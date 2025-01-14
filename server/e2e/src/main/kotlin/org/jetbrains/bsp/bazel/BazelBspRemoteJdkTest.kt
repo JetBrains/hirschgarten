@@ -45,7 +45,7 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
 
     val exampleExampleBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//example"),
+        BuildTargetIdentifier("$targetPrefix//example:example"),
         listOf("application"),
         listOf("java"),
         emptyList(),
@@ -56,7 +56,7 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
           it.canDebug = false
         },
       )
-    exampleExampleBuildTarget.displayName = "$targetPrefix//example"
+    exampleExampleBuildTarget.displayName = "$targetPrefix//example:example"
     exampleExampleBuildTarget.baseDirectory = "file://\$WORKSPACE/example/"
     exampleExampleBuildTarget.data = exampleExampleJvmBuildTarget
     exampleExampleBuildTarget.dataKind = BuildTargetDataKind.JVM

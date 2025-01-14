@@ -71,7 +71,7 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
           ?.descendantsOfType<StarlarkNamedArgumentExpression>()
           ?.filter { it.isNameArgument() }
           ?.firstOrNull {
-            it.getArgumentStringValue()?.let { it1 -> Label.parseOrNull(it1)?.targetName } == target
+            it.getArgumentStringValue()?.let { name -> Label.parseOrNull(name)?.targetName } == target
           }
       OpenFileHyperlinkInfo(project, virtualFile, psiElement?.calculateLineNumber() ?: 0, 0)
     }

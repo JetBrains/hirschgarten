@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.commons.label
 
-import io.kotest.matchers.should
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 class LabelTest {
   @Test
@@ -89,13 +91,6 @@ class LabelTest {
   }
 
   @Test
-  fun `should return empty string for label with target without target name`() {
-    val label = Label.parse("//path/to/target")
-    val targetName = label.targetName
-    targetName shouldBe "target"
-  }
-
-  @Test
   fun `should correctly parse at-less targets`() {
     val label = Label.parse("//path/to/target:targetName")
     val normalized = label.toString()
@@ -121,23 +116,17 @@ class LabelTest {
   }
 
   @Test
-  fun `should return package name as target for label without explicit target name`() {
-    val label = Label.parse("//path/to/target")
-    val targetName = label.targetName
-    targetName shouldBe "target"
-  }
-
-  @Test
   fun `main workspace targets should be equal, no matter how they are created`() {
     val label1 = Label.parse("@//path/to/target:target")
     val label2 = Label.parse("//path/to/target:target")
     val label3 = Label.parse("@@//path/to/target:target")
+
     val label4 = Label.parse("@@//path/to/target")
     val label5 = Label.parse("//path/to/target")
     label1 shouldBe label2
     label1 shouldBe label3
-    label1 shouldBe label4
-    label1 shouldBe label5
+
+    label4 shouldBe label5
   }
 
   @Test
@@ -152,14 +141,15 @@ class LabelTest {
     label.toString() shouldBe "@//:target"
     label.targetName shouldBe "target"
     label.packagePath.toString() shouldBe ""
-    label.assumeResolved().repo shouldBe Main
+    label.repo shouldBe Main
     label.isMainWorkspace shouldBe true
 
     val label2 = Label.parse("target").assumeResolved()
     label2.toString() shouldBe "@//target"
     label2.targetName shouldBe "target"
+    label2.target shouldBe AmbiguousEmptyTarget
     label2.packagePath.toString() shouldBe "target"
-    label.assumeResolved().repo shouldBe Main
+    label.repo shouldBe Main
     label2.isMainWorkspace shouldBe true
   }
 
@@ -179,7 +169,12 @@ class LabelTest {
   @Test
   fun `package wildcards are normalized`() {
     val label = Label.parse("//...:all")
-    label.toString() shouldBe "@//..."
+    label.toString() shouldBe "@//...:all"
+
+    val label2 = Label.parse("//...")
+    label2.toString() shouldBe "@//...:all"
+
+    label shouldBe label2
   }
 
   @Test
@@ -205,7 +200,8 @@ class LabelTest {
   fun `package wildcards are parsed correctly`() {
     val label = Label.parse("@//path/to/...")
     label.packagePath shouldBe AllPackagesBeneath(listOf("path", "to"))
-    label.toString() shouldBe "@//path/to/..."
+    label.target shouldBe AllRuleTargets
+    label.toString() shouldBe "@//path/to/...:all"
   }
 
   @Test
@@ -251,20 +247,57 @@ class LabelTest {
     val relative = Label.parse("path/segment:oh/god").asRelative()
     val resolved = relative?.resolve(base)
     resolved.toString() shouldBe "@blah//path/to/path/segment:oh/god"
+    resolved?.target shouldBe SingleTarget("oh/god")
+  }
+
+  @Test
+  fun `resolving a relative label with respect to a wildcard package is impossible`() {
+    val base = Label.parse("@blah//path/to/...").assumeResolved()
+    val relative = Label.parse("path/segment").asRelative()
+    shouldThrow<IllegalStateException> {
+      relative?.resolve(base)
+    }
+  }
+
+  @Test
+  fun `resolving a relative label preserves empty ambigous target`() {
+    val base = Label.parse("@blah//path/to").assumeResolved()
+    val relative = Label.parse("another/path").asRelative()!!
+    val resolved = relative.resolve(base)
+    resolved.toString() shouldBe "@blah//path/to/another/path"
+    resolved.target shouldBe AmbiguousEmptyTarget
+    resolved.packagePath shouldBe Package(listOf("path", "to", "another", "path"))
   }
 
   @Test
   fun `parse relative label with ambiguous package`() {
     val label1 = Label.parse("src/Hello.java")
     label1.toString() shouldBe "src/Hello.java"
-    label1.target should { it is AmbiguousSingleTarget }
+    label1.target shouldBe AmbiguousEmptyTarget
     label1.packagePath shouldBe Package(listOf("src", "Hello.java"))
     label1.isRelative shouldBe true
 
     val label2 = Label.parse("//src/Hello.java")
     label2.toString() shouldBe "@//src/Hello.java"
-    label2.target should { it is AmbiguousSingleTarget }
+    label2.target shouldBe AmbiguousEmptyTarget
     label2.packagePath shouldBe Package(listOf("src", "Hello.java"))
     label2.isRelative shouldBe false
+  }
+
+  @Test
+  fun `targetName returns package name for ambiguous empty target`() {
+    val label = Label.parse("//src/Hello.java")
+    label.targetName shouldBe "Hello.java"
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+    strings = ["@//path/to/target", "@//path:all", "relative:target", "relative:all", "wildcard/...", "@@canonical~//path/to/target"],
+  )
+  fun `toString preserves semantics`() {
+    val label = Label.parse("@//path/to/target")
+    val string = label.toString()
+    val parsed = Label.parse(string)
+    parsed shouldBe label
   }
 }

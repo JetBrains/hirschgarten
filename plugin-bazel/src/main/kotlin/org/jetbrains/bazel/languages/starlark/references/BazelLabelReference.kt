@@ -9,7 +9,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReferenceBase
-import org.jetbrains.bazel.commons.label.AmbiguousSingleTarget
+import org.jetbrains.bazel.commons.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bazel.commons.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
@@ -69,7 +69,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     val containingPackage = findContainingPackage(containingFile) ?: return null
     val referredPackage = containingPackage.findFileByRelativePath(label.packagePath.toString()) ?: return null
     if (referredPackage.isFile) {
-      if (label.target is AmbiguousSingleTarget) return SourceFile(referredPackage)
+      if (label.target is AmbiguousEmptyTarget) return SourceFile(referredPackage)
       return null
     }
     val buildFile = findBuildFile(referredPackage) ?: return null
