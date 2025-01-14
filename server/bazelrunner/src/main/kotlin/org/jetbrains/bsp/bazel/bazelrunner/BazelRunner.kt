@@ -48,11 +48,12 @@ class BazelRunner(
       },
     ) = BazelCommand.ModDumpRepoMapping(bazelBinary).apply { builder() }
 
-    fun query(
-      allowManualTargetsSync: Boolean = true,
-      builder: BazelCommand.Query.() -> Unit = {
-      },
-    ) = BazelCommand.Query(bazelBinary, allowManualTargetsSync).apply { builder() }
+    fun query(allowManualTargetsSync: Boolean = true, builder: BazelCommand.Query.() -> Unit = {}) =
+      BazelCommand.Query(bazelBinary, allowManualTargetsSync).apply { builder() }
+
+    /** Special version of `query` for asking Bazel about a file instead of a target */
+    fun fileQuery(filePath: Path, builder: BazelCommand.FileQuery.() -> Unit = {}) =
+      BazelCommand.FileQuery(bazelBinary, filePath.toString()).apply { builder() }
 
     fun cquery(builder: BazelCommand.CQuery.() -> Unit = {}) =
       BazelCommand.CQuery(bazelBinary).apply { builder() }.also { inheritWorkspaceOptions = true }

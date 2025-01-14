@@ -65,15 +65,7 @@ object InverseSourcesQuery {
     bazelRunner: BazelRunner,
     cancelChecker: CancelChecker,
   ): String? {
-    val packagePath = relativePath.parent
-    val file = relativePath.fileName.toString()
-
-    val command =
-      bazelRunner.buildBazelCommand {
-        query {
-          targets.add(Label.parse("$packagePath:$file"))
-        }
-      }
+    val command = bazelRunner.buildBazelCommand { fileQuery(relativePath) }
     val fileLabelResult =
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
