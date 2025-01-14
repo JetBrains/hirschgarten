@@ -41,8 +41,8 @@ class CppLanguagePlugin(
     cToolchainInfoLookupMap =
       targets
         .filter { it.hasCToolchainInfo() }
-        .map {
-          val original = it.getCToolChainInfoOrNull()!!
+        .mapNotNull {
+          val original = it.getCToolChainInfoOrNull() ?: return@mapNotNull null
           val oldCCompiler = bazelPathsResolver.resolve(original.cCompiler)
           val oldCppCompiler = bazelPathsResolver.resolve(original.cppCompiler)
           val newCCompiler =
