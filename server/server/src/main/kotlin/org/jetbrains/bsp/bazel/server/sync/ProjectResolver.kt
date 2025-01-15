@@ -139,7 +139,12 @@ class ProjectResolver(
       // resolve root targets (expand wildcards)
       val rootTargets =
         measured("Calculating root targets") {
-          bazelLabelExpander.getAllPossibleTargets(cancelChecker).map { it.assumeResolved().canonicalize(repoMapping) }.toSet()
+          bazelLabelExpander
+            .getAllPossibleTargets(
+              targetsToSync,
+              cancelChecker,
+            ).map { it.assumeResolved().canonicalize(repoMapping) }
+            .toSet()
         }
       return@useWithScope measured(
         "Mapping to internal model",
