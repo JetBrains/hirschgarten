@@ -1,10 +1,8 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.cpp.toolchain
 
 import java.io.File
-import java.io.PrintWriter
-import java.nio.charset.StandardCharsets
 import java.nio.file.Path
-import java.util.function.Consumer
+import java.util.Locale
 
 class CompilerWrapper {
   fun createCompilerExecutableWrapper(
@@ -14,7 +12,9 @@ class CompilerWrapper {
   ): Path {
     // bazel only uses a wrapper script on unix, so we do not need this script when running on windows
 
-    // todo: skip windows
+    if (System.getProperty("os.name").lowercase(Locale.getDefault()).contains("windows")) {
+      return bazelCompilerExecutableFile
+    }
 
     val bazelCompilerWrapper =
       File.createTempFile("blaze_compiler", ".sh")
@@ -55,15 +55,12 @@ class CompilerWrapper {
         "done",
         "",
         "# The actual compiler wrapper script we get from blaze",
-        String.format("EXE=%s", bazelCompilerExecutableFile),
+        "EXE=$bazelCompilerExecutableFile",
         "# Read in the arguments file so we can pass the arguments on the command line.",
-        String.format("(cd %s && \$EXE \"\${parsedargs[@]}\")", executionRoot),
+        "(cd $executionRoot && \$EXE \"\${parsedargs[@]}\")",
       ),
     )
-
-    PrintWriter(bazelCompilerWrapper, StandardCharsets.UTF_8.name()).use { pw ->
-      compilerWrapperScriptLines.forEach(Consumer { x: String? -> pw.println(x) })
-    }
+    bazelCompilerWrapper.writeText(compilerWrapperScriptLines.joinToString(System.lineSeparator()))
     return bazelCompilerWrapper.toPath().toAbsolutePath()
   }
 

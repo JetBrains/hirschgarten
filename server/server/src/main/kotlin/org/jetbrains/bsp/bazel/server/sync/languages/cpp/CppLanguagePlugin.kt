@@ -21,20 +21,12 @@ import kotlin.io.path.Path
 class CppLanguagePlugin(
   private val bazelPathsResolver: BazelPathsResolver,
   private val bazelRunner: BazelRunner,
-  private val bazelCppToolchainResolver: BazelCppToolchainResolver,
+  private val bazelCppToolchainResolver: BazelCppToolchainResolver = BazelCppToolchainResolver(bazelPathsResolver.bazelInfo, bazelRunner),
 ) : LanguagePlugin<CppModule>() {
   var cToolchainInfoLookupMap = mapOf<String, CToolchainInfo>()
   var targetsLookupMap = mapOf<String, TargetInfo>()
 
-  val cppPathResolver = CppPathResolver(bazelPathsResolver.bazelInfo)
-
-  // BazelCppToolchainResolver needs to be mocked if we want to test
-  // so CppLanguagePlugin has a second constructor
-  constructor(bazelPathsResolver: BazelPathsResolver, bazelRunner: BazelRunner) : this(
-    bazelPathsResolver,
-    bazelRunner,
-    BazelCppToolchainResolver(bazelPathsResolver.bazelInfo, bazelRunner),
-  )
+  val cppPathResolver = CppPathResolver(bazelPathsResolver)
 
   override fun prepareSync(targets: Sequence<TargetInfo>) {
     targetsLookupMap = targets.map { it.id to it }.toMap()
@@ -43,8 +35,8 @@ class CppLanguagePlugin(
         .filter { it.hasCToolchainInfo() }
         .mapNotNull {
           val original = it.getCToolChainInfoOrNull() ?: return@mapNotNull null
-          val oldCCompiler = bazelPathsResolver.resolve(original.cCompiler)
-          val oldCppCompiler = bazelPathsResolver.resolve(original.cppCompiler)
+          val oldCCompiler = cppPathResolver.resolveToPath(original.cCompiler)
+          val oldCppCompiler = cppPathResolver.resolveToPath(original.cppCompiler)
           val newCCompiler =
             CompilerWrapper().createCompilerExecutableWrapper(
               Path.of(bazelPathsResolver.bazelInfo.execRoot),
@@ -66,7 +58,7 @@ class CppLanguagePlugin(
               cppOptions = original.cppOptionList,
               cCompiler = bazelPathsResolver.resolveUri(newCCompiler).toString(),
               cppCompiler = bazelPathsResolver.resolveUri(newCppCompiler).toString(),
-              compilerVersion = bazelCppToolchainResolver.getCompilerVersion(newCppCompiler.toString(), newCCompiler.toString()),
+              compilerVersion = bazelCppToolchainResolver.getCompilerVersion(newCppCompiler, newCCompiler),
             )
         }.toMap()
   }

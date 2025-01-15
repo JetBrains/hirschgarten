@@ -2,12 +2,11 @@ package org.jetbrains.bsp.bazel.server.sync.languages.cpp.toolchain
 
 import org.apache.logging.log4j.LogManager
 import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.io.path.exists
 
 interface CompilerVersionChecker {
   fun getCompilerVersion(
-    execRoot: String,
+    execRoot: Path,
     executable: Path,
     xcode: XCodeCompilerSettings?,
   ): String?
@@ -17,11 +16,11 @@ class CompilerVersionCheckerImpl : CompilerVersionChecker {
   private val log = LogManager.getLogger(javaClass)
 
   override fun getCompilerVersion(
-    execRoot: String,
+    execRoot: Path,
     executable: Path,
     xcode: XCodeCompilerSettings?,
   ): String? {
-    if (!Paths.get(execRoot).exists()) {
+    if (!execRoot.exists()) {
       log.warn("Cannot find executable '$execRoot' in $executable")
       return null
     }

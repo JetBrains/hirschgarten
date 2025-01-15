@@ -1,7 +1,8 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.cpp
 
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
-import org.jetbrains.bsp.bazel.server.sync.languages.cpp.CppPathResolver.Companion.getFileRootedAt
+import org.jetbrains.bsp.bazel.server.sync.languages.cpp.CppPathResolver.CppPathResolver.getFileRootedAt
 import java.net.URI
 import java.nio.file.Path
 
@@ -85,17 +86,17 @@ class VirtualIncludesHandler(val pathResolver: CppPathResolver) {
       } else {
         Path.of(key.bazelPackageName()).resolve(stripPrefix)
       }
+    val keyLabel = Label.parse(key)
 
     // if this header is not external, then call now we can resolveToIncludeDirectories on it
-    val externalWorkspace = key.externalWorkspaceName()
-    if (externalWorkspace == null) {
+    if (keyLabel.isMainWorkspace) {
       return pathResolver.resolveToIncludeDirectories(workspacePath, targetMap)
     }
 
     val externalRoot =
       Path
         .of("external")
-        .resolve(externalWorkspace)
+        .resolve(keyLabel.packagePath.toString())
         .resolve(workspacePath)
     return externalRoot.getFileRootedAt(externalWorkspacePath).map { it.toAbsolutePath().toUri() }
   }
@@ -147,7 +148,7 @@ class VirtualIncludesHandler(val pathResolver: CppPathResolver) {
    * Returns the external workspace referenced by this label, or null if it's a main workspace
    * label.
    */
-  fun String.externalWorkspaceName(): String? {
+  fun String.xternalWorkspaceName(): String? {
     if (!this.startsWith("@")) {
       return null
     }

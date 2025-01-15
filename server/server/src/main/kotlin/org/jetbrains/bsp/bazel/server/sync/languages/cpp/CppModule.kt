@@ -23,5 +23,5 @@ data class CToolchainInfo(
   val cppOptions: List<String>,
   val cCompiler: String,
   val cppCompiler: String,
-  val compilerVersion: String,
+  val compilerVersion: String?,
 )

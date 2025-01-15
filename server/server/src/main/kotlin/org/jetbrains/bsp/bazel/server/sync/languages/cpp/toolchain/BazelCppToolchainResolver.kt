@@ -7,33 +7,20 @@ import java.nio.file.Path
 class BazelCppToolchainResolver(
   val bazelInfo: BazelInfo,
   val bazelRunner: BazelRunner,
-  val compilerVersionChecker: CompilerVersionChecker,
-  val xCodeProvider: XCodeCompilerSettingProvider,
+  val compilerVersionChecker: CompilerVersionChecker = CompilerVersionCheckerImpl(),
+  val xCodeProvider: XCodeCompilerSettingProvider = XCodeCompilerSettingProviderImpl(),
 ) {
-  constructor(bazelInfo: BazelInfo, bazelRunner: BazelRunner) : this(
-    bazelInfo,
-    bazelRunner,
-    CompilerVersionCheckerImpl(),
-    XCodeCompilerSettingProviderImpl(),
-  )
-
   val xCodeSetting = xCodeProvider.fromContext(bazelRunner)
 
-  fun getCompilerVersion(cppExecutable: String, cExecutable: String): String {
-    val cppCompilerVersion = resolveCompilerVersion(bazelInfo.execRoot, cppExecutable, xCodeSetting)
-    val cCompilerVersion = resolveCompilerVersion(bazelInfo.execRoot, cExecutable, xCodeSetting)
-    return mergeCompilerVersions(cCompilerVersion, cppCompilerVersion) ?: ""
+  fun getCompilerVersion(cppExecutable: Path, cExecutable: Path): String? {
+    val cppCompilerVersion = resolveCompilerVersion(Path.of(bazelInfo.execRoot), cppExecutable, xCodeSetting)
+    if (cppCompilerVersion != null) return cppCompilerVersion
+    return resolveCompilerVersion(Path.of(bazelInfo.execRoot), cExecutable, xCodeSetting)
   }
-
-  private fun mergeCompilerVersions(cCompilerVersion: String?, cppCompilerVersion: String?): String? =
-    cppCompilerVersion ?: cCompilerVersion
 
   private fun resolveCompilerVersion(
-    execRoot: String,
-    executable: String,
+    execRoot: Path,
+    executable: Path,
     xcode: XCodeCompilerSettings?,
-  ): String? {
-    if (executable.isBlank()) return null
-    return compilerVersionChecker.getCompilerVersion(execRoot, Path.of(executable), xcode)
-  }
+  ): String? = compilerVersionChecker.getCompilerVersion(execRoot, executable, xcode)
 }
