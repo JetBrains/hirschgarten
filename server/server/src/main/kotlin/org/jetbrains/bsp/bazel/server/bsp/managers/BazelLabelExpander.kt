@@ -3,11 +3,10 @@ package org.jetbrains.bsp.bazel.server.bsp.managers
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 
-class BazelLabelExpander(private val bazelRunner: BazelRunner, private val workspaceContextProvider: WorkspaceContextProvider) {
-  fun getAllPossibleTargets(cancelChecker: CancelChecker): List<Label> {
-    val targets = workspaceContextProvider.currentWorkspaceContext().targets
+class BazelLabelExpander(private val bazelRunner: BazelRunner) {
+  fun getAllPossibleTargets(targets: TargetsSpec, cancelChecker: CancelChecker): List<Label> {
     val command =
       bazelRunner.buildBazelCommand {
         query {
