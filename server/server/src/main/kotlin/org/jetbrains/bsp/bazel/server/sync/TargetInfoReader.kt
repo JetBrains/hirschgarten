@@ -15,7 +15,7 @@ import kotlin.io.path.reader
 class TargetInfoReader(private val bspClientLogger: BspClientLogger) {
   suspend fun readTargetMapFromAspectOutputs(files: Set<Path>): Map<Label, TargetInfo> =
     withContext(Dispatchers.Default) {
-      files.map { file ->  readFromFile(file) }
+      files.map { file -> async { readFromFile(file) } }.awaitAll()
     }.asSequence()
       .filterNotNull()
       .groupBy { it.id }

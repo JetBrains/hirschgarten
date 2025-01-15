@@ -20,7 +20,6 @@ kt_jvm_library(
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/performance",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/taskEvents",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/utils",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/languages",
         "//plugin-bsp/workspacemodel/src:workspacemodel",
         "//protocol",
         "//sdkcompat",

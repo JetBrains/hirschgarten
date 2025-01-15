@@ -33,8 +33,8 @@ import com.jetbrains.cidr.lang.workspace.compiler.OCCompilerKind
 import com.jetbrains.cidr.lang.workspace.compiler.TempFilesPool
 import com.jetbrains.cidr.lang.workspace.compiler.UnknownCompilerKind
 import com.jetbrains.cidr.lang.workspace.headerRoots.HeadersSearchPath
-import org.jetbrains.bsp.bazel.server.sync.languages.cpp.CToolchainInfo
-import org.jetbrains.bsp.bazel.server.sync.languages.cpp.CppModule
+import org.jetbrains.bsp.protocol.CToolchainInfo
+import org.jetbrains.bsp.protocol.CppModule
 import org.jetbrains.bsp.protocol.utils.extractData
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.config.bspBuildToolId
