@@ -7,8 +7,8 @@ include:
 exclude:
   - name: All
     paths:
-      - plugin-bazel/src/main/gen/org/jetbrains/bazel/languages/bazelrc/lexer/_BazelrcLexer.java
-      - plugin-bazel/src/main/gen/org/jetbrains/bazel/languages/starlark/lexer/_StarlarkLexer.java
+      - plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelrc/lexer/_BazelrcLexer.java
+      - plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/lexer/_StarlarkLexer.java
       - plugin-bazel/src/test/testData/bazelrc
       - plugin-bazel/src/test/testData/starlark
       # generated workspace entities are full of various things, boring for qodana
