@@ -13,7 +13,6 @@ java_library(
     visibility = ["//visibility:public"],
     exports = select_for_plugin_api({
         "intellij-2024.3": ["@clion_2024_3//:cpp"],
-        "clion-2024.3": ["@clion_2024_3//:cpp"],
         "default": [],
     }),
 )

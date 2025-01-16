@@ -65,7 +65,11 @@ SDK_243_PLUGIN_REPOSITORY_VERSION = "243.22562.145"
 
 SDK_243_INTELLIJ_REPOSITORY_VERSION = "243.22562.218"
 
-SDK_243_INTELLIJ_REPOSITORY = "releases"  # or release
+SDK_243_INTELLIJ_REPOSITORY = "releases"  # or snapshots
+
+SDK_243_CLION_REPOSITORY_VERSION = "2024.3.1.1"
+
+SDK_243_CLION_REPOSITORY = "releases"  # or snapshots
 
 IC_243_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_243_INTELLIJ_REPOSITORY, SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
 
@@ -150,9 +154,9 @@ http_archive(
     url = GO_PLUGIN_243_URL,
 )
 
-CLION_243_SHA = "9dd62fecc0530c0a1783505f2c5b5b0cba7f9be0d23583ef3837235974c57d2b"
+CLION_243_SHA = "fb6498edd13da3eeb4dc53e33d24e76ecea667ea4ecf9f61b5ded5f4c3c551c4"
 
-CLION_243_URL = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/clion/clion/2024.3/clion-2024.3.zip"
+CLION_243_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/clion/clion/%s/clion-%s.zip" % (SDK_243_CLION_REPOSITORY, SDK_243_CLION_REPOSITORY_VERSION, SDK_243_CLION_REPOSITORY_VERSION)
 
 _CLION_BUILD_FILE = """
 java_import(

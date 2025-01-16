@@ -36,11 +36,6 @@ config_setting(
     values = {"define": "ij_product=intellij-2024.3"},
 )
 
-config_setting(
-    name = "clion-2024.3",
-    values = {"define": "ij_product=clion-2024.3"},
-)
-
 # The purpose of this rule is to hide the versioning
 # complexity from users of this api.
 # There will be additional versions added in the future
@@ -127,7 +122,7 @@ java_library(
     testonly = 1,
     runtime_deps = select_from_plugin_api_directory(
         android_studio = [":bundled_plugins"],
-        clion = [":bundled_plugins"],
+        clion = [],
         intellij = [":bundled_plugins"],
     ),
 )
@@ -136,7 +131,7 @@ filegroup(
     name = "application_info_json",
     srcs = select_from_plugin_api_directory(
         android_studio = [":application_info_json"],
-        clion = [":application_info_json"],
+        clion = [],
         intellij = [":application_info_json"],
     ),
 )
