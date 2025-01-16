@@ -22,7 +22,7 @@ class CppPathResolver(val bazelPathsResolver: BazelPathsResolver) {
     )
 
   /**
-   * resolve a normal path string in cpp options to correct absolute uri
+   * Resolve a normal path string in cpp options to correct absolute uri
    * */
   fun resolve(path: String): URI = resolveToPath(path).toUri()
 
