@@ -1,8 +1,11 @@
 package org.jetbrains.bsp.bazel.bazelrunner
 
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bsp.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bsp.bazel.workspacecontext.BazelBinarySpec
@@ -22,7 +25,10 @@ import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.junit.jupiter.api.Test
+import java.nio.file.Paths
 import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.readText
 
 fun String.label() = Label.parse(this)
 
@@ -46,12 +52,23 @@ val mockContext =
     shardingApproachSpec = ShardingApproachSpec(null),
   )
 
+val mockBazelInfo =
+  BazelInfo(
+    execRoot = "execRoot",
+    outputBase = Path("outputBase"),
+    workspaceRoot = Path("workspaceRoot"),
+    release = BazelRelease(7),
+    isBzlModEnabled = true,
+    isWorkspaceEnabled = true,
+  )
+
 val contextProvider =
   object : WorkspaceContextProvider {
     override fun currentWorkspaceContext(): WorkspaceContext = mockContext
   }
 
-val bazelRunner = BazelRunner(contextProvider, null, Path("workspaceRoot"))
+val bazelRunner = BazelRunner(contextProvider, null, mockBazelInfo.workspaceRoot)
+val bazelRunnerWithBazelInfo = BazelRunner(contextProvider, null, mockBazelInfo.workspaceRoot, mockBazelInfo)
 
 class BazelRunnerBuilderTest {
   @Test
@@ -61,7 +78,7 @@ class BazelRunnerBuilderTest {
         build()
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "build",
@@ -75,7 +92,7 @@ class BazelRunnerBuilderTest {
   }
 
   @Test
-  fun `build with targets from spec`() {
+  fun `build with targets from spec without bazel info (legacy flow)`() {
     val command =
       bazelRunner.buildBazelCommand {
         build {
@@ -83,7 +100,7 @@ class BazelRunnerBuilderTest {
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "build",
@@ -103,13 +120,50 @@ class BazelRunnerBuilderTest {
   }
 
   @Test
+  fun `build with targets from spec (new flow with target pattern file)`() {
+    val command =
+      bazelRunnerWithBazelInfo.buildBazelCommand {
+        build {
+          addTargetsFromSpec(mockContext.targets)
+        }
+      }
+    val executionDescriptor = command.buildExecutionDescriptor()
+    val commandLine = executionDescriptor.command
+    commandLine.dropLast(1) shouldContainExactly
+      listOf(
+        "bazel",
+        "build",
+        BazelFlag.toolTag(),
+        "--override_repository=bazelbsp_aspect=.bazelbsp",
+        "--curses=no",
+        "--color=yes",
+        "--noprogress_in_terminal_title",
+        "flag1",
+        "flag2",
+      )
+    val targetPatternFileFlag = "--target_pattern_file="
+    commandLine.last().startsWith(targetPatternFileFlag)
+    val targetPatternFile = Paths.get(commandLine.last().removePrefix(targetPatternFileFlag))
+    targetPatternFile.readText() shouldBe
+      """
+      in1
+      in2
+      -ex1
+      -ex2
+      
+      """.trimIndent()
+    executionDescriptor.finishCallback()
+    targetPatternFile.exists() shouldBe false
+  }
+
+  @Test
   fun `run without program arguments`() {
     val command =
       bazelRunner.buildBazelCommand {
         run("in1".label())
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "run",
@@ -133,7 +187,7 @@ class BazelRunnerBuilderTest {
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "run",
@@ -160,7 +214,7 @@ class BazelRunnerBuilderTest {
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "run",
@@ -185,7 +239,7 @@ class BazelRunnerBuilderTest {
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "build",
@@ -212,7 +266,7 @@ class BazelRunnerBuilderTest {
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "test",
@@ -239,7 +293,7 @@ class BazelRunnerBuilderTest {
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "test",
@@ -268,7 +322,7 @@ class BazelRunnerBuilderTest {
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "coverage",
@@ -296,7 +350,7 @@ class BazelRunnerBuilderTest {
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "query",
@@ -321,7 +375,7 @@ class BazelRunnerBuilderTest {
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "query",
@@ -343,7 +397,7 @@ class BazelRunnerBuilderTest {
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "cquery",
@@ -369,7 +423,7 @@ class BazelRunnerBuilderTest {
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "build",
