@@ -13,7 +13,6 @@ import org.jetbrains.plugins.bsp.startup.BspProjectActivity
 // See https://youtrack.jetbrains.com/issue/BAZEL-1236
 private val SLOW_PLUGINS =
   listOf(
-    "com.intellij.spring",
     "com.intellij.python.django",
     "com.intellij.aop",
   )
