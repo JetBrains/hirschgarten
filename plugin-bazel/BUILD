@@ -12,6 +12,13 @@ load(
 )
 load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
 load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
+load("//:query.bzl", "runtime_classpath")
+
+runtime_classpath(
+    name = "extract_runtime_jars",
+    target = "//plugin-bazel/src:intellij-bazel",
+    visibility = ["//visibility:public"],
+)
 
 define_kt_toolchain(
     name = "kotlin_toolchain",
