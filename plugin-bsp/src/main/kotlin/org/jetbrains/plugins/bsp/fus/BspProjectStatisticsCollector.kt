@@ -8,9 +8,9 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.bspProjectProperties
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 
-class ProjectDataCollector : ProjectUsagesCollector() {
+class BspProjectStatisticsCollector : ProjectUsagesCollector() {
 
-  override fun getGroup(): EventLogGroup? {
+  override fun getGroup(): EventLogGroup {
     return GROUP
   }
 
@@ -34,12 +34,12 @@ class ProjectDataCollector : ProjectUsagesCollector() {
    * Recording a tool window activation event with two fields.
    */
   companion object {
-    private val GROUP = EventLogGroup("bsp.project", 0)
+    private val GROUP = EventLogGroup("bsp.project.statistics", 0, "FUS", "General statistics about a project's 'demographics'")
 
-    private val UNKNOWN_BUILD_TOOL_ID = "unknown"
-    private val KNOWN_BUILD_TOOL_IDS = listOf("bazelbsp", "mill", "sbt", "unknown")
+    private const val UNKNOWN_BUILD_TOOL_ID = "_unknown"
+    private val KNOWN_BUILD_TOOL_IDS = listOf("bazelbsp", "mill", "sbt", UNKNOWN_BUILD_TOOL_ID)
 
-    // build tool id is expected to be set by plugins only and should not contain sensitive data
+    // build tool id is expected to be set by plugins only and should not contain sensitive data, how to allow previously unknown fields?
     private val BUILDTOOL = GROUP.registerEvent("buildtool", EventFields.String("buildtool", KNOWN_BUILD_TOOL_IDS))
     private val COUNT_TARGETS = GROUP.registerEvent("count.targets", EventFields.LogarithmicInt("count_targets", "number of targets synced"))
     private val COUNT_FILES = GROUP.registerEvent("count.files", EventFields.LogarithmicInt("count_files", "number of files synced"))

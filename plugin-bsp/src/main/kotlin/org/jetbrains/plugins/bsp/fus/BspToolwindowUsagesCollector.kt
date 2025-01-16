@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 
 class BspToolwindowUsagesCollector : CounterUsagesCollector() {
 
-  override fun getGroup(): EventLogGroup? {
+  override fun getGroup(): EventLogGroup {
     return GROUP
   }
 
@@ -14,7 +14,7 @@ class BspToolwindowUsagesCollector : CounterUsagesCollector() {
    * Recording a tool window activation event with two fields.
    */
   companion object {
-    private val GROUP: EventLogGroup = EventLogGroup("bsp.toolwindow", 0)
+    private val GROUP: EventLogGroup = EventLogGroup("bsp.toolwindow", 0, "FUS", "BSP tool window action usages")
     private val ACTIVATED = GROUP.registerEvent("activated", "focused the BSP tool window")
 
     @JvmStatic
