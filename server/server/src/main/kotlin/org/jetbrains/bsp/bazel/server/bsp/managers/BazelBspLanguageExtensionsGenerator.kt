@@ -17,7 +17,13 @@ enum class Language(
 ) {
   Java("//aspects:rules/java/java_info.bzl", listOf("rules_java"), listOf("extract_java_toolchain", "extract_java_runtime"), true, true),
   Python("//aspects:rules/python/python_info.bzl", listOf("rules_python"), listOf("extract_python_info"), true, true),
-  Scala("//aspects:rules/scala/scala_info.bzl", listOf("io_bazel_rules_scala", "rules_scala"), listOf("extract_scala_info"), false, false),
+  Scala(
+    "//aspects:rules/scala/scala_info.bzl",
+    listOf("rules_scala_annex", "io_bazel_rules_scala", "rules_scala"),
+    listOf("extract_scala_info"),
+    true,
+    false,
+  ),
   Cpp("//aspects:rules/cpp/cpp_info.bzl", listOf("rules_cc"), listOf("extract_cpp_info", "extract_c_toolchain_info"), false, false),
   Kotlin("//aspects:rules/kt/kt_info.bzl", listOf("io_bazel_rules_kotlin", "rules_kotlin"), listOf("extract_kotlin_info"), true, false),
   Jvm("//aspects:rules/jvm/jvm_info.bzl", Java.ruleNames + Scala.ruleNames + Kotlin.ruleNames, listOf("extract_jvm_info"), true, true),
@@ -60,12 +66,12 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
     return props
   }
 
-  fun generateLanguageExtensions(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, List<Label>>) {
+  fun generateLanguageExtensions(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, Label?>) {
     val fileContent = prepareFileContent(ruleLanguages, toolchains)
     createNewExtensionsFile(fileContent)
   }
 
-  private fun prepareFileContent(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, List<Label>>) =
+  private fun prepareFileContent(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, Label?>) =
     listOf(
       "# This is a generated file, do not edit it",
       createLoadStatementsString(ruleLanguages.map { it.language }),
@@ -86,10 +92,9 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
     return functionNames.joinToString(prefix = "EXTENSIONS = [\n", postfix = "\n]", separator = ",\n ") { "\t$it" }
   }
 
-  private fun createToolchainListString(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, List<Label>>): String =
+  private fun createToolchainListString(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, Label?>): String =
     ruleLanguages
       .mapNotNull { toolchains[it] }
-      .flatten()
       .joinToString(prefix = "TOOLCHAINS = [\n", postfix = "\n]", separator = ",\n ") { "\t\"$it\"" }
 
   private fun createNewExtensionsFile(fileContent: String) {

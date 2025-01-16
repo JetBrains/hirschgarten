@@ -62,6 +62,8 @@ object BazelFlag {
 
   @JvmStatic fun noBuild(): String = flag("nobuild")
 
+  @JvmStatic fun noRunValidations(): String = flag("norun_validations")
+
   private fun arg(name: String, value: String) = String.format("--%s=%s", name, value)
 
   private fun flag(name: String) = "--$name"
