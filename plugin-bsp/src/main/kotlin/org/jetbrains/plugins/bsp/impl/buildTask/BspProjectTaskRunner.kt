@@ -34,7 +34,7 @@ class BspProjectTaskRunner : ProjectTaskRunner() {
     when (projectTask) {
       is JpsOnlyModuleBuildTask -> false
       is BspOnlyModuleBuildTask -> true
-      is ModuleBuildTask -> !JpsFeatureFlags.isJpsCompilationAsDefaultEnabled
+      is ModuleBuildTask -> !JpsFeatureFlags.isJpsCompilationEnabled
       else -> false
     }
 
