@@ -17,7 +17,7 @@ class CompilerWrapper {
     }
 
     val bazelCompilerWrapper =
-      File.createTempFile("blaze_compiler", ".sh")
+      File.createTempFile("bazel_compiler", ".sh")
     bazelCompilerWrapper.setExecutable(true)
 
     val compilerWrapperScriptLines =
