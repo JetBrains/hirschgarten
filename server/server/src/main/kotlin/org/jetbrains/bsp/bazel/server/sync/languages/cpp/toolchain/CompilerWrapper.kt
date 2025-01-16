@@ -18,7 +18,7 @@ class CompilerWrapper {
     // todo: skip windows
 
       val bazelCompilerWrapper =
-        File.createTempFile("blaze_compiler", ".sh" /* deleteOnExit */)
+        File.createTempFile("blaze_compiler", ".sh")
       bazelCompilerWrapper.setExecutable(true)
 
       val compilerWrapperScriptLines  = mutableListOf(

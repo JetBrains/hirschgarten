@@ -253,8 +253,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(startupOptions)
       commandLine.add("cquery")
       commandLine.addAll(options)
-      commandLine.addAll(targetCommandLine())
-
+      if (targets.isNotEmpty()) commandLine.addAll(targetCommandLine())
       return commandLine
     }
   }

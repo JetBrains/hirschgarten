@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.cpp
 
+import org.apache.logging.log4j.LogManager
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
@@ -8,7 +9,7 @@ import java.net.URI
 import java.nio.file.Path
 
 class CppPathResolver(bazelInfo: BazelInfo) : BazelPathsResolver(bazelInfo) {
-
+  private val log = LogManager.getLogger(CppPathResolver::class.java)
   private val VIRTUAL_INCLUDES_DIRECTORY: Path = Path.of("_virtual_includes")
   private val virtualIncludesHandler: VirtualIncludesHandler = VirtualIncludesHandler(this)
 
@@ -53,6 +54,7 @@ class CppPathResolver(bazelInfo: BazelInfo) : BazelPathsResolver(bazelInfo) {
       }
     } catch (e: IOException) {
       //todo: log something
+      log.info("Failed to resolve real path for ${fileInExecutionRoot.toRealPath()}: ${e.message},${e.stackTrace.joinToString("\n")}")
     }
     return listOf(fileInExecutionRoot.toAbsolutePath().toUri())
   }

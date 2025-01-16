@@ -1,0 +1,2 @@
+def format(target):
+    return "{} {}".format(providers(target)["XcodeProperties"].xcode_version, providers(target)["XcodeProperties"].default_macos_sdk_version) if providers(target) and "XcodeProperties" in providers(target) else ""
