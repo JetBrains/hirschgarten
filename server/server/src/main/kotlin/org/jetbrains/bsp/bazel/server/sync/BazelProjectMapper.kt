@@ -841,15 +841,17 @@ class BazelProjectMapper(
 
   private fun hasKnownPythonSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
-      !it.isExternal && it.relativePath.endsWith(".py")
+      it.relativePath.endsWith(".py")
     }
 
-  private fun hasOtherKnownSources(targetInfo: TargetInfo) =
+  private fun hasKnownGoSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
-      !it.isExternal &&
-        it.relativePath.endsWith(".sh") ||
-        it.relativePath.endsWith(".rs") ||
-        it.relativePath.endsWith(".go")
+      it.relativePath.endsWith(".go")
+    }
+
+  private fun hasKnownRustSources(targetInfo: TargetInfo) =
+    targetInfo.sourcesList.any {
+      it.relativePath.endsWith(".rs")
     }
 
   private fun externalRepositoriesTreatedAsInternal(repoMapping: RepoMapping) =
@@ -871,7 +873,12 @@ class BazelProjectMapper(
           featureFlags.isPythonSupportEnabled &&
           target.hasPythonTargetInfo() &&
           hasKnownPythonSources(target) ||
-          hasOtherKnownSources(target)
+          featureFlags.isGoSupportEnabled &&
+          target.hasGoTargetInfo() &&
+          hasKnownGoSources(target) ||
+          featureFlags.isRustSupportEnabled &&
+          target.hasRustCrateInfo() &&
+          hasKnownRustSources(target)
       )
 
   private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds
@@ -972,6 +979,7 @@ class BazelProjectMapper(
         .toSet()
         .map(bazelPathsResolver::resolve)
         .partition { it.exists() }
+
     nonExistentSources.forEach { it.logNonExistingFile(target.id) }
     val generatedSources =
       target.generatedSourcesList
