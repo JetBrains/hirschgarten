@@ -34,7 +34,7 @@ abstract class BspRunnerAction(
   }
 
   private fun calculateConfigurationName(project: Project, targetInfo: List<BuildTargetInfo>): String {
-    val targetDisplayName = targetInfo.map { it.id.uri }.joinToString(";")
+    val targetDisplayName = targetInfo.joinToString(";") { it.id.uri }
     val actionNameKey =
       when {
         this is TestTargetAction -> "target.test.config.name"
