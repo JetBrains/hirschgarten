@@ -60,7 +60,7 @@ class BazelRunner(
 
     fun build(builder: BazelCommand.Build.() -> Unit = {}) =
       BazelCommand
-        .Build(bazelBinary)
+        .Build(bazelInfo, bazelBinary)
         .apply { builder() }
         .also { inheritWorkspaceOptions = true }
 
@@ -84,7 +84,7 @@ class BazelRunner(
     val commandBuilder = CommandBuilder()
     val command = doBuild(commandBuilder)
     val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
-    val relativeDotBspFolderPath = workspaceContextProvider.currentWorkspaceContext().dotBazelBspDirPath.value
+    val relativeDotBspFolderPath = workspaceContext.dotBazelBspDirPath.value
 
     command.options.add(
       overrideRepository(
@@ -133,7 +133,10 @@ class BazelRunner(
     serverPidFuture: CompletableFuture<Long>?,
     shouldLogInvocation: Boolean = true,
   ): BazelProcess {
-    val processArgs = command.makeCommandLine()
+    val executionDescriptor = command.buildExecutionDescriptor()
+    val finishCallback = executionDescriptor.finishCallback
+    val processArgs = executionDescriptor.command
+
     val processBuilder = ProcessBuilder(processArgs)
     workspaceRoot?.let { processBuilder.directory(it.toFile()) }
 
@@ -153,6 +156,7 @@ class BazelRunner(
       process,
       outputLogger,
       serverPidFuture,
+      finishCallback,
     )
   }
 

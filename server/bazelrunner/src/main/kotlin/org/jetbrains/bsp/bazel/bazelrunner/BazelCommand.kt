@@ -1,10 +1,17 @@
 package org.jetbrains.bsp.bazel.bazelrunner
 
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
+import java.io.IOException
+import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
+import kotlin.io.path.writeLines
 
 interface HasProgramArguments {
   // Will be forwarded directly to `bazel run <target> -- <arguments>` or set using `--test_arg=<arg>` for `bazel test`
@@ -57,6 +64,8 @@ interface HasSingleTarget {
   val target: Label
 }
 
+data class BazelCommandExecutionDescriptor(val command: List<String>, val finishCallback: () -> Unit = {})
+
 // See https://bazel.build/reference/command-line-reference#commands
 abstract class BazelCommand(val bazelBinary: String) {
   // See https://bazel.build/reference/command-line-reference#startup-options
@@ -65,7 +74,7 @@ abstract class BazelCommand(val bazelBinary: String) {
   // See https://bazel.build/reference/command-line-reference#options-common-to-all-commands and command-specific options
   val options: MutableList<String> = mutableListOf(BazelFlag.toolTag())
 
-  abstract fun makeCommandLine(): List<String>
+  abstract fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor
 
   // See https://bazel.build/reference/command-line-reference#flag--build_event_binary_file
   fun useBes(besOutputFile: Path) {
@@ -91,7 +100,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     override var workingDirectory: Path? = null
     override val additionalBazelOptions: MutableList<String> = mutableListOf()
 
-    override fun makeCommandLine(): List<String> {
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
       val commandLine = mutableListOf<String>()
 
       commandLine.add(bazelBinary)
@@ -106,11 +115,11 @@ abstract class BazelCommand(val bazelBinary: String) {
         commandLine.addAll(programArguments)
       }
 
-      return commandLine
+      return BazelCommandExecutionDescriptor(commandLine)
     }
   }
 
-  class Build(bazelBinary: String) :
+  class Build(private val bazelInfo: BazelInfo?, bazelBinary: String) :
     BazelCommand(bazelBinary),
     HasEnvironment,
     HasMultipleTargets {
@@ -119,7 +128,8 @@ abstract class BazelCommand(val bazelBinary: String) {
     override val environment: MutableMap<String, String> = mutableMapOf()
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
 
-    override fun makeCommandLine(): List<String> {
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
+      var finishCallback: () -> Unit = {}
       val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
@@ -127,9 +137,52 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(options)
       commandLine.addAll(environment.map { (key, value) -> "--action_env=$key=$value" })
       commandLine.addAll(inheritedEnvironment.map { "--action_env=$it" })
-      commandLine.addAll(targetCommandLine())
+      if (bazelInfo == null) {
+        // it is just here for completeness + test
+        // should not ever reach here in production
+        commandLine.addAll(targetCommandLine())
+      } else {
+        val targetPatternFile = prepareTargetPatternFile(bazelInfo)
+        // https://bazel.build/reference/command-line-reference#flag--target_pattern_file
+        commandLine.add("--target_pattern_file=$targetPatternFile")
+        finishCallback = {
+          try {
+            Files.deleteIfExists(targetPatternFile)
+          } catch (e: IOException) {
+            log.warn("Failed to delete target pattern file", e)
+          }
+        }
+      }
 
-      return commandLine
+      return BazelCommandExecutionDescriptor(commandLine, finishCallback)
+    }
+
+    fun prepareTargetPatternFile(bazelInfo: BazelInfo): Path {
+      var targetPatternFile: Path? = null
+      try {
+        val targetsDir = bazelInfo.dotBazelBsp().resolve("targets")
+        Files.createDirectories(targetsDir)
+
+        targetPatternFile = Files.createTempFile(targetsDir, "targets-", "").also { it.toFile().deleteOnExit() }
+
+        val targetsList = (targets.map { it.toString() } + excludedTargets.map { "-$it" })
+
+        targetPatternFile.writeLines(targetsList, Charsets.UTF_8, StandardOpenOption.WRITE)
+      } catch (e: IOException) {
+        targetPatternFile?.let {
+          try {
+            Files.deleteIfExists(it)
+          } catch (deleteException: IOException) {
+            throw IllegalStateException("Couldn't delete file after creation failure", deleteException)
+          }
+        }
+        throw IllegalStateException("Couldn't create target pattern file", e)
+      }
+      return targetPatternFile
+    }
+
+    companion object {
+      val log: Logger = LogManager.getLogger(BazelCommand::class.java)
     }
   }
 
@@ -146,7 +199,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     override val programArguments: MutableList<String> = mutableListOf()
     override val additionalBazelOptions: MutableList<String> = mutableListOf()
 
-    override fun makeCommandLine(): List<String> {
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
       val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
@@ -158,7 +211,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(programArguments.map { "--test_arg=$it" })
       commandLine.addAll(targetCommandLine())
 
-      return commandLine
+      return BazelCommandExecutionDescriptor(commandLine)
     }
   }
 
@@ -173,7 +226,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
     override val programArguments: MutableList<String> = mutableListOf()
 
-    override fun makeCommandLine(): List<String> {
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
       val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
@@ -184,7 +237,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(programArguments.map { "--test_arg=$it" })
       commandLine.addAll(targetCommandLine())
 
-      return commandLine
+      return BazelCommandExecutionDescriptor(commandLine)
     }
   }
 
@@ -192,7 +245,7 @@ abstract class BazelCommand(val bazelBinary: String) {
   class MobileInstall(bazelBinary: String, override val target: Label) :
     BazelCommand(bazelBinary),
     HasSingleTarget {
-    override fun makeCommandLine(): List<String> {
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
       val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
@@ -200,7 +253,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(options)
       commandLine.add(target.toString())
 
-      return commandLine
+      return BazelCommandExecutionDescriptor(commandLine)
     }
   }
 
@@ -210,7 +263,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     override val targets: MutableList<Label> = mutableListOf()
     override val excludedTargets: MutableList<Label> = mutableListOf()
 
-    override fun makeCommandLine(): List<String> {
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
       val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
@@ -218,7 +271,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(options)
       commandLine.add(queryString(allowManualTargetsSync))
 
-      return commandLine
+      return BazelCommandExecutionDescriptor(commandLine)
     }
 
     fun queryString(allowManualTargetsSync: Boolean): String {
@@ -247,7 +300,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     override val targets: MutableList<Label> = mutableListOf()
     override val excludedTargets: MutableList<Label> = mutableListOf()
 
-    override fun makeCommandLine(): List<String> {
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
       val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
@@ -255,19 +308,19 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(options)
       commandLine.addAll(targetCommandLine())
 
-      return commandLine
+      return BazelCommandExecutionDescriptor(commandLine)
     }
   }
 
   abstract class SimpleCommand(bazelBinary: String, val command: List<String>) : BazelCommand(bazelBinary) {
-    override fun makeCommandLine(): List<String> {
+    override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
       val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
       commandLine.addAll(command)
       commandLine.addAll(options)
 
-      return commandLine
+      return BazelCommandExecutionDescriptor(commandLine)
     }
   }
 

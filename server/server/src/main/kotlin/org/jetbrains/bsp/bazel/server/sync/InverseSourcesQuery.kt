@@ -76,7 +76,7 @@ object InverseSourcesQuery {
       null
     } else {
       throw RuntimeException(
-        "Could not find file. Bazel query failed:\n command:\n${command.makeCommandLine()}\nstderr:\n${fileLabelResult.stderr}\nstdout:\n${fileLabelResult.stdout}",
+        "Could not find file. Bazel query failed:\n command:\n${command.buildExecutionDescriptor().command}\nstderr:\n${fileLabelResult.stderr}\nstdout:\n${fileLabelResult.stdout}",
       )
     }
   }
