@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.exists
 import kotlin.io.path.toPath
 
-private val BAZEL_COMPONENT_SEPARATOR = "/"
+private const val BAZEL_COMPONENT_SEPARATOR = "/"
 
 class BazelPathsResolver(private val bazelInfo: BazelInfo) {
   private val uris = ConcurrentHashMap<Path, URI>()
