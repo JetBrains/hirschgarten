@@ -9,7 +9,7 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.jvmBinaryJarsEntity
 
 internal class JvmBinaryJarsEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithParentModuleUpdater<JavaModule, JvmBinaryJarsEntity> {
-  override fun addEntity(entityToAdd: JavaModule, parentModuleEntity: ModuleEntity): JvmBinaryJarsEntity {
+  override suspend fun addEntity(entityToAdd: JavaModule, parentModuleEntity: ModuleEntity): JvmBinaryJarsEntity {
     val jvmBinaryJars =
       entityToAdd.jvmBinaryJars.map { jar ->
         jar.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
