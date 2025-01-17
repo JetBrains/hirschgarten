@@ -1,6 +1,24 @@
+/*
+ * Copyright 201<insert year> The Bazel Authors. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Copyright 2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package org.jetbrains.bsp.bazel.server.sync.languages.cpp
 
 import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.label.ResolvedLabel
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.server.sync.languages.cpp.CppPathResolver.CppPathResolver.getFileRootedAt
 import java.net.URI
@@ -39,13 +57,13 @@ class VirtualIncludesHandler(val pathResolver: CppPathResolver) {
    * target data or empty list if resolution has failed
    */
   fun resolveVirtualInclude(
-    executionRootPath: Path,
+    path: Path,
     externalWorkspacePath: Path,
     targetMap: Map<String, TargetInfo>,
   ): List<URI> {
     val key =
       try {
-        guessTargetKey(executionRootPath)
+        guessTargetKey(path)
       } catch (exception: java.lang.IndexOutOfBoundsException) {
         return emptyList()
       }
@@ -74,19 +92,18 @@ class VirtualIncludesHandler(val pathResolver: CppPathResolver) {
     }
 
     // strip prefix is a path not a label, `//something` is invalid
-    stripPrefix = stripPrefix.replace("/+", "/")
+    stripPrefix = stripPrefix.replace("/+".toRegex(), "/")
     // remove trailing slash
     if (stripPrefix.endsWith("/")) {
       stripPrefix = stripPrefix.substring(0, stripPrefix.length - 1)
     }
-
+    val keyLabel = Label.parse(key)
     val workspacePath =
       if (stripPrefix.startsWith("/")) {
         Path.of(stripPrefix.substring(1))
       } else {
-        Path.of(key.bazelPackageName()).resolve(stripPrefix)
+        Path.of(keyLabel.packagePath.toString()).resolve(stripPrefix)
       }
-    val keyLabel = Label.parse(key)
 
     // if this header is not external, then call now we can resolveToIncludeDirectories on it
     if (keyLabel.isMainWorkspace) {
@@ -96,9 +113,9 @@ class VirtualIncludesHandler(val pathResolver: CppPathResolver) {
     val externalRoot =
       Path
         .of("external")
-        .resolve(keyLabel.packagePath.toString())
+        .resolve((keyLabel as ResolvedLabel).repo.repoName)
         .resolve(workspacePath)
-    return externalRoot.getFileRootedAt(externalWorkspacePath).map { it.toAbsolutePath().toUri() }
+    return listOf(externalRoot.getFileRootedAt(externalWorkspacePath).toUri())
   }
 
   /**
@@ -117,10 +134,10 @@ class VirtualIncludesHandler(val pathResolver: CppPathResolver) {
         if (externalWorkspaceName != null) workspacePathStartForExternalWorkspace else workspacePathStartForLocalWorkspace
 
       val workspacePaths: List<Path> =
-        if (workspacePathStart <= virtualIncludesIdx) {
+        if (workspacePathStart < virtualIncludesIdx) {
           split.subList(workspacePathStart, virtualIncludesIdx)
         } else {
-          emptyList()
+          listOf(Path.of(""))
         }
 
       val workspacePathString: String =
@@ -134,26 +151,6 @@ class VirtualIncludesHandler(val pathResolver: CppPathResolver) {
       return createLabelName(externalWorkspaceName, workspacePath, target)
     }
     return null
-  }
-
-  fun String.toSystemIndependentName(): String = replace('\\', '/')
-
-  fun String.bazelPackageName(): String {
-    val startIndex = this.indexOf("//") + "//".length
-    val colonIndex = this.lastIndexOf(':')
-    return this.substring(startIndex, colonIndex)
-  }
-
-  /**
-   * Returns the external workspace referenced by this label, or null if it's a main workspace
-   * label.
-   */
-  fun String.xternalWorkspaceName(): String? {
-    if (!this.startsWith("@")) {
-      return null
-    }
-    val slashesIndex = this.indexOf("//")
-    return this.substring(0, slashesIndex).replaceFirst("@@?".toRegex(), "")
   }
 
   fun createLabelName(

@@ -33,10 +33,10 @@ class CppLanguagePlugin(
     cToolchainInfoLookupMap =
       targets
         .filter { it.hasCToolchainInfo() }
-        .mapNotNull {
-          val original = it.getCToolChainInfoOrNull() ?: return@mapNotNull null
-          val oldCCompiler = cppPathResolver.resolveToPath(original.cCompiler)
-          val oldCppCompiler = cppPathResolver.resolveToPath(original.cppCompiler)
+        .mapNotNull { it ->
+          val originalToolChainInfo = it.getCToolChainInfoOrNull() ?: return@mapNotNull null
+          val oldCCompiler = cppPathResolver.resolveToPath(Path.of(originalToolChainInfo.cCompiler))
+          val oldCppCompiler = cppPathResolver.resolveToPath(Path.of(originalToolChainInfo.cppCompiler))
           val newCCompiler =
             CompilerWrapper().createCompilerExecutableWrapper(
               Path.of(bazelPathsResolver.bazelInfo.execRoot),
@@ -53,11 +53,11 @@ class CppLanguagePlugin(
             )
           it.id to
             CToolchainInfo(
-              builtInIncludeDirectory = original.builtInIncludeDirectoryList,
-              cOptions = original.cOptionList,
-              cppOptions = original.cppOptionList,
-              cCompiler = bazelPathsResolver.resolveUri(newCCompiler).toString(),
-              cppCompiler = bazelPathsResolver.resolveUri(newCppCompiler).toString(),
+              builtInIncludeDirectories = originalToolChainInfo.builtInIncludeDirectoryList.map { it1 -> URI(it1) },
+              cOptions = originalToolChainInfo.cOptionList,
+              cppOptions = originalToolChainInfo.cppOptionList,
+              cCompiler = bazelPathsResolver.resolveUri(newCCompiler),
+              cppCompiler = bazelPathsResolver.resolveUri(newCppCompiler),
               compilerVersion = bazelCppToolchainResolver.getCompilerVersion(newCppCompiler, newCCompiler),
             )
         }.toMap()
@@ -69,9 +69,8 @@ class CppLanguagePlugin(
       val toolchainInfo = targetInfo.dependenciesList.mapNotNull { cToolchainInfoLookupMap[Label.parse(it.id).toString()] }.firstOrNull()
       CppModule(
         copts = targetInfo.cppTargetInfo.coptsList,
-        sources = targetInfo.sourcesList.map { bazelPathsResolver.resolveUri(it).toString() },
-        headers = targetInfo.cppTargetInfo.headersList.map { bazelPathsResolver.resolveUri(it).toString() },
-        textualHeaders = targetInfo.cppTargetInfo.textualHeadersList.map { bazelPathsResolver.resolveUri(it).toString() },
+        headers = targetInfo.cppTargetInfo.headersList.map { bazelPathsResolver.resolveUri(it) },
+        textualHeaders = targetInfo.cppTargetInfo.textualHeadersList.map { bazelPathsResolver.resolveUri(it) },
         transitiveIncludeDirectory =
           targetInfo.cppTargetInfo.transitiveIncludeDirectoryList
             .flatMap {
@@ -79,7 +78,7 @@ class CppLanguagePlugin(
                 Path(it),
                 targetsLookupMap,
               )
-            }.map { it.toString().trimEnd('/') },
+            },
         transitiveQuoteIncludeDirectory =
           targetInfo.cppTargetInfo.transitiveQuoteIncludeDirectoryList
             .flatMap {
@@ -87,7 +86,7 @@ class CppLanguagePlugin(
                 Path(it),
                 targetsLookupMap,
               )
-            }.map { it.toString().trimEnd('/') },
+            },
         transitiveSystemIncludeDirectory =
           targetInfo.cppTargetInfo.transitiveSystemIncludeDirectoryList
             .flatMap {
@@ -95,7 +94,7 @@ class CppLanguagePlugin(
                 Path(it),
                 targetsLookupMap,
               )
-            }.map { it.toString().trimEnd('/') },
+            },
         transitiveDefine = transitiveDefineList,
         includePrefix = targetInfo.cppTargetInfo.includePrefix,
         stripIncludePrefix = targetInfo.cppTargetInfo.stripIncludePrefix,

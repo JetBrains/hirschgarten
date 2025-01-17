@@ -1,8 +1,8 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.cpp.toolchain
 
+import org.jetbrains.bazel.commons.utils.OsFamily
 import java.io.File
 import java.nio.file.Path
-import java.util.Locale
 
 class CompilerWrapper {
   fun createCompilerExecutableWrapper(
@@ -10,9 +10,8 @@ class CompilerWrapper {
     bazelCompilerExecutableFile: Path,
     compilerWrapperEnvVars: Map<String, String>,
   ): Path {
-    // bazel only uses a wrapper script on unix, so we do not need this script when running on windows
-
-    if (System.getProperty("os.name").lowercase(Locale.getDefault()).contains("windows")) {
+    // bazel itself only uses a wrapper script on unix, so we do not need this script when running on windows
+    if (OsFamily.inferFromSystem() == OsFamily.WINDOWS) {
       return bazelCompilerExecutableFile
     }
 

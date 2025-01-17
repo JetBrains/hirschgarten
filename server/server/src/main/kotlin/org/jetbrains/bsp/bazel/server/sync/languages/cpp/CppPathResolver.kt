@@ -6,7 +6,6 @@ import java.io.IOException
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
 class CppPathResolver(val bazelPathsResolver: BazelPathsResolver) {
   private val virtualIncludeDirectory: Path = Path.of("_virtual_includes")
@@ -24,13 +23,14 @@ class CppPathResolver(val bazelPathsResolver: BazelPathsResolver) {
   /**
    * Resolve a normal path string in cpp options to correct absolute uri
    * */
-  fun resolve(path: String): URI = resolveToPath(path).toUri()
+  fun resolve(path: Path): URI = resolveToPath(path).toUri()
 
-  fun resolveToPath(path: String): Path =
+  fun resolveToPath(path: Path): Path =
+
     when {
-      isAbsolute(path) -> Path.of(path)
-      isInExternalWorkspace(path) -> bazelPathsResolver.resolveExternal(Path.of(path))
-      isArtifact(path) -> bazelPathsResolver.resolveOutput(Path.of(path))
+      isAbsolute(path) -> path
+      isInExternalWorkspace(path) -> bazelPathsResolver.resolveExternal(path)
+      isArtifact(path) -> bazelPathsResolver.resolveOutput(path)
       else -> bazelInfo.workspaceRoot.resolve(path)
     }
 
@@ -43,15 +43,16 @@ class CppPathResolver(val bazelPathsResolver: BazelPathsResolver) {
    * - For other relative paths, it resolves to workspace
    * */
   fun resolveToIncludeDirectories(path: Path, targetMap: Map<String, TargetInfo>): List<URI> {
-    val refinedTargetMap = targetMap.map { (targetName, targetInfo) -> targetName.removePrefix("@@") to targetInfo }.toMap()
+    val refinedTargetMap =
+      targetMap.map { (targetName, targetInfo) -> targetName.removePrefix("@@") to targetInfo }.toMap()
     return when {
       // For absolute path, it remains as it is
-      isAbsolute(path.toString()) -> listOf(path.toAbsolutePath().toUri())
-      isArtifact(path.toString()) -> resolveArtifactHeaders(path, refinedTargetMap)
-      isInExternalWorkspace(path.toString()) -> resolveExternalHeaders(path)
+      isAbsolute(path) -> listOf(path.toAbsolutePath().toUri())
+      isArtifact(path) -> resolveArtifactHeaders(path, refinedTargetMap)
+      isInExternalWorkspace(path) -> resolveExternalHeaders(path)
       // For other relative paths, it resolves to workspace
-      // todo: validate the path
-      else ->
+      else -> {
+        if (!isValidWorkspacePath(path))return listOf()
         listOf(
           bazelInfo.workspaceRoot
             .resolve(path)
@@ -59,6 +60,7 @@ class CppPathResolver(val bazelPathsResolver: BazelPathsResolver) {
             .toAbsolutePath()
             .toUri(),
         )
+      }
     }
   }
 
@@ -72,7 +74,7 @@ class CppPathResolver(val bazelPathsResolver: BazelPathsResolver) {
 
   private fun resolveExternalHeaders(path: Path): List<URI> {
     // For external path, resolve to its real path
-    val fileInExecutionRoot = path.getFileRootedAt(Path.of(bazelInfo.execRoot))
+    val fileInExecutionRoot = path.getFileRootedAt(bazelInfo.outputBase)
     try {
       val realPath = fileInExecutionRoot.toRealPath()
       if (isRealFileInWorkspace(realPath)) {
@@ -91,11 +93,11 @@ class CppPathResolver(val bazelPathsResolver: BazelPathsResolver) {
     return path.startsWith(bazelInfo.workspaceRoot)
   }
 
-  private fun isArtifact(path: String): Boolean = buildArtifactDirectories.contains(Paths.get(path).getFirstComponent())
+  private fun isArtifact(path: Path): Boolean = buildArtifactDirectories.contains(path.getFirstComponent())
 
-  private fun isInExternalWorkspace(path: String): Boolean = path.startsWith("external/") || path.startsWith("../")
+  private fun isInExternalWorkspace(path: Path): Boolean = path.startsWith("external/") || path.startsWith("../")
 
-  private fun isAbsolute(path: String): Boolean = path.startsWith("/") && Files.exists(Paths.get(path))
+  private fun isAbsolute(path: Path): Boolean = path.startsWith("/") && Files.exists(path)
 
   companion object CppPathResolver {
     fun Path.getFileRootedAt(absoluteRoot: Path): Path =
@@ -106,7 +108,10 @@ class CppPathResolver(val bazelPathsResolver: BazelPathsResolver) {
       }
   }
 
-  fun Path.getLastComponent(): String = getName(count() - 1).toString()
+  private fun isValidWorkspacePath(path: Path) =
+    !path.startsWith("/") && !path.startsWith("..") && !path.endsWith("/") && !path.toString().contains(":")
 
-  fun Path.getFirstComponent(): String = getName(0).toString()
+  fun Path.getLastComponent(): String = if (this.count() == 0) "" else getName(count() - 1).toString()
+
+  fun Path.getFirstComponent(): String = if (this.count() == 0) "" else getName(0).toString()
 }
