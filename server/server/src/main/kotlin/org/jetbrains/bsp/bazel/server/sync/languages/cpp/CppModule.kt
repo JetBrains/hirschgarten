@@ -14,6 +14,8 @@ data class CppModule(
   val includePrefix: String,
   val stripIncludePrefix: String,
   val cToolchainInfo: CToolchainInfo?,
+  // The execRoot is needed by clion(not via the include path) to automatically discover search paths
+  // according to google plugin's implementation, so we need to pass this information to sync hook
   val execRoot: String?,
 ) : LanguageData
 
