@@ -44,7 +44,7 @@ class WorkspaceModelUpdaterImpl(
     ExternalProjectsManagerImpl.getInstance(project).setStoreExternally(true)
   }
 
-  override fun loadModule(module: Module) {
+  override suspend fun loadModule(module: Module) {
     when (module) {
       is JavaModule -> {
         val dummyJavaModules = javaModuleToDummyJavaModulesTransformerHACK.transform(module)
@@ -54,7 +54,7 @@ class WorkspaceModelUpdaterImpl(
     }
   }
 
-  override fun loadLibraries(libraries: List<Library>) {
+  override suspend fun loadLibraries(libraries: List<Library>) {
     val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
     libraryEntityUpdater.addEntities(libraries)
   }

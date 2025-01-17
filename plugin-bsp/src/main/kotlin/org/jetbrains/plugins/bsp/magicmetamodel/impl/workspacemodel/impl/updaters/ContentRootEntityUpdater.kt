@@ -5,25 +5,32 @@ import com.intellij.platform.workspace.jps.entities.ExcludeUrlEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ContentRoot
 
 class ContentRootEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithParentModuleUpdater<ContentRoot, ContentRootEntity> {
-  override fun addEntities(entitiesToAdd: List<ContentRoot>, parentModuleEntity: ModuleEntity): List<ContentRootEntity> =
+  override suspend fun addEntities(entitiesToAdd: List<ContentRoot>, parentModuleEntity: ModuleEntity): List<ContentRootEntity> =
     addContentRootEntities(
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
       parentModuleEntity,
       entitiesToAdd,
     )
 
-  private fun addContentRootEntities(
+  private suspend fun addContentRootEntities(
     builder: MutableEntityStorage,
     moduleEntity: ModuleEntity,
     entitiesToAdd: List<ContentRoot>,
   ): List<ContentRootEntity> {
+    // Resolved together for better parallelization
+    val resolvedContentRootsPaths =
+      entitiesToAdd
+        .map { it.path }
+        .toResolvedVirtualFileUrls(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+
     val contentRootEntities =
-      entitiesToAdd.map { entityToAdd ->
-        createContentRootEntity(moduleEntity, entityToAdd)
+      (entitiesToAdd zip resolvedContentRootsPaths).map { (entityToAdd, contentRootPath) ->
+        createContentRootEntity(moduleEntity, entityToAdd, contentRootPath)
       }
 
     val updatedModuleEntity =
@@ -34,8 +41,11 @@ class ContentRootEntityUpdater(private val workspaceModelEntityUpdaterConfig: Wo
     return updatedModuleEntity.contentRoots.takeLast(contentRootEntities.size)
   }
 
-  private fun createContentRootEntity(moduleEntity: ModuleEntity, entityToAdd: ContentRoot): ContentRootEntity.Builder {
-    val url = entityToAdd.path.toResolvedVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+  private fun createContentRootEntity(
+    moduleEntity: ModuleEntity,
+    entityToAdd: ContentRoot,
+    contentRootPath: VirtualFileUrl,
+  ): ContentRootEntity.Builder {
     val excludedUrls =
       entityToAdd.excludedPaths.map { it.toResolvedVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager) }
     val excludes =
@@ -46,7 +56,7 @@ class ContentRootEntityUpdater(private val workspaceModelEntityUpdaterConfig: Wo
         )
       }
     return ContentRootEntity(
-      url = url,
+      url = contentRootPath,
       excludedPatterns = ArrayList(),
       entitySource = moduleEntity.entitySource,
     ) {
@@ -54,6 +64,6 @@ class ContentRootEntityUpdater(private val workspaceModelEntityUpdaterConfig: Wo
     }
   }
 
-  override fun addEntity(entityToAdd: ContentRoot, parentModuleEntity: ModuleEntity): ContentRootEntity =
+  override suspend fun addEntity(entityToAdd: ContentRoot, parentModuleEntity: ModuleEntity): ContentRootEntity =
     addEntities(listOf(entityToAdd), parentModuleEntity).single()
 }

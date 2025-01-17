@@ -15,7 +15,7 @@ import java.nio.file.Path
 
 internal class AndroidAddendumEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithParentModuleUpdater<AndroidAddendum, AndroidAddendumEntity> {
-  override fun addEntity(entityToAdd: AndroidAddendum, parentModuleEntity: ModuleEntity): AndroidAddendumEntity {
+  override suspend fun addEntity(entityToAdd: AndroidAddendum, parentModuleEntity: ModuleEntity): AndroidAddendumEntity {
     val androidTargetType =
       when (entityToAdd.androidTargetType) {
         APP -> AndroidTargetType.APP
