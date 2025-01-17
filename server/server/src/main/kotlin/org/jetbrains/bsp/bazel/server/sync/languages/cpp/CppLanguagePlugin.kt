@@ -72,29 +72,11 @@ class CppLanguagePlugin(
         headers = targetInfo.cppTargetInfo.headersList.map { bazelPathsResolver.resolveUri(it) },
         textualHeaders = targetInfo.cppTargetInfo.textualHeadersList.map { bazelPathsResolver.resolveUri(it) },
         transitiveIncludeDirectories =
-          targetInfo.cppTargetInfo.transitiveIncludeDirectoryList
-            .flatMap {
-              cppPathResolver.resolveToIncludeDirectories(
-                Path(it),
-                targetsLookupMap,
-              )
-            },
+          targetInfo.cppTargetInfo.transitiveIncludeDirectoryList.includePathsToURIs(),
         transitiveQuoteIncludeDirectories =
-          targetInfo.cppTargetInfo.transitiveQuoteIncludeDirectoryList
-            .flatMap {
-              cppPathResolver.resolveToIncludeDirectories(
-                Path(it),
-                targetsLookupMap,
-              )
-            },
+          targetInfo.cppTargetInfo.transitiveQuoteIncludeDirectoryList.includePathsToURIs(),
         transitiveSystemIncludeDirectories =
-          targetInfo.cppTargetInfo.transitiveSystemIncludeDirectoryList
-            .flatMap {
-              cppPathResolver.resolveToIncludeDirectories(
-                Path(it),
-                targetsLookupMap,
-              )
-            },
+          targetInfo.cppTargetInfo.transitiveSystemIncludeDirectoryList.includePathsToURIs(),
         transitiveDefine = transitiveDefineList,
         includePrefix = targetInfo.cppTargetInfo.includePrefix,
         stripIncludePrefix = targetInfo.cppTargetInfo.stripIncludePrefix,
@@ -108,6 +90,14 @@ class CppLanguagePlugin(
     buildTarget.data = moduleData
     buildTarget.dataKind = BuildTargetDataKind.CPP
   }
+
+  private fun List<String>.includePathsToURIs() =
+    this.flatMap {
+      cppPathResolver.resolveToIncludeDirectories(
+        Path(it),
+        targetsLookupMap,
+      )
+    }
 
   private fun TargetInfo.getCppTargetInfoOrNull(): BspTargetInfo.CppTargetInfo? = this.takeIf(TargetInfo::hasCppTargetInfo)?.cppTargetInfo
 
