@@ -71,7 +71,7 @@ class CppLanguagePlugin(
         copts = targetInfo.cppTargetInfo.coptsList,
         headers = targetInfo.cppTargetInfo.headersList.map { bazelPathsResolver.resolveUri(it) },
         textualHeaders = targetInfo.cppTargetInfo.textualHeadersList.map { bazelPathsResolver.resolveUri(it) },
-        transitiveIncludeDirectory =
+        transitiveIncludeDirectories =
           targetInfo.cppTargetInfo.transitiveIncludeDirectoryList
             .flatMap {
               cppPathResolver.resolveToIncludeDirectories(
@@ -79,7 +79,7 @@ class CppLanguagePlugin(
                 targetsLookupMap,
               )
             },
-        transitiveQuoteIncludeDirectory =
+        transitiveQuoteIncludeDirectories =
           targetInfo.cppTargetInfo.transitiveQuoteIncludeDirectoryList
             .flatMap {
               cppPathResolver.resolveToIncludeDirectories(
@@ -87,7 +87,7 @@ class CppLanguagePlugin(
                 targetsLookupMap,
               )
             },
-        transitiveSystemIncludeDirectory =
+        transitiveSystemIncludeDirectories =
           targetInfo.cppTargetInfo.transitiveSystemIncludeDirectoryList
             .flatMap {
               cppPathResolver.resolveToIncludeDirectories(
