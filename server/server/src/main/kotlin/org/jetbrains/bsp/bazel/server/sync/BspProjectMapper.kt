@@ -63,8 +63,6 @@ import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bazel.commons.label.label
 import org.jetbrains.bazel.commons.label.toBspIdentifier
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bsp.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
@@ -110,8 +108,6 @@ class BspProjectMapper(
   private val bazelPathsResolver: BazelPathsResolver,
   private val bazelRunner: BazelRunner,
   private val bspInfo: BspInfo,
-  private val bazelInfo: BazelInfo,
-  private val bspClientLogger: BspClientLogger,
 ) {
   fun initializeServer(supportedLanguages: Set<Language>): InitializeBuildResult {
     val languageNames = supportedLanguages.map { it.id }

@@ -61,11 +61,72 @@ http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "ht
 
 http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
 
+# Any SDK version
+
+DEVKIT_BUILD_FILE = """
+java_import(
+    name = "devkit",
+    jars = ["devkit/lib/devkit.jar"],
+    visibility = ["//visibility:public"],
+)
+"""
+
+_PYTHON_CE_BUILD_FILE = """
+java_import(
+    name = "python",
+    jars = glob(["python-ce/lib/*.jar"]),
+    visibility = ["//visibility:public"],
+)
+filegroup(
+  name = "python_helpers",
+  srcs = glob(["python-ce/helpers/**/*"]),
+  visibility = ["//visibility:public"],
+)
+"""
+
+_GO_BUILD_FILE = """
+java_import(
+    name = "go",
+    jars = glob(["go-plugin/lib/*.jar", "go-plugin/lib/modules/*.jar"]),
+    visibility = ["//visibility:public"],
+)
+"""
+
+_CLION_BUILD_FILE = """
+java_import(
+    name = "cpp",
+    visibility = ["//visibility:public"],
+    jars = glob([
+        "plugins/c-plugin/lib/*.jar",
+        "plugins/cidr-base-plugin/lib/*.jar",
+        "plugins/nativeDebug-plugin/lib/*.jar",
+        "plugins/clion-ide/lib/clion-ide.jar",  # for CMakeNotificationProvider
+        "plugins/clion-test-google-plugin/lib/clion-test-google-plugin.jar",  # for com.jetbrains.cidr.execution.testing.google
+        "plugins/platform-images/lib/*.jar",  # for native debug plugin
+    ]),
+    tags = ["intellij-provided-by-sdk"],
+)
+"""
+
+_ANDRIOD_PLUGIN_BUILD_FILE = """
+java_import(
+    name = "android",
+    jars = glob(["android/lib/*.jar"]),
+    visibility = ["//visibility:public"],
+)
+"""
+
+# SDK 243
+
 SDK_243_PLUGIN_REPOSITORY_VERSION = "243.22562.145"
 
 SDK_243_INTELLIJ_REPOSITORY_VERSION = "243.22562.218"
 
-SDK_243_INTELLIJ_REPOSITORY = "releases"  # or release
+SDK_243_INTELLIJ_REPOSITORY = "releases"  # or snapshots
+
+SDK_243_CLION_REPOSITORY_VERSION = "2024.3.1.1"
+
+SDK_243_CLION_REPOSITORY = "releases"  # or snapshots
 
 IC_243_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_243_INTELLIJ_REPOSITORY, SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
 
@@ -88,14 +149,6 @@ http_jar(
     url = IC_243_SOURCES_URL,
 )
 
-DEVKIT_BUILD_FILE = """
-java_import(
-    name = "devkit",
-    jars = ["devkit/lib/devkit.jar"],
-    visibility = ["//visibility:public"],
-)
-"""
-
 DEVKIT_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
 
 DEVKIT_243_SHA = "b3403b6a3c1dadd0eaaaa12cc21c910bc0e9c7264c55a9785a7ece188cba5ec6"
@@ -106,19 +159,6 @@ http_archive(
     sha256 = DEVKIT_243_SHA,
     url = DEVKIT_243_URL,
 )
-
-_PYTHON_CE_BUILD_FILE = """
-java_import(
-    name = "python",
-    jars = glob(["python-ce/lib/*.jar"]),
-    visibility = ["//visibility:public"],
-)
-filegroup(
-  name = "python_helpers",
-  srcs = glob(["python-ce/helpers/**/*"]),
-  visibility = ["//visibility:public"],
-)
-"""
 
 PYTHON_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
 
@@ -131,14 +171,6 @@ http_archive(
     url = PYTHON_PLUGIN_243_URL,
 )
 
-_GO_BUILD_FILE = """
-java_import(
-    name = "go",
-    jars = glob(["go-plugin/lib/*.jar", "go-plugin/lib/modules/*.jar"]),
-    visibility = ["//visibility:public"],
-)
-"""
-
 GO_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
 
 GO_PLUGIN_243_SHA = "5b893719694c65c82bae4df6916d94a3961b6390a6aaa8a077a1daf7954041a9"
@@ -150,25 +182,9 @@ http_archive(
     url = GO_PLUGIN_243_URL,
 )
 
-CLION_243_SHA = "9dd62fecc0530c0a1783505f2c5b5b0cba7f9be0d23583ef3837235974c57d2b"
+CLION_243_SHA = "fb6498edd13da3eeb4dc53e33d24e76ecea667ea4ecf9f61b5ded5f4c3c551c4"
 
-CLION_243_URL = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/clion/clion/2024.3/clion-2024.3.zip"
-
-_CLION_BUILD_FILE = """
-java_import(
-    name = "cpp",
-    visibility = ["//visibility:public"],
-    jars = glob([
-        "plugins/c-plugin/lib/*.jar",
-        "plugins/cidr-base-plugin/lib/*.jar",
-        "plugins/nativeDebug-plugin/lib/*.jar",
-        "plugins/clion-ide/lib/clion-ide.jar",  # for CMakeNotificationProvider
-        "plugins/clion-test-google-plugin/lib/clion-test-google-plugin.jar",  # for com.jetbrains.cidr.execution.testing.google
-        "plugins/platform-images/lib/*.jar",  # for native debug plugin
-    ]),
-    tags = ["intellij-provided-by-sdk"],
-)
-"""
+CLION_243_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/clion/clion/%s/clion-%s.zip" % (SDK_243_CLION_REPOSITORY, SDK_243_CLION_REPOSITORY_VERSION, SDK_243_CLION_REPOSITORY_VERSION)
 
 http_archive(
     name = "clion_2024_3",
@@ -176,14 +192,6 @@ http_archive(
     sha256 = CLION_243_SHA,
     url = CLION_243_URL,
 )
-
-_ANDRIOD_PLUGIN_BUILD_FILE = """
-java_import(
-    name = "android",
-    jars = glob(["android/lib/*.jar"]),
-    visibility = ["//visibility:public"],
-)
-"""
 
 ANDROID_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.android/%s/org.jetbrains.android-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
 
@@ -214,4 +222,112 @@ http_jar(
     name = "code_with_me_2024_3",
     sha256 = CODE_WITH_ME_243_SHA,
     url = CODE_WITH_ME_243_URL,
+)
+
+# SDK 251
+
+SDK_251_PLUGIN_REPOSITORY_VERSION = "251.14649.49"
+
+SDK_251_INTELLIJ_REPOSITORY_VERSION = "251.14649.49-EAP-SNAPSHOT"
+
+SDK_251_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
+
+SDK_251_CLION_REPOSITORY_VERSION = "251.14649.40-EAP-SNAPSHOT"
+
+SDK_251_CLION_REPOSITORY = "snapshots"  # releases or snapshots
+
+IC_251_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_251_INTELLIJ_REPOSITORY, SDK_251_INTELLIJ_REPOSITORY_VERSION, SDK_251_INTELLIJ_REPOSITORY_VERSION)
+
+IC_251_SHA = "86dd6617de5054dfbe2150bb005c4739c833adc1fee437d87e698eac03cf15dc"
+
+http_archive(
+    name = "intellij_ce_2025_1",
+    build_file = "@rules_intellij//intellij_platform_sdk:BUILD.idea251",
+    sha256 = IC_251_SHA,
+    url = IC_251_URL,
+)
+
+IC_251_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_251_INTELLIJ_REPOSITORY, SDK_251_INTELLIJ_REPOSITORY_VERSION, SDK_251_INTELLIJ_REPOSITORY_VERSION)
+
+IC_251_SOURCES_SHA = "8753da4b885ffc1e31f96dbd4b08618facb676ebe94a5f301952ad920c8bc1de"
+
+http_jar(
+    name = "intellij_ce_2025_1_sources",
+    sha256 = IC_251_SOURCES_SHA,
+    url = IC_251_SOURCES_URL,
+)
+
+DEVKIT_251_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_251_PLUGIN_REPOSITORY_VERSION, SDK_251_PLUGIN_REPOSITORY_VERSION)
+
+DEVKIT_251_SHA = "d7e48245cb09607204d6b31347c982b7a3cf74c3b112406252e950eea63bcf7b"
+
+http_archive(
+    name = "devkit_2025_1",
+    build_file_content = DEVKIT_BUILD_FILE,
+    sha256 = DEVKIT_251_SHA,
+    url = DEVKIT_251_URL,
+)
+
+PYTHON_PLUGIN_251_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_251_PLUGIN_REPOSITORY_VERSION, SDK_251_PLUGIN_REPOSITORY_VERSION)
+
+PYTHON_PLUGIN_251_SHA = "2dbe044e1f7cec4368d927f59962b0916e3d4ba06b3a6100114ccad386ad1636"
+
+http_archive(
+    name = "python_2025_1",
+    build_file_content = _PYTHON_CE_BUILD_FILE,
+    sha256 = PYTHON_PLUGIN_251_SHA,
+    url = PYTHON_PLUGIN_251_URL,
+)
+
+GO_PLUGIN_251_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_251_PLUGIN_REPOSITORY_VERSION, SDK_251_PLUGIN_REPOSITORY_VERSION)
+
+GO_PLUGIN_251_SHA = "e481abb6d206d420bc3eb5d362af02c1f9d28800012f0700a2ca04941f8471ad"
+
+http_archive(
+    name = "go_2025_1",
+    build_file_content = _GO_BUILD_FILE,
+    sha256 = GO_PLUGIN_251_SHA,
+    url = GO_PLUGIN_251_URL,
+)
+
+CLION_251_SHA = "fb6498edd13da3eeb4dc53e33d24e76ecea667ea4ecf9f61b5ded5f4c3c551c4"
+
+CLION_251_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/clion/clion/%s/clion-%s.zip" % (SDK_251_CLION_REPOSITORY, SDK_251_CLION_REPOSITORY_VERSION, SDK_251_CLION_REPOSITORY_VERSION)
+
+http_archive(
+    name = "clion_2025_1",
+    build_file_content = _CLION_BUILD_FILE,
+    sha256 = CLION_251_SHA,
+    url = CLION_251_URL,
+)
+
+ANDROID_PLUGIN_251_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.android/%s/org.jetbrains.android-%s.zip" % (SDK_251_PLUGIN_REPOSITORY_VERSION, SDK_251_PLUGIN_REPOSITORY_VERSION)
+
+ANDROID_PLUGIN_251_SHA = "541b5fd49eb958e45103381daf21644db5c8b807ef52676cf466e3c09c38ccb1"
+
+http_archive(
+    name = "android_2025_1",
+    build_file_content = _ANDRIOD_PLUGIN_BUILD_FILE,
+    sha256 = ANDROID_PLUGIN_251_SHA,
+    url = ANDROID_PLUGIN_251_URL,
+)
+
+PERFORMANCE_PLUGIN_251_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_251_INTELLIJ_REPOSITORY, SDK_251_INTELLIJ_REPOSITORY_VERSION, SDK_251_INTELLIJ_REPOSITORY_VERSION)
+
+PERFORMANCE_PLUGIN_251_SHA = "b6788f0d6a2c58a73fd3543fd5e005d9e6e1142e4b0769fece0d420212af6f6e"
+
+http_jar(
+    name = "performance_2025_1",
+    sha256 = PERFORMANCE_PLUGIN_251_SHA,
+    url = PERFORMANCE_PLUGIN_251_URL,
+)
+
+CODE_WITH_ME_251_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_251_INTELLIJ_REPOSITORY, SDK_251_INTELLIJ_REPOSITORY_VERSION, SDK_251_INTELLIJ_REPOSITORY_VERSION)
+
+CODE_WITH_ME_251_SHA = "89bd281a6b95659bdd68a287401db911812ab422ebd3958db3b789d62bd84468"
+
+http_jar(
+    name = "code_with_me_2025_1",
+    sha256 = CODE_WITH_ME_251_SHA,
+    url = CODE_WITH_ME_251_URL,
 )

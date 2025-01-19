@@ -104,8 +104,6 @@ class BazelBspServer(
         bazelPathsResolver = bazelPathsResolver,
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,
-        bazelInfo = bazelInfo,
-        bspClientLogger = bspClientLogger,
       )
     val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
     val projectSyncService =

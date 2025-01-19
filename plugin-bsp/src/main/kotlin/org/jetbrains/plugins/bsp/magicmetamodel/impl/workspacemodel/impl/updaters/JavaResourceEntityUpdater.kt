@@ -16,7 +16,10 @@ class JavaResourceEntityUpdater(private val workspaceModelEntityUpdaterConfig: W
   WorkspaceModelEntityWithParentModuleUpdater<ResourceRoot, JavaResourceRootPropertiesEntity> {
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
-  override fun addEntities(entitiesToAdd: List<ResourceRoot>, parentModuleEntity: ModuleEntity): List<JavaResourceRootPropertiesEntity> {
+  override suspend fun addEntities(
+    entitiesToAdd: List<ResourceRoot>,
+    parentModuleEntity: ModuleEntity,
+  ): List<JavaResourceRootPropertiesEntity> {
     val contentRootEntities = addContentRootEntities(entitiesToAdd, parentModuleEntity)
 
     val sourceRoots =
@@ -33,7 +36,7 @@ class JavaResourceEntityUpdater(private val workspaceModelEntityUpdaterConfig: W
     }
   }
 
-  private fun addContentRootEntities(entitiesToAdd: List<ResourceRoot>, parentModuleEntity: ModuleEntity): List<ContentRootEntity> {
+  private suspend fun addContentRootEntities(entitiesToAdd: List<ResourceRoot>, parentModuleEntity: ModuleEntity): List<ContentRootEntity> {
     val contentRoots =
       entitiesToAdd.map { entityToAdd ->
         ContentRoot(
@@ -81,7 +84,7 @@ class JavaResourceEntityUpdater(private val workspaceModelEntityUpdaterConfig: W
     return updatedSourceRoot.javaResourceRoots.last()
   }
 
-  override fun addEntity(entityToAdd: ResourceRoot, parentModuleEntity: ModuleEntity): JavaResourceRootPropertiesEntity =
+  override suspend fun addEntity(entityToAdd: ResourceRoot, parentModuleEntity: ModuleEntity): JavaResourceRootPropertiesEntity =
     addEntities(listOf(entityToAdd), parentModuleEntity).single()
 
   private companion object {

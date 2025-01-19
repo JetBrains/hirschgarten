@@ -103,9 +103,9 @@ def update_checksums(content: str, temp_dir: str, intellij_version: str) -> str:
 
     return content
 
-def main(intellij_version: str, plugin_repository_version: str, intellij_repository_version: str, intellij_repository: str) -> None:
-    logger.info("Reading MODULE.bazel file.")
-    with open('MODULE.bazel', 'r') as file:
+def main(module_file_path: str, intellij_version: str, plugin_repository_version: str, intellij_repository_version: str, intellij_repository: str) -> None:
+    logger.info(f"Reading {module_file_path} file.")
+    with open(module_file_path, 'r') as file:
         content = file.read()
 
     logger.info("Replacing variables in MODULE.bazel content.")
@@ -115,18 +115,19 @@ def main(intellij_version: str, plugin_repository_version: str, intellij_reposit
         logger.info("Updating checksums for URLs.")
         content = update_checksums(content, temp_dir, intellij_version)
 
-    logger.info("Writing updated content back to MODULE.bazel.")
-    with open('MODULE.bazel', 'w') as file:
+    logger.info(f"Writing updated content back to {module_file_path}.")
+    with open(module_file_path, 'w') as file:
         file.write(content)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        print("Usage: script.py <intellij_version> <plugin_repository_version> <intellij_repository_version> <intellij_repository>")
+    if len(sys.argv) != 6:
+        print("Usage: script.py <module_file_path> <intellij_version> <plugin_repository_version> <intellij_repository_version> <intellij_repository>")
         sys.exit(1)
 
-    intellij_version: str = sys.argv[1]
-    plugin_repository_version: str = sys.argv[2]
-    intellij_repository_version: str = sys.argv[3]
-    intellij_repository: str = sys.argv[4]
+    module_file_path: str = sys.argv[1]
+    intellij_version: str = sys.argv[2]
+    plugin_repository_version: str = sys.argv[3]
+    intellij_repository_version: str = sys.argv[4]
+    intellij_repository: str = sys.argv[5]
 
-    main(intellij_version, plugin_repository_version, intellij_repository_version, intellij_repository)
+    main(module_file_path, intellij_version, plugin_repository_version, intellij_repository_version, intellij_repository)

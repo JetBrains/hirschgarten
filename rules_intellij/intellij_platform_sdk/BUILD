@@ -37,8 +37,8 @@ config_setting(
 )
 
 config_setting(
-    name = "clion-2024.3",
-    values = {"define": "ij_product=clion-2024.3"},
+    name = "intellij-2025.1",
+    values = {"define": "ij_product=intellij-2025.1"},
 )
 
 # The purpose of this rule is to hide the versioning
@@ -127,7 +127,7 @@ java_library(
     testonly = 1,
     runtime_deps = select_from_plugin_api_directory(
         android_studio = [":bundled_plugins"],
-        clion = [":bundled_plugins"],
+        clion = [],
         intellij = [":bundled_plugins"],
     ),
 )
@@ -136,7 +136,7 @@ filegroup(
     name = "application_info_json",
     srcs = select_from_plugin_api_directory(
         android_studio = [":application_info_json"],
-        clion = [":application_info_json"],
+        clion = [],
         intellij = [":application_info_json"],
     ),
 )

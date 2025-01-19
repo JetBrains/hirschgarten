@@ -16,7 +16,10 @@ internal class JavaSourceEntityUpdater(
   private val sourceEntityUpdater = SourceEntityUpdater(workspaceModelEntityUpdaterConfig, workspaceModelEntitiesFolderMarker)
   private val generatedJavaSourceEntityUpdater = GeneratedJavaSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
 
-  override fun addEntities(entitiesToAdd: List<JavaSourceRoot>, parentModuleEntity: ModuleEntity): List<JavaSourceRootPropertiesEntity> {
+  override suspend fun addEntities(
+    entitiesToAdd: List<JavaSourceRoot>,
+    parentModuleEntity: ModuleEntity,
+  ): List<JavaSourceRootPropertiesEntity> {
     generatedJavaSourceEntityUpdater.addEntities(entitiesToAdd)
     val sourceRootEntities =
       sourceEntityUpdater.addEntities(
@@ -59,6 +62,6 @@ internal class JavaSourceEntityUpdater(
     return updatedSourceRoot.javaSourceRoots.last()
   }
 
-  override fun addEntity(entityToAdd: JavaSourceRoot, parentModuleEntity: ModuleEntity): JavaSourceRootPropertiesEntity =
+  override suspend fun addEntity(entityToAdd: JavaSourceRoot, parentModuleEntity: ModuleEntity): JavaSourceRootPropertiesEntity =
     addEntities(listOf(entityToAdd), parentModuleEntity).single()
 }

@@ -2,12 +2,12 @@ load("@rules_intellij//intellij_platform_sdk:build_defs.bzl", "select_for_plugin
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 kt_jvm_library(
-    name = "v243",
+    name = "v251",
     srcs = select_for_plugin_api({
-        "intellij-2024.3": glob([
+        "intellij-2024.3": ["Dummy.kt"],
+        "intellij-2025.1": glob([
             "org/jetbrains/bsp/sdkcompat/**",
         ]),
-        "intellij-2025.1": ["Dummy.kt"],
     }),
     visibility = ["//sdkcompat:__pkg__"],
     deps = [

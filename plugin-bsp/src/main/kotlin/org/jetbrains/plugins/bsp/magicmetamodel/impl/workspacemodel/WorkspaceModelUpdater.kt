@@ -28,11 +28,11 @@ data class ModuleDetails(
 )
 
 interface WorkspaceModelUpdater {
-  fun loadModules(moduleEntities: List<Module>) = moduleEntities.forEach { loadModule(it) }
+  suspend fun loadModules(moduleEntities: List<Module>) = moduleEntities.forEach { loadModule(it) }
 
-  fun loadModule(module: Module)
+  suspend fun loadModule(module: Module)
 
-  fun loadLibraries(libraries: List<Library>)
+  suspend fun loadLibraries(libraries: List<Library>)
 
   fun loadDirectories(includedDirectories: List<VirtualFileUrl>, excludedDirectories: List<VirtualFileUrl>)
 }
