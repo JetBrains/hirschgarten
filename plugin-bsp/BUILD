@@ -117,7 +117,7 @@ intellij_plugin_debug_target(
 
 repackaged_files(
     name = "intellij-bsp_jar",
-    srcs = [":intellij-bsp"],
+    srcs = [":intellij-bsp", ":intellij-bsp_external_jars"],
     prefix = "intellij-bsp/lib",
     visibility = ["//visibility:public"],
 )

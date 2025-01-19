@@ -12,13 +12,6 @@ load(
 )
 load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
 load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
-load("//:query.bzl", "runtime_classpath")
-
-runtime_classpath(
-    name = "extract_runtime_jars",
-    target = "//plugin-bazel/src:intellij-bazel",
-    visibility = ["//visibility:public"],
-)
 
 define_kt_toolchain(
     name = "kotlin_toolchain",
@@ -94,8 +87,8 @@ java_binary(
 
 repackaged_files(
     name = "intellij-bazel_jar",
-    srcs = [":intellij-bazel"],
-    prefix = "intellij-bazel/lib",
+    srcs = [":intellij-bazel", "intellij-bazel_external_jars"],
+    prefix = "intellij-bazel/lib"
 )
 
 plugin_deploy_zip(
@@ -151,6 +144,6 @@ intellij_plugin(
 
 repackaged_files(
     name = "intellij-bazel-with-inmemory-server_jar",
-    srcs = [":intellij-bazel-with-inmemory-server"],
+    srcs = [":intellij-bazel-with-inmemory-server", ":intellij-bazel-with-inmemory-server_external_jars"],
     prefix = "intellij-bazel-with-inmemory-server/lib",
 )

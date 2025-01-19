@@ -44,6 +44,7 @@ intellij_plugin(
 
 load("@rules_java//java:defs.bzl", "java_binary", "java_import")
 load("@rules_java//java/common:java_info.bzl", "JavaInfo")
+load("@rules_java//java/common:java_common.bzl", "java_common")
 load(
     "//build_defs:restrictions.bzl",
     "RestrictedInfo",
@@ -297,6 +298,64 @@ _intellij_plugin_java_deps = rule(
     },
 )
 
+def _plugin_external_jars_impl(ctx):
+    java_infos = [dep[_IntellijPluginLibraryInfo].java_info for dep in ctx.attr.deps]
+
+    merged = java_common.merge(java_infos)
+
+    # that's whatever is not in the workspace
+    new_transitive_runtime_jars = [jar for jar in merged.transitive_runtime_jars.to_list() if jar.owner.workspace_name != ""]
+
+    # filter out deploy env
+    if hasattr(java_common, "JavaRuntimeClasspathInfo"):
+            deploy_env_jars = depset(transitive = [
+                dep[java_common.JavaRuntimeClasspathInfo].runtime_classpath
+                for dep in ctx.attr.deploy_env
+            ])
+            excluded_jars = {jar: None for jar in deploy_env_jars.to_list()}
+            if excluded_jars:
+                new_transitive_runtime_jars = [jar for jar in new_transitive_runtime_jars if jar not in excluded_jars]
+
+
+    return DefaultInfo(
+        files = depset(new_transitive_runtime_jars),
+    )
+
+_plugin_external_jars = rule(
+    implementation = _plugin_external_jars_impl,
+    attrs = {
+        "deps": attr.label_list(
+            mandatory = True,
+            providers = [[_IntellijPluginLibraryInfo]],
+        ),
+        "deploy_env": attr.label_list(
+            providers = [java_common.JavaRuntimeClasspathInfo],
+        ),
+    },
+)
+
+def _plugin_internal_jars_impl(ctx):
+    java_infos = [dep[_IntellijPluginLibraryInfo].java_info for dep in ctx.attr.deps]
+
+    merged = java_common.merge(java_infos)
+
+    # idk, let's try brute force and remove all external deps
+    new_transitive_runtime_jars = [jar for jar in merged.transitive_runtime_jars.to_list() if jar.owner.workspace_name == ""]
+
+    return DefaultInfo(
+        files = depset(new_transitive_runtime_jars),
+    )
+
+_plugin_internal_jars = rule(
+    implementation = _plugin_internal_jars_impl,
+    attrs = {
+        "deps": attr.label_list(
+            mandatory = True,
+            providers = [[_IntellijPluginLibraryInfo]],
+        ),
+    },
+)
+
 def _intellij_plugin_jar_impl(ctx):
     augmented_xml = _merge_plugin_xmls(ctx)
     optional_module_to_merged_xmls = _merge_optional_plugin_deps(ctx)
@@ -371,39 +430,46 @@ def intellij_plugin(name, deps, plugin_xml, plugin_deps = [], optional_plugin_de
       plugin_icons: Plugin logo files to be placed in META-INF. Follow https://plugins.jetbrains.com/docs/intellij/plugin-icon-file.html#plugin-logo-requirements
       **kwargs: Any further arguments to be passed to the final target
     """
-    java_deps_name = name + "_java_deps"
+#     java_deps_name = name + "_java_deps"
     binary_name = name + "_binary"
     deploy_jar = binary_name + "_deploy.jar"
-    _intellij_plugin_java_deps(
-        name = java_deps_name,
+
+    internal_jars_name = name + "_internal_jars"
+    _plugin_internal_jars(
+        name = internal_jars_name,
         deps = deps,
     )
+
+    internal_jars_import_name = name + "_internal_jars_import"
+
+    java_import(
+        name = internal_jars_import_name,
+        jars = [internal_jars_name],
+    )
+
+    external_jars_name = name + "_external_jars"
+    _plugin_external_jars(
+        name = external_jars_name,
+        deps = deps,
+        deploy_env = deploy_env,
+    )
+
+    # todo: remove kotlin stdlib?
+    external_jars_import_name = name + "_external_jars_import"
+    java_import(
+        name = external_jars_import_name,
+        jars = [external_jars_name],
+    )
+
     java_binary(
         name = binary_name,
-        runtime_deps = [":" + java_deps_name] + extra_runtime_deps,
+        runtime_deps = [":" + internal_jars_import_name],
         create_executable = 0,
         deploy_env = deploy_env,
     )
 
-    if not ("testonly" in kwargs and kwargs["testonly"]):
-        DELETE_ENTRIES = [
-            # TODO(b/255334320) Remove these 2 (and hopefully the entire zip -d invocation)
-            "com/google/common/util/concurrent/ListenableFuture.class",
-        ]
-        deploy_jar = binary_name + "_cleaned.jar"
-        native.genrule(
-            name = binary_name + "_cleaned",
-            srcs = [binary_name + "_deploy.jar"],
-            outs = [deploy_jar],
-            cmd = "\n".join([
-                # zip -d operates on a single zip file, modifying it in place. So
-                # make a copy of our input first, and make it writable.
-                "cp $< $@",
-                "chmod u+w $@",
-                "zip -q -d $@ " + " ".join(DELETE_ENTRIES) + " || true ",
-            ]),
-            message = "Applying workarounds to plugin jar",
-        )
+    # instead of creating a deploy jar, filter out files from the local repository ONLY, and put the rest into a filegroup
+    # and also remove kotlin
 
     jar_target_name = name + "_intellij_plugin_jar"
     _intellij_plugin_jar(
@@ -422,7 +488,7 @@ def intellij_plugin(name, deps, plugin_xml, plugin_deps = [], optional_plugin_de
     # included (with tag) as a hack so that IJwB can recognize this is an intellij plugin
     java_import(
         name = name,
-        jars = [jar_target_name],
+        jars = [jar_target_name, external_jars_name],
         tags = ["intellij-plugin"] + kwargs.pop("tags", []),
         **kwargs
     )

@@ -44,6 +44,7 @@ _AspectIntellijPluginDeployInfo = provider("", fields = ["input_files", "deploy_
 _IntellijPluginDeployInfo = provider("", fields = ["deploy_files", "java_agent_deploy_files"])
 
 def _repackaged_deploy_file(f, repackaging_data):
+    print("dupka13", output_path(f, repackaging_data))
     return struct(
         src = f,
         deploy_location = output_path(f, repackaging_data),
