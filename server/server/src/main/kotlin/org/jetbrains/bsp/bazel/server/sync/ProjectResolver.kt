@@ -203,6 +203,7 @@ class ProjectResolver(
         var shardedBuildResult: BazelBspAspectsManagerResult? = null
         var suggestedTargetShardSize = workspaceContext.targetShardSize.value
         while (remainingShardedTargetsSpecs.isNotEmpty()) {
+          cancelChecker.checkCanceled()
           val shardedTargetsSpec = remainingShardedTargetsSpecs.removeFirst()
           val shardName = "shard $shardNumber of ${shardNumber + remainingShardedTargetsSpecs.size}"
           bspClientLogger.message("\nBuilding $shardName ...")
