@@ -290,7 +290,7 @@ http_archive(
     url = GO_PLUGIN_251_URL,
 )
 
-CLION_251_SHA = "fb6498edd13da3eeb4dc53e33d24e76ecea667ea4ecf9f61b5ded5f4c3c551c4"
+CLION_251_SHA = "1a8dcdafb91f4ed442f28ca7871562249c31452574a6493207755908dd56eab1"
 
 CLION_251_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/clion/clion/%s/clion-%s.zip" % (SDK_251_CLION_REPOSITORY, SDK_251_CLION_REPOSITORY_VERSION, SDK_251_CLION_REPOSITORY_VERSION)
 
