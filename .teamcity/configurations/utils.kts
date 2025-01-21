@@ -16,12 +16,12 @@ object CommonParams {
   val BazelCiSpecificArgs: String = "--test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
 
   val DockerE2eImage: String = "registry.jetbrains.team/p/bazel/docker/hirschgarten-e2e:latest"
-  val DockerQodanaImage: String = "registry.jetbrains.team/p/bazel/docker-private/hirschgarten-qodana:latest"
-  val DockerQodanaAndroidImage: String = "registry.jetbrains.team/p/bazel/docker-private/hirschgarten-qodana-android:latest"
+  val DockerQodanaImage: String = "registry.jetbrains.team/p/bazel/docker-private/hirschgarten-qodana"
+  val DockerQodanaAndroidImage: String = "registry.jetbrains.team/p/bazel/docker-private/hirschgarten-qodana-android"
 
   val QodanaArtifactRules: String = "+:intellij-*.zip=>%system.teamcity.build.checkoutDir%/tc-artifacts"
 
-  val CrossBuildPlatforms: List<String> = listOf("243")
+  val CrossBuildPlatforms: List<String> = listOf("243", "251")
 
   val BazelVersion = "7.4.1"
 }
