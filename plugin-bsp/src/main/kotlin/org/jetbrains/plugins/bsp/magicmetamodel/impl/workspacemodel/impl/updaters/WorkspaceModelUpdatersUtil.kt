@@ -24,7 +24,13 @@ internal fun String.toResolvedVirtualFileUrl(virtualFileUrlManager: VirtualFileU
   return url
 }
 
+private const val VFS_PARALLELIZATION_SIZE = 128
+
 suspend fun List<Path>.toResolvedVirtualFileUrls(virtualFileUrlManager: VirtualFileUrlManager): List<VirtualFileUrl> =
-  withContext(Dispatchers.IO) {
-    map { async { it.toResolvedVirtualFileUrl(virtualFileUrlManager) } }.awaitAll()
+  if (this.size < VFS_PARALLELIZATION_SIZE) {
+    map { it.toResolvedVirtualFileUrl(virtualFileUrlManager) }
+  } else {
+    withContext(Dispatchers.IO) {
+      map { async { it.toResolvedVirtualFileUrl(virtualFileUrlManager) } }.awaitAll()
+    }
   }
