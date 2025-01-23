@@ -9,6 +9,7 @@ import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.buildTagFilters
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.color
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.keepGoing
+import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.noRunValidations
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.outputGroups
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.commons.BazelStatus
@@ -101,7 +102,9 @@ class BazelBspAspectsManager(
           "javaEnabled" to javaEnabled.toString(),
           "pythonEnabled" to pythonEnabled.toString(),
           "bazel8OrAbove" to bazel8OrAbove.toString(),
-          "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl]?.toString()?.let { "\"" + it + "\"" } },
+          // This will only return the first toolchain in the list.
+          // At the moment, there is only one place this is used, and it wouldn't make sense for there to be more than one anyway though.
+          "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl]?.toString().let { "\"" + it + "\"" } },
         )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
     }
@@ -138,6 +141,11 @@ class BazelBspAspectsManager(
 
   private fun Boolean.toStarlarkString(): String = if (this) "True" else "False"
 
+  /*
+   * Explicitly specifying a list of output groups should prevent bazel from building the default output group, but it will still include the validations output group unless you specifically exclude it with --norun_validations.
+   * If the validations output group depends on the results of other more costly actions, they can make this take a long time.
+   * https://bazel.build/extending/rules#validation_actions
+   */
   suspend fun fetchFilesFromOutputGroups(
     cancelChecker: CancelChecker,
     targetsSpec: TargetsSpec,
@@ -156,6 +164,7 @@ class BazelBspAspectsManager(
         color(true),
         curses(false),
         buildTagFilters(listOf("-no-ide")),
+        noRunValidations(),
       )
     val allowManualTargetsSyncFlags = if (shouldSyncManualFlags) listOf(buildManualTests()) else emptyList()
     val syncFlags = workspaceContextProvider.currentWorkspaceContext().syncFlags.values
