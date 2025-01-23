@@ -12,7 +12,7 @@ import org.jetbrains.bsp.bazel.server.benchmark.useWithScope
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
-import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesQueryImpl
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesetsQueryImpl
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelLabelExpander
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.bzlmod.calculateRepoMapping
@@ -57,8 +57,8 @@ class ProjectResolver(
           workspaceContextProvider::currentWorkspaceContext,
         )
 
-      val bazelExternalRulesQuery =
-        BazelExternalRulesQueryImpl(
+      val bazelExternalRulesetsQuery =
+        BazelExternalRulesetsQueryImpl(
           bazelRunner,
           bazelInfo.isBzlModEnabled,
           bazelInfo.isWorkspaceEnabled,
@@ -66,15 +66,15 @@ class ProjectResolver(
           bspClientLogger,
         )
 
-      val externalRuleNames =
+      val externalRulesetNames =
         measured(
           "Discovering supported external rules",
-        ) { bazelExternalRulesQuery.fetchExternalRuleNames(cancelChecker) }
+        ) { bazelExternalRulesetsQuery.fetchExternalRulesetNames(cancelChecker) }
 
       val ruleLanguages =
         measured(
           "Mapping rule names to languages",
-        ) { bazelBspAspectsManager.calculateRuleLanguages(externalRuleNames) }
+        ) { bazelBspAspectsManager.calculateRulesetLanguages(externalRulesetNames) }
 
       val toolchains =
         measured(

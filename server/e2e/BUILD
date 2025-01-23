@@ -47,12 +47,20 @@ bazel_integration_test_all_versions(
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspPythonProjectTest",
 )
 
-bazel_integration_test(
+bazel_integration_test_all_versions(
     name = "kotlin_project_test",
-    timeout = "eternal",
-    bazel_version = "6.4.0",
+    bzlmod_project_path = "test-projects/bzlmod/kotlin-project",
+    exclude_bazel_5 = True,  # bazel 5 will be deprecated soon, project fails to build with bazel 5 so let's just skip it
+    project_path = "test-projects/workspace/kotlin-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspKotlinProjectTest",
-    workspace_path = "test-projects/workspace/kotlin-project",
+)
+
+bazel_integration_test_all_versions(
+    name = "kotlin_project_with_enabled_rules_test",
+    bzlmod_project_path = "test-projects/bzlmod/kotlin-project",
+    exclude_bazel_5 = True,  # bazel 5 will be deprecated soon, project fails to build with bazel 5 so let's just skip it
+    project_path = "test-projects/workspace/kotlin-project",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspKotlinProjectWithEnabledRulesTest",
 )
 
 bazel_integration_test_all_versions(
@@ -147,6 +155,8 @@ test_suite(
         ":first_phase_sync_test",
         ":go_project_test",
         ":java_diagnostics_test",
+        ":kotlin_project_test",
+        ":kotlin_project_with_enabled_rules_test",
         ":local_jdk_test",
         ":nested_modules_test",
         ":partial_sync_test",

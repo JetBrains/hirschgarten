@@ -12,11 +12,8 @@ import org.jetbrains.bsp.bazel.install.Install
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import kotlin.time.Duration.Companion.seconds
 
-object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
+open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
   private val testClient = createTestkitClient()
-
-  @JvmStatic
-  fun main(args: Array<String>) = executeScenario()
 
   override fun installServer() {
     Install.main(
@@ -27,13 +24,10 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         bazelBinary,
         "-t",
         "//...",
-        "--enabled-rules",
-        "rules_kotlin",
         "--shard-sync",
+        "true",
         "--target-shard-size",
         "1",
-        "--shard-approach",
-        "EXPAND_AND_SHARD",
       ),
     )
   }
@@ -44,9 +38,14 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     )
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
+    val workspaceJavaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
+    val bzlmodJavaHome =
+      "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java$bzlmodRepoNameSeparator" +
+        "${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_$javaHomeArchitecture/"
+    val javaHome = if (isBzlmod) bzlmodJavaHome else workspaceJavaHome
     val jvmBuildTargetData =
       JvmBuildTarget().also {
-        it.javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
+        it.javaHome = javaHome
         it.javaVersion = "11"
       }
 
@@ -55,14 +54,14 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         languageVersion = "1.9",
         apiVersion = "1.9",
         kotlincOptions =
-          listOf(
+          listOfNotNull(
             "-Xsam-conversions=class",
             "-Xlambdas=class",
-            "-Xno-source-debug-extension",
+            if (isBzlmod) null else "-Xno-source-debug-extension",
             "-jvm-target=1.8",
           ),
         associates = listOf(),
-        jvmBuildTarget = jvmBuildTargetData,
+        jvmBuildTarget = if (isBazel8OrHigher) null else jvmBuildTargetData,
       )
 
     val kotlincTestBuildTargetData =
@@ -70,16 +69,16 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         languageVersion = "1.9",
         apiVersion = "1.9",
         kotlincOptions =
-          listOf(
+          listOfNotNull(
             "-Xno-call-assertions",
             "-Xno-param-assertions",
             "-Xsam-conversions=class",
             "-Xlambdas=class",
-            "-Xno-source-debug-extension",
+            if (isBzlmod) null else "-Xno-source-debug-extension",
             "-jvm-target=1.8",
           ),
         associates = listOf(),
-        jvmBuildTarget = jvmBuildTargetData,
+        jvmBuildTarget = if (isBazel8OrHigher) null else jvmBuildTargetData,
       )
 
     val kotlincTestBuildTarget =
@@ -118,22 +117,28 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     openForTestingBuildTarget.data = kotlinBuildTargetData
     openForTestingBuildTarget.dataKind = "kotlin"
 
+    val bzlmodPluginRepo =
+      "rules_kotlin${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+        "rules_kotlin_extensions${bzlmodRepoNameSeparator}com_github_jetbrains_kotlin_git"
+    val workspacePluginRepo = "com_github_jetbrains_kotlin"
+    val pluginRepo = if (isBzlmod) bzlmodPluginRepo else workspacePluginRepo
+
     val userBuildTargetData =
       KotlinBuildTarget(
         languageVersion = "1.9",
         apiVersion = "1.9",
         kotlincOptions =
-          listOf(
+          listOfNotNull(
             "-P",
             "-Xlambdas=class",
-            "-Xno-source-debug-extension",
-            "-Xplugin=\$BAZEL_OUTPUT_BASE_PATH/external/com_github_jetbrains_kotlin/lib/allopen-compiler-plugin.jar",
+            if (isBzlmod) null else "-Xno-source-debug-extension",
+            "-Xplugin=\$BAZEL_OUTPUT_BASE_PATH/external/$pluginRepo/lib/allopen-compiler-plugin.jar",
             "-Xsam-conversions=class",
             "-jvm-target=1.8",
             "plugin:org.jetbrains.kotlin.allopen:annotation=plugin.allopen.OpenForTesting",
           ),
         associates = listOf(),
-        jvmBuildTarget = jvmBuildTargetData,
+        jvmBuildTarget = if (isBazel8OrHigher) null else jvmBuildTargetData,
       )
 
     val userOfExportBuildTargetData =
@@ -141,17 +146,17 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         languageVersion = "1.9",
         apiVersion = "1.9",
         kotlincOptions =
-          listOf(
+          listOfNotNull(
             "-P",
             "-Xlambdas=class",
-            "-Xno-source-debug-extension",
-            "-Xplugin=\$BAZEL_OUTPUT_BASE_PATH/external/com_github_jetbrains_kotlin/lib/allopen-compiler-plugin.jar",
+            if (isBzlmod) null else "-Xno-source-debug-extension",
+            "-Xplugin=\$BAZEL_OUTPUT_BASE_PATH/external/$pluginRepo/lib/allopen-compiler-plugin.jar",
             "-Xsam-conversions=class",
             "-jvm-target=1.8",
             "plugin:org.jetbrains.kotlin.allopen:annotation=plugin.allopen.OpenForTesting",
           ),
         associates = listOf(),
-        jvmBuildTarget = jvmBuildTargetData,
+        jvmBuildTarget = if (isBazel8OrHigher) null else jvmBuildTargetData,
       )
 
     val userBuildTarget =
@@ -233,5 +238,10 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
   private fun compareWorkspaceTargetsResults(): BazelBspTestScenarioStep =
     BazelBspTestScenarioStep(
       "compare workspace targets results",
-    ) { testClient.testWorkspaceTargets(60.seconds, expectedWorkspaceBuildTargetsResult()) }
+    ) { testClient.testWorkspaceTargets(140.seconds, expectedWorkspaceBuildTargetsResult()) }
+
+  companion object {
+    @JvmStatic
+    fun main(args: Array<String>) = BazelBspKotlinProjectTest().executeScenario()
+  }
 }
