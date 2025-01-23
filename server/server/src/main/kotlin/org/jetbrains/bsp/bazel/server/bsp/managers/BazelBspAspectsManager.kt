@@ -29,6 +29,10 @@ data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: Ba
 
   fun merge(anotherResult: BazelBspAspectsManagerResult): BazelBspAspectsManagerResult =
     BazelBspAspectsManagerResult(bepOutput.merge(anotherResult.bepOutput), status.merge(anotherResult.status))
+
+  companion object {
+    fun emptyResult(): BazelBspAspectsManagerResult = BazelBspAspectsManagerResult(BepOutput(), BazelStatus.SUCCESS)
+  }
 }
 
 data class RuleLanguage(val ruleName: String?, val language: Language)
