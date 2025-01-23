@@ -200,8 +200,8 @@ class ProjectResolver(
           )
         var remainingShardedTargetsSpecs = shardedResult.targets.toTargetsSpecs().toMutableList()
         var shardNumber = 1
-        var shardedBuildResult: BazelBspAspectsManagerResult? = null
-        var suggestedTargetShardSize = workspaceContext.targetShardSize.value
+        var shardedBuildResult: BazelBspAspectsManagerResult = BazelBspAspectsManagerResult.emptyResult()
+        var suggestedTargetShardSize: Int = workspaceContext.targetShardSize.value
         while (remainingShardedTargetsSpecs.isNotEmpty()) {
           cancelChecker.checkCanceled()
           val shardedTargetsSpec = remainingShardedTargetsSpecs.removeFirst()
@@ -229,6 +229,9 @@ class ProjectResolver(
             try {
               val halvedTargetsSpec = shardedTargetsSpec.halve()
               suggestedTargetShardSize = halvedTargetsSpec.first().values.size
+              bspClientLogger.message(
+                "Retrying with the target shard size of $suggestedTargetShardSize (previously ${shardedTargetsSpec.values.size}) ...",
+              )
               remainingShardedTargetsSpecs = remainingShardedTargetsSpecs.flatMap { it.halve() }.toMutableList()
               remainingShardedTargetsSpecs.addAll(0, halvedTargetsSpec)
             } catch (e: IllegalTargetsSizeException) {
@@ -236,7 +239,7 @@ class ProjectResolver(
               throw e
             }
           }
-          shardedBuildResult = shardedBuildResult?.merge(result) ?: result
+          shardedBuildResult = shardedBuildResult.merge(result)
 
           bspClientLogger.message("---")
           ++shardNumber
@@ -247,7 +250,7 @@ class ProjectResolver(
           )
           bspClientLogger.message("---")
         }
-        shardedBuildResult!!
+        shardedBuildResult
       } else {
         nonShardBuild()
       }

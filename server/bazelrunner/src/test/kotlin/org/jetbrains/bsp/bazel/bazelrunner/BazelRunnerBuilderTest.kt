@@ -10,6 +10,7 @@ import org.jetbrains.bsp.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bsp.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bsp.bazel.workspacecontext.BazelBinarySpec
 import org.jetbrains.bsp.bazel.workspacecontext.BuildFlagsSpec
+import org.jetbrains.bsp.bazel.workspacecontext.DEFAULT_TARGET_SHARD_SIZE
 import org.jetbrains.bsp.bazel.workspacecontext.DirectoriesSpec
 import org.jetbrains.bsp.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bsp.bazel.workspacecontext.EnableNativeAndroidRules
@@ -48,7 +49,7 @@ val mockContext =
     enableNativeAndroidRules = EnableNativeAndroidRules(false),
     androidMinSdkSpec = AndroidMinSdkSpec(null),
     shardSync = ShardSyncSpec(false),
-    targetShardSize = TargetShardSizeSpec(null),
+    targetShardSize = TargetShardSizeSpec(DEFAULT_TARGET_SHARD_SIZE),
     shardingApproachSpec = ShardingApproachSpec(null),
   )
 
