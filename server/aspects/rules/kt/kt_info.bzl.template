@@ -1,8 +1,8 @@
-load("@${ruleName}//kotlin/internal:defs.bzl", "KtJvmInfo", "KtCompilerPluginInfo")
-load("@${ruleName}//kotlin/internal:opts.bzl", "KotlincOptions", "kotlinc_options_to_flags")
-load("//aspects:utils/utils.bzl", "convert_struct_to_dict", "create_struct", "map", "file_location", "filter_not_none", "log_warn", "collect_targets_from_attrs", "COMPILE_DEPS")
+load("@${rulesetName}//kotlin/internal:defs.bzl", "KtCompilerPluginInfo", "KtJvmInfo")
+load("@${rulesetName}//kotlin/internal:opts.bzl", "KotlincOptions", "kotlinc_options_to_flags")
+load("//aspects:utils/utils.bzl", "COMPILE_DEPS", "collect_targets_from_attrs", "convert_struct_to_dict", "create_struct", "file_location", "filter_not_none", "log_warn", "map")
 
-KOTLIN_TOOLCHAIN_TYPE = "@${ruleName}//kotlin/internal:kt_toolchain_type"
+KOTLIN_TOOLCHAIN_TYPE = "@${rulesetName}//kotlin/internal:kt_toolchain_type"
 
 def get_kt_jvm_provider(target):
     if KtJvmInfo in target:
@@ -50,6 +50,7 @@ def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
     # accumulate Kotlin compiler plugin info
     direct_plugins = getattr(rule_attrs, "plugins", [])
     dep_plugins = []
+
     # exported_compiler_plugins is not transitive, so we only iterate over direct dependencies.
     # See https://github.com/bazelbuild/rules_kotlin/blob/f14d01ef5af3ad7ff0660ff671ca9b20c8a020d2/kotlin/internal/jvm/jvm.bzl#L268
     for dep in dep_targets:

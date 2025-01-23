@@ -34,7 +34,7 @@ class JavaLanguagePlugin(
       val runtimeJdk = jdkResolver.resolveJdk(targetInfo)
 
       JavaModule(
-        getJdk(),
+        jdk,
         runtimeJdk,
         javacOptsList,
         jvmFlagsList,
@@ -49,8 +49,6 @@ class JavaLanguagePlugin(
     JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source)
 
   private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }
-
-  private fun getJdk(): Jdk = jdk ?: throw RuntimeException("Failed to resolve JDK for project")
 
   override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<URI> =
     emptySet() // Provided via workspace/libraries
@@ -68,8 +66,8 @@ class JavaLanguagePlugin(
       if (flagName == "-target" || flagName == "--target" || flagName == "--release") argument else null
     }
 
-  fun toJvmBuildTarget(javaModule: JavaModule): JvmBuildTarget {
-    val jdk = javaModule.jdk
+  fun toJvmBuildTarget(javaModule: JavaModule): JvmBuildTarget? {
+    val jdk = javaModule.jdk ?: return null
     val javaHome = jdk.javaHome?.toString()
     return JvmBuildTarget().also {
       it.javaVersion = javaVersionFromJavacOpts(javaModule.javacOpts) ?: jdk.version
