@@ -19,6 +19,7 @@ import org.jetbrains.bsp.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bsp.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bsp.bazel.workspacecontext.BazelBinarySpec
 import org.jetbrains.bsp.bazel.workspacecontext.BuildFlagsSpec
+import org.jetbrains.bsp.bazel.workspacecontext.DEFAULT_TARGET_SHARD_SIZE
 import org.jetbrains.bsp.bazel.workspacecontext.DirectoriesSpec
 import org.jetbrains.bsp.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bsp.bazel.workspacecontext.EnableNativeAndroidRules
@@ -64,7 +65,7 @@ private class MockWorkspaceContextProvider(private val allowManualTargetsSync: B
       enableNativeAndroidRules = EnableNativeAndroidRules(false),
       androidMinSdkSpec = AndroidMinSdkSpec(null),
       shardSync = ShardSyncSpec(false),
-      targetShardSize = TargetShardSizeSpec(null),
+      targetShardSize = TargetShardSizeSpec(DEFAULT_TARGET_SHARD_SIZE),
       shardingApproachSpec = ShardingApproachSpec(null),
     )
 }
@@ -339,6 +340,72 @@ class FirstPhaseTargetToBspMapperTest {
           EnhancedSourceItemData(jvmPackagePrefix = "com.example.a"),
           EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
           EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
+        )
+    }
+
+    @Test
+    fun `should map project to source items including sources referenced via filegroup targets`() {
+      // given
+      val filegroupRoot1 = workspaceRoot.resolve("filegroup")
+      val filegroupRoot2 = workspaceRoot.resolve("filegroup/a")
+      val filegroupSrc1 = workspaceRoot.createMockSourceFile("filegroup/src1.java", "com.example")
+      val filegroupSrc2 = workspaceRoot.createMockSourceFile("filegroup/a/src2.java", "com.example.a")
+
+      val target1Root = workspaceRoot.resolve("target1")
+      val target1Src1 = workspaceRoot.createMockSourceFile("target1/src1.kt", "com.example")
+      val target1Src2 = workspaceRoot.createMockSourceFile("target1/src2.kt", "com.example")
+
+      val targets =
+        listOf(
+          createMockTarget(
+            name = "//filegroup",
+            kind = "filegroup",
+            srcs = listOf("//filegroup:src1.java", "//filegroup:a/src2.java"),
+          ),
+          createMockTarget(
+            name = "//target1",
+            kind = "java_library",
+            srcs = listOf("//target1:src1.kt", "//target1:src2.kt", "//filegroup"),
+          ),
+        )
+      val project = createMockProject(targets)
+
+      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+
+      // when
+      val params =
+        SourcesParams(
+          listOf(
+            BuildTargetIdentifier("//target1"),
+          ),
+        )
+      val result = mapper.toSourcesResult(project, params)
+
+      // then
+      result.items shouldContainExactlyInAnyOrder
+        listOf(
+          SourcesItem(
+            BuildTargetIdentifier("//target1"),
+            listOf(
+              EnhancedSourceItem(target1Src1.toUri().toString(), SourceItemKind.FILE, false),
+              EnhancedSourceItem(target1Src2.toUri().toString(), SourceItemKind.FILE, false),
+              EnhancedSourceItem(filegroupSrc1.toUri().toString(), SourceItemKind.FILE, false),
+              EnhancedSourceItem(filegroupSrc2.toUri().toString(), SourceItemKind.FILE, false),
+            ),
+          ).apply {
+            roots = listOf(target1Root.toUri().toString(), filegroupRoot1.toUri().toString(), filegroupRoot2.toUri().toString())
+          },
+        )
+      result.items
+        .flatMap { it.sources }
+        .map { it as EnhancedSourceItem }
+        .map { it.data } shouldContainExactly
+        listOf(
+          EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
+          EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
+          EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
+          EnhancedSourceItemData(jvmPackagePrefix = "com.example.a"),
         )
     }
   }

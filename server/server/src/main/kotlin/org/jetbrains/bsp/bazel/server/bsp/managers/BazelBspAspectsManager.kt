@@ -17,6 +17,7 @@ import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bsp.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
+import org.jetbrains.bsp.bazel.server.bzlmod.canonicalizeOrNull
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
@@ -29,9 +30,13 @@ data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: Ba
 
   fun merge(anotherResult: BazelBspAspectsManagerResult): BazelBspAspectsManagerResult =
     BazelBspAspectsManagerResult(bepOutput.merge(anotherResult.bepOutput), status.merge(anotherResult.status))
+
+  companion object {
+    fun emptyResult(): BazelBspAspectsManagerResult = BazelBspAspectsManagerResult(BepOutput(), BazelStatus.SUCCESS)
+  }
 }
 
-data class RuleLanguage(val ruleName: String?, val language: Language)
+data class RulesetLanguage(val rulesetName: String?, val language: Language)
 
 class BazelBspAspectsManager(
   private val bazelBspCompilationManager: BazelBspCompilationManager,
@@ -43,17 +48,17 @@ class BazelBspAspectsManager(
   private val aspectsPath = Paths.get(aspectsResolver.bazelBspRoot, Constants.ASPECTS_ROOT)
   private val templateWriter = TemplateWriter(aspectsPath)
 
-  fun calculateRuleLanguages(externalRuleNames: List<String>): List<RuleLanguage> =
+  fun calculateRulesetLanguages(externalRulesetNames: List<String>): List<RulesetLanguage> =
     Language
       .entries
       .mapNotNull { language ->
-        if (language.isBundled && bazelRelease.major < 8) return@mapNotNull RuleLanguage(null, language) // bundled in Bazel version < 8
-        val ruleName = language.ruleNames.firstOrNull { externalRuleNames.contains(it) }
-        ruleName?.let { RuleLanguage(it, language) }
+        if (language.isBundled && bazelRelease.major < 8) return@mapNotNull RulesetLanguage(null, language) // bundled in Bazel version < 8
+        val rulesetName = language.rulesetNames.firstOrNull { externalRulesetNames.contains(it) }
+        rulesetName?.let { RulesetLanguage(it, language) }
       }.removeDisabledLanguages()
       .addNativeAndroidLanguageIfNeeded()
 
-  private fun List<RuleLanguage>.removeDisabledLanguages(): List<RuleLanguage> {
+  private fun List<RulesetLanguage>.removeDisabledLanguages(): List<RulesetLanguage> {
     val disabledLanguages =
       buildSet {
         if (!featureFlags.isAndroidSupportEnabled) add(Language.Android)
@@ -64,21 +69,21 @@ class BazelBspAspectsManager(
     return filterNot { it.language in disabledLanguages }
   }
 
-  private fun List<RuleLanguage>.addNativeAndroidLanguageIfNeeded(): List<RuleLanguage> {
+  private fun List<RulesetLanguage>.addNativeAndroidLanguageIfNeeded(): List<RulesetLanguage> {
     if (!featureFlags.isAndroidSupportEnabled) return this
     if (!workspaceContextProvider.currentWorkspaceContext().enableNativeAndroidRules.value) return this
-    return this.filterNot { it.language == Language.Android } + RuleLanguage(null, Language.Android)
+    return this.filterNot { it.language == Language.Android } + RulesetLanguage(null, Language.Android)
   }
 
   fun generateAspectsFromTemplates(
-    ruleLanguages: List<RuleLanguage>,
+    rulesetLanguages: List<RulesetLanguage>,
     workspaceContext: WorkspaceContext,
-    toolchains: Map<RuleLanguage, Label?>,
+    toolchains: Map<RulesetLanguage, Label?>,
     bazelRelease: BazelRelease,
     repoMapping: RepoMapping,
   ) {
-    val languageRuleMap = ruleLanguages.associateBy { it.language }
-    val activeLanguages = ruleLanguages.map { it.language }.toSet()
+    val languageRuleMap = rulesetLanguages.associateBy { it.language }
+    val activeLanguages = rulesetLanguages.map { it.language }.toSet()
     val kotlinEnabled = Language.Kotlin in activeLanguages
     val cppEnabled = Language.Cpp in activeLanguages
     val javaEnabled = Language.Java in activeLanguages
@@ -86,11 +91,12 @@ class BazelBspAspectsManager(
     val bazel8OrAbove = bazelRelease.major >= 8
     Language.entries.filter { it.isTemplate }.forEach {
       val ruleLanguage = languageRuleMap[it]
+
       val outputFile = aspectsPath.resolve(it.toAspectRelativePath())
       val templateFilePath = it.toAspectTemplateRelativePath()
       val variableMap =
         mapOf(
-          "ruleName" to ruleLanguage?.ruleName,
+          "rulesetName" to ruleLanguage?.calculateCanonicalName(repoMapping),
           "addTransitiveCompileTimeJars" to
             workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
           "kotlinEnabled" to kotlinEnabled.toString(),
@@ -131,6 +137,16 @@ class BazelBspAspectsManager(
       ),
     )
   }
+
+  private fun RulesetLanguage.calculateCanonicalName(repoMapping: RepoMapping): String? =
+    when {
+      // bazel mod dump_repo_mapping returns everything without @@
+      // and in aspects we have a @ prefix
+      repoMapping is BzlmodRepoMapping ->
+        Label.parseOrNull(rulesetName)?.canonicalizeOrNull(repoMapping)?.let { "@$it" } ?: rulesetName
+
+      else -> rulesetName
+    }
 
   private fun Boolean.toStarlarkString(): String = if (this) "True" else "False"
 

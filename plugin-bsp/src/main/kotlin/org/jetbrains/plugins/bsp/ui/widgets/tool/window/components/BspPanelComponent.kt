@@ -127,11 +127,11 @@ class BspPanelComponent private constructor(
    * @param targets collection of build targets which the new panel will contain
    * @return newly created panel
    */
-  fun createNewWithTargets(targets: Collection<BuildTargetInfo>): BspPanelComponent =
+  fun createNewWithTargets(targets: Collection<BuildTargetInfo>, invalidTargets: List<BuildTargetIdentifier>): BspPanelComponent =
     BspPanelComponent(
       targetIcon,
       toolName,
-      targetTree.createNewWithTargets(targets),
-      targetSearch.createNewWithTargets(targets),
+      targetTree.createNewWithTargets(targets, invalidTargets),
+      targetSearch.createNewWithTargets(targets, invalidTargets),
     )
 }

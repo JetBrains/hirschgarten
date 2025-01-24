@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
@@ -141,7 +142,10 @@ class BuildTargetSearch(
     chooseTargetSearchPanel().selectTopTargetAndFocus()
   }
 
-  override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetSearch {
+  override fun createNewWithTargets(
+    newTargets: Collection<BuildTargetInfo>,
+    newInvalidTargets: List<BuildTargetIdentifier>,
+  ): BuildTargetSearch {
     val new = BuildTargetSearch(targetIcon, buildToolId, toolName, newTargets, searchBarPanel)
     popupHandlerBuilder?.let { new.registerPopupHandler(it) }
     return new

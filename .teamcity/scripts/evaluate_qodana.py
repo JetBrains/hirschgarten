@@ -69,6 +69,11 @@ class QodanaLogAnalyzer:
         return None, None
 
 def evaluate_qodana_results(log_content: str, expected_unchanged: Optional[int], allowed_diff: int) -> None:
+    # check if "project contains no modules" is present
+    if "project contains no modules" in log_content.lower():
+        print("error: found 'project contains no modules' in the build log")
+        sys.exit(1)
+
     analyzer = QodanaLogAnalyzer(log_content)
     unchanged_count, new_count = analyzer.analyze_problem_counts()
 
@@ -80,7 +85,7 @@ def evaluate_qodana_results(log_content: str, expected_unchanged: Optional[int],
     print(f"Unchanged Problems: {unchanged_count}")
     print(f"New Problems: {new_count}")
 
-    # skip validation if --unchanged wa`sn't provided
+    # skip validation if --unchanged wasn't provided
     if expected_unchanged is not None:
         print(f"Checking against expected: {expected_unchanged} ±{allowed_diff}")
         if abs(unchanged_count - expected_unchanged) > allowed_diff:

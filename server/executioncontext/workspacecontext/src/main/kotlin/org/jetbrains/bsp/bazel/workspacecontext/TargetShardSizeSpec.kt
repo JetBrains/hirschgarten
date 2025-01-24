@@ -4,7 +4,7 @@ import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtrac
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextSingletonEntity
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 
-data class TargetShardSizeSpec(override val value: Int?) : ExecutionContextSingletonEntity<Int?>()
+data class TargetShardSizeSpec(override val value: Int) : ExecutionContextSingletonEntity<Int?>()
 
 const val DEFAULT_TARGET_SHARD_SIZE = 1000
 
