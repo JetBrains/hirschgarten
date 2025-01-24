@@ -11,7 +11,7 @@ class LabelTest {
   fun `should normalize @@ main repo targets`() {
     val label = Label.parse("@@//path/to/target:targetName")
     val normalized = label.toString()
-    normalized shouldBe "@//path/to/target:targetName"
+    normalized shouldBe "@//path/to/target:targetName/xyz"
   }
 
   @Test
