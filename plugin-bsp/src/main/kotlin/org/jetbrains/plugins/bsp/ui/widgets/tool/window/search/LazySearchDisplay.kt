@@ -57,7 +57,7 @@ class LazySearchDisplay(
 
   private fun rerender() {
     component.remove(targetTree.treeComponent)
-    targetTree = targetTree.createNewWithTargetsAndHighlighter(targets) { QueryHighlighter.highlight(it, query) }
+    targetTree = targetTree.createNewWithTargetsAndHighlighter(targets, emptyList()) { QueryHighlighter.highlight(it, query) }
     component.add(targetTree.treeComponent)
   }
 

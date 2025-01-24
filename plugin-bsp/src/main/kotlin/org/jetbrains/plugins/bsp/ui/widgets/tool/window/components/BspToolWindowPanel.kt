@@ -20,11 +20,10 @@ import org.jetbrains.plugins.bsp.action.SuspendableAction
 import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.buildToolId
-import org.jetbrains.plugins.bsp.config.withBuildToolId
 import org.jetbrains.plugins.bsp.extensionPoints.BspToolWindowConfigFileProviderExtension
 import org.jetbrains.plugins.bsp.extensionPoints.bspToolWindowConfigFileProvider
 import org.jetbrains.plugins.bsp.extensionPoints.bspToolWindowSettingsProvider
-import org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension
+import org.jetbrains.plugins.bsp.services.invalidTargets
 import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.FilterActionGroup
@@ -73,30 +72,24 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
     }
   }
 
-  private fun createLoadedTargetsPanel(project: Project, temporaryTargetUtils: TemporaryTargetUtils): BspPanelComponent {
-    val invalidTargets =
-      InvalidTargetsProviderExtension.ep
-        .withBuildToolId(project.buildToolId)
-        ?.provideInvalidTargets(project)
-        .orEmpty()
-
-    return BspPanelComponent(
+  private fun createLoadedTargetsPanel(project: Project, temporaryTargetUtils: TemporaryTargetUtils): BspPanelComponent =
+    BspPanelComponent(
       targetIcon = project.assets.targetIcon,
       invalidTargetIcon = project.assets.errorTargetIcon,
       buildToolId = project.buildToolId,
       toolName = project.assets.presentableName,
       targets = temporaryTargetUtils.allTargetIds().mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) },
-      invalidTargets = invalidTargets,
+      invalidTargets = project.invalidTargets,
       searchBarPanel = searchBarPanel,
     ).apply {
       registerPopupHandler { LoadedTargetsMouseListener(it, project) }
     }
-  }
 
   private fun rerenderComponents() {
     val temporaryTargetUtils = project.temporaryTargetUtils
     searchBarPanel.clearAllListeners()
-    loadedTargetsPanel = loadedTargetsPanel.createNewWithTargets(targetFilter.getMatchingLoadedTargets(temporaryTargetUtils))
+    loadedTargetsPanel =
+      loadedTargetsPanel.createNewWithTargets(targetFilter.getMatchingLoadedTargets(temporaryTargetUtils), project.invalidTargets)
     setContent(loadedTargetsPanel.withScrollAndSearch())
   }
 
