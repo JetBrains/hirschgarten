@@ -107,8 +107,10 @@ class ProjectSyncService(
   }
 
   fun workspaceInvalidTargets(cancelChecker: CancelChecker): WorkspaceInvalidTargetsResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return WorkspaceInvalidTargetsResult(emptyList())
-    return bspMapper.workspaceInvalidTargets(project)
+    // TODO: BAZEL-1644
+    return WorkspaceInvalidTargetsResult(emptyList())
+//    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return WorkspaceInvalidTargetsResult(emptyList())
+//    return bspMapper.workspaceInvalidTargets(project)
   }
 
   fun workspaceBazelRepoMapping(cancelChecker: CancelChecker): WorkspaceBazelRepoMappingResult {
