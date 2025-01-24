@@ -1,8 +1,13 @@
 #!/bin/bash
 
-# Check if folder name is provided
-if [ $# -eq 0 ]; then
-	echo "Usage: $0 <folder_name> [private] [space_git_credentials]"
+# usage:
+#   ./script.sh <folder_name> [private] [space_git_credentials] [tag]
+#
+# if [tag] is provided, it overrides building/pushing date/latest tags
+
+# check if folder name is provided
+if [ $# -lt 1 ]; then
+	echo "usage: $0 <folder_name> [private] [space_git_credentials] [tag]"
 	exit 1
 fi
 
@@ -10,84 +15,99 @@ FOLDER_NAME=$1
 DATE_TAG=$(date +%d%m%y)
 PRIVATE=false
 SPACE_GIT_CREDENTIALS=""
+CUSTOM_TAG=""
 
-# Check if 'private' flag is passed
+# check if 'private' flag is passed
 if [[ "$2" == "private" ]]; then
 	PRIVATE=true
 	REGISTRY="registry.jetbrains.team/p/bazel/docker-private"
-
-	# Check if space_git_credentials is provided
-	if [ $# -eq 3 ]; then
+	# if space_git_credentials is provided
+	if [ $# -ge 3 ]; then
 		SPACE_GIT_CREDENTIALS=$3
+	fi
+	# if a custom tag is provided as the 4th arg
+	if [ $# -eq 4 ]; then
+		CUSTOM_TAG=$4
 	fi
 else
 	REGISTRY="registry.jetbrains.team/p/bazel/docker"
+	# if a custom tag is provided as the 3rd arg (no 'private' arg used)
+	if [ $# -eq 3 ]; then
+		CUSTOM_TAG=$3
+	fi
 fi
 
 IMAGE_NAME="hirschgarten-$FOLDER_NAME"
 FULL_IMAGE_NAME="$REGISTRY/$IMAGE_NAME"
 
-# Function to check if we're logged in
+# function to check login
 check_login() {
-	docker login $REGISTRY -u dummy -p dummy &>/dev/null
+	docker login "$REGISTRY" -u dummy -p dummy &>/dev/null
 	return $?
 }
 
-# Function to handle login
+# function to handle login
 handle_login() {
-	echo "Authentication required. Please log in:"
-	docker login $REGISTRY
+	echo "authentication required. please log in:"
+	docker login "$REGISTRY"
 	if [ $? -ne 0 ]; then
-		echo "Login failed. Exiting."
+		echo "login failed. exiting."
 		exit 1
 	fi
 }
 
-# Function to build the Docker image
+# function to build docker image
 build_image() {
-	local build_command="docker build"
+	local build_command="docker build --progress=plain"
 
 	if $PRIVATE && [ -n "$SPACE_GIT_CREDENTIALS" ]; then
 		build_command+=" --no-cache --secret id=space_git_credentials,src=<(echo \"$SPACE_GIT_CREDENTIALS\")"
 	fi
 
-	build_command+=" -t $FULL_IMAGE_NAME:$DATE_TAG ."
+	if [ -n "$CUSTOM_TAG" ]; then
+		build_command+=" -t $FULL_IMAGE_NAME:$CUSTOM_TAG ."
+	else
+		build_command+=" -t $FULL_IMAGE_NAME:$DATE_TAG ."
+	fi
 
-	if ! eval $build_command; then
-		echo "Docker build failed. Exiting."
+	if ! eval "$build_command"; then
+		echo "docker build failed. exiting."
 		exit 1
 	fi
 
-	# Tag the image with 'latest'
-	docker tag $FULL_IMAGE_NAME:$DATE_TAG $FULL_IMAGE_NAME:latest
+	# only tag as latest if custom tag wasn't specified
+	if [ -z "$CUSTOM_TAG" ]; then
+		docker tag "$FULL_IMAGE_NAME:$DATE_TAG" "$FULL_IMAGE_NAME:latest"
+	fi
 }
 
-# Function to push image
+# function to push image
 push_image() {
 	local tag=$1
-	if ! docker push $FULL_IMAGE_NAME:$tag; then
-		echo "Failed to push $FULL_IMAGE_NAME:$tag. Attempting to re-authenticate."
+	if ! docker push "$FULL_IMAGE_NAME:$tag"; then
+		echo "failed to push $FULL_IMAGE_NAME:$tag, re-authenticating..."
 		handle_login
-		if ! docker push $FULL_IMAGE_NAME:$tag; then
-			echo "Push failed again for $FULL_IMAGE_NAME:$tag. Exiting."
+		if ! docker push "$FULL_IMAGE_NAME:$tag"; then
+			echo "push failed again, exiting."
 			exit 1
 		fi
 	fi
 }
 
-# Main execution
+# main
 cd "$(dirname "$0")/$FOLDER_NAME" || exit 1
 
-# Check if we're logged in, if not, attempt to log in
 if ! check_login; then
 	handle_login
 fi
 
-# Build the Docker image
 build_image
 
-# Push the images
-push_image $DATE_TAG
-push_image "latest"
+if [ -n "$CUSTOM_TAG" ]; then
+	push_image "$CUSTOM_TAG"
+else
+	push_image "$DATE_TAG"
+	push_image "latest"
+fi
 
-echo "Docker image $IMAGE_NAME built and pushed successfully!"
+echo "docker image $IMAGE_NAME built and pushed successfully!"
