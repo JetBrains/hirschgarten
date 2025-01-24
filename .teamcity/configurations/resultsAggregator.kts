@@ -27,7 +27,7 @@ open class Aggregator(vcsRoot: GitVcsRoot) :
             github {
               authType =
                 token {
-                  token = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
+                  token = Utils.CredentialsStore.GitHubPassword
                 }
               filterAuthorRole = PullRequests.GitHubRoleFilter.EVERYBODY
             }

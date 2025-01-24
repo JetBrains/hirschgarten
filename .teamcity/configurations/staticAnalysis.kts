@@ -89,6 +89,7 @@ open class Analyze(
             additionalDockerArguments = """
                 -v %system.agent.persistent.cache%/plugins/intellij-bazel:/opt/idea/custom-plugins/intellij-bazel
                 -v %system.agent.persistent.cache%/plugins/intellij-bsp:/opt/idea/custom-plugins/intellij-bsp
+                -v %system.agent.persistent.cache%/.netrc:/root/.netrc
                 ${if (repo != null) {"-v %system.agent.persistent.cache%/$repo/qodana.yaml:%system.agent.persistent.cache%/$repo/qodana.yaml"} else {""}}
                 ${if (repo != null) {"-e QODANA_REMOTE_URL=\"%env.GIT_REPO_URL%\""} else {""}}
                 ${if (repo != null) {"-e QODANA_REVISION=\"%env.GIT_COMMIT%\""} else {""}}
@@ -129,7 +130,7 @@ open class Analyze(
       param("env.GIT_REPO_URL", "")
       param("env.GIT_COMMIT", "")
       params(this)
-      if (repo != null) {password("jetbrains.bazel.teamcity.token", "credentialsJSON:f47ac10b-58cc-4372-a567-0e02b2c3d479", label = "jetbrains.bazel.teamcity.token", description = "Bazel TCC token", display = ParameterDisplay.HIDDEN) }
+      if (repo != null) {password("jetbrains.bazel.teamcity.token", Utils.CredentialsStore.BazelTeamcityToken, label = "jetbrains.bazel.teamcity.token", description = "Bazel TCC token", display = ParameterDisplay.HIDDEN) }
     },
     dockerSupport = {
         loginToRegistry = on {
