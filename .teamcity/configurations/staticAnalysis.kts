@@ -67,6 +67,7 @@ open class Analyze(
                 git clone --depth 1 https://github.com/JetBrainsBazelBot/$repo %system.agent.persistent.cache%/$repo
               
                 cd %system.agent.persistent.cache%/$repo
+                
                 # Set commit hash
                 echo "##teamcity[setParameter name='env.GIT_COMMIT' value='${'$'}(git rev-parse HEAD)']"
                 echo %env.GIT_COMMIT%
@@ -75,6 +76,18 @@ open class Analyze(
                 echo "##teamcity[setParameter name='env.GIT_REPO_URL' value='${'$'}(git config --get remote.origin.url)']"
                 echo %env.GIT_REPO_URL%
               fi
+            """.trimIndent()
+          }
+        } else {
+          script {
+            name = "enable remcache $platform"
+            id = "enable_remcache_$platform"
+            scriptContent = """
+              #!/bin/bash
+              set -euxo
+
+              sed -i 's/:remotecache//g' ".cache.bazelrc"
+              sed -i 's/:nocacheupload//g' ".cache.bazelrc"
             """.trimIndent()
           }
         }
