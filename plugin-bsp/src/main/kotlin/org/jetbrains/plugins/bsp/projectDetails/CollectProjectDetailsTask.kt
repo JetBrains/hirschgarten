@@ -350,6 +350,7 @@ class CollectProjectDetailsTask(
     // This will be handled properly after this ticket:
     // https://youtrack.jetbrains.com/issue/BAZEL-426/Configure-JDK-using-workspace-model-API-instead-of-ProjectJdkTable
     project.temporaryTargetUtils.fireSyncListeners(targetListChanged)
+    SdkUtils.cleanUpInvalidJdks(project.bspProjectName)
     addBspFetchedJdks()
     addBspFetchedJavacOptions()
     addBspFetchedScalaSdks()
