@@ -204,6 +204,12 @@ class ProjectResolver(
         var suggestedTargetShardSize: Int = workspaceContext.targetShardSize.value
         while (remainingShardedTargetsSpecs.isNotEmpty()) {
           cancelChecker.checkCanceled()
+          if (featureFlags.bazelShutDownBeforeShardBuild) {
+            // Prevent memory leak by forcing Bazel to shut down before it builds a shard
+            // This may cause the build to become slower, but it is necessary, at least before this issue is solved
+            // https://github.com/bazelbuild/bazel/issues/19412
+            runBazelShutDown(cancelChecker)
+          }
           val shardedTargetsSpec = remainingShardedTargetsSpecs.removeFirst()
           val shardName = "shard $shardNumber of ${shardNumber + remainingShardedTargetsSpecs.size}"
           bspClientLogger.message("\nBuilding $shardName ...")
@@ -256,6 +262,17 @@ class ProjectResolver(
       }
 
     return res
+  }
+
+  private fun runBazelShutDown(cancelChecker: CancelChecker) {
+    bazelRunner.run {
+      val command =
+        buildBazelCommand {
+          shutDown()
+        }
+      runBazelCommand(command, serverPidFuture = null)
+        .waitAndGetResult(cancelChecker)
+    }
   }
 
   fun releaseMemory() {

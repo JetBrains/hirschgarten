@@ -330,6 +330,8 @@ abstract class BazelCommand(val bazelBinary: String) {
 
   class Clean(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("clean"))
 
+  class ShutDown(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("shutdown"))
+
   class ModGraph(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "graph"))
 
   class ModPath(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "path"))
