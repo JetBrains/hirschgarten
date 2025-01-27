@@ -12,7 +12,6 @@ from [Bazel Plugin for Intellij](https://ij.bazel.build/docs/project-views.html)
 > In general, you can start with just ~~directories and~~ targets and add more sections as you want to further tweak
 > your IDE workspace.
 
-
 ## Usage
 
 **Note:** We will be changing this mechanism in future releases.
@@ -123,7 +122,8 @@ No directories included.
 
 A flag specifying if targets should be derived from list of directories in directories section.
 
-Flag is boolean value, so it can take either true or false. In the first case targets will be derived from directories, in the second they won't.
+Flag is boolean value, so it can take either true or false. In the first case targets will be derived from directories,
+in the second they won't.
 
 ##### example:
 
@@ -186,7 +186,7 @@ enable shard sync, split and build targets in batches to avoid Bazel OOM.
 
 ##### default
 
-default to `true`.
+default to `false` due to potential [memory leak issue](https://github.com/bazelbuild/bazel/issues/19412) with Bazel.
 
 ---
 
