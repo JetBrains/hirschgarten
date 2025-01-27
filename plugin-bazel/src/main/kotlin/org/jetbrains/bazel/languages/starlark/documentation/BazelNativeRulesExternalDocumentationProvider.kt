@@ -33,7 +33,7 @@ class BazelNativeRulesDocumentationTarget(val element: PsiElement, private val o
 
 class BazelNativeRulesExternalDocumentationProvider : PsiDocumentationTargetProvider {
   override fun documentationTarget(element: PsiElement, originalElement: PsiElement?): DocumentationTarget? {
-    return if (element.language.`is`(StarlarkLanguage) || element.language.`is`(BazelrcLanguage)) {
+    return if (element.language.`is`(StarlarkLanguage)) {
       BazelNativeRulesDocumentationTarget(element, originalElement)
     } else {
       null
