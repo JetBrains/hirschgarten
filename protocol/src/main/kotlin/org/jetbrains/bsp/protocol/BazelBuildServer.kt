@@ -51,4 +51,7 @@ interface BazelBuildServer {
 
   @JsonRequest("workspace/repoMapping")
   fun workspaceBazelRepoMapping(): CompletableFuture<WorkspaceBazelRepoMappingResult>
+
+  @JsonRequest("workspace/bazelBinPath")
+  fun workspaceBazelBinPath(): CompletableFuture<WorkspaceBazelBinPathResult>
 }
