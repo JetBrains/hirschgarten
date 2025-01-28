@@ -37,6 +37,7 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.server.model.Language
@@ -48,6 +49,7 @@ import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
+import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -61,6 +63,7 @@ class ProjectSyncService(
   private val firstPhaseTargetToBspMapper: FirstPhaseTargetToBspMapper,
   private val projectProvider: ProjectProvider,
   private val clientCapabilities: BuildClientCapabilities,
+  private val bazelInfo: BazelInfo,
 ) {
   fun initialize(): InitializeBuildResult = bspMapper.initializeServer(Language.all())
 
@@ -121,6 +124,9 @@ class ProjectSyncService(
     val project = projectProvider.get(cancelChecker)
     return bspMapper.workspaceBazelRepoMapping(project)
   }
+
+  fun workspaceBazelBinPath(cancelChecker: CancelChecker): WorkspaceBazelBinPathResult =
+    WorkspaceBazelBinPathResult(bazelInfo.bazelBin.toString())
 
   fun buildTargetSources(cancelChecker: CancelChecker, sourcesParams: SourcesParams): SourcesResult {
     val project = projectProvider.get(cancelChecker)

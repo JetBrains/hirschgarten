@@ -2,6 +2,7 @@ load(
     "@rules_intellij//build_defs:build_defs.bzl",
     "intellij_plugin",
     "intellij_plugin_library",
+    "optional_plugin_dep",
     "plugin_deploy_zip",
     "repackaged_files",
     "stamped_plugin_xml",
@@ -20,9 +21,17 @@ define_kt_toolchain(
     language_version = "1.9",  # "1.1", "1.2", "1.3", "1.4", "1.5" "1.6", "1.7", "1.8", or "1.9"
 )
 
+optional_plugin_dep(
+    name = "bazel_with_python",
+    module = ["com.intellij.modules.python"],
+    plugin_xml = "//plugin-bazel/src:main/resources/META-INF/bazel-withPython.xml",
+)
+
 intellij_plugin_library(
     name = "plugin_library",
-    optional_plugin_deps = [],
+    optional_plugin_deps = [
+        ":bazel_with_python",
+    ],
     plugin_deps = ["com.intellij.modules.platform"],
     plugin_xmls = [
         "//plugin-bazel/src:main/resources/META-INF/base.xml",

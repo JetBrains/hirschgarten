@@ -3,6 +3,7 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 exports_files([
     "main/resources/META-INF/base.xml",
+    "main/resources/META-INF/bazel-withPython.xml",
     "test/resources/META-INF/bazel-ide-starter-test.xml",
 ])
 
@@ -37,6 +38,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/hotswap",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui",

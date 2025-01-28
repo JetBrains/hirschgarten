@@ -35,6 +35,7 @@
         <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.BazelBinPathSyncHook"/>
 
         <defaultProjectSyncHooksDisabler
                 implementation="org.jetbrains.bazel.flow.sync.BazelDefaultProjectSyncHooksDisabler"/>
