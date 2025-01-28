@@ -228,6 +228,7 @@ class CppProjectSync : ProjectSyncHook {
 
 
   fun getDeclaredLanguageKind(project: Project, sourceOrHeaderFile: VirtualFile): OCLanguageKind? {
+    return  CLanguageKind.CPP
     val fileName = sourceOrHeaderFile.name
     if (OCFileTypeHelpers.isSourceFile(fileName)) {
       return getLanguageKind(sourceOrHeaderFile)

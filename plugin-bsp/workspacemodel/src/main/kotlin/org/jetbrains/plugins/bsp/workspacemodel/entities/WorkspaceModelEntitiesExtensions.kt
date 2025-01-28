@@ -9,6 +9,8 @@ public fun LanguageIds.includesJava(): Boolean = contains("java")
 public fun LanguageIds.includesScala(): Boolean = contains("scala")
 
 public fun LanguageIds.includesAndroid(): Boolean = contains("android")
+public fun LanguageIds.includesCPP(): Boolean = contains("cpp")
+
 
 public fun LanguageIds.includesJavaOrScala(): Boolean = includesJava() || includesScala()
 

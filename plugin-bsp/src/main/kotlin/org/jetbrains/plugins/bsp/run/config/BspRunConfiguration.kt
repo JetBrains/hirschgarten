@@ -60,7 +60,9 @@ class BspRunConfiguration internal constructor(
     }
   }
 
-  override fun getConfigurationEditor(): BspRunConfigurationEditor = BspRunConfigurationEditor(this)
+  override fun getConfigurationEditor(): BspRunConfigurationEditor {
+    return BspRunConfigurationEditor(this)
+  }
 
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? =
     handler?.getRunProfileState(executor, environment)

@@ -93,7 +93,24 @@ class ExecuteService(
   fun compile(cancelChecker: CancelChecker, params: CompileParams): CompileResult =
     if (params.targets.isNotEmpty()) {
       val result = build(cancelChecker, params.targets, params.originId, params.arguments ?: emptyList())
-      CompileResult(result.bspStatusCode).apply { originId = params.originId }
+
+      val command=bazelRunner.buildBazelCommand{
+        cquery {
+          options.add(params.targets.first().label().toString())
+          options.add("--output=files")
+          params.arguments.forEach{options.add(it.toString())}
+        }
+      }
+
+      val bazelProcessResult =
+        bazelRunner
+          .runBazelCommand(
+            command,
+            originId = params.originId,
+            serverPidFuture = null,
+          ).waitAndGetResult(cancelChecker)
+
+      CompileResult(result.bspStatusCode).apply { originId = params.originId }.apply { data=bazelProcessResult.stdout.trim() }
     } else {
       CompileResult(StatusCode.ERROR).apply { originId = params.originId }
     }

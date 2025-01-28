@@ -16,6 +16,7 @@ kt_jvm_library(
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/impl",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/intellij",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/jvm",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/gdb",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/kotlin",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/performance",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/performanceImpl",

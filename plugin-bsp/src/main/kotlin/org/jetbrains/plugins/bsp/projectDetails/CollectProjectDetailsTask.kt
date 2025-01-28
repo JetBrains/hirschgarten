@@ -27,8 +27,7 @@ import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
-import org.jetbrains.kotlin.analysis.api.platform.analysisMessageBus
-import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinModificationTopics
+
 import org.jetbrains.plugins.bsp.android.AndroidSdk
 import org.jetbrains.plugins.bsp.android.AndroidSdkGetterExtension
 import org.jetbrains.plugins.bsp.android.androidSdkGetterExtension
@@ -103,28 +102,28 @@ class CollectProjectDetailsTask(
       }
 
     progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
-      calculateAllUniqueJdkInfosSubtask(projectDetails)
-      uniqueJavaHomes.orEmpty().also {
-        if (it.isNotEmpty()) {
-          projectDetails.defaultJdkName = project.bspProjectName.projectNameToJdkName(it.first())
-        } else {
-          projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
-        }
-      }
-      project.defaultJdkName = projectDetails.defaultJdkName
+//      calculateAllUniqueJdkInfosSubtask(projectDetails)
+//      uniqueJavaHomes.orEmpty().also {
+//        if (it.isNotEmpty()) {
+//          projectDetails.defaultJdkName = project.bspProjectName.projectNameToJdkName(it.first())
+//        } else {
+//          projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
+//        }
+//      }
+//      project.defaultJdkName = projectDetails.defaultJdkName
     }
 
-    if (scalaSdkExtensionExists()) {
-      progressReporter.indeterminateStep(text = "Calculating all unique scala sdk infos") {
-        calculateAllScalaSdkInfosSubtask(projectDetails)
-      }
-    }
-
-    if (BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
-      progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
-        calculateAllAndroidSdkInfosSubtask(projectDetails)
-      }
-    }
+//    if (scalaSdkExtensionExists()) {
+//      progressReporter.indeterminateStep(text = "Calculating all unique scala sdk infos") {
+//        calculateAllScalaSdkInfosSubtask(projectDetails)
+//      }
+//    }
+//
+//    if (BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
+//      progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
+//        calculateAllAndroidSdkInfosSubtask(projectDetails)
+//      }
+//    }
 
     progressReporter.sizedStep(workSize = 25, text = BspPluginBundle.message("progress.bar.update.internal.model")) {
       updateInternalModelSubtask(projectDetails, syncScope)
@@ -350,13 +349,13 @@ class CollectProjectDetailsTask(
     // This will be handled properly after this ticket:
     // https://youtrack.jetbrains.com/issue/BAZEL-426/Configure-JDK-using-workspace-model-API-instead-of-ProjectJdkTable
     project.temporaryTargetUtils.fireSyncListeners(targetListChanged)
-    addBspFetchedJdks()
-    addBspFetchedJavacOptions()
-    addBspFetchedScalaSdks()
+//    addBspFetchedJdks()
+//    addBspFetchedJavacOptions()
+//    addBspFetchedScalaSdks()
 
-    if (BspFeatureFlags.isAndroidSupportEnabled) {
-      addBspFetchedAndroidSdks()
-    }
+//    if (BspFeatureFlags.isAndroidSupportEnabled) {
+//      addBspFetchedAndroidSdks()
+//    }
 
     VirtualFileManager.getInstance().asyncRefresh()
     project.refreshKotlinHighlighting()
@@ -426,7 +425,7 @@ class CollectProjectDetailsTask(
    */
   private suspend fun Project.refreshKotlinHighlighting() =
     writeAction {
-      analysisMessageBus.syncPublisher(KotlinModificationTopics.GLOBAL_MODULE_STATE_MODIFICATION).onModification()
+
     }
 
   private fun checkOverlappingSources() {
