@@ -7,7 +7,6 @@ import ch.epfl.scala.bsp4j.InverseSourcesParams
 import ch.epfl.scala.bsp4j.InverseSourcesResult
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.ide.impl.isTrusted
-import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectLocator
@@ -31,7 +30,10 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import com.intellij.util.withScheme
 import com.intellij.workspaceModel.ide.legacyBridge.impl.java.JAVA_SOURCE_ROOT_ENTITY_TYPE_ID
+import com.intellij.workspaceModel.ide.toPath
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import org.jetbrains.kotlin.config.KOTLIN_SOURCE_ROOT_TYPE_ID
@@ -45,6 +47,7 @@ import org.jetbrains.plugins.bsp.sync.status.BspSyncStatusService
 import org.jetbrains.plugins.bsp.target.TargetUtils
 import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.utils.isSourceFile
+import org.jetbrains.plugins.bsp.utils.safeCastToURI
 
 class AssignFileToModuleListener : BulkFileListener {
   private val pendingEvents = mutableMapOf<Project, MutableList<VFileEvent>>()
@@ -52,8 +55,14 @@ class AssignFileToModuleListener : BulkFileListener {
   override fun after(events: MutableList<out VFileEvent>) {
     // if the list has multiple events, it means an external operation (like Git) and resync is probably required anyway
     events.singleOrNull()?.let {
-      val file = it.getAffectedFile()
-      if (file?.isSourceFile() == true) {
+      val file = it.getAffectedFile() ?: return
+      val isSource =
+        if (it is VFileDeleteEvent) {
+          file.path.safeCastToURI().isSourceFile() // file does not exist any more, so it is not a source itself
+        } else {
+          file.isSourceFile()
+        }
+      if (isSource) {
         file.getRelatedProjects().forEach { project -> project.processWithDelay(it) }
       }
     }
@@ -73,6 +82,9 @@ class AssignFileToModuleListener : BulkFileListener {
   }
 }
 
+private fun VFileEvent.getNewFile(): VirtualFile? =
+  if (this !is VFileDeleteEvent) getAffectedFile() else null
+
 private fun VFileEvent.getAffectedFile(): VirtualFile? {
   val file =
     when (this) {
@@ -85,6 +97,16 @@ private fun VFileEvent.getAffectedFile(): VirtualFile? {
     }
   return if (file?.isDirectory == false) file else null
 }
+
+private fun VFileEvent.getOldFilePath(): String? =
+  when (this) {
+    is VFileCreateEvent -> null // explicit branch for code clarity
+    is VFileCopyEvent -> null // explicit branch for code clarity
+    is VFileDeleteEvent -> this.path
+    is VFileMoveEvent -> this.oldPath
+    is VFilePropertyChangeEvent -> if (this.propertyName == VirtualFile.PROP_NAME) this.oldPath else null
+    else -> null
+  }
 
 private fun VirtualFile.getRelatedProjects(): List<Project> {
   val projectManager = ProjectManager.getInstance()
@@ -102,86 +124,86 @@ private fun VFileEvent.process(project: Project) {
   val workspaceModel = WorkspaceModel.getInstance(project)
   val storage = workspaceModel.currentSnapshot
   val moduleNameProvider = project.findNameProvider() ?: return
-  val file = this.getAffectedFile() ?: return
   val targetUtils = project.targetUtils
-  runInBackgroundWithProgress(project, file.name) {
-    when (this) {
-      is VFileCreateEvent ->
-        processFileCreated(file, project, workspaceModel, targetUtils, storage, moduleNameProvider)
-      is VFileCopyEvent ->
-        processFileCreated(file, project, workspaceModel, targetUtils, storage, moduleNameProvider)
-      is VFileDeleteEvent ->
-        processFileRemoved(file, project, workspaceModel, targetUtils, storage, moduleNameProvider)
-      is VFileMoveEvent ->
-        processFileMoved(file, project, workspaceModel, targetUtils, storage, moduleNameProvider)
-      is VFilePropertyChangeEvent ->
-        processFileMoved(file, project, workspaceModel, targetUtils, storage, moduleNameProvider)
+
+  val newFile = this.getNewFile()
+  val oldFilePath = this.getOldFilePath()
+
+  runInBackgroundWithProgress(project) {
+    oldFilePath?.let {
+      processFileRemoved(
+        oldFilePath = it,
+        newFile = newFile,
+        project = project,
+        workspaceModel = workspaceModel,
+        targetUtils = targetUtils,
+        storage = storage,
+        moduleNameProvider = moduleNameProvider
+      )
     }
-  }
+    newFile?.let {
+      processFileCreated(
+        newFile = it,
+        project = project,
+        workspaceModel = workspaceModel,
+        targetUtils = targetUtils,
+        storage = storage,
+        moduleNameProvider = moduleNameProvider
+      )
+    }
+  }.invokeOnCompletion { targetUtils.fireSyncListeners(false) }
 }
 
 private fun runInBackgroundWithProgress(
   project: Project,
-  fileName: String,
   action: suspend () -> Unit,
-) {
+): Job =
   BspCoroutineService.getInstance(project).start {
-    withBackgroundProgress(project, BspPluginBundle.message("file.change.processing.title", fileName)) {
+    withBackgroundProgress(project, BspPluginBundle.message("file.change.processing.title")) {
       action()
     }
   }
-}
 
 private suspend fun processFileCreated(
-  file: VirtualFile,
+  newFile: VirtualFile,
   project: Project,
   workspaceModel: WorkspaceModel,
   targetUtils: TargetUtils,
   storage: ImmutableEntityStorage,
   moduleNameProvider: TargetNameReformatProvider,
 ) {
-  val url = file.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
-  getTargetsForFile(project, url)
-    ?.mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
-    ?.forEach { url.addToModule(workspaceModel, it, file.extension) }
+  val url = newFile.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
+  val uri = url.toPath().toUri()
+  queryTargetsForFile(project, url)?.let {
+    val modules = it.mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
+    modules.forEach { url.addToModule(workspaceModel, it, newFile.extension) }
+    project.temporaryTargetUtils.addFileToTargetIdEntry(uri, it)
+  }
 }
 
 private suspend fun processFileRemoved(
-  file: VirtualFile,
+  oldFilePath: String,
+  newFile: VirtualFile?,
   project: Project,
   workspaceModel: WorkspaceModel,
   targetUtils: TargetUtils,
   storage: ImmutableEntityStorage,
   moduleNameProvider: TargetNameReformatProvider,
 ) {
-  val url = file.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
-  targetUtils
-    .getTargetsForFile(file)
+  val oldUrl = workspaceModel.getVirtualFileUrlManager().fromPath(oldFilePath)
+  val oldUri = oldFilePath.safeCastToURI().withScheme("file")
+  val newUrl = newFile?.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
+  val modules = targetUtils
+    .getTargetsForURI(oldUri)
     .mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
-    .forEach {
-      url.removeFromModule(workspaceModel, it)
-    }
+  modules.forEach {
+    oldUrl.removeFromModule(workspaceModel, it)
+    newUrl?.removeFromModule(workspaceModel, it) // IntelliJ might have already changed the content root's path to the new one
+  }
+  project.temporaryTargetUtils.removeFileToTargetIdEntry(oldUri)
 }
 
-private suspend fun processFileMoved(
-  file: VirtualFile,
-  project: Project,
-  workspaceModel: WorkspaceModel,
-  targetUtils: TargetUtils,
-  storage: ImmutableEntityStorage,
-  moduleNameProvider: TargetNameReformatProvider,
-) {
-  val url = file.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
-  val inverseSourcesResult = getTargetsForFile(project, url) ?: return
-  val applicableModules =
-    inverseSourcesResult
-      .mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
-      .toSet()
-
-  applicableModules.forEach { url.addToModule(workspaceModel, it, file.extension) }
-}
-
-private suspend fun getTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<BuildTargetIdentifier>? =
+private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<BuildTargetIdentifier>? =
   if (!BspSyncStatusService.getInstance(project).isSyncInProgress) {
     try {
       askForInverseSources(project, fileUrl)
@@ -263,11 +285,9 @@ private suspend fun updateContentRoots(
   module: ModuleEntity,
   updater: (List<ContentRootEntity.Builder>) -> List<ContentRootEntity.Builder>,
 ) {
-  writeAction {
-    workspaceModel.updateProjectModel("File changes processing") {
-      it.modifyModuleEntity(module) {
-        contentRoots = updater(contentRoots)
-      }
+  workspaceModel.update("File changes processing") {
+    it.modifyModuleEntity(module) {
+      contentRoots = updater(contentRoots)
     }
   }
 }
