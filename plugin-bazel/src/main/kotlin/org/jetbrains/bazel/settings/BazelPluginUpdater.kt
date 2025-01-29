@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.settings
 
+import com.intellij.ide.plugins.IdeaPluginDescriptor
 import com.intellij.ide.plugins.IdeaPluginDescriptorImpl
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.extensions.PluginId
+import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.updateSettings.impl.UpdateChecker
 import com.intellij.openapi.updateSettings.impl.UpdateSettings
 
@@ -11,6 +13,29 @@ const val BSP_PLUGIN_ID = "org.jetbrains.bsp"
 
 @Suppress("UnstableApiUsage")
 internal object BazelPluginUpdater {
+  fun verifyPluginVersionChannel(pluginDescriptor: IdeaPluginDescriptor) {
+    val pluginId = pluginDescriptor.pluginId.idString
+    if (pluginId != BAZEL_PLUGIN_ID && pluginId != BSP_PLUGIN_ID) return
+    // dev version
+    if (pluginDescriptor.version == "9999.9.9") return
+    val updateChannelFromSettings = BazelApplicationSettingsService.getInstance().settings.updateChannel
+    val updateChannelFromPlugin = pluginDescriptor.toUpdateChannel()
+    val pluginDisplayName = pluginDescriptor.toPluginDisplayName()
+    if (updateChannelFromSettings != updateChannelFromPlugin) {
+      val result =
+        Messages.showDialog(
+          "$pluginDisplayName version ${pluginDescriptor.version} is not compatible with ${updateChannelFromSettings.displayName} channel. Do you want to update the plugin?",
+          "$pluginDisplayName Version Mismatch",
+          arrayOf("Yes", "No"),
+          0,
+          Messages.getQuestionIcon(),
+        )
+      when (result) {
+        0 -> updatePlugins()
+      }
+    }
+  }
+
   fun updatePlugins() {
     UpdateChecker.updateAndShowResult(null, UpdateSettings.getInstance())
   }
@@ -55,4 +80,18 @@ internal object BazelPluginUpdater {
     PluginManagerCore.getPlugin(getPluginId(id)) as? IdeaPluginDescriptorImpl
 
   private fun getPluginId(pluginIdString: String): PluginId? = PluginId.findId(pluginIdString)
+
+  private fun IdeaPluginDescriptor.toUpdateChannel(): UpdateChannel =
+    when {
+      version.contains("-nightly", ignoreCase = true) -> UpdateChannel.NIGHTLY
+      else -> UpdateChannel.RELEASE
+    }
+
+  private fun IdeaPluginDescriptor.toPluginDisplayName(): String =
+    when (this.pluginId.idString) {
+      BAZEL_PLUGIN_ID -> "Bazel Plugin"
+      BSP_PLUGIN_ID -> "BSP Plugin"
+      // just for completeness
+      else -> ""
+    }
 }

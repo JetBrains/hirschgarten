@@ -238,6 +238,9 @@
                      description="Force Bazel to shut down before each shard build to prevent Bazel memory leak issue"
                      key="bazel.shutdown.before.shard.build"/>
         <configurationType implementation="org.jetbrains.bazel.run.BazelRunConfigurationType"/>
+
+        <applicationInitializedListener
+                implementation="org.jetbrains.bazel.settings.BazelApplicationInitializedListener"/>
     </extensions>
 
     <actions>
