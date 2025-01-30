@@ -45,6 +45,7 @@ class DependencySourcesItemToIntermediateLibraryDependencyTransformerTest {
     val expectedIntermediateLibraryDependency =
       IntermediateLibraryDependency(
         libraryName = "BSP: file:///dependency/test/test-1.0.0.jar",
+        exported = true,
       )
 
     librariesDependencies shouldContainExactlyInAnyOrder listOf(expectedIntermediateLibraryDependency)
@@ -78,14 +79,17 @@ class DependencySourcesItemToIntermediateLibraryDependencyTransformerTest {
     val expectedIntermediateLibraryDependency1 =
       IntermediateLibraryDependency(
         libraryName = "BSP: file:///dependency/test1/test1-1.0.0.jar",
+        exported = true,
       )
     val expectedIntermediateLibraryDependency2 =
       IntermediateLibraryDependency(
         libraryName = "BSP: file:///dependency/test2/test2-1.0.0.jar",
+        exported = true,
       )
     val expectedIntermediateLibraryDependency3 =
       IntermediateLibraryDependency(
         libraryName = "BSP: file:///dependency/test3/test3-1.0.0.jar",
+        exported = true,
       )
 
     librariesDependencies shouldContainExactlyInAnyOrder
@@ -137,14 +141,17 @@ class DependencySourcesItemToIntermediateLibraryDependencyTransformerTest {
     val expectedIntermediateLibraryDependency1 =
       IntermediateLibraryDependency(
         libraryName = "BSP: file:///dependency/test1/test1-1.0.0.jar",
+        exported = true,
       )
     val expectedIntermediateLibraryDependency2 =
       IntermediateLibraryDependency(
         libraryName = "BSP: file:///dependency/test2/test2-1.0.0.jar",
+        exported = true,
       )
     val expectedIntermediateLibraryDependency3 =
       IntermediateLibraryDependency(
         libraryName = "BSP: file:///dependency/test3/test3-1.0.0.jar",
+        exported = true,
       )
 
     librariesDependencies shouldContainExactlyInAnyOrder

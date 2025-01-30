@@ -19,6 +19,7 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.protocol.Dependency
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.plugins.bsp.magicmetamodel.DefaultNameProvider
@@ -164,8 +165,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         libraryDependencies = null,
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("module2"),
-            BuildTargetIdentifier("module3"),
+            Dependency(BuildTargetIdentifier("module2"), exported = true),
+            Dependency(BuildTargetIdentifier("module3"), exported = false),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -190,14 +191,14 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         modulesDependencies =
           listOf(
-            IntermediateModuleDependency("module2"),
-            IntermediateModuleDependency("module3"),
-            IntermediateModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath)),
+            IntermediateModuleDependency("module2", exported = true),
+            IntermediateModuleDependency("module3", exported = false),
+            IntermediateModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath), exported = true),
           ),
         librariesDependencies =
           listOf(
-            IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
-            IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar"),
+            IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar", exported = true),
+            IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar", exported = true),
           ),
       )
 
@@ -325,12 +326,12 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         outputPathUris = listOf(),
         libraryDependencies =
           listOf(
-            BuildTargetIdentifier("@maven//:lib1"),
+            Dependency(BuildTargetIdentifier("@maven//:lib1"), exported = true),
           ),
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("module2"),
-            BuildTargetIdentifier("module3"),
+            Dependency(BuildTargetIdentifier("module2"), exported = false),
+            Dependency(BuildTargetIdentifier("module3"), exported = true),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -354,17 +355,17 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         modulesDependencies =
           listOf(
-            IntermediateModuleDependency("module2"),
-            IntermediateModuleDependency("module3"),
+            IntermediateModuleDependency("module2", exported = false),
+            IntermediateModuleDependency("module3", exported = true),
           ),
         librariesDependencies =
           listOf(
-            IntermediateLibraryDependency("@maven//:lib1", true),
+            IntermediateLibraryDependency("@maven//:lib1", true, exported = true),
           ),
         associates =
           listOf(
-            IntermediateModuleDependency("//target4"),
-            IntermediateModuleDependency("//target5"),
+            IntermediateModuleDependency("//target4", exported = false),
+            IntermediateModuleDependency("//target5", exported = false),
           ),
       )
 
@@ -487,8 +488,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         libraryDependencies = null,
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("module2"),
-            BuildTargetIdentifier("module3"),
+            Dependency(BuildTargetIdentifier("module2"), exported = true),
+            Dependency(BuildTargetIdentifier("module3"), exported = false),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -560,7 +561,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         libraryDependencies = null,
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("module3"),
+            Dependency(BuildTargetIdentifier("module3"), exported = true),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -587,14 +588,14 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         modulesDependencies =
           listOf(
-            IntermediateModuleDependency("module2"),
-            IntermediateModuleDependency("module3"),
-            IntermediateModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath)),
+            IntermediateModuleDependency("module2", exported = true),
+            IntermediateModuleDependency("module3", exported = false),
+            IntermediateModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath), exported = true),
           ),
         librariesDependencies =
           listOf(
-            IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
-            IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar"),
+            IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar", exported = true),
+            IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar", exported = true),
           ),
       )
 
@@ -666,11 +667,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         type = ModuleTypeId("JAVA_MODULE"),
         modulesDependencies =
           listOf(
-            IntermediateModuleDependency("module3"),
+            IntermediateModuleDependency("module3", exported = true),
           ),
         librariesDependencies =
           listOf(
-            IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
+            IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar", exported = true),
           ),
       )
 

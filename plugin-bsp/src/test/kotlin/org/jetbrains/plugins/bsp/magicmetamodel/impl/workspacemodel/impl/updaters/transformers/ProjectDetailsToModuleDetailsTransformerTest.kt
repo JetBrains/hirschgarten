@@ -10,6 +10,8 @@ import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.protocol.DependenciesExportedItem
+import org.jetbrains.bsp.protocol.Dependency
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.junit.jupiter.api.DisplayName
@@ -35,6 +37,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targets = setOf(target),
         sources = emptyList(),
         resources = emptyList(),
+        dependenciesExported = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         libraries = null,
@@ -43,7 +46,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       )
 
     // when
-    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, LibraryGraph(emptyList()))
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, LibraryGraph(emptyList(), includesTransitive = false))
     val actualModuleDetails = transformer.moduleDetailsForTargetId(target.id)
 
     // then
@@ -106,6 +109,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targets = setOf(target),
         sources = listOf(targetSources),
         resources = listOf(targetResources),
+        dependenciesExported = emptyList(),
         dependenciesSources = listOf(targetDependencySources),
         javacOptions = listOf(javacOptions),
         libraries = emptyList(),
@@ -114,7 +118,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       )
 
     // when
-    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, LibraryGraph(emptyList()))
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, LibraryGraph(emptyList(), includesTransitive = false))
     val actualModuleDetails = transformer.moduleDetailsForTargetId(target.id)
 
     // then
@@ -244,12 +248,33 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         ),
       )
 
+    val dependenciesExported =
+      listOf(
+        DependenciesExportedItem(
+          target = target1Id,
+          dependenciesExported = listOf(false),
+        ),
+        DependenciesExportedItem(
+          target = target2Id,
+          dependenciesExported = emptyList(),
+        ),
+        DependenciesExportedItem(
+          target = target3Id,
+          dependenciesExported = listOf(true),
+        ),
+        DependenciesExportedItem(
+          target = target4Id,
+          dependenciesExported = listOf(false),
+        ),
+      )
+
     val projectDetails =
       ProjectDetails(
         targetIds = listOf(target1Id, target3Id, target2Id, target4Id),
         targets = setOf(target2, target1, target3, target4),
         sources = listOf(target3Sources, target2Sources1, target1Sources, target2Sources2, target4Sources),
         resources = listOf(target1Resources, target2Resources),
+        dependenciesExported = dependenciesExported,
         dependenciesSources = listOf(target2DependencySources, target1DependencySources),
         javacOptions = listOf(target3JavacOptionsItem, target1JavacOptionsItem),
         libraries = emptyList(),
@@ -258,7 +283,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       )
 
     // when
-    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, LibraryGraph(emptyList()))
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, LibraryGraph(emptyList(), includesTransitive = false))
     val actualModuleDetails1 = transformer.moduleDetailsForTargetId(target1.id)
     val actualModuleDetails2 = transformer.moduleDetailsForTargetId(target2.id)
     val actualModuleDetails3 = transformer.moduleDetailsForTargetId(target3.id)
@@ -275,7 +300,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         scalacOptions = null,
         outputPathUris = emptyList(),
         libraryDependencies = emptyList(),
-        moduleDependencies = listOf(target2Id),
+        moduleDependencies = listOf(Dependency(target2Id, exported = false)),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
@@ -303,7 +328,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         scalacOptions = null,
         outputPathUris = emptyList(),
         libraryDependencies = emptyList(),
-        moduleDependencies = listOf(target2Id),
+        moduleDependencies = listOf(Dependency(target2Id, exported = true)),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
@@ -317,7 +342,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         scalacOptions = null,
         outputPathUris = emptyList(),
         libraryDependencies = emptyList(),
-        moduleDependencies = listOf(target1Id),
+        moduleDependencies = listOf(Dependency(target1Id, exported = false)),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )

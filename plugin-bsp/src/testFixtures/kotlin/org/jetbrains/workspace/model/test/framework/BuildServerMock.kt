@@ -48,6 +48,8 @@ import ch.epfl.scala.bsp4j.TestResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
+import org.jetbrains.bsp.protocol.DependenciesExportedParams
+import org.jetbrains.bsp.protocol.DependenciesExportedResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
@@ -103,6 +105,7 @@ class BuildServerMock(
   private val pythonOptionsResult: PythonOptionsResult? = null,
   private val rustWorkspaceResult: RustWorkspaceResult? = null,
   private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = null,
+  private val buildTargetDependenciesExported: DependenciesExportedResult? = null,
 ) : JoinedBuildServer {
   override fun buildInitialize(initializeBuildParams: InitializeBuildParams): CompletableFuture<InitializeBuildResult> =
     wrapInFuture(initializeBuildResult)
@@ -217,6 +220,9 @@ class BuildServerMock(
 
   override fun workspaceBazelRepoMapping(): CompletableFuture<WorkspaceBazelRepoMappingResult> =
     wrapInFuture(workspaceBazelRepoMappingResult)
+
+  override fun buildTargetDependenciesExported(params: DependenciesExportedParams): CompletableFuture<DependenciesExportedResult> =
+    wrapInFuture(buildTargetDependenciesExported)
 
   private fun <T> wrapInFuture(value: T?): CompletableFuture<T> =
     value?.let { CompletableFuture.completedFuture(it) } ?: CompletableFuture.failedFuture(Exception("mock value is null"))

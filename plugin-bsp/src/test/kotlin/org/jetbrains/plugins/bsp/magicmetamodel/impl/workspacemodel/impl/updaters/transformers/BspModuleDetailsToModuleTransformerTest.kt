@@ -11,6 +11,7 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.protocol.Dependency
 import org.jetbrains.plugins.bsp.magicmetamodel.DefaultNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toDefaultTargetsMap
@@ -86,8 +87,8 @@ class BspModuleDetailsToModuleTransformerTest {
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("//target2"),
-            BuildTargetIdentifier("//target3"),
+            Dependency(BuildTargetIdentifier("//target2"), exported = true),
+            Dependency(BuildTargetIdentifier("//target3"), exported = false),
           ),
         libraryDependencies = null,
         scalacOptions = null,
@@ -113,20 +114,22 @@ class BspModuleDetailsToModuleTransformerTest {
           listOf(
             IntermediateModuleDependency(
               moduleName = "//target2",
+              exported = true,
             ),
             IntermediateModuleDependency(
               moduleName = "//target3",
+              exported = false,
             ),
           ),
         librariesDependencies =
           listOf(
             IntermediateLibraryDependency(
               libraryName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-              false,
+              exported = true,
             ),
             IntermediateLibraryDependency(
               libraryName = "BSP: file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
-              false,
+              exported = true,
             ),
           ),
       )
@@ -164,12 +167,12 @@ class BspModuleDetailsToModuleTransformerTest {
           ),
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("//target2"),
-            BuildTargetIdentifier("//target3"),
+            Dependency(BuildTargetIdentifier("//target2"), exported = true),
+            Dependency(BuildTargetIdentifier("//target3"), exported = false),
           ),
         libraryDependencies =
           listOf(
-            BuildTargetIdentifier("@maven//:test"),
+            Dependency(BuildTargetIdentifier("@maven//:test"), exported = false),
           ),
         scalacOptions = null,
       )
@@ -194,22 +197,26 @@ class BspModuleDetailsToModuleTransformerTest {
           listOf(
             IntermediateModuleDependency(
               moduleName = "//target2",
+              exported = true,
             ),
             IntermediateModuleDependency(
               moduleName = "//target3",
+              exported = false,
             ),
           ),
         librariesDependencies =
           listOf(
-            IntermediateLibraryDependency("@maven//:test", true),
+            IntermediateLibraryDependency("@maven//:test", isProjectLevelLibrary = true, exported = false),
           ),
         associates =
           listOf(
             IntermediateModuleDependency(
               moduleName = "//target4",
+              exported = false,
             ),
             IntermediateModuleDependency(
               moduleName = "//target5",
+              exported = false,
             ),
           ),
       )
@@ -263,8 +270,8 @@ class BspModuleDetailsToModuleTransformerTest {
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("//target2"),
-            BuildTargetIdentifier("//target3"),
+            Dependency(BuildTargetIdentifier("//target2"), exported = true),
+            Dependency(BuildTargetIdentifier("//target3"), exported = false),
           ),
         libraryDependencies = null,
         scalacOptions = null,
@@ -307,7 +314,7 @@ class BspModuleDetailsToModuleTransformerTest {
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("//target3"),
+            Dependency(BuildTargetIdentifier("//target3"), exported = false),
           ),
         libraryDependencies = null,
         scalacOptions = null,
@@ -334,18 +341,22 @@ class BspModuleDetailsToModuleTransformerTest {
           listOf(
             IntermediateModuleDependency(
               moduleName = "//target2",
+              exported = true,
             ),
             IntermediateModuleDependency(
               moduleName = "//target3",
+              exported = false,
             ),
           ),
         librariesDependencies =
           listOf(
             IntermediateLibraryDependency(
               libraryName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
+              exported = true,
             ),
             IntermediateLibraryDependency(
               libraryName = "BSP: file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
+              exported = true,
             ),
           ),
       )
@@ -358,12 +369,14 @@ class BspModuleDetailsToModuleTransformerTest {
           listOf(
             IntermediateModuleDependency(
               moduleName = "//target3",
+              exported = false,
             ),
           ),
         librariesDependencies =
           listOf(
             IntermediateLibraryDependency(
               libraryName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
+              exported = true,
             ),
           ),
       )

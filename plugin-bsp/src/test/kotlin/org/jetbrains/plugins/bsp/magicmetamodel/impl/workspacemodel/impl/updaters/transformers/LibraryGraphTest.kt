@@ -3,15 +3,15 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.protocol.Dependency
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import java.util.concurrent.TimeUnit
-import kotlin.collections.map
 
 class LibraryGraphTest {
+  // TODO: remove LibraryGraphTransitiveDependenciesTest after dropping support for 2024.3
   @Nested
   inner class LibraryGraphTransitiveDependenciesTest {
     @Test
@@ -23,14 +23,14 @@ class LibraryGraphTest {
           dependencies = emptyList(),
         )
       val libraries = emptyList<LibraryItem>()
-      val libraryGraph = LibraryGraph(libraries)
+      val libraryGraph = LibraryGraph(libraries, true)
 
       // when
-      val dependencies = libraryGraph.calculateAllDependencies(target, true)
+      val dependencies = libraryGraph.calculateAllDependencies(target, null)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder emptyList()
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
+      dependencies.libraryDependencies shouldBe emptySet()
+      dependencies.moduleDependencies shouldBe emptySet()
     }
 
     @Test
@@ -52,18 +52,18 @@ class LibraryGraphTest {
             emptyList(),
           ),
         )
-      val libraryGraph = LibraryGraph(libraries)
+      val libraryGraph = LibraryGraph(libraries, true)
 
       // when
-      val dependencies = libraryGraph.calculateAllDependencies(target, true)
+      val dependencies = libraryGraph.calculateAllDependencies(target, null)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder
-        listOf(
+      dependencies.libraryDependencies shouldBe
+        setOfExportedDependencies(
           BuildTargetIdentifier("lib1"),
           BuildTargetIdentifier("lib2"),
         )
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
+      dependencies.moduleDependencies shouldBe emptySet()
     }
 
     @Test
@@ -113,14 +113,14 @@ class LibraryGraphTest {
             emptyList(),
           ),
         )
-      val libraryGraph = LibraryGraph(libraries)
+      val libraryGraph = LibraryGraph(libraries, true)
 
       // when
-      val dependencies = libraryGraph.calculateAllDependencies(target, true)
+      val dependencies = libraryGraph.calculateAllDependencies(target, null)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder
-        listOf(
+      dependencies.libraryDependencies shouldBe
+        setOfExportedDependencies(
           BuildTargetIdentifier("lib1"),
           BuildTargetIdentifier("lib2"),
           BuildTargetIdentifier("lib3"),
@@ -129,7 +129,7 @@ class LibraryGraphTest {
           BuildTargetIdentifier("lib6"),
           BuildTargetIdentifier("lib7"),
         )
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
+      dependencies.moduleDependencies shouldBe emptySet()
     }
 
     @Test
@@ -179,14 +179,14 @@ class LibraryGraphTest {
             emptyList(),
           ),
         )
-      val libraryGraph = LibraryGraph(libraries)
+      val libraryGraph = LibraryGraph(libraries, true)
 
       // when
-      val dependencies = libraryGraph.calculateAllDependencies(target, true)
+      val dependencies = libraryGraph.calculateAllDependencies(target, null)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder
-        listOf(
+      dependencies.libraryDependencies shouldBe
+        setOfExportedDependencies(
           BuildTargetIdentifier("lib1"),
           BuildTargetIdentifier("lib2"),
           BuildTargetIdentifier("lib3"),
@@ -195,8 +195,8 @@ class LibraryGraphTest {
           BuildTargetIdentifier("lib6"),
           BuildTargetIdentifier("lib7"),
         )
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder
-        listOf(
+      dependencies.moduleDependencies shouldBe
+        setOfExportedDependencies(
           BuildTargetIdentifier("target2"),
           BuildTargetIdentifier("target3"),
         )
@@ -218,14 +218,14 @@ class LibraryGraphTest {
             (it + 1..1000).map { depId -> "lib$depId" },
           )
         }
-      val libraryGraph = LibraryGraph(libraries)
+      val libraryGraph = LibraryGraph(libraries, true)
 
       // when
-      val dependencies = libraryGraph.calculateAllDependencies(target, true)
+      val dependencies = libraryGraph.calculateAllDependencies(target, null)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder (1..1000).map { BuildTargetIdentifier("lib$it") }
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
+      dependencies.libraryDependencies shouldBe (1..1000).map { Dependency(BuildTargetIdentifier("lib$it"), exported = true) }
+      dependencies.moduleDependencies shouldBe emptySet()
     }
   }
 
@@ -240,14 +240,14 @@ class LibraryGraphTest {
           dependencies = emptyList(),
         )
       val libraries = emptyList<LibraryItem>()
-      val libraryGraph = LibraryGraph(libraries)
+      val libraryGraph = LibraryGraph(libraries, false)
 
       // when
-      val dependencies = libraryGraph.calculateAllDependencies(target, false)
+      val dependencies = libraryGraph.calculateAllDependencies(target, null)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder emptyList()
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
+      dependencies.libraryDependencies shouldBe emptySet()
+      dependencies.moduleDependencies shouldBe emptySet()
     }
 
     @Test
@@ -258,6 +258,7 @@ class LibraryGraphTest {
           id = "target",
           dependencies = listOf("lib1", "lib2"),
         )
+      val dependenciesExported = listOf(true, false)
       val libraries =
         listOf(
           mockLibraryItem(
@@ -269,18 +270,52 @@ class LibraryGraphTest {
             emptyList(),
           ),
         )
-      val libraryGraph = LibraryGraph(libraries)
+      val libraryGraph = LibraryGraph(libraries, false)
 
       // when
-      val dependencies = libraryGraph.calculateAllDependencies(target, false)
+      val dependencies = libraryGraph.calculateAllDependencies(target, dependenciesExported)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder
-        listOf(
-          BuildTargetIdentifier("lib1"),
-          BuildTargetIdentifier("lib2"),
+      dependencies.libraryDependencies shouldBe
+        setOf(
+          Dependency(BuildTargetIdentifier("lib1"), exported = true),
+          Dependency(BuildTargetIdentifier("lib2"), exported = false),
         )
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
+      dependencies.moduleDependencies shouldBe emptySet()
+    }
+
+    @Test
+    fun `should set all dependencies as exported if dependenciesExported response is empty`() {
+      // given
+      val target =
+        mockTarget(
+          id = "target",
+          dependencies = listOf("lib1", "lib2"),
+        )
+      val dependenciesExported = null
+      val libraries =
+        listOf(
+          mockLibraryItem(
+            "lib1",
+            emptyList(),
+          ),
+          mockLibraryItem(
+            "lib2",
+            emptyList(),
+          ),
+        )
+      val libraryGraph = LibraryGraph(libraries, false)
+
+      // when
+      val dependencies = libraryGraph.calculateAllDependencies(target, dependenciesExported)
+
+      // then
+      dependencies.libraryDependencies shouldBe
+        setOf(
+          Dependency(BuildTargetIdentifier("lib1"), exported = true),
+          Dependency(BuildTargetIdentifier("lib2"), exported = true),
+        )
+      dependencies.moduleDependencies shouldBe emptySet()
     }
 
     @Test
@@ -291,6 +326,7 @@ class LibraryGraphTest {
           id = "target",
           dependencies = listOf("lib1", "lib2"),
         )
+      val dependenciesExported = listOf(false, true)
       val libraries =
         listOf(
           mockLibraryItem(
@@ -330,18 +366,18 @@ class LibraryGraphTest {
             emptyList(),
           ),
         )
-      val libraryGraph = LibraryGraph(libraries)
+      val libraryGraph = LibraryGraph(libraries, false)
 
       // when
-      val dependencies = libraryGraph.calculateAllDependencies(target, false)
+      val dependencies = libraryGraph.calculateAllDependencies(target, dependenciesExported)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder
-        listOf(
-          BuildTargetIdentifier("lib1"),
-          BuildTargetIdentifier("lib2"),
+      dependencies.libraryDependencies shouldBe
+        setOf(
+          Dependency(BuildTargetIdentifier("lib1"), exported = false),
+          Dependency(BuildTargetIdentifier("lib2"), exported = true),
         )
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
+      dependencies.moduleDependencies shouldBe emptySet()
     }
 
     @Test
@@ -352,6 +388,7 @@ class LibraryGraphTest {
           id = "target1",
           dependencies = listOf("lib1", "lib2", "target2", "target3"),
         )
+      val dependenciesExported = listOf(true, false, true, false)
       val libraries =
         listOf(
           mockLibraryItem(
@@ -383,25 +420,31 @@ class LibraryGraphTest {
             emptyList(),
           ),
         )
-      val libraryGraph = LibraryGraph(libraries)
+      val libraryGraph = LibraryGraph(libraries, false)
 
       // when
-      val dependencies = libraryGraph.calculateAllDependencies(target, false)
+      val dependencies = libraryGraph.calculateAllDependencies(target, dependenciesExported)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder
-        listOf(
-          BuildTargetIdentifier("lib1"),
-          BuildTargetIdentifier("lib2"),
+      dependencies.libraryDependencies shouldBe
+        setOf(
+          Dependency(BuildTargetIdentifier("lib1"), exported = true),
+          Dependency(BuildTargetIdentifier("lib2"), exported = false),
         )
-      dependencies.moduleDependencies shouldContainExactlyInAnyOrder
-        listOf(
-          BuildTargetIdentifier("target2"),
-          BuildTargetIdentifier("target3"),
+      dependencies.moduleDependencies shouldBe
+        setOf(
+          Dependency(BuildTargetIdentifier("target2"), exported = true),
+          Dependency(BuildTargetIdentifier("target3"), exported = false),
         )
     }
   }
 }
+
+private fun setOfExportedDependencies(vararg elements: BuildTargetIdentifier): Set<Dependency> =
+  elements
+    .map {
+      Dependency(it, exported = true)
+    }.toSet()
 
 private fun mockTarget(id: String, dependencies: List<String>): BuildTarget =
   BuildTarget(
@@ -415,7 +458,7 @@ private fun mockTarget(id: String, dependencies: List<String>): BuildTarget =
 private fun mockLibraryItem(id: String, dependencies: List<String>): LibraryItem =
   LibraryItem(
     id = BuildTargetIdentifier(id),
-    dependencies = dependencies.map { BuildTargetIdentifier(it) },
+    dependencies = dependencies.map { Dependency(BuildTargetIdentifier(it), exported = false) },
     ijars = emptyList(),
     jars = emptyList(),
     sourceJars = emptyList(),

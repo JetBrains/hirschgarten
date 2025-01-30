@@ -6,6 +6,7 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
+import org.jetbrains.bsp.bazel.server.model.Dependency
 import org.jetbrains.bsp.bazel.server.model.Library
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.SourceSet
@@ -14,7 +15,8 @@ import java.net.URI
 import java.nio.file.Paths
 
 class DependencyMapperTest {
-  private val cacheLocation = "file:///home/user/.cache/bazel/_bazel_user/ae7b7b315151086e31e3b97f9ddba009/execroot/monorepo/bazel-out/k8-fastbuild-ST-4a519fd6d3e4"
+  private val cacheLocation =
+    "file:///home/user/.cache/bazel/_bazel_user/ae7b7b315151086e31e3b97f9ddba009/execroot/monorepo/bazel-out/k8-fastbuild-ST-4a519fd6d3e4"
 
   private val mavenCoordinatesResolver = MavenCoordinatesResolver()
 
@@ -124,21 +126,21 @@ class DependencyMapperTest {
         Label.parse("@maven//:org_scala_lang_scala_library2"),
         emptySet(),
         emptySet(),
-        listOf(lib1.label),
+        listOf(Dependency(lib1.label, exported = true)),
       )
     val lib3 =
       Library(
         Label.parse("@maven//:org_scala_lang_scala_library3"),
         emptySet(),
         emptySet(),
-        listOf(lib1.label, lib2.label),
+        listOf(Dependency(lib1.label, exported = true), Dependency(lib2.label, exported = true)),
       )
     val lib4 =
       Library(
         Label.parse("@maven//:org_scala_lang_scala_library4"),
         emptySet(),
         emptySet(),
-        listOf(lib3.label, lib2.label),
+        listOf(Dependency(lib3.label, exported = true), Dependency(lib2.label, exported = true)),
       )
     val libraries = mapOf(lib1.label to lib1, lib2.label to lib2, lib3.label to lib3, lib4.label to lib4)
     val currentUri = Paths.get(".").toUri()
@@ -156,7 +158,7 @@ class DependencyMapperTest {
       Module(
         Label.parse(""),
         true,
-        listOf(lib4.label),
+        listOf(Dependency(lib4.label, exported = true)),
         emptySet(),
         emptySet(),
         currentUri,
@@ -188,7 +190,7 @@ class DependencyMapperTest {
           Label.parse("@maven//:org_scala_lang_scala_library" + i),
           emptySet(),
           emptySet(),
-          deps,
+          deps.map { label -> Dependency(label, exported = false) },
         ),
       )
     }
@@ -217,7 +219,7 @@ class DependencyMapperTest {
       Module(
         Label.parse(""),
         true,
-        listOf(allLibraries[libCount - 1].label),
+        listOf(Dependency(allLibraries[libCount - 1].label, exported = false)),
         emptySet(),
         emptySet(),
         currentUri,
@@ -244,7 +246,7 @@ class DependencyMapperTest {
       label = label,
       outputs = outputs,
       sources = sources,
-      dependencies = dependencies,
+      dependencies = dependencies.map { Dependency(it, exported = false) },
       interfaceJars = interfaceJars,
       mavenCoordinates = mavenCoordinatesResolver.resolveMavenCoordinates(label, outputs.first()),
     )

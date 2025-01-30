@@ -20,7 +20,6 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.ResourceRoot
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.io.path.name
@@ -52,10 +51,10 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies =
           listOf(
-            IntermediateModuleDependency("module2"),
-            IntermediateModuleDependency("module3"),
+            IntermediateModuleDependency("module2", exported = true),
+            IntermediateModuleDependency("module3", exported = true),
           ),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1", exported = true)),
       )
 
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")
@@ -148,7 +147,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = emptyList(),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1", exported = true)),
       )
     val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
     val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
@@ -252,7 +251,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = emptyList(),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1", exported = true)),
       )
     val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
     val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
@@ -326,7 +325,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = emptyList(),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1", exported = true)),
       )
     val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
     val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
@@ -403,7 +402,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = emptyList(),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1", exported = true)),
       )
     val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
     val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")

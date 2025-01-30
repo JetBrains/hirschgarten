@@ -64,9 +64,11 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
               listOf(
                 IntermediateModuleDependency(
                   moduleName = "module2",
+                  exported = true,
                 ),
                 IntermediateModuleDependency(
                   moduleName = "module3",
+                  exported = false,
                 ),
               ),
             librariesDependencies =
@@ -74,10 +76,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                 IntermediateLibraryDependency(
                   libraryName = "lib1",
                   isProjectLevelLibrary = false,
+                  exported = true,
                 ),
                 IntermediateLibraryDependency(
                   libraryName = "lib2",
                   isProjectLevelLibrary = false,
+                  exported = false,
                 ),
               ),
           )
@@ -168,7 +172,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                     ),
                     ModuleDependency(
                       module = ModuleId("module3"),
-                      exported = true,
+                      exported = false,
                       scope = DependencyScope.COMPILE,
                       productionOnTest = true,
                     ),
@@ -187,7 +191,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                           name = "lib2",
                           tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
                         ),
-                      exported = true,
+                      exported = false,
                       scope = DependencyScope.COMPILE,
                     ),
                     SdkDependency(SdkId("test-proj-11", "JavaSDK")),
@@ -337,9 +341,11 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
               listOf(
                 IntermediateModuleDependency(
                   moduleName = "module2",
+                  exported = true,
                 ),
                 IntermediateModuleDependency(
                   moduleName = "module3",
+                  exported = false,
                 ),
               ),
             librariesDependencies =
@@ -347,10 +353,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                 IntermediateLibraryDependency(
                   libraryName = "lib1",
                   isProjectLevelLibrary = false,
+                  exported = true,
                 ),
                 IntermediateLibraryDependency(
                   libraryName = "lib2",
                   isProjectLevelLibrary = false,
+                  exported = false,
                 ),
               ),
           )
@@ -427,6 +435,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
               listOf(
                 IntermediateModuleDependency(
                   moduleName = "module3",
+                  exported = true,
                 ),
               ),
             librariesDependencies =
@@ -434,6 +443,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                 IntermediateLibraryDependency(
                   libraryName = "lib1",
                   isProjectLevelLibrary = false,
+                  exported = false,
                 ),
               ),
           )
@@ -509,7 +519,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                     ),
                     ModuleDependency(
                       module = ModuleId("module3"),
-                      exported = true,
+                      exported = false,
                       scope = DependencyScope.COMPILE,
                       productionOnTest = true,
                     ),
@@ -528,7 +538,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                           name = "lib2",
                           tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
                         ),
-                      exported = true,
+                      exported = false,
                       scope = DependencyScope.COMPILE,
                     ),
                     SdkDependency(SdkId("test-proj-11", "JavaSDK")),
@@ -567,7 +577,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                           name = "lib1",
                           tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module2")),
                         ),
-                      exported = true,
+                      exported = false,
                       scope = DependencyScope.COMPILE,
                     ),
                     SdkDependency(SdkId("test-proj-11", "JavaSDK")),

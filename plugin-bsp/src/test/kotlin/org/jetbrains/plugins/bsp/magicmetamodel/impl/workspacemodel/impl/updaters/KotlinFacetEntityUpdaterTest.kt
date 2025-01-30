@@ -54,11 +54,11 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
           type = ModuleTypeId("JAVA_MODULE"),
           modulesDependencies =
             listOf(
-              IntermediateModuleDependency("module2"),
-              IntermediateModuleDependency("module3"),
+              IntermediateModuleDependency("module2", exported = false),
+              IntermediateModuleDependency("module3", exported = false),
             ),
           librariesDependencies = listOf(),
-          associates = associates.map { IntermediateModuleDependency(it) },
+          associates = associates.map { IntermediateModuleDependency(it, exported = false) },
         )
 
       val baseDirContentRoot =

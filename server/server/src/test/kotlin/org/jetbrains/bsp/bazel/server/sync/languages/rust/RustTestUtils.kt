@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.rust
 
 import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bsp.bazel.server.model.Dependency
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.SourceSet
@@ -18,7 +19,7 @@ fun createModule(
   Module(
     label = label,
     isSynthetic = false,
-    directDependencies = directDependencies,
+    directDependencies = directDependencies.map { Dependency(it, exported = true) },
     languages = setOf(Language.RUST),
     tags = setOf(Tag.APPLICATION),
     baseDirectory = baseDirectory,

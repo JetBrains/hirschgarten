@@ -11,6 +11,7 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
+import org.jetbrains.bsp.bazel.server.model.Dependency
 import org.jetbrains.bsp.bazel.server.model.Library
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.SourceSet
@@ -101,7 +102,7 @@ class BspProjectMapperTest {
     }
 
     // Common deps for each target
-    val commonDeps = allLibraries.subList(0, mavenDepCount).map { it.label }
+    val commonDeps = allLibraries.subList(0, mavenDepCount).map { Dependency(it.label, exported = false) }
 
     for (i in 0..libCount - 1) {
       val label = Label.parse("//foo/bar:target" + i)
