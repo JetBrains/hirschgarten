@@ -20,13 +20,14 @@ import org.jetbrains.idea.devkit.projectRoots.IdeaJdk
 import org.jetbrains.idea.devkit.projectRoots.Sandbox
 import org.jetbrains.idea.devkit.run.IdeaLicenseHelper
 import org.jetbrains.idea.devkit.run.loadProductInfo
-import org.jetbrains.idea.devkit.run.resolveIdeHomeVariable
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.run.BspRunHandler
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 import java.io.File
 import java.io.IOException
 import java.nio.file.Path
+import kotlin.io.path.Path
+import kotlin.io.path.exists
 
 internal val INTELLIJ_PLUGIN_SANDBOX_KEY: Key<Path> = Key.create("INTELLIJ_PLUGIN_SANDBOX_KEY")
 
@@ -118,6 +119,21 @@ class IntellijPluginRunHandler(private val configuration: BspRunConfiguration) :
       }
     }
   }
+
+  // Copied from ProductInfo.kt to fix an exception, remove when the fix arrives into the DevKit plugin
+  fun resolveIdeHomeVariable(path: String, ideHome: String) =
+    path
+      .replace("\$APP_PACKAGE", ideHome)
+      .replace("\$IDE_HOME", ideHome)
+      .replace("%IDE_HOME%", ideHome)
+      .replace("Contents/Contents", "Contents")
+      .let { entry ->
+        val value = entry.split("=").getOrNull(1) ?: entry
+        when {
+          runCatching { Path(value).exists() }.getOrElse { false } -> entry
+          else -> entry.replace("/Contents", "")
+        }
+      }
 
   private fun fillParameterList(parameterList: ParametersList, parameters: String?) {
     if (!parameters.isNullOrEmpty()) {
