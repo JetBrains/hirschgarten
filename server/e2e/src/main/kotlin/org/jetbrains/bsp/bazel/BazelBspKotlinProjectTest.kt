@@ -5,15 +5,18 @@ import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.bazel.install.Install
+import org.jetbrains.bsp.protocol.DependenciesExportedParams
+import org.jetbrains.bsp.protocol.DependenciesExportedResult
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import kotlin.time.Duration.Companion.seconds
 
 open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
-  private val testClient = createTestkitClient()
+  private val testClient = createBazelClient()
 
   override fun installServer() {
     Install.main(
@@ -35,6 +38,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
   override fun scenarioSteps(): List<BazelBspTestScenarioStep> =
     listOf(
       compareWorkspaceTargetsResults(),
+      compareDependenciesExportedResults(),
     )
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
@@ -235,10 +239,29 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     )
   }
 
+  // experimental_strict_kotlin_deps = "off" by default in the Kotlin toolchain, so we should not try to enforce strict deps either
+  private fun expectedDependenciesExportedResult(): DependenciesExportedResult = DependenciesExportedResult(emptyList())
+
   private fun compareWorkspaceTargetsResults(): BazelBspTestScenarioStep =
     BazelBspTestScenarioStep(
       "compare workspace targets results",
-    ) { testClient.testWorkspaceTargets(140.seconds, expectedWorkspaceBuildTargetsResult()) }
+    ) {
+      testClient.test(140.seconds) { session, _ ->
+        val result = session.server.workspaceBuildTargets().await()
+        testClient.assertJsonEquals<WorkspaceBuildTargetsResult>(expectedWorkspaceBuildTargetsResult(), result)
+      }
+    }
+
+  private fun compareDependenciesExportedResults(): BazelBspTestScenarioStep =
+    BazelBspTestScenarioStep(
+      "compare dependencies exported results",
+    ) {
+      testClient.test(60.seconds) { session, _ ->
+        val params = DependenciesExportedParams(expectedTargetIdentifiers())
+        val result = session.server.buildTargetDependenciesExported(params).await()
+        testClient.assertJsonEquals<DependenciesExportedResult>(expectedDependenciesExportedResult(), result)
+      }
+    }
 
   companion object {
     @JvmStatic
