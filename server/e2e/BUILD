@@ -142,6 +142,12 @@ bazel_integration_test_all_versions(
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:NestedModulesTest",
 )
 
+bazel_integration_test_current_version(
+    name = "dependencies_exported_project_test",
+    project_path = "test-projects/bzlmod/dependencies-exported-project",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspDependenciesExportedProjectTest",
+)
+
 test_suite(
     name = "all_tests",
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
@@ -151,6 +157,7 @@ test_suite(
         ":android_kotlin_project_test",
         ":android_project_test",
         ":build_and_sync_test",
+        ":dependencies_exported_project_test",
         ":enabled_rules_test",
         ":first_phase_sync_test",
         ":go_project_test",

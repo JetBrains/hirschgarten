@@ -266,3 +266,18 @@ kt_jvm_binary(
         "@maven//:io_kotest_kotest_common_jvm",
     ],
 )
+
+kt_jvm_binary(
+    name = "BazelBspDependenciesExportedProjectTest",
+    srcs = ["BazelBspDependenciesExportedProjectTest.kt"],
+    main_class = "org.jetbrains.bsp.bazel.BazelBspDependenciesExportedProjectTest",
+    resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
+    visibility = ["//server/e2e:__subpackages__"],
+    deps = [
+        "//protocol",
+        "//server/commons",
+        "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
+        "@maven//:ch_epfl_scala_bsp4j",
+    ],
+)
