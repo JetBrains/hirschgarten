@@ -10,6 +10,7 @@ class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: Proje
   private val targetsIndex = projectDetails.targets.associateBy { it.id }
   private val sourcesIndex = projectDetails.sources.groupBy { it.target }
   private val resourcesIndex = projectDetails.resources.groupBy { it.target }
+  private val dependenciesExportedIndex = projectDetails.dependenciesExported.groupBy { it.target }
   private val dependenciesSourcesIndex = projectDetails.dependenciesSources.groupBy { it.target }
   private val javacOptionsIndex = projectDetails.javacOptions.associateBy { it.target }
   private val scalacOptionsIndex = projectDetails.scalacOptions.associateBy { it.target }
@@ -17,7 +18,8 @@ class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: Proje
 
   fun moduleDetailsForTargetId(targetId: BuildTargetIdentifier): ModuleDetails {
     val target = targetsIndex[targetId] ?: error("Cannot find target for target id: $targetId.")
-    val allDependencies = libraryGraph.calculateAllDependencies(target)
+    val dependenciesExported = dependenciesExportedIndex[targetId]?.singleOrNull()
+    val allDependencies = libraryGraph.calculateAllDependencies(target, dependenciesExported?.dependenciesExported)
     return ModuleDetails(
       target = target,
       sources = sourcesIndex[target.id].orEmpty(),

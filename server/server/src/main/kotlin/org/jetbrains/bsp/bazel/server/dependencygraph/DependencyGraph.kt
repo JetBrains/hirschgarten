@@ -1,7 +1,6 @@
 package org.jetbrains.bsp.bazel.server.dependencygraph
 
 import org.jetbrains.bazel.commons.label.Label
-import org.jetbrains.bsp.bazel.info.BspTargetInfo.Dependency
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.server.label.label
 
@@ -78,8 +77,7 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
 
   private fun getDependencies(target: TargetInfo): Set<Label> =
     target.dependenciesList
-      .map(Dependency::getId)
-      .map(Label::parse)
+      .map { dependency -> Label.parse(dependency.id) }
       .toSet()
 
   private fun isNotARootTarget(targetId: Label): Boolean = !rootTargets.contains(targetId)

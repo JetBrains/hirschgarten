@@ -6,7 +6,7 @@ import java.net.URI
 data class Module(
   val label: Label,
   val isSynthetic: Boolean,
-  val directDependencies: List<Label>,
+  val directDependencies: List<Dependency>,
   val languages: Set<Language>,
   val tags: Set<Tag>,
   val baseDirectory: URI,

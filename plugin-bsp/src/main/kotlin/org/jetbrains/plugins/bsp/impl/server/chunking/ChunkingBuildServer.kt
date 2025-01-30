@@ -15,6 +15,8 @@ import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ResourcesResult
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.SourcesResult
+import org.jetbrains.bsp.protocol.DependenciesExportedParams
+import org.jetbrains.bsp.protocol.DependenciesExportedResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.util.concurrent.CompletableFuture
 import kotlin.math.sqrt
@@ -38,6 +40,15 @@ public class ChunkingBuildServer<S : JoinedBuildServer>(private val base: S, pri
       doRequest = { base.buildTargetResources(it) },
       unwrapRes = { it.items },
       wrapRes = { ResourcesResult(it) },
+    )(params)
+
+  override fun buildTargetDependenciesExported(params: DependenciesExportedParams): CompletableFuture<DependenciesExportedResult> =
+    chunkedRequest(
+      unwrapReq = { it.targets },
+      wrapReq = { DependenciesExportedParams(it) },
+      doRequest = { base.buildTargetDependenciesExported(checkNotNull(it)) },
+      unwrapRes = { it.items },
+      wrapRes = { DependenciesExportedResult(it) },
     )(params)
 
   override fun buildTargetDependencySources(params: DependencySourcesParams?): CompletableFuture<DependencySourcesResult> =

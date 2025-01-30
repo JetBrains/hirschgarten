@@ -51,6 +51,8 @@ import org.jetbrains.bsp.bazel.server.sync.ExecuteService
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
+import org.jetbrains.bsp.protocol.DependenciesExportedParams
+import org.jetbrains.bsp.protocol.DependenciesExportedResult
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
@@ -233,6 +235,9 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, Initial
 
   override fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): CompletableFuture<JvmBinaryJarsResult> =
     runner.handleRequest("buildTarget/jvmBinaryJars", projectSyncService::jvmBinaryJars, params)
+
+  override fun buildTargetDependenciesExported(params: DependenciesExportedParams): CompletableFuture<DependenciesExportedResult> =
+    runner.handleRequest("buildTarget/dependenciesExported", projectSyncService::dependenciesExported, params)
 
   override fun workspaceLibraries(): CompletableFuture<WorkspaceLibrariesResult> =
     runner.handleRequest("workspace/libraries", projectSyncService::workspaceBuildLibraries)

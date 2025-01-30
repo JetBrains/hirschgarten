@@ -12,13 +12,8 @@ message FileLocation {
 }
 
 message Dependency {
-  enum DependencyType {
-    COMPILE = 0;
-    RUNTIME = 1;
-  }
-
   string id = 1;
-  DependencyType dependency_type = 2;
+  bool exported = 2;
 }
 
 message JvmOutputs {
@@ -92,6 +87,7 @@ message KotlinTargetInfo {
   repeated string kotlinc_opts = 400;
   repeated FileLocation stdlibs = 500;
   repeated KotlincPluginInfo kotlinc_plugin_infos = 600;
+  bool strict_deps_enabled = 700;
 }
 
 message PythonTargetInfo {

@@ -69,12 +69,15 @@ data class Library(
   }
 }
 
-data class IntermediateModuleDependency(val moduleName: String) :
+data class IntermediateModuleDependency(val moduleName: String, val exported: Boolean) :
   WorkspaceModelEntity(),
   EntityDependency
 
-data class IntermediateLibraryDependency(val libraryName: String, val isProjectLevelLibrary: Boolean = false) :
-  WorkspaceModelEntity(),
+data class IntermediateLibraryDependency(
+  val libraryName: String,
+  val isProjectLevelLibrary: Boolean = false,
+  val exported: Boolean,
+) : WorkspaceModelEntity(),
   EntityDependency
 
 /**

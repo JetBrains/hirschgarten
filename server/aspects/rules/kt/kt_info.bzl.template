@@ -29,7 +29,7 @@ def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
     direct_dep_targets = collect_targets_from_attrs(rule_attrs, COMPILE_DEPS)
     for dep in direct_dep_targets:
         if str(dep.label) in associates_labels:
-            additional_associates = additional_associates + dep.bsp_info.export_deps
+            additional_associates = additional_associates + dep.bsp_info.direct_exports
     additional_associates_labels = [associate.id for associate in additional_associates]
 
     kotlin_toolchain = ctx.toolchains[KOTLIN_TOOLCHAIN_TYPE]
@@ -61,6 +61,8 @@ def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
     plugins = depset(direct = direct_plugins, transitive = dep_plugins).to_list()
     kt_compiler_plugin_infos = filter_not_none([extract_kt_compiler_plugin_info(plugin) for plugin in plugins])
 
+    strict_deps_enabled = getattr(kotlin_toolchain, "experimental_strict_kotlin_deps", None) in ["error", "warn"]
+
     kotlin_target_info = create_struct(
         language_version = language_version,
         api_version = api_version,
@@ -68,6 +70,7 @@ def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
         kotlinc_opts = kotlinc_options_to_flags(create_struct(**kotlinc_opts_dict)),
         stdlibs = stdlibs,
         kotlinc_plugin_infos = kt_compiler_plugin_infos,
+        strict_deps_enabled = strict_deps_enabled,
     )
 
     info_file = dict(kotlin_target_info = kotlin_target_info)

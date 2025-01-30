@@ -86,6 +86,6 @@ class RustDependencyResolver {
     resolver: (RustPackage, List<Label>) -> Pair<String, List<T>>,
   ): List<Pair<String, List<T>>> =
     bspTargets.map { bspTarget ->
-      resolver(rustPackage, bspTarget.directDependencies)
+      resolver(rustPackage, bspTarget.directDependencies.map { it.label })
     }
 }

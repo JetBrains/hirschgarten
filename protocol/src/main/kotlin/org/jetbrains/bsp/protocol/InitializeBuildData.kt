@@ -14,7 +14,7 @@ data class FeatureFlags(
   val isGoSupportEnabled: Boolean = false,
   val isRustSupportEnabled: Boolean = false,
   val isCppSupportEnabled: Boolean = false,
-  val isPropagateExportsFromDepsEnabled: Boolean = true,
+  val isPropagateExportsFromDepsEnabled: Boolean = false,
   /** Bazel specific */
   val bazelSymlinksScanMaxDepth: Int = 2,
   val bazelShutDownBeforeShardBuild: Boolean = false,

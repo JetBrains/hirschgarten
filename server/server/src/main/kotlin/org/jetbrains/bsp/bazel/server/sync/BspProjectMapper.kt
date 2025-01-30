@@ -81,6 +81,10 @@ import org.jetbrains.bsp.bazel.server.sync.languages.jvm.javaModule
 import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.DependenciesExportedItem
+import org.jetbrains.bsp.protocol.DependenciesExportedParams
+import org.jetbrains.bsp.protocol.DependenciesExportedResult
+import org.jetbrains.bsp.protocol.Dependency
 import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.EnhancedSourceItem
 import org.jetbrains.bsp.protocol.GoLibraryItem
@@ -132,6 +136,7 @@ class BspProjectMapper(
         jvmBinaryJarsProvider = true,
         jvmCompileClasspathProvider = true,
         bazelRepoMappingProvider = true,
+        buildTargetDependenciesExportedProvider = true,
       )
     return InitializeBuildResult(
       Constants.NAME,
@@ -154,7 +159,7 @@ class BspProjectMapper(
       project.libraries.values.map {
         LibraryItem(
           id = BuildTargetIdentifier(it.label.toString()),
-          dependencies = it.dependencies.map { dep -> BuildTargetIdentifier(dep.toString()) },
+          dependencies = it.dependencies.map { (label, exported) -> Dependency(label.toBspIdentifier(), exported) },
           ijars = it.interfaceJars.map { uri -> uri.toString() },
           jars = it.outputs.map { uri -> uri.toString() },
           sourceJars = it.sources.map { uri -> uri.toString() },
@@ -258,7 +263,7 @@ class BspProjectMapper(
   private fun Module.toBuildTarget(): BuildTarget {
     val label = BspMappings.toBspId(this)
     val dependencies =
-      directDependencies.map { it.toBspIdentifier() }
+      directDependencies.map { it.label.toBspIdentifier() }
     val languages = languages.flatMap(Language::allNames).distinct()
     val capabilities = inferCapabilities(tags)
     val tags = tags.mapNotNull(BspMappings::toBspTag)
@@ -469,6 +474,21 @@ class BspProjectMapper(
         module?.let { toJvmBinaryJarsItem(it) }
       }
     return JvmBinaryJarsResult(jvmBinaryJarsItems)
+  }
+
+  fun dependenciesExported(project: AspectSyncProject, params: DependenciesExportedParams): DependenciesExportedResult {
+    if (!project.strictDepsEnabled) return DependenciesExportedResult(emptyList())
+
+    fun toDependenciesExportedItem(module: Module): DependenciesExportedItem? =
+      DependenciesExportedItem(BspMappings.toBspId(module), module.directDependencies.map { dependency -> dependency.exported })
+
+    val dependenciesExportedItems =
+      params.targets.mapNotNull { target ->
+        val label = Label.parse(target.uri)
+        val module = project.findModule(label)
+        module?.let { toDependenciesExportedItem(it) }
+      }
+    return DependenciesExportedResult(dependenciesExportedItems)
   }
 
   fun buildTargetJavacOptions(

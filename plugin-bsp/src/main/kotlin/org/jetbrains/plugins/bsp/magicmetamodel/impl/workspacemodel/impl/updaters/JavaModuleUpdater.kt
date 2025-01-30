@@ -101,7 +101,7 @@ internal class JavaModuleWithSourcesUpdater(
     entityToAdd.scalaAddendum?.also { addendum ->
       returnDependencies.add(
         toLibraryDependency(
-          IntermediateLibraryDependency(addendum.scalaSdkName, true),
+          IntermediateLibraryDependency(addendum.scalaSdkName, isProjectLevelLibrary = true, exported = true),
           workspaceModelEntityUpdaterConfig.project,
         ),
       )

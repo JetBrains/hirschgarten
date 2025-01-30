@@ -40,6 +40,9 @@ interface BazelBuildServer {
   @JsonRequest("buildTarget/jvmBinaryJars")
   fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): CompletableFuture<JvmBinaryJarsResult>
 
+  @JsonRequest("buildTarget/dependenciesExported")
+  fun buildTargetDependenciesExported(params: DependenciesExportedParams): CompletableFuture<DependenciesExportedResult>
+
   @JsonRequest("workspace/buildAndGetBuildTargets")
   fun workspaceBuildAndGetBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult>
 

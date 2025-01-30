@@ -32,6 +32,7 @@ object BspFeatureFlags {
   val isRetrieveTargetsForFileFromAncestorsEnabled: Boolean
     get() = Registry.`is`(RETRIEVE_TARGETS_FOR_FILE_FROM_ANCESTORS)
 
+  // TODO: remove when dropping support for 2024.3 because K2 is enabled by default
   val isWrapLibrariesInsideModulesEnabled: Boolean
     get() = Registry.`is`(WRAP_LIBRARIES_INSIDE_MODULES) || isKotlinPluginK2Mode
 
@@ -53,6 +54,8 @@ class DefaultBspFeatureFlagsProvider : BspFeatureFlagsProvider {
         isAndroidSupportEnabled = isAndroidSupportEnabled,
         isGoSupportEnabled = isGoSupportEnabled,
         isRustSupportEnabled = false, // No corresponding registry key for now
+        // Libraries in the IntelliJ project model cannot have dependencies.
+        // If we don't wrap them in modules, then the only way to make exports available to dependents is by propagating them manually.
         isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
       )
     }

@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
+import org.jetbrains.bsp.protocol.Dependency
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
@@ -15,22 +16,19 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateModuleDepen
 import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 
-data class LibraryGraphDependencies(
-  val libraryDependencies: Set<BuildTargetIdentifier>,
-  val moduleDependencies: Set<BuildTargetIdentifier>,
-)
+data class LibraryGraphDependencies(val libraryDependencies: Set<Dependency>, val moduleDependencies: Set<Dependency>)
 
-class LibraryGraph(private val libraries: List<LibraryItem>) {
+class LibraryGraph(
+  private val libraries: List<LibraryItem>,
+  private val includesTransitive: Boolean = !BspFeatureFlags.isWrapLibrariesInsideModulesEnabled,
+) {
   private val graph = libraries.associate { it.id to it.dependencies }
 
-  fun calculateAllDependencies(
-    target: BuildTarget,
-    includesTransitive: Boolean = !BspFeatureFlags.isWrapLibrariesInsideModulesEnabled,
-  ): LibraryGraphDependencies =
+  fun calculateAllDependencies(target: BuildTarget, dependenciesExported: List<Boolean>?): LibraryGraphDependencies =
     if (includesTransitive) {
       calculateAllTransitiveDependencies(target)
     } else {
-      calculateDirectDependencies(target)
+      calculateDirectDependencies(target, dependenciesExported)
     }
 
   private fun calculateAllTransitiveDependencies(target: BuildTarget): LibraryGraphDependencies {
@@ -46,8 +44,8 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
 
       if (currentNode !in visited) {
         // don't traverse further when hitting modules
-        if (currentNode.isCurrentNodeLibrary()) {
-          toVisit += graph[currentNode].orEmpty()
+        if (currentNode.isLibrary()) {
+          toVisit += graph[currentNode].orEmpty().map { dep -> dep.id }
         }
         visited += currentNode
 
@@ -55,28 +53,37 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
       }
     }
 
+    // TODO: support exported flags if isWrapLibrariesInsideModulesEnabled == false.
+    //  Or just wait until IDEA 2025.1 when K2 is default and isWrapLibrariesInsideModulesEnabled is removed (together with this function).
     return LibraryGraphDependencies(
-      libraryDependencies = resultLibraries,
-      moduleDependencies = resultModules,
+      libraryDependencies = resultLibraries.map { id -> Dependency(id, exported = true) }.toSet(),
+      moduleDependencies = resultModules.map { id -> Dependency(id, exported = true) }.toSet(),
     )
   }
 
-  private fun calculateDirectDependencies(target: BuildTarget): LibraryGraphDependencies {
+  private fun calculateDirectDependencies(target: BuildTarget, dependenciesExported: List<Boolean>?): LibraryGraphDependencies {
+    val dependencies =
+      if (dependenciesExported == null) {
+        target.dependencies.map { id -> Dependency(id, exported = true) }
+      } else {
+        target.dependencies.zip(dependenciesExported).map { (id, exported) -> Dependency(id, exported) }
+      }
+
     val (libraryDependencies, moduleDependencies) =
-      target.dependencies.partition { it.isCurrentNodeLibrary() }
+      dependencies.partition { it.id.isLibrary() }
     return LibraryGraphDependencies(
       libraryDependencies = libraryDependencies.toSet(),
       moduleDependencies = moduleDependencies.toSet(),
     )
   }
 
-  private fun BuildTargetIdentifier.isCurrentNodeLibrary() = this in graph
+  private fun BuildTargetIdentifier.isLibrary() = this in graph
 
   private fun BuildTargetIdentifier.addToCorrectResultSet(
     resultLibraries: MutableSet<BuildTargetIdentifier>,
     resultModules: MutableSet<BuildTargetIdentifier>,
   ) {
-    if (isCurrentNodeLibrary()) {
+    if (isLibrary()) {
       resultLibraries += this
     } else {
       resultModules += this
@@ -107,12 +114,12 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
             GenericModuleInfo(
               name = libraryModuleName,
               type = ModuleTypeId(StdModuleTypes.JAVA.id),
-              librariesDependencies = listOf(IntermediateLibraryDependency(libraryName, true)),
+              librariesDependencies = listOf(IntermediateLibraryDependency(libraryName, isProjectLevelLibrary = true, exported = true)),
               modulesDependencies =
-                library.dependencies.map { targetId ->
-                  val rawId = nameProvider(BuildTargetInfo(id = targetId))
-                  val id = if (targetId.isLibraryId()) rawId.addLibraryModulePrefix() else rawId
-                  IntermediateModuleDependency(id)
+                library.dependencies.map { dep ->
+                  val rawId = nameProvider(BuildTargetInfo(id = dep.id))
+                  val id = if (dep.id.isLibraryId()) rawId.addLibraryModulePrefix() else rawId
+                  IntermediateModuleDependency(id, exported = dep.exported)
                 },
               isLibraryModule = true,
               languageIds = listOf("java"),

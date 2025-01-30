@@ -41,6 +41,8 @@ import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
+import org.jetbrains.bsp.protocol.DependenciesExportedParams
+import org.jetbrains.bsp.protocol.DependenciesExportedResult
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
@@ -165,6 +167,11 @@ class ProjectSyncService(
   fun jvmBinaryJars(cancelChecker: CancelChecker, params: JvmBinaryJarsParams): JvmBinaryJarsResult {
     val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return JvmBinaryJarsResult(emptyList())
     return bspMapper.jvmBinaryJars(project, params)
+  }
+
+  fun dependenciesExported(cancelChecker: CancelChecker, params: DependenciesExportedParams): DependenciesExportedResult {
+    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return DependenciesExportedResult(emptyList())
+    return bspMapper.dependenciesExported(project, params)
   }
 
   fun jvmCompileClasspath(cancelChecker: CancelChecker, params: JvmCompileClasspathParams): JvmCompileClasspathResult {

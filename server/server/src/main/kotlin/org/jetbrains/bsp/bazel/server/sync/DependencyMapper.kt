@@ -26,7 +26,7 @@ object DependencyMapper {
 
   fun allModuleDependencies(project: AspectSyncProject, module: Module): HashSet<Library> {
     val toResolve = mutableListOf<Label>()
-    toResolve.addAll(module.directDependencies)
+    toResolve.addAll(module.directDependencies.map { it.label })
     val accumulator = HashSet<Library>()
     val allSeenTargets = toResolve.toMutableSet()
     while (toResolve.isNotEmpty()) {
@@ -35,8 +35,8 @@ object DependencyMapper {
         accumulator.add(lib)
         allSeenTargets.add(lib.label)
         for (dep in lib.dependencies) {
-          if (allSeenTargets.add(dep)) {
-            toResolve.add(dep)
+          if (allSeenTargets.add(dep.label)) {
+            toResolve.add(dep.label)
           }
         }
       }

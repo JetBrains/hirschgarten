@@ -22,6 +22,7 @@ import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bsp.bazel.server.label.label
 import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
+import org.jetbrains.bsp.bazel.server.model.Dependency
 import org.jetbrains.bsp.bazel.server.model.GoLibrary
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Library
@@ -98,9 +99,13 @@ class BazelProjectMapper(
         val usedLibraries = dependencyGraph.filterUsedLibraries(libraries, targetsToImport)
         usedLibraries
       }
+    val strictDepsEnabled =
+      measure("Check if strict deps are enabled") {
+        strictDepsEnabled(targetsToImport)
+      }
     val outputJarsLibraries =
       measure("Create output jars libraries") {
-        calculateOutputJarsLibraries(targetsToImport)
+        calculateOutputJarsLibraries(targetsToImport, strictDepsEnabled)
       }
     val annotationProcessorLibraries =
       measure("Create AP libraries") {
@@ -148,7 +153,7 @@ class BazelProjectMapper(
       }
     val librariesFromDepsAndTargets =
       measure("Libraries from targets and deps") {
-        createLibraries(targetsAsLibraries) +
+        createLibraries(targetsAsLibraries, strictDepsEnabled) +
           librariesFromDeps.values
             .flatten()
             .distinct()
@@ -174,6 +179,7 @@ class BazelProjectMapper(
             extraLibrariesFromJdeps,
             librariesFromTransitiveCompileTimeJars,
           ),
+          strictDepsEnabled,
         )
       }
     val mergedModulesFromBazel =
@@ -239,6 +245,7 @@ class BazelProjectMapper(
       invalidTargets = invalidTargets,
       nonModuleTargets = nonModuleTargets,
       repoMapping = repoMapping,
+      strictDepsEnabled = strictDepsEnabled,
     )
   }
 
@@ -250,11 +257,11 @@ class BazelProjectMapper(
         maps.flatMap { it[key].orEmpty() }
       }
 
-  private fun calculateOutputJarsLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
+  private fun calculateOutputJarsLibraries(targetsToImport: Sequence<TargetInfo>, strictDepsEnabled: Boolean): Map<Label, List<Library>> =
     targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true)?.let { library ->
+        createLibrary(Label.parse(target.id + "_output_jars"), target, strictDepsEnabled, onlyOutputJars = true)?.let { library ->
           target.label() to listOf(library)
         }
       }.toMap()
@@ -554,7 +561,7 @@ class BazelProjectMapper(
       val dependencies =
         targetsToImport[targetOrLibrary]?.dependenciesList.orEmpty().map { it.label() } +
           libraryDependencies[targetOrLibrary].orEmpty().map { it.label } +
-          librariesToImport[targetOrLibrary]?.dependencies.orEmpty()
+          librariesToImport[targetOrLibrary]?.dependencies.orEmpty().map { it.label }
 
       dependencies.flatMapTo(outputJars) { dependency ->
         getJdepsJarsFromTransitiveDependencies(
@@ -628,11 +635,11 @@ class BazelProjectMapper(
         )
       }
 
-  private fun createLibraries(targets: Map<Label, TargetInfo>): Map<Label, Library> =
+  private fun createLibraries(targets: Map<Label, TargetInfo>, strictDepsEnabled: Boolean): Map<Label, Library> =
     targets
       .asSequence()
       .mapNotNull { (targetId, targetInfo) ->
-        createLibrary(targetId, targetInfo)?.let { library ->
+        createLibrary(targetId, targetInfo, strictDepsEnabled)?.let { library ->
           targetId to library
         }
       }.toMap()
@@ -640,6 +647,7 @@ class BazelProjectMapper(
   private fun createLibrary(
     label: Label,
     targetInfo: TargetInfo,
+    strictDepsEnabled: Boolean,
     onlyOutputJars: Boolean = false,
   ): Library? {
     val outputs = getTargetOutputJarUris(targetInfo) + getAndroidAarUris(targetInfo) + getIntellijPluginJars(targetInfo)
@@ -669,7 +677,7 @@ class BazelProjectMapper(
       label = label,
       outputs = outputs,
       sources = sources,
-      dependencies = targetInfo.dependenciesList.map { Label.parse(it.id) },
+      dependencies = resolveDirectDependencies(targetInfo, strictDepsEnabled),
       interfaceJars = interfaceJars,
       mavenCoordinates = mavenCoordinates,
     )
@@ -910,10 +918,14 @@ class BazelProjectMapper(
 
   private fun isRustTarget(target: TargetInfo): Boolean = target.hasRustCrateInfo()
 
+  private fun strictDepsEnabled(targetsToImport: Sequence<TargetInfo>): Boolean =
+    targetsToImport.filter { it.hasKotlinTargetInfo() }.all { it.kotlinTargetInfo.strictDepsEnabled }
+
   private suspend fun createModules(
     targetsToImport: Sequence<TargetInfo>,
     dependencyGraph: DependencyGraph,
     generatedLibraries: Map<Label, Collection<Library>>,
+    strictDepsEnabled: Boolean,
   ): List<Module> =
     withContext(Dispatchers.Default) {
       targetsToImport
@@ -924,6 +936,7 @@ class BazelProjectMapper(
               it,
               dependencyGraph,
               generatedLibraries[it.label()].orEmpty(),
+              strictDepsEnabled,
             )
           }
         }.awaitAll()
@@ -934,10 +947,12 @@ class BazelProjectMapper(
     target: TargetInfo,
     dependencyGraph: DependencyGraph,
     extraLibraries: Collection<Library>,
+    strictDepsEnabled: Boolean,
   ): Module {
     val label = target.label().assumeResolved()
     // extra libraries can override some library versions, so they should be put before
-    val directDependencies = extraLibraries.map { it.label } + resolveDirectDependencies(target)
+    val directDependencies =
+      extraLibraries.map { Dependency(it.label, exported = true) } + resolveDirectDependencies(target, strictDepsEnabled)
     val languages = inferLanguages(target)
     val tags = targetTagsResolver.resolveTags(target)
     val baseDirectory = label.toDirectoryUri()
@@ -963,7 +978,13 @@ class BazelProjectMapper(
     )
   }
 
-  private fun resolveDirectDependencies(target: TargetInfo): List<Label> = target.dependenciesList.map { it.label() }
+  private fun resolveDirectDependencies(target: TargetInfo, strictDepsEnabled: Boolean): List<Dependency> =
+    target.dependenciesList.map { dependency ->
+      Dependency(
+        label = Label.parse(dependency.id),
+        exported = !strictDepsEnabled || dependency.exported,
+      )
+    }
 
   private fun inferLanguages(target: TargetInfo): Set<Language> {
     val languagesForTarget = Language.allOfKind(target.kind)
@@ -1039,7 +1060,7 @@ class BazelProjectMapper(
     dependencyGraph: DependencyGraph,
     generatedLibraries: Map<Label, Collection<Library>>,
   ): Sequence<Module> {
-    val modules = createModules(targetsToImport, dependencyGraph, generatedLibraries)
+    val modules = createModules(targetsToImport, dependencyGraph, generatedLibraries, strictDepsEnabled(targetsToImport))
     return modules.asSequence().onEach {
       (it.languageData as? RustModule)?.isExternalModule = true
     }

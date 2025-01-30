@@ -111,7 +111,7 @@ class RustLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : L
         .asSequence()
         .flatMap { module ->
           filterVisitedRustDependencies(
-            module.directDependencies,
+            module.directDependencies.map { it.label },
             allModules,
             visited,
           ).asSequence()

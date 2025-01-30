@@ -1,13 +1,13 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel
 
 import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.bsp.protocol.Dependency
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
@@ -20,8 +20,8 @@ data class ModuleDetails(
   val javacOptions: JavacOptionsItem?,
   val scalacOptions: ScalacOptionsItem?,
   val outputPathUris: List<String>,
-  val libraryDependencies: List<BuildTargetIdentifier>?,
-  val moduleDependencies: List<BuildTargetIdentifier>,
+  val libraryDependencies: List<Dependency>?,
+  val moduleDependencies: List<Dependency>,
   val defaultJdkName: String?,
   val jvmBinaryJars: List<JvmBinaryJarsItem>,
   val workspaceModelEntitiesFolderMarker: Boolean = false,

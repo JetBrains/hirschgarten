@@ -18,7 +18,7 @@ internal class TargetDependentsGraph(targetIdToTargetInfo: Map<BuildTargetIdenti
     libraryItems?.forEach { libraryItem ->
       val dependencies = libraryItem.dependencies
       dependencies.forEach { dependency ->
-        val dependentIds = targetIdToDirectDependentIds.getOrPut(dependency) { hashSetOf() }
+        val dependentIds = targetIdToDirectDependentIds.getOrPut(dependency.id) { hashSetOf() }
         dependentIds.add(libraryItem.id)
       }
     }

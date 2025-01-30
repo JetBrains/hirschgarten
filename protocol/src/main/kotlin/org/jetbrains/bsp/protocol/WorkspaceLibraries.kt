@@ -3,9 +3,11 @@ package org.jetbrains.bsp.protocol
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import java.net.URI
 
+data class Dependency(val id: BuildTargetIdentifier, val exported: Boolean)
+
 public data class LibraryItem(
   val id: BuildTargetIdentifier,
-  val dependencies: List<BuildTargetIdentifier>,
+  val dependencies: List<Dependency>,
   val ijars: List<String>,
   val jars: List<String>,
   val sourceJars: List<String>,

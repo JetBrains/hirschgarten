@@ -81,7 +81,7 @@ internal class ModuleEntityUpdater(
 
   private fun List<IntermediateLibraryDependency>.toLibraryModuleDependencies() =
     this.map {
-      IntermediateModuleDependency(it.libraryName.addLibraryModulePrefix())
+      IntermediateModuleDependency(it.libraryName.addLibraryModulePrefix(), exported = it.exported)
     }
 
   private fun toEntitySource(entityToAdd: GenericModuleInfo): EntitySource =
@@ -106,7 +106,7 @@ internal class ModuleEntityUpdater(
     BspWorkspace.getInstance(project).interner.getOrPut(
       ModuleDependency(
         module = BspWorkspace.getInstance(project).interner.getOrPut(ModuleId(intermediateModuleDependency.moduleName)),
-        exported = true,
+        exported = intermediateModuleDependency.exported,
         scope = DependencyScope.COMPILE,
         productionOnTest = true,
       ),
@@ -123,7 +123,7 @@ internal fun toLibraryDependency(intermediateLibraryDependency: IntermediateLibr
             tableId = LibraryTableId.ProjectLibraryTableId, // treat all libraries as project-level libraries
           ),
         ),
-      exported = true, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
+      exported = intermediateLibraryDependency.exported,
       scope = DependencyScope.COMPILE,
     ),
   )

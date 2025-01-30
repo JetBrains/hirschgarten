@@ -8,7 +8,7 @@ data class Library(
   val label: Label,
   val outputs: Set<URI>,
   val sources: Set<URI>,
-  val dependencies: List<Label>,
+  val dependencies: List<Dependency>,
   val interfaceJars: Set<URI> = emptySet(),
   val mavenCoordinates: MavenCoordinates? = null,
 )

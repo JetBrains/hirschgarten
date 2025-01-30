@@ -107,7 +107,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
     val dummyJavaModuleDependencies =
       calculateDummyJavaModuleNames(calculateDummyJavaSourceRoots(toJavaSourceRoots(inputEntity)), projectBasePath)
         .filter { it.isNotEmpty() }
-        .map { IntermediateModuleDependency(it) }
+        .map { IntermediateModuleDependency(moduleName = it, exported = true) }
     return this.copy(modulesDependencies = modulesDependencies + dummyJavaModuleDependencies)
   }
 

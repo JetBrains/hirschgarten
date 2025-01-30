@@ -21,6 +21,7 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bsp.protocol.BazelBuildServer
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.DependenciesExportedParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
@@ -477,6 +478,11 @@ suspend fun calculateProjectDetailsWithCapabilities(
           (server as BazelBuildServer).workspaceLibraries()
         }
 
+      val dependenciesExportedResult =
+        asyncQueryIf(buildServerCapabilities.buildTargetDependenciesExportedProvider, "buildTarget/dependenciesExported") {
+          server.buildTargetDependenciesExported(DependenciesExportedParams(baseTargetInfos.allTargetIds))
+        }
+
       val dependencySourcesResult =
         asyncQueryIf(buildServerCapabilities.dependencySourcesProvider == true, "buildTarget/dependencySources") {
           val dependencySourcesTargetIds =
@@ -506,7 +512,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
         ) {
           server.buildTargetJvmBinaryJars(JvmBinaryJarsParams(javaTargetIds))
         }
-
       // We use javacOptions only to build the dependency tree based on the classpath.
       // If the workspace/libraries endpoint is NOT available (like SBT), we need to retrieve it.
       // If a server supports buildTarget/jvmCompileClasspath, then the classpath won't be passed via this endpoint
@@ -537,6 +542,7 @@ suspend fun calculateProjectDetailsWithCapabilities(
         targets = baseTargetInfos.infos.map { it.target }.toSet(),
         sources = baseTargetInfos.infos.flatMap { it.sources },
         resources = baseTargetInfos.infos.flatMap { it.resources },
+        dependenciesExported = dependenciesExportedResult.await()?.items ?: emptyList(),
         dependenciesSources = dependencySourcesResult.await()?.items ?: emptyList(),
         javacOptions = javacOptionsResult?.await()?.items ?: emptyList(),
         scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
