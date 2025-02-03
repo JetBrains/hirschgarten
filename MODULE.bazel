@@ -47,7 +47,7 @@ register_toolchains(
 
 # Required by rules_jvm_external since version 6.3
 bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "rules_java", version = "8.6.3")
+bazel_dep(name = "rules_java", version = "8.8.0")
 bazel_dep(name = "rules_jvm_external", version = "6.6")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
@@ -57,7 +57,7 @@ maven.install(
         "com.fasterxml.jackson.core:jackson-databind:2.18.2",
         "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.2",
         "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2",
-        "com.google.code.gson:gson:2.11.0",
+        "com.google.code.gson:gson:2.12.1",
         "com.google.guava:guava:31.0.1-jre",
         "com.google.protobuf:protobuf-java:4.29.3",
         "com.jetbrains.intellij.tools:ide-metrics-collector-starter:251.17181.16-EAP-SNAPSHOT",
@@ -83,14 +83,14 @@ maven.install(
         "org.apache.logging.log4j:log4j-api:2.24.3",
         "org.apache.logging.log4j:log4j-core:2.24.3",
         "org.apache.velocity:velocity-engine-core:2.4.1",
-        "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.23.1",
+        "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.24.0",
         "org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0",
         "org.junit.jupiter:junit-jupiter:5.11.4",
         "org.junit.platform:junit-platform-console:1.11.4",
         "org.junit.platform:junit-platform-suite-api:1.11.4",
         "org.junit.platform:junit-platform-suite-engine:1.11.4",
-        "org.kodein.di:kodein-di:7.24.1",
-        "org.scala-lang:scala-library:2.13.15",
+        "org.kodein.di:kodein-di:7.25.0",
+        "org.scala-lang:scala-library:2.13.16",
     ],
     fail_if_repin_required = True,
     generate_compat_repositories = True,
@@ -154,8 +154,8 @@ http_jar(
 bazel_dep(name = "rules_proto", version = "7.1.0")
 bazel_dep(name = "protobuf", version = "29.3")
 bazel_dep(name = "rules_cc", version = "0.1.0")
-bazel_dep(name = "platforms", version = "0.0.10")
-bazel_dep(name = "rules_python", version = "1.0.0")
+bazel_dep(name = "rules_python", version = "1.1.0")
+bazel_dep(name = "platforms", version = "0.0.11")
 
 # Needed for codecanvas
 python = use_extension("@rules_python//python/extensions:python.bzl", "python", dev_dependency = True)
