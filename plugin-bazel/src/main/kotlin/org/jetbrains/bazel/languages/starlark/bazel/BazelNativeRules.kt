@@ -818,4 +818,5 @@ object BazelNativeRules {
     )
 
   val ruleNames = NATIVE_RULES_MAP.keys
+  fun getRuleByName(name: String): BazelNativeRule? = NATIVE_RULES_MAP[name]
 }
