@@ -41,6 +41,10 @@ import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
+import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
+import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
+import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
+import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
@@ -215,4 +219,10 @@ class ProjectSyncService(
         ?: return RustWorkspaceResult(emptyList(), emptyMap(), emptyMap(), emptyList())
     return bspMapper.rustWorkspace(project, params)
   }
+
+  fun resolveLocalToRemote(cancelChecker: CancelChecker, params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
+    bspMapper.resolveLocalToRemote(cancelChecker, params)
+
+  fun resolveRemoteToLocal(cancelChecker: CancelChecker, params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult =
+    bspMapper.resolveRemoteToLocal(cancelChecker, params)
 }
