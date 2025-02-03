@@ -413,7 +413,8 @@ object BazelNativeRules {
           BazelNativeRuleArgument("reexport_deps", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("stamp", "-1", false),
           BazelNativeRuleArgument("win_def_file", BAZEL_NONE, false),
-        )),
+        ),
+      ),
       addNativeRule(
         "cc_import",
         "https://bazel.build/reference/be/c-cpp#cc_import",
@@ -431,7 +432,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("shared_library", BAZEL_NONE, false),
           BazelNativeRuleArgument("static_library", BAZEL_NONE, false),
           BazelNativeRuleArgument("system_provided", BAZEL_FALSE, false),
-        )
+        ),
       ),
       addNativeRule(
         "cc_library",
@@ -461,7 +462,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("strip_include_prefix", BAZEL_EMPTY_STRING, false),
           BazelNativeRuleArgument("textual_hdrs", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("win_def_file", BAZEL_NONE, false),
-        )
+        ),
       ),
       addNativeRule(
         "cc_shared_library",
@@ -477,7 +478,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("static_deps", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("user_link_flags", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("win_def_file", BAZEL_NONE, false),
-        )
+        ),
       ),
       addNativeRule(
         "cc_static_library",
@@ -485,7 +486,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-        )
+        ),
       ),
       addNativeRule(
         "cc_test",
@@ -514,7 +515,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("reexport_deps", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("stamp", "0", false),
           BazelNativeRuleArgument("win_def_file", BAZEL_NONE, false),
-        )
+        ),
       ),
       addNativeRule(
         "cc_toolchain",
@@ -540,14 +541,14 @@ object BazelNativeRules {
           BazelNativeRuleArgument("supports_param_files", BAZEL_TRUE, false),
           BazelNativeRuleArgument("toolchain_config", BAZEL_TRUE, true),
           BazelNativeRuleArgument("toolchain_identifier", BAZEL_EMPTY_STRING, false),
-        )
+        ),
       ),
       addNativeRule(
         "cc_toolchain_suite",
         "https://bazel.build/reference/be/c-cpp#cc_toolchain_suite",
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
-        )
+        ),
       ),
       addNativeRule(
         "fdo_prefetch_hints",
@@ -555,7 +556,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("profile", BAZEL_NONE, true),
-        )
+        ),
       ),
       addNativeRule(
         "fdo_profile",
@@ -565,7 +566,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("memprof_profile", BAZEL_NONE, false),
           BazelNativeRuleArgument("profile", BAZEL_NONE, true),
           BazelNativeRuleArgument("proto_profile", BAZEL_NONE, false),
-        )
+        ),
       ),
       addNativeRule(
         "memprof_profile",
@@ -573,7 +574,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("profile", BAZEL_NONE, true),
-        )
+        ),
       ),
       addNativeRule(
         "propeller_optimize",
@@ -582,7 +583,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("cc_profile", BAZEL_NONE, true),
           BazelNativeRuleArgument("ld_profile", BAZEL_NONE, true),
-        )
+        ),
       ),
       // Objective-C
       addNativeRule(
@@ -600,7 +601,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("sdk_includes", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("textual_hdrs", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("weak_sdk_frameworks", BAZEL_EMPTY_LIST, false),
-        )
+        ),
       ),
       addNativeRule(
         "objc_library",
@@ -629,7 +630,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("stamp", BAZEL_FALSE, false),
           BazelNativeRuleArgument("textual_hdrs", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("weak_sdk_frameworks", BAZEL_EMPTY_LIST, false),
-        )
+        ),
       ),
       // Protocol buffer.
       addNativeRule(
@@ -638,7 +639,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-        )
+        ),
       ),
       addNativeRule(
         "java_lite_proto_library",
@@ -646,7 +647,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-        )
+        ),
       ),
       addNativeRule(
         "java_proto_library",
@@ -654,7 +655,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-        )
+        ),
       ),
       addNativeRule(
         "proto_library",
@@ -667,7 +668,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("exports", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("import_prefix", BAZEL_EMPTY_STRING, false),
           BazelNativeRuleArgument("strip_import_prefix", BAZEL_EMPTY_STRING, false),
-        )
+        ),
       ),
       addNativeRule(
         "py_proto_library",
@@ -675,7 +676,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-        )
+        ),
       ),
       addNativeRule(
         "proto_lang_toolchain",
@@ -693,7 +694,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("protoc_minimal_do_not_use", BAZEL_NONE, false),
           BazelNativeRuleArgument("runtime", BAZEL_NONE, false),
           BazelNativeRuleArgument("toolchain_type", BAZEL_NONE, false),
-        )
+        ),
       ),
       addNativeRule(
         "proto_toolchain",
@@ -705,7 +706,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("output_files", BAZEL_EMPTY_STRING, false),
           BazelNativeRuleArgument("progress_message", BAZEL_EMPTY_STRING, false),
           BazelNativeRuleArgument("proto_compiler", BAZEL_NONE, false),
-        )
+        ),
       ),
       // Python.
       addNativeRule(
@@ -727,7 +728,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("python_version", BAZEL_EMPTY_STRING, false),
           BazelNativeRuleArgument("srcs_version", BAZEL_EMPTY_STRING, false),
           BazelNativeRuleArgument("stamp", "-1", false),
-        )
+        ),
       ),
       addNativeRule(
         "py_library",
@@ -743,7 +744,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("precompile_optimize_level", "0", false),
           BazelNativeRuleArgument("precompile_source_retention", BAZEL_EMPTY_STRING, false),
           BazelNativeRuleArgument("srcs_version", BAZEL_EMPTY_STRING, false),
-        )
+        ),
       ),
       addNativeRule(
         "py_test",
@@ -764,7 +765,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("python_version", BAZEL_EMPTY_STRING, false),
           BazelNativeRuleArgument("srcs_version", BAZEL_EMPTY_STRING, false),
           BazelNativeRuleArgument("stamp", "0", false),
-        )
+        ),
       ),
       addNativeRule(
         "py_runtime",
@@ -784,7 +785,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("stage2_bootstrap_template", BAZEL_EMPTY_STRING, false),
           BazelNativeRuleArgument("stub_shebang", BAZEL_EMPTY_STRING, false),
           BazelNativeRuleArgument("zip_main_template", BAZEL_EMPTY_STRING, false),
-        )
+        ),
       ),
       // Shell.
       addNativeRule(
@@ -795,7 +796,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
           BazelNativeRuleArgument("env_inherit", BAZEL_EMPTY_LIST, false),
-        )
+        ),
       ),
       addNativeRule(
         "sh_library",
@@ -804,7 +805,7 @@ object BazelNativeRules {
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
-        )
+        ),
       ),
       addNativeRule(
         "sh_test",
@@ -813,10 +814,11 @@ object BazelNativeRules {
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
-        )
+        ),
       ),
     )
 
   val ruleNames = NATIVE_RULES_MAP.keys
+
   fun getRuleByName(name: String): BazelNativeRule? = NATIVE_RULES_MAP[name]
 }
