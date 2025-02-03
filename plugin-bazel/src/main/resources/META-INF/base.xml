@@ -148,8 +148,6 @@
         <completion.contributor
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"/>
-        <platform.backend.documentation.psiTargetProvider
-                implementation="org.jetbrains.bazel.languages.starlark.documentation.BazelNativeRulesExternalDocumentationProvider"/>
         <editorTabTitleProvider
                 implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider"/>
         <extendWordSelectionHandler
