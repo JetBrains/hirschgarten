@@ -83,8 +83,8 @@ class BazelBspServer(
       )
     setupTelemetry(telemetryConfig)
 
-    val languagePluginsService = createLanguagePluginsService(bazelPathsResolver)
     val featureFlags = initializeBuildData.featureFlags ?: FeatureFlags()
+    val languagePluginsService = createLanguagePluginsService(bazelPathsResolver, featureFlags)
     val projectProvider =
       createProjectProvider(
         bspInfo = bspInfo,
@@ -134,9 +134,9 @@ class BazelBspServer(
     return bazelDataResolver.resolveBazelInfo { }
   }
 
-  private fun createLanguagePluginsService(bazelPathsResolver: BazelPathsResolver): LanguagePluginsService {
+  private fun createLanguagePluginsService(bazelPathsResolver: BazelPathsResolver, featureFlags: FeatureFlags): LanguagePluginsService {
     val jdkResolver = JdkResolver(bazelPathsResolver, JdkVersionResolver())
-    val javaLanguagePlugin = JavaLanguagePlugin(workspaceContextProvider, bazelPathsResolver, jdkResolver)
+    val javaLanguagePlugin = JavaLanguagePlugin(workspaceContextProvider, bazelPathsResolver, jdkResolver, featureFlags)
     val scalaLanguagePlugin = ScalaLanguagePlugin(javaLanguagePlugin, bazelPathsResolver)
     val cppLanguagePlugin = CppLanguagePlugin(bazelPathsResolver)
     val kotlinLanguagePlugin = KotlinLanguagePlugin(javaLanguagePlugin, bazelPathsResolver)

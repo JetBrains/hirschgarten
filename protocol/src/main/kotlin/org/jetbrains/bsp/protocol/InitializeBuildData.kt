@@ -15,6 +15,7 @@ data class FeatureFlags(
   val isRustSupportEnabled: Boolean = false,
   val isCppSupportEnabled: Boolean = false,
   val isPropagateExportsFromDepsEnabled: Boolean = true,
+  val isDependencySourcesEnabled: Boolean = true,
   /** Bazel specific */
   val bazelSymlinksScanMaxDepth: Int = 2,
 ) {
@@ -25,6 +26,7 @@ data class FeatureFlags(
       isGoSupportEnabled = isGoSupportEnabled || anotherFeatureFlags.isGoSupportEnabled,
       isRustSupportEnabled = isRustSupportEnabled || anotherFeatureFlags.isRustSupportEnabled,
       isPropagateExportsFromDepsEnabled = isPropagateExportsFromDepsEnabled || anotherFeatureFlags.isPropagateExportsFromDepsEnabled,
+      isDependencySourcesEnabled = isDependencySourcesEnabled && anotherFeatureFlags.isDependencySourcesEnabled,
       bazelSymlinksScanMaxDepth = max(bazelSymlinksScanMaxDepth, anotherFeatureFlags.bazelSymlinksScanMaxDepth),
     )
 }

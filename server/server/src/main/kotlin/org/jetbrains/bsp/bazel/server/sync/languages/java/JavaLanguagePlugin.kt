@@ -14,6 +14,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bsp.protocol.FeatureFlags
 import java.net.URI
 import java.nio.file.Path
 
@@ -21,6 +22,7 @@ class JavaLanguagePlugin(
   private val workspaceContextProvider: WorkspaceContextProvider,
   private val bazelPathsResolver: BazelPathsResolver,
   private val jdkResolver: JdkResolver,
+  private val featureFlags: FeatureFlags,
 ) : LanguagePlugin<JavaModule>() {
   private var jdk: Jdk? = null
 
@@ -55,16 +57,19 @@ class JavaLanguagePlugin(
 
   private fun getJdk(): Jdk = jdk ?: throw RuntimeException("Failed to resolve JDK for project")
 
-  override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<URI> =
-    targetInfo
-      .getJvmTargetInfoOrNull()
-      ?.run {
-        dependencyGraph
-          .transitiveDependenciesWithoutRootTargets(Label.parse(targetInfo.id))
-          .flatMap(::getSourceJars)
-          .map(bazelPathsResolver::resolveUri)
-          .toSet()
-      }.orEmpty()
+  // Provided via workspace/libraries in intellij
+  override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<URI> = 
+    if (featureFlags.isDependencySourcesEnabled) {
+      targetInfo
+        .getJvmTargetInfoOrNull()
+        ?.run {
+          dependencyGraph
+            .transitiveDependenciesWithoutRootTargets(Label.parse(targetInfo.id))
+            .flatMap(::getSourceJars)
+            .map(bazelPathsResolver::resolveUri)
+            .toSet()
+        }.orEmpty()
+      } else emptySet()
 
   private fun getSourceJars(targetInfo: TargetInfo): List<FileLocation> =
     targetInfo

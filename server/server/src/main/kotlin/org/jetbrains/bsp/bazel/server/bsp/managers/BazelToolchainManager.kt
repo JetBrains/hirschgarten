@@ -12,7 +12,7 @@ class BazelToolchainManager(private val bazelRunner: BazelRunner, private val fe
       Language.Scala ->
         when (ruleLanguage.ruleName) {
           "rules_scala_annex" -> Label.parse("@rules_scala_annex//rules/scala:toolchain_type")
-          else -> Label.parse("@${ruleLanguage.ruleName}//scala:toolchain_type")
+          else -> Label.parse("@io_bazel_rules_scala//scala:toolchain_type")
         }
       Language.Java -> Label.parse("@bazel_tools//tools/jdk:runtime_toolchain_type")
       Language.Kotlin -> Label.parse("@${ruleLanguage.ruleName}//kotlin/internal:kt_toolchain_type")
