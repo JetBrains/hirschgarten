@@ -81,6 +81,10 @@ import org.jetbrains.bsp.bazel.server.sync.languages.jvm.javaModule
 import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
+import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
+import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
+import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.EnhancedSourceItem
 import org.jetbrains.bsp.protocol.GoLibraryItem
@@ -124,6 +128,7 @@ class BspProjectMapper(
         jvmRunEnvironmentProvider = true,
         jvmTestEnvironmentProvider = true,
         workspaceLibrariesProvider = true,
+        goDebuggerDataProvider = true,
         workspaceDirectoriesProvider = true,
         workspaceNonModuleTargetsProvider = true,
         workspaceInvalidTargetsProvider = true,
@@ -600,6 +605,16 @@ class BspProjectMapper(
     val toRustWorkspaceResult = languagePluginsService.rustLanguagePlugin::toRustWorkspaceResult
 
     return toRustWorkspaceResult(requestedModules, allRustModules)
+  }
+
+  fun resolveLocalToRemote(cancelChecker: CancelChecker, params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult {
+    val resolve = languagePluginsService.goLanguagePlugin::resolveLocalToRemote
+    return resolve(params)
+  }
+
+  fun resolveRemoteToLocal(cancelChecker: CancelChecker, params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult {
+    val resolve = languagePluginsService.goLanguagePlugin::resolveRemoteToLocal
+    return resolve(params)
   }
 
   companion object {
