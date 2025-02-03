@@ -99,6 +99,7 @@ class FirstPhaseTargetToBspMapperTest {
             name = "//target1",
             kind = "java_library",
             deps = listOf("//dep/target1", "//dep/target2"),
+            srcs = listOf("//target1:src1.java", "//target1:a/src2.java"),
           ),
           createMockTarget(
             name = "//target2",
@@ -124,6 +125,11 @@ class FirstPhaseTargetToBspMapperTest {
             name = "//target6",
             kind = "kt_jvm_test",
             deps = listOf("//dep/target1", "//dep/target2"),
+          ),
+          createMockTarget(
+            name = "//target7",
+            kind = "custom_rule_with_supported_rules_library",
+            srcs = listOf("//target7:src1.java", "//target7:a/src2.java"),
           ),
           createMockTarget(
             name = "//manual_target",
@@ -220,6 +226,18 @@ class FirstPhaseTargetToBspMapperTest {
               canCompile = true
               canRun = false
               canTest = true
+              canDebug = false
+            },
+          ),
+          BuildTarget(
+            BuildTargetIdentifier("//target7"),
+            listOf("library"),
+            listOf("java"),
+            emptyList(),
+            BuildTargetCapabilities().apply {
+              canCompile = true
+              canRun = false
+              canTest = false
               canDebug = false
             },
           ),
