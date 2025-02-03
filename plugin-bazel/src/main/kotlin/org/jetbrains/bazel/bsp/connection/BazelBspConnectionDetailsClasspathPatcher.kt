@@ -38,9 +38,8 @@ internal fun BspConnectionDetails.updateClasspath() {
 private fun BspConnectionDetails.calculateNewClasspath(): String {
   val bazelPluginClasspath = calculatePluginClasspath(BAZEL_PLUGIN_ID)
   val bspPluginClasspath = calculatePluginClasspath(BSP_PLUGIN_ID)
-  val util8Jar = getUtil8Jar()
-
-  return listOfNotNull(bazelPluginClasspath, bspPluginClasspath, util8Jar).joinToString(File.pathSeparator)
+  val pluginClasspaths = listOfNotNull(bazelPluginClasspath, bspPluginClasspath)
+  return (pluginClasspaths + getKotlinxCoroutines()).joinToString(File.pathSeparator)
 }
 
 private fun calculatePluginClasspath(pluginIdString: String): String? {
@@ -66,7 +65,10 @@ private fun calculatePluginClasspath(pluginIdString: String): String? {
 
 private fun Path.isJarFile() = isRegularFile() && name.endsWith(".jar")
 
-private fun BspConnectionDetails.getUtil8Jar(): String =
-  argv[BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX]
-    .split(File.pathSeparator)
-    .first { it.endsWith(UTIL_8_JAR_NAME) }
+private fun BspConnectionDetails.getKotlinxCoroutines(): List<String> {
+  val ideaClasspath = this.argv[BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX].split(File.pathSeparator)
+  val util8Jar = ideaClasspath.firstOrNull { it.endsWith(UTIL_8_JAR_NAME) }
+  if (util8Jar != null) return listOf(util8Jar)
+  // util-8.jar is not present when launching IDEA from sources
+  return ideaClasspath.filter { "kotlinx-coroutines-" in it }
+}

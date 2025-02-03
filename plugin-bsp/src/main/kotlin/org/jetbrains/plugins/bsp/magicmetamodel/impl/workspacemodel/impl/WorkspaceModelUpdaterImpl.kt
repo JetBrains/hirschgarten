@@ -7,6 +7,7 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryEntityUpdater
@@ -47,8 +48,10 @@ class WorkspaceModelUpdaterImpl(
   override suspend fun loadModule(module: Module) {
     when (module) {
       is JavaModule -> {
-        val dummyJavaModules = javaModuleToDummyJavaModulesTransformerHACK.transform(module)
-        javaModuleUpdater.addEntities(dummyJavaModules.filterNot { it.isAlreadyAdded() })
+        if (BspFeatureFlags.addDummyModules) {
+          val dummyJavaModules = javaModuleToDummyJavaModulesTransformerHACK.transform(module)
+          javaModuleUpdater.addEntities(dummyJavaModules.filterNot { it.isAlreadyAdded() })
+        }
         javaModuleUpdater.addEntity(module)
       }
     }
