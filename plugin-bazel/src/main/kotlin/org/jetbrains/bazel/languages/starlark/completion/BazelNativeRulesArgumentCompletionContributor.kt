@@ -76,9 +76,10 @@ class BazelNativeRulesArgumentCompletionContributor : CompletionContributor() {
       override fun handleInsert(context: InsertionContext, item: T) {
         val editor = context.editor
         val document = editor.document
-        if (default == BazelNativeRules.BAZEL_EMPTY_LIST
-          || default == BazelNativeRules.BAZEL_EMPTY_STRING
-          || default == BazelNativeRules.BAZEL_STRUCT) {
+        if (default == BazelNativeRules.BAZEL_EMPTY_LIST ||
+          default == BazelNativeRules.BAZEL_EMPTY_STRING ||
+          default == BazelNativeRules.BAZEL_STRUCT
+        ) {
           document.insertString(context.tailOffset, " = $default,")
           editor.caretModel.moveToOffset(context.tailOffset - 2)
         } else {

@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
-import com.intellij.model.psi.PsiSymbolReference
 import com.intellij.psi.PsiReference
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement

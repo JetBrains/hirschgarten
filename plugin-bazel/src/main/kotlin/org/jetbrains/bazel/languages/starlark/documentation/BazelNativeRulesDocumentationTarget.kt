@@ -1,12 +1,12 @@
 package org.jetbrains.bazel.languages.starlark.documentation
 
-import com.intellij.platform.backend.documentation.DocumentationTarget
 import com.intellij.model.Pointer
 import com.intellij.platform.backend.documentation.DocumentationResult
+import com.intellij.platform.backend.documentation.DocumentationTarget
 import com.intellij.platform.backend.presentation.TargetPresentation
 
 @Suppress("UnstableApiUsage")
-class BazelNativeRulesDocumentationTarget(symbol: BazelNativeRuleDocumentationSymbol):
+class BazelNativeRulesDocumentationTarget(symbol: BazelNativeRuleDocumentationSymbol) :
   DocumentationTarget,
   Pointer<BazelNativeRulesDocumentationTarget> {
   val symbolPtr = symbol.createPointer()
@@ -15,16 +15,14 @@ class BazelNativeRulesDocumentationTarget(symbol: BazelNativeRuleDocumentationSy
 
   override fun dereference(): BazelNativeRulesDocumentationTarget? = symbolPtr.dereference().documentationTarget
 
-  override fun computePresentation(): TargetPresentation {
-    return symbolPtr.dereference().run {
+  override fun computePresentation(): TargetPresentation =
+    symbolPtr.dereference().run {
       TargetPresentation.builder(nativeRule.name).presentation()
     }
-  }
 
-  override fun computeDocumentation(): DocumentationResult? {
-    return symbolPtr.dereference().run {
+  override fun computeDocumentation(): DocumentationResult? =
+    symbolPtr.dereference().run {
       val html = "External documentation for ${nativeRule.name}: <a href=${nativeRule.docsLink}>${nativeRule.docsLink}</a>"
       DocumentationResult.documentation(html.toString())
     }
-  }
 }
