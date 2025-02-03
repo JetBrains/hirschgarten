@@ -103,7 +103,8 @@ class IntellijPluginRunHandler(private val configuration: BspRunConfiguration) :
         params.workingDirectory = ideaJdkHome + File.separator + "bin" + File.separator
         params.jdk = ideaJdk
 
-        for (path in productInfo.getCurrentLaunch().bootClassPathJarNames) {
+        val additionalBootClassPathJarNames = listOf("nio-fs.jar") // For some reason it's missing from the ProductInfo parsed by DevKit
+        for (path in productInfo.getCurrentLaunch().bootClassPathJarNames + additionalBootClassPathJarNames) {
           params.classPath.add(ideaJdkHome + FileUtil.toSystemDependentName("/lib/$path"))
         }
 
