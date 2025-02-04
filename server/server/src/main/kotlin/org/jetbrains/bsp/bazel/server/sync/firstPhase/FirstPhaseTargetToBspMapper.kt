@@ -82,8 +82,15 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
       canDebug = false
     }
 
-  // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1557
-  fun Target.isSupported(): Boolean = Language.allOfKind(kind).isNotEmpty()
+  private fun Target.isSupported(): Boolean {
+    val isRuleSupported = Language.allOfKind(kind).isNotEmpty()
+    val areSourcesSupported =
+      srcs
+        .map { it.substringAfterLast('.') }
+        .any { Language.allOfSource(".$it").isNotEmpty() }
+
+    return isRuleSupported || areSourcesSupported
+  }
 
   fun toSourcesResult(project: FirstPhaseProject, sourcesParams: SourcesParams): SourcesResult {
     val items =

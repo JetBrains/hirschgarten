@@ -103,4 +103,11 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
       .relativize(path)
       .toString()
       .replace(File.separator, BAZEL_COMPONENT_SEPARATOR)
+
+  fun resolve(path: String): File =
+    when {
+      Paths.get(path).isAbsolute -> File(path)
+      path.startsWith("external/") -> bazelInfo.outputBase.resolve(path).toFile()
+      else -> bazelInfo.workspaceRoot.resolve(path).toFile()
+    }
 }
