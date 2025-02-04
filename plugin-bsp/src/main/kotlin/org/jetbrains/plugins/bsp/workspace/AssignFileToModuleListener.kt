@@ -82,8 +82,7 @@ class AssignFileToModuleListener : BulkFileListener {
   }
 }
 
-private fun VFileEvent.getNewFile(): VirtualFile? =
-  if (this !is VFileDeleteEvent) getAffectedFile() else null
+private fun VFileEvent.getNewFile(): VirtualFile? = if (this !is VFileDeleteEvent) getAffectedFile() else null
 
 private fun VFileEvent.getAffectedFile(): VirtualFile? {
   val file =
@@ -138,7 +137,7 @@ private fun VFileEvent.process(project: Project) {
         workspaceModel = workspaceModel,
         targetUtils = targetUtils,
         storage = storage,
-        moduleNameProvider = moduleNameProvider
+        moduleNameProvider = moduleNameProvider,
       )
     }
     newFile?.let {
@@ -148,16 +147,13 @@ private fun VFileEvent.process(project: Project) {
         workspaceModel = workspaceModel,
         targetUtils = targetUtils,
         storage = storage,
-        moduleNameProvider = moduleNameProvider
+        moduleNameProvider = moduleNameProvider,
       )
     }
   }.invokeOnCompletion { targetUtils.fireSyncListeners(false) }
 }
 
-private fun runInBackgroundWithProgress(
-  project: Project,
-  action: suspend () -> Unit,
-): Job =
+private fun runInBackgroundWithProgress(project: Project, action: suspend () -> Unit): Job =
   BspCoroutineService.getInstance(project).start {
     withBackgroundProgress(project, BspPluginBundle.message("file.change.processing.title")) {
       action()
@@ -193,9 +189,10 @@ private suspend fun processFileRemoved(
   val oldUrl = workspaceModel.getVirtualFileUrlManager().fromPath(oldFilePath)
   val oldUri = oldFilePath.safeCastToURI().withScheme("file")
   val newUrl = newFile?.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
-  val modules = targetUtils
-    .getTargetsForURI(oldUri)
-    .mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
+  val modules =
+    targetUtils
+      .getTargetsForURI(oldUri)
+      .mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
   modules.forEach {
     oldUrl.removeFromModule(workspaceModel, it)
     newUrl?.removeFromModule(workspaceModel, it) // IntelliJ might have already changed the content root's path to the new one

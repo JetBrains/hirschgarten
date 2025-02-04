@@ -164,8 +164,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   fun allTargetIds(): List<BuildTargetIdentifier> = targetIdToTargetInfo.keys.toList()
 
-  fun getTargetsForURI(uri: URI): List<BuildTargetIdentifier> =
-    fileToTargetId[uri] ?: emptyList()
+  fun getTargetsForURI(uri: URI): List<BuildTargetIdentifier> = fileToTargetId[uri] ?: emptyList()
 
   fun getTargetsForFile(file: VirtualFile): List<BuildTargetIdentifier> =
     fileToTargetId[file.url.processUriString().safeCastToURI()]
