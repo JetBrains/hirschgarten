@@ -489,6 +489,52 @@ class FirstPhaseTargetToBspMapperTest {
           ),
         )
     }
+
+    @Test
+    fun `should map project to resource items including resources referenced via filegroup targets`() {
+      // given
+      val filegroupResource1 = workspaceRoot.resolve("filegroup/resource1.txt").createParentDirectories().createFile()
+      val filegroupResource2 = workspaceRoot.resolve("filegroup/a/resource2.txt").createParentDirectories().createFile()
+
+      val target1Resource1 = workspaceRoot.resolve("target1/resource1.txt").createParentDirectories().createFile()
+      val target1Resource2 = workspaceRoot.resolve("target1/resource2.txt").createParentDirectories().createFile()
+
+      val targets =
+        listOf(
+          createMockTarget(
+            name = "//filegroup",
+            kind = "filegroup",
+            resources = listOf("//filegroup:resource1.txt", "//filegroup:a/resource2.txt"),
+          ),
+          createMockTarget(
+            name = "//target1",
+            kind = "java_library",
+            resources = listOf("//target1:resource1.txt", "//target1:resource2.txt", "//filegroup"),
+          ),
+        )
+      val project = createMockProject(targets)
+
+      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+
+      // when
+      val params = ResourcesParams(listOf(BuildTargetIdentifier("//target1")))
+      val result = mapper.toResourcesResult(project, params)
+
+      // then
+      result.items shouldContainExactlyInAnyOrder
+        listOf(
+          ResourcesItem(
+            BuildTargetIdentifier("//target1"),
+            listOf(
+              target1Resource1.toUri().toString(),
+              target1Resource2.toUri().toString(),
+              filegroupResource1.toUri().toString(),
+              filegroupResource2.toUri().toString(),
+            ),
+          ),
+        )
+    }
   }
 }
 
