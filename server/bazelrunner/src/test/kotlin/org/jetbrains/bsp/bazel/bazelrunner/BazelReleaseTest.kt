@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.bazelrunner
 
-import com.google.common.base.Charsets
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
@@ -68,7 +67,7 @@ class BazelReleaseTest {
 
   private fun copyBazelVersionToTmp(): Path {
     val inputStream = BazelReleaseTest::class.java.getResourceAsStream("/.bazelversion")
-    val content = inputStream?.bufferedReader(Charsets.UTF_8)?.readText()
+    val content = inputStream?.bufferedReader()?.readText()
     val tempDir = createTempDirectory("workspace").createDirectories()
     val tempFile = tempDir.resolve(".bazelversion")
     content?.let { tempFile.writeText(it) }
