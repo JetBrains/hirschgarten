@@ -61,7 +61,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             "-jvm-target=1.8",
           ),
         associates = listOf(),
-        jvmBuildTarget = if (isBazel8OrHigher) null else jvmBuildTargetData,
+        jvmBuildTarget = jvmBuildTargetData,
       )
 
     val kotlincTestBuildTargetData =
@@ -78,7 +78,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             "-jvm-target=1.8",
           ),
         associates = listOf(),
-        jvmBuildTarget = if (isBazel8OrHigher) null else jvmBuildTargetData,
+        jvmBuildTarget = jvmBuildTargetData,
       )
 
     val kotlincTestBuildTarget =
@@ -138,7 +138,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             "plugin:org.jetbrains.kotlin.allopen:annotation=plugin.allopen.OpenForTesting",
           ),
         associates = listOf(),
-        jvmBuildTarget = if (isBazel8OrHigher) null else jvmBuildTargetData,
+        jvmBuildTarget = jvmBuildTargetData,
       )
 
     val userOfExportBuildTargetData =
@@ -156,7 +156,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             "plugin:org.jetbrains.kotlin.allopen:annotation=plugin.allopen.OpenForTesting",
           ),
         associates = listOf(),
-        jvmBuildTarget = if (isBazel8OrHigher) null else jvmBuildTargetData,
+        jvmBuildTarget = jvmBuildTargetData,
       )
 
     val userBuildTarget =
