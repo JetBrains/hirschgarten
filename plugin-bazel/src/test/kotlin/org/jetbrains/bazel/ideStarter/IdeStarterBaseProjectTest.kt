@@ -220,3 +220,8 @@ fun <T : CommandChain> T.waitForBazelSync(): T {
   addCommand(CMD_PREFIX + "waitForBazelSync")
   return this
 }
+
+fun <T : CommandChain> T.buildAndSync(): T {
+  addCommand(CMD_PREFIX + "buildAndSync")
+  return this
+}

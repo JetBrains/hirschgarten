@@ -9,12 +9,17 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 sealed class IdeStarterTests(
   vcsRoot: GitVcsRoot,
   targets: String,
-  requirements: (Requirements.() -> Unit)? = null,
-  name: String
+  name: String,
+  testSpecificArgs: String = ""
 ) : BaseConfiguration.BaseBuildType(
   name = "[ide-starter] $name",
   vcsRoot = vcsRoot,
-  requirements = requirements,
+  requirements = if (vcsRoot == BaseConfiguration.GitHubVcs) {
+    {
+      endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
+      equals("container.engine.osType", "linux")
+    }
+  } else null,
   artifactRules = Utils.CommonParams.BazelTestlogsArtifactRules,
   steps = {
     bazel {
@@ -30,7 +35,7 @@ sealed class IdeStarterTests(
       id = "run_${targets.replace(":", "_")}"
       command = "test"
       this.targets = targets
-      arguments = "$sysArgs ${Utils.CommonParams.BazelCiSpecificArgs}"
+      arguments = "$sysArgs ${Utils.CommonParams.BazelCiSpecificArgs} $testSpecificArgs"
       toolPath = "/usr/local/bin"
       logging = BazelStep.Verbosity.Diagnostic
       Utils.DockerParams.get().forEach { (key, value) ->
@@ -53,44 +58,48 @@ sealed class IdeStarterTests(
 
 sealed class HotswapTest(
   vcsRoot: GitVcsRoot,
-  requirements: (Requirements.() -> Unit)? = null
 ) : IdeStarterTests(
   name = "Hotswap test",
   vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/hotswap",
-  requirements = requirements
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/hotswap"
 )
 
 sealed class ExternalRepoResolveTest(
   vcsRoot: GitVcsRoot,
-  requirements: (Requirements.() -> Unit)? = null
 ) : IdeStarterTests(
   name = "External repo resolve test",
   vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/references:ExternalRepoResolveTest",
-  requirements = requirements
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/references:ExternalRepoResolveTest"
+)
+
+sealed class JarSourceExcludeTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Compiled source code inside jar exclude test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/java:CompiledSourceCodeInsideJarExcludeTest",
 )
 
 object HotswapTestGitHub : HotswapTest(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-  requirements = {
-    endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
-    equals("container.engine.osType", "linux")
-  }
+  vcsRoot = BaseConfiguration.GitHubVcs
 )
 
 object HotswapTestSpace : HotswapTest(
-  vcsRoot = BaseConfiguration.SpaceVcs,
+  vcsRoot = BaseConfiguration.SpaceVcs
 )
 
 object ExternalRepoResolveTestGitHub : ExternalRepoResolveTest(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-  requirements = {
-    endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
-    equals("container.engine.osType", "linux")
-  }
+  vcsRoot = BaseConfiguration.GitHubVcs
 )
 
 object ExternalRepoResolveTestSpace : ExternalRepoResolveTest(
-  vcsRoot = BaseConfiguration.SpaceVcs,
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object JarSourceExcludeTestGitHub : JarSourceExcludeTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object JarSourceExcludeTestSpace : JarSourceExcludeTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
 )
