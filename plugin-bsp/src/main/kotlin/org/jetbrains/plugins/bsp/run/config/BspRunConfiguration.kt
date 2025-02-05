@@ -38,12 +38,16 @@ class BspRunConfiguration internal constructor(
     targets = newTargets
     updateHandlerIfDifferentProvider(BspRunHandlerProvider.getRunHandlerProvider(project, newTargets))
   }
+  fun updateTargets(newTargets: List<BuildTargetIdentifier>,newProvider: BspRunHandlerProvider) {
+    targets = newTargets
+    updateHandlerIfDifferentProvider(newProvider)
+  }
 
   private var handlerProvider: BspRunHandlerProvider? = null
 
   var handler: BspRunHandler? = null
 
-  private fun updateHandlerIfDifferentProvider(newProvider: BspRunHandlerProvider) {
+  fun updateHandlerIfDifferentProvider(newProvider: BspRunHandlerProvider) {
     if (newProvider == handlerProvider) return
     try {
       handler?.state?.writeExternal(bspElementState)

@@ -46,7 +46,10 @@ class CppPathResolver(bazelInfo: BazelInfo) : BazelPathsResolver(bazelInfo) {
 
   private fun resolveExternalHeaders(path: Path): List<URI> {
     // For external path, resolve to its real path
-    val fileInExecutionRoot = path.getFileRootedAt(Path.of(bazelInfo.execRoot))
+    //todo: here
+    //val fileInExecutionRoot = path.getFileRootedAt(Path.of(bazelInfo.execRoot))
+    val fileInExecutionRoot = path.getFileRootedAt(bazelInfo.outputBase)
+
     try {
       val realPath = fileInExecutionRoot.toRealPath()
       if (isRealFileInWorkspace(realPath)) {

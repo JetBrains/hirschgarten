@@ -54,6 +54,8 @@ java_library(
         android_studio = [
         ],
         clion = [
+            ":cpp",
+            ":sdk",
         ],
         intellij = [
             ":sdk",

@@ -159,14 +159,21 @@ java_import(
     name = "cpp",
     visibility = ["//visibility:public"],
     jars = glob([
+        "lib/*.jar",
+        "lib/modules/*.jar",
         "plugins/c-plugin/lib/*.jar",
         "plugins/cidr-base-plugin/lib/*.jar",
+        "plugins/nativeDebug-plugin/lib/*.jar",
+        "plugins/clion-radler/lib/*.jar",
+        "plugins/clion-rd-components/lib/*.jar",
         "plugins/nativeDebug-plugin/lib/*.jar",
         "plugins/clion-ide/lib/clion-ide.jar",  # for CMakeNotificationProvider
         "plugins/clion-test-google-plugin/lib/clion-test-google-plugin.jar",  # for com.jetbrains.cidr.execution.testing.google
         "plugins/platform-images/lib/*.jar",  # for native debug plugin
-    ]),
-    tags = ["intellij-provided-by-sdk"],
+    ],exclude = [
+         # mockito-extensions needs to be removed from this jar.
+         "lib/testFramework.jar",
+     ]),
 )
 """
 

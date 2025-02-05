@@ -69,10 +69,12 @@ intellij_plugin_library(
         ":bsp_with_go",
         ":bsp_performance_testing",
         ":bsp_devkit",
+        ":bsp_with_cpp",
         ":bsp_code_with_me",
     ],
     plugin_deps = [
         "com.intellij.modules.platform",
+        "org.jetbrains.plugins.clion.radler",
 #         "com.intellij.java",
 #         "org.jetbrains.kotlin",
     ],
