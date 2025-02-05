@@ -60,6 +60,7 @@ object GitHub : Project({
         buildType(PluginBenchmark.BenchmarkWithVersionGitHub)
         buildType(IdeStarterTests.HotswapTestGitHub)
         buildType(IdeStarterTests.ExternalRepoResolveTestGitHub)
+        buildType(IdeStarterTests.JarSourceExcludeTestGitHub) // Added new test
         buildType(ServerE2eTests.SampleRepoGitHub)
         buildType(ServerE2eTests.LocalJdkGitHub)
         buildType(ServerE2eTests.RemoteJdkGitHub)
@@ -118,6 +119,7 @@ object GitHub : Project({
       PluginBenchmark.BenchmarkWithVersionGitHub,
       IdeStarterTests.HotswapTestGitHub,
       IdeStarterTests.ExternalRepoResolveTestGitHub,
+      IdeStarterTests.JarSourceExcludeTestGitHub,
       ServerE2eTests.SampleRepoGitHub,
       ServerE2eTests.LocalJdkGitHub,
       ServerE2eTests.RemoteJdkGitHub,
@@ -139,7 +141,7 @@ object GitHub : Project({
       StaticAnalysis.AndroidTestdpcGitHub,
       StaticAnalysis.BazelGitHub,
       StaticAnalysis.JetpackComposeGitHub,
-      ResultsAggregator.GitHub,
+      ResultsAggregator.GitHub
     )
 })
 
@@ -165,6 +167,7 @@ object Space : Project({
         buildType(PluginBenchmark.SpaceBenchmarkWithVersion)
         buildType(IdeStarterTests.HotswapTestSpace)
         buildType(IdeStarterTests.ExternalRepoResolveTestSpace)
+        buildType(IdeStarterTests.JarSourceExcludeTestSpace) // Added new test
         buildType(ServerE2eTests.SampleRepoSpace)
         buildType(ServerE2eTests.LocalJdkSpace)
         buildType(ServerE2eTests.RemoteJdkSpace)
@@ -223,6 +226,7 @@ object Space : Project({
       PluginBenchmark.SpaceBenchmarkWithVersion,
       IdeStarterTests.HotswapTestSpace,
       IdeStarterTests.ExternalRepoResolveTestSpace,
+      IdeStarterTests.JarSourceExcludeTestSpace,
       ServerE2eTests.SampleRepoSpace,
       ServerE2eTests.LocalJdkSpace,
       ServerE2eTests.RemoteJdkSpace,
@@ -244,6 +248,6 @@ object Space : Project({
       StaticAnalysis.AndroidTestdpcSpace,
       StaticAnalysis.BazelSpace,
       StaticAnalysis.JetpackComposeSpace,
-      ResultsAggregator.Space,
+      ResultsAggregator.Space
     )
 })
