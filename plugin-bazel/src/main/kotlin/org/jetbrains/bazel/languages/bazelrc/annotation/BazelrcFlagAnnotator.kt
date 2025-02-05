@@ -26,7 +26,7 @@ val flagTokenPattern =
       BazelrcLine::class.java,
     )!!
 
-val labelFlagRe = Regex("^--(?:no)?[@/].*$")
+private val labelFlagRe = Regex("^--(?:no)?[@/].*$")
 
 @Suppress("UnstableApiUsage")
 class BazelrcFlagAnnotator : Annotator {
