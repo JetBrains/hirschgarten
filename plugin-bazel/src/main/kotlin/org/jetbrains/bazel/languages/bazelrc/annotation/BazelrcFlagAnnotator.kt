@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.languages.bazelrc.annotation
 
+import com.android.tools.lint.detector.api.startsWith
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.model.psi.PsiSymbolReference
 import com.intellij.model.psi.PsiSymbolReferenceService
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
@@ -25,6 +25,8 @@ val flagTokenPattern =
       BazelrcFlag::class.java,
       BazelrcLine::class.java,
     )!!
+
+val labelFlagRe = Regex("^--(?:no)?[@/].*$")
 
 @Suppress("UnstableApiUsage")
 class BazelrcFlagAnnotator : Annotator {
@@ -78,17 +80,26 @@ class BazelrcFlagAnnotator : Annotator {
           .needsUpdateOnTyping()
           .create()
 
-      isOld(flag, element.textRange.substring(element.containingFile.text)) ->
+      isOld(flag, element.text) ->
         holder
-          .newAnnotation(HighlightSeverity.INFORMATION, "Flag: '${element.text}'")
+          .newAnnotation(HighlightSeverity.INFORMATION, oldAnnotationMessage(flag, element.text))
           .range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.DEPRECATED_FLAG)
           .needsUpdateOnTyping()
+          // TODO(mihai): Add an intention to fix
           .create()
 
       else -> {}
     }
   }
+
+  private fun oldAnnotationMessage(flag: Flag, flagText: String) =
+    when {
+      flagText.startsWith("--no") -> "--no"
+      else -> "--"
+    }.let {
+      "'$flagText' is deprecated. use '$it${flag.option.name}' instead."
+    }
 
   private fun isLabel(e: PsiElement) = labelFlagRe.matches(e.text)
 
@@ -103,10 +114,11 @@ class BazelrcFlagAnnotator : Annotator {
 
   private fun isNoOp(flag: Flag) = flag.option.effectTags.contains(OptionEffectTag.NO_OP)
 
-  private fun isOld(flag: Flag, name: String) = "--${flag.option.oldName}" == name
+  private fun isOld(flag: Flag, name: String) =
+    when (flag) {
+      is Flag.Boolean, is Flag.TriState ->
+        name == "--${flag.option.oldName}" || name == "--no${flag.option.oldName}"
 
-  private companion object {
-    private val log = logger<BazelrcFlagAnnotator>()
-    private val labelFlagRe = Regex("^--(?:no)?[@/].*$")
-  }
+      else -> "--${flag.option.oldName}" == name
+    }
 }
