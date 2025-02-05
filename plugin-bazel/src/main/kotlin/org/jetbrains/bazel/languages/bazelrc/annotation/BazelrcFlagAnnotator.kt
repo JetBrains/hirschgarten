@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.bazelrc.annotation
 
-import com.android.tools.lint.detector.api.startsWith
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
@@ -86,7 +85,7 @@ class BazelrcFlagAnnotator : Annotator {
           .range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.DEPRECATED_FLAG)
           .needsUpdateOnTyping()
-          // TODO(mihai): Add an intention to fix
+          // TODO(BAZEL-1704): Add an intention to fix
           .create()
 
       else -> {}
