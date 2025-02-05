@@ -102,6 +102,5 @@ query --noexperimental_check_output_files
 # https://github.com/JetBrains/hirschgarten/pull/92
 common --experimental_rule_extension_api
 
-# https://youtrack.jetbrains.com/issue/BAZEL-1095
-# Added a new flag, --incompatible_use_plus_in_repo_names, which uses the plus character (+) instead of the tilde (~) in canonical repo names. This flag will be flipped to true in Bazel 8.0. (#23127)
-# common --incompatible_use_plus_in_repo_names
+# https://github.com/protocolbuffers/protobuf/issues/16944#issuecomment-2530220696
+build --host_cxxopt=-std=c++14 --cxxopt=-std=c++14
