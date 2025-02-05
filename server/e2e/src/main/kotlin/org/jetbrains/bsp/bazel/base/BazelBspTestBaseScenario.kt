@@ -25,18 +25,20 @@ abstract class BazelBspTestBaseScenario {
   val targetPrefix = "@"
 
   val isBzlmod = majorBazelVersion >= 7
+  val isBazel8OrHigher = majorBazelVersion >= 8
   val bzlmodRepoNameSeparator = if (majorBazelVersion == 7) "~" else "+"
 
   private val architecturePart
     get() = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
   val javaHomeArchitecture get() = "\$OS$architecturePart"
 
-  private val bazelArch get() =
-    if (OsFamily.inferFromSystem() == OsFamily.MACOS) {
-      "darwin_arm64"
-    } else {
-      "k8"
-    }
+  private val bazelArch
+    get() =
+      if (OsFamily.inferFromSystem() == OsFamily.MACOS) {
+        "darwin_arm64"
+      } else {
+        "k8"
+      }
   private val mainBinName = if (majorBazelVersion >= 7) "_main" else "__main__"
   val bazelBinDirectory get() = "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/$mainBinName/bazel-out/$bazelArch-fastbuild/bin"
 

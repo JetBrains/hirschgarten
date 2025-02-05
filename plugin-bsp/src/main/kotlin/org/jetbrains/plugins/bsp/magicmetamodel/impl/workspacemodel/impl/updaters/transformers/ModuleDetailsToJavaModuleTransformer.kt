@@ -8,6 +8,7 @@ import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
+import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.bspProjectName
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -104,6 +105,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
   }
 
   private fun GenericModuleInfo.applyHACK(inputEntity: ModuleDetails, projectBasePath: Path): GenericModuleInfo {
+    if (!BspFeatureFlags.addDummyModules) return this
     val dummyJavaModuleDependencies =
       calculateDummyJavaModuleNames(calculateDummyJavaSourceRoots(toJavaSourceRoots(inputEntity)), projectBasePath)
         .filter { it.isNotEmpty() }

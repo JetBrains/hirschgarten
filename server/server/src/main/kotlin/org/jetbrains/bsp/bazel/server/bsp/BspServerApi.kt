@@ -51,6 +51,10 @@ import org.jetbrains.bsp.bazel.server.sync.ExecuteService
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
+import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
+import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
+import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
+import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
@@ -254,4 +258,10 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, Initial
 
   override fun rustWorkspace(params: RustWorkspaceParams): CompletableFuture<RustWorkspaceResult> =
     runner.handleRequest("buildTarget/rustWorkspace", projectSyncService::rustWorkspace, params)
+
+  override fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): CompletableFuture<BazelResolveLocalToRemoteResult> =
+    runner.handleRequest("debug/resolveLocalToRemote", projectSyncService::resolveLocalToRemote, params)
+
+  override fun bazelResolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): CompletableFuture<BazelResolveRemoteToLocalResult> =
+    runner.handleRequest("debug/resolveRemoteToLocal", projectSyncService::resolveRemoteToLocal, params)
 }

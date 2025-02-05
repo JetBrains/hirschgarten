@@ -13,6 +13,7 @@ kt_jvm_library(
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/config",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/console",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/extensionPoints",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/golang",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/impl",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/intellij",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/jvm",
@@ -53,6 +54,7 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         ":intellij-bsp",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/coroutines",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
@@ -60,5 +62,6 @@ kt_jvm_library(
         "@maven//:io_kotest_kotest_common_jvm",
         "@maven//:org_junit_jupiter_junit_jupiter",
         "@rules_intellij//testing:lib",
+        "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_test",
     ],
 )

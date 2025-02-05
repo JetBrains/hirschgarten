@@ -12,7 +12,7 @@ import org.jetbrains.bsp.bazel.server.benchmark.useWithScope
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
-import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesQueryImpl
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesetsQueryImpl
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelLabelExpander
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.bzlmod.calculateRepoMapping
@@ -57,8 +57,8 @@ class ProjectResolver(
           workspaceContextProvider::currentWorkspaceContext,
         )
 
-      val bazelExternalRulesQuery =
-        BazelExternalRulesQueryImpl(
+      val bazelExternalRulesetsQuery =
+        BazelExternalRulesetsQueryImpl(
           bazelRunner,
           bazelInfo.isBzlModEnabled,
           bazelInfo.isWorkspaceEnabled,
@@ -66,15 +66,15 @@ class ProjectResolver(
           bspClientLogger,
         )
 
-      val externalRuleNames =
+      val externalRulesetNames =
         measured(
           "Discovering supported external rules",
-        ) { bazelExternalRulesQuery.fetchExternalRuleNames(cancelChecker) }
+        ) { bazelExternalRulesetsQuery.fetchExternalRulesetNames(cancelChecker) }
 
       val ruleLanguages =
         measured(
           "Mapping rule names to languages",
-        ) { bazelBspAspectsManager.calculateRuleLanguages(externalRuleNames) }
+        ) { bazelBspAspectsManager.calculateRulesetLanguages(externalRulesetNames) }
 
       val toolchains =
         measured(
@@ -200,9 +200,16 @@ class ProjectResolver(
           )
         var remainingShardedTargetsSpecs = shardedResult.targets.toTargetsSpecs().toMutableList()
         var shardNumber = 1
-        var shardedBuildResult: BazelBspAspectsManagerResult? = null
-        var suggestedTargetShardSize = workspaceContext.targetShardSize.value
+        var shardedBuildResult: BazelBspAspectsManagerResult = BazelBspAspectsManagerResult.emptyResult()
+        var suggestedTargetShardSize: Int = workspaceContext.targetShardSize.value
         while (remainingShardedTargetsSpecs.isNotEmpty()) {
+          cancelChecker.checkCanceled()
+          if (featureFlags.bazelShutDownBeforeShardBuild) {
+            // Prevent memory leak by forcing Bazel to shut down before it builds a shard
+            // This may cause the build to become slower, but it is necessary, at least before this issue is solved
+            // https://github.com/bazelbuild/bazel/issues/19412
+            runBazelShutDown(cancelChecker)
+          }
           val shardedTargetsSpec = remainingShardedTargetsSpecs.removeFirst()
           val shardName = "shard $shardNumber of ${shardNumber + remainingShardedTargetsSpecs.size}"
           bspClientLogger.message("\nBuilding $shardName ...")
@@ -228,6 +235,9 @@ class ProjectResolver(
             try {
               val halvedTargetsSpec = shardedTargetsSpec.halve()
               suggestedTargetShardSize = halvedTargetsSpec.first().values.size
+              bspClientLogger.message(
+                "Retrying with the target shard size of $suggestedTargetShardSize (previously ${shardedTargetsSpec.values.size}) ...",
+              )
               remainingShardedTargetsSpecs = remainingShardedTargetsSpecs.flatMap { it.halve() }.toMutableList()
               remainingShardedTargetsSpecs.addAll(0, halvedTargetsSpec)
             } catch (e: IllegalTargetsSizeException) {
@@ -235,7 +245,7 @@ class ProjectResolver(
               throw e
             }
           }
-          shardedBuildResult = shardedBuildResult?.merge(result) ?: result
+          shardedBuildResult = shardedBuildResult.merge(result)
 
           bspClientLogger.message("---")
           ++shardNumber
@@ -246,12 +256,23 @@ class ProjectResolver(
           )
           bspClientLogger.message("---")
         }
-        shardedBuildResult!!
+        shardedBuildResult
       } else {
         nonShardBuild()
       }
 
     return res
+  }
+
+  private fun runBazelShutDown(cancelChecker: CancelChecker) {
+    bazelRunner.run {
+      val command =
+        buildBazelCommand {
+          shutDown()
+        }
+      runBazelCommand(command, serverPidFuture = null)
+        .waitAndGetResult(cancelChecker)
+    }
   }
 
   fun releaseMemory() {

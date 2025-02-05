@@ -13,6 +13,7 @@ import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.server.model.BspMappings
 import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.server.model.Language
@@ -25,6 +26,7 @@ import kotlin.collections.map
 import kotlin.collections.mapNotNull
 import kotlin.io.path.Path
 import kotlin.io.path.exists
+import kotlin.io.path.isRegularFile
 
 class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: WorkspaceContextProvider, private val workspaceRoot: Path) {
   fun toWorkspaceBuildTargetsResult(project: FirstPhaseProject): WorkspaceBuildTargetsResult {
@@ -80,27 +82,42 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
       canDebug = false
     }
 
-  // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1557
-  fun Target.isSupported(): Boolean = Language.allOfKind(kind).isNotEmpty()
+  private fun Target.isSupported(): Boolean {
+    val isRuleSupported = Language.allOfKind(kind).isNotEmpty()
+    val areSourcesSupported =
+      srcs
+        .map { it.substringAfterLast('.') }
+        .any { Language.allOfSource(".$it").isNotEmpty() }
 
-  // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1549/
+    return isRuleSupported || areSourcesSupported
+  }
+
   fun toSourcesResult(project: FirstPhaseProject, sourcesParams: SourcesParams): SourcesResult {
     val items =
       project
         .lightweightModulesForTargets(sourcesParams.targets)
-        .map { it.toBspSourcesItem() }
+        .map { it.toBspSourcesItem(project) }
 
     return SourcesResult(items)
   }
 
-  private fun Target.toBspSourcesItem(): SourcesItem {
-    val sourceFiles = srcs.map { it.bazelFileFormatToPath() }.filter { it.exists() }
+  private fun Target.toBspSourcesItem(project: FirstPhaseProject): SourcesItem {
+    val sourceFiles = srcs.map { it.bazelFileFormatToPath() }.filter { it.exists() }.filter { it.isRegularFile() }
     val sourceFilesAndData = sourceFiles.map { it to JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(it) }
 
-    val items = sourceFilesAndData.map { EnhancedSourceItem(it.first.toUri().toString(), SourceItemKind.FILE, false, it.second.data) }
+    val itemsForSourcesReferencedViaTarget =
+      srcs
+        .mapNotNull { Label.parseOrNull(it) }
+        .mapNotNull { project.modules[it] }
+        .map { it.toBspSourcesItem(project) }
+    val directItems = sourceFilesAndData.map { EnhancedSourceItem(it.first.toUri().toString(), SourceItemKind.FILE, false, it.second.data) }
+    val items = (directItems + itemsForSourcesReferencedViaTarget.flatMap { it.sources }).distinct()
+
+    val directRoots = sourceFilesAndData.map { it.second.sourceRoot }.map { it.toUri().toString() }
+    val roots = (directRoots + itemsForSourcesReferencedViaTarget.flatMap { it.roots }).distinct()
 
     return SourcesItem(BuildTargetIdentifier(name), items).apply {
-      roots = sourceFilesAndData.map { it.second.sourceRoot }.map { it.toUri().toString() }.distinct()
+      this.roots = roots
     }
   }
 

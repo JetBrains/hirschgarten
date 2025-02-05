@@ -105,7 +105,9 @@ def extract_runtime_jars(target, provider):
     if compilation_info:
         return compilation_info.runtime_classpath
 
-    return getattr(provider, "transitive_runtime_jars", get_java_info(target).transitive_runtime_jars)
+    java_info = get_java_info(target)
+
+    return getattr(provider, "transitive_runtime_jars", java_info.transitive_runtime_jars if java_info else depset())
 
 def extract_compile_jars(provider):
     compilation_info = getattr(provider, "compilation_info", None)

@@ -207,6 +207,33 @@ class CliOptionsProvider(private val args: Array<String>) {
           "Add manually enabled rules to override the automatic rules detection mechanism",
         ).build()
     cliParserOptions.addOption(enabledRulesOption)
+
+    val shardSyncOption =
+      Option
+        .builder()
+        .longOpt(SHARD_SYNC_LONG_OPT)
+        .hasArg()
+        .desc("Enable shard sync")
+        .build()
+    cliParserOptions.addOption(shardSyncOption)
+
+    val targetShardSizeOption =
+      Option
+        .builder()
+        .longOpt(TARGET_SHARD_SIZE_LONG_OPT)
+        .hasArg()
+        .desc("Target shard size")
+        .build()
+    cliParserOptions.addOption(targetShardSizeOption)
+
+    val shardApproachOption =
+      Option
+        .builder()
+        .longOpt(SHARD_APPROACH_LONG_OPT)
+        .hasArg()
+        .desc("Shard approach")
+        .build()
+    cliParserOptions.addOption(shardApproachOption)
   }
 
   fun getOptions(): CliOptions {
@@ -342,7 +369,7 @@ class CliOptionsProvider(private val args: Array<String>) {
 
   private fun produceTraceLogFlag(cmd: CommandLine): Boolean = cmd.hasOption(PRODUCE_TRACE_LOG_OPT)
 
-  private fun shardSyncEnabled(cmd: CommandLine): Boolean = cmd.hasOption(SHARD_SYNC_LONG_OPT)
+  private fun shardSyncEnabled(cmd: CommandLine): Boolean = cmd.getOptionValue(SHARD_SYNC_LONG_OPT)?.toBoolean() == true
 
   private fun getTargetShardSize(cmd: CommandLine): Int? = cmd.getOptionValue(TARGET_SHARD_SIZE_LONG_OPT)?.toInt()
 
