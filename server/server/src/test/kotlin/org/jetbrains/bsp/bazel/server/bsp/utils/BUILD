@@ -16,7 +16,7 @@ kt_junit5_test(
     src = "DelimitedMessageReaderTest.kt",
     deps = [
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bsp/utils",
-        "@bazel_bep//jar",
+        "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
         "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_test",
     ],
 )

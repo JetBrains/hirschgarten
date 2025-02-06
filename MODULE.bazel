@@ -59,7 +59,6 @@ maven.install(
         "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2",
         "com.google.code.gson:gson:2.12.1",
         "com.google.guava:guava:31.0.1-jre",
-        "com.google.protobuf:protobuf-java:4.29.3",
         "com.jetbrains.intellij.tools:ide-metrics-collector-starter:251.17181.16-EAP-SNAPSHOT",
         "com.jetbrains.intellij.tools:ide-metrics-collector:251.17181.16-EAP-SNAPSHOT",
         "com.jetbrains.intellij.tools:ide-starter-junit5:251.17181.16-EAP-SNAPSHOT",
@@ -141,14 +140,12 @@ use_repo(
 )
 
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "googleapis", version = "0.0.0-20240819-fe8ba054a")
 
-# Required until Bazel repo upstreams it's rules_jvm_external fix and there's a new release
-BAZEL_BEP_VERSION = "5.4.1"
-
-http_jar(
-    name = "bazel_bep",
-    integrity = "sha256-z7XAsDOW3Ha8zrcg1ZP/8+7Azg4MNzUFQAtUBvjl75U=",
-    url = "https://github.com/agluszak/bazel-bep-proto/releases/download/%s/bazel-bep-protobuf.jar" % BAZEL_BEP_VERSION,
+switched_rules = use_extension("@googleapis//:extensions.bzl", "switched_rules")
+switched_rules.use_languages(
+    grpc = True,
+    java = True,
 )
 
 bazel_dep(name = "rules_proto", version = "7.1.0")

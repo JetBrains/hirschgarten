@@ -8,7 +8,6 @@ kt_jvm_library(
     visibility = ["//visibility:private"],
     deps = [
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:build_java_proto",
-        "@maven//:com_google_protobuf_protobuf_java",
     ],
 )
 
