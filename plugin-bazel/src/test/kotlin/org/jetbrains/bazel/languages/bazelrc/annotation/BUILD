@@ -5,6 +5,7 @@ kt_intellij_junit4_test(
     src = "BazelrcAnnotationTest.kt",
     data = [
         "//plugin-bazel/src/test/testData/bazelrc/annotation:LabelFlagsTestData.bazelrc",
+        "//plugin-bazel/src/test/testData/bazelrc/annotation:OldFlagsTestData.bazelrc",
     ],
     runtime_deps = [
         "//plugin-bsp:intellij-bsp",
