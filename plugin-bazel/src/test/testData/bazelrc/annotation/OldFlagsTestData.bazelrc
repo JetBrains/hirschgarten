@@ -1,0 +1,4 @@
+common:bad <info descr="'--experimental_action_cache_store_output_metadata' is deprecated. use '--action_cache_store_output_metadata' instead.">--experimental_action_cache_store_output_metadata</info>
+common:bad <info descr="'--noexperimental_action_cache_store_output_metadata' is deprecated. use '--noaction_cache_store_output_metadata' instead.">--noexperimental_action_cache_store_output_metadata</info>
+common:good --action_cache_store_output_metadata
+common:good --noaction_cache_store_output_metadata
