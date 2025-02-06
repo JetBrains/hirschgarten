@@ -8,6 +8,7 @@ import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
+import org.jetbrains.bsp.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
 import org.jetbrains.bsp.bazel.workspacecontext.EnabledRulesSpec
 import org.w3c.dom.Document
 import org.w3c.dom.NodeList
@@ -19,7 +20,12 @@ interface BazelExternalRulesetsQuery {
 }
 
 class BazelEnabledRulesetsQueryImpl(private val enabledRulesSpec: EnabledRulesSpec) : BazelExternalRulesetsQuery {
-  override fun fetchExternalRulesetNames(cancelChecker: CancelChecker): List<String> = enabledRulesSpec.values.distinct()
+  override fun fetchExternalRulesetNames(cancelChecker: CancelChecker): List<String> {
+    val specifiedRules = enabledRulesSpec.values
+    val neededTransitiveRules = specifiedRules.mapNotNull { rootRulesToNeededTransitiveRules[it] }.flatten()
+
+    return (specifiedRules + neededTransitiveRules).distinct()
+  }
 }
 
 class BazelExternalRulesetsQueryImpl(
@@ -127,7 +133,16 @@ class BazelBzlModExternalRulesetsQueryImpl(
           }
         } as? JsonObject
     return try {
-      gson.fromJson(bzlmodGraphJson, BzlmodGraph::class.java).getAllDirectRulesetDependencies()
+      val graph = gson.fromJson(bzlmodGraphJson, BzlmodGraph::class.java)
+      val directDeps = graph.getAllDirectRulesetDependencies()
+      val indirectDeps =
+        rootRulesToNeededTransitiveRules
+          .filterKeys { it in directDeps }
+          .filter { it.value.any { transitiveDep -> graph.isIncludedTransitively(it.key, transitiveDep) } }
+          .values
+          .flatten()
+
+      return directDeps + indirectDeps
     } catch (e: Throwable) {
       log.warn("The returned bzlmod json is not parsable:\n$bzlmodGraphJson", e)
       emptyList()

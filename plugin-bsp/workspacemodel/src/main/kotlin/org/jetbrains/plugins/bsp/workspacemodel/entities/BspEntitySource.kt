@@ -6,6 +6,6 @@ sealed interface BspEntitySource : EntitySource
 
 data object BspProjectEntitySource : BspEntitySource
 
-class BspModuleEntitySource(val moduleName: String) : BspEntitySource
+data class BspModuleEntitySource(val moduleName: String) : BspEntitySource
 
 data object BspDummyEntitySource : BspEntitySource

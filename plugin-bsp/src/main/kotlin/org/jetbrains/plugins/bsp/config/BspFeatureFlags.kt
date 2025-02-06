@@ -13,6 +13,7 @@ private const val WRAP_LIBRARIES_INSIDE_MODULES = "bsp.wrap.libraries.inside.mod
 private const val USE_PHASED_SYNC = "bsp.use.phased.sync"
 private const val EXECUTE_SECOND_PHASE_ON_SYNC = "bsp.execute.second.phase.on.sync"
 private const val ADD_DUMMY_MODULES = "bsp.add.dummy.modules"
+private const val EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS = "bsp.exclude.compiled.source.code.inside.jars"
 
 object BspFeatureFlags {
   val isPythonSupportEnabled: Boolean
@@ -47,6 +48,9 @@ object BspFeatureFlags {
 
   val addDummyModules: Boolean
     get() = Registry.`is`(ADD_DUMMY_MODULES)
+
+  val excludeCompiledSourceCodeInsideJars: Boolean
+    get() = Registry.`is`(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS)
 }
 
 class DefaultBspFeatureFlagsProvider : BspFeatureFlagsProvider {

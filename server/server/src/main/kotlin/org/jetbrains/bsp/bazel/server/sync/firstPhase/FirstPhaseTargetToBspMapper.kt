@@ -27,6 +27,7 @@ import kotlin.collections.mapNotNull
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
+import kotlin.toString
 
 class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: WorkspaceContextProvider, private val workspaceRoot: Path) {
   fun toWorkspaceBuildTargetsResult(project: FirstPhaseProject): WorkspaceBuildTargetsResult {
@@ -102,14 +103,10 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
   }
 
   private fun Target.toBspSourcesItem(project: FirstPhaseProject): SourcesItem {
-    val sourceFiles = srcs.map { it.bazelFileFormatToPath() }.filter { it.exists() }.filter { it.isRegularFile() }
+    val sourceFiles = srcs.calculateFiles()
     val sourceFilesAndData = sourceFiles.map { it to JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(it) }
 
-    val itemsForSourcesReferencedViaTarget =
-      srcs
-        .mapNotNull { Label.parseOrNull(it) }
-        .mapNotNull { project.modules[it] }
-        .map { it.toBspSourcesItem(project) }
+    val itemsForSourcesReferencedViaTarget = srcs.calculateModuleDependencies(project).map { it.toBspSourcesItem(project) }
     val directItems = sourceFilesAndData.map { EnhancedSourceItem(it.first.toUri().toString(), SourceItemKind.FILE, false, it.second.data) }
     val items = (directItems + itemsForSourcesReferencedViaTarget.flatMap { it.sources }).distinct()
 
@@ -121,21 +118,32 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
     }
   }
 
-  // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1549/
   fun toResourcesResult(project: FirstPhaseProject, resourcesParams: ResourcesParams): ResourcesResult {
     val items =
       project
         .lightweightModulesForTargets(resourcesParams.targets)
-        .map { it.toBspResourcesItem() }
+        .map { it.toBspResourcesItem(project) }
 
     return ResourcesResult(items)
   }
 
-  private fun Target.toBspResourcesItem(): ResourcesItem =
-    ResourcesItem(
-      BuildTargetIdentifier(name),
-      resources.map { it.bazelFileFormatToPath() }.filter { it.exists() }.map { it.toUri().toString() },
-    )
+  private fun Target.toBspResourcesItem(project: FirstPhaseProject): ResourcesItem {
+    val directResources = resources.calculateFiles().map { it.toUri().toString() }
+    val resourcesReferencedViaTarget =
+      resources
+        .calculateModuleDependencies(project)
+        .map { it.toBspResourcesItem(project) }
+        .flatMap { it.resources }
+
+    val items = (directResources + resourcesReferencedViaTarget).distinct()
+    return ResourcesItem(BuildTargetIdentifier(name), items)
+  }
+
+  private fun List<String>.calculateModuleDependencies(project: FirstPhaseProject): List<Target> =
+    mapNotNull { Label.parseOrNull(it) }.mapNotNull { project.modules[it] }
+
+  private fun List<String>.calculateFiles(): List<Path> =
+    map { it.bazelFileFormatToPath() }.filter { it.exists() }.filter { it.isRegularFile() }
 
   private fun String.bazelFileFormatToPath(): Path {
     val withoutColons = replace(':', '/')

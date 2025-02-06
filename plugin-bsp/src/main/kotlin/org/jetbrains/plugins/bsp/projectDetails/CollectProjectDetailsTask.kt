@@ -54,6 +54,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.findNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.TargetIdToModuleEntitiesMap
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModulesToCompiledSourceCodeInsideJarExcludeTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.androidJarToAndroidSdkName
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
@@ -309,6 +310,17 @@ class CollectProjectDetailsTask(
             targetIdToModuleEntityMap
           }
 
+        val modulesToLoad = targetIdToModuleEntitiesMap.values.toList()
+
+        val compiledSourceCodeInsideJarToExclude =
+          bspTracer.spanBuilder("calculate.non.generated.class.files.to.exclude").use {
+            if (BspFeatureFlags.excludeCompiledSourceCodeInsideJars) {
+              ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(modulesToLoad)
+            } else {
+              null
+            }
+          }
+
         bspTracer.spanBuilder("load.modules.ms").use {
           val workspaceModel = WorkspaceModel.getInstance(project)
           val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
@@ -322,10 +334,9 @@ class CollectProjectDetailsTask(
               isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
             )
 
-          val modulesToLoad = targetIdToModuleEntitiesMap.values.toList()
-
           workspaceModelUpdater.loadModules(modulesToLoad + libraryModules)
           workspaceModelUpdater.loadLibraries(libraries)
+          compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
           calculateAllJavacOptions(modulesToLoad)
         }
       }

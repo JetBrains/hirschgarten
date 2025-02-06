@@ -17,7 +17,6 @@ import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bsp.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
-import org.jetbrains.bsp.bazel.server.bzlmod.canonicalizeOrNull
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
@@ -142,8 +141,8 @@ class BazelBspAspectsManager(
     when {
       // bazel mod dump_repo_mapping returns everything without @@
       // and in aspects we have a @ prefix
-      repoMapping is BzlmodRepoMapping ->
-        Label.parseOrNull(rulesetName)?.canonicalizeOrNull(repoMapping)?.let { "@$it" } ?: rulesetName
+      repoMapping is BzlmodRepoMapping && rulesetName != null ->
+        repoMapping.apparentRepoNameToCanonicalName[rulesetName]?.let { "@$it" } ?: rulesetName
 
       else -> rulesetName
     }

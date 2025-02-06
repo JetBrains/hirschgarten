@@ -132,6 +132,8 @@
                 implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
         <workspaceModel.fileIndexContributor
                 implementation="org.jetbrains.plugins.bsp.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"/>
+        <workspaceModel.fileIndexContributor
+                implementation="org.jetbrains.plugins.bsp.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
 
         <java.programPatcher implementation="org.jetbrains.plugins.bsp.jvm.BspJvmEnvironmentProgramPatcher"/>
         <java.elementFinder implementation="org.jetbrains.plugins.bsp.services.GeneratedClassFinder"/>
@@ -194,6 +196,9 @@
         <registryKey defaultValue="true"
                      description="Add the so-called &quot;dummy&quot; modules to make Java resolve work correctly."
                      key="bsp.add.dummy.modules"/>
+        <registryKey defaultValue="true"
+                     description="Exclude class files inside jars (and source files inside source jars) if they match up with a source file in the current project."
+                     key="bsp.exclude.compiled.source.code.inside.jars"/>
 
         <statusBarWidgetFactory id="BspFileTargetsWidget"
                                 implementation="org.jetbrains.plugins.bsp.ui.widgets.fileTargets.BspFileTargetsWidgetFactory"/>
