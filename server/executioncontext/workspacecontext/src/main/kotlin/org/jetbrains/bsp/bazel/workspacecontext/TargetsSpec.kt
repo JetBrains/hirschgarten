@@ -8,6 +8,7 @@ import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
 import java.nio.file.Path
+import kotlin.io.path.isDirectory
 import kotlin.io.path.pathString
 
 class IllegalTargetsSizeException(message: String) : IllegalArgumentException(message)
@@ -49,7 +50,7 @@ internal object TargetsSpecExtractor : ExecutionContextEntityExtractor<TargetsSp
         )
 
       hasEmptyIncludedValuesAndNonEmptyExcludedValuesDirectories(directories)
-      -> throw ExecutionContextEntityExtractorException(
+        -> throw ExecutionContextEntityExtractorException(
         NAME,
         "'directories' section has no included targets.",
       )
@@ -90,8 +91,9 @@ internal object TargetsSpecExtractor : ExecutionContextEntityExtractor<TargetsSp
     targetsSection: ProjectViewTargetsSection?,
     directoriesSection: ProjectViewDirectoriesSection,
   ): TargetsSpec {
-    val directoriesValues = directoriesSection.values.map { mapDirectoryToTarget(it) }
-    val directoriesExcludedValues = directoriesSection.excludedValues.map { mapDirectoryToTarget(it) }
+    val directoriesValues = directoriesSection.values.filter { it.isDirectory() }.map { mapDirectoryToTarget(it) }.distinct()
+    val directoriesExcludedValues =
+      directoriesSection.excludedValues.filter { it.isDirectory() }.map { mapDirectoryToTarget(it) }.distinct()
 
     return TargetsSpec(
       targetsSection?.values.orEmpty() + directoriesValues,

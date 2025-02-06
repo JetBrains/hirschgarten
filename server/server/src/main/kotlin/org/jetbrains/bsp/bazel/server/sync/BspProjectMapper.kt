@@ -176,6 +176,7 @@ class BspProjectMapper(
           id = BuildTargetIdentifier(it.label.toString()),
           goImportPath = it.goImportPath,
           goRoot = it.goRoot,
+          goSources = it.goSources,
         )
       }
     return WorkspaceGoLibrariesResult(libraries)

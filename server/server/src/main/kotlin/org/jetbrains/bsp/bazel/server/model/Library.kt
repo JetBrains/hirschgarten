@@ -17,4 +17,5 @@ data class GoLibrary(
   val label: Label,
   val goImportPath: String? = null,
   val goRoot: URI? = null,
+  val goSources: List<URI> = emptyList<URI>(),
 )

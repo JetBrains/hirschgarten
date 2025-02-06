@@ -14,6 +14,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.java.JdkResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.java.JdkVersionResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.proto.ProtoLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.python.PythonLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaLanguagePlugin
@@ -62,6 +63,7 @@ class LanguagePluginServiceTest {
     val rustLanguagePlugin = RustLanguagePlugin(bazelPathsResolver)
     val androidLanguagePlugin = AndroidLanguagePlugin(provider, javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
     val goLanguagePlugin = GoLanguagePlugin(bazelPathsResolver)
+    val protoLanguagePlugin = ProtoLanguagePlugin(bazelPathsResolver)
     languagePluginsService =
       LanguagePluginsService(
         scalaLanguagePlugin,
@@ -73,6 +75,7 @@ class LanguagePluginServiceTest {
         rustLanguagePlugin,
         androidLanguagePlugin,
         goLanguagePlugin,
+        protoLanguagePlugin,
       )
   }
 

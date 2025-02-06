@@ -1,4 +1,4 @@
-derive_targets_from_directories: true
+derive_targets_from_directories: false
 
 workspace_type: intellij_plugin
 
@@ -21,4 +21,4 @@ additional_languages:
   kotlin
   python
 
-allow_manual_targets_sync: true
+allow_manual_targets_sync: false

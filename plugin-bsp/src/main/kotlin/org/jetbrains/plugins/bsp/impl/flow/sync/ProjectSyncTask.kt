@@ -34,6 +34,7 @@ import org.jetbrains.plugins.bsp.impl.projectAware.SyncAlreadyInProgressExceptio
 import org.jetbrains.plugins.bsp.impl.server.connection.connection
 import org.jetbrains.plugins.bsp.performance.bspTracer
 import org.jetbrains.plugins.bsp.projectStructure.AllProjectStructuresProvider
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 
@@ -173,6 +174,8 @@ class ProjectSyncTask(private val project: Project) {
     project.connection.runWithServer { server, capabilities ->
       bspTracer.spanBuilder("collect.project.details.ms").use {
         val baseTargetInfos = BaseProjectSync(project).execute(syncScope, buildProject, server, capabilities, PROJECT_SYNC_TASK_ID)
+        val buildTargets = baseTargetInfos.infos.map { it.target }
+        project.temporaryTargetUtils.targetsMap = buildTargets.associate { it.id to it }
         val environment =
           ProjectSyncHookEnvironment(
             project = project,

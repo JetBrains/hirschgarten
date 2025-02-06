@@ -22,6 +22,7 @@ public data class GoLibraryItem(
   val id: BuildTargetIdentifier,
   val goImportPath: String? = null,
   val goRoot: URI? = null,
+  val goSources: List<URI> = emptyList<URI>(),
 )
 
 public data class WorkspaceLibrariesResult(val libraries: List<LibraryItem>)

@@ -10,6 +10,7 @@ import com.google.gson.JsonObject
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.protocol.ProtoBuildTarget
 
 private inline fun <reified Data> extractData(target: BuildTarget, kind: String): Data? =
   if (target.dataKind == kind) {
@@ -32,6 +33,8 @@ public fun extractScalaBuildTarget(target: BuildTarget): ScalaBuildTarget? = ext
 public fun extractAndroidBuildTarget(target: BuildTarget): AndroidBuildTarget? = extractData(target, "android")
 
 public fun extractGoBuildTarget(target: BuildTarget): GoBuildTarget? = extractData(target, "go")
+
+public fun extractProtoBuildTarget(target: BuildTarget): ProtoBuildTarget? = extractData(target, "proto")
 
 public fun extractKotlinBuildTarget(target: BuildTarget): KotlinBuildTarget? =
   extractData(target, "kotlin")

@@ -1,6 +1,8 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.go
 
 import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
@@ -26,6 +28,9 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, priva
           sdkHomePath = sdkHomePath,
           importPath = importPath,
           generatedLibraries = generatedLibraries,
+          generatedSources = generatedSources,
+          ruleKind = ruleKind,
+          libraryLabels = libraryLabels.map { BuildTargetIdentifier(it.toString()) },
         )
       }
 
@@ -46,9 +51,11 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, priva
     val goTargetInfo = targetInfo.goTargetInfo
     return GoModule(
       sdkHomePath = calculateSdkURI(goTargetInfo.sdkHomePath),
-      importPath = goTargetInfo.importpath,
+      importPath = goTargetInfo.importPath.takeIf { it.isNotEmpty() },
       generatedSources = goTargetInfo.generatedSourcesList.mapNotNull { bazelPathsResolver.resolveUri(it) },
       generatedLibraries = goTargetInfo.generatedLibrariesList.mapNotNull { bazelPathsResolver.resolveUri(it) },
+      ruleKind = goTargetInfo.ruleKind,
+      libraryLabels = goTargetInfo.libraryLabelsList.map { Label.parse(it) },
     )
   }
 

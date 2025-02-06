@@ -26,6 +26,7 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.bsp.protocol.GoLibraryItem
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 import org.jetbrains.plugins.bsp.building.syncConsole
@@ -43,13 +44,17 @@ import org.jetbrains.plugins.bsp.magicmetamodel.findNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.RawUriToDirectoryPathTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.orDefault
 import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelDiff
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import kotlin.io.path.toPath
 
+
 private const val GO_SOURCE_ROOT_TYPE = "go-source"
 private const val GO_TEST_SOURCE_ROOT_TYPE = "go-test"
 private const val GO_RESOURCE_ROOT_TYPE = "go-resource"
+
+private val GO_LIBRARY_PREFIXES = setOf<String>("GOPATH", "Go SDK")
 
 // looks strange, but GO plugin does not use this field extensively, so there is no GO-specific type available
 // WEB_MODULE is the "recommended" one
@@ -65,6 +70,9 @@ class GoProjectSync : ProjectSyncHook {
     val idToGoTargetMap = goTargets.associateBy({ it.target.id }, { it })
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
     val moduleNameProvider = environment.project.findNameProvider().orDefault()
+    val goLibraries = queryGoLibraries(environment)?.libraries
+
+    goLibraries?.let { environment.project.temporaryTargetUtils.goLibraries = it }
 
     val moduleEntities =
       goTargets.map {
@@ -81,7 +89,15 @@ class GoProjectSync : ProjectSyncHook {
             moduleNameProvider = moduleNameProvider,
           )
         val vgoModule =
-          prepareVgoModule(environment, it, moduleEntity.symbolicId, virtualFileUrlManager, idToGoTargetMap, moduleSourceEntity)
+          prepareVgoModule(
+            environment,
+            it,
+            moduleEntity.symbolicId,
+            virtualFileUrlManager,
+            idToGoTargetMap,
+            moduleSourceEntity,
+            goLibraries,
+          )
         environment.diff.workspaceModelDiff.mutableEntityStorage
           .addEntity(vgoModule)
         moduleEntity
@@ -186,6 +202,7 @@ class GoProjectSync : ProjectSyncHook {
     virtualFileUrlManager: VirtualFileUrlManager,
     idToGoTargetMap: Map<BuildTargetIdentifier, BaseTargetInfo>,
     entitySource: BspModuleEntitySource,
+    goLibraries: List<GoLibraryItem>?,
   ): VgoStandaloneModuleEntity.Builder {
     val goBuildInfo = extractGoBuildTarget(inputEntity.target)
 
@@ -195,7 +212,7 @@ class GoProjectSync : ProjectSyncHook {
           val goDependencyBuildInfo = extractGoBuildTarget(dependencyTargetInfo.target)
           goDependencyBuildInfo?.let { goDepBuildInfo ->
             VgoDependencyEntity(
-              importPath = goDepBuildInfo.importPath,
+              importPath = goDepBuildInfo.importPath.orEmpty(),
               entitySource = entitySource,
               isMainModule = false,
               internal = true,
@@ -207,7 +224,7 @@ class GoProjectSync : ProjectSyncHook {
       }
 
     val vgoModuleLibraries =
-      queryGoLibraries(environment)?.libraries?.map {
+      goLibraries?.map {
         VgoDependencyEntity(
           importPath = it.goImportPath ?: "",
           entitySource = entitySource,

@@ -226,9 +226,12 @@ class BazelProjectMapper(
       createNonModuleTargets(
         targets.filterKeys {
           nonModuleTargetIds.contains(it) &&
-            isTargetTreatedAsInternal(it.assumeResolved(), repoMapping)
+            isTargetTreatedAsInternal(targets[it]!!, repoMapping)
         },
       )
+
+    print(targetsAsLibraries)
+    print(goLibrariesMapper)
 
     return AspectSyncProject(
       workspaceRoot = workspaceRoot,
@@ -443,8 +446,9 @@ class BazelProjectMapper(
           target.goTargetInfo.generatedLibrariesList.map {
             GoLibrary(
               label = label,
-              goImportPath = target.goTargetInfo.importpath,
+              goImportPath = target.goTargetInfo.importPath,
               goRoot = bazelPathsResolver.resolve(it).parent.toUri(),
+              goSources = listOfNotNull(bazelPathsResolver.resolve(it).takeIf { it.extension == "go" }?.toUri()),
             )
           }
         label to libraries
@@ -697,8 +701,10 @@ class BazelProjectMapper(
   private fun createGoLibrary(label: Label, targetInfo: TargetInfo): GoLibrary =
     GoLibrary(
       label = label,
-      goImportPath = targetInfo.goTargetInfo?.importpath,
+      goImportPath = targetInfo.goTargetInfo?.importPath,
       goRoot = getGoRootUri(targetInfo),
+      goSources = targetInfo.sourcesList?.mapNotNull { bazelPathsResolver.resolveUri(it).takeIf { it.toString().endsWith(".go") } }
+        ?: emptyList(),
     )
 
   private fun createLibrariesFromTransitiveCompileTimeJars(
@@ -854,18 +860,26 @@ class BazelProjectMapper(
       it.relativePath.endsWith(".rs")
     }
 
+  private fun hasKnownProtoSources(targetInfo: TargetInfo) =
+    targetInfo.sourcesList.any {
+      it.relativePath.endsWith(".proto")
+    }
+
   private fun externalRepositoriesTreatedAsInternal(repoMapping: RepoMapping) =
     when (repoMapping) {
       is BzlmodRepoMapping -> repoMapping.canonicalRepoNameToLocalPath.keys
       is RepoMappingDisabled -> emptySet()
     }
 
-  private fun isTargetTreatedAsInternal(target: ResolvedLabel, repoMapping: RepoMapping): Boolean =
-    target.isMainWorkspace || target.repo.repoName in externalRepositoriesTreatedAsInternal(repoMapping)
+  private fun isTargetTreatedAsInternal(target: TargetInfo, repoMapping: RepoMapping): Boolean =
+    with(target.label().assumeResolved()) {
+      isMainWorkspace || repo.repoName in externalRepositoriesTreatedAsInternal(repoMapping) || target.hasGoTargetInfo() || target.hasGoTargetInfo()
+    }
+
 
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
   private fun isWorkspaceTarget(target: TargetInfo, repoMapping: RepoMapping): Boolean =
-    isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
+    isTargetTreatedAsInternal(target, repoMapping) &&
       (
         shouldImportTargetKind(target.kind) ||
           target.hasJvmTargetInfo() &&
@@ -878,8 +892,9 @@ class BazelProjectMapper(
           hasKnownGoSources(target) ||
           featureFlags.isRustSupportEnabled &&
           target.hasRustCrateInfo() &&
-          hasKnownRustSources(target)
-      )
+          hasKnownRustSources(target) ||
+          hasKnownProtoSources(target)
+        )
 
   private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds
 
@@ -903,9 +918,12 @@ class BazelProjectMapper(
       "kt_android_library",
       "kt_android_local_test",
       "intellij_plugin_debug_target",
+      "go_source",
       "go_library",
       "go_binary",
       "go_test",
+      "go_proto_library",
+      "proto_library",
     )
 
   private fun isRustTarget(target: TargetInfo): Boolean = target.hasRustCrateInfo()

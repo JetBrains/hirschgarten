@@ -159,7 +159,7 @@ class ProjectResolver(
     featureFlags: FeatureFlags,
     firstPhaseProject: FirstPhaseProject?,
   ): BazelBspAspectsManagerResult {
-    val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, SYNC_ARTIFACT_OUTPUT_GROUP)
+    val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, SYNC_ARTIFACT_OUTPUT_GROUP, "bsp-sources-go")
     if (build) {
       outputGroups.add(BUILD_ARTIFACT_OUTPUT_GROUP)
     }

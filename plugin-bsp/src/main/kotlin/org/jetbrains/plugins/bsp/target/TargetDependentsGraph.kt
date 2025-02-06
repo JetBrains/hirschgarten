@@ -4,7 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
-internal class TargetDependentsGraph(targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>, libraryItems: List<LibraryItem>?) {
+class TargetDependentsGraph(targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>, libraryItems: List<LibraryItem>?) {
   private val targetIdToDirectDependentIds = hashMapOf<BuildTargetIdentifier, MutableSet<BuildTargetIdentifier>>()
 
   init {

@@ -13,7 +13,7 @@ class BazelToolchainManager(private val bazelRunner: BazelRunner, private val fe
       Language.Kotlin -> Label.parse("@${rulesetLanguage.rulesetName}//kotlin/internal:kt_toolchain_type")
       Language.Rust -> Label.parse("@${rulesetLanguage.rulesetName}//rust:toolchain_type")
       Language.Android -> getAndroidToolchain(rulesetLanguage, cancelChecker)
-      Language.Go -> Label.parse("@${rulesetLanguage.rulesetName}//go:toolchain")
+      Language.Go -> Label.parse("@io_bazel_rules_go//go:toolchain")
       else -> null
     }
 

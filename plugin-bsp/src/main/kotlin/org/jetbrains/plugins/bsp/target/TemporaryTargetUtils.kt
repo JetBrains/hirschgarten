@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.target
 
+import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
@@ -14,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import org.jetbrains.bsp.protocol.GoLibraryItem
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.rootDir
@@ -41,6 +43,11 @@ data class TemporaryTargetUtilsState(
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
 class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState> {
+  var targetsMap: Map<BuildTargetIdentifier, BuildTarget> = emptyMap()
+
+  @Volatile
+  var goLibraries: List<GoLibraryItem> = emptyList()
+  var targetDependentsGraph: TargetDependentsGraph = TargetDependentsGraph(emptyMap(), emptyList())
   var targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo> = emptyMap()
     private set
   private var moduleIdToBuildTargetId: Map<String, BuildTargetIdentifier> = emptyMap()
@@ -87,7 +94,7 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
 
   private suspend fun calculateFileToExecutableTargetIds(libraryItems: List<LibraryItem>?): Map<URI, List<BuildTargetIdentifier>> =
     withContext(Dispatchers.Default) {
-      val targetDependentsGraph = TargetDependentsGraph(targetIdToTargetInfo, libraryItems)
+      targetDependentsGraph = TargetDependentsGraph(targetIdToTargetInfo, libraryItems)
       val targetToTransitiveRevertedDependenciesCache = ConcurrentHashMap<BuildTargetIdentifier, Set<BuildTargetIdentifier>>()
       fileToTargetId
         .map { (uri, targetIds) ->

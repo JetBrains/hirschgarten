@@ -9,6 +9,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.cpp.CppModule
 import org.jetbrains.bsp.bazel.server.sync.languages.go.GoLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.proto.ProtoLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.python.PythonLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.python.PythonModule
 import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustLanguagePlugin
@@ -25,6 +26,7 @@ class LanguagePluginsService(
   val rustLanguagePlugin: RustLanguagePlugin,
   private val androidLanguagePlugin: AndroidLanguagePlugin,
   val goLanguagePlugin: GoLanguagePlugin,
+  val protoLanguagePlugin: ProtoLanguagePlugin,
 ) {
   private val emptyLanguagePlugin: EmptyLanguagePlugin = EmptyLanguagePlugin()
 
@@ -37,6 +39,7 @@ class LanguagePluginsService(
     rustLanguagePlugin.prepareSync(targetInfos)
     androidLanguagePlugin.prepareSync(targetInfos)
     goLanguagePlugin.prepareSync(targetInfos)
+    protoLanguagePlugin.prepareSync(targetInfos)
   }
 
   fun getPlugin(languages: Set<Language>): LanguagePlugin<*> =
@@ -50,6 +53,7 @@ class LanguagePluginsService(
       languages.contains(Language.PYTHON) -> pythonLanguagePlugin
       languages.contains(Language.RUST) -> rustLanguagePlugin
       languages.contains(Language.GO) -> goLanguagePlugin
+      languages.contains(Language.PROTO) -> protoLanguagePlugin
       else -> emptyLanguagePlugin
     }
 
