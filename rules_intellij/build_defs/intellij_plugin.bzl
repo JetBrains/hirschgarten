@@ -43,8 +43,8 @@ intellij_plugin(
 """
 
 load("@rules_java//java:defs.bzl", "java_binary", "java_import")
-load("@rules_java//java/common:java_info.bzl", "JavaInfo")
 load("@rules_java//java/common:java_common.bzl", "java_common")
+load("@rules_java//java/common:java_info.bzl", "JavaInfo")
 load(
     "//build_defs:restrictions.bzl",
     "RestrictedInfo",
@@ -308,14 +308,13 @@ def _plugin_external_jars_impl(ctx):
 
     # filter out deploy env
     if hasattr(java_common, "JavaRuntimeClasspathInfo"):
-            deploy_env_jars = depset(transitive = [
-                dep[java_common.JavaRuntimeClasspathInfo].runtime_classpath
-                for dep in ctx.attr.deploy_env
-            ])
-            excluded_jars = {jar: None for jar in deploy_env_jars.to_list()}
-            if excluded_jars:
-                new_transitive_runtime_jars = [jar for jar in new_transitive_runtime_jars if jar not in excluded_jars]
-
+        deploy_env_jars = depset(transitive = [
+            dep[java_common.JavaRuntimeClasspathInfo].runtime_classpath
+            for dep in ctx.attr.deploy_env
+        ])
+        excluded_jars = {jar: None for jar in deploy_env_jars.to_list()}
+        if excluded_jars:
+            new_transitive_runtime_jars = [jar for jar in new_transitive_runtime_jars if jar not in excluded_jars]
 
     return DefaultInfo(
         files = depset(new_transitive_runtime_jars),
@@ -430,7 +429,8 @@ def intellij_plugin(name, deps, plugin_xml, plugin_deps = [], optional_plugin_de
       plugin_icons: Plugin logo files to be placed in META-INF. Follow https://plugins.jetbrains.com/docs/intellij/plugin-icon-file.html#plugin-logo-requirements
       **kwargs: Any further arguments to be passed to the final target
     """
-#     java_deps_name = name + "_java_deps"
+
+    #     java_deps_name = name + "_java_deps"
     binary_name = name + "_binary"
     deploy_jar = binary_name + "_deploy.jar"
 

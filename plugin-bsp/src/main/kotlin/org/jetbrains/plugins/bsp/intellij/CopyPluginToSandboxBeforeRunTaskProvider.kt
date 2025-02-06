@@ -1,34 +1,24 @@
 package org.jetbrains.plugins.bsp.intellij
 
-import com.google.devtools.intellij.plugin.IntellijPluginDeployTargetInfo
-import com.google.devtools.intellij.plugin.IntellijPluginDeployTargetInfo.IntellijPluginDeployFile
+import com.google.devtools.intellij.plugin.IntellijPluginDeployTargetInfo.IntellijPluginDeployInfo
+import com.google.protobuf.TextFormat
 import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.BeforeRunTaskProvider
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.components.service
-import com.intellij.openapi.roots.OrderEnumerator
-import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.util.Key
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.getModule
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
-import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
-import com.google.devtools.intellij.plugin.IntellijPluginDeployTargetInfo.IntellijPluginDeployInfo
-import com.google.protobuf.TextFormat
 import java.io.IOException
 import java.io.InputStreamReader
-import java.net.URI
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
-import kotlin.io.path.name
-import kotlin.io.path.toPath
 
 private val PROVIDER_ID = Key.create<CopyPluginToSandboxBeforeRunTaskProvider.Task>("CopyPluginToSandboxBeforeRunTaskProvider")
 private val DEPLOY_INFO_FILE_EXTENSION = ".intellij-plugin-debug-target-deploy-info"
@@ -64,18 +54,23 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
 
     //
     val target = runConfiguration.targets.single()
-      // convert uri to a project-local path pointing to the uri + DEPLOY_INFO_FILE_EXTENSION
-      val path = Path.of(target.uri)
-      val jarPath = path.resolveSibling(path.fileName.toString() + DEPLOY_INFO_FILE_EXTENSION)
-      if (path.exists()) {
-        val info = Files.newInputStream(jarPath).use { inputStream ->
+    // convert uri to a project-local path pointing to the uri + DEPLOY_INFO_FILE_EXTENSION
+    val path = Path.of(target.uri)
+    val jarPath = path.resolveSibling(path.fileName.toString() + DEPLOY_INFO_FILE_EXTENSION)
+    if (path.exists()) {
+      val info =
+        Files.newInputStream(jarPath).use { inputStream ->
           val builder = IntellijPluginDeployInfo.newBuilder()
-          val parser = TextFormat.Parser.newBuilder().setAllowUnknownFields(true).build()
+          val parser =
+            TextFormat.Parser
+              .newBuilder()
+              .setAllowUnknownFields(true)
+              .build()
           parser.merge(InputStreamReader(inputStream, UTF_8), builder)
           builder.build()
         }
-        for (file in info.deployFilesList) {
-          deployFiles.put(Path.of(file.executionPath), Path.of(file.deployLocation))
+      for (file in info.deployFilesList) {
+        deployFiles.put(Path.of(file.executionPath), Path.of(file.deployLocation))
       }
     }
 

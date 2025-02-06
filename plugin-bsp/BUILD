@@ -118,13 +118,19 @@ intellij_plugin_debug_target(
 
 java_single_jar(
     name = "intellij-bsp_single_jar_for_debug",
-    deps = [":intellij-bsp", ":intellij-bsp_external_jars"],
     visibility = ["//visibility:public"],
+    deps = [
+        ":intellij-bsp",
+        ":intellij-bsp_external_jars",
+    ],
 )
 
 repackaged_files(
     name = "intellij-bsp_jar",
-    srcs = [":intellij-bsp", ":intellij-bsp_external_jars"],
+    srcs = [
+        ":intellij-bsp",
+        ":intellij-bsp_external_jars",
+    ],
     prefix = "intellij-bsp/lib",
     visibility = ["//visibility:public"],
 )
