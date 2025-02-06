@@ -1,5 +1,7 @@
 package org.jetbrains.plugins.bsp.intellij
 
+import com.google.devtools.intellij.plugin.IntellijPluginDeployTargetInfo
+import com.google.devtools.intellij.plugin.IntellijPluginDeployTargetInfo.IntellijPluginDeployFile
 import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.BeforeRunTaskProvider
 import com.intellij.execution.configurations.RunConfiguration
@@ -14,8 +16,13 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.getModu
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
+import com.google.devtools.intellij.plugin.IntellijPluginDeployTargetInfo.IntellijPluginDeployInfo
+import com.google.protobuf.TextFormat
 import java.io.IOException
+import java.io.InputStreamReader
 import java.net.URI
+import java.nio.charset.StandardCharsets.UTF_8
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
@@ -24,6 +31,7 @@ import kotlin.io.path.name
 import kotlin.io.path.toPath
 
 private val PROVIDER_ID = Key.create<CopyPluginToSandboxBeforeRunTaskProvider.Task>("CopyPluginToSandboxBeforeRunTaskProvider")
+private val DEPLOY_INFO_FILE_EXTENSION = ".intellij-plugin-debug-target-deploy-info"
 
 public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<CopyPluginToSandboxBeforeRunTaskProvider.Task>() {
   public class Task : BeforeRunTask<Task>(PROVIDER_ID)
@@ -52,39 +60,42 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
         "INTELLIJ_PLUGIN_SANDBOX_KEY must be passed"
       }
 
-    val pluginJars = mutableListOf<Path>()
+    val deployFiles = mutableMapOf<Path, Path>()
 
-    for (target in runConfiguration.targets) {
-      val targetInfo = configuration.project.service<TemporaryTargetUtils>().getBuildTargetInfoForId(target)
-      val module = targetInfo?.getModule(environment.project) ?: continue
-      OrderEnumerator.orderEntries(module).librariesOnly().recursively().withoutSdk().forEachLibrary { library ->
-        // Use URLs directly because getFiles will be empty until VFS refresh.
-        library
-          .getUrls(OrderRootType.CLASSES)
-          .mapNotNull { "file://" + it.removePrefix("jar://").removeSuffix("!/") }
-          .map { URI.create(it).toPath() }
-          .forEach { pluginJars.add(it) }
-        true
+    //
+    val target = runConfiguration.targets.single()
+      // convert uri to a project-local path pointing to the uri + DEPLOY_INFO_FILE_EXTENSION
+      val path = Path.of(target.uri)
+      val jarPath = path.resolveSibling(path.fileName.toString() + DEPLOY_INFO_FILE_EXTENSION)
+      if (path.exists()) {
+        val info = Files.newInputStream(jarPath).use { inputStream ->
+          val builder = IntellijPluginDeployInfo.newBuilder()
+          val parser = TextFormat.Parser.newBuilder().setAllowUnknownFields(true).build()
+          parser.merge(InputStreamReader(inputStream, UTF_8), builder)
+          builder.build()
+        }
+        for (file in info.deployFilesList) {
+          deployFiles.put(Path.of(file.executionPath), Path.of(file.deployLocation))
       }
     }
 
-    if (pluginJars.isEmpty()) {
+    if (deployFiles.isEmpty()) {
       showError(BspPluginBundle.message("console.task.exception.no.plugin.jars"))
       return false
     }
-    for (pluginJar in pluginJars) {
-      if (!pluginJar.exists()) {
-        showError(BspPluginBundle.message("console.task.exception.plugin.jar.not.found", pluginJar))
+    for ((deployFile, target) in deployFiles) {
+      if (!deployFile.exists()) {
+        showError(BspPluginBundle.message("console.task.exception.plugin.jar.not.found", deployFile))
         return false
       }
       try {
         pluginSandbox.createDirectories()
-        pluginJar.copyTo(pluginSandbox.resolve(pluginJar.name), overwrite = true)
+        deployFile.copyTo(pluginSandbox.resolve(target), overwrite = true)
       } catch (e: IOException) {
         val errorMessage =
           BspPluginBundle.message(
             "console.task.exception.plugin.jar.could.not.copy",
-            pluginJar,
+            deployFile,
             pluginSandbox,
             e.message.orEmpty(),
           )
