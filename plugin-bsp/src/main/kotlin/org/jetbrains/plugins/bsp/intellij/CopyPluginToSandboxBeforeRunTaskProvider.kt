@@ -16,6 +16,7 @@ import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
@@ -52,12 +53,20 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
 
     val deployFiles = mutableMapOf<Path, Path>()
 
-    //
+    val projectPath = Path(configuration.project.basePath!!)
     val target = runConfiguration.targets.single()
+    val uriToPath =
+      target.uri
+        .removePrefix("@")
+        .removePrefix("/")
+        .removePrefix("/")
+        .replace(":", "/")
+
     // convert uri to a project-local path pointing to the uri + DEPLOY_INFO_FILE_EXTENSION
-    val path = Path.of(target.uri)
+    val path = projectPath.resolve("bazel-bin").resolve(Path.of(uriToPath))
     val jarPath = path.resolveSibling(path.fileName.toString() + DEPLOY_INFO_FILE_EXTENSION)
-    if (path.exists()) {
+
+    if (jarPath.exists()) {
       val info =
         Files.newInputStream(jarPath).use { inputStream ->
           val builder = IntellijPluginDeployInfo.newBuilder()
@@ -70,12 +79,14 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
           builder.build()
         }
       for (file in info.deployFilesList) {
-        deployFiles.put(Path.of(file.executionPath), Path.of(file.deployLocation))
+        val executionPath = Path.of(file.executionPath)
+        val deployLocation = Path.of(file.deployLocation)
+        deployFiles.put(projectPath.resolve(executionPath), pluginSandbox.resolve(deployLocation))
       }
     }
 
     if (deployFiles.isEmpty()) {
-      showError(BspPluginBundle.message("console.task.exception.no.plugin.jars"))
+      showError(jarPath.toString() + BspPluginBundle.message("console.task.exception.no.plugin.jars"))
       return false
     }
     for ((deployFile, target) in deployFiles) {
@@ -85,7 +96,7 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
       }
       try {
         pluginSandbox.createDirectories()
-        deployFile.copyTo(pluginSandbox.resolve(target), overwrite = true)
+        deployFile.copyTo(target, overwrite = true)
       } catch (e: IOException) {
         val errorMessage =
           BspPluginBundle.message(
