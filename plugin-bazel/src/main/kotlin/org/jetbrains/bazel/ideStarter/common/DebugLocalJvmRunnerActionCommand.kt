@@ -6,7 +6,7 @@ import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
 import org.jetbrains.plugins.bsp.runnerAction.RunWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.runnerAction.TestWithLocalJvmRunnerAction
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 
 abstract class DebugLocalJvmRunnerActionCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   override suspend fun doExecute(context: PlaybackContext) {
@@ -15,7 +15,7 @@ abstract class DebugLocalJvmRunnerActionCommand(text: String, line: Int) : Playb
 
   private suspend fun executeDebugLocalJVMRunnerAction(project: Project) {
     val id = getTargetId(project) ?: return
-    val targetInfo = project.temporaryTargetUtils.targetIdToTargetInfo[id] ?: return
+    val targetInfo = project.targetUtils.getBuildTargetInfoForId(id) ?: return
     if (targetInfo.capabilities.canTest) {
       TestWithLocalJvmRunnerAction(targetInfo, isDebugMode = true).doPerformAction(project)
     } else {

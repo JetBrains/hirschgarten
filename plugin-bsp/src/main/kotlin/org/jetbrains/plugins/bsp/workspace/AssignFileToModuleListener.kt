@@ -42,8 +42,8 @@ import org.jetbrains.plugins.bsp.impl.projectAware.BspSyncStatusService
 import org.jetbrains.plugins.bsp.impl.server.connection.connection
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.findNameProvider
-import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.TargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.utils.isSourceFile
 
 class AssignFileToModuleListener : BulkFileListener {
@@ -103,7 +103,7 @@ private fun VFileEvent.process(project: Project) {
   val storage = workspaceModel.currentSnapshot
   val moduleNameProvider = project.findNameProvider() ?: return
   val file = this.getAffectedFile() ?: return
-  val targetUtils = project.temporaryTargetUtils
+  val targetUtils = project.targetUtils
   runInBackgroundWithProgress(project, file.name) {
     when (this) {
       is VFileCreateEvent ->
@@ -136,7 +136,7 @@ private suspend fun processFileCreated(
   file: VirtualFile,
   project: Project,
   workspaceModel: WorkspaceModel,
-  targetUtils: TemporaryTargetUtils,
+  targetUtils: TargetUtils,
   storage: ImmutableEntityStorage,
   moduleNameProvider: TargetNameReformatProvider,
 ) {
@@ -150,7 +150,7 @@ private suspend fun processFileRemoved(
   file: VirtualFile,
   project: Project,
   workspaceModel: WorkspaceModel,
-  targetUtils: TemporaryTargetUtils,
+  targetUtils: TargetUtils,
   storage: ImmutableEntityStorage,
   moduleNameProvider: TargetNameReformatProvider,
 ) {
@@ -167,7 +167,7 @@ private suspend fun processFileMoved(
   file: VirtualFile,
   project: Project,
   workspaceModel: WorkspaceModel,
-  targetUtils: TemporaryTargetUtils,
+  targetUtils: TargetUtils,
   storage: ImmutableEntityStorage,
   moduleNameProvider: TargetNameReformatProvider,
 ) {
@@ -209,7 +209,7 @@ private suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileU
 private fun BuildTargetIdentifier.toModuleEntity(
   storage: ImmutableEntityStorage,
   moduleNameProvider: TargetNameReformatProvider,
-  targetUtils: TemporaryTargetUtils,
+  targetUtils: TargetUtils,
 ): ModuleEntity? {
   val targetInfo = targetUtils.getBuildTargetInfoForId(this) ?: return null
   val moduleName = moduleNameProvider(targetInfo)

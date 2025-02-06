@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.target
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.BuildTargetTag
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -14,7 +15,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.plugins.bsp.annotations.PublicApi
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -27,20 +30,22 @@ import java.util.concurrent.ConcurrentHashMap
 
 private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
-data class TemporaryTargetUtilsState(
+@ApiStatus.Internal
+data class TargetUtilsState(
   var idToTargetInfo: Map<String, BuildTargetInfoState> = emptyMap(),
   var moduleIdToBuildTargetId: Map<String, String> = emptyMap(),
   var fileToId: Map<String, List<String>> = emptyMap(),
   var fileToExecutableTargetIds: Map<String, List<String>> = emptyMap(),
 )
 
-// This whole service is very temporary, it will be removed in the following PR
+@PublicApi
 @Service(Service.Level.PROJECT)
 @State(
-  name = "TemporaryTargetUtils",
+  name = "TargetUtils",
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
-class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState> {
+class TargetUtils : PersistentStateComponent<TargetUtilsState> {
+  @ApiStatus.Internal
   var targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo> = emptyMap()
     private set
   private var moduleIdToBuildTargetId: Map<String, BuildTargetIdentifier> = emptyMap()
@@ -56,6 +61,7 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
 
   private var listeners: List<(Boolean) -> Unit> = emptyList()
 
+  @ApiStatus.Internal
   suspend fun saveTargets(
     targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>,
     targetIdToModuleEntity: Map<BuildTargetIdentifier, Module>,
@@ -132,10 +138,12 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
   private fun createLibraryModulesLookupTable(libraryModules: List<JavaModule>) =
     libraryModules.map { it.genericModuleInfo.name }.toHashSet()
 
+  @ApiStatus.Internal
   fun fireSyncListeners(targetListChanged: Boolean) {
     listeners.forEach { it(targetListChanged) }
   }
 
+  @ApiStatus.Internal
   fun registerSyncListener(listener: (targetListChanged: Boolean) -> Unit) {
     listeners += listener
   }
@@ -146,6 +154,7 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
     fileToTargetId[file.url.processUriString().safeCastToURI()]
       ?: getTargetsFromAncestorsForFile(file, project)
 
+  @ApiStatus.Internal
   fun getExecutableTargetsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> {
     val executableDirectTargets =
       getTargetsForFile(file, project).filter { targetId -> targetIdToTargetInfo[targetId]?.capabilities?.isExecutable() == true }
@@ -170,24 +179,34 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
     }
   }
 
+  @PublicApi // // https://youtrack.jetbrains.com/issue/BAZEL-1632
+  @Suppress("UNUSED")
+  fun isLibrary(id: BuildTargetIdentifier): Boolean = BuildTargetTag.LIBRARY in getBuildTargetInfoForId(id)?.tags.orEmpty()
+
+  @ApiStatus.Internal
   fun getTargetIdForModuleId(moduleId: String): BuildTargetIdentifier? = moduleIdToBuildTargetId[moduleId]
 
+  @ApiStatus.Internal
   fun getBuildTargetInfoForId(buildTargetIdentifier: BuildTargetIdentifier): BuildTargetInfo? = targetIdToTargetInfo[buildTargetIdentifier]
 
-  fun getBuildTargetInfoForModule(module: com.intellij.openapi.module.Module) =
+  @ApiStatus.Internal
+  fun getBuildTargetInfoForModule(module: com.intellij.openapi.module.Module): BuildTargetInfo? =
     getTargetIdForModuleId(module.name)?.let { getBuildTargetInfoForId(it) }
 
+  @ApiStatus.Internal
   fun isLibraryModule(name: String): Boolean = name.addLibraryModulePrefix() in libraryModulesLookupTable
 
-  override fun getState(): TemporaryTargetUtilsState =
-    TemporaryTargetUtilsState(
+  @ApiStatus.Internal
+  override fun getState(): TargetUtilsState =
+    TargetUtilsState(
       idToTargetInfo = targetIdToTargetInfo.mapKeys { it.key.uri }.mapValues { it.value.toState() },
       moduleIdToBuildTargetId = moduleIdToBuildTargetId.mapValues { it.value.uri },
       fileToId = fileToTargetId.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.uri } },
       fileToExecutableTargetIds = fileToExecutableTargetIds.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.uri } },
     )
 
-  override fun loadState(state: TemporaryTargetUtilsState) {
+  @ApiStatus.Internal
+  override fun loadState(state: TargetUtilsState) {
     targetIdToTargetInfo =
       state.idToTargetInfo
         .mapKeys { BuildTargetIdentifier(it.key) }
@@ -200,7 +219,8 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
   }
 }
 
+@ApiStatus.Internal
 fun String.addLibraryModulePrefix() = "_aux.libraries.$this"
 
-val Project.temporaryTargetUtils: TemporaryTargetUtils
-  get() = service<TemporaryTargetUtils>()
+val Project.targetUtils: TargetUtils
+  get() = service<TargetUtils>()

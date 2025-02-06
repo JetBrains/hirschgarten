@@ -24,8 +24,8 @@ import org.jetbrains.plugins.bsp.extensionPoints.BspToolWindowConfigFileProvider
 import org.jetbrains.plugins.bsp.extensionPoints.bspToolWindowConfigFileProvider
 import org.jetbrains.plugins.bsp.extensionPoints.bspToolWindowSettingsProvider
 import org.jetbrains.plugins.bsp.services.invalidTargets
-import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.TargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.FilterActionGroup
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.TargetFilter
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
@@ -40,7 +40,7 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
 
   init {
     val actionManager = ActionManager.getInstance()
-    val temporaryTargetUtils = project.temporaryTargetUtils
+    val temporaryTargetUtils = project.targetUtils
 
     loadedTargetsPanel = createLoadedTargetsPanel(project, temporaryTargetUtils)
 
@@ -72,13 +72,13 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
     }
   }
 
-  private fun createLoadedTargetsPanel(project: Project, temporaryTargetUtils: TemporaryTargetUtils): BspPanelComponent =
+  private fun createLoadedTargetsPanel(project: Project, targetUtils: TargetUtils): BspPanelComponent =
     BspPanelComponent(
       targetIcon = project.assets.targetIcon,
       invalidTargetIcon = project.assets.errorTargetIcon,
       buildToolId = project.buildToolId,
       toolName = project.assets.presentableName,
-      targets = temporaryTargetUtils.allTargetIds().mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) },
+      targets = targetUtils.allTargetIds().mapNotNull { targetUtils.getBuildTargetInfoForId(it) },
       invalidTargets = project.invalidTargets,
       searchBarPanel = searchBarPanel,
     ).apply {
@@ -86,7 +86,7 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
     }
 
   private fun rerenderComponents() {
-    val temporaryTargetUtils = project.temporaryTargetUtils
+    val temporaryTargetUtils = project.targetUtils
     searchBarPanel.clearAllListeners()
     loadedTargetsPanel =
       loadedTargetsPanel.createNewWithTargets(targetFilter.getMatchingLoadedTargets(temporaryTargetUtils), project.invalidTargets)
