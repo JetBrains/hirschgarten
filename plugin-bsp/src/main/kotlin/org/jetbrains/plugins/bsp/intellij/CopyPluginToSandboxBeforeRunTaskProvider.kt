@@ -12,7 +12,7 @@ import com.intellij.openapi.util.Key
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.getModule
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
-import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.TargetUtils
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 import java.io.IOException
 import java.net.URI
@@ -55,7 +55,7 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
     val pluginJars = mutableListOf<Path>()
 
     for (target in runConfiguration.targets) {
-      val targetInfo = configuration.project.service<TemporaryTargetUtils>().getBuildTargetInfoForId(target)
+      val targetInfo = configuration.project.service<TargetUtils>().getBuildTargetInfoForId(target)
       val module = targetInfo?.getModule(environment.project) ?: continue
       OrderEnumerator.orderEntries(module).librariesOnly().recursively().withoutSdk().forEachLibrary { library ->
         // Use URLs directly because getFiles will be empty until VFS refresh.

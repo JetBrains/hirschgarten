@@ -10,12 +10,12 @@ import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.moduleEntity
 import org.jetbrains.plugins.bsp.startup.BspProjectActivity
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.androidAddendumEntity
 
 class BspAndroidModelUpdater : BspProjectActivity() {
   override suspend fun Project.executeForBspProject() {
-    temporaryTargetUtils.registerSyncListener {
+    targetUtils.registerSyncListener {
       if (!BspFeatureFlags.isAndroidSupportEnabled) return@registerSyncListener
       BspCoroutineService.getInstance(this).start {
         readActionBlocking {
