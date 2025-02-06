@@ -139,6 +139,8 @@ private class ExcludedDirectoriesNode(
   override fun update(presentation: PresentationData) {
     presentation.presentableText = BspPluginBundle.message("widget.project.tree.excluded.directories")
     presentation.setIcon(AllIcons.Modules.ExcludeRoot)
+    // Show in gray even if the project root dir is excluded (for better visibility)
+    presentation.background = null
   }
 
   // Display below the project directories node
