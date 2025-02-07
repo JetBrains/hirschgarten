@@ -22,7 +22,7 @@ FILES = [
     "test_status",
     "worker_protocol",
     "execution_graph",
-    "file_invalidation_data",
+#     "file_invalidation_data",
 ]
 
 [proto_library(
