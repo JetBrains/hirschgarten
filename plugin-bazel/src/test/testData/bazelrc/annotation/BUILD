@@ -1,1 +1,4 @@
-exports_files(["LabelFlagsTestData.bazelrc"])
+exports_files([
+    "LabelFlagsTestData.bazelrc",
+    "OldFlagsTestData.bazelrc",
+])

@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
@@ -31,7 +31,7 @@ abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
 
   private fun PsiElement.calculateLineMarkerInfo(): Info? =
     containingFile.virtualFile?.let { url ->
-      val temporaryTargetUtils = project.temporaryTargetUtils
+      val temporaryTargetUtils = project.targetUtils
       val targetInfos =
         temporaryTargetUtils
           .getExecutableTargetsForFile(url, project)

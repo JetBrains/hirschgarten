@@ -5,6 +5,7 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//plugin-bsp:__subpackages__"],
     deps = [
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/annotations",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/config",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/magicmetamodel/impl/workspacemodel",
         "//plugin-bsp/workspacemodel/src:workspacemodel",

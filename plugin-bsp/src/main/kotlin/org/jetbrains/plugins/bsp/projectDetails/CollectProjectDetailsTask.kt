@@ -64,7 +64,7 @@ import org.jetbrains.plugins.bsp.performance.bspTracer
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 import org.jetbrains.plugins.bsp.utils.isSourceFile
 import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
@@ -284,7 +284,7 @@ class CollectProjectDetailsTask(
               if (syncScope is FullProjectSync) {
                 syncedTargetIdToTargetInfo
               } else {
-                project.temporaryTargetUtils.targetIdToTargetInfo +
+                project.targetUtils.targetIdToTargetInfo +
                   syncedTargetIdToTargetInfo
               }
             val targetIdToModuleEntityMap =
@@ -299,7 +299,7 @@ class CollectProjectDetailsTask(
               )
 
             if (syncScope is FullProjectSync) {
-              project.temporaryTargetUtils.saveTargets(
+              project.targetUtils.saveTargets(
                 targetIdToTargetInfo,
                 targetIdToModuleEntityMap,
                 targetIdToModuleDetails,
@@ -360,7 +360,7 @@ class CollectProjectDetailsTask(
     // updating jdks before applying the project model will render the action to fail.
     // This will be handled properly after this ticket:
     // https://youtrack.jetbrains.com/issue/BAZEL-426/Configure-JDK-using-workspace-model-API-instead-of-ProjectJdkTable
-    project.temporaryTargetUtils.fireSyncListeners(targetListChanged)
+    project.targetUtils.fireSyncListeners(targetListChanged)
     SdkUtils.cleanUpInvalidJdks(project.bspProjectName)
     addBspFetchedJdks()
     addBspFetchedJavacOptions()
@@ -442,7 +442,7 @@ class CollectProjectDetailsTask(
     }
 
   private fun checkOverlappingSources() {
-    val fileToTargetId = project.temporaryTargetUtils.fileToTargetId
+    val fileToTargetId = project.targetUtils.fileToTargetId
     for ((file, targetIds) in fileToTargetId) {
       if (targetIds.size <= 1) continue
       if (!file.isSourceFile()) continue

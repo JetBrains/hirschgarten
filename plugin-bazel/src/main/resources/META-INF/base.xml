@@ -46,6 +46,8 @@
         <bspFeatureFlagsProvider implementation="org.jetbrains.bazel.config.BazelBspFeatureFlagsProvider"/>
         <bspAdditionalProjectTaskRunnerProvider
                 implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
+        <bspTreeStructureSettingsExtension
+                implementation="org.jetbrains.bazel.settings.BazelTreeStructureSettingsProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

@@ -9,7 +9,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspaceListener
 import org.jetbrains.plugins.bsp.impl.projectAware.isSyncInProgress
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 
 private const val SYNC_START_TIMEOUT_MS = 10000L
 
@@ -48,6 +48,6 @@ internal class WaitForBazelSyncCommand(text: String, line: Int) : PlaybackComman
         syncFinished.receive()
       }
 
-      check(project.temporaryTargetUtils.allTargetIds().isNotEmpty()) { "Target id list is empty after sync" }
+      check(project.targetUtils.allTargetIds().isNotEmpty()) { "Target id list is empty after sync" }
     }
 }
