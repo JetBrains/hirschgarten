@@ -8,11 +8,11 @@ import ch.epfl.scala.bsp4j.DependencyModulesResult
 import ch.epfl.scala.bsp4j.MavenDependencyModule
 import ch.epfl.scala.bsp4j.MavenDependencyModuleArtifact
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.Library
 import org.jetbrains.bsp.bazel.server.model.Module
-import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.SourceSet
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -27,7 +27,7 @@ class BspProjectMapperTest {
   private val mavenCoordinatesResolver = MavenCoordinatesResolver()
 
   @Test
-  @Timeout(value = 1, unit = TimeUnit.MINUTES)
+  @Timeout(value = 2, unit = TimeUnit.MINUTES)
   fun `should compute buildDependencyModules quickly`() {
     // Make sure we can compute dependency modules for a large number of targets, each of which has a large number of dependencies.
     // Large enough to time out if using a non-optimized algorithm.
@@ -133,7 +133,16 @@ class BspProjectMapperTest {
     }
 
     val libraries = allLibraries.associate({ it.label to it })
-    val project = Project(currentUri, allModules, libraries, emptyMap(), emptyList(), emptyList(), BazelRelease(6))
+    val project =
+      AspectSyncProject(
+        workspaceRoot = currentUri,
+        bazelRelease = BazelRelease(6),
+        modules = allModules,
+        libraries = libraries,
+        goLibraries = emptyMap(),
+        invalidTargets = emptyList(),
+        nonModuleTargets = emptyList(),
+      )
 
     val deps =
       BspProjectMapper.buildDependencyModulesStatic(

@@ -24,9 +24,9 @@ import io.kotest.matchers.collections.shouldNotContainAnyOf
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.settings.BazelProjectSettings
 import org.jetbrains.bazel.settings.bazelProjectSettings
-import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.server.connection.ConnectionDetailsProviderExtension
 import org.junit.jupiter.api.AfterEach
@@ -36,8 +36,8 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
+import kotlin.io.path.readText
 
 @BazelTestApplication
 open class MockProjectBaseTest : Disposable {
@@ -144,11 +144,13 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     projectRoot.findFile(".bazelbsp/.bazelproject")?.readText() shouldBe "example content"
   }
 
-  fun `should not generate the new project view file if managed file exists`() {
+  @Test
+  fun `should copy the managed project view file if it exists`() {
     // given
+    val projectviewText = "# example content"
     runWriteAction {
       val projectViewFile = projectRoot.createFile("tools/intellij/.managed.bazelproject")
-      projectViewFile.writeText("example content")
+      projectViewFile.writeText(projectviewText)
     }
 
     // when
@@ -160,7 +162,8 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     // then
     onFirstOpeningResult shouldBe true
     projectRoot.findFile(".bazelbsp/projectview.bazelproject") shouldBe null
-    projectRoot.findFile(".bazelbsp/.bazelproject") shouldBe null
+    val projectviewFile = projectRoot.findFile(".bazelbsp/.bazelproject")
+    projectviewFile!!.toNioPath().readText() shouldBe projectviewText
   }
 
   @Nested

@@ -1,28 +1,33 @@
 load("@bazel_binaries//:defs.bzl", "bazel_binaries")
 load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "bazel_integration_test", "bazel_integration_tests", "integration_test_utils")
 
-def bazel_integration_test_all_versions(name, test_runner, project_path, env = {}, additional_env_inherit = [], bzlmod_project_path = None):
-    # test projects are too old for bazel 7
-    bazel_versions = ["5.3.2", "6.4.0"]
+def bazel_integration_test_all_versions(name, test_runner, project_path = None, bzlmod_project_path = None, env = {}, additional_env_inherit = [], exclude_bazel_5 = False):
+    bazel_versions = []
 
-    bazel_integration_tests(
-        name = name,
-        timeout = "eternal",
-        bazel_versions = ["5.3.2", "6.4.0"],
-        test_runner = test_runner,
-        workspace_path = project_path,
-        env = env,
-        additional_env_inherit = additional_env_inherit,
-    )
+    if project_path != None:
+        workspace_bazel_versions = ["6.4.0"]
+        if not exclude_bazel_5:
+            workspace_bazel_versions += ["5.3.2"]
+        bazel_versions = workspace_bazel_versions
+
+        bazel_integration_tests(
+            name = name,
+            timeout = "eternal",
+            bazel_versions = workspace_bazel_versions,
+            test_runner = test_runner,
+            workspace_path = project_path,
+            env = env,
+            additional_env_inherit = additional_env_inherit,
+        )
 
     if bzlmod_project_path != None:
-        bazel_versions = bazel_binaries.versions.all
-        bazel_7_version = bazel_binaries.versions.current
+        bzlmod_bazel_versions = ["7.4.0", "8.0.0"]
+        bazel_versions += bzlmod_bazel_versions
 
-        bazel_integration_test(
-            name = integration_test_utils.bazel_integration_test_name(name, bazel_7_version),
+        bazel_integration_tests(
+            name = name,
             timeout = "eternal",
-            bazel_version = bazel_7_version,
+            bazel_versions = bzlmod_bazel_versions,
             test_runner = test_runner,
             workspace_path = bzlmod_project_path,
             env = env,

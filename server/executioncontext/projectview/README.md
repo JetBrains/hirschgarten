@@ -12,7 +12,6 @@ from [Bazel Plugin for Intellij](https://ij.bazel.build/docs/project-views.html)
 > In general, you can start with just ~~directories and~~ targets and add more sections as you want to further tweak
 > your IDE workspace.
 
-
 ## Usage
 
 **Note:** We will be changing this mechanism in future releases.
@@ -123,7 +122,8 @@ No directories included.
 
 A flag specifying if targets should be derived from list of directories in directories section.
 
-Flag is boolean value, so it can take either true or false. In the first case targets will be derived from directories, in the second they won't.
+Flag is boolean value, so it can take either true or false. In the first case targets will be derived from directories,
+in the second they won't.
 
 ##### example:
 
@@ -182,13 +182,37 @@ _We are working on it, you can expect support for this section in future release
 
 #### shard_sync
 
-_We are working on it, you can expect support for this section in future releases._
+enable shard sync, split and build targets in batches to avoid Bazel OOM.
+
+##### default
+
+default to `false` due to potential [memory leak issue](https://github.com/bazelbuild/bazel/issues/19412) with Bazel.
 
 ---
 
 #### target_shard_size
 
-_We are working on it, you can expect support for this section in future releases._
+Used alongside with `shard_sync`. It decides the number of targets to be built in each shard.
+
+##### default
+
+default to `1000`
+
+---
+
+#### shard_approach
+
+Used alongside with `shard_sync`. It decides the sharding strategy used to shard the list of original targets.
+
+There are three options to use:
+
+- `EXPAND_AND_SHARD` : expand wildcard targets to package targets, query single targets, and then shard to batches
+- `QUERY_AND_SHARD` : query single targets from the given list of targets without expanding, and then shard to batches
+- `SHARD_ONLY` : split unexpanded wildcard targets into batches
+
+##### default
+
+default to `QUERY_AND_SHARD`
 
 ---
 
@@ -217,7 +241,18 @@ No flags.
 
 #### sync_flags
 
-_We are working on it, you can expect support for this section in future releases._
+A set of bazel flags added only to bazel calls during sync.
+
+##### example:
+
+```
+sync_flags:
+  --define=ij_product=intellij-latest
+```
+
+##### default:
+
+No flags.
 
 ---
 

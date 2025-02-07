@@ -41,9 +41,10 @@ import ch.epfl.scala.bsp4j.StatusCode
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import kotlinx.coroutines.future.await
+import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -51,29 +52,41 @@ import kotlin.time.Duration.Companion.seconds
 object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
   private val testClient = createTestkitClient(jvmClasspathReceiver = true)
 
-  private val scalaRulesPath = if (majorBazelVersion == 7) "rules_scala~~scala_deps~io_bazel_rules_scala" else "io_bazel_rules_scala"
-  private val scalaRulesPathVersionSuffix = if (majorBazelVersion == 7) "_2_13_14" else ""
-  private val scalaRulesVersion = if (majorBazelVersion == 7) "2.13.14" else "2.13.6"
+  private val scalaRulesPath =
+    if (isBzlmod) {
+      "rules_scala${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+        "scala_deps${bzlmodRepoNameSeparator}io_bazel_rules_scala"
+    } else {
+      "io_bazel_rules_scala"
+    }
+  private val scalaRulesPathVersionSuffix = if (isBzlmod) "_2_13_14" else ""
+  private val scalaRulesVersion = if (isBzlmod) "2.13.14" else "2.13.6"
 
-  private val remote_java_tools = if (majorBazelVersion == 7) "rules_java~~toolchains~remote_java_tools" else "remote_java_tools"
+  private val remote_java_tools =
+    if (isBzlmod) {
+      "rules_java${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+        "toolchains${bzlmodRepoNameSeparator}remote_java_tools"
+    } else {
+      "remote_java_tools"
+    }
 
   private val bazelArch =
-    if (System.getProperty("os.name").lowercase().startsWith("mac")) {
+    if (OsFamily.inferFromSystem() == OsFamily.MACOS) {
       "darwin_arm64"
     } else {
       "k8"
     }
 
   private val guavaClasspath =
-    if (majorBazelVersion == 7) {
+    if (isBzlmod) {
       listOf(
-        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/processed_jsr305-3.0.2.jar",
-        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/processed_error_prone_annotations-2.7.1.jar",
-        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/processed_failureaccess-1.0.1.jar",
-        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/processed_guava-31.0.1-jre.jar",
-        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/processed_listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar",
-        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/processed_j2objc-annotations-1.3.jar",
-        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/processed_checker-qual-3.12.0.jar",
+        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}maven${bzlmodRepoNameSeparator}maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/processed_jsr305-3.0.2.jar",
+        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}maven${bzlmodRepoNameSeparator}maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/processed_error_prone_annotations-2.7.1.jar",
+        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}maven${bzlmodRepoNameSeparator}maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/processed_failureaccess-1.0.1.jar",
+        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}maven${bzlmodRepoNameSeparator}maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/processed_guava-31.0.1-jre.jar",
+        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}maven${bzlmodRepoNameSeparator}maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/processed_listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar",
+        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}maven${bzlmodRepoNameSeparator}maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/processed_j2objc-annotations-1.3.jar",
+        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}maven${bzlmodRepoNameSeparator}maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/processed_checker-qual-3.12.0.jar",
       )
     } else {
       listOf("file://\$BAZEL_OUTPUT_BASE_PATH/external/guava/guava-28.0-jre.jar")
@@ -969,9 +982,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
               "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
             ),
             emptyList(),
-            if (majorBazelVersion ==
-              7
-            ) {
+            if (isBzlmod) {
               "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/target_with_javac_exports/libjava_library.jar"
             } else {
               "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/__main__/bazel-out/$bazelArch-fastbuild/bin/target_with_javac_exports/libjava_library.jar"
@@ -1096,8 +1107,10 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
     val javaHomeBazel5And6 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
-    val javaHomeBazel7 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java~~toolchains~remotejdk11_\$OS$architecturePart/"
-    val javaHome = if (majorBazelVersion == 7) javaHomeBazel7 else javaHomeBazel5And6
+    val javaHomeBazel7 =
+      "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+        "toolchains${bzlmodRepoNameSeparator}remotejdk11_\$OS$architecturePart/"
+    val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
     val jvmBuildTarget =
       JvmBuildTarget().also {
         it.javaHome = javaHome
@@ -1107,7 +1120,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val jvmBuildTargetWithFlag =
       JvmBuildTarget().also {
         it.javaHome = javaHome
-        it.javaVersion = if (majorBazelVersion == 7) "17" else "8"
+        it.javaVersion = if (isBzlmod) "17" else "8"
       }
 
     val javaTargetsJavaBinary =
@@ -1149,7 +1162,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val scalaBuildTarget =
       ScalaBuildTarget(
         "org.scala-lang",
-        "$scalaRulesVersion",
+        scalaRulesVersion,
         "2.13",
         ScalaPlatform.JVM,
         listOf(
@@ -1285,8 +1298,10 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     targetWithoutArgsBinary.data = scalaBuildTarget
 
     val guavaDepBazel5And6 = "@guava//:guava"
-    val guavaDepBazel7 = "@@rules_jvm_external~~maven~maven//:com_google_guava_guava"
-    val guavaDep = if (majorBazelVersion == 7) guavaDepBazel7 else guavaDepBazel5And6
+    val guavaDepBazel7 =
+      "@@rules_jvm_external${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+        "maven${bzlmodRepoNameSeparator}maven//:com_google_guava_guava"
+    val guavaDep = if (isBzlmod) guavaDepBazel7 else guavaDepBazel5And6
     val targetWithDependencyJavaBinary =
       BuildTarget(
         BuildTargetIdentifier("$targetPrefix//target_with_dependency:java_binary"),

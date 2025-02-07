@@ -1,12 +1,16 @@
 package org.jetbrains.bsp.bazel.bazelrunner
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bsp.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bsp.bazel.workspacecontext.BazelBinarySpec
 import org.jetbrains.bsp.bazel.workspacecontext.BuildFlagsSpec
+import org.jetbrains.bsp.bazel.workspacecontext.DEFAULT_TARGET_SHARD_SIZE
 import org.jetbrains.bsp.bazel.workspacecontext.DirectoriesSpec
 import org.jetbrains.bsp.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bsp.bazel.workspacecontext.EnableNativeAndroidRules
@@ -14,19 +18,27 @@ import org.jetbrains.bsp.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ExperimentalAddTransitiveCompileTimeJars
 import org.jetbrains.bsp.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ImportDepthSpec
+import org.jetbrains.bsp.bazel.workspacecontext.ShardSyncSpec
+import org.jetbrains.bsp.bazel.workspacecontext.ShardingApproachSpec
+import org.jetbrains.bsp.bazel.workspacecontext.SyncFlagsSpec
+import org.jetbrains.bsp.bazel.workspacecontext.TargetShardSizeSpec
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.junit.jupiter.api.Test
+import java.nio.file.Paths
 import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.readText
 
-fun String.bsp() = BuildTargetIdentifier(this)
+fun String.label() = Label.parse(this)
 
 val mockContext =
   WorkspaceContext(
-    targets = TargetsSpec(listOf("in1".bsp(), "in2".bsp()), listOf("ex1".bsp(), "ex2".bsp())),
+    targets = TargetsSpec(listOf("in1".label(), "in2".label()), listOf("ex1".label(), "ex2".label())),
     directories = DirectoriesSpec(listOf(Path("in1dir"), Path("in2dir")), listOf(Path("ex1dir"), Path("ex2dir"))),
     buildFlags = BuildFlagsSpec(listOf("flag1", "flag2")),
+    syncFlags = SyncFlagsSpec(listOf("flag1", "flag2")),
     bazelBinary = BazelBinarySpec(Path("bazel")),
     allowManualTargetsSync = AllowManualTargetsSyncSpec(true),
     dotBazelBspDirPath = DotBazelBspDirPathSpec(Path(".bazelbsp")),
@@ -36,6 +48,19 @@ val mockContext =
     experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJars(true),
     enableNativeAndroidRules = EnableNativeAndroidRules(false),
     androidMinSdkSpec = AndroidMinSdkSpec(null),
+    shardSync = ShardSyncSpec(false),
+    targetShardSize = TargetShardSizeSpec(DEFAULT_TARGET_SHARD_SIZE),
+    shardingApproachSpec = ShardingApproachSpec(null),
+  )
+
+val mockBazelInfo =
+  BazelInfo(
+    execRoot = "execRoot",
+    outputBase = Path("outputBase"),
+    workspaceRoot = Path("workspaceRoot"),
+    release = BazelRelease(7),
+    isBzlModEnabled = true,
+    isWorkspaceEnabled = true,
   )
 
 val contextProvider =
@@ -43,7 +68,8 @@ val contextProvider =
     override fun currentWorkspaceContext(): WorkspaceContext = mockContext
   }
 
-val bazelRunner = BazelRunner(contextProvider, null, Path("workspaceRoot"))
+val bazelRunner = BazelRunner(contextProvider, null, mockBazelInfo.workspaceRoot)
+val bazelRunnerWithBazelInfo = BazelRunner(contextProvider, null, mockBazelInfo.workspaceRoot, mockBazelInfo)
 
 class BazelRunnerBuilderTest {
   @Test
@@ -53,7 +79,7 @@ class BazelRunnerBuilderTest {
         build()
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "build",
@@ -67,7 +93,7 @@ class BazelRunnerBuilderTest {
   }
 
   @Test
-  fun `build with targets from spec`() {
+  fun `build with targets from spec without bazel info (legacy flow)`() {
     val command =
       bazelRunner.buildBazelCommand {
         build {
@@ -75,7 +101,7 @@ class BazelRunnerBuilderTest {
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "build",
@@ -95,13 +121,50 @@ class BazelRunnerBuilderTest {
   }
 
   @Test
+  fun `build with targets from spec (new flow with target pattern file)`() {
+    val command =
+      bazelRunnerWithBazelInfo.buildBazelCommand {
+        build {
+          addTargetsFromSpec(mockContext.targets)
+        }
+      }
+    val executionDescriptor = command.buildExecutionDescriptor()
+    val commandLine = executionDescriptor.command
+    commandLine.dropLast(1) shouldContainExactly
+      listOf(
+        "bazel",
+        "build",
+        BazelFlag.toolTag(),
+        "--override_repository=bazelbsp_aspect=.bazelbsp",
+        "--curses=no",
+        "--color=yes",
+        "--noprogress_in_terminal_title",
+        "flag1",
+        "flag2",
+      )
+    val targetPatternFileFlag = "--target_pattern_file="
+    commandLine.last().startsWith(targetPatternFileFlag)
+    val targetPatternFile = Paths.get(commandLine.last().removePrefix(targetPatternFileFlag))
+    targetPatternFile.readText() shouldBe
+      """
+      in1
+      in2
+      -ex1
+      -ex2
+      
+      """.trimIndent()
+    executionDescriptor.finishCallback()
+    targetPatternFile.exists() shouldBe false
+  }
+
+  @Test
   fun `run without program arguments`() {
     val command =
       bazelRunner.buildBazelCommand {
-        run("in1".bsp())
+        run("in1".label())
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "run",
@@ -120,12 +183,12 @@ class BazelRunnerBuilderTest {
   fun `run with program arguments`() {
     val command =
       bazelRunner.buildBazelCommand {
-        run("in1".bsp()) {
+        run("in1".label()) {
           programArguments.addAll(listOf("hello", "world"))
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "run",
@@ -147,12 +210,12 @@ class BazelRunnerBuilderTest {
   fun `run doesn't set environment using arguments`() {
     val command =
       bazelRunner.buildBazelCommand {
-        run("in1".bsp()) {
+        run("in1".label()) {
           environment["key"] = "value"
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "run",
@@ -172,12 +235,12 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand {
         build {
-          targets.add("in1".bsp())
+          targets.add("in1".label())
           environment["key"] = "value"
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "build",
@@ -199,12 +262,12 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand {
         test {
-          targets.add("in1".bsp())
+          targets.add("in1".label())
           environment["key"] = "value"
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "test",
@@ -226,12 +289,12 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand {
         test {
-          targets.add("in1".bsp())
+          targets.add("in1".label())
           programArguments.addAll(listOf("hello", "world"))
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "test",
@@ -254,13 +317,13 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand {
         coverage {
-          targets.add("in1".bsp())
+          targets.add("in1".label())
           programArguments.addAll(listOf("hello", "world"))
           environment["key"] = "value"
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "coverage",
@@ -284,11 +347,11 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand(inheritProjectviewOptionsOverride = null) {
         query {
-          targets.add("in1".bsp())
+          targets.add("in1".label())
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "query",
@@ -297,8 +360,32 @@ class BazelRunnerBuilderTest {
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
-        "--",
         "in1",
+      )
+  }
+
+  @Test
+  fun `query correctly handles excluded values`() {
+    val command =
+      bazelRunner.buildBazelCommand(inheritProjectviewOptionsOverride = null) {
+        query {
+          targets.add("in1".label())
+          targets.add("in2".label())
+          excludedTargets.add("ex1".label())
+          excludedTargets.add("ex2".label())
+        }
+      }
+
+    command.buildExecutionDescriptor().command shouldContainExactly
+      listOf(
+        "bazel",
+        "query",
+        BazelFlag.toolTag(),
+        "--override_repository=bazelbsp_aspect=.bazelbsp",
+        "--curses=no",
+        "--color=yes",
+        "--noprogress_in_terminal_title",
+        "in1 + in2 - ex1 - ex2",
       )
   }
 
@@ -307,11 +394,11 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand(inheritProjectviewOptionsOverride = null) {
         cquery {
-          targets.add("in1".bsp())
+          targets.add("in1".label())
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "cquery",
@@ -332,12 +419,12 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand {
         build {
-          targets.add("in1".bsp())
+          targets.add("in1".label())
           useBes(Path("/dev/null"))
         }
       }
 
-    command.makeCommandLine() shouldContainExactly
+    command.buildExecutionDescriptor().command shouldContainExactly
       listOf(
         "bazel",
         "build",

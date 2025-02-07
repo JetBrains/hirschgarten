@@ -3,11 +3,11 @@ package org.jetbrains.bsp.bazel.server.sync
 import ch.epfl.scala.bsp4j.MavenDependencyModule
 import ch.epfl.scala.bsp4j.MavenDependencyModuleArtifact
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.Library
 import org.jetbrains.bsp.bazel.server.model.Module
-import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.SourceSet
 import org.junit.jupiter.api.Test
 import java.net.URI
@@ -142,7 +142,16 @@ class DependencyMapperTest {
       )
     val libraries = mapOf(lib1.label to lib1, lib2.label to lib2, lib3.label to lib3, lib4.label to lib4)
     val currentUri = Paths.get(".").toUri()
-    val project = Project(currentUri, emptyList(), libraries, emptyMap(), emptyList(), emptyList(), BazelRelease(6))
+    val project =
+      AspectSyncProject(
+        workspaceRoot = currentUri,
+        bazelRelease = BazelRelease(6),
+        modules = emptyList(),
+        libraries = libraries,
+        goLibraries = emptyMap(),
+        invalidTargets = emptyList(),
+        nonModuleTargets = emptyList(),
+      )
     val module =
       Module(
         Label.parse(""),
@@ -194,7 +203,16 @@ class DependencyMapperTest {
       )
     val libraries = allLibraries.associate({ it.label to it })
     val currentUri = Paths.get(".").toUri()
-    val project = Project(currentUri, emptyList(), libraries, emptyMap(), emptyList(), emptyList(), BazelRelease(6))
+    val project =
+      AspectSyncProject(
+        workspaceRoot = currentUri,
+        bazelRelease = BazelRelease(6),
+        modules = emptyList(),
+        libraries = libraries,
+        goLibraries = emptyMap(),
+        invalidTargets = emptyList(),
+        nonModuleTargets = emptyList(),
+      )
     val module =
       Module(
         Label.parse(""),

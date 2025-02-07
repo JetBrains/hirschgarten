@@ -3,6 +3,7 @@ package org.jetbrains.bsp.bazel.server.model
 import io.kotest.assertions.throwables.shouldThrowWithMessage
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -18,7 +19,7 @@ class ProjectTest {
     fun `should throw an exception if workspaceRoot differs`() {
       // given
       val project1 =
-        Project(
+        AspectSyncProject(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
@@ -29,7 +30,7 @@ class ProjectTest {
         )
 
       val project2 =
-        Project(
+        AspectSyncProject(
           workspaceRoot = URI.create("file:///path/to/another/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
@@ -51,7 +52,7 @@ class ProjectTest {
     fun `should throw an exception if bazelRelease differs`() {
       // given
       val project1 =
-        Project(
+        AspectSyncProject(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
@@ -62,7 +63,7 @@ class ProjectTest {
         )
 
       val project2 =
-        Project(
+        AspectSyncProject(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
@@ -84,7 +85,7 @@ class ProjectTest {
     fun `should add two projects`() {
       // given
       val project1 =
-        Project(
+        AspectSyncProject(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules = listOf("//project1:module1".toMockModule(), "//project1:module2".toMockModule(), "//module".toMockModule()),
           libraries =
@@ -103,7 +104,7 @@ class ProjectTest {
         )
 
       val project2 =
-        Project(
+        AspectSyncProject(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules =
             listOf(
@@ -129,7 +130,7 @@ class ProjectTest {
 
       // then
       val expectedNewProject =
-        Project(
+        AspectSyncProject(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules =
             listOf(

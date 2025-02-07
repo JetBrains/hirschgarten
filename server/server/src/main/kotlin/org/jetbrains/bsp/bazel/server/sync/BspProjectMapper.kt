@@ -58,11 +58,16 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.TestProvider
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.label.label
+import org.jetbrains.bazel.commons.label.toBspIdentifier
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
+import org.jetbrains.bsp.bazel.server.bzlmod.BzlmodRepoMapping
+import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
+import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.BspMappings
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.NonModuleTarget
@@ -76,6 +81,10 @@ import org.jetbrains.bsp.bazel.server.sync.languages.jvm.javaModule
 import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
+import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
+import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
+import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.EnhancedSourceItem
 import org.jetbrains.bsp.protocol.GoLibraryItem
@@ -84,6 +93,7 @@ import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
+import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
@@ -118,6 +128,7 @@ class BspProjectMapper(
         jvmRunEnvironmentProvider = true,
         jvmTestEnvironmentProvider = true,
         workspaceLibrariesProvider = true,
+        goDebuggerDataProvider = true,
         workspaceDirectoriesProvider = true,
         workspaceNonModuleTargetsProvider = true,
         workspaceInvalidTargetsProvider = true,
@@ -125,6 +136,7 @@ class BspProjectMapper(
         testWithDebugProvider = true,
         jvmBinaryJarsProvider = true,
         jvmCompileClasspathProvider = true,
+        bazelRepoMappingProvider = true,
       )
     return InitializeBuildResult(
       Constants.NAME,
@@ -134,15 +146,15 @@ class BspProjectMapper(
     )
   }
 
-  fun workspaceTargets(project: Project): WorkspaceBuildTargetsResult {
+  fun workspaceTargets(project: AspectSyncProject): WorkspaceBuildTargetsResult {
     val buildTargets = project.modules.map { it.toBuildTarget() }
     return WorkspaceBuildTargetsResult(buildTargets)
   }
 
-  fun workspaceInvalidTargets(project: Project): WorkspaceInvalidTargetsResult =
+  fun workspaceInvalidTargets(project: AspectSyncProject): WorkspaceInvalidTargetsResult =
     WorkspaceInvalidTargetsResult(project.invalidTargets.map { BuildTargetIdentifier(it.toString()) })
 
-  fun workspaceLibraries(project: Project): WorkspaceLibrariesResult {
+  fun workspaceLibraries(project: AspectSyncProject): WorkspaceLibrariesResult {
     val libraries =
       project.libraries.values.map {
         LibraryItem(
@@ -157,7 +169,7 @@ class BspProjectMapper(
     return WorkspaceLibrariesResult(libraries)
   }
 
-  fun workspaceGoLibraries(project: Project): WorkspaceGoLibrariesResult {
+  fun workspaceGoLibraries(project: AspectSyncProject): WorkspaceGoLibrariesResult {
     val libraries =
       project.goLibraries.values.map {
         GoLibraryItem(
@@ -169,7 +181,7 @@ class BspProjectMapper(
     return WorkspaceGoLibrariesResult(libraries)
   }
 
-  fun workspaceNonModuleTargets(project: Project): NonModuleTargetsResult {
+  fun workspaceNonModuleTargets(project: AspectSyncProject): NonModuleTargetsResult {
     val nonModuleTargets =
       project.nonModuleTargets.map {
         it.toBuildTarget()
@@ -189,6 +201,21 @@ class BspProjectMapper(
       includedDirectories = directoriesSection.values.map { it.toDirectoryItem() },
       excludedDirectories = directoriesToExclude.map { it.toDirectoryItem() },
     )
+  }
+
+  fun workspaceBazelRepoMapping(project: Project): WorkspaceBazelRepoMappingResult {
+    val repoMapping = project.repoMapping
+    return when (repoMapping) {
+      is RepoMappingDisabled -> WorkspaceBazelRepoMappingResult(emptyMap(), emptyMap())
+      is BzlmodRepoMapping ->
+        WorkspaceBazelRepoMappingResult(
+          apparentRepoNameToCanonicalName = repoMapping.apparentRepoNameToCanonicalName,
+          canonicalRepoNameToPath =
+            repoMapping.canonicalRepoNameToPath.mapValues { (_, path) ->
+              path.toUri().toString()
+            },
+        )
+    }
   }
 
   private fun computeSymlinksToExclude(workspaceRoot: URI): List<Path> {
@@ -216,20 +243,19 @@ class BspProjectMapper(
     )
 
   private fun NonModuleTarget.toBuildTarget(): BuildTarget {
-    val label = BspMappings.toBspId(this.label)
     val languages = languages.flatMap(Language::allNames).distinct()
     val capabilities = inferCapabilities(tags)
     val tags = tags.mapNotNull(BspMappings::toBspTag)
     val baseDirectory = BspMappings.toBspUri(baseDirectory)
     val buildTarget =
       BuildTarget(
-        label,
+        label.toBspIdentifier(),
         tags,
         languages,
         emptyList(),
         capabilities,
       )
-    buildTarget.displayName = label.uri
+    buildTarget.displayName = label.toString()
     buildTarget.baseDirectory = baseDirectory
     return buildTarget
   }
@@ -237,7 +263,7 @@ class BspProjectMapper(
   private fun Module.toBuildTarget(): BuildTarget {
     val label = BspMappings.toBspId(this)
     val dependencies =
-      directDependencies.map(BspMappings::toBspId)
+      directDependencies.map { it.toBspIdentifier() }
     val languages = languages.flatMap(Language::allNames).distinct()
     val capabilities = inferCapabilities(tags)
     val tags = tags.mapNotNull(BspMappings::toBspTag)
@@ -277,7 +303,7 @@ class BspProjectMapper(
     module.languageData?.let { plugin.setModuleData(it, buildTarget) }
   }
 
-  fun sources(project: Project, sourcesParams: SourcesParams): SourcesResult {
+  fun sources(project: AspectSyncProject, sourcesParams: SourcesParams): SourcesResult {
     fun toSourcesItem(module: Module): SourcesItem {
       val sourceSet = module.sourceSet
       val sourceItems =
@@ -304,7 +330,7 @@ class BspProjectMapper(
       return sourcesItem
     }
 
-    fun emptySourcesItem(label: Label): SourcesItem = SourcesItem(BspMappings.toBspId(label), emptyList())
+    fun emptySourcesItem(label: Label): SourcesItem = SourcesItem(label.toBspIdentifier(), emptyList())
 
     val labels = BspMappings.toLabels(sourcesParams.targets)
     val sourcesItems =
@@ -314,13 +340,13 @@ class BspProjectMapper(
     return SourcesResult(sourcesItems)
   }
 
-  fun resources(project: Project, resourcesParams: ResourcesParams): ResourcesResult {
+  fun resources(project: AspectSyncProject, resourcesParams: ResourcesParams): ResourcesResult {
     fun toResourcesItem(module: Module): ResourcesItem {
       val resources = module.resources.map(BspMappings::toBspUri)
       return ResourcesItem(BspMappings.toBspId(module), resources)
     }
 
-    fun emptyResourcesItem(label: Label): ResourcesItem = ResourcesItem(BspMappings.toBspId(label), emptyList())
+    fun emptyResourcesItem(label: Label): ResourcesItem = ResourcesItem(label.toBspIdentifier(), emptyList())
 
     val labels = BspMappings.toLabels(resourcesParams.targets)
     val resourcesItems =
@@ -331,7 +357,7 @@ class BspProjectMapper(
   }
 
   fun inverseSources(
-    project: Project,
+    project: AspectSyncProject,
     inverseSourcesParams: InverseSourcesParams,
     cancelChecker: CancelChecker,
   ): InverseSourcesResult {
@@ -343,7 +369,7 @@ class BspProjectMapper(
     return InverseSourcesQuery.inverseSourcesQuery(documentRelativePath, bazelRunner, project.bazelRelease, cancelChecker)
   }
 
-  fun dependencySources(project: Project, dependencySourcesParams: DependencySourcesParams): DependencySourcesResult {
+  fun dependencySources(project: AspectSyncProject, dependencySourcesParams: DependencySourcesParams): DependencySourcesResult {
     fun getDependencySourcesItem(label: Label): DependencySourcesItem {
       val sources =
         project
@@ -351,7 +377,7 @@ class BspProjectMapper(
           ?.sourceDependencies
           ?.map(BspMappings::toBspUri)
           .orEmpty()
-      return DependencySourcesItem(BspMappings.toBspId(label), sources)
+      return DependencySourcesItem(label.toBspIdentifier(), sources)
     }
 
     val labels = BspMappings.toLabels(dependencySourcesParams.targets)
@@ -359,7 +385,7 @@ class BspProjectMapper(
     return DependencySourcesResult(items)
   }
 
-  fun outputPaths(project: Project, params: OutputPathsParams): OutputPathsResult {
+  fun outputPaths(project: AspectSyncProject, params: OutputPathsParams): OutputPathsResult {
     fun getItem(label: Label): OutputPathsItem {
       val items =
         project
@@ -367,7 +393,7 @@ class BspProjectMapper(
           ?.let { module ->
             module.outputs.map { OutputPathItem(BspMappings.toBspUri(it), OutputPathItemKind.DIRECTORY) }
           }.orEmpty()
-      return OutputPathsItem(BspMappings.toBspId(label), items)
+      return OutputPathsItem(label.toBspIdentifier(), items)
     }
 
     val labels = BspMappings.toLabels(params.targets)
@@ -376,7 +402,7 @@ class BspProjectMapper(
   }
 
   fun jvmRunEnvironment(
-    project: Project,
+    project: AspectSyncProject,
     params: JvmRunEnvironmentParams,
     cancelChecker: CancelChecker,
   ): JvmRunEnvironmentResult {
@@ -386,7 +412,7 @@ class BspProjectMapper(
   }
 
   fun jvmTestEnvironment(
-    project: Project,
+    project: AspectSyncProject,
     params: JvmTestEnvironmentParams,
     cancelChecker: CancelChecker,
   ): JvmTestEnvironmentResult {
@@ -396,7 +422,7 @@ class BspProjectMapper(
   }
 
   fun jvmCompileClasspath(
-    project: Project,
+    project: AspectSyncProject,
     params: JvmCompileClasspathParams,
     cancelChecker: CancelChecker,
   ): JvmCompileClasspathResult {
@@ -408,7 +434,7 @@ class BspProjectMapper(
   }
 
   private fun getJvmEnvironmentItems(
-    project: Project,
+    project: AspectSyncProject,
     targets: List<BuildTargetIdentifier>,
     cancelChecker: CancelChecker,
   ): List<JvmEnvironmentItem> {
@@ -426,15 +452,15 @@ class BspProjectMapper(
       }
 
     return targets.mapNotNull {
-      val label = Label.parse(it.uri)
+      val label = it.label()
       val module = project.findModule(label)
-      val cqueryResult = ClasspathQuery.classPathQuery(it, cancelChecker, bspInfo, bazelRunner).runtime_classpath
+      val cqueryResult = ClasspathQuery.classPathQuery(label, cancelChecker, bspInfo, bazelRunner).runtime_classpath
       val resolvedClasspath = resolveClasspath(cqueryResult)
       module?.let { extractJvmEnvironmentItem(module, resolvedClasspath) }
     }
   }
 
-  fun jvmBinaryJars(project: Project, params: JvmBinaryJarsParams): JvmBinaryJarsResult {
+  fun jvmBinaryJars(project: AspectSyncProject, params: JvmBinaryJarsParams): JvmBinaryJarsResult {
     fun toJvmBinaryJarsItem(module: Module): JvmBinaryJarsItem? =
       module.javaModule?.let { javaModule ->
         val jars = javaModule.binaryOutputs.map { it.toString() }
@@ -451,7 +477,7 @@ class BspProjectMapper(
   }
 
   fun buildTargetJavacOptions(
-    project: Project,
+    project: AspectSyncProject,
     params: JavacOptionsParams,
     includeClasspath: Boolean,
     cancelChecker: CancelChecker,
@@ -463,7 +489,7 @@ class BspProjectMapper(
     return JavacOptionsResult(items)
   }
 
-  fun buildTargetCppOptions(project: Project, params: CppOptionsParams): CppOptionsResult {
+  fun buildTargetCppOptions(project: AspectSyncProject, params: CppOptionsParams): CppOptionsResult {
     fun extractCppOptionsItem(module: Module): CppOptionsItem? =
       languagePluginsService.extractCppModule(module)?.let {
         languagePluginsService.cppLanguagePlugin.toCppOptionsItem(module, it)
@@ -474,7 +500,7 @@ class BspProjectMapper(
     return CppOptionsResult(items)
   }
 
-  fun buildTargetPythonOptions(project: Project, params: PythonOptionsParams): PythonOptionsResult {
+  fun buildTargetPythonOptions(project: AspectSyncProject, params: PythonOptionsParams): PythonOptionsResult {
     val modules = BspMappings.getModules(project, params.targets)
     val items = modules.mapNotNull(::extractPythonOptionsItem)
     return PythonOptionsResult(items)
@@ -486,7 +512,7 @@ class BspProjectMapper(
     }
 
   fun buildTargetScalacOptions(
-    project: Project,
+    project: AspectSyncProject,
     params: ScalacOptionsParams,
     includeClasspath: Boolean,
     cancelChecker: CancelChecker,
@@ -499,7 +525,7 @@ class BspProjectMapper(
   }
 
   private fun <T> List<BuildTargetIdentifier>.collectClasspathForTargetsAndApply(
-    project: Project,
+    project: AspectSyncProject,
     includeClasspath: Boolean,
     cancelChecker: CancelChecker,
     mapper: (Module, List<URI>) -> T?,
@@ -512,8 +538,7 @@ class BspProjectMapper(
       }
 
   private fun readIdeClasspath(targetLabel: Label, cancelChecker: CancelChecker): List<URI> {
-    val targetIdentifier = BspMappings.toBspId(targetLabel)
-    val classPathFromQuery = ClasspathQuery.classPathQuery(targetIdentifier, cancelChecker, bspInfo, bazelRunner)
+    val classPathFromQuery = ClasspathQuery.classPathQuery(targetLabel, cancelChecker, bspInfo, bazelRunner)
     val ideClasspath =
       IdeClasspathResolver.resolveIdeClasspath(
         label = targetLabel,
@@ -554,24 +579,24 @@ class BspProjectMapper(
       javaModule.mainOutput.toString(),
     )
 
-  fun buildTargetScalaTestClasses(project: Project, params: ScalaTestClassesParams): ScalaTestClassesResult {
+  fun buildTargetScalaTestClasses(project: AspectSyncProject, params: ScalaTestClassesParams): ScalaTestClassesResult {
     val modules = BspMappings.getModules(project, params.targets)
     val scalaLanguagePlugin = languagePluginsService.scalaLanguagePlugin
     val items = modules.mapNotNull(scalaLanguagePlugin::toScalaTestClassesItem)
     return ScalaTestClassesResult(items)
   }
 
-  fun buildTargetScalaMainClasses(project: Project, params: ScalaMainClassesParams): ScalaMainClassesResult {
+  fun buildTargetScalaMainClasses(project: AspectSyncProject, params: ScalaMainClassesParams): ScalaMainClassesResult {
     val modules = BspMappings.getModules(project, params.targets)
     val scalaLanguagePlugin = languagePluginsService.scalaLanguagePlugin
     val items = modules.mapNotNull(scalaLanguagePlugin::toScalaMainClassesItem)
     return ScalaMainClassesResult(items)
   }
 
-  fun buildDependencyModules(project: Project, params: DependencyModulesParams): DependencyModulesResult =
+  fun buildDependencyModules(project: AspectSyncProject, params: DependencyModulesParams): DependencyModulesResult =
     buildDependencyModulesStatic(project, params)
 
-  fun rustWorkspace(project: Project, params: RustWorkspaceParams): RustWorkspaceResult {
+  fun rustWorkspace(project: AspectSyncProject, params: RustWorkspaceParams): RustWorkspaceResult {
     val allRustModules = project.modules.filter { Language.RUST in it.languages }
     val requestedModules =
       BspMappings
@@ -582,9 +607,19 @@ class BspProjectMapper(
     return toRustWorkspaceResult(requestedModules, allRustModules)
   }
 
+  fun resolveLocalToRemote(cancelChecker: CancelChecker, params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult {
+    val resolve = languagePluginsService.goLanguagePlugin::resolveLocalToRemote
+    return resolve(params)
+  }
+
+  fun resolveRemoteToLocal(cancelChecker: CancelChecker, params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult {
+    val resolve = languagePluginsService.goLanguagePlugin::resolveRemoteToLocal
+    return resolve(params)
+  }
+
   companion object {
     @JvmStatic
-    fun buildDependencyModulesStatic(project: Project, params: DependencyModulesParams): DependencyModulesResult {
+    fun buildDependencyModulesStatic(project: AspectSyncProject, params: DependencyModulesParams): DependencyModulesResult {
       val targetSet = params.targets.toSet()
       val cache = mutableMapOf<String, List<DependencyModule>>()
       val dependencyModulesItems =

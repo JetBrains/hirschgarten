@@ -31,7 +31,12 @@ object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
   }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val javaHomePrefix = if (majorBazelVersion == 7) "rules_java~~toolchains~" else ""
+    val javaHomePrefix =
+      if (isBzlmod) {
+        "rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains$bzlmodRepoNameSeparator"
+      } else {
+        ""
+      }
 
     val exampleExampleJvmBuildTarget =
       JvmBuildTarget().also {
@@ -41,7 +46,7 @@ object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
 
     val exampleExampleBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//example"),
+        BuildTargetIdentifier("$targetPrefix//example:example"),
         listOf("application"),
         listOf("java"),
         emptyList(),
@@ -52,7 +57,7 @@ object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
           it.canDebug = false
         },
       )
-    exampleExampleBuildTarget.displayName = "$targetPrefix//example"
+    exampleExampleBuildTarget.displayName = "$targetPrefix//example:example"
     exampleExampleBuildTarget.baseDirectory = "file://\$WORKSPACE/example/"
     exampleExampleBuildTarget.data = exampleExampleJvmBuildTarget
     exampleExampleBuildTarget.dataKind = BuildTargetDataKind.JVM

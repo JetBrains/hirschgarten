@@ -3,11 +3,13 @@ package org.jetbrains.bsp.bazel.server.sync.firstPhase
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import kotlinx.coroutines.runBlocking
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bsp.bazel.server.model.Label
-import org.jetbrains.bsp.bazel.server.model.Project
+import org.jetbrains.bsp.bazel.logger.BspClientLogger
+import org.jetbrains.bsp.bazel.server.bzlmod.calculateRepoMapping
+import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import java.nio.file.Path
 
@@ -16,8 +18,9 @@ class FirstPhaseProjectResolver(
   private val bazelRunner: BazelRunner,
   private val workspaceContextProvider: WorkspaceContextProvider,
   private val bazelInfo: BazelInfo,
+  private val bspClientLogger: BspClientLogger,
 ) {
-  fun resolve(originId: String, cancelChecker: CancelChecker): Project =
+  fun resolve(originId: String, cancelChecker: CancelChecker): FirstPhaseProject =
     runBlocking {
       val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
       val command =
@@ -35,17 +38,16 @@ class FirstPhaseProjectResolver(
       val inputStream = bazelProcess.process.inputStream
 
       val targets = generateSequence { Target.parseDelimitedFrom(inputStream) }
+      val modules = targets.associateBy { Label.parse(it.rule.name) }
+
+      val repoMapping = calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
 
       val project =
-        Project(
+        FirstPhaseProject(
           workspaceRoot = workspaceRoot.toUri(),
-          modules = emptyList(),
-          libraries = emptyMap(),
-          goLibraries = emptyMap(),
-          invalidTargets = emptyList(),
-          nonModuleTargets = emptyList(),
           bazelRelease = bazelInfo.release,
-          lightweightModules = targets.associateBy { Label.parse(it.rule.name) },
+          modules = modules,
+          repoMapping = repoMapping,
         )
 
       bazelProcess.waitAndGetResult(cancelChecker, true)

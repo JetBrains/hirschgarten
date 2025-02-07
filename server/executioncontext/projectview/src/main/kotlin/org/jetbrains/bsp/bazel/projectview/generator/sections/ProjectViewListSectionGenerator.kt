@@ -3,6 +3,7 @@ package org.jetbrains.bsp.bazel.projectview.generator.sections
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewListSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
 
 abstract class ProjectViewListSectionGenerator<V, in T : ProjectViewListSection<V>> : ProjectViewSectionGenerator<T>() {
   /**
@@ -36,5 +37,7 @@ abstract class ProjectViewListSectionGenerator<V, in T : ProjectViewListSection<
 }
 
 object ProjectViewBuildFlagsSectionGenerator : ProjectViewListSectionGenerator<String, ProjectViewBuildFlagsSection>()
+
+object ProjectViewSyncFlagsSectionGenerator : ProjectViewListSectionGenerator<String, ProjectViewSyncFlagsSection>()
 
 object ProjectViewEnabledRulesSectionGenerator : ProjectViewListSectionGenerator<String, ProjectViewEnabledRulesSection>()

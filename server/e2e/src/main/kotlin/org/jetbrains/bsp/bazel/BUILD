@@ -7,9 +7,10 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/utils",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -49,7 +50,7 @@ kt_jvm_binary(
     deps = [
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -76,7 +77,7 @@ kt_jvm_binary(
     deps = [
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -88,6 +89,22 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
+        "//protocol",
+        "//server/commons",
+        "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
+        "@maven//:ch_epfl_scala_bsp4j",
+    ],
+)
+
+kt_jvm_binary(
+    name = "BazelBspKotlinProjectWithEnabledRulesTest",
+    srcs = ["BazelBspKotlinProjectWithEnabledRulesTest.kt"],
+    main_class = "org.jetbrains.bsp.bazel.BazelBspKotlinProjectWithEnabledRulesTest",
+    resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
+    visibility = ["//server/e2e:__subpackages__"],
+    deps = [
+        ":BazelBspKotlinProjectTest",
         "//protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
@@ -148,7 +165,7 @@ kt_jvm_binary(
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/android",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -189,7 +206,7 @@ kt_jvm_binary(
     deps = [
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -230,5 +247,22 @@ kt_jvm_binary(
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
         "@maven//:ch_epfl_scala_bsp4j",
+    ],
+)
+
+kt_jvm_binary(
+    name = "NestedModulesTest",
+    srcs = ["NestedModulesTest.kt"],
+    main_class = "org.jetbrains.bsp.bazel.NestedModulesTest",
+    resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
+    visibility = ["//server/e2e:__subpackages__"],
+    deps = [
+        "//server/commons",
+        "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
+        "@maven//:ch_epfl_scala_bsp4j",
+        "@maven//:io_kotest_kotest_assertions_api_jvm",
+        "@maven//:io_kotest_kotest_assertions_core_jvm",
+        "@maven//:io_kotest_kotest_assertions_shared_jvm",
+        "@maven//:io_kotest_kotest_common_jvm",
     ],
 )

@@ -1,20 +1,27 @@
 package org.jetbrains.bsp.bazel.server.sync
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.label.assumeResolved
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bsp.bazel.commons.BazelStatus
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.benchmark.tracer
 import org.jetbrains.bsp.bazel.server.benchmark.useWithScope
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManagerResult
-import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspFallbackAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
-import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesQueryImpl
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesetsQueryImpl
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelLabelExpander
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
-import org.jetbrains.bsp.bazel.server.model.Project
+import org.jetbrains.bsp.bazel.server.bzlmod.calculateRepoMapping
+import org.jetbrains.bsp.bazel.server.bzlmod.canonicalize
+import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
+import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.bazel.server.sync.sharding.BazelBuildTargetSharder
+import org.jetbrains.bsp.bazel.workspacecontext.IllegalTargetsSizeException
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
@@ -25,7 +32,7 @@ class ProjectResolver(
   private val bazelBspAspectsManager: BazelBspAspectsManager,
   private val bazelToolchainManager: BazelToolchainManager,
   private val bazelBspLanguageExtensionsGenerator: BazelBspLanguageExtensionsGenerator,
-  private val bazelBspFallbackAspectsManager: BazelBspFallbackAspectsManager,
+  private val bazelLabelExpander: BazelLabelExpander,
   private val workspaceContextProvider: WorkspaceContextProvider,
   private val bazelProjectMapper: BazelProjectMapper,
   private val targetInfoReader: TargetInfoReader,
@@ -40,8 +47,9 @@ class ProjectResolver(
   suspend fun resolve(
     cancelChecker: CancelChecker,
     build: Boolean,
-    requestedTargetsToSync: List<BuildTargetIdentifier>?,
-  ): Project =
+    requestedTargetsToSync: List<Label>?,
+    firstPhaseProject: FirstPhaseProject?,
+  ): AspectSyncProject =
     tracer.spanBuilder("Resolve project").useWithScope {
       val workspaceContext =
         measured(
@@ -49,38 +57,52 @@ class ProjectResolver(
           workspaceContextProvider::currentWorkspaceContext,
         )
 
-      val bazelExternalRulesQuery =
-        BazelExternalRulesQueryImpl(bazelRunner, bazelInfo.isBzlModEnabled, workspaceContext.enabledRules, bspClientLogger)
+      val bazelExternalRulesetsQuery =
+        BazelExternalRulesetsQueryImpl(
+          bazelRunner,
+          bazelInfo.isBzlModEnabled,
+          bazelInfo.isWorkspaceEnabled,
+          workspaceContext.enabledRules,
+          bspClientLogger,
+        )
 
-      val externalRuleNames =
+      val externalRulesetNames =
         measured(
           "Discovering supported external rules",
-        ) { bazelExternalRulesQuery.fetchExternalRuleNames(cancelChecker) }
+        ) { bazelExternalRulesetsQuery.fetchExternalRulesetNames(cancelChecker) }
 
       val ruleLanguages =
         measured(
           "Mapping rule names to languages",
-        ) { bazelBspAspectsManager.calculateRuleLanguages(externalRuleNames) }
+        ) { bazelBspAspectsManager.calculateRulesetLanguages(externalRulesetNames) }
 
       val toolchains =
         measured(
           "Mapping languages to toolchains",
         ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it, cancelChecker) } }
 
+      val repoMapping =
+        measured("Calculating external repository mapping") {
+          calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
+        }
+
       measured("Realizing language aspect files from templates") {
-        bazelBspAspectsManager.generateAspectsFromTemplates(ruleLanguages, workspaceContext, toolchains)
+        bazelBspAspectsManager.generateAspectsFromTemplates(ruleLanguages, workspaceContext, toolchains, bazelInfo.release, repoMapping)
       }
 
       measured("Generating language extensions file") {
         bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, toolchains)
       }
 
-      val targetsToSync = requestedTargetsToSync?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
+      val targetsToSync =
+        requestedTargetsToSync
+          ?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
 
       val buildAspectResult =
         measured(
           "Building project with aspect",
-        ) { buildProjectWithAspect(cancelChecker, workspaceContext, build, targetsToSync) }
+        ) { buildProjectWithAspect(cancelChecker, workspaceContext, build, targetsToSync, featureFlags, firstPhaseProject) }
+
       val aspectOutputs =
         measured(
           "Reading aspect output paths",
@@ -88,19 +110,45 @@ class ProjectResolver(
       val targets =
         measured(
           "Parsing aspect outputs",
-        ) { targetInfoReader.readTargetMapFromAspectOutputs(aspectOutputs) }
-      val allTargetNames =
-        if (buildAspectResult.isFailure) {
-          measured(
-            "Fetching all possible target names",
-          ) { bazelBspFallbackAspectsManager.getAllPossibleTargets(cancelChecker) }
-        } else {
-          emptyList()
+        ) {
+          targetInfoReader
+            .readTargetMapFromAspectOutputs(aspectOutputs)
+            .map { (k, v) ->
+              // TODO: make sure we canonicalize everything
+              //  (https://youtrack.jetbrains.com/issue/BAZEL-1595/Merge-WildcardTargetExpander-and-BazelLabelExpander)
+              //  also, this can be done in a more efficient way
+              //  maybe we can do it in the aspect with some flag or something
+              val label = k.canonicalize(repoMapping)
+              label to
+                v
+                  .toBuilder()
+                  .apply {
+                    id = label.toString()
+                    val canonicalizedDependencies =
+                      dependenciesBuilderList.map {
+                        it
+                          .apply {
+                            id = Label.parse(it.id).canonicalize(repoMapping).toString()
+                          }.build()
+                      }
+                    clearDependencies()
+                    addAllDependencies(canonicalizedDependencies)
+                  }.build()
+            }.toMap()
         }
-      val rootTargets = buildAspectResult.bepOutput.rootTargets()
+      // resolve root targets (expand wildcards)
+      val rootTargets =
+        measured("Calculating root targets") {
+          bazelLabelExpander
+            .getAllPossibleTargets(
+              targetsToSync,
+              cancelChecker,
+            ).map { it.assumeResolved().canonicalize(repoMapping) }
+            .toSet()
+        }
       return@useWithScope measured(
         "Mapping to internal model",
-      ) { bazelProjectMapper.createProject(targets, rootTargets.toSet(), allTargetNames, workspaceContext, bazelInfo) }
+      ) { bazelProjectMapper.createProject(targets, rootTargets, workspaceContext, bazelInfo, repoMapping) }
     }
 
   private suspend fun buildProjectWithAspect(
@@ -108,20 +156,123 @@ class ProjectResolver(
     workspaceContext: WorkspaceContext,
     build: Boolean,
     targetsToSync: TargetsSpec,
+    featureFlags: FeatureFlags,
+    firstPhaseProject: FirstPhaseProject?,
   ): BazelBspAspectsManagerResult {
-    val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, ARTIFACTS_OUTPUT_GROUP, RUST_ANALYZER_OUTPUT_GROUP)
+    val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, SYNC_ARTIFACT_OUTPUT_GROUP)
     if (build) {
-      outputGroups.add(GENERATED_JARS_OUTPUT_GROUP)
+      outputGroups.add(BUILD_ARTIFACT_OUTPUT_GROUP)
     }
+    val nonShardBuild =
+      suspend {
+        bazelBspAspectsManager
+          .fetchFilesFromOutputGroups(
+            cancelChecker = cancelChecker,
+            targetsSpec = targetsToSync,
+            aspect = ASPECT_NAME,
+            outputGroups = outputGroups,
+            shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
+            isRustEnabled = featureFlags.isRustSupportEnabled,
+            shouldLogInvocation = false,
+          ).also {
+            if (it.status == BazelStatus.OOM_ERROR) {
+              bspClientLogger.warn(
+                "Bazel ran out of memory during sync. To mitigate, consider enabling shard sync in your project view file: `shard_sync: true`",
+              )
+              bspClientLogger.message("---")
+            }
+          }
+      }
 
-    return bazelBspAspectsManager.fetchFilesFromOutputGroups(
-      cancelChecker = cancelChecker,
-      targetSpecs = targetsToSync,
-      aspect = ASPECT_NAME,
-      outputGroups = outputGroups,
-      shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
-      isRustEnabled = featureFlags.isRustSupportEnabled,
-    )
+    val res =
+      if (workspaceContext.shardSync.value) {
+        val shardedResult =
+          BazelBuildTargetSharder.expandAndShardTargets(
+            bazelPathsResolver,
+            bazelInfo,
+            featureFlags,
+            targetsToSync,
+            workspaceContext,
+            bazelRunner,
+            cancelChecker,
+            bspClientLogger,
+            firstPhaseProject,
+          )
+        var remainingShardedTargetsSpecs = shardedResult.targets.toTargetsSpecs().toMutableList()
+        var shardNumber = 1
+        var shardedBuildResult: BazelBspAspectsManagerResult = BazelBspAspectsManagerResult.emptyResult()
+        var suggestedTargetShardSize: Int = workspaceContext.targetShardSize.value
+        while (remainingShardedTargetsSpecs.isNotEmpty()) {
+          cancelChecker.checkCanceled()
+          if (featureFlags.bazelShutDownBeforeShardBuild) {
+            // Prevent memory leak by forcing Bazel to shut down before it builds a shard
+            // This may cause the build to become slower, but it is necessary, at least before this issue is solved
+            // https://github.com/bazelbuild/bazel/issues/19412
+            runBazelShutDown(cancelChecker)
+          }
+          val shardedTargetsSpec = remainingShardedTargetsSpecs.removeFirst()
+          val shardName = "shard $shardNumber of ${shardNumber + remainingShardedTargetsSpecs.size}"
+          bspClientLogger.message("\nBuilding $shardName ...")
+          bspClientLogger.message("Expected remaining shards: ${remainingShardedTargetsSpecs.size}")
+          val result =
+            bazelBspAspectsManager
+              .fetchFilesFromOutputGroups(
+                cancelChecker = cancelChecker,
+                targetsSpec = shardedTargetsSpec,
+                aspect = ASPECT_NAME,
+                outputGroups = outputGroups,
+                shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
+                isRustEnabled = featureFlags.isRustSupportEnabled,
+                shouldLogInvocation = false,
+              )
+          if (result.isFailure) {
+            bspClientLogger.warn("Failed to build $shardName")
+          } else {
+            bspClientLogger.message("Finished building $shardName")
+          }
+          if (result.status == BazelStatus.OOM_ERROR) {
+            bspClientLogger.warn("Bazel ran out of memory during sync, attempting to halve the target shard size to recover")
+            try {
+              val halvedTargetsSpec = shardedTargetsSpec.halve()
+              suggestedTargetShardSize = halvedTargetsSpec.first().values.size
+              bspClientLogger.message(
+                "Retrying with the target shard size of $suggestedTargetShardSize (previously ${shardedTargetsSpec.values.size}) ...",
+              )
+              remainingShardedTargetsSpecs = remainingShardedTargetsSpecs.flatMap { it.halve() }.toMutableList()
+              remainingShardedTargetsSpecs.addAll(0, halvedTargetsSpec)
+            } catch (e: IllegalTargetsSizeException) {
+              bspClientLogger.error("Cannot split targets further: ${e.message}")
+              throw e
+            }
+          }
+          shardedBuildResult = shardedBuildResult.merge(result)
+
+          bspClientLogger.message("---")
+          ++shardNumber
+        }
+        if (suggestedTargetShardSize != workspaceContext.targetShardSize.value) {
+          bspClientLogger.message(
+            "Bazel ran out of memory during sync. To mitigate, consider setting shard size in your project view file: `target_shard_size: $suggestedTargetShardSize`",
+          )
+          bspClientLogger.message("---")
+        }
+        shardedBuildResult
+      } else {
+        nonShardBuild()
+      }
+
+    return res
+  }
+
+  private fun runBazelShutDown(cancelChecker: CancelChecker) {
+    bazelRunner.run {
+      val command =
+        buildBazelCommand {
+          shutDown()
+        }
+      runBazelCommand(command, serverPidFuture = null)
+        .waitAndGetResult(cancelChecker)
+    }
   }
 
   fun releaseMemory() {
@@ -132,8 +283,11 @@ class ProjectResolver(
   companion object {
     private const val ASPECT_NAME = "bsp_target_info_aspect"
     private const val BSP_INFO_OUTPUT_GROUP = "bsp-target-info"
-    private const val ARTIFACTS_OUTPUT_GROUP = "external-deps-resolve"
-    private const val GENERATED_JARS_OUTPUT_GROUP = "generated-jars-resolve"
-    private const val RUST_ANALYZER_OUTPUT_GROUP = "rust_analyzer_crate_spec"
+
+    // this output group is for artifacts which are needed during no-build sync
+    private const val SYNC_ARTIFACT_OUTPUT_GROUP = "bsp-sync-artifact"
+
+    // this output group is for artifacts which are only needed during build
+    private const val BUILD_ARTIFACT_OUTPUT_GROUP = "bsp-build-artifact"
   }
 }

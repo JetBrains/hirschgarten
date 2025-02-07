@@ -5,7 +5,7 @@ import ch.epfl.scala.bsp4j.RustDepKindInfo
 import ch.epfl.scala.bsp4j.RustDependency
 import ch.epfl.scala.bsp4j.RustPackage
 import ch.epfl.scala.bsp4j.RustRawDependency
-import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.server.model.Module
 
 data class RustDependencies(val dependencies: Map<String, List<RustDependency>>, val rawDependencies: Map<String, List<RustRawDependency>>)
@@ -34,7 +34,7 @@ class RustDependencyResolver {
 
   private fun groupBspRawTargetsByPackage(rustBspTargets: List<Module>, rustPackages: List<RustPackage>): Map<RustPackage, List<Module>> =
     rustPackages.associateWith { pkg ->
-      rustBspTargets.filter { it.label.packagePath == pkg.id }
+      rustBspTargets.filter { it.label.packagePath.toString() == pkg.id }
     }
 
   private fun resolveDependencies(associatedBspTargets: Map<RustPackage, List<Module>>): Map<String, List<RustDependency>> =
@@ -49,7 +49,7 @@ class RustDependencyResolver {
   }
 
   private fun createDependency(bazelPackageTargetInfo: Label): RustDependency {
-    val dep = RustDependency(bazelPackageTargetInfo.packagePath)
+    val dep = RustDependency(bazelPackageTargetInfo.packagePath.toString())
     dep.name = bazelPackageTargetInfo.targetName
     dep.depKinds = listOf(RustDepKindInfo(RustDepKind.NORMAL))
     return dep

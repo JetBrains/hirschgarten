@@ -15,7 +15,11 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewIdeJavaHome
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewListSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSingletonSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ShardSyncSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ShardingApproachSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.TargetShardSizeSection
 
 /**
  * Representation of the project view file.
@@ -29,6 +33,8 @@ data class ProjectView(
   val bazelBinary: ProjectViewBazelBinarySection?,
   /** bazel flags added to all bazel command invocations  */
   val buildFlags: ProjectViewBuildFlagsSection?,
+  /** bazel flags added to sync invocation */
+  val syncFlags: ProjectViewSyncFlagsSection?,
   /** flag for building manual targets. */
   val allowManualTargetsSync: ProjectViewAllowManualTargetsSyncSection?,
   /** directories included and excluded from the project  */
@@ -47,12 +53,19 @@ data class ProjectView(
   val enableNativeAndroidRules: EnableNativeAndroidRulesSection? = null,
   /** Override the minimum Android SDK version globally for the whole project */
   val androidMinSdkSection: AndroidMinSdkSection? = null,
+  /** enable sharded sync */
+  val shardSync: ShardSyncSection? = null,
+  /** number of targets per build shard */
+  val targetShardSize: TargetShardSizeSection? = null,
+  /** sharding approach */
+  val shardingApproach: ShardingApproachSection? = null,
 ) {
   data class Builder(
     private val imports: List<ProjectView> = emptyList(),
     private val targets: ProjectViewTargetsSection? = null,
     private val bazelBinary: ProjectViewBazelBinarySection? = null,
     private val buildFlags: ProjectViewBuildFlagsSection? = null,
+    private val syncFlags: ProjectViewSyncFlagsSection? = null,
     private val allowManualTargetsSync: ProjectViewAllowManualTargetsSyncSection? = null,
     private val directories: ProjectViewDirectoriesSection? = null,
     private val deriveTargetsFromDirectories: ProjectViewDeriveTargetsFromDirectoriesSection? = null,
@@ -62,6 +75,9 @@ data class ProjectView(
     private val addTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJarsSection? = null,
     private val enableNativeAndroidRules: EnableNativeAndroidRulesSection? = null,
     private val androidMinSdkSection: AndroidMinSdkSection? = null,
+    private val shardSync: ShardSyncSection? = null,
+    private val targetShardSize: TargetShardSizeSection? = null,
+    private val shardingApproach: ShardingApproachSection? = null,
   ) {
     fun build(): ProjectView {
       log.debug("Building project view for: {}", this)
@@ -73,6 +89,7 @@ data class ProjectView(
       val targets = combineTargetsSection(importedProjectViews)
       val bazelBinary = combineBazelBinarySection(importedProjectViews)
       val buildFlags = combineBuildFlagsSection(importedProjectViews)
+      val syncFlags = combineSyncFlagsSection(importedProjectViews)
       val allowManualTargetsSync = combineManualTargetsSection(importedProjectViews)
       val directories = combineDirectoriesSection(importedProjectViews)
       val deriveTargetsFromDirectories = combineDeriveTargetFlagSection(importedProjectViews)
@@ -82,12 +99,16 @@ data class ProjectView(
       val addTransitiveCompileTimeJars = combineAddTransitiveCompileTimeJarsSection(importedProjectViews)
       val enableNativeAndroidRules = combineEnableNativeAndroidRulesSection(importedProjectViews)
       val androidMinSdkSection = combineAndroidMinSdkSection(importedProjectViews)
+      val shardSyncSection = combineShardSyncSection(importedProjectViews)
+      val targetShardSizeSection = combineTargetShardSizeSection(importedProjectViews)
+      val shardingApproachSection = combineShardingApproachSection(importedProjectViews)
 
       log.debug(
         "Building project view with combined" +
           " targets: {}," +
           " bazel binary: {}," +
           " build flags: {}" +
+          " sync flags: {}" +
           " build manual targets {}," +
           " directories: {}," +
           " deriveTargetsFlag: {}." +
@@ -98,10 +119,14 @@ data class ProjectView(
           " addTransitiveCompileTimeJars: {}," +
           " enableNativeAndroidRules: {}," +
           " androidMinSdkSection: {}," +
+          " shardSync: {}," +
+          " targetShardSize: {}," +
+          " shardingApproach: {}," +
           "", // preserve Git blame
         targets,
         bazelBinary,
         buildFlags,
+        syncFlags,
         allowManualTargetsSync,
         directories,
         deriveTargetsFromDirectories,
@@ -111,11 +136,15 @@ data class ProjectView(
         addTransitiveCompileTimeJars,
         enableNativeAndroidRules,
         androidMinSdkSection,
+        shardSyncSection,
+        targetShardSizeSection,
+        shardingApproachSection,
       )
       return ProjectView(
         targets,
         bazelBinary,
         buildFlags,
+        syncFlags,
         allowManualTargetsSync,
         directories,
         deriveTargetsFromDirectories,
@@ -125,6 +154,9 @@ data class ProjectView(
         addTransitiveCompileTimeJars,
         enableNativeAndroidRules,
         androidMinSdkSection,
+        shardSyncSection,
+        targetShardSizeSection,
+        shardingApproachSection,
       )
     }
 
@@ -146,6 +178,24 @@ data class ProjectView(
       androidMinSdkSection ?: getLastImportedSingletonValue(
         importedProjectViews,
         ProjectView::androidMinSdkSection,
+      )
+
+    private fun combineShardSyncSection(importedProjectViews: List<ProjectView>): ShardSyncSection? =
+      shardSync ?: getLastImportedSingletonValue(
+        importedProjectViews,
+        ProjectView::shardSync,
+      )
+
+    private fun combineTargetShardSizeSection(importedProjectViews: List<ProjectView>): TargetShardSizeSection? =
+      targetShardSize ?: getLastImportedSingletonValue(
+        importedProjectViews,
+        ProjectView::targetShardSize,
+      )
+
+    private fun combineShardingApproachSection(importedProjectViews: List<ProjectView>): ShardingApproachSection? =
+      shardingApproach ?: getLastImportedSingletonValue(
+        importedProjectViews,
+        ProjectView::shardingApproach,
       )
 
     private fun combineTargetsSection(importedProjectViews: List<ProjectView>): ProjectViewTargetsSection? {
@@ -180,6 +230,18 @@ data class ProjectView(
         )
 
       return createInstanceOfListSectionOrNull(flags, ::ProjectViewBuildFlagsSection)
+    }
+
+    private fun combineSyncFlagsSection(importedProjectViews: List<ProjectView>): ProjectViewSyncFlagsSection? {
+      val flags =
+        combineListValuesWithImported(
+          importedProjectViews,
+          syncFlags,
+          ProjectView::syncFlags,
+          ProjectViewSyncFlagsSection::values,
+        )
+
+      return createInstanceOfListSectionOrNull(flags, ::ProjectViewSyncFlagsSection)
     }
 
     private fun combineDirectoriesSection(importedProjectViews: List<ProjectView>): ProjectViewDirectoriesSection? {

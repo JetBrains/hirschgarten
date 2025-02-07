@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.projectview.generator
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
@@ -10,6 +10,7 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDeriveTarge
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.jetbrains.bsp.bazel.projectview.parser.DefaultProjectViewParser
 import org.junit.jupiter.api.AfterEach
@@ -37,6 +38,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
+          syncFlags = null,
           allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
@@ -60,17 +62,18 @@ class DefaultProjectViewGeneratorTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target1"),
-                BuildTargetIdentifier("//included_target2"),
-                BuildTargetIdentifier("//included_target3"),
+                Label.parse("//included_target1"),
+                Label.parse("//included_target2"),
+                Label.parse("//included_target3"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target1"),
-                BuildTargetIdentifier("//excluded_target2"),
+                Label.parse("//excluded_target1"),
+                Label.parse("//excluded_target2"),
               ),
             ),
           bazelBinary = null,
           buildFlags = null,
+          syncFlags = null,
           allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
@@ -86,11 +89,11 @@ class DefaultProjectViewGeneratorTest {
       val expectedGeneratedString =
         """
         targets:
-            //included_target1
-            //included_target2
-            //included_target3
-            -//excluded_target1
-            -//excluded_target2
+            @//included_target1
+            @//included_target2
+            @//included_target3
+            -@//excluded_target1
+            -@//excluded_target2
 
         """.trimIndent()
       generatedString shouldBe expectedGeneratedString
@@ -104,6 +107,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
           buildFlags = null,
+          syncFlags = null,
           allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
@@ -139,6 +143,7 @@ class DefaultProjectViewGeneratorTest {
                 "--build_flag3=value3",
               ),
             ),
+          syncFlags = null,
           allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
@@ -163,6 +168,45 @@ class DefaultProjectViewGeneratorTest {
     }
 
     @Test
+    fun `should return pretty string only with sync flags for project view only with sync flags`() {
+      // given
+      val projectView =
+        ProjectView(
+          targets = null,
+          bazelBinary = null,
+          buildFlags = null,
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag1=value1",
+                "--sync_flag2=value2",
+                "--sync_flag3=value3",
+              ),
+            ),
+          allowManualTargetsSync = null,
+          directories = null,
+          deriveTargetsFromDirectories = null,
+          importDepth = null,
+          enabledRules = null,
+          ideJavaHomeOverride = null,
+        )
+
+      // when
+      val generatedString = DefaultProjectViewGenerator.generatePrettyString(projectView)
+
+      // then
+      val expectedGeneratedString =
+        """
+        sync_flags:
+            --sync_flag1=value1
+            --sync_flag2=value2
+            --sync_flag3=value3
+
+        """.trimIndent()
+      generatedString shouldBe expectedGeneratedString
+    }
+
+    @Test
     fun `should return pretty string only with directories for project view only with directories`() {
       // given
       val projectView =
@@ -170,6 +214,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
+          syncFlags = null,
           allowManualTargetsSync = null,
           directories =
             ProjectViewDirectoriesSection(
@@ -214,6 +259,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
+          syncFlags = null,
           allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSection(true),
@@ -242,6 +288,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
+          syncFlags = null,
           allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
@@ -270,6 +317,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
+          syncFlags = null,
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories = null,
           deriveTargetsFromDirectories = null,
@@ -298,6 +346,7 @@ class DefaultProjectViewGeneratorTest {
           targets = ProjectViewTargetsSection(emptyList(), emptyList()),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
           buildFlags = ProjectViewBuildFlagsSection(emptyList()),
+          syncFlags = ProjectViewSyncFlagsSection(emptyList()),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories = ProjectViewDirectoriesSection(emptyList(), emptyList()),
           deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSection(true),
@@ -317,6 +366,8 @@ class DefaultProjectViewGeneratorTest {
         bazel_binary: /path/to/bazel
 
         build_flags:
+        
+        sync_flags:
         
         allow_manual_targets_sync: true
         
@@ -338,9 +389,9 @@ class DefaultProjectViewGeneratorTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target1"),
-                BuildTargetIdentifier("//included_target2"),
-                BuildTargetIdentifier("//included_target3"),
+                Label.parse("//included_target1"),
+                Label.parse("//included_target2"),
+                Label.parse("//included_target3"),
               ),
               emptyList(),
             ),
@@ -353,6 +404,7 @@ class DefaultProjectViewGeneratorTest {
                 "--build_flag3=value3",
               ),
             ),
+          syncFlags = null,
           allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
@@ -368,9 +420,9 @@ class DefaultProjectViewGeneratorTest {
       val expectedGeneratedString =
         """
         targets:
-            //included_target1
-            //included_target2
-            //included_target3
+            @//included_target1
+            @//included_target2
+            @//included_target3
 
         build_flags:
             --build_flag1=value1
@@ -389,13 +441,13 @@ class DefaultProjectViewGeneratorTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target1"),
-                BuildTargetIdentifier("//included_target2"),
-                BuildTargetIdentifier("//included_target3"),
+                Label.parse("//included_target1"),
+                Label.parse("//included_target2"),
+                Label.parse("//included_target3"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target1"),
-                BuildTargetIdentifier("//excluded_target2"),
+                Label.parse("//excluded_target1"),
+                Label.parse("//excluded_target2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
@@ -405,6 +457,14 @@ class DefaultProjectViewGeneratorTest {
                 "--build_flag1=value1",
                 "--build_flag2=value2",
                 "--build_flag3=value3",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag1=value1",
+                "--sync_flag2=value2",
+                "--sync_flag3=value3",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
@@ -433,11 +493,11 @@ class DefaultProjectViewGeneratorTest {
       val expectedGeneratedString =
         """
         targets:
-            //included_target1
-            //included_target2
-            //included_target3
-            -//excluded_target1
-            -//excluded_target2
+            @//included_target1
+            @//included_target2
+            @//included_target3
+            -@//excluded_target1
+            -@//excluded_target2
 
         bazel_binary: /path/to/bazel
 
@@ -445,6 +505,11 @@ class DefaultProjectViewGeneratorTest {
             --build_flag1=value1
             --build_flag2=value2
             --build_flag3=value3
+        
+        sync_flags:
+            --sync_flag1=value1
+            --sync_flag2=value2
+            --sync_flag3=value3
 
         allow_manual_targets_sync: true
 
@@ -489,13 +554,13 @@ class DefaultProjectViewGeneratorTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target1"),
-                BuildTargetIdentifier("//included_target2"),
-                BuildTargetIdentifier("//included_target3"),
+                Label.parse("//included_target1"),
+                Label.parse("//included_target2"),
+                Label.parse("//included_target3"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target1"),
-                BuildTargetIdentifier("//excluded_target2"),
+                Label.parse("//excluded_target1"),
+                Label.parse("//excluded_target2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
@@ -507,6 +572,7 @@ class DefaultProjectViewGeneratorTest {
                 "--build_flag3=value3",
               ),
             ),
+          syncFlags = null,
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
@@ -533,11 +599,11 @@ class DefaultProjectViewGeneratorTest {
       val expectedFileContent =
         """
         targets:
-            //included_target1
-            //included_target2
-            //included_target3
-            -//excluded_target1
-            -//excluded_target2
+            @//included_target1
+            @//included_target2
+            @//included_target3
+            -@//excluded_target1
+            -@//excluded_target2
 
         bazel_binary: /path/to/bazel
 
@@ -574,13 +640,13 @@ class DefaultProjectViewGeneratorTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target1"),
-                BuildTargetIdentifier("//included_target2"),
-                BuildTargetIdentifier("//included_target3"),
+                Label.parse("//included_target1"),
+                Label.parse("//included_target2"),
+                Label.parse("//included_target3"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target1"),
-                BuildTargetIdentifier("//excluded_target2"),
+                Label.parse("//excluded_target1"),
+                Label.parse("//excluded_target2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
@@ -592,6 +658,7 @@ class DefaultProjectViewGeneratorTest {
                 "--build_flag3=value3",
               ),
             ),
+          syncFlags = null,
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
@@ -618,11 +685,11 @@ class DefaultProjectViewGeneratorTest {
       val expectedFileContent =
         """
         targets:
-            //included_target1
-            //included_target2
-            //included_target3
-            -//excluded_target1
-            -//excluded_target2
+            @//included_target1
+            @//included_target2
+            @//included_target3
+            -@//excluded_target1
+            -@//excluded_target2
 
         bazel_binary: /path/to/bazel
 
@@ -658,6 +725,7 @@ class DefaultProjectViewGeneratorTest {
           targets = ProjectViewTargetsSection(emptyList(), emptyList()),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
           buildFlags = ProjectViewBuildFlagsSection(emptyList()),
+          syncFlags = ProjectViewSyncFlagsSection(emptyList()),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories = ProjectViewDirectoriesSection(emptyList(), emptyList()),
           deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSection(true),
@@ -678,6 +746,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
           buildFlags = null,
+          syncFlags = null,
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories = null,
           deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSection(true),
@@ -698,9 +767,9 @@ class DefaultProjectViewGeneratorTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target1"),
-                BuildTargetIdentifier("//included_target2"),
-                BuildTargetIdentifier("//included_target3"),
+                Label.parse("//included_target1"),
+                Label.parse("//included_target2"),
+                Label.parse("//included_target3"),
               ),
               emptyList(),
             ),
@@ -713,6 +782,7 @@ class DefaultProjectViewGeneratorTest {
                 "--build_flag3=value3",
               ),
             ),
+          syncFlags = null,
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories = null,
           deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSection(true),
@@ -741,13 +811,13 @@ class DefaultProjectViewGeneratorTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target1"),
-                BuildTargetIdentifier("//included_target2"),
-                BuildTargetIdentifier("//included_target3"),
+                Label.parse("//included_target1"),
+                Label.parse("//included_target2"),
+                Label.parse("//included_target3"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target1"),
-                BuildTargetIdentifier("//excluded_target2"),
+                Label.parse("//excluded_target1"),
+                Label.parse("//excluded_target2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
@@ -759,6 +829,7 @@ class DefaultProjectViewGeneratorTest {
                 "--build_flag3=value3",
               ),
             ),
+          syncFlags = null,
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
           directories =
             ProjectViewDirectoriesSection(
@@ -796,6 +867,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
           buildFlags = null,
+          syncFlags = null,
           allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,

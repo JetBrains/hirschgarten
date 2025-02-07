@@ -1,11 +1,11 @@
 package org.jetbrains.bsp.bazel.bazelrunner
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.enableWorkspace
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.overrideRepository
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.bazel.workspacecontext.extraFlags
@@ -30,11 +30,13 @@ class BazelRunner(
 
     fun clean(builder: BazelCommand.Clean.() -> Unit = {}) = BazelCommand.Clean(bazelBinary).apply { builder() }
 
+    fun shutDown(builder: BazelCommand.ShutDown.() -> Unit = {}) = BazelCommand.ShutDown(bazelBinary).apply { builder() }
+
     fun info(builder: BazelCommand.Info.() -> Unit = {}) = BazelCommand.Info(bazelBinary).apply { builder() }
 
     fun version(builder: BazelCommand.Version.() -> Unit = {}) = BazelCommand.Version(bazelBinary).apply { builder() }
 
-    fun run(target: BuildTargetIdentifier, builder: BazelCommand.Run.() -> Unit = {}) =
+    fun run(target: Label, builder: BazelCommand.Run.() -> Unit = {}) =
       BazelCommand.Run(bazelBinary, target).apply { builder() }.also { inheritWorkspaceOptions = true }
 
     fun graph(builder: BazelCommand.ModGraph.() -> Unit = {}) = BazelCommand.ModGraph(bazelBinary).apply { builder() }
@@ -43,18 +45,28 @@ class BazelRunner(
 
     fun showRepo(builder: BazelCommand.ModShowRepo.() -> Unit = {}) = BazelCommand.ModShowRepo(bazelBinary).apply { builder() }
 
-    fun query(builder: BazelCommand.Query.() -> Unit = {}) = BazelCommand.Query(bazelBinary).apply { builder() }
+    fun dumpRepoMapping(
+      builder: BazelCommand.ModDumpRepoMapping.() -> Unit = {
+      },
+    ) = BazelCommand.ModDumpRepoMapping(bazelBinary).apply { builder() }
+
+    fun query(allowManualTargetsSync: Boolean = true, builder: BazelCommand.Query.() -> Unit = {}) =
+      BazelCommand.Query(bazelBinary, allowManualTargetsSync).apply { builder() }
+
+    /** Special version of `query` for asking Bazel about a file instead of a target */
+    fun fileQuery(filePath: Path, builder: BazelCommand.FileQuery.() -> Unit = {}) =
+      BazelCommand.FileQuery(bazelBinary, filePath.toString()).apply { builder() }
 
     fun cquery(builder: BazelCommand.CQuery.() -> Unit = {}) =
       BazelCommand.CQuery(bazelBinary).apply { builder() }.also { inheritWorkspaceOptions = true }
 
     fun build(builder: BazelCommand.Build.() -> Unit = {}) =
       BazelCommand
-        .Build(bazelBinary)
+        .Build(bazelInfo, bazelBinary)
         .apply { builder() }
         .also { inheritWorkspaceOptions = true }
 
-    fun mobileInstall(target: BuildTargetIdentifier, builder: BazelCommand.MobileInstall.() -> Unit = {}) =
+    fun mobileInstall(target: Label, builder: BazelCommand.MobileInstall.() -> Unit = {}) =
       BazelCommand
         .MobileInstall(bazelBinary, target)
         .apply {
@@ -74,7 +86,7 @@ class BazelRunner(
     val commandBuilder = CommandBuilder()
     val command = doBuild(commandBuilder)
     val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
-    val relativeDotBspFolderPath = workspaceContextProvider.currentWorkspaceContext().dotBazelBspDirPath.value
+    val relativeDotBspFolderPath = workspaceContext.dotBazelBspDirPath.value
 
     command.options.add(
       overrideRepository(
@@ -121,8 +133,12 @@ class BazelRunner(
     originId: String? = null,
     logProcessOutput: Boolean = true,
     serverPidFuture: CompletableFuture<Long>?,
+    shouldLogInvocation: Boolean = true,
   ): BazelProcess {
-    val processArgs = command.makeCommandLine()
+    val executionDescriptor = command.buildExecutionDescriptor()
+    val finishCallback = executionDescriptor.finishCallback
+    val processArgs = executionDescriptor.command
+
     val processBuilder = ProcessBuilder(processArgs)
     workspaceRoot?.let { processBuilder.directory(it.toFile()) }
 
@@ -130,9 +146,9 @@ class BazelRunner(
     if (command is BazelCommand.Run) {
       command.workingDirectory?.let { processBuilder.directory(it.toFile()) }
       processBuilder.environment() += command.environment
-      logInvocation(processArgs, command.environment, command.workingDirectory, originId)
+      logInvocation(processArgs, command.environment, command.workingDirectory, originId, shouldLogInvocation = shouldLogInvocation)
     } else {
-      logInvocation(processArgs, null, null, originId)
+      logInvocation(processArgs, null, null, originId, shouldLogInvocation = shouldLogInvocation)
     }
 
     val process = processBuilder.start()
@@ -142,6 +158,7 @@ class BazelRunner(
       process,
       outputLogger,
       serverPidFuture,
+      finishCallback,
     )
   }
 
@@ -152,7 +169,9 @@ class BazelRunner(
     processEnv: Map<String, String>?,
     directory: Path?,
     originId: String?,
+    shouldLogInvocation: Boolean,
   ) {
+    if (!shouldLogInvocation) return
     val envString = processEnv?.let { envToString(it) }
     val directoryString = directory?.let { "cd $it &&" }
     val processArgsString = processArgs.joinToString("' '", "'", "'")

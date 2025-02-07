@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.server.bep
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.CompileReport
 import ch.epfl.scala.bsp4j.CompileTask
 import ch.epfl.scala.bsp4j.TaskFinishDataKind
@@ -10,6 +9,7 @@ import ch.epfl.scala.bsp4j.TaskStartDataKind
 import ch.epfl.scala.bsp4j.TaskStartParams
 import ch.epfl.scala.bsp4j.TestStatus
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.NamedSetOfFiles
 import com.google.devtools.build.v1.BuildEvent
 import com.google.devtools.build.v1.PublishBuildEventGrpc
 import com.google.devtools.build.v1.PublishBuildToolEventStreamRequest
@@ -19,12 +19,13 @@ import com.google.protobuf.Empty
 import io.grpc.stub.StreamObserver
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.label.toBspIdentifier
 import org.jetbrains.bsp.bazel.commons.BazelStatus
-import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.PublishOutputParams
@@ -40,7 +41,7 @@ class BepServer(
   private val bspClient: JoinedBuildClient,
   private val diagnosticsService: DiagnosticsService,
   private val originId: String?,
-  private val target: BuildTargetIdentifier?,
+  private val target: Label?,
   bazelPathsResolver: BazelPathsResolver,
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
   private val bspClientLogger = BspClientLogger(bspClient)
@@ -118,7 +119,13 @@ class BepServer(
       val coverageReportUri = testResult.testActionOutputList.find { it.name == "test.lcov" }?.uri
       if (coverageReportUri != null) {
         bspClient.onBuildPublishOutput(
-          PublishOutputParams(originId, taskId, target, TestCoverageReport.DATA_KIND, TestCoverageReport(coverageReportUri)),
+          PublishOutputParams(
+            originId,
+            taskId,
+            Label.parse(event.id.testResult.label).toBspIdentifier(),
+            TestCoverageReport.DATA_KIND,
+            TestCoverageReport(coverageReportUri),
+          ),
         )
       }
 
@@ -144,16 +151,41 @@ class BepServer(
 
   private fun fetchNamedSet(event: BuildEventStreamProtos.BuildEvent) {
     if (event.id.hasNamedSet()) {
+      val internedNamedSetOfFiles = event.namedSetOfFiles.intern()
       bepOutputBuilder.storeNamedSet(
         event.id.namedSet.id,
-        event.namedSetOfFiles,
+        internedNamedSetOfFiles,
       )
     }
   }
 
+  /**
+   *  Returns a copy of a [NamedSetOfFiles] with interned string references.
+   *  String references in [NamedSetOfFiles] are interned to conserve memory.
+   *
+   *  BEP protos often contain many duplicate strings both within a single stream and across
+   *  shards running in parallel, so string interner is used to share references.
+   */
+
+  private fun NamedSetOfFiles.intern(): NamedSetOfFiles =
+    toBuilder()
+      .clearFiles()
+      .addAllFiles(
+        filesList.map { file ->
+          file
+            .toBuilder()
+            .setUri(file.uri.intern())
+            .setName(file.name.intern())
+            .clearPathPrefix()
+            .addAllPathPrefix(
+              file.pathPrefixList.map { it.intern() },
+            ).build()
+        },
+      ).build()
+
   private fun processBuildStartedEvent(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasStarted()) {
-      consumeBuildStartedEvent(event.started)
+      consumeBuildStartedEvent(event)
     }
   }
 
@@ -170,20 +202,23 @@ class BepServer(
     }
   }
 
-  private fun consumeBuildStartedEvent(buildStarted: BuildEventStreamProtos.BuildStarted) {
+  private fun consumeBuildStartedEvent(event: BuildEventStreamProtos.BuildEvent) {
     bepOutputBuilder.clear()
-    val taskId = TaskId(buildStarted.uuid)
+    val taskId = TaskId(event.started.uuid)
     val startParams = TaskStartParams(taskId)
-    startParams.eventTime = buildStarted.startTimeMillis
+    val target =
+      event.id.testResult.label
+        ?.let { Label.parse(it) }
+    startParams.eventTime = event.started.startTimeMillis
 
-    if (buildStarted.command == Constants.BAZEL_BUILD_COMMAND) { // todo: why only build?
+    if (event.started.command == Constants.BAZEL_BUILD_COMMAND) { // todo: why only build?
       if (target != null) {
         startParams.dataKind = TaskStartDataKind.COMPILE_TASK
-        val task = CompileTask(target)
+        val task = CompileTask(target.toBspIdentifier())
         startParams.data = task
       }
       bspClient.onBuildTaskStart(startParams)
-    } else if (buildStarted.command == Constants.BAZEL_TEST_COMMAND) {
+    } else if (event.started.command == Constants.BAZEL_TEST_COMMAND || event.started.command == Constants.BAZEL_COVERAGE_COMMAND) {
       if (originId == null) {
         return
       }
@@ -197,12 +232,15 @@ class BepServer(
 
   private fun processFinishedEvent(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasFinished()) {
-      consumeFinishedEvent(event.finished)
+      consumeFinishedEvent(event)
     }
   }
 
-  private fun consumeFinishedEvent(buildFinished: BuildEventStreamProtos.BuildFinished) {
+  private fun consumeFinishedEvent(event: BuildEventStreamProtos.BuildEvent) {
     val taskId = startedEvent
+    val target =
+      event.id.testResult.label
+        ?.let { Label.parse(it) }
 
     if (taskId == null) {
       LOGGER.warn("No start event id was found. Origin id: {}", originId)
@@ -216,15 +254,15 @@ class BepServer(
       return
     }
 
-    val statusCode = BazelStatus.fromExitCode(buildFinished.exitCode.code).toBspStatusCode()
+    val statusCode = BazelStatus.fromExitCode(event.finished.exitCode.code).toBspStatusCode()
     val finishParams = TaskFinishParams(taskId, statusCode)
-    finishParams.eventTime = buildFinished.finishTimeMillis
+    finishParams.eventTime = event.finished.finishTimeMillis
 
     if (target != null) {
       finishParams.dataKind = TaskFinishDataKind.COMPILE_REPORT
       val isSuccess = statusCode.value == 1
       val errors = if (isSuccess) 0 else 1
-      val report = CompileReport(target, errors, 0)
+      val report = CompileReport(target.toBspIdentifier(), errors, 0)
       finishParams.data = report
     }
     bspClient.onBuildTaskFinish(finishParams)
@@ -282,13 +320,12 @@ class BepServer(
   }
 
   private fun consumeCompletedEvent(event: BuildEventStreamProtos.BuildEvent) {
-    val eventLabel = event.id.targetCompleted.label
-    /* The events never contain @, which will be different than the actual target id. Here we work around that fact,
-     * but since we also set up the BEP server to gather info about build targets within certain path (//... etc.), we can't
-     * just use target.uri.
-     * */
-    val labelText = if (target != null && ("@$eventLabel" == target.uri || "@@$eventLabel" == target.uri)) target.uri else eventLabel
-    val label = Label.parse(labelText)
+    val eventLabel = Label.parseOrNull(event.id.targetCompleted.label)
+    val label =
+      eventLabel ?: run {
+        LOGGER.warn("No target label found in event {}", event)
+        return
+      }
     val targetComplete = event.completed
     val outputGroups = targetComplete.outputGroupList
     LOGGER.trace("Consuming target completed event {}", targetComplete)

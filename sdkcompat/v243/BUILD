@@ -7,6 +7,7 @@ kt_jvm_library(
         "intellij-2024.3": glob([
             "org/jetbrains/bsp/sdkcompat/**",
         ]),
+        "intellij-2025.1": ["Dummy.kt"],
     }),
     visibility = ["//sdkcompat:__pkg__"],
     deps = [

@@ -28,6 +28,15 @@ kt_junit5_test(
 )
 
 kt_junit5_test(
+    name = "SyncFlagsSpecMapperTest",
+    size = "small",
+    src = "SyncFlagsSpecMapperTest.kt",
+    associates = [
+        "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
+    ],
+)
+
+kt_junit5_test(
     name = "AllowManualTargetsSyncSpecMapperTest",
     size = "small",
     src = "AllowManualTargetsSyncSpecMapperTest.kt",
@@ -69,5 +78,8 @@ kt_junit5_test(
     src = "DefaultWorkspaceContextProviderTest.kt",
     associates = [
         "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
+    ],
+    deps = [
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
     ],
 )

@@ -1,20 +1,22 @@
 package org.jetbrains.bsp.bazel.commons
 
+import org.jetbrains.bazel.commons.utils.OsFamily
 import java.io.File
 
 object FileUtils {
   fun getCacheDirectory(subfolder: String): File? {
     val path =
       System.getenv("XDG_CACHE_HOME") ?: run {
-        val os = System.getProperty("os.name").lowercase()
-        when {
-          os.startsWith("windows") ->
+        val os = OsFamily.inferFromSystem()
+        when (os) {
+          OsFamily.WINDOWS ->
             System.getenv("LOCALAPPDATA") ?: System.getenv("APPDATA")
-          os.startsWith("linux") ->
+
+          OsFamily.LINUX ->
             System.getenv("HOME") + "/.cache"
-          os.startsWith("mac") ->
+
+          OsFamily.MACOS ->
             System.getenv("HOME") + "/Library/Caches"
-          else -> return null
         }
       }
     val file = File(path, subfolder)

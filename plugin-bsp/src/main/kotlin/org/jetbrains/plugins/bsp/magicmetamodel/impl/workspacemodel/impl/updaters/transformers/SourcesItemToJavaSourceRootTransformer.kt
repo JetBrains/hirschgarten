@@ -5,7 +5,7 @@ import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaSourceRoot
-import java.net.URI
+import java.nio.file.Path
 import kotlin.io.path.toPath
 
 internal data class BuildTargetAndSourceItem(val buildTarget: BuildTarget, val sourcesItem: SourcesItem)
@@ -16,7 +16,7 @@ internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModel
   private val testSourceRootType = SourceRootTypeId("java-test")
 
   override fun transform(inputEntity: BuildTargetAndSourceItem): List<JavaSourceRoot> {
-    val sourceRoots = getSourceRootsAsURIs(inputEntity.sourcesItem)
+    val sourceRoots = getSourceRoots(inputEntity.sourcesItem)
     val rootType = inferRootType(inputEntity.buildTarget)
 
     return if (workspaceModelEntitiesFolderMarker) {
@@ -26,14 +26,18 @@ internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModel
     }
   }
 
-  private fun getSourceRootsAsURIs(sourcesItem: SourcesItem): List<URI> = sourcesItem.roots.orEmpty().map { it.safeCastToURI() }
+  private fun getSourceRoots(sourcesItem: SourcesItem): Set<Path> =
+    sourcesItem.roots
+      .orEmpty()
+      .map { it.safeCastToURI().toPath() }
+      .toSet()
 
   private fun inferRootType(buildTarget: BuildTarget): SourceRootTypeId =
     if (buildTarget.tags.contains("test")) testSourceRootType else sourceRootType
 
-  private fun URI.toJavaSourceRoot(rootType: SourceRootTypeId): JavaSourceRoot =
+  private fun Path.toJavaSourceRoot(rootType: SourceRootTypeId): JavaSourceRoot =
     JavaSourceRoot(
-      sourcePath = toPath(),
+      sourcePath = this,
       generated = false,
       packagePrefix = "",
       rootType = rootType,
@@ -41,7 +45,7 @@ internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModel
 
   private fun toJavaSourceRoot(
     sourceRoot: SourceRoot,
-    sourceRoots: List<URI>,
+    sourceRoots: Set<Path>,
     rootType: SourceRootTypeId,
   ): JavaSourceRoot {
     val packagePrefix = calculatePackagePrefix(sourceRoot, sourceRoots)
@@ -54,12 +58,12 @@ internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModel
     )
   }
 
-  private fun calculatePackagePrefix(sourceRoot: SourceRoot, sourceRoots: List<URI>): JavaSourceRootPackagePrefix {
+  private fun calculatePackagePrefix(sourceRoot: SourceRoot, sourceRoots: Set<Path>): JavaSourceRootPackagePrefix {
     val packagePrefixFromData = sourceRoot.additionalData?.jvmPackagePrefix
     if (packagePrefixFromData != null) return JavaSourceRootPackagePrefix(packagePrefixFromData)
     val packageDetails =
       JavaSourcePackageDetails(
-        sourceURI = sourceRoot.sourcePath.let { if (sourceRoot.isFile) it.parent else it }.toUri(),
+        source = sourceRoot.sourcePath.let { if (sourceRoot.isFile) it.parent else it },
         sourceRoots = sourceRoots,
       )
 

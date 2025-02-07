@@ -7,8 +7,8 @@ include:
 exclude:
   - name: All
     paths:
-      - plugin-bazel/src/main/gen/org/jetbrains/bazel/languages/bazelrc/lexer/_BazelrcLexer.java
-      - plugin-bazel/src/main/gen/org/jetbrains/bazel/languages/starlark/lexer/_StarlarkLexer.java
+      - plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelrc/lexer/_BazelrcLexer.java
+      - plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/lexer/_StarlarkLexer.java
       - plugin-bazel/src/test/testData/bazelrc
       - plugin-bazel/src/test/testData/starlark
       # generated workspace entities are full of various things, boring for qodana
@@ -19,6 +19,8 @@ exclude:
       - server/example/kotlincplugin/UserIsOpenTest.kt
       # .teamcity currently doesn't comply with k2, so we remove it
       - .teamcity
+      # test projects, not needed for qodana, may produce false positives
+      - server/e2e/test-projects
   - name: CheckDependencyLicenses
   - name: UnnecessaryUnicodeEscape
   - name: UnstableApiUsage

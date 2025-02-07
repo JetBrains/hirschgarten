@@ -1,15 +1,15 @@
 package org.jetbrains.bsp.bazel.server.sync
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
 
 object ClasspathQuery {
   fun classPathQuery(
-    target: BuildTargetIdentifier,
+    target: Label,
     cancelChecker: CancelChecker,
     bspInfo: BspInfo,
     bazelRunner: BazelRunner,
@@ -26,7 +26,7 @@ object ClasspathQuery {
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
         .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
-    if (cqueryResult.isNotSuccess) throw RuntimeException("Could not query target '${target.uri}' for runtime classpath")
+    if (cqueryResult.isNotSuccess) throw RuntimeException("Could not query target '$target' for runtime classpath")
     try {
       val classpaths = Gson().fromJson(cqueryResult.stdout, JvmClasspath::class.java)
       return classpaths

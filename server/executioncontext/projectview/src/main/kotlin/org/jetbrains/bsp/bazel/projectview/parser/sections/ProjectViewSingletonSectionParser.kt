@@ -10,6 +10,9 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDeriveTarge
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewIdeJavaHomeOverrideSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSingletonSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ShardSyncSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ShardingApproachSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.TargetShardSizeSection
 import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSections
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -113,4 +116,28 @@ object AndroidMinSdkSectionParser :
   override fun mapRawValue(rawValue: String): Int = rawValue.toInt()
 
   override fun createInstance(value: Int): AndroidMinSdkSection = AndroidMinSdkSection(value)
+}
+
+object ShardSyncParser : ProjectViewSingletonSectionParser<Boolean, ShardSyncSection>(
+  ShardSyncSection.SECTION_NAME,
+) {
+  override fun mapRawValue(rawValue: String): Boolean = rawValue.toBoolean()
+
+  override fun createInstance(value: Boolean): ShardSyncSection = ShardSyncSection(value)
+}
+
+object TargetShardSizeParser : ProjectViewSingletonSectionParser<Int, TargetShardSizeSection>(
+  TargetShardSizeSection.SECTION_NAME,
+) {
+  override fun mapRawValue(rawValue: String): Int = rawValue.toInt()
+
+  override fun createInstance(value: Int): TargetShardSizeSection = TargetShardSizeSection(value)
+}
+
+object ShardingApproachParser : ProjectViewSingletonSectionParser<String, ShardingApproachSection>(
+  ShardingApproachSection.SECTION_NAME,
+) {
+  override fun mapRawValue(rawValue: String): String = rawValue
+
+  override fun createInstance(value: String): ShardingApproachSection = ShardingApproachSection(value)
 }

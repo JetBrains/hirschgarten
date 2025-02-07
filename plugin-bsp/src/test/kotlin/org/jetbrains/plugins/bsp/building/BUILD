@@ -11,6 +11,7 @@ intellij_integration_test_suite(
         "//plugin-bsp:intellij-bsp",
     ],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/utils",
         "//plugin-bsp/src:test_fixtures",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:io_kotest_kotest_assertions_api_jvm",

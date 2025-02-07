@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter
 
-import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.TargetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 public class TargetFilter(private val onFilterChange: () -> Unit) {
@@ -14,7 +14,7 @@ public class TargetFilter(private val onFilterChange: () -> Unit) {
 
   public fun isFilterOn(): Boolean = currentFilter != FILTER.OFF
 
-  public fun getMatchingLoadedTargets(xd: TemporaryTargetUtils): List<BuildTargetInfo> =
+  public fun getMatchingLoadedTargets(xd: TargetUtils): List<BuildTargetInfo> =
     xd.allTargetIds().mapNotNull { xd.getBuildTargetInfoForId(it) }.filterTargets()
 
   private fun List<BuildTargetInfo>.filterTargets(): List<BuildTargetInfo> = this.filter(currentFilter.predicate)

@@ -6,6 +6,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.label.ResolvedLabel
+import org.jetbrains.bazel.commons.label.assumeResolved
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.FileLocation
@@ -13,18 +16,20 @@ import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.benchmark.tracer
 import org.jetbrains.bsp.bazel.server.benchmark.useWithScope
+import org.jetbrains.bsp.bazel.server.bzlmod.BzlmodRepoMapping
+import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
+import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
+import org.jetbrains.bsp.bazel.server.label.label
+import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.GoLibrary
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Library
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.NonModuleTarget
-import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.SourceSet
 import org.jetbrains.bsp.bazel.server.model.SourceWithData
 import org.jetbrains.bsp.bazel.server.model.Tag
-import org.jetbrains.bsp.bazel.server.model.label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
@@ -70,10 +75,10 @@ class BazelProjectMapper(
   suspend fun createProject(
     targets: Map<Label, TargetInfo>,
     rootTargets: Set<Label>,
-    allTargetNames: List<Label>,
     workspaceContext: WorkspaceContext,
     bazelInfo: BazelInfo,
-  ): Project {
+    repoMapping: RepoMapping,
+  ): AspectSyncProject {
     languagePluginsService.prepareSync(targets.values.asSequence())
     val dependencyGraph =
       measure("Build dependency tree") {
@@ -81,7 +86,7 @@ class BazelProjectMapper(
       }
     val targetsToImport =
       measure("Select targets") {
-        selectTargetsToImport(workspaceContext, rootTargets, dependencyGraph)
+        selectTargetsToImport(workspaceContext, rootTargets, dependencyGraph, repoMapping)
       }
     val interfacesAndBinariesFromTargetsToImport =
       measure("Collect interfaces and classes from targets to import") {
@@ -195,7 +200,7 @@ class BazelProjectMapper(
       }
     val invalidTargets =
       measure("Save invalid target labels") {
-        removeDotBazelBspTarget(allTargetNames) - targetsToImport.map { it.label() }.toSet()
+        removeDotBazelBspTarget(rootTargets) - targetsToImport.map { it.label() }.toSet()
       }
     val rustExternalTargetsToImport =
       measureIf(
@@ -203,7 +208,7 @@ class BazelProjectMapper(
         predicate = { featureFlags.isRustSupportEnabled },
         ifFalse = emptySequence(),
       ) {
-        selectRustExternalTargetsToImport(rootTargets, dependencyGraph)
+        selectRustExternalTargetsToImport(rootTargets, dependencyGraph, repoMapping)
       }
     val rustExternalModules =
       measureIf(
@@ -215,18 +220,25 @@ class BazelProjectMapper(
       }
     val allModules = mergedModulesFromBazel + rustExternalModules
 
-    val nonModuleTargetIds = removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys
+    val nonModuleTargetIds =
+      (removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys).toSet()
     val nonModuleTargets =
-      createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && it.isMainWorkspace })
+      createNonModuleTargets(
+        targets.filterKeys {
+          nonModuleTargetIds.contains(it) &&
+            isTargetTreatedAsInternal(it.assumeResolved(), repoMapping)
+        },
+      )
 
-    return Project(
-      workspaceRoot,
-      allModules.toList(),
-      librariesToImport,
-      goLibrariesToImport,
-      invalidTargets,
-      nonModuleTargets,
-      bazelInfo.release,
+    return AspectSyncProject(
+      workspaceRoot = workspaceRoot,
+      bazelRelease = bazelInfo.release,
+      modules = allModules.toList(),
+      libraries = librariesToImport,
+      goLibraries = goLibrariesToImport,
+      invalidTargets = invalidTargets,
+      nonModuleTargets = nonModuleTargets,
+      repoMapping = repoMapping,
     )
   }
 
@@ -607,13 +619,12 @@ class BazelProjectMapper(
 
   private fun createNonModuleTargets(targets: Map<Label, TargetInfo>): List<NonModuleTarget> =
     targets
-      .filter { !isWorkspaceTarget(it.value) }
       .map { (label, targetInfo) ->
         NonModuleTarget(
           label = label,
           languages = inferLanguages(targetInfo),
           tags = targetTagsResolver.resolveTags(targetInfo),
-          baseDirectory = label.toDirectoryUri(),
+          baseDirectory = label.assumeResolved().toDirectoryUri(),
         )
       }
 
@@ -787,24 +798,29 @@ class BazelProjectMapper(
       .flatMap { it.interfaceJarsList }
       .map { bazelPathsResolver.resolve(it) }
 
-  private fun getGoRootUri(targetInfo: TargetInfo): URI = targetInfo.label().toDirectoryUri()
+  private fun getGoRootUri(targetInfo: TargetInfo): URI = targetInfo.label().assumeResolved().toDirectoryUri()
 
-  private fun selectRustExternalTargetsToImport(rootTargets: Set<Label>, graph: DependencyGraph): Sequence<TargetInfo> =
+  private fun selectRustExternalTargetsToImport(
+    rootTargets: Set<Label>,
+    graph: DependencyGraph,
+    repoMapping: RepoMapping,
+  ): Sequence<TargetInfo> =
     graph
       .allTargetsAtDepth(-1, rootTargets)
       .asSequence()
-      .filter { !isWorkspaceTarget(it) && isRustTarget(it) }
+      .filter { !isWorkspaceTarget(it, repoMapping) && isRustTarget(it) }
 
   private fun selectTargetsToImport(
     workspaceContext: WorkspaceContext,
     rootTargets: Set<Label>,
     graph: DependencyGraph,
+    repoMapping: RepoMapping,
   ): Sequence<TargetInfo> =
     graph
       .allTargetsAtDepth(
         workspaceContext.importDepth.value,
         rootTargets,
-      ).filter { isWorkspaceTarget(it) }
+      ).filter { isWorkspaceTarget(it, repoMapping) }
       .asSequence()
 
   private fun collectInterfacesAndClasses(targets: Sequence<TargetInfo>) =
@@ -825,20 +841,31 @@ class BazelProjectMapper(
 
   private fun hasKnownPythonSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
-      !it.isExternal && it.relativePath.endsWith(".py")
+      it.relativePath.endsWith(".py")
     }
 
-  private fun hasOtherKnownSources(targetInfo: TargetInfo) =
+  private fun hasKnownGoSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
-      !it.isExternal &&
-        it.relativePath.endsWith(".sh") ||
-        it.relativePath.endsWith(".rs") ||
-        it.relativePath.endsWith(".go")
+      it.relativePath.endsWith(".go")
     }
+
+  private fun hasKnownRustSources(targetInfo: TargetInfo) =
+    targetInfo.sourcesList.any {
+      it.relativePath.endsWith(".rs")
+    }
+
+  private fun externalRepositoriesTreatedAsInternal(repoMapping: RepoMapping) =
+    when (repoMapping) {
+      is BzlmodRepoMapping -> repoMapping.canonicalRepoNameToLocalPath.keys
+      is RepoMappingDisabled -> emptySet()
+    }
+
+  private fun isTargetTreatedAsInternal(target: ResolvedLabel, repoMapping: RepoMapping): Boolean =
+    target.isMainWorkspace || target.repo.repoName in externalRepositoriesTreatedAsInternal(repoMapping)
 
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
-  private fun isWorkspaceTarget(target: TargetInfo): Boolean =
-    target.label().isMainWorkspace &&
+  private fun isWorkspaceTarget(target: TargetInfo, repoMapping: RepoMapping): Boolean =
+    isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
       (
         shouldImportTargetKind(target.kind) ||
           target.hasJvmTargetInfo() &&
@@ -846,7 +873,12 @@ class BazelProjectMapper(
           featureFlags.isPythonSupportEnabled &&
           target.hasPythonTargetInfo() &&
           hasKnownPythonSources(target) ||
-          hasOtherKnownSources(target)
+          featureFlags.isGoSupportEnabled &&
+          target.hasGoTargetInfo() &&
+          hasKnownGoSources(target) ||
+          featureFlags.isRustSupportEnabled &&
+          target.hasRustCrateInfo() &&
+          hasKnownRustSources(target)
       )
 
   private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds
@@ -903,7 +935,7 @@ class BazelProjectMapper(
     dependencyGraph: DependencyGraph,
     extraLibraries: Collection<Library>,
   ): Module {
-    val label = target.label()
+    val label = target.label().assumeResolved()
     // extra libraries can override some library versions, so they should be put before
     val directDependencies = extraLibraries.map { it.label } + resolveDirectDependencies(target)
     val languages = inferLanguages(target)
@@ -939,15 +971,16 @@ class BazelProjectMapper(
     return languagesForTarget + languagesForSources
   }
 
-  private fun Label.toDirectoryUri(): URI = bazelPathsResolver.pathToDirectoryUri(this.toBazelPath().toString(), isMainWorkspace)
+  private fun ResolvedLabel.toDirectoryUri(): URI = bazelPathsResolver.pathToDirectoryUri(this.toBazelPath().toString(), isMainWorkspace)
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): SourceSet {
-    val sources =
+    val (sources, nonExistentSources) =
       (target.sourcesList + languagePlugin.calculateAdditionalSources(target))
         .toSet()
         .map(bazelPathsResolver::resolve)
-        .onEach { if (it.notExists()) it.logNonExistingFile(target.id) }
-        .filter { it.exists() }
+        .partition { it.exists() }
+
+    nonExistentSources.forEach { it.logNonExistingFile(target.id) }
     val generatedSources =
       target.generatedSourcesList
         .toSet()
@@ -998,7 +1031,7 @@ class BazelProjectMapper(
 
   private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
     targets.filter {
-      it.isMainWorkspace && !it.packagePath.startsWith(".bazelbsp")
+      it.isMainWorkspace && !it.packagePath.toString().startsWith(".bazelbsp")
     }
 
   private suspend fun createRustExternalModules(

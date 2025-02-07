@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.server.bep
 
 import com.google.common.collect.Queues
-import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bazel.commons.label.Label
 import java.nio.file.Path
 
 class BepOutput(
@@ -34,4 +34,15 @@ class BepOutput(
     }
     return result
   }
+
+  fun merge(anotherBepOutput: BepOutput): BepOutput =
+    BepOutput(
+      outputGroups + anotherBepOutput.outputGroups,
+      (textProtoFileSets.keys + anotherBepOutput.textProtoFileSets.keys).associateWith { k ->
+        val left = textProtoFileSets[k] ?: TextProtoDepSet(emptyList(), emptyList())
+        val right = anotherBepOutput.textProtoFileSets[k] ?: TextProtoDepSet(emptyList(), emptyList())
+        TextProtoDepSet(left.files + right.files, left.children + right.children)
+      },
+      rootTargets + anotherBepOutput.rootTargets,
+    )
 }

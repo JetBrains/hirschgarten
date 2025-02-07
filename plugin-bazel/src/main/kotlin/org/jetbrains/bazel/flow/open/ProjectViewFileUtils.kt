@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.flow.open
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.readText
+import com.intellij.openapi.vfs.resolveFromRootOrRelative
+import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
+import org.jetbrains.bazel.commons.constants.Constants.DOT_BAZELBSP_DIR_NAME
+import org.jetbrains.bazel.commons.constants.Constants.LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.config.BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION
 import org.jetbrains.bazel.settings.bazelProjectSettings
-import org.jetbrains.bsp.bazel.commons.Constants.DOT_BAZELBSP_DIR_NAME
-import org.jetbrains.bsp.bazel.install.DEFAULT_PROJECT_VIEW_FILE_NAME
-import org.jetbrains.bsp.bazel.install.LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.plugins.bsp.config.rootDir
 import java.nio.file.Files
 import java.nio.file.Path
@@ -22,12 +24,13 @@ import kotlin.io.path.writeText
 
 private const val PROJECT_VIEW_FILE_SYSTEM_PROPERTY = "bazel.project.view.file.path"
 
+private const val PROJECTVIEW_DEFAULT_TEMPLATE_PATH = "tools/intellij/.managed.bazelproject"
+
 private val INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE =
   """
   # This project view file may be overwritten by the Bazel plugin.
   # To use it as default, place it in the Bazel module or workspace root directory.
   # For more options, see https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md
-  try_import tools/intellij/.managed.bazelproject
   
   derive_targets_from_directories: true
   directories: %s
@@ -36,7 +39,7 @@ private val INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE =
 
 private val OPEN_OPTIONS = arrayOf(StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
 
-internal object ProjectViewFileUtils {
+object ProjectViewFileUtils {
   fun calculateProjectViewFilePath(
     project: Project,
     generateContent: Boolean,
@@ -49,6 +52,11 @@ internal object ProjectViewFileUtils {
       setProjectViewFileContent(projectViewFilePath, project, bazelPackageDir, overwrite)
     }
     return projectViewFilePath
+  }
+
+  fun projectViewTemplate(project: Project): String {
+    val path = project.rootDir.resolveFromRootOrRelative(PROJECTVIEW_DEFAULT_TEMPLATE_PATH)
+    return path?.readText() ?: INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE
   }
 
   private fun calculateDefaultProjectViewFile(project: Project, overwrite: Boolean): Path {
@@ -90,7 +98,7 @@ internal object ProjectViewFileUtils {
     val projectRoot = project.rootDir.toNioPath()
     val realizedBazelPackageDir = bazelPackageDir ?: projectRoot
     val relativePath = calculateRelativePathForInferredDirectory(projectRoot, realizedBazelPackageDir)
-    val content = INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE.format(relativePath)
+    val content = projectViewTemplate(project).format(relativePath)
     setProjectViewFileContent(projectViewFilePath, content, overwrite)
   }
 

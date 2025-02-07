@@ -1,7 +1,6 @@
 package org.jetbrains.plugins.bsp.workspace
 
-import com.intellij.openapi.util.io.FileUtil
-import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
@@ -40,18 +39,12 @@ class BspProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexCon
       )
     }
 
-  private fun WorkspaceFileSetRegistrar.registerAllOtherDirectoriesAsExcluded(entity: BspProjectDirectoriesEntity) =
+  private fun WorkspaceFileSetRegistrar.registerAllOtherDirectoriesAsExcluded(entity: BspProjectDirectoriesEntity) {
+    val includedRoots = entity.includedRoots.mapNotNull { it.virtualFile }.toSet()
     registerExclusionCondition(
       root = entity.projectRoot,
-      condition = { it.isNotIncludedInTheProject(entity) },
+      condition = { !VfsUtilCore.isUnderFiles(it, includedRoots) },
       entity = entity,
     )
-
-  private fun VirtualFile.isNotIncludedInTheProject(entity: BspProjectDirectoriesEntity) =
-    entity.includedRoots
-      .mapNotNull { it.virtualFile }
-      .none { it.isEqualOrParentOf(this) }
-
-  private fun VirtualFile.isEqualOrParentOf(other: VirtualFile): Boolean =
-    FileUtil.startsWith(other.url.removeSuffix("/"), url.removeSuffix("/"))
+  }
 }

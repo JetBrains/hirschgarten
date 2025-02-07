@@ -14,10 +14,9 @@ open class FormatChecker(vcsRoot: GitVcsRoot) :
           """
           bazel run //tools/format:format.check ${Utils.CommonParams.BazelCiSpecificArgs}
           """.trimIndent()
-        dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
-        dockerPull = true
-        dockerImage = "registry.jetbrains.team/p/bazel/docker/hirschgarten-e2e:latest"
-      }
+        Utils.DockerParams.get().forEach { (key, value) ->
+          param(key, value)
+        }      }
     },
     vcsRoot = vcsRoot,
   )

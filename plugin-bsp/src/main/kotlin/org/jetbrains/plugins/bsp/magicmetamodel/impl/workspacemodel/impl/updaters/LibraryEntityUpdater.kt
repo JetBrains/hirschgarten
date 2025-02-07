@@ -34,7 +34,7 @@ internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfi
   //    val entitySource = parentModuleEntity.entitySource
   //    return addLibraryEntity(builder, entityToAdd, tableId, entitySource)
   //  }
-  override fun addEntity(entityToAdd: Library): LibraryEntity =
+  override suspend fun addEntity(entityToAdd: Library): LibraryEntity =
     addProjectLibraryEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
 
   private fun addProjectLibraryEntity(builder: MutableEntityStorage, entityToAdd: Library): LibraryEntity {

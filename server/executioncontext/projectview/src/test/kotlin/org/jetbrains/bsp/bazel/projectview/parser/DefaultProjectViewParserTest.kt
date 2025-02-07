@@ -1,10 +1,10 @@
 package org.jetbrains.bsp.bazel.projectview.parser
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
@@ -13,6 +13,7 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDeriveTarge
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -171,6 +172,7 @@ class DefaultProjectViewParserTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
+          syncFlags = null,
           allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
@@ -197,11 +199,11 @@ class DefaultProjectViewParserTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target1.1"),
-                BuildTargetIdentifier("//included_target1.2"),
+                Label.parse("//included_target1.1"),
+                Label.parse("//included_target1.2"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target1.1"),
+                Label.parse("//excluded_target1.1"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Path("path1/to/bazel")),
@@ -210,6 +212,13 @@ class DefaultProjectViewParserTest {
               listOf(
                 "--build_flag1.1=value1.1",
                 "--build_flag1.2=value1.2",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag1.1=value1.1",
+                "--sync_flag1.2=value1.2",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
@@ -246,14 +255,14 @@ class DefaultProjectViewParserTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target1.1"),
-                BuildTargetIdentifier("//included_target1.2"),
-                BuildTargetIdentifier("//included_target4.1"),
+                Label.parse("//included_target1.1"),
+                Label.parse("//included_target1.2"),
+                Label.parse("//included_target4.1"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target1.1"),
-                BuildTargetIdentifier("//excluded_target4.1"),
-                BuildTargetIdentifier("//excluded_target4.2"),
+                Label.parse("//excluded_target1.1"),
+                Label.parse("//excluded_target4.1"),
+                Label.parse("//excluded_target4.2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Path("path1/to/bazel")),
@@ -265,6 +274,16 @@ class DefaultProjectViewParserTest {
                 "--build_flag4.1=value4.1",
                 "--build_flag4.2=value4.2",
                 "--build_flag4.3=value4.3",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag1.1=value1.1",
+                "--sync_flag1.2=value1.2",
+                "--sync_flag4.1=value4.1",
+                "--sync_flag4.2=value4.2",
+                "--sync_flag4.3=value4.3",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
@@ -303,14 +322,14 @@ class DefaultProjectViewParserTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target1.1"),
-                BuildTargetIdentifier("//included_target1.2"),
-                BuildTargetIdentifier("//included_target7.1"),
+                Label.parse("//included_target1.1"),
+                Label.parse("//included_target1.2"),
+                Label.parse("//included_target7.1"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target1.1"),
-                BuildTargetIdentifier("//excluded_target7.1"),
-                BuildTargetIdentifier("//excluded_target7.2"),
+                Label.parse("//excluded_target1.1"),
+                Label.parse("//excluded_target7.1"),
+                Label.parse("//excluded_target7.2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Path("path7/to/bazel")),
@@ -322,6 +341,16 @@ class DefaultProjectViewParserTest {
                 "--build_flag7.1=value7.1",
                 "--build_flag7.2=value7.2",
                 "--build_flag7.3=value7.3",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag1.1=value1.1",
+                "--sync_flag1.2=value1.2",
+                "--sync_flag7.1=value7.1",
+                "--sync_flag7.2=value7.2",
+                "--sync_flag7.3=value7.3",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
@@ -357,10 +386,10 @@ class DefaultProjectViewParserTest {
         ProjectView(
           targets =
             ProjectViewTargetsSection(
-              listOf(BuildTargetIdentifier("//included_target8.1")),
+              listOf(Label.parse("//included_target8.1")),
               listOf(
-                BuildTargetIdentifier("//excluded_target8.1"),
-                BuildTargetIdentifier("//excluded_target8.2"),
+                Label.parse("//excluded_target8.1"),
+                Label.parse("//excluded_target8.2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Path("path8/to/bazel")),
@@ -370,6 +399,14 @@ class DefaultProjectViewParserTest {
                 "--build_flag8.1=value8.1",
                 "--build_flag8.2=value8.2",
                 "--build_flag8.3=value8.3",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag8.1=value8.1",
+                "--sync_flag8.2=value8.2",
+                "--sync_flag8.3=value8.3",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
@@ -406,16 +443,16 @@ class DefaultProjectViewParserTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target1.1"),
-                BuildTargetIdentifier("//included_target1.2"),
-                BuildTargetIdentifier("//included_target2.1"),
-                BuildTargetIdentifier("//included_target3.1"),
+                Label.parse("//included_target1.1"),
+                Label.parse("//included_target1.2"),
+                Label.parse("//included_target2.1"),
+                Label.parse("//included_target3.1"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target1.1"),
-                BuildTargetIdentifier("//excluded_target2.1"),
-                BuildTargetIdentifier("//excluded_target5.1"),
-                BuildTargetIdentifier("//excluded_target5.2"),
+                Label.parse("//excluded_target1.1"),
+                Label.parse("//excluded_target2.1"),
+                Label.parse("//excluded_target5.1"),
+                Label.parse("//excluded_target5.2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Path("path3/to/bazel")),
@@ -429,6 +466,18 @@ class DefaultProjectViewParserTest {
                 "--build_flag3.1=value3.1",
                 "--build_flag5.1=value5.1",
                 "--build_flag5.2=value5.2",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag1.1=value1.1",
+                "--sync_flag1.2=value1.2",
+                "--sync_flag2.1=value2.1",
+                "--sync_flag2.2=value2.2",
+                "--sync_flag3.1=value3.1",
+                "--sync_flag5.1=value5.1",
+                "--sync_flag5.2=value5.2",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
@@ -469,17 +518,17 @@ class DefaultProjectViewParserTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target2.1"),
-                BuildTargetIdentifier("//included_target3.1"),
-                BuildTargetIdentifier("//included_target1.1"),
-                BuildTargetIdentifier("//included_target1.2"),
-                BuildTargetIdentifier("//included_target4.1"),
+                Label.parse("//included_target2.1"),
+                Label.parse("//included_target3.1"),
+                Label.parse("//included_target1.1"),
+                Label.parse("//included_target1.2"),
+                Label.parse("//included_target4.1"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target2.1"),
-                BuildTargetIdentifier("//excluded_target1.1"),
-                BuildTargetIdentifier("//excluded_target4.1"),
-                BuildTargetIdentifier("//excluded_target4.2"),
+                Label.parse("//excluded_target2.1"),
+                Label.parse("//excluded_target1.1"),
+                Label.parse("//excluded_target4.1"),
+                Label.parse("//excluded_target4.2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Path("path1/to/bazel")),
@@ -494,6 +543,19 @@ class DefaultProjectViewParserTest {
                 "--build_flag4.1=value4.1",
                 "--build_flag4.2=value4.2",
                 "--build_flag4.3=value4.3",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag2.1=value2.1",
+                "--sync_flag2.2=value2.2",
+                "--sync_flag3.1=value3.1",
+                "--sync_flag1.1=value1.1",
+                "--sync_flag1.2=value1.2",
+                "--sync_flag4.1=value4.1",
+                "--sync_flag4.2=value4.2",
+                "--sync_flag4.3=value4.3",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
@@ -537,17 +599,17 @@ class DefaultProjectViewParserTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target2.1"),
-                BuildTargetIdentifier("//included_target3.1"),
-                BuildTargetIdentifier("//included_target1.1"),
-                BuildTargetIdentifier("//included_target1.2"),
-                BuildTargetIdentifier("//included_target4.1"),
+                Label.parse("//included_target2.1"),
+                Label.parse("//included_target3.1"),
+                Label.parse("//included_target1.1"),
+                Label.parse("//included_target1.2"),
+                Label.parse("//included_target4.1"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target2.1"),
-                BuildTargetIdentifier("//excluded_target1.1"),
-                BuildTargetIdentifier("//excluded_target4.1"),
-                BuildTargetIdentifier("//excluded_target4.2"),
+                Label.parse("//excluded_target2.1"),
+                Label.parse("//excluded_target1.1"),
+                Label.parse("//excluded_target4.1"),
+                Label.parse("//excluded_target4.2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Path("path1/to/bazel")),
@@ -562,6 +624,19 @@ class DefaultProjectViewParserTest {
                 "--build_flag4.1=value4.1",
                 "--build_flag4.2=value4.2",
                 "--build_flag4.3=value4.3",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag2.1=value2.1",
+                "--sync_flag2.2=value2.2",
+                "--sync_flag3.1=value3.1",
+                "--sync_flag1.1=value1.1",
+                "--sync_flag1.2=value1.2",
+                "--sync_flag4.1=value4.1",
+                "--sync_flag4.2=value4.2",
+                "--sync_flag4.3=value4.3",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
@@ -605,6 +680,7 @@ class DefaultProjectViewParserTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
+          syncFlags = null,
           allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
@@ -615,6 +691,79 @@ class DefaultProjectViewParserTest {
 
       projectView shouldBe expectedProjectView
     }
+  }
+
+  @Test
+  fun `should parse external targets`() {
+    val projectViewFilePath = Path("/projectview/externalTargets.bazelproject")
+    val projectView = parser.parse(projectViewFilePath)
+    val expected =
+      ProjectView(
+        targets =
+          ProjectViewTargetsSection(
+            listOf(
+              Label.parse("@ext//something/..."),
+              Label.parse("@ext//some/other:target"),
+              Label.parse("int"),
+            ),
+            listOf(
+              Label.parse("@ext//something/a"),
+            ),
+          ),
+        bazelBinary = null,
+        buildFlags = null,
+        syncFlags = null,
+        allowManualTargetsSync = null,
+        directories = null,
+        deriveTargetsFromDirectories = null,
+        importDepth = null,
+        enabledRules = null,
+        ideJavaHomeOverride = null,
+      )
+
+    projectView shouldBe expected
+  }
+
+  @Test
+  fun `should parse Bazel's official projectview from github`() {
+    val projectViewFilePath = Path("/projectview/github_bazel_scripts_ij.bazelproject")
+    val projectView = parser.parse(projectViewFilePath)
+    val expectedProjectView =
+      ProjectView(
+        targets =
+          ProjectViewTargetsSection(
+            listOf(
+              Label.parse("//src:bazel"),
+              Label.parse("//src/java_tools/buildjar:JavaBuilder"),
+              Label.parse("//src/java_tools/buildjar:VanillaJavaBuilder"),
+              Label.parse("//src/java_tools/buildjar/javatests/..."),
+              Label.parse("//src/java_tools/junitrunner/java/com/google/testing/junit/runner:Runner"),
+              Label.parse("//src/java_tools/junitrunner/javatests/..."),
+              Label.parse("//src/test/..."),
+              Label.parse("//src/tools/remote/..."),
+              Label.parse("//src/tools/starlark/..."),
+            ),
+            listOf(
+              Label.parse("//src/test/shell/bazel/android/..."),
+              Label.parse("//src/test/shell/bazel:all_tests"),
+            ),
+          ),
+        bazelBinary = null,
+        buildFlags = null,
+        syncFlags = null,
+        allowManualTargetsSync = null,
+        directories =
+          ProjectViewDirectoriesSection(
+            listOf(Path(".")),
+            listOf(),
+          ),
+        deriveTargetsFromDirectories = null,
+        importDepth = null,
+        enabledRules = null,
+        ideJavaHomeOverride = null,
+      )
+
+    projectView shouldBe expectedProjectView
   }
 
   @Nested

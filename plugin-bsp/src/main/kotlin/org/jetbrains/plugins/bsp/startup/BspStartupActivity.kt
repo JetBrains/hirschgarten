@@ -19,7 +19,7 @@ import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
 import org.jetbrains.plugins.bsp.impl.server.connection.connectionDetailsProvider
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.fileTargets.updateBspFileTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.registerBspToolWindow
 import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
@@ -128,7 +128,7 @@ class BspStartupActivity : BspProjectActivity() {
     }
   }
 
-  private fun Project.isProjectInIncompleteState() = temporaryTargetUtils.allTargetIds().isEmpty() || !workspaceModelLoadedFromCache
+  private fun Project.isProjectInIncompleteState() = targetUtils.allTargetIds().isEmpty() || !workspaceModelLoadedFromCache
 
   private fun Project.updateProjectProperties() {
     isBspProjectInitialized = true

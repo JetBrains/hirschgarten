@@ -2,6 +2,7 @@ package org.jetbrains.bsp.bazel.server.sync
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.BspMappings
 import org.jetbrains.bsp.bazel.server.sync.languages.android.AndroidModule
 import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
@@ -13,7 +14,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModule
  */
 class AdditionalAndroidBuildTargetsProvider(private val projectProvider: ProjectProvider) {
   fun getAdditionalBuildTargets(cancelChecker: CancelChecker, targets: List<BuildTargetIdentifier>): List<BuildTargetIdentifier> {
-    val project = projectProvider.get(cancelChecker)
+    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return emptyList()
     val modules = BspMappings.getModules(project, targets)
     return modules
       .mapNotNull { (it.languageData as? AndroidModule)?.correspondingKotlinTarget?.let { BuildTargetIdentifier(it.toString()) } }

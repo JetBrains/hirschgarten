@@ -9,6 +9,7 @@ data class ProjectViewCliOptions internal constructor(
   val targets: List<String>?,
   val excludedTargets: List<String>?,
   val buildFlags: List<String>?,
+  val syncFlags: List<String>?,
   val allowManualTargetsSync: Boolean?,
   val directories: List<String>?,
   val excludedDirectories: List<String>?,
@@ -17,6 +18,9 @@ data class ProjectViewCliOptions internal constructor(
   val produceTraceLog: Boolean?,
   val enabledRules: List<String>?,
   val ideJavaHomeOverride: Path?,
+  val shardSync: Boolean?,
+  val targetShardSize: Int?,
+  val shardApproach: String?,
 )
 
 data class CliOptions internal constructor(

@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.commons.constants.Constants.BAZELBSP_JSON_FILE_NAME
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.settings.bazelProjectSettings
@@ -12,7 +13,6 @@ import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.impl.flow.open.BaseBspProjectOpenProcessor
 import org.jetbrains.plugins.bsp.impl.flow.open.BspProjectOpenProcessor
 import org.jetbrains.plugins.bsp.impl.flow.open.BspProjectOpenProcessorExtension
-import org.jetbrains.plugins.bsp.impl.flow.open.toBuildToolId
 import javax.swing.Icon
 
 internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelBspBuildToolId) {
@@ -39,7 +39,10 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
 
   private fun VirtualFile.isEligibleFile() = isBazelBspConnectionFile() || isWorkspaceFile() || isBuildFile() || isProjectViewFile()
 
-  private fun VirtualFile.isBazelBspConnectionFile() = toBuildToolId() == bazelBspBuildToolId
+  /**
+   * Basic name matching to quickly check for an eligible bazel bsp connection file
+   */
+  private fun VirtualFile.isBazelBspConnectionFile() = name == BAZELBSP_JSON_FILE_NAME
 
   override fun calculateBeforeOpenCallback(originalVFile: VirtualFile): (Project) -> Unit =
     when {

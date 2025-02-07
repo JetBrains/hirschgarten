@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.bazel.projectview.parser.sections
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewExcludableListSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
@@ -63,13 +63,11 @@ abstract class ProjectViewExcludableListSectionParser<V, T : ProjectViewExcludab
 }
 
 object ProjectViewTargetsSectionParser :
-  ProjectViewExcludableListSectionParser<BuildTargetIdentifier, ProjectViewTargetsSection>(ProjectViewTargetsSection.SECTION_NAME) {
-  override fun mapRawValues(rawValue: String): BuildTargetIdentifier = BuildTargetIdentifier(rawValue)
+  ProjectViewExcludableListSectionParser<Label, ProjectViewTargetsSection>(ProjectViewTargetsSection.SECTION_NAME) {
+  override fun mapRawValues(rawValue: String): Label = Label.parse(rawValue)
 
-  override fun createInstance(
-    includedValues: List<BuildTargetIdentifier>,
-    excludedValues: List<BuildTargetIdentifier>,
-  ): ProjectViewTargetsSection = ProjectViewTargetsSection(includedValues, excludedValues)
+  override fun createInstance(includedValues: List<Label>, excludedValues: List<Label>): ProjectViewTargetsSection =
+    ProjectViewTargetsSection(includedValues, excludedValues)
 }
 
 object ProjectViewDirectoriesSectionParser :

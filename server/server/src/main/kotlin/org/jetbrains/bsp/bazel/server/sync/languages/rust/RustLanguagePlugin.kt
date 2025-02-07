@@ -3,10 +3,10 @@ package org.jetbrains.bsp.bazel.server.sync.languages.rust
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.RustWorkspaceResult
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.RustCrateInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver

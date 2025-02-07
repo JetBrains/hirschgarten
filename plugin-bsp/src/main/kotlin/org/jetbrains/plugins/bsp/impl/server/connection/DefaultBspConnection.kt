@@ -34,7 +34,7 @@ import org.jetbrains.bsp.protocol.utils.BazelBuildServerCapabilitiesTypeAdapter
 import org.jetbrains.bsp.protocol.utils.EnhancedSourceItemTypeAdapter
 import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.building.TaskConsole
-import org.jetbrains.plugins.bsp.config.BspFeatureFlags
+import org.jetbrains.plugins.bsp.config.BspFeatureFlagsProvider
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
@@ -152,9 +152,14 @@ class DefaultBspConnection(
     mutex.withLock {
       try {
         ensureConnected()
-      } catch (e: Exception) {
-        disconnectWithAcquiredLock()
-        throw e
+      } catch (connectException: Exception) {
+        try {
+          disconnectWithAcquiredLock()
+        } catch (disconnectException: Exception) {
+          // connectException is probably more informative to the user, throw it instead of disconnectException
+          connectException.addSuppressed(disconnectException)
+        }
+        throw connectException
       }
     }
   }
@@ -407,7 +412,7 @@ class DefaultBspConnection(
       InitializeBuildData(
         clientClassesRootDir = "$projectBaseDir/out",
         openTelemetryEndpoint = getOpenTelemetryEndPoint(),
-        featureFlags = BspFeatureFlags.toBspProtocolFeatureFlags(),
+        featureFlags = BspFeatureFlagsProvider.accumulateFeatureFlags(),
       )
     params.data = initializeBuildData
 
@@ -439,11 +444,11 @@ class DefaultBspConnection(
   private fun disconnectWithAcquiredLock() {
     if (!isConnected()) return
     val exceptions = executeDisconnectActionsAndCollectExceptions(disconnectActions)
-    throwExceptionWithSuppressedIfOccurred(exceptions)
     bspProcess?.destroy().also { bspProcess = null }
     disconnectActions.clear()
     server = null
     capabilities = null
+    throwExceptionWithSuppressedIfOccurred(exceptions)
   }
 
   private fun executeDisconnectActionsAndCollectExceptions(disconnectActions: List<() -> Unit>): List<Throwable> =

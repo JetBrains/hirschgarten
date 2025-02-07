@@ -7,23 +7,15 @@ import ch.epfl.scala.bsp4j.CppOptionsItem
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
+import org.jetbrains.bsp.bazel.server.label.label
 import org.jetbrains.bsp.bazel.server.model.BspMappings
 import org.jetbrains.bsp.bazel.server.model.Module
-import org.jetbrains.bsp.bazel.server.model.label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
 import java.net.URI
 
 class CppLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<CppModule>() {
-  override fun resolveModule(targetInfo: TargetInfo): CppModule? =
-    targetInfo.getCppTargetInfoOrNull()?.run {
-      CppModule(
-        copts = targetInfo.cppTargetInfo.coptsList,
-        defines = targetInfo.cppTargetInfo.definesList,
-        linkOpts = targetInfo.cppTargetInfo.linkOptsList,
-        linkShared = targetInfo.cppTargetInfo.linkShared,
-      )
-    }
+  override fun resolveModule(targetInfo: TargetInfo): CppModule? = null
 
   override fun applyModuleData(moduleData: CppModule, buildTarget: BuildTarget) {
     // TODO https://youtrack.jetbrains.com/issue/BAZEL-612

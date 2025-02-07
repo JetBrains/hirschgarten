@@ -14,7 +14,11 @@ import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewDirectorie
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewEnabledRulesSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewIdeJavaHomeOverrideSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewImportDepthSectionParser
+import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewSyncFlagsSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewTargetsSectionParser
+import org.jetbrains.bsp.bazel.projectview.parser.sections.ShardSyncParser
+import org.jetbrains.bsp.bazel.projectview.parser.sections.ShardingApproachParser
+import org.jetbrains.bsp.bazel.projectview.parser.sections.TargetShardSizeParser
 import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSections
 import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewSectionSplitter
 import java.nio.file.Path
@@ -40,6 +44,7 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         targets = ProjectViewTargetsSectionParser.parse(rawSections),
         bazelBinary = ProjectViewBazelBinarySectionParser.parse(rawSections),
         buildFlags = ProjectViewBuildFlagsSectionParser.parse(rawSections),
+        syncFlags = ProjectViewSyncFlagsSectionParser.parse(rawSections),
         allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSectionParser.parse(rawSections),
         directories = ProjectViewDirectoriesSectionParser.parse(rawSections),
         deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSectionParser.parse(rawSections),
@@ -49,6 +54,9 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         addTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsParser.parse(rawSections),
         enableNativeAndroidRules = EnableNativeAndroidRulesParser.parse(rawSections),
         androidMinSdkSection = AndroidMinSdkSectionParser.parse(rawSections),
+        shardSync = ShardSyncParser.parse(rawSections),
+        targetShardSize = TargetShardSizeParser.parse(rawSections),
+        shardingApproach = ShardingApproachParser.parse(rawSections),
       ).build()
   }
 

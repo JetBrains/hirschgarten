@@ -232,6 +232,22 @@ class BazelrcQuotingLexerTest : LexerTestCase() {
       )
   }
 
+  @Test fun `values with quotes`() {
+    var code = """build --define=ij_product="intellij-2024.3""""
+
+    code shouldLexTo
+      listOf(
+        "Bazelrc:COMMAND",
+        "WHITE_SPACE",
+        "Bazelrc:FLAG",
+        "Bazelrc:=",
+        "Bazelrc:VALUE",
+        "Bazelrc:\"",
+        "Bazelrc:VALUE",
+        "Bazelrc:\"",
+      )
+  }
+
   private infix fun String.shouldLexTo(expectedTokens: List<String>) {
     super.doLexerTest(this, BazelrcLexer(), expectedTokens)
   }

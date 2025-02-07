@@ -46,10 +46,15 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.TestParams
 import ch.epfl.scala.bsp4j.TestResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import org.jetbrains.bazel.commons.label.label
 import org.jetbrains.bsp.bazel.server.sync.ExecuteService
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
+import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
+import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
+import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
+import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
@@ -59,6 +64,7 @@ import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.TestWithDebugParams
+import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -140,7 +146,7 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, Initial
     runner.handleRequest("workspace/buildTargetsPartial") {
       projectSyncService.workspaceBuildTargetsPartial(
         cancelChecker = it,
-        targetsToSync = params.targets,
+        targetsToSync = params.targets.map { it.label() },
       )
     }
 
@@ -247,6 +253,15 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, Initial
   override fun workspaceDirectories(): CompletableFuture<WorkspaceDirectoriesResult> =
     runner.handleRequest("workspace/directories", projectSyncService::workspaceDirectories)
 
+  override fun workspaceBazelRepoMapping(): CompletableFuture<WorkspaceBazelRepoMappingResult> =
+    runner.handleRequest("workspace/bazelRepoMapping", projectSyncService::workspaceBazelRepoMapping)
+
   override fun rustWorkspace(params: RustWorkspaceParams): CompletableFuture<RustWorkspaceResult> =
     runner.handleRequest("buildTarget/rustWorkspace", projectSyncService::rustWorkspace, params)
+
+  override fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): CompletableFuture<BazelResolveLocalToRemoteResult> =
+    runner.handleRequest("debug/resolveLocalToRemote", projectSyncService::resolveLocalToRemote, params)
+
+  override fun bazelResolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): CompletableFuture<BazelResolveRemoteToLocalResult> =
+    runner.handleRequest("debug/resolveRemoteToLocal", projectSyncService::resolveRemoteToLocal, params)
 }

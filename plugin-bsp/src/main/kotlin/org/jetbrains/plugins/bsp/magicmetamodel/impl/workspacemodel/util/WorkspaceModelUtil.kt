@@ -10,7 +10,7 @@ import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModuleEntity
 import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
 import org.jetbrains.plugins.bsp.magicmetamodel.findNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.orDefault
-import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.TargetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 val Module.moduleEntity: ModuleEntity?
@@ -26,6 +26,6 @@ fun BuildTargetInfo.getModule(project: Project): Module? {
 }
 
 fun BuildTargetIdentifier.getModule(project: Project): Module? =
-  project.service<TemporaryTargetUtils>().getBuildTargetInfoForId(this)?.getModule(project)
+  project.service<TargetUtils>().getBuildTargetInfoForId(this)?.getModule(project)
 
 fun BuildTargetIdentifier.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity

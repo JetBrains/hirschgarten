@@ -25,7 +25,7 @@ internal class JavaModuleWithSourcesUpdater(
   private val projectBasePath: Path,
   private val isAndroidSupportEnabled: Boolean,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
-  override fun addEntity(entityToAdd: JavaModule): ModuleEntity {
+  override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater =
       ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd))
 
@@ -152,7 +152,7 @@ internal fun JavaModule.isRoot(projectBasePath: Path): Boolean =
 
 internal class JavaModuleWithoutSourcesUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
-  override fun addEntity(entityToAdd: JavaModule): ModuleEntity {
+  override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater =
       ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd))
 
@@ -175,7 +175,7 @@ internal class JavaModuleUpdater(
     JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled)
   private val javaModuleWithoutSourcesUpdater = JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig)
 
-  override fun addEntity(entityToAdd: JavaModule): ModuleEntity =
+  override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity =
     if (entityToAdd.doesntContainSourcesAndResources() && entityToAdd.containsJavaKotlinLanguageIds()) {
       javaModuleWithoutSourcesUpdater.addEntity(entityToAdd)
     } else {

@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.projectview.parser
 
-import com.google.common.base.Charsets
 import com.google.common.io.CharStreams
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import java.io.InputStream

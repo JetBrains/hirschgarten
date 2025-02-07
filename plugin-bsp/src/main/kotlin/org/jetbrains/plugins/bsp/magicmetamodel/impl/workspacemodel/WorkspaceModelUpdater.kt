@@ -7,8 +7,8 @@ import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.SourcesItem
-import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
+import org.jetbrains.plugins.bsp.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
 
@@ -28,11 +28,9 @@ data class ModuleDetails(
 )
 
 interface WorkspaceModelUpdater {
-  fun loadModules(moduleEntities: List<Module>) = moduleEntities.forEach { loadModule(it) }
+  suspend fun loadModules(moduleEntities: List<Module>)
 
-  fun loadModule(module: Module)
+  suspend fun loadLibraries(libraries: List<Library>)
 
-  fun loadLibraries(libraries: List<Library>)
-
-  fun loadDirectories(includedDirectories: List<VirtualFileUrl>, excludedDirectories: List<VirtualFileUrl>)
+  suspend fun loadCompiledSourceCodeInsideJarExclude(exclude: CompiledSourceCodeInsideJarExclude)
 }

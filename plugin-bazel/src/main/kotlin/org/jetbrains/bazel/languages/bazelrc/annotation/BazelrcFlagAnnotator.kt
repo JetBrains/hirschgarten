@@ -5,7 +5,6 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.model.psi.PsiSymbolReference
 import com.intellij.model.psi.PsiSymbolReferenceService
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
@@ -17,6 +16,7 @@ import org.jetbrains.bazel.languages.bazelrc.flags.OptionMetadataTag
 import org.jetbrains.bazel.languages.bazelrc.highlighting.BazelrcHighlightingColors
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
+import kotlin.text.Regex
 
 val flagTokenPattern =
   psiElement(BazelrcTokenTypes.FLAG)
@@ -25,12 +25,14 @@ val flagTokenPattern =
       BazelrcLine::class.java,
     )!!
 
+private val labelFlagRe = Regex("^--(?:no)?[@/].*$")
+
 @Suppress("UnstableApiUsage")
 class BazelrcFlagAnnotator : Annotator {
   val symbolReferenceService = PsiSymbolReferenceService.getService()
 
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-    if (!flagTokenPattern.accepts(element)) {
+    if (!flagTokenPattern.accepts(element) || isLabel(element)) {
       return
     }
 
@@ -77,17 +79,28 @@ class BazelrcFlagAnnotator : Annotator {
           .needsUpdateOnTyping()
           .create()
 
-      isOld(flag, element.textRange.substring(element.containingFile.text)) ->
+      isOld(flag, element.text) ->
         holder
-          .newAnnotation(HighlightSeverity.INFORMATION, "Flag: '${element.text}'")
+          .newAnnotation(HighlightSeverity.INFORMATION, oldAnnotationMessage(flag, element.text))
           .range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.DEPRECATED_FLAG)
           .needsUpdateOnTyping()
+          // TODO(BAZEL-1704): Add an intention to fix
           .create()
 
       else -> {}
     }
   }
+
+  private fun oldAnnotationMessage(flag: Flag, flagText: String) =
+    when {
+      flagText.startsWith("--no") -> "--no"
+      else -> "--"
+    }.let {
+      "'$flagText' is deprecated. use '$it${flag.option.name}' instead."
+    }
+
+  private fun isLabel(e: PsiElement) = labelFlagRe.matches(e.text)
 
   private fun isHidden(flag: Flag) = flag.option.metadataTags.contains(OptionMetadataTag.HIDDEN)
 
@@ -100,9 +113,11 @@ class BazelrcFlagAnnotator : Annotator {
 
   private fun isNoOp(flag: Flag) = flag.option.effectTags.contains(OptionEffectTag.NO_OP)
 
-  private fun isOld(flag: Flag, name: String) = "--${flag.option.oldName}" == name
+  private fun isOld(flag: Flag, name: String) =
+    when (flag) {
+      is Flag.Boolean, is Flag.TriState ->
+        name == "--${flag.option.oldName}" || name == "--no${flag.option.oldName}"
 
-  private companion object {
-    private val log = logger<BazelrcFlagAnnotator>()
-  }
+      else -> "--${flag.option.oldName}" == name
+    }
 }

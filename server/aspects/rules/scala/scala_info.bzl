@@ -68,7 +68,7 @@ def extract_scala_info(target, ctx, output_groups, **kwargs):
             if compiler_classpath:
                 scala_info["compiler_classpath"] = map(file_location, compiler_classpath)
                 if is_external(scalac):
-                    update_sync_output_groups(output_groups, "external-deps-resolve", depset(compiler_classpath))
+                    update_sync_output_groups(output_groups, "bsp-sync-artifact", depset(compiler_classpath))
     else:
         common_scalac_opts = []
     scala_info["scalac_opts"] = common_scalac_opts + getattr(ctx.rule.attr, "scalacopts", [])

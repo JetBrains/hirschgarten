@@ -32,8 +32,10 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val javaHomeBazel5And6 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
-    val javaHomeBazel7 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java~~toolchains~remotejdk11_$javaHomeArchitecture/"
-    val javaHome = if (majorBazelVersion == 7) javaHomeBazel7 else javaHomeBazel5And6
+    val javaHomeBazel7 =
+      "file://\$BAZEL_OUTPUT_BASE_PATH/external/" +
+        "rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_$javaHomeArchitecture/"
+    val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
 
     val exampleExampleJvmBuildTarget =
       JvmBuildTarget().also {
@@ -43,7 +45,7 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
 
     val exampleExampleBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//example"),
+        BuildTargetIdentifier("$targetPrefix//example:example"),
         listOf("application"),
         listOf("java"),
         emptyList(),
@@ -54,7 +56,7 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
           it.canDebug = false
         },
       )
-    exampleExampleBuildTarget.displayName = "$targetPrefix//example"
+    exampleExampleBuildTarget.displayName = "$targetPrefix//example:example"
     exampleExampleBuildTarget.baseDirectory = "file://\$WORKSPACE/example/"
     exampleExampleBuildTarget.data = exampleExampleJvmBuildTarget
     exampleExampleBuildTarget.dataKind = BuildTargetDataKind.JVM

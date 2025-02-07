@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.CompileResult
 import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.util.toPromise
 import com.intellij.task.ModuleBuildTask
@@ -18,10 +19,10 @@ import org.jetbrains.concurrency.Promise
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.server.tasks.runBuildTargetTask
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
-public class BspProjectTaskRunner : ProjectTaskRunner() {
+class BspProjectTaskRunner : ProjectTaskRunner() {
   private val log = logger<BspProjectTaskRunner>()
 
   override fun canRun(project: Project, projectTask: ProjectTask): Boolean =
@@ -33,7 +34,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
     when (projectTask) {
       is JpsOnlyModuleBuildTask -> false
       is BspOnlyModuleBuildTask -> true
-      is ModuleBuildTask -> !JpsFeatureFlags.isJpsCompilationAsDefaultEnabled
+      is ModuleBuildTask -> !JpsFeatureFlags.isJpsCompilationEnabled
       else -> false
     }
 
@@ -44,8 +45,13 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   ): Promise<Result> {
     val result = AsyncPromise<Result>()
 
+    BspAdditionalProjectTaskRunnerProvider.ep.extensionList.forEach { it.preRun(project, projectTaskContext, *tasks) }
+
     val res = runModuleBuildTasks(project, tasks.filterIsInstance<ModuleBuildTask>())
-    res.then { result.setResult(it) }
+    res.then {
+      BspAdditionalProjectTaskRunnerProvider.ep.extensionList.forEach { it.postRun(project, projectTaskContext, *tasks) }
+      result.setResult(it)
+    }
 
     return result
   }
@@ -56,7 +62,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   }
 
   private fun obtainTargetsToBuild(project: Project, tasks: List<ModuleBuildTask>): List<BuildTargetInfo> {
-    val temporaryTargetUtils = project.temporaryTargetUtils
+    val temporaryTargetUtils = project.targetUtils
     return tasks.mapNotNull { temporaryTargetUtils.getBuildTargetInfoForModule(it.module) }
   }
 
@@ -78,4 +84,26 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
       StatusCode.CANCELLED -> TaskRunnerResults.ABORTED
       else -> TaskRunnerResults.FAILURE
     }
+}
+
+/**
+ * This extension is useful when there is a need to inject before and after actions with respect to the project task runner
+ */
+interface BspAdditionalProjectTaskRunnerProvider {
+  fun preRun(
+    project: Project,
+    projectTaskContext: ProjectTaskContext,
+    vararg tasks: ProjectTask,
+  )
+
+  fun postRun(
+    project: Project,
+    projectTaskContext: ProjectTaskContext,
+    vararg tasks: ProjectTask,
+  )
+
+  companion object {
+    val ep: ExtensionPointName<BspAdditionalProjectTaskRunnerProvider> =
+      ExtensionPointName.create("org.jetbrains.bsp.bspAdditionalProjectTaskRunnerProvider")
+  }
 }

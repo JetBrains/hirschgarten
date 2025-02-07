@@ -2,6 +2,7 @@
 
 load("//aspects:extensions.bzl", "EXTENSIONS", "TOOLCHAINS")
 load("//aspects:utils/utils.bzl", "ALL_DEPS", "COMPILE_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "file_location", "get_aspect_ids", "update_sync_output_groups")
+load("//aspects:rules/java/java_info.bzl", "java_info_in_target", "java_info_reference")
 
 def create_all_extension_info(target, ctx, output_groups, dep_targets):
     all_info = [create_extension_info(target = target, ctx = ctx, output_groups = output_groups, dep_targets = dep_targets) for create_extension_info in EXTENSIONS]
@@ -69,7 +70,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
     # Propagate my own exports
     export_deps = []
     direct_exports = []
-    if JavaInfo in target:
+    if java_info_in_target(target):
         direct_exports = collect_targets_from_attrs(rule_attrs, ["exports"])
         export_deps.extend(make_deps(direct_exports, COMPILE))
         for export in direct_exports:
@@ -162,7 +163,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
         file_name = file_name + "-" + str(abs(hash(".".join(aspect_ids))))
     file_name = "bsp.%s.bsp-info.textproto" % file_name
     info_file = ctx.actions.declare_file(file_name)
-    ctx.actions.write(info_file, create_struct(**info).to_proto())
+    ctx.actions.write(info_file, proto.encode_text(create_struct(**info)))
     update_sync_output_groups(output_groups, "bsp-target-info", depset([info_file]))
 
     return struct(
@@ -172,7 +173,8 @@ def _bsp_target_info_aspect_impl(target, ctx):
 
 bsp_target_info_aspect = aspect(
     implementation = _bsp_target_info_aspect_impl,
-    required_aspect_providers = [[JavaInfo]],
+    required_aspect_providers = [java_info_reference()],
     attr_aspects = ALL_DEPS,
     toolchains = TOOLCHAINS,
+    fragments = ["cpp"]
 )

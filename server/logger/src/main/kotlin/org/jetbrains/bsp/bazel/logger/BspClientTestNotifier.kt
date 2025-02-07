@@ -1,7 +1,6 @@
 package org.jetbrains.bsp.bazel.logger
 
 import ch.epfl.scala.bsp4j.BuildClient
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.StatusCode
 import ch.epfl.scala.bsp4j.TaskFinishDataKind
 import ch.epfl.scala.bsp4j.TaskFinishParams
@@ -13,6 +12,8 @@ import ch.epfl.scala.bsp4j.TestReport
 import ch.epfl.scala.bsp4j.TestStart
 import ch.epfl.scala.bsp4j.TestStatus
 import ch.epfl.scala.bsp4j.TestTask
+import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.label.toBspIdentifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 
 class BspClientTestNotifier(private val bspClient: BuildClient, private val originId: String) {
@@ -90,8 +91,8 @@ class BspClientTestNotifier(private val bspClient: BuildClient, private val orig
    * @param targetIdentifier identifier of the testing target being executed
    * @param taskId           TaskId of the testing target execution
    */
-  fun beginTestTarget(targetIdentifier: BuildTargetIdentifier?, taskId: TaskId) {
-    val testingBegin = TestTask(targetIdentifier)
+  fun beginTestTarget(targetIdentifier: Label?, taskId: TaskId) {
+    val testingBegin = TestTask(targetIdentifier?.toBspIdentifier())
     val taskStartParams = TaskStartParams(taskId)
     taskStartParams.originId = originId
     taskStartParams.dataKind = TaskStartDataKind.TEST_TASK
@@ -106,13 +107,13 @@ class BspClientTestNotifier(private val bspClient: BuildClient, private val orig
    * @param taskId     TaskId of the testing target execution
    */
   fun endTestTarget(
-    targetIdentifier: BuildTargetIdentifier?,
+    targetIdentifier: Label?,
     taskId: TaskId,
     time: Long? = null,
   ) {
     val testReport =
       TestReport(
-        targetIdentifier,
+        targetIdentifier?.toBspIdentifier(),
         passedTests,
         failedTests,
         ignoredTests,

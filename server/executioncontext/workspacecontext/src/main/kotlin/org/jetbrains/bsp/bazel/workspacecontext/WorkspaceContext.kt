@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.bazel.workspacecontext
 
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.bazel.commons.label.assumeResolved
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContext
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextConstructor
@@ -34,6 +35,12 @@ data class WorkspaceContext(
    * Obtained from `ProjectView` simply by mapping `build_flags` section.
    */
   val buildFlags: BuildFlagsSpec,
+  /**
+   * Sync flags which should be added to sync call.
+   *
+   * Obtained from `ProjectView` simply by mapping `sync_flags` section.
+   */
+  val syncFlags: SyncFlagsSpec,
   /**
    * Path to bazel which should be used in the bazel runner.
    *
@@ -73,7 +80,23 @@ data class WorkspaceContext(
   val experimentalAddTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJars,
   val enableNativeAndroidRules: EnableNativeAndroidRules,
   val androidMinSdkSpec: AndroidMinSdkSpec,
+  val shardSync: ShardSyncSpec,
+  val targetShardSize: TargetShardSizeSpec,
+  val shardingApproachSpec: ShardingApproachSpec,
 ) : ExecutionContext()
+
+/**
+ * List of names of repositories that should be treated as internal because there are some targets that we want to be imported that
+ * belong to them.
+ */
+val WorkspaceContext.externalRepositoriesTreatedAsInternal: List<String>
+  get() =
+    targets.values.mapNotNull {
+      it
+        .assumeResolved()
+        .repo.repoName
+        .takeIf { it.isNotEmpty() }
+    }
 
 class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDirPath: Path) :
   ExecutionContextConstructor<WorkspaceContext> {
@@ -88,6 +111,7 @@ class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDi
       targets = TargetsSpecExtractor.fromProjectView(projectView),
       directories = directoriesSpecExtractor.fromProjectView(projectView),
       buildFlags = BuildFlagsSpecExtractor.fromProjectView(projectView),
+      syncFlags = SyncFlagsSpecExtractor.fromProjectView(projectView),
       bazelBinary = BazelBinarySpecExtractor.fromProjectView(projectView),
       allowManualTargetsSync = AllowManualTargetsSyncSpecExtractor.fromProjectView(projectView),
       dotBazelBspDirPath = DotBazelBspDirPathSpec(dotBazelBspDirPath),
@@ -97,6 +121,9 @@ class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDi
       experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsExtractor.fromProjectView(projectView),
       enableNativeAndroidRules = EnableNativeAndroidRulesExtractor.fromProjectView(projectView),
       androidMinSdkSpec = AndroidMinSdkSpecExtractor.fromProjectView(projectView),
+      shardSync = ShardSyncSpecExtractor.fromProjectView(projectView),
+      targetShardSize = TargetShardSizeSpecExtractor.fromProjectView(projectView),
+      shardingApproachSpec = ShardingApproachSpecExtractor.fromProjectView(projectView),
     )
   }
 }

@@ -26,6 +26,8 @@ intellij_plugin_library(
     plugin_deps = ["com.intellij.modules.platform"],
     plugin_xmls = [
         "//plugin-bazel/src:main/resources/META-INF/base.xml",
+        # bazel plugin depends on bsp plugin, which already adds performance plugin as optional plugin dep
+        "//plugin-bazel/src:test/resources/META-INF/bazel-ide-starter-test.xml",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -47,6 +49,7 @@ stamped_plugin_xml(
 java_binary(
     name = "intellij-bazel_exclude",
     main_class = "DummySourceForExclude",
+    tags = ["no-ide"],
     runtime_deps = [
         "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
@@ -71,6 +74,7 @@ intellij_plugin(
 java_binary(
     name = "intellij-bazel_exclude_debug",
     main_class = "DummySourceForExclude",
+    tags = ["no-ide"],
     runtime_deps = [
         "@maven//:io_opentelemetry_opentelemetry_api",
         "@maven//:io_opentelemetry_opentelemetry_exporter_otlp",
@@ -117,6 +121,7 @@ intellij_plugin_debug_target(
 java_binary(
     name = "intellij-bazel-debug_exclude",
     main_class = "DummySourceForExclude",
+    tags = ["no-ide"],
     runtime_deps = [
         "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",

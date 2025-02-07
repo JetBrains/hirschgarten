@@ -25,12 +25,14 @@ public class BazelBuildServerCapabilities(
   canReload: Boolean = false,
   jvmCompileClasspathProvider: Boolean = false,
   public val workspaceLibrariesProvider: Boolean = false,
+  public val goDebuggerDataProvider: Boolean = false,
   public val workspaceNonModuleTargetsProvider: Boolean = false,
   public val workspaceDirectoriesProvider: Boolean = false,
   public val workspaceInvalidTargetsProvider: Boolean = false,
   public val runWithDebugProvider: Boolean = false,
   public val testWithDebugProvider: Boolean = false,
   public val jvmBinaryJarsProvider: Boolean = false,
+  public val bazelRepoMappingProvider: Boolean = false,
 ) : BuildServerCapabilities() {
   init {
     this.compileProvider = compileProvider

@@ -8,6 +8,7 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/config",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/utils",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

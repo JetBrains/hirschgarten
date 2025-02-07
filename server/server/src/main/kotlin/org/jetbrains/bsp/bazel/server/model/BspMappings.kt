@@ -3,11 +3,10 @@ package org.jetbrains.bsp.bazel.server.model
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.BuildTargetTag
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
+import org.jetbrains.bazel.commons.label.Label
 import java.net.URI
 
 object BspMappings {
-  fun toBspId(label: Label): BuildTargetIdentifier = BuildTargetIdentifier(label.toString())
-
   fun toBspId(module: Module): BuildTargetIdentifier = BuildTargetIdentifier(module.label.toString())
 
   fun toBspTag(tag: Tag): String? =
@@ -22,7 +21,7 @@ object BspMappings {
 
   fun toBspUri(uri: URI): String = uri.toString()
 
-  fun getModules(project: Project, targets: List<BuildTargetIdentifier>): Set<Module> =
+  fun getModules(project: AspectSyncProject, targets: List<BuildTargetIdentifier>): Set<Module> =
     toLabels(targets).mapNotNull(project::findModule).toSet()
 
   fun toUri(textDocument: TextDocumentIdentifier): URI = URI.create(textDocument.uri)

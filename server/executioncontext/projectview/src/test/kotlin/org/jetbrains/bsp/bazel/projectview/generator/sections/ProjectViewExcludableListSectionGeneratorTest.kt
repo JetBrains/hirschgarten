@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.projectview.generator.sections
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -29,9 +29,9 @@ class ProjectViewExcludableListSectionGeneratorTest {
       val section =
         ProjectViewTargetsSection(
           listOf(
-            BuildTargetIdentifier("//included_target1"),
-            BuildTargetIdentifier("//included_target2"),
-            BuildTargetIdentifier("//included_target3"),
+            Label.parse("//included_target1"),
+            Label.parse("//included_target2"),
+            Label.parse("//included_target3"),
           ),
           emptyList(),
         )
@@ -43,9 +43,9 @@ class ProjectViewExcludableListSectionGeneratorTest {
       val expectedGeneratedString =
         """
         targets:
-            //included_target1
-            //included_target2
-            //included_target3
+            @//included_target1
+            @//included_target2
+            @//included_target3
         """.trimIndent()
       generatedString shouldBe expectedGeneratedString
     }
@@ -57,8 +57,8 @@ class ProjectViewExcludableListSectionGeneratorTest {
         ProjectViewTargetsSection(
           emptyList(),
           listOf(
-            BuildTargetIdentifier("//excluded_target1"),
-            BuildTargetIdentifier("//excluded_target2"),
+            Label.parse("//excluded_target1"),
+            Label.parse("//excluded_target2"),
           ),
         )
 
@@ -69,8 +69,8 @@ class ProjectViewExcludableListSectionGeneratorTest {
       val expectedGeneratedString =
         """
         targets:
-            -//excluded_target1
-            -//excluded_target2
+            -@//excluded_target1
+            -@//excluded_target2
         """.trimIndent()
       generatedString shouldBe expectedGeneratedString
     }
@@ -81,13 +81,13 @@ class ProjectViewExcludableListSectionGeneratorTest {
       val section =
         ProjectViewTargetsSection(
           listOf(
-            BuildTargetIdentifier("//included_target1"),
-            BuildTargetIdentifier("//included_target2"),
-            BuildTargetIdentifier("//included_target3"),
+            Label.parse("//included_target1"),
+            Label.parse("//included_target2"),
+            Label.parse("//included_target3"),
           ),
           listOf(
-            BuildTargetIdentifier("//excluded_target1"),
-            BuildTargetIdentifier("//excluded_target2"),
+            Label.parse("//excluded_target1"),
+            Label.parse("//excluded_target2"),
           ),
         )
 
@@ -98,11 +98,11 @@ class ProjectViewExcludableListSectionGeneratorTest {
       val expectedGeneratedString =
         """
         targets:
-            //included_target1
-            //included_target2
-            //included_target3
-            -//excluded_target1
-            -//excluded_target2
+            @//included_target1
+            @//included_target2
+            @//included_target3
+            -@//excluded_target1
+            -@//excluded_target2
         """.trimIndent()
       generatedString shouldBe expectedGeneratedString
     }

@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.bazel.install
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.install.cli.CliOptions
 import org.jetbrains.bsp.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bsp.bazel.projectview.generator.DefaultProjectViewGenerator
@@ -13,7 +13,11 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectories
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewIdeJavaHomeOverrideSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ShardSyncSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ShardingApproachSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.TargetShardSizeSection
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -29,12 +33,16 @@ object ProjectViewCLiOptionsProvider {
       bazelBinary = toBazelBinarySection(projectViewCliOptions),
       targets = toTargetsSection(projectViewCliOptions),
       buildFlags = toBuildFlagsSection(projectViewCliOptions),
+      syncFlags = toSyncFlagsSection(projectViewCliOptions),
       directories = toDirectoriesSection(projectViewCliOptions),
       deriveTargetsFromDirectories = toDeriveTargetFlagSection(projectViewCliOptions),
       importDepth = toImportDepthSection(projectViewCliOptions),
       allowManualTargetsSync = toAllowManualTargetsSyncSection(projectViewCliOptions),
       enabledRules = toEnabledRulesSection(projectViewCliOptions),
       ideJavaHomeOverride = toIdeJavaHomeOverrideSection(projectViewCliOptions),
+      shardSync = toShardSyncSection(projectViewCliOptions),
+      targetShardSize = toTargetShardSizeSection(projectViewCliOptions),
+      shardingApproach = toShardingStrategy(projectViewCliOptions),
     )
 
   private fun toBazelBinarySection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewBazelBinarySection? =
@@ -50,8 +58,8 @@ object ProjectViewCLiOptionsProvider {
     }
 
   private fun toTargetsSectionNotNull(projectViewCliOptions: ProjectViewCliOptions): ProjectViewTargetsSection {
-    val includedTargets = projectViewCliOptions.targets.orEmpty().map { BuildTargetIdentifier(it) }
-    val excludedTargets = projectViewCliOptions.excludedTargets.orEmpty().map { BuildTargetIdentifier(it) }
+    val includedTargets = projectViewCliOptions.targets.orEmpty().map { Label.parse(it) }
+    val excludedTargets = projectViewCliOptions.excludedTargets.orEmpty().map { Label.parse(it) }
 
     return ProjectViewTargetsSection(includedTargets, excludedTargets)
   }
@@ -81,6 +89,9 @@ object ProjectViewCLiOptionsProvider {
   private fun toBuildFlagsSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewBuildFlagsSection? =
     projectViewCliOptions?.buildFlags?.let { ProjectViewBuildFlagsSection(it) }
 
+  private fun toSyncFlagsSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewSyncFlagsSection? =
+    projectViewCliOptions?.syncFlags?.let { ProjectViewSyncFlagsSection(it) }
+
   private fun toEnabledRulesSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewEnabledRulesSection? =
     projectViewCliOptions?.enabledRules?.let { ProjectViewEnabledRulesSection(it) }
 
@@ -89,4 +100,13 @@ object ProjectViewCLiOptionsProvider {
 
   private fun toDeriveTargetFlagSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewDeriveTargetsFromDirectoriesSection? =
     projectViewCliOptions?.deriveTargetsFromDirectories?.let(::ProjectViewDeriveTargetsFromDirectoriesSection)
+
+  private fun toShardSyncSection(projectViewCliOptions: ProjectViewCliOptions?): ShardSyncSection? =
+    projectViewCliOptions?.shardSync?.let(::ShardSyncSection)
+
+  private fun toTargetShardSizeSection(projectViewCliOptions: ProjectViewCliOptions?): TargetShardSizeSection? =
+    projectViewCliOptions?.targetShardSize?.let(::TargetShardSizeSection)
+
+  private fun toShardingStrategy(projectViewCliOptions: ProjectViewCliOptions?): ShardingApproachSection? =
+    projectViewCliOptions?.shardApproach?.let(::ShardingApproachSection)
 }

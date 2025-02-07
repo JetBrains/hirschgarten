@@ -1,5 +1,6 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij">
+      <programRunner implementation="org.jetbrains.plugins.bsp.golang.debug.BspGoDebugRunner"/>
         <runLineMarkerContributor
                 implementationClass="org.jetbrains.plugins.bsp.ui.gutters.BspGoRunLineMarkerContributor"
                 language="go"/>
@@ -7,5 +8,11 @@
 
     <extensions defaultExtensionNs="org.jetbrains.bsp">
         <projectSyncHook implementation="org.jetbrains.plugins.bsp.impl.flow.sync.languages.go.GoProjectSync"/>
+        <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.golang.debug.GoBspRunHandler$GoBspRunHandlerProvider"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.goide">
+        <dlv.positionConverterFactory
+                implementation="org.jetbrains.plugins.bsp.golang.debug.BspDlvPosConverterFactory"
+                order="first"/>
     </extensions>
 </idea-plugin>

@@ -1,0 +1,31 @@
+module(
+    name = "bsp-testkit2",
+    version = "",
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.5.0")
+bazel_dep(name = "rules_java", version = "7.5.0")
+bazel_dep(name = "rules_kotlin", version = "1.9.1")
+bazel_dep(name = "rules_jvm_external", version = "6.0")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    name = "maven",
+    artifacts = [
+        "com.google.code.gson:gson:2.10.1",
+        "com.google.guava:guava:31.1-jre",
+        "ch.epfl.scala:bsp4j:2.2.0-M2",
+        "org.junit.jupiter:junit-jupiter:5.10.2",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0",
+    ],
+    fetch_sources = True,
+    repositories = [
+        "https://maven.google.com",
+        "https://repo.maven.apache.org/maven2",
+    ],
+)
+use_repo(
+    maven,
+    "maven",
+)

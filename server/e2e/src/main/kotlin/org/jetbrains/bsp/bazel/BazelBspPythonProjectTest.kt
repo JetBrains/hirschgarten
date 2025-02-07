@@ -15,6 +15,8 @@ import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ResourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import org.jetbrains.bazel.commons.utils.OsArch
+import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import kotlin.time.Duration.Companion.minutes
@@ -23,7 +25,7 @@ import kotlin.time.Duration.Companion.seconds
 object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
   private val testClient = createTestkitClient()
 
-  private val externalRepoPrefix = if (majorBazelVersion == 7) "@@" else "@"
+  private val externalRepoPrefix = if (isBzlmod) "@@" else "@"
 
   @JvmStatic
   fun main(args: Array<String>) = executeScenario()
@@ -37,9 +39,14 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
     )
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val architecturePart = if (System.getProperty("os.arch") == "aarch64") "aarch64" else "x86_64"
-    val osPart = if (System.getProperty("os.name").lowercase().contains("mac")) "apple-darwin" else "unknown-linux-gnu"
-    val interpreterPath = "file://\$BAZEL_OUTPUT_BASE_PATH/external/python3_9_$architecturePart-$osPart/bin/python3"
+    val architecturePart = if (OsArch.inferFromSystem() == OsArch.ARM64) "aarch64" else "x86_64"
+    val osPart = if (OsFamily.inferFromSystem() == OsFamily.MACOS) "apple-darwin" else "unknown-linux-gnu"
+    val workspaceInterpreterPath = "file://\$BAZEL_OUTPUT_BASE_PATH/external/python3_9_$architecturePart-$osPart/bin/python3"
+    val bzlmodInterpreterPath =
+      "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_python${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+        "python${bzlmodRepoNameSeparator}python_3_9_$architecturePart-$osPart/bin/python3"
+
+    val interpreterPath = if (isBzlmod) bzlmodInterpreterPath else workspaceInterpreterPath
 
     val examplePythonBuildTarget =
       PythonBuildTarget().also {
@@ -49,12 +56,11 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
 
     val exampleExampleBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//example"),
+        BuildTargetIdentifier("$targetPrefix//example:example"),
         listOf("application"),
         listOf("python"),
         listOf(
           BuildTargetIdentifier("$targetPrefix//lib:example_library"),
-          BuildTargetIdentifier("${externalRepoPrefix}requests//:srcs"),
         ),
         BuildTargetCapabilities().also {
           it.canCompile = true
@@ -63,17 +69,22 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           it.canDebug = false
         },
       )
-    exampleExampleBuildTarget.displayName = "$targetPrefix//example"
+    exampleExampleBuildTarget.displayName = "$targetPrefix//example:example"
     exampleExampleBuildTarget.baseDirectory = "file://\$WORKSPACE/example/"
     exampleExampleBuildTarget.data = examplePythonBuildTarget
     exampleExampleBuildTarget.dataKind = BuildTargetDataKind.PYTHON
+
+    val workspacePipDepId = "${externalRepoPrefix}pip_deps_numpy//:pkg"
+    val bzlmodPipDepId =
+      "@@rules_python${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}pip${bzlmodRepoNameSeparator}pip_deps_39_numpy//:pkg"
+    val pipDepId = if (isBzlmod) bzlmodPipDepId else workspacePipDepId
 
     val exampleExampleLibBuildTarget =
       BuildTarget(
         BuildTargetIdentifier("$targetPrefix//lib:example_library"),
         listOf("library"),
         listOf("python"),
-        listOf(BuildTargetIdentifier("${externalRepoPrefix}pip_deps_numpy//:pkg")),
+        listOf(BuildTargetIdentifier(pipDepId)),
         BuildTargetCapabilities().also {
           it.canCompile = true
           it.canTest = false
@@ -88,7 +99,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
 
     val exampleExampleTestBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//test"),
+        BuildTargetIdentifier("$targetPrefix//test:test"),
         listOf("test"),
         listOf("python"),
         listOf(),
@@ -99,7 +110,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           it.canDebug = false
         },
       )
-    exampleExampleTestBuildTarget.displayName = "$targetPrefix//test"
+    exampleExampleTestBuildTarget.displayName = "$targetPrefix//test:test"
     exampleExampleTestBuildTarget.baseDirectory = "file://\$WORKSPACE/test/"
     exampleExampleTestBuildTarget.data = examplePythonBuildTarget
     exampleExampleTestBuildTarget.dataKind = BuildTargetDataKind.PYTHON
@@ -125,12 +136,18 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
   }
 
   private fun dependencySourcesResults(): BazelBspTestScenarioStep {
+    val workspacePipPath = "file://\$BAZEL_OUTPUT_BASE_PATH/external/pip_deps_numpy/site-packages/"
+    val bzlmodPipPath =
+      "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_python${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+        "pip${bzlmodRepoNameSeparator}pip_deps_39_numpy/site-packages/"
+    val pipPath = if (isBzlmod) bzlmodPipPath else workspacePipPath
+
     val expectedPythonDependencySourcesItems =
       expectedWorkspaceBuildTargetsResult().targets.map {
         if (it.id == BuildTargetIdentifier("$targetPrefix//lib:example_library")) {
           DependencySourcesItem(
             it.id,
-            listOf("file://\$BAZEL_OUTPUT_BASE_PATH/external/pip_deps_numpy/site-packages/"),
+            listOf(pipPath),
           )
         } else {
           DependencySourcesItem(it.id, emptyList())

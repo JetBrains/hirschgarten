@@ -7,6 +7,7 @@ import org.jetbrains.bsp.bazel.projectview.generator.sections.ProjectViewDeriveT
 import org.jetbrains.bsp.bazel.projectview.generator.sections.ProjectViewDirectoriesSectionGenerator
 import org.jetbrains.bsp.bazel.projectview.generator.sections.ProjectViewEnabledRulesSectionGenerator
 import org.jetbrains.bsp.bazel.projectview.generator.sections.ProjectViewImportDepthSectionGenerator
+import org.jetbrains.bsp.bazel.projectview.generator.sections.ProjectViewSyncFlagsSectionGenerator
 import org.jetbrains.bsp.bazel.projectview.generator.sections.ProjectViewTargetsSectionGenerator
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import java.nio.file.Files
@@ -23,6 +24,7 @@ object DefaultProjectViewGenerator : ProjectViewGenerator {
       ProjectViewTargetsSectionGenerator.generatePrettyString(projectView.targets),
       ProjectViewBazelBinarySectionGenerator.generatePrettyString(projectView.bazelBinary),
       ProjectViewBuildFlagsSectionGenerator.generatePrettyString(projectView.buildFlags),
+      ProjectViewSyncFlagsSectionGenerator.generatePrettyString(projectView.syncFlags),
       ProjectViewAllowManualTargetsSyncSectionGenerator.generatePrettyString(projectView.allowManualTargetsSync),
       ProjectViewDirectoriesSectionGenerator.generatePrettyString(projectView.directories),
       ProjectViewDeriveTargetsFromDirectoriesSectionGenerator.generatePrettyString(projectView.deriveTargetsFromDirectories),

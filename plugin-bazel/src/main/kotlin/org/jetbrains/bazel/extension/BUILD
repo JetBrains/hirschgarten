@@ -5,10 +5,12 @@ kt_jvm_library(
     srcs = glob([
         "*.kt",
     ]),
-    associates = ["//plugin-bazel/src:intellij-bazel-unpackaged"],
-    visibility = ["//visibility:public"],
+    visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/label",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/debug",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui",
         "@maven//:ch_epfl_scala_bsp4j",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],

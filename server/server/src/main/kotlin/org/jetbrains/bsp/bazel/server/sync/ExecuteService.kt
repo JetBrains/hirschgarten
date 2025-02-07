@@ -19,8 +19,11 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.eclipse.lsp4j.jsonrpc.ResponseErrorException
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseError
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode
+import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.label.label
 import org.jetbrains.bsp.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bsp.bazel.bazelrunner.HasAdditionalBazelOptions
 import org.jetbrains.bsp.bazel.bazelrunner.HasEnvironment
 import org.jetbrains.bsp.bazel.bazelrunner.HasMultipleTargets
 import org.jetbrains.bsp.bazel.bazelrunner.HasProgramArguments
@@ -30,12 +33,15 @@ import org.jetbrains.bsp.bazel.server.bep.BepServer
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BepReader
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
+import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.BspMappings
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.Tag
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
-import org.jetbrains.bsp.bazel.server.sync.JvmDebugHelper.generateRunArguments
-import org.jetbrains.bsp.bazel.server.sync.JvmDebugHelper.verifyDebugRequest
+import org.jetbrains.bsp.bazel.server.sync.DebugHelper.buildBeforeRun
+import org.jetbrains.bsp.bazel.server.sync.DebugHelper.generateRunArguments
+import org.jetbrains.bsp.bazel.server.sync.DebugHelper.generateRunOptions
+import org.jetbrains.bsp.bazel.server.sync.DebugHelper.verifyDebugRequest
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
@@ -65,7 +71,7 @@ class ExecuteService(
 
   private fun <T> withBepServer(
     originId: String?,
-    target: BuildTargetIdentifier?,
+    target: Label?,
     body: (BepReader) -> T,
   ): T {
     val diagnosticsService = DiagnosticsService(compilationManager.workspaceRoot)
@@ -115,27 +121,34 @@ class ExecuteService(
   fun runWithDebug(cancelChecker: CancelChecker, params: RunWithDebugParams): RunResult {
     val modules = selectModules(cancelChecker, listOf(params.runParams.target))
     val singleModule = modules.singleOrResponseError(params.runParams.target)
-    val requestedDebugType = JvmDebugType.fromDebugData(params.debug)
+    val requestedDebugType = DebugType.fromDebugData(params.debug)
     val debugArguments = generateRunArguments(requestedDebugType)
+    val debugOptions = generateRunOptions(requestedDebugType)
+    val buildBeforeRun = buildBeforeRun(requestedDebugType)
     verifyDebugRequest(requestedDebugType, singleModule)
 
-    return runImpl(cancelChecker, params.runParams, debugArguments)
+    return runImpl(cancelChecker, params.runParams, debugArguments, debugOptions, buildBeforeRun)
   }
 
   private fun runImpl(
     cancelChecker: CancelChecker,
     params: RunParams,
     additionalProgramArguments: List<String>? = null,
+    additionalOptions: List<String>? = null,
+    buildBeforeRun: Boolean = true,
   ): RunResult {
-    val targets = listOf(params.target)
-    val result = build(cancelChecker, targets, params.originId)
-    if (result.isNotSuccess) {
-      return RunResult(result.bspStatusCode).apply { originId = originId }
+    if (buildBeforeRun) {
+      val targets = listOf(params.target)
+      val result = build(cancelChecker, targets, params.originId)
+      if (result.isNotSuccess) {
+        return RunResult(result.bspStatusCode).apply { originId = originId }
+      }
     }
     val command =
       bazelRunner.buildBazelCommand {
-        run(params.target) {
+        run(params.target.label()) {
           options.add(BazelFlag.color(true))
+          additionalOptions?.let { options.addAll(it) }
           additionalProgramArguments?.let { programArguments.addAll(it) }
           params.environmentVariables?.let { environment.putAll(it) }
           params.workingDirectory?.let { workingDirectory = Path(it) }
@@ -160,7 +173,7 @@ class ExecuteService(
   fun testWithDebug(cancelChecker: CancelChecker, params: TestWithDebugParams): TestResult {
     val modules = selectModules(cancelChecker, params.testParams.targets)
     val singleModule = modules.singleOrResponseError(params.testParams.targets.first())
-    val requestedDebugType = JvmDebugType.fromDebugData(params.debug)
+    val requestedDebugType = DebugType.fromDebugData(params.debug)
     val debugArguments = generateRunArguments(requestedDebugType)
     verifyDebugRequest(requestedDebugType, singleModule)
 
@@ -172,7 +185,7 @@ class ExecuteService(
     params: TestParams,
     additionalProgramArguments: List<String>? = emptyList(),
   ): TestResult {
-    val targetsSpec = TargetsSpec(params.targets, emptyList())
+    val targetsSpec = TargetsSpec(params.targets.map { it.label() }, emptyList())
 
     var bazelTestParamsData: BazelTestParamsData? = null
     try {
@@ -189,8 +202,8 @@ class ExecuteService(
         else -> bazelRunner.buildBazelCommand { test() }
       }
 
-    bazelTestParamsData?.additionalBazelParams?.let { additionalBazelParams ->
-      command.options.add(additionalBazelParams)
+    bazelTestParamsData?.additionalBazelParams?.let { additionalParams ->
+      (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalParams.split(" "))
     }
 
     bazelTestParamsData?.testFilter?.let { testFilter ->
@@ -206,7 +219,7 @@ class ExecuteService(
 
     // TODO: handle multiple targets
     val result =
-      withBepServer(params.originId, params.targets.single()) { bepReader ->
+      withBepServer(params.originId, params.targets.first().label()) { bepReader ->
         command.useBes(bepReader.eventFile.toPath().toAbsolutePath())
         bazelRunner
           .runBazelCommand(
@@ -233,7 +246,7 @@ class ExecuteService(
 
     val command =
       bazelRunner.buildBazelCommand {
-        mobileInstall(params.target) {
+        mobileInstall(params.target.label()) {
           options.add(BazelFlag.device(params.targetDeviceSerialNumber))
           options.add(BazelFlag.start(startType))
           params.adbPath?.let { adbPath ->
@@ -272,12 +285,12 @@ class ExecuteService(
     val allTargets = bspIds + getAdditionalBuildTargets(cancelChecker, bspIds)
     // TODO: what if there's more than one target?
     //  (it was like this in now-deleted BazelBspCompilationManager.buildTargetsWithBep)
-    return withBepServer(originId, bspIds.firstOrNull()) { bepReader ->
+    return withBepServer(originId, bspIds.firstOrNull()?.label()) { bepReader ->
       val command =
         bazelRunner.buildBazelCommand {
           build {
             options.addAll(additionalArguments)
-            targets.addAll(allTargets)
+            targets.addAll(allTargets.map { it.label() })
             useBes(bepReader.eventFile.toPath().toAbsolutePath())
           }
         }
@@ -295,7 +308,7 @@ class ExecuteService(
     }
 
   private fun selectModules(cancelChecker: CancelChecker, targets: List<BuildTargetIdentifier>): List<Module> {
-    val project = projectProvider.get(cancelChecker)
+    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return emptyList()
     val modules = BspMappings.getModules(project, targets)
     val ignoreManualTag = targets.size == 1
     return modules.filter { isBuildable(it, ignoreManualTag) }

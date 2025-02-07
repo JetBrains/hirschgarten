@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.bazelrunner.params
 
-import org.jetbrains.bsp.bazel.commons.Constants.NAME
-import org.jetbrains.bsp.bazel.commons.Constants.VERSION
+import org.jetbrains.bazel.commons.constants.Constants.NAME
+import org.jetbrains.bazel.commons.constants.Constants.VERSION
 
 object BazelFlag {
   @JvmStatic fun runUnder(command: String) = arg("run_under", command)

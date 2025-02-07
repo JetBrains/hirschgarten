@@ -81,6 +81,18 @@ class CliOptionsProvider(private val args: Array<String>) {
         ).build()
     cliParserOptions.addOption(buildFlagsOption)
 
+    val syncFlagsOption =
+      Option
+        .builder(SYNC_FLAGS_SHORT_OPT)
+        .longOpt("sync-flags")
+        .hasArgs()
+        .argName("flags")
+        .desc(
+          "Add sync flags to the generated project view file, you can read more about it here:" +
+            " https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md#sync_flags",
+        ).build()
+    cliParserOptions.addOption(syncFlagsOption)
+
     val bazelBinaryOption =
       Option
         .builder(BAZEL_BINARY_SHORT_OPT)
@@ -195,6 +207,33 @@ class CliOptionsProvider(private val args: Array<String>) {
           "Add manually enabled rules to override the automatic rules detection mechanism",
         ).build()
     cliParserOptions.addOption(enabledRulesOption)
+
+    val shardSyncOption =
+      Option
+        .builder()
+        .longOpt(SHARD_SYNC_LONG_OPT)
+        .hasArg()
+        .desc("Enable shard sync")
+        .build()
+    cliParserOptions.addOption(shardSyncOption)
+
+    val targetShardSizeOption =
+      Option
+        .builder()
+        .longOpt(TARGET_SHARD_SIZE_LONG_OPT)
+        .hasArg()
+        .desc("Target shard size")
+        .build()
+    cliParserOptions.addOption(targetShardSizeOption)
+
+    val shardApproachOption =
+      Option
+        .builder()
+        .longOpt(SHARD_APPROACH_LONG_OPT)
+        .hasArg()
+        .desc("Shard approach")
+        .build()
+    cliParserOptions.addOption(shardApproachOption)
   }
 
   fun getOptions(): CliOptions {
@@ -252,6 +291,7 @@ class CliOptionsProvider(private val args: Array<String>) {
         targets = targets(cmd),
         excludedTargets = excludedTargets(cmd),
         buildFlags = buildFlags(cmd),
+        syncFlags = syncFlags(cmd),
         allowManualTargetsSync = allowManualTargetsSync(cmd),
         directories = directories(cmd),
         excludedDirectories = excludedDirectories(cmd),
@@ -260,6 +300,9 @@ class CliOptionsProvider(private val args: Array<String>) {
         produceTraceLog = produceTraceLogFlag(cmd),
         enabledRules = enabledRules(cmd),
         ideJavaHomeOverride = ideJavaHomeOverride(cmd),
+        shardSync = shardSyncEnabled(cmd),
+        targetShardSize = getTargetShardSize(cmd),
+        shardApproach = getShardApproach(cmd),
       )
     } else {
       null
@@ -270,14 +313,15 @@ class CliOptionsProvider(private val args: Array<String>) {
       cmd.hasOption(EXCLUDED_TARGETS_LONG_OPT) or
       cmd.hasOption(BAZEL_BINARY_SHORT_OPT) or
       cmd.hasOption(BUILD_FLAGS_SHORT_OPT) or
+      cmd.hasOption(SYNC_FLAGS_SHORT_OPT) or
       cmd.hasOption(BUILD_MANUAL_TARGETS_OPT) or
-      cmd.hasOption(BUILD_FLAGS_SHORT_OPT) or
       cmd.hasOption(DIRECTORIES_SHORT_OPT) or
       cmd.hasOption(EXCLUDED_DIRECTORIES_LONG_OPT) or
       cmd.hasOption(DERIVE_TARGETS_FLAG_SHORT_OPT) or
       cmd.hasOption(IMPORT_DEPTH_SHORT_OPT) or
       cmd.hasOption(PRODUCE_TRACE_LOG_OPT) or
-      cmd.hasOption(ENABLED_RULES_LONG_OPT)
+      cmd.hasOption(ENABLED_RULES_LONG_OPT) or
+      cmd.hasOption(SHARD_SYNC_LONG_OPT)
 
   private fun javaPath(cmd: CommandLine): Path? = getOptionValueAndMapToAbsolutePath(cmd, JAVA_PATH_SHORT_OPT)
 
@@ -300,11 +344,15 @@ class CliOptionsProvider(private val args: Array<String>) {
 
   private fun ideJavaHomeOverride(cmd: CommandLine): Path? = getOptionValueAndMapToAbsolutePath(cmd, IDE_JAVA_HOME_OVERRIDE_LONG_OPT)
 
-  private fun targets(cmd: CommandLine): List<String>? = cmd.getOptionValues(TARGETS_SHORT_OPT)?.toList()
+  private fun targets(cmd: CommandLine): List<String>? = cmd.getOptionValues(TARGETS_SHORT_OPT)?.toList()?.splitTargets()
 
-  private fun excludedTargets(cmd: CommandLine): List<String>? = cmd.getOptionValues(EXCLUDED_TARGETS_LONG_OPT)?.toList()
+  private fun excludedTargets(cmd: CommandLine): List<String>? = cmd.getOptionValues(EXCLUDED_TARGETS_LONG_OPT)?.toList()?.splitTargets()
+
+  private fun List<String>.splitTargets(): List<String> = this.flatMap { it.split(" ") }
 
   private fun buildFlags(cmd: CommandLine): List<String>? = cmd.getOptionValues(BUILD_FLAGS_SHORT_OPT)?.toList()
+
+  private fun syncFlags(cmd: CommandLine): List<String>? = cmd.getOptionValues(SYNC_FLAGS_SHORT_OPT)?.toList()
 
   private fun calculateCurrentAbsoluteDirectory(): Path = calculateCurrentDir().toAbsolutePath()
 
@@ -321,6 +369,12 @@ class CliOptionsProvider(private val args: Array<String>) {
 
   private fun produceTraceLogFlag(cmd: CommandLine): Boolean = cmd.hasOption(PRODUCE_TRACE_LOG_OPT)
 
+  private fun shardSyncEnabled(cmd: CommandLine): Boolean = cmd.getOptionValue(SHARD_SYNC_LONG_OPT)?.toBoolean() == true
+
+  private fun getTargetShardSize(cmd: CommandLine): Int? = cmd.getOptionValue(TARGET_SHARD_SIZE_LONG_OPT)?.toInt()
+
+  private fun getShardApproach(cmd: CommandLine): String? = cmd.getOptionValue(SHARD_APPROACH_LONG_OPT)
+
   companion object {
     private const val HELP_SHORT_OPT = "h"
     private const val WORKSPACE_ROOT_DIR_SHORT_OPT = "d"
@@ -328,6 +382,7 @@ class CliOptionsProvider(private val args: Array<String>) {
     private const val TARGETS_SHORT_OPT = "t"
     private const val EXCLUDED_TARGETS_LONG_OPT = "excluded-targets"
     private const val BUILD_FLAGS_SHORT_OPT = "f"
+    private const val SYNC_FLAGS_SHORT_OPT = "s"
     private const val BAZEL_BINARY_SHORT_OPT = "b"
     private const val DEBUGGER_ADDRESS_SHORT_OPT = "x"
     private const val JAVA_PATH_SHORT_OPT = "j"
@@ -340,6 +395,9 @@ class CliOptionsProvider(private val args: Array<String>) {
     private const val IMPORT_DEPTH_SHORT_OPT = "i"
     private const val BAZEL_WORKSPACE_ROOT_DIR_OPT = "w"
     private const val PRODUCE_TRACE_LOG_OPT = "l"
+    private const val SHARD_SYNC_LONG_OPT = "shard-sync"
+    private const val TARGET_SHARD_SIZE_LONG_OPT = "target-shard-size"
+    private const val SHARD_APPROACH_LONG_OPT = "shard-approach"
 
     const val INSTALLER_BINARY_NAME = "bazelbsp-install"
   }

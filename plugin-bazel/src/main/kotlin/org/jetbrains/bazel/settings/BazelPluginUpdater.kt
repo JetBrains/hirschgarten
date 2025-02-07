@@ -6,8 +6,8 @@ import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.updateSettings.impl.UpdateChecker
 import com.intellij.openapi.updateSettings.impl.UpdateSettings
 
-internal const val BAZEL_PLUGIN_ID = "org.jetbrains.bazel"
-internal const val BSP_PLUGIN_ID = "org.jetbrains.bsp"
+const val BAZEL_PLUGIN_ID = "org.jetbrains.bazel"
+const val BSP_PLUGIN_ID = "org.jetbrains.bsp"
 
 @Suppress("UnstableApiUsage")
 internal object BazelPluginUpdater {

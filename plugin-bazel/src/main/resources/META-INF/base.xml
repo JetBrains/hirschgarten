@@ -32,7 +32,9 @@
         <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook"/>
 
         <projectSyncHook implementation="org.jetbrains.bazel.flow.open.InvalidTargetsProjectSyncHook"/>
+        <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"/>
 
         <defaultProjectSyncHooksDisabler
                 implementation="org.jetbrains.bazel.flow.sync.BazelDefaultProjectSyncHooksDisabler"/>
@@ -41,14 +43,19 @@
                 implementation="org.jetbrains.bazel.flow.open.BazelInvalidTargetsProviderExtension"/>
 
         <runConfigurationTypeProvider implementation="org.jetbrains.bazel.run.BazelRunConfigurationTypeProvider"/>
+        <bspFeatureFlagsProvider implementation="org.jetbrains.bazel.config.BazelBspFeatureFlagsProvider"/>
+        <bspAdditionalProjectTaskRunnerProvider
+                implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
+        <bspTreeStructureSettingsExtension
+                implementation="org.jetbrains.bazel.settings.BazelTreeStructureSettingsProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
+        <consoleFilterProvider implementation="org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilterProvider"/>
+
         <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider"/>
         <projectOpenProcessor
                 implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessor"/>
-        <postStartupActivity
-                implementation="org.jetbrains.bazel.flow.open.CheckSlowPluginsStartupActivity"/>
         <postStartupActivity
                 implementation="org.jetbrains.bazel.flow.open.SuggestEnableK2StartupActivity"/>
         <postStartupActivity
@@ -75,6 +82,9 @@
                 fileNames="BUILD;WORKSPACE"
                 extensions="bzl;bazel;bzlmod"
                 patterns="*.bzl.template"/>
+        <lang.fileViewProviderFactory
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.psi.StarlarkViewProviderFactory"/>
         <enterBetweenBracesDelegate
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.indentation.StarlarkEnterBetweenBracesHandler"/>
@@ -227,6 +237,9 @@
         <registryKey defaultValue="2"
                      description="How many levels to go down when scanning the project for Bazel symlinks to exclude"
                      key="bazel.symlink.scan.max.depth"/>
+        <registryKey defaultValue="true"
+                     description="Force Bazel to shut down before each shard build to prevent Bazel memory leak issue"
+                     key="bazel.shutdown.before.shard.build"/>
         <configurationType implementation="org.jetbrains.bazel.run.BazelRunConfigurationType"/>
     </extensions>
 

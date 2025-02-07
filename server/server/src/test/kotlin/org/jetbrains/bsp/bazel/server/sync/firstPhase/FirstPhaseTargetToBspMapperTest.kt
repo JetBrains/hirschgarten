@@ -11,13 +11,15 @@ import ch.epfl.scala.bsp4j.SourcesParams
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bsp.bazel.server.model.Label
-import org.jetbrains.bsp.bazel.server.model.Project
+import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
+import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bsp.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bsp.bazel.workspacecontext.BazelBinarySpec
 import org.jetbrains.bsp.bazel.workspacecontext.BuildFlagsSpec
+import org.jetbrains.bsp.bazel.workspacecontext.DEFAULT_TARGET_SHARD_SIZE
 import org.jetbrains.bsp.bazel.workspacecontext.DirectoriesSpec
 import org.jetbrains.bsp.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bsp.bazel.workspacecontext.EnableNativeAndroidRules
@@ -25,6 +27,10 @@ import org.jetbrains.bsp.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ExperimentalAddTransitiveCompileTimeJars
 import org.jetbrains.bsp.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ImportDepthSpec
+import org.jetbrains.bsp.bazel.workspacecontext.ShardSyncSpec
+import org.jetbrains.bsp.bazel.workspacecontext.ShardingApproachSpec
+import org.jetbrains.bsp.bazel.workspacecontext.SyncFlagsSpec
+import org.jetbrains.bsp.bazel.workspacecontext.TargetShardSizeSpec
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
@@ -45,9 +51,10 @@ import kotlin.io.path.writeText
 private class MockWorkspaceContextProvider(private val allowManualTargetsSync: Boolean) : WorkspaceContextProvider {
   override fun currentWorkspaceContext(): WorkspaceContext =
     WorkspaceContext(
-      targets = TargetsSpec(listOf(BuildTargetIdentifier("//...")), emptyList()),
+      targets = TargetsSpec(listOf(Label.parse("//...")), emptyList()),
       directories = DirectoriesSpec(listOf(Path(".")), emptyList()),
       buildFlags = BuildFlagsSpec(emptyList()),
+      syncFlags = SyncFlagsSpec(emptyList()),
       bazelBinary = BazelBinarySpec(Path("bazel")),
       allowManualTargetsSync = AllowManualTargetsSyncSpec(allowManualTargetsSync),
       dotBazelBspDirPath = DotBazelBspDirPathSpec(Path(".bazelbsp")),
@@ -57,19 +64,18 @@ private class MockWorkspaceContextProvider(private val allowManualTargetsSync: B
       experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJars(false),
       enableNativeAndroidRules = EnableNativeAndroidRules(false),
       androidMinSdkSpec = AndroidMinSdkSpec(null),
+      shardSync = ShardSyncSpec(false),
+      targetShardSize = TargetShardSizeSpec(DEFAULT_TARGET_SHARD_SIZE),
+      shardingApproachSpec = ShardingApproachSpec(null),
     )
 }
 
-private fun createMockProject(lightweightModules: List<Build.Target>): Project =
-  Project(
+private fun createMockProject(lightweightModules: List<Build.Target>): FirstPhaseProject =
+  FirstPhaseProject(
     workspaceRoot = URI.create("file:///path/to/workspace"),
-    modules = emptyList(),
-    libraries = emptyMap(),
-    goLibraries = emptyMap(),
-    invalidTargets = emptyList(),
-    nonModuleTargets = emptyList(),
     bazelRelease = BazelRelease(7),
-    lightweightModules = lightweightModules.associateBy { Label.parse(it.rule.name) },
+    modules = lightweightModules.associateBy { Label.parse(it.rule.name) },
+    repoMapping = RepoMappingDisabled,
   )
 
 class FirstPhaseTargetToBspMapperTest {
@@ -93,6 +99,7 @@ class FirstPhaseTargetToBspMapperTest {
             name = "//target1",
             kind = "java_library",
             deps = listOf("//dep/target1", "//dep/target2"),
+            srcs = listOf("//target1:src1.java", "//target1:a/src2.java"),
           ),
           createMockTarget(
             name = "//target2",
@@ -118,6 +125,11 @@ class FirstPhaseTargetToBspMapperTest {
             name = "//target6",
             kind = "kt_jvm_test",
             deps = listOf("//dep/target1", "//dep/target2"),
+          ),
+          createMockTarget(
+            name = "//target7",
+            kind = "custom_rule_with_supported_rules_library",
+            srcs = listOf("//target7:src1.java", "//target7:a/src2.java"),
           ),
           createMockTarget(
             name = "//manual_target",
@@ -214,6 +226,18 @@ class FirstPhaseTargetToBspMapperTest {
               canCompile = true
               canRun = false
               canTest = true
+              canDebug = false
+            },
+          ),
+          BuildTarget(
+            BuildTargetIdentifier("//target7"),
+            listOf("library"),
+            listOf("java"),
+            emptyList(),
+            BuildTargetCapabilities().apply {
+              canCompile = true
+              canRun = false
+              canTest = false
               canDebug = false
             },
           ),
@@ -336,6 +360,72 @@ class FirstPhaseTargetToBspMapperTest {
           EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
         )
     }
+
+    @Test
+    fun `should map project to source items including sources referenced via filegroup targets`() {
+      // given
+      val filegroupRoot1 = workspaceRoot.resolve("filegroup")
+      val filegroupRoot2 = workspaceRoot.resolve("filegroup/a")
+      val filegroupSrc1 = workspaceRoot.createMockSourceFile("filegroup/src1.java", "com.example")
+      val filegroupSrc2 = workspaceRoot.createMockSourceFile("filegroup/a/src2.java", "com.example.a")
+
+      val target1Root = workspaceRoot.resolve("target1")
+      val target1Src1 = workspaceRoot.createMockSourceFile("target1/src1.kt", "com.example")
+      val target1Src2 = workspaceRoot.createMockSourceFile("target1/src2.kt", "com.example")
+
+      val targets =
+        listOf(
+          createMockTarget(
+            name = "//filegroup",
+            kind = "filegroup",
+            srcs = listOf("//filegroup:src1.java", "//filegroup:a/src2.java"),
+          ),
+          createMockTarget(
+            name = "//target1",
+            kind = "java_library",
+            srcs = listOf("//target1:src1.kt", "//target1:src2.kt", "//filegroup"),
+          ),
+        )
+      val project = createMockProject(targets)
+
+      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+
+      // when
+      val params =
+        SourcesParams(
+          listOf(
+            BuildTargetIdentifier("//target1"),
+          ),
+        )
+      val result = mapper.toSourcesResult(project, params)
+
+      // then
+      result.items shouldContainExactlyInAnyOrder
+        listOf(
+          SourcesItem(
+            BuildTargetIdentifier("//target1"),
+            listOf(
+              EnhancedSourceItem(target1Src1.toUri().toString(), SourceItemKind.FILE, false),
+              EnhancedSourceItem(target1Src2.toUri().toString(), SourceItemKind.FILE, false),
+              EnhancedSourceItem(filegroupSrc1.toUri().toString(), SourceItemKind.FILE, false),
+              EnhancedSourceItem(filegroupSrc2.toUri().toString(), SourceItemKind.FILE, false),
+            ),
+          ).apply {
+            roots = listOf(target1Root.toUri().toString(), filegroupRoot1.toUri().toString(), filegroupRoot2.toUri().toString())
+          },
+        )
+      result.items
+        .flatMap { it.sources }
+        .map { it as EnhancedSourceItem }
+        .map { it.data } shouldContainExactly
+        listOf(
+          EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
+          EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
+          EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
+          EnhancedSourceItemData(jvmPackagePrefix = "com.example.a"),
+        )
+    }
   }
 
   @Nested
@@ -395,6 +485,52 @@ class FirstPhaseTargetToBspMapperTest {
             listOf(
               target2Resource1.toUri().toString(),
               target2Resource2.toUri().toString(),
+            ),
+          ),
+        )
+    }
+
+    @Test
+    fun `should map project to resource items including resources referenced via filegroup targets`() {
+      // given
+      val filegroupResource1 = workspaceRoot.resolve("filegroup/resource1.txt").createParentDirectories().createFile()
+      val filegroupResource2 = workspaceRoot.resolve("filegroup/a/resource2.txt").createParentDirectories().createFile()
+
+      val target1Resource1 = workspaceRoot.resolve("target1/resource1.txt").createParentDirectories().createFile()
+      val target1Resource2 = workspaceRoot.resolve("target1/resource2.txt").createParentDirectories().createFile()
+
+      val targets =
+        listOf(
+          createMockTarget(
+            name = "//filegroup",
+            kind = "filegroup",
+            resources = listOf("//filegroup:resource1.txt", "//filegroup:a/resource2.txt"),
+          ),
+          createMockTarget(
+            name = "//target1",
+            kind = "java_library",
+            resources = listOf("//target1:resource1.txt", "//target1:resource2.txt", "//filegroup"),
+          ),
+        )
+      val project = createMockProject(targets)
+
+      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+
+      // when
+      val params = ResourcesParams(listOf(BuildTargetIdentifier("//target1")))
+      val result = mapper.toResourcesResult(project, params)
+
+      // then
+      result.items shouldContainExactlyInAnyOrder
+        listOf(
+          ResourcesItem(
+            BuildTargetIdentifier("//target1"),
+            listOf(
+              target1Resource1.toUri().toString(),
+              target1Resource2.toUri().toString(),
+              filegroupResource1.toUri().toString(),
+              filegroupResource2.toUri().toString(),
             ),
           ),
         )

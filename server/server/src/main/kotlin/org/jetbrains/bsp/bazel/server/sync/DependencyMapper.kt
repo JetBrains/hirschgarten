@@ -2,10 +2,10 @@ package org.jetbrains.bsp.bazel.server.sync
 
 import ch.epfl.scala.bsp4j.MavenDependencyModule
 import ch.epfl.scala.bsp4j.MavenDependencyModuleArtifact
-import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.Library
 import org.jetbrains.bsp.bazel.server.model.Module
-import org.jetbrains.bsp.bazel.server.model.Project
 
 object DependencyMapper {
   fun extractMavenDependencyInfo(lib: Library): MavenDependencyModule? {
@@ -24,7 +24,7 @@ object DependencyMapper {
     return MavenDependencyModule(mavenCoordinates.groupId, mavenCoordinates.artifactId, mavenCoordinates.version, jars + sourceJars)
   }
 
-  fun allModuleDependencies(project: Project, module: Module): HashSet<Library> {
+  fun allModuleDependencies(project: AspectSyncProject, module: Module): HashSet<Library> {
     val toResolve = mutableListOf<Label>()
     toResolve.addAll(module.directDependencies)
     val accumulator = HashSet<Library>()
