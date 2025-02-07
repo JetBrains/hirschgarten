@@ -15,6 +15,12 @@ import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.backend.workspace.impl.WorkspaceModelInternal
+import com.intellij.platform.backend.workspace.virtualFile
+import com.intellij.platform.workspace.storage.CachedValue
+import com.intellij.platform.workspace.storage.entities
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
@@ -25,6 +31,7 @@ import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.isBspProjectLoaded
 import org.jetbrains.plugins.bsp.config.openedTimesSinceLastStartupResync
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
 
 internal class BspTreeStructureProvider : TreeStructureProvider {
   // We want to get rid of all the module (group) nodes from the project view tree;
@@ -60,7 +67,9 @@ internal class BspTreeStructureProvider : TreeStructureProvider {
     val rootDirectoryNodeFilter =
       if (showExcludedDirectoriesAsSeparateNode) {
         PsiFileSystemItemFilter { item ->
-          item !is PsiDirectory || item.parent != rootDirectory || !ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile)
+          item !is PsiDirectory ||
+            item.virtualFile in project.directoriesContainingIncludedDirectories ||
+            !ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile)
         }
       } else {
         null
@@ -72,7 +81,13 @@ internal class BspTreeStructureProvider : TreeStructureProvider {
     val excludedDirectoriesNode =
       if (showExcludedDirectoriesAsSeparateNode) {
         ExcludedDirectoriesNode(project, rootDirectory, settings) { item ->
-          item.parent != rootDirectory || (item is PsiDirectory && ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile))
+          if (item is PsiDirectory) {
+            ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile)
+          } else {
+            val parentDir = item.virtualFile.parent
+            parentDir !in project.directoriesContainingIncludedDirectories &&
+              ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile)
+          }
         }
       } else {
         null
@@ -85,6 +100,38 @@ internal class BspTreeStructureProvider : TreeStructureProvider {
     this
       .filterNot { it is ProjectViewModuleGroupNode }
       .filterNot { it is ProjectViewModuleNode }
+
+  private val Project.directoriesContainingIncludedDirectories: Set<VirtualFile>
+    get() =
+      (
+        WorkspaceModel.getInstance(
+          this,
+        ) as WorkspaceModelInternal
+      ).entityStorage.cachedValue(directoriesContainingIncludedDirectoriesValue)
+
+  private val directoriesContainingIncludedDirectoriesValue =
+    CachedValue { storage ->
+      val bspProjectDirectories = storage.entities<BspProjectDirectoriesEntity>().firstOrNull() ?: return@CachedValue emptySet()
+
+      val result =
+        bspProjectDirectories.includedRoots
+          .asSequence()
+          .mapNotNull { it.virtualFile }
+          .mapNotNull { if (it.isDirectory) it else it.parent }
+          .toMutableSet()
+
+      val toVisit = ArrayDeque(result)
+
+      while (toVisit.isNotEmpty()) {
+        val dir = toVisit.removeFirst()
+        val parent = dir.parent ?: continue
+        if (parent in result) continue
+        result.add(parent)
+        toVisit.add(parent)
+      }
+
+      result
+    }
 }
 
 /**
