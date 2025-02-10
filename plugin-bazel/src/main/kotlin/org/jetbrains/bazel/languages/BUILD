@@ -13,6 +13,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/base",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/highlighting:higlighting",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/parser",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )
