@@ -81,7 +81,7 @@ class ProjectViewParser : PsiParser {
   }
 
   fun parseScalarKey(builder: PsiBuilder): Boolean {
-    log.assertTrue(builder.tokenType == ProjectViewTokenType.IDENTIFIER)
+    log.assertTrue(builder.tokenType == ProjectViewTokenType.SCALAR_KEYWORD)
     val key = builder.mark()
     val isImport = builder.tokenText == importKeyword
     builder.advanceLexer()
