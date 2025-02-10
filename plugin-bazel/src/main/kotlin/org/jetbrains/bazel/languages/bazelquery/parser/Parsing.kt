@@ -101,6 +101,7 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
     val file = builder.mark()
     while (!eof()) {
       when {
+        atToken(BazelqueryTokenTypes.BAZEL_NO_SPACE) -> advanceLexer()
         atToken(BazelqueryTokenTypes.BAZEL) -> parsePrompt()
 
         else -> advanceError("<bazel> expected")
@@ -116,7 +117,15 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
 
     advanceLexer()
 
-    expectToken(BazelqueryTokenTypes.QUERY)
+    if (atToken(BazelqueryTokenTypes.QUERY_NO_SPACE)) {
+      advanceLexer()
+      if (!eof()) advanceError("Unexpected token")
+    } else if (atToken(BazelqueryTokenTypes.QUERY)) {
+      advanceLexer()
+    } else {
+      advanceError("Unexpected token: Expected 'QUERY'")
+    }
+
 
     while (!atAnyToken(queryValPrefixes) && !eof()) {
       when {
@@ -131,11 +140,14 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
 
     if (atAnyToken(queryValPrefixes)) parseQueryVal()
 
-    while (!atToken(BazelqueryTokenTypes.BAZEL) && !eof()) {
+    while (!atToken(BazelqueryTokenTypes.BAZEL) && !atToken(BazelqueryTokenTypes.BAZEL_NO_SPACE) && !eof()) {
       when {
         atAnyToken(BazelqueryTokenSets.FLAGS) -> parseFlag()
         else -> {
-          while(!atAnyToken(BazelqueryTokenSets.FLAGS) && !atToken(BazelqueryTokenTypes.BAZEL) && !eof()) {
+          while(!atAnyToken(BazelqueryTokenSets.FLAGS)
+            && !atToken(BazelqueryTokenTypes.BAZEL)
+            && !atToken(BazelqueryTokenTypes.BAZEL_NO_SPACE)
+            && !eof()) {
             advanceError("Invalid content2")
           }
         }
@@ -384,16 +396,30 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
   private fun parseFlag() {
     val flag = mark()
 
-    if(atToken(BazelqueryTokenTypes.FLAG)) {
+    if(atToken(BazelqueryTokenTypes.UNFINISHED_FLAG)) {
+      if (!eof()) advanceError("Unfinished flag")
+      else error("Unfinished flag1")
+      expectToken(BazelqueryTokenTypes.WHITE_SPACE)
+    }
+    else if(atToken(BazelqueryTokenTypes.FLAG)) {
       advanceLexer()
 
       if(!matchToken(BazelqueryTokenTypes.EQUALS)) advanceError("Flag value expected1")
       else {
         if(matchToken(BazelqueryTokenTypes.UNFINISHED_VAL)) error("Quote expected")
         else if(!matchAnyToken(BazelqueryTokenSets.FLAG_VALS)) error("Flag value expected2")
+        else if(!eof()) expectToken(BazelqueryTokenTypes.WHITE_SPACE)
       }
     }
-    else advanceLexer()
+    else {
+      advanceLexer()
+      while(matchToken(BazelqueryTokenTypes.MISSING_SPACE)) {
+        advanceError("Whitespace expected")
+      }
+      matchToken(BazelqueryTokenTypes.WHITE_SPACE)
+    }
+
+
 
     flag.done(BazelqueryElementTypes.FLAG)
   }

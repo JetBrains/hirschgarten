@@ -102,6 +102,8 @@ object BazelqueryTokenTypes {
     val FLAG = BazelqueryTokenType("FLAG")
     @JvmField
     val FLAG_NO_VAL = BazelqueryTokenType("FLAG_NO_VAL")
+    @JvmField
+    val UNFINISHED_FLAG = BazelqueryTokenType("UNFINISHED_FLAG")
 /*
     @JvmField
     val VALUE = BazelqueryTokenType("VALUE")
@@ -148,6 +150,14 @@ object BazelqueryTokenTypes {
     @JvmField
     val QUERY = BazelqueryTokenType("QUERY")
 
+  @JvmField
+  val BAZEL_NO_SPACE = BazelqueryTokenType("BAZEL_NO_SPACE")
+
+  @JvmField
+  val QUERY_NO_SPACE = BazelqueryTokenType("QUERY_NO_SPACE")
+
+
+
     @JvmField
     val INTEGER = BazelqueryTokenType("INTEGER")
 
@@ -177,4 +187,7 @@ object BazelqueryTokenTypes {
 
     @JvmField
     val DQ_EMPTY = BazelqueryTokenType("DQ_EMPTY")
+
+    @JvmField
+    val MISSING_SPACE = BazelqueryTokenType("MISSING_SPACE")
 }

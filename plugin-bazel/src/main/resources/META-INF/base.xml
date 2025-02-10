@@ -173,6 +173,9 @@
                 language="Bazelquery"
                 implementationClass="org.jetbrains.bazel.languages.bazelquery.highlighting.BazelquerySyntaxHighlighterFactory"/>
 
+        <completion.contributor
+                language="Bazelquery"
+                implementationClass="org.jetbrains.bazel.languages.bazelquery.completion.BazelqueryCompletionContributor"/>
 
 
 

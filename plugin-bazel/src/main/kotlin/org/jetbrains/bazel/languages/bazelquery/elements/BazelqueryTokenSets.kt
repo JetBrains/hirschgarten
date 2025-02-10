@@ -26,7 +26,8 @@ object BazelqueryTokenSets {
 
   val FLAGS = TokenSet.create(
     BazelqueryTokenTypes.FLAG,
-    BazelqueryTokenTypes.FLAG_NO_VAL
+    BazelqueryTokenTypes.FLAG_NO_VAL,
+    BazelqueryTokenTypes.UNFINISHED_FLAG
   )
 
   val FLAG_VALS = TokenSet.create(

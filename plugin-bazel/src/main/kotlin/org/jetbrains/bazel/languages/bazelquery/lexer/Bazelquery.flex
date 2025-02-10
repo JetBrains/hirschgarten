@@ -47,7 +47,7 @@ DOUBLE_AT=[@@]
 UNQUOTED_WORD=([A-Za-z0-9/@._:$~\[\]][A-Za-z0-9*/@.\-_:$~\[\]]* | {DOUBLE_AT}[A-Za-z0-9*/@.\-_:$~\[\]+]*)
 QUOTED_WORD=[^{NL}{SQ}{DQ}]+
 
-//SQ_WORD={SQ}{QUOTED_WORD}{SQ}
+SQ_WORD={SQ}{QUOTED_WORD}{SQ}
 DQ_WORD={DQ}{QUOTED_WORD}{DQ}
 
 UNEXPECTED_WORD=[^-{NL}{SPACE}][^{NL}{SPACE}]*
@@ -89,6 +89,8 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
 %xstate FLAG, VALUE, PRE_VALUE
 %xstate VALUE_SQ, VALUE_DQ
 
+%xstate SPACE_NEEDED
+
 
 %%
 
@@ -97,8 +99,10 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
     ({SOFT_NL} | [{SPACE}{NL}])+      { return TokenType.WHITE_SPACE; }
     {COMMENT}+                        { return BazelqueryTokenTypes.COMMENT; }
 
-    "bazel"                           { return BazelqueryTokenTypes.BAZEL; }
-    "query"                           { return BazelqueryTokenTypes.QUERY; }
+    "bazel "                           { return BazelqueryTokenTypes.BAZEL; }
+    "query "                           { return BazelqueryTokenTypes.QUERY; }
+    "bazel"                           { return BazelqueryTokenTypes.BAZEL_NO_SPACE; }
+    "query"                           { return BazelqueryTokenTypes.QUERY_NO_SPACE; }
 
     {HYP}                             { yybegin(FLAG);  yypushback(1); }
 
@@ -195,14 +199,19 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
     [^]                               { yybegin(YYINITIAL); yypushback(1); }
 }
 
+<SPACE_NEEDED> {
+    {SPACE} | {NL}                          { yybegin(YYINITIAL); return BazelqueryTokenTypes.WHITE_SPACE; }
+    [^]                               { yybegin(YYINITIAL); yypushback(1); return BazelqueryTokenTypes.MISSING_SPACE; }
+}
 
 
 <FLAG> {
+    {HYP} | {HYP}{HYP}                { return BazelqueryTokenTypes.UNFINISHED_FLAG; }
     {OPTION_REQ_VALUE}{SPACE}         { yybegin(PRE_VALUE); yypushback(1); return BazelqueryTokenTypes.FLAG; }
     {OPTION_REQ_VALUE}{EQALS}         { yybegin(PRE_VALUE); yypushback(1); return BazelqueryTokenTypes.FLAG; }
     {OPTION_REQ_VALUE}                { yybegin(PRE_VALUE); return BazelqueryTokenTypes.FLAG; }
     {OPTION}{EQALS}                   { yybegin(PRE_VALUE); yypushback(1); return BazelqueryTokenTypes.FLAG; }
-    {OPTION}                          { yybegin(YYINITIAL); return BazelqueryTokenTypes.FLAG_NO_VAL; }
+    {OPTION}                          { yybegin(SPACE_NEEDED); return BazelqueryTokenTypes.FLAG_NO_VAL; }
 
     {OPTION_REQ_VALUE}[^{EQALS}{SPACE}][-]*{UNEXPECTED_WORD}*     { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNEXPECTED; }
     {UNEXPECTED_WORD}                 { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNEXPECTED; }
@@ -219,24 +228,24 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
     {SQ}                              { yybegin(VALUE_SQ); yypushback(1); }
     {DQ}                              { yybegin(VALUE_DQ); yypushback(1); }
 
-    {UNQUOTED_WORD}                   { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNQUOTED_VAL; }
+    {UNQUOTED_WORD}                   { yybegin(SPACE_NEEDED); return BazelqueryTokenTypes.UNQUOTED_VAL; }
 
     [^]                               { yybegin(YYINITIAL); yypushback(1); } // return UNEXPECTED???
 }
 
 <VALUE_SQ> {
-    {SQ}{SQ}                          { yybegin(YYINITIAL); return BazelqueryTokenTypes.SQ_VAL; }
-    {SQ}({QUOTED_WORD} | {DQ})+{SQ}   { yybegin(YYINITIAL); return BazelqueryTokenTypes.SQ_VAL; }
-    {SQ}({QUOTED_WORD} | {DQ})+       { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNFINISHED_VAL; }
-    {SQ}                              { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNFINISHED_VAL; }
+    {SQ}{SQ}                          { yybegin(SPACE_NEEDED); return BazelqueryTokenTypes.SQ_VAL; }
+    {SQ}({QUOTED_WORD} | {DQ})+{SQ}   { yybegin(SPACE_NEEDED); return BazelqueryTokenTypes.SQ_VAL; }
+    {SQ}({QUOTED_WORD} | {DQ})+       { yybegin(SPACE_NEEDED); return BazelqueryTokenTypes.UNFINISHED_VAL; }
+    {SQ}                              { yybegin(SPACE_NEEDED); return BazelqueryTokenTypes.UNFINISHED_VAL; }
     [^]                               { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <VALUE_DQ> {
-    {DQ}{DQ}                          { yybegin(YYINITIAL); return BazelqueryTokenTypes.DQ_VAL; }
-    {DQ}({QUOTED_WORD} | {SQ})+{DQ}   { yybegin(YYINITIAL); return BazelqueryTokenTypes.DQ_VAL; }
-    {DQ}({QUOTED_WORD} | {SQ})+       { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNFINISHED_VAL; }
-    {DQ}                              { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNFINISHED_VAL; }
+    {DQ}{DQ}                          { yybegin(SPACE_NEEDED); return BazelqueryTokenTypes.DQ_VAL; }
+    {DQ}({QUOTED_WORD} | {SQ})+{DQ}   { yybegin(SPACE_NEEDED); return BazelqueryTokenTypes.DQ_VAL; }
+    {DQ}({QUOTED_WORD} | {SQ})+       { yybegin(SPACE_NEEDED); return BazelqueryTokenTypes.UNFINISHED_VAL; }
+    {DQ}                              { yybegin(SPACE_NEEDED); return BazelqueryTokenTypes.UNFINISHED_VAL; }
     [^]                               { yybegin(YYINITIAL); yypushback(1); }
 }
 
