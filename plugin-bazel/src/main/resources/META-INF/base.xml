@@ -159,6 +159,10 @@
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"/>
 
+        <lang.commenter
+                language="ProjectView"
+                implementationClass="org.jetbrains.bazel.languages.projectview.commenter.ProjectViewCommenter"/>
+
         <formattingService
                 implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService"/>
 
