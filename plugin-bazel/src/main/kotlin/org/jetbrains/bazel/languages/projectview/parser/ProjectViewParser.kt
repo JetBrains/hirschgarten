@@ -35,7 +35,7 @@ class ProjectViewParser : PsiParser {
     } else {
       val tokenText = builder.tokenText
       builder.advanceLexer()
-      builder.error("Unexpected token: $tokenText") // TODO(localization)
+      builder.error("Unexpected token: $tokenText")
     }
   }
 
