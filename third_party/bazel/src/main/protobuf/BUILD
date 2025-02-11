@@ -10,19 +10,11 @@ FILES = [
     "android_deploy_info",
     "bazel_flags",
     "builtin",
-    "crash_debugging",
-    "crosstool_config",
     "deps",
-    "desugar_deps",
-    "execution_statistics",
-    "extra_actions_base",
     "java_compilation",
-    "memory_pressure",
     "strategy_policy",
     "test_status",
-    "worker_protocol",
     "execution_graph",
-    #     "file_invalidation_data",
 ]
 
 [proto_library(
@@ -129,120 +121,6 @@ java_proto_library(
     deps = [":command_line_proto"],
 )
 
-# Proto needed by singlejar and embedded into the java tools archive.
-genrule(
-    name = "desugar_deps_zip",
-    srcs = ["desugar_deps.proto"],
-    outs = ["desugar_deps.zip"],
-    cmd = "zip -q $@ $<",
-    visibility = ["//src/tools/singlejar:__pkg__"],
-)
-
-filegroup(
-    name = "desugar_deps_filegroup",
-    srcs = ["desugar_deps.proto"],
-    visibility = ["//src/tools/singlejar:__pkg__"],
-)
-
-cc_proto_library(
-    name = "desugar_deps_cc_proto",
-    deps = [":desugar_deps_proto"],
-)
-
-cc_proto_library(
-    name = "worker_protocol_cc_proto",
-    deps = [":worker_protocol_proto"],
-)
-
-cc_proto_library(
-    name = "command_server_cc_proto",
-    deps = [":command_server_proto"],
-)
-
-py_proto_library(
-    name = "build_pb_py",
-    deps = [":build_proto"],
-)
-
-cc_proto_library(
-    name = "execution_statistics_cc_proto",
-    deps = [":execution_statistics_proto"],
-)
-
-# proto_library(
-#     name = "remote_execution_log_proto",
-#     srcs = ["remote_execution_log.proto"],
-#     deps = [
-#         "@googleapis//google/bytestream:bytestream_proto",
-#         "@googleapis//google/longrunning:operations_proto",
-#         "@googleapis//google/rpc:status_proto",
-#         "@protobuf//:timestamp_proto",
-#         "@remoteapis//:build_bazel_remote_execution_v2_remote_execution_proto",
-#     ],
-# )
-#
-# java_proto_library(
-#     name = "remote_execution_log_java_proto",
-#     deps = [":remote_execution_log_proto"],
-# )
-
-proto_library(
-    name = "cache_salt_proto",
-    srcs = ["cache_salt.proto"],
-)
-
-java_proto_library(
-    name = "cache_salt_java_proto",
-    deps = [":cache_salt_proto"],
-)
-
-proto_library(
-    name = "remote_scrubbing_proto",
-    srcs = ["remote_scrubbing.proto"],
-)
-
-java_proto_library(
-    name = "remote_scrubbing_java_proto",
-    deps = [":remote_scrubbing_proto"],
-)
-
-# proto_library(
-#     name = "bazel_output_service_proto",
-#     srcs = ["bazel_output_service.proto"],
-#     deps = [
-#         "@googleapis//google/rpc:status_proto",
-#         "@protobuf//:any_proto",
-#     ],
-# )
-#
-# java_proto_library(
-#     name = "bazel_output_service_java_proto",
-#     deps = [":bazel_output_service_proto"],
-# )
-#
-# cc_proto_library(
-#     name = "bazel_output_service_cc_proto",
-#     deps = [":bazel_output_service_proto"],
-# )
-
-# proto_library(
-#     name = "bazel_output_service_rev2_proto",
-#     srcs = ["bazel_output_service_rev2.proto"],
-#     deps = [
-#         "@remoteapis//:build_bazel_remote_execution_v2_remote_execution_proto",
-#     ],
-# )
-#
-# java_proto_library(
-#     name = "bazel_output_service_rev2_java_proto",
-#     deps = [":bazel_output_service_rev2_proto"],
-# )
-#
-# cc_proto_library(
-#     name = "bazel_output_service_rev2_cc_proto",
-#     deps = [":bazel_output_service_rev2_proto"],
-# )
-
 proto_library(
     name = "spawn_proto",
     srcs = ["spawn.proto"],
@@ -257,73 +135,17 @@ java_proto_library(
     deps = [":spawn_proto"],
 )
 
-# Note that stardoc_output_proto and stardoc_output_java_proto are vendored by
-# Stardoc: https://github.com/bazelbuild/stardoc/tree/master/stardoc/proto
-package_group(
-    name = "stardoc_output_users",
-    packages = [
-        "//src/test/java/com/google/devtools/build/docgen/...",
-        "//src/test/java/com/google/devtools/build/lib/rules/starlarkdocextract/...",
-        "//src/test/java/com/google/devtools/build/lib/starlarkdocextract/...",
-        "//third_party/bazel/src/main/java/com/google/devtools/build/docgen/...",
-        "//third_party/bazel/src/main/java/com/google/devtools/build/lib/rules/starlarkdocextract/...",
-        "//third_party/bazel/src/main/java/com/google/devtools/build/lib/starlarkdocextract/...",
-    ],
-)
-
 proto_library(
     name = "stardoc_output_proto",
     srcs = ["stardoc_output.proto"],
-    visibility = [":stardoc_output_users"],
 )
 
 java_proto_library(
     name = "stardoc_output_java_proto",
-    visibility = [":stardoc_output_users"],
     deps = [":stardoc_output_proto"],
-)
-
-proto_library(
-    name = "xcode_proto",
-    srcs = ["xcode_config.proto"],
-    visibility = ["//visibility:public"],
-)
-
-java_proto_library(
-    name = "xcode_java_proto",
-    deps = [":xcode_proto"],
-)
-
-cc_proto_library(
-    name = "xcode_cc_proto",
-    deps = [":xcode_proto"],
 )
 
 filegroup(
     name = "srcs",
     srcs = glob(["**"]),
 )
-
-# filegroup(
-#     name = "dist_jars",
-#     srcs = [s + "_java_proto_srcs" for s in FILES] + [
-#         ":analysis_v2_java_proto_srcs",
-#         ":bazel_output_service_java_grpc_srcs",
-#         ":bazel_output_service_java_proto_srcs",
-#         ":bazel_output_service_rev2_java_proto_srcs",
-#         ":build_java_proto_srcs",
-#         ":cache_salt_java_proto_srcs",
-#         ":command_line_java_proto_srcs",
-#         ":command_server_java_grpc_srcs",
-#         ":command_server_java_proto_srcs",
-#         ":failure_details_java_proto_srcs",
-#         ":invocation_policy_java_proto_srcs",
-#         ":option_filters_java_proto_srcs",
-#         ":profile_java_proto_srcs",
-#         ":remote_execution_log_java_proto_srcs",
-#         ":remote_scrubbing_java_proto_srcs",
-#         ":spawn_java_proto_srcs",
-#         ":stardoc_output_java_proto_srcs",
-#         ":xcode_java_proto_srcs",
-#     ],
-# )

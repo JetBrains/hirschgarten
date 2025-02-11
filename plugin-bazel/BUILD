@@ -10,7 +10,6 @@ load(
     "@rules_intellij//build_defs:intellij_plugin_debug_target.bzl",
     "intellij_plugin_debug_target",
 )
-load("@rules_java//java:java_single_jar.bzl", "java_single_jar")
 load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
 load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
 
@@ -91,18 +90,10 @@ java_binary(
 repackaged_files(
     name = "intellij-bazel_jar",
     srcs = [
-        "intellij-bazel_external_jars",
         ":intellij-bazel",
+        ":intellij-bazel_external_jars",
     ],
     prefix = "intellij-bazel/lib",
-)
-
-java_single_jar(
-    name = "intellij-bazel_single_jar_for_debug",
-    deps = [
-        "intellij-bazel_external_jars",
-        ":intellij-bazel",
-    ],
 )
 
 plugin_deploy_zip(
@@ -117,16 +108,20 @@ plugin_deploy_zip(
 intellij_plugin_debug_target(
     name = "plugin-bazel-debug",
     deps = [
-        ":intellij-bazel_single_jar_for_debug",
-        "//plugin-bsp:intellij-bsp_single_jar_for_debug",
+        ":intellij-bazel",
+        ":intellij-bazel_external_jars",
+        "//plugin-bsp:intellij-bsp",
+        "//plugin-bsp:intellij-bsp_external_jars",
     ],
 )
 
 intellij_plugin_debug_target(
     name = "plugin-bazel-with-server-debug",
     deps = [
-        ":intellij-bazel-with-inmemory-server_single_jar_for_debug",
-        "//plugin-bsp:intellij-bsp_single_jar_for_debug",
+        ":intellij-bazel-with-inmemory-server",
+        ":intellij-bazel-with-inmemory-server_external_jars",
+        "//plugin-bsp:intellij-bsp",
+        "//plugin-bsp:intellij-bsp_external_jars",
     ],
 )
 
@@ -154,14 +149,6 @@ intellij_plugin(
     deps = [
         ":plugin_library",
         "//plugin-bazel/plugin-inmem-server:plugin_library",
-    ],
-)
-
-java_single_jar(
-    name = "intellij-bazel-with-inmemory-server_single_jar_for_debug",
-    deps = [
-        ":intellij-bazel-with-inmemory-server",
-        ":intellij-bazel-with-inmemory-server_external_jars",
     ],
 )
 

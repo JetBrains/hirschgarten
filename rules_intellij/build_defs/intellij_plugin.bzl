@@ -452,6 +452,7 @@ def intellij_plugin(name, deps, plugin_xml, plugin_deps = [], optional_plugin_de
         name = external_jars_name,
         deps = deps,
         deploy_env = deploy_env,
+        visibility = ["//visibility:public"],
     )
 
     # todo: remove kotlin stdlib?
@@ -469,7 +470,6 @@ def intellij_plugin(name, deps, plugin_xml, plugin_deps = [], optional_plugin_de
     )
 
     # instead of creating a deploy jar, filter out files from the local repository ONLY, and put the rest into a filegroup
-    # and also remove kotlin
 
     jar_target_name = name + "_intellij_plugin_jar"
     _intellij_plugin_jar(
