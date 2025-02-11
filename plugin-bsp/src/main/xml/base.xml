@@ -3,6 +3,9 @@
     <!-- which will be merged with this one -->
     <vendor>JetBrains</vendor>
     <extensionPoints>
+        <extensionPoint qualifiedName="org.jetbrains.bsp.sourceTypeIconProvider"
+                        interface="org.jetbrains.plugins.bsp.utils.SourceTypeIconProvider"
+                        dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.buildTargetClassifierExtension"
                         interface="org.jetbrains.plugins.bsp.extensionPoints.BuildTargetClassifierExtension"
                         dynamic="true"/>
@@ -109,6 +112,8 @@
         <runConfigurationTypeProvider
                 implementation="org.jetbrains.plugins.bsp.run.config.DefaultBspRunConfigurationTypeProvider"/>
         <bspFeatureFlagsProvider implementation="org.jetbrains.plugins.bsp.config.DefaultBspFeatureFlagsProvider"/>
+        <sourceTypeIconProvider implementation="org.jetbrains.plugins.bsp.java.JavaSourceTypeIconProvider"/>
+        <sourceTypeIconProvider implementation="org.jetbrains.plugins.bsp.kotlin.KotlinSourceTypeIconProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -133,8 +138,14 @@
 
         <workspaceModel.fileIndexContributor
                 implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
-        <workspaceModel.fileIndexContributor
-                implementation="org.jetbrains.plugins.bsp.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"/>
+        <!--        <workspaceModel.fileIndexContributor-->
+        <!--                implementation="org.jetbrains.plugins.bsp.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"/>-->
+        <fileTypeOverrider
+                implementation="org.jetbrains.plugins.bsp.workspace.DummyModuleSourcePlainTextTypeOverrider"/>
+        <fileType name="BSP_PLAIN_TEXT"
+                  language="TEXT"
+                  implementationClass="org.jetbrains.plugins.bsp.workspace.BspPlainTextFileType"
+                  fieldName="INSTANCE"/>
         <workspaceModel.fileIndexContributor
                 implementation="org.jetbrains.plugins.bsp.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
 
