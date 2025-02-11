@@ -173,7 +173,7 @@ private suspend fun processFileCreated(
   queryTargetsForFile(project, url)?.let {
     val modules = it.mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
     modules.forEach { url.addToModule(workspaceModel, it, newFile.extension) }
-    project.temporaryTargetUtils.addFileToTargetIdEntry(uri, it)
+    project.targetUtils.addFileToTargetIdEntry(uri, it)
   }
 }
 
@@ -197,7 +197,7 @@ private suspend fun processFileRemoved(
     oldUrl.removeFromModule(workspaceModel, it)
     newUrl?.removeFromModule(workspaceModel, it) // IntelliJ might have already changed the content root's path to the new one
   }
-  project.temporaryTargetUtils.removeFileToTargetIdEntry(oldUri)
+  project.targetUtils.removeFileToTargetIdEntry(oldUri)
 }
 
 private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<BuildTargetIdentifier>? =
