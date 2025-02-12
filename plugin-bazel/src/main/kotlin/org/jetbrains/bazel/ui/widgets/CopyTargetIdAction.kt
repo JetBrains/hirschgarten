@@ -54,7 +54,7 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
 
   override fun update(project: Project, e: AnActionEvent) {
     e.presentation.isEnabledAndVisible =
-      e.place == ActionPlaces.EDITOR_POPUP &&
+      (e.place == ActionPlaces.EDITOR_POPUP || e.place == ActionPlaces.ACTION_SEARCH) &&
       shouldAddActionToFile(project, e) &&
       shouldAddActionToElement(e)
   }
