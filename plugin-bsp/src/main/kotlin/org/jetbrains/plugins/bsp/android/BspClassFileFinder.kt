@@ -7,7 +7,7 @@ import com.android.tools.idea.rendering.classloading.loaders.JarManager
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.workspaceModel.ide.toPath
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.moduleEntity
+import org.jetbrains.plugins.bsp.target.moduleEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.jvmBinaryJarsEntity
 import kotlin.io.path.exists
 

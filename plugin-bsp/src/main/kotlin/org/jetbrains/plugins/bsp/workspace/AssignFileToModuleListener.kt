@@ -156,7 +156,7 @@ private suspend fun processFileRemoved(
 ) {
   val url = file.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   targetUtils
-    .getTargetsForFile(file, project)
+    .getTargetsForFile(file)
     .mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
     .forEach {
       url.removeFromModule(workspaceModel, it)

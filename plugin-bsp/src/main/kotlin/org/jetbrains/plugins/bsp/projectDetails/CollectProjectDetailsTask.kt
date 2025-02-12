@@ -40,6 +40,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.bspProjectName
 import org.jetbrains.plugins.bsp.config.defaultJdkName
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.extensionPoints.shouldImportJvmBinaryJars
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfo
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfos
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
@@ -92,6 +93,7 @@ class CollectProjectDetailsTask(
   private var androidSdks: Set<AndroidSdk>? = null
 
   suspend fun execute(
+    project: Project,
     server: JoinedBuildServer,
     syncScope: ProjectSyncScope,
     capabilities: BazelBuildServerCapabilities,
@@ -100,7 +102,7 @@ class CollectProjectDetailsTask(
   ) {
     val projectDetails =
       progressReporter.sizedStep(workSize = 50, text = BspPluginBundle.message("progress.bar.collect.project.details")) {
-        collectModel(server, capabilities, baseTargetInfos)
+        collectModel(project, server, capabilities, baseTargetInfos)
       }
 
     progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
@@ -133,6 +135,7 @@ class CollectProjectDetailsTask(
   }
 
   private suspend fun collectModel(
+    project: Project,
     server: JoinedBuildServer,
     capabilities: BazelBuildServerCapabilities,
     baseTargetInfos: BaseTargetInfos,
@@ -146,6 +149,7 @@ class CollectProjectDetailsTask(
 
       val projectDetails =
         calculateProjectDetailsWithCapabilities(
+          project = project,
           server = server,
           buildServerCapabilities = capabilities,
           baseTargetInfos = baseTargetInfos,
@@ -475,6 +479,7 @@ class CollectProjectDetailsTask(
 
 @Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")
 suspend fun calculateProjectDetailsWithCapabilities(
+  project: Project,
   server: JoinedBuildServer,
   buildServerCapabilities: BazelBuildServerCapabilities,
   baseTargetInfos: BaseTargetInfos,
@@ -510,9 +515,9 @@ suspend fun calculateProjectDetailsWithCapabilities(
 
       val jvmBinaryJarsResult =
         queryIf(
-          BspFeatureFlags.isAndroidSupportEnabled &&
-            buildServerCapabilities.jvmBinaryJarsProvider &&
-            javaTargetIds.isNotEmpty(),
+          buildServerCapabilities.jvmBinaryJarsProvider &&
+            javaTargetIds.isNotEmpty() &&
+            project.shouldImportJvmBinaryJars(),
           "buildTarget/jvmBinaryJars",
         ) {
           server.buildTargetJvmBinaryJars(JvmBinaryJarsParams(javaTargetIds))

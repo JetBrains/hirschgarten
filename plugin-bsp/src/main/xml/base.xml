@@ -84,6 +84,9 @@
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspTreeStructureSettingsExtension"
                         interface="org.jetbrains.plugins.bsp.ui.projectTree.BspTreeStructureSettingsProvider"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bsp.bspJvmBinaryJarsExtension"
+                        interface="org.jetbrains.plugins.bsp.extensionPoints.JvmBinaryJarsExtension"
+                        dynamic="true"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="org.jetbrains.bsp">
