@@ -153,7 +153,7 @@ http_jar(
 
 bazel_dep(name = "rules_proto", version = "7.1.0")
 bazel_dep(name = "protobuf", version = "29.3")
-bazel_dep(name = "rules_cc", version = "0.1.0")
+bazel_dep(name = "rules_cc", version = "0.1.1")
 bazel_dep(name = "rules_python", version = "1.1.0")
 bazel_dep(name = "platforms", version = "0.0.11")
 
