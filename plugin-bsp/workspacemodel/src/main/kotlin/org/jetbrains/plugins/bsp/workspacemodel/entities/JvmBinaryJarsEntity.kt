@@ -9,7 +9,9 @@ import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.annotations.Child
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.plugins.bsp.annotations.PublicApi
 
+@PublicApi
 interface JvmBinaryJarsEntity : WorkspaceEntity {
   val jars: List<VirtualFileUrl>
   val module: ModuleEntity
@@ -51,4 +53,5 @@ var ModuleEntity.Builder.jvmBinaryJarsEntity: @Child JvmBinaryJarsEntity.Builder
   by WorkspaceEntity.extensionBuilder(JvmBinaryJarsEntity::class.java)
 //endregion
 
+@PublicApi
 val ModuleEntity.jvmBinaryJarsEntity: @Child JvmBinaryJarsEntity? by WorkspaceEntity.extension()

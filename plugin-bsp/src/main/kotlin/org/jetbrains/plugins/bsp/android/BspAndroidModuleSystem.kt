@@ -28,7 +28,7 @@ import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.moduleEntity
+import org.jetbrains.plugins.bsp.target.moduleEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.androidAddendumEntity
 
 public class BspAndroidModuleSystem(override val module: Module) :

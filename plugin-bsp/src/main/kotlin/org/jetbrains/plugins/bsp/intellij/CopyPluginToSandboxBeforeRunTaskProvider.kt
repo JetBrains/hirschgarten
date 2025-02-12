@@ -10,9 +10,9 @@ import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.util.Key
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.getModule
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 import org.jetbrains.plugins.bsp.target.TargetUtils
+import org.jetbrains.plugins.bsp.target.getModule
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 import java.io.IOException
 import java.net.URI

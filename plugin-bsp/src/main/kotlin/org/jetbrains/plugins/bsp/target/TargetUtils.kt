@@ -8,9 +8,13 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
+import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModuleEntity
+import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -20,7 +24,9 @@ import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.plugins.bsp.annotations.PublicApi
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.magicmetamodel.findNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.plugins.bsp.magicmetamodel.orDefault
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
@@ -44,7 +50,7 @@ data class TargetUtilsState(
   name = "TargetUtils",
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
-class TargetUtils : PersistentStateComponent<TargetUtilsState> {
+class TargetUtils(private val project: Project) : PersistentStateComponent<TargetUtilsState> {
   @ApiStatus.Internal
   var targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo> = emptyMap()
     private set
@@ -150,21 +156,21 @@ class TargetUtils : PersistentStateComponent<TargetUtilsState> {
 
   fun allTargetIds(): List<BuildTargetIdentifier> = targetIdToTargetInfo.keys.toList()
 
-  fun getTargetsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> =
+  fun getTargetsForFile(file: VirtualFile): List<BuildTargetIdentifier> =
     fileToTargetId[file.url.processUriString().safeCastToURI()]
-      ?: getTargetsFromAncestorsForFile(file, project)
+      ?: getTargetsFromAncestorsForFile(file)
 
   @ApiStatus.Internal
-  fun getExecutableTargetsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> {
+  fun getExecutableTargetsForFile(file: VirtualFile): List<BuildTargetIdentifier> {
     val executableDirectTargets =
-      getTargetsForFile(file, project).filter { targetId -> targetIdToTargetInfo[targetId]?.capabilities?.isExecutable() == true }
+      getTargetsForFile(file).filter { targetId -> targetIdToTargetInfo[targetId]?.capabilities?.isExecutable() == true }
     if (executableDirectTargets.isEmpty()) {
       return fileToExecutableTargetIds.getOrDefault(file.url.processUriString().safeCastToURI(), emptySet()).toList()
     }
     return executableDirectTargets
   }
 
-  private fun getTargetsFromAncestorsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> {
+  private fun getTargetsFromAncestorsForFile(file: VirtualFile): List<BuildTargetIdentifier> {
     return if (BspFeatureFlags.isRetrieveTargetsForFileFromAncestorsEnabled) {
       val rootDir = project.rootDir
       var iter = file.parent
@@ -222,5 +228,27 @@ class TargetUtils : PersistentStateComponent<TargetUtilsState> {
 @ApiStatus.Internal
 fun String.addLibraryModulePrefix() = "_aux.libraries.$this"
 
+@PublicApi
 val Project.targetUtils: TargetUtils
   get() = service<TargetUtils>()
+
+@PublicApi
+fun BuildTargetIdentifier.getModule(project: Project): com.intellij.openapi.module.Module? =
+  project.service<TargetUtils>().getBuildTargetInfoForId(this)?.getModule(project)
+
+@PublicApi
+fun BuildTargetIdentifier.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity
+
+val com.intellij.openapi.module.Module.moduleEntity: ModuleEntity?
+  @ApiStatus.Internal
+  get() {
+    val bridge = this as? ModuleBridge ?: return null
+    return bridge.findModuleEntity(bridge.entityStorage.current)
+  }
+
+@ApiStatus.Internal
+fun BuildTargetInfo.getModule(project: Project): com.intellij.openapi.module.Module? {
+  val moduleNameProvider = project.findNameProvider().orDefault()
+  val moduleName = moduleNameProvider(this)
+  return ModuleManager.getInstance(project).findModuleByName(moduleName)
+}

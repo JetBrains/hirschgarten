@@ -34,7 +34,7 @@ abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
       val temporaryTargetUtils = project.targetUtils
       val targetInfos =
         temporaryTargetUtils
-          .getExecutableTargetsForFile(url, project)
+          .getExecutableTargetsForFile(url)
           .mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) }
       calculateLineMarkerInfo(project, targetInfos, getSingleTestFilter(this))
     }
