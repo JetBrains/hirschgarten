@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.bazelrunner.outputs
 
-import com.google.common.base.Charsets
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import java.io.BufferedReader
