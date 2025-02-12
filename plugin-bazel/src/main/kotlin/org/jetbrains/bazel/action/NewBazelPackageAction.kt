@@ -17,10 +17,10 @@ import com.intellij.psi.PsiManager
 import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
-import javax.swing.Icon
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
+import javax.swing.Icon
 
-class NewBazelPackageAction: AnAction {
+class NewBazelPackageAction : AnAction {
   protected constructor() : super()
 
   protected constructor(icon: Icon?) : super(icon)
@@ -52,8 +52,9 @@ class NewBazelPackageAction: AnAction {
 
   override fun actionPerformed(event: AnActionEvent) {
     val project = event.project ?: return
-    val view: IdeView = event.getData<IdeView>(LangDataKeys.IDE_VIEW)
-      ?: return
+    val view: IdeView =
+      event.getData<IdeView>(LangDataKeys.IDE_VIEW)
+        ?: return
     val directory = DirectoryChooserUtil.getOrChooseDirectory(view) ?: return
     val validator: CreateDirectoryOrPackageHandler =
       object : CreateDirectoryOrPackageHandler(project, directory, false, ".") {
@@ -81,7 +82,6 @@ class NewBazelPackageAction: AnAction {
         OpenFileAction.openFile(buildFile.viewProvider.virtualFile, project)
       }
     }
-
   }
 
   private fun findBuildFile(project: Project, parent: PsiDirectory): PsiFile? {
@@ -93,12 +93,11 @@ class NewBazelPackageAction: AnAction {
   private fun createBuildFile(project: Project, parent: PsiDirectory) {
     val filename: String = BazelPluginConstants.BUILD_FILE_NAMES[0]
     val file: PsiFile =
-      PsiFileFactory.getInstance(project)
+      PsiFileFactory
+        .getInstance(project)
         .createFileFromText(filename, StarlarkLanguage, "")
     parent.add(file)
   }
 
-  override fun getActionUpdateThread(): ActionUpdateThread {
-    return ActionUpdateThread.BGT
-  }
+  override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 }
