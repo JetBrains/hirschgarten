@@ -40,6 +40,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.bspProjectName
 import org.jetbrains.plugins.bsp.config.defaultJdkName
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.extensionPoints.shouldImportJvmBinaryJars
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfo
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfos
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
@@ -54,6 +55,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.findNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.TargetIdToModuleEntitiesMap
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModulesToCompiledSourceCodeInsideJarExcludeTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.androidJarToAndroidSdkName
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
@@ -63,7 +65,7 @@ import org.jetbrains.plugins.bsp.performance.bspTracer
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 import org.jetbrains.plugins.bsp.utils.isSourceFile
 import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
@@ -91,6 +93,7 @@ class CollectProjectDetailsTask(
   private var androidSdks: Set<AndroidSdk>? = null
 
   suspend fun execute(
+    project: Project,
     server: JoinedBuildServer,
     syncScope: ProjectSyncScope,
     capabilities: BazelBuildServerCapabilities,
@@ -99,7 +102,7 @@ class CollectProjectDetailsTask(
   ) {
     val projectDetails =
       progressReporter.sizedStep(workSize = 50, text = BspPluginBundle.message("progress.bar.collect.project.details")) {
-        collectModel(server, capabilities, baseTargetInfos)
+        collectModel(project, server, capabilities, baseTargetInfos)
       }
 
     progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
@@ -132,6 +135,7 @@ class CollectProjectDetailsTask(
   }
 
   private suspend fun collectModel(
+    project: Project,
     server: JoinedBuildServer,
     capabilities: BazelBuildServerCapabilities,
     baseTargetInfos: BaseTargetInfos,
@@ -145,6 +149,7 @@ class CollectProjectDetailsTask(
 
       val projectDetails =
         calculateProjectDetailsWithCapabilities(
+          project = project,
           server = server,
           buildServerCapabilities = capabilities,
           baseTargetInfos = baseTargetInfos,
@@ -283,7 +288,7 @@ class CollectProjectDetailsTask(
               if (syncScope is FullProjectSync) {
                 syncedTargetIdToTargetInfo
               } else {
-                project.temporaryTargetUtils.targetIdToTargetInfo +
+                project.targetUtils.targetIdToTargetInfo +
                   syncedTargetIdToTargetInfo
               }
             val targetIdToModuleEntityMap =
@@ -298,7 +303,7 @@ class CollectProjectDetailsTask(
               )
 
             if (syncScope is FullProjectSync) {
-              project.temporaryTargetUtils.saveTargets(
+              project.targetUtils.saveTargets(
                 targetIdToTargetInfo,
                 targetIdToModuleEntityMap,
                 targetIdToModuleDetails,
@@ -307,6 +312,17 @@ class CollectProjectDetailsTask(
               )
             }
             targetIdToModuleEntityMap
+          }
+
+        val modulesToLoad = targetIdToModuleEntitiesMap.values.toList()
+
+        val compiledSourceCodeInsideJarToExclude =
+          bspTracer.spanBuilder("calculate.non.generated.class.files.to.exclude").use {
+            if (BspFeatureFlags.excludeCompiledSourceCodeInsideJars) {
+              ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(modulesToLoad)
+            } else {
+              null
+            }
           }
 
         bspTracer.spanBuilder("load.modules.ms").use {
@@ -322,10 +338,9 @@ class CollectProjectDetailsTask(
               isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
             )
 
-          val modulesToLoad = targetIdToModuleEntitiesMap.values.toList()
-
           workspaceModelUpdater.loadModules(modulesToLoad + libraryModules)
           workspaceModelUpdater.loadLibraries(libraries)
+          compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
           calculateAllJavacOptions(modulesToLoad)
         }
       }
@@ -349,7 +364,8 @@ class CollectProjectDetailsTask(
     // updating jdks before applying the project model will render the action to fail.
     // This will be handled properly after this ticket:
     // https://youtrack.jetbrains.com/issue/BAZEL-426/Configure-JDK-using-workspace-model-API-instead-of-ProjectJdkTable
-    project.temporaryTargetUtils.fireSyncListeners(targetListChanged)
+    project.targetUtils.fireSyncListeners(targetListChanged)
+    SdkUtils.cleanUpInvalidJdks(project.bspProjectName)
     addBspFetchedJdks()
     addBspFetchedJavacOptions()
     addBspFetchedScalaSdks()
@@ -430,7 +446,7 @@ class CollectProjectDetailsTask(
     }
 
   private fun checkOverlappingSources() {
-    val fileToTargetId = project.temporaryTargetUtils.fileToTargetId
+    val fileToTargetId = project.targetUtils.fileToTargetId
     for ((file, targetIds) in fileToTargetId) {
       if (targetIds.size <= 1) continue
       if (!file.isSourceFile()) continue
@@ -463,6 +479,7 @@ class CollectProjectDetailsTask(
 
 @Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")
 suspend fun calculateProjectDetailsWithCapabilities(
+  project: Project,
   server: JoinedBuildServer,
   buildServerCapabilities: BazelBuildServerCapabilities,
   baseTargetInfos: BaseTargetInfos,
@@ -498,9 +515,9 @@ suspend fun calculateProjectDetailsWithCapabilities(
 
       val jvmBinaryJarsResult =
         queryIf(
-          BspFeatureFlags.isAndroidSupportEnabled &&
-            buildServerCapabilities.jvmBinaryJarsProvider &&
-            javaTargetIds.isNotEmpty(),
+          buildServerCapabilities.jvmBinaryJarsProvider &&
+            javaTargetIds.isNotEmpty() &&
+            project.shouldImportJvmBinaryJars(),
           "buildTarget/jvmBinaryJars",
         ) {
           server.buildTargetJvmBinaryJars(JvmBinaryJarsParams(javaTargetIds))

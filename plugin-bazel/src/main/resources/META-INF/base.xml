@@ -46,6 +46,8 @@
         <bspFeatureFlagsProvider implementation="org.jetbrains.bazel.config.BazelBspFeatureFlagsProvider"/>
         <bspAdditionalProjectTaskRunnerProvider
                 implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
+        <bspTreeStructureSettingsExtension
+                implementation="org.jetbrains.bazel.settings.BazelTreeStructureSettingsProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -54,8 +56,6 @@
         <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider"/>
         <projectOpenProcessor
                 implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessor"/>
-        <postStartupActivity
-                implementation="org.jetbrains.bazel.flow.open.CheckSlowPluginsStartupActivity"/>
         <postStartupActivity
                 implementation="org.jetbrains.bazel.flow.open.SuggestEnableK2StartupActivity"/>
         <postStartupActivity
@@ -234,6 +234,9 @@
         <registryKey defaultValue="2"
                      description="How many levels to go down when scanning the project for Bazel symlinks to exclude"
                      key="bazel.symlink.scan.max.depth"/>
+        <registryKey defaultValue="true"
+                     description="Force Bazel to shut down before each shard build to prevent Bazel memory leak issue"
+                     key="bazel.shutdown.before.shard.build"/>
         <configurationType implementation="org.jetbrains.bazel.run.BazelRunConfigurationType"/>
     </extensions>
 

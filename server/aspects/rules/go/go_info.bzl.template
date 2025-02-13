@@ -1,5 +1,5 @@
+load("@${rulesetName}//go:def.bzl", "GoArchive", "GoSource", "go_context")
 load("//aspects:utils/utils.bzl", "create_struct", "file_location")
-load("@${ruleName}//go:def.bzl", "go_context", "GoArchive", "GoSource")
 
 def extract_go_info(target, ctx, **kwargs):
     if GoArchive not in target:

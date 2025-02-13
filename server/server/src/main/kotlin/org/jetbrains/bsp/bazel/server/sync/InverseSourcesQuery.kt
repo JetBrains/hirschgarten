@@ -65,15 +65,7 @@ object InverseSourcesQuery {
     bazelRunner: BazelRunner,
     cancelChecker: CancelChecker,
   ): String? {
-    val packagePath = relativePath.parent
-    val file = relativePath.fileName.toString()
-
-    val command =
-      bazelRunner.buildBazelCommand {
-        query {
-          targets.add(Label.parse("$packagePath:$file"))
-        }
-      }
+    val command = bazelRunner.buildBazelCommand { fileQuery(relativePath) }
     val fileLabelResult =
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
@@ -84,7 +76,7 @@ object InverseSourcesQuery {
       null
     } else {
       throw RuntimeException(
-        "Could not find file. Bazel query failed:\n command:\n${command.makeCommandLine()}\nstderr:\n${fileLabelResult.stderr}\nstdout:\n${fileLabelResult.stdout}",
+        "Could not find file. Bazel query failed:\n command:\n${command.buildExecutionDescriptor().command}\nstderr:\n${fileLabelResult.stderr}\nstdout:\n${fileLabelResult.stdout}",
       )
     }
   }

@@ -15,6 +15,7 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewIdeJavaHome
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewListSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSingletonSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ShardSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ShardingApproachSection
@@ -32,6 +33,8 @@ data class ProjectView(
   val bazelBinary: ProjectViewBazelBinarySection?,
   /** bazel flags added to all bazel command invocations  */
   val buildFlags: ProjectViewBuildFlagsSection?,
+  /** bazel flags added to sync invocation */
+  val syncFlags: ProjectViewSyncFlagsSection?,
   /** flag for building manual targets. */
   val allowManualTargetsSync: ProjectViewAllowManualTargetsSyncSection?,
   /** directories included and excluded from the project  */
@@ -62,6 +65,7 @@ data class ProjectView(
     private val targets: ProjectViewTargetsSection? = null,
     private val bazelBinary: ProjectViewBazelBinarySection? = null,
     private val buildFlags: ProjectViewBuildFlagsSection? = null,
+    private val syncFlags: ProjectViewSyncFlagsSection? = null,
     private val allowManualTargetsSync: ProjectViewAllowManualTargetsSyncSection? = null,
     private val directories: ProjectViewDirectoriesSection? = null,
     private val deriveTargetsFromDirectories: ProjectViewDeriveTargetsFromDirectoriesSection? = null,
@@ -85,6 +89,7 @@ data class ProjectView(
       val targets = combineTargetsSection(importedProjectViews)
       val bazelBinary = combineBazelBinarySection(importedProjectViews)
       val buildFlags = combineBuildFlagsSection(importedProjectViews)
+      val syncFlags = combineSyncFlagsSection(importedProjectViews)
       val allowManualTargetsSync = combineManualTargetsSection(importedProjectViews)
       val directories = combineDirectoriesSection(importedProjectViews)
       val deriveTargetsFromDirectories = combineDeriveTargetFlagSection(importedProjectViews)
@@ -103,6 +108,7 @@ data class ProjectView(
           " targets: {}," +
           " bazel binary: {}," +
           " build flags: {}" +
+          " sync flags: {}" +
           " build manual targets {}," +
           " directories: {}," +
           " deriveTargetsFlag: {}." +
@@ -120,6 +126,7 @@ data class ProjectView(
         targets,
         bazelBinary,
         buildFlags,
+        syncFlags,
         allowManualTargetsSync,
         directories,
         deriveTargetsFromDirectories,
@@ -137,6 +144,7 @@ data class ProjectView(
         targets,
         bazelBinary,
         buildFlags,
+        syncFlags,
         allowManualTargetsSync,
         directories,
         deriveTargetsFromDirectories,
@@ -222,6 +230,18 @@ data class ProjectView(
         )
 
       return createInstanceOfListSectionOrNull(flags, ::ProjectViewBuildFlagsSection)
+    }
+
+    private fun combineSyncFlagsSection(importedProjectViews: List<ProjectView>): ProjectViewSyncFlagsSection? {
+      val flags =
+        combineListValuesWithImported(
+          importedProjectViews,
+          syncFlags,
+          ProjectView::syncFlags,
+          ProjectViewSyncFlagsSection::values,
+        )
+
+      return createInstanceOfListSectionOrNull(flags, ::ProjectViewSyncFlagsSection)
     }
 
     private fun combineDirectoriesSection(importedProjectViews: List<ProjectView>): ProjectViewDirectoriesSection? {

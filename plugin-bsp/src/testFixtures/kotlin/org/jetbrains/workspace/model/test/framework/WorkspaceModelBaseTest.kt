@@ -19,6 +19,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.testFramework.rules.ProjectModelExtension
 import com.intellij.testFramework.workspaceModel.updateProjectModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -53,9 +54,9 @@ open class WorkspaceModelBaseTest {
   protected val virtualFileUrlManager: VirtualFileUrlManager
     get() = workspaceModel.getVirtualFileUrlManager()
 
-  protected fun <T : Any> runTestWriteAction(action: () -> T): T {
+  protected fun <T : Any> runTestWriteAction(action: suspend () -> T): T {
     lateinit var result: T
-    WriteCommandAction.runWriteCommandAction(project) { result = action() }
+    WriteCommandAction.runWriteCommandAction(project) { result = runBlocking { action() } }
 
     return result
   }

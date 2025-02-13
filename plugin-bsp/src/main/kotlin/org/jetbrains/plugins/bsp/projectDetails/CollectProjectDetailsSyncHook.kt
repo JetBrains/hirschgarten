@@ -13,6 +13,7 @@ class CollectProjectDetailsSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     val task = CollectProjectDetailsTask(environment.project, environment.taskId, environment.diff.workspaceModelDiff.mutableEntityStorage)
     task.execute(
+      project = environment.project,
       server = environment.server,
       capabilities = environment.capabilities,
       progressReporter = environment.progressReporter,

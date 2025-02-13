@@ -15,10 +15,14 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
 
 @BazelTestApplication
-public open class MockProjectBaseTest : Disposable {
+open class MockProjectBaseTest : Disposable {
   @JvmField
   @RegisterExtension
   protected val projectModel: ProjectModelExtension = ProjectModelExtension()
+
+  init {
+    Disposer.register(projectModel.disposableRule.disposable, this)
+  }
 
   protected val project: Project
     get() = projectModel.project
@@ -46,6 +50,7 @@ public open class MockProjectBaseTest : Disposable {
     point.registerExtension(extension, projectModel.disposableRule.disposable)
   }
 
+  @Suppress("IncorrectParentDisposable") // the project instance here is artificial, so disposing it manually is not forbidden
   override fun dispose() {
     // Required for the test framework to clean up the project
     // Otherwise the "hidden" leak hunter test will fail

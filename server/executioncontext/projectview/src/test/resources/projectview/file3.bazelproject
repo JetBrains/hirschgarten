@@ -10,6 +10,12 @@ build_flags:
 
     --build_flag3.1=value3.1
 
+sync_flags:
+
+
+
+    --sync_flag3.1=value3.1
+
 directories:
 
     included_dir3.1

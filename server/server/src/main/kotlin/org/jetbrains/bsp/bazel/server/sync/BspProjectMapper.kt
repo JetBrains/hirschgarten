@@ -63,14 +63,11 @@ import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bazel.commons.label.label
 import org.jetbrains.bazel.commons.label.toBspIdentifier
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bsp.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.BspMappings
-import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.NonModuleTarget
@@ -84,6 +81,10 @@ import org.jetbrains.bsp.bazel.server.sync.languages.jvm.javaModule
 import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
+import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
+import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
+import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.EnhancedSourceItem
 import org.jetbrains.bsp.protocol.GoLibraryItem
@@ -111,8 +112,6 @@ class BspProjectMapper(
   private val bazelPathsResolver: BazelPathsResolver,
   private val bazelRunner: BazelRunner,
   private val bspInfo: BspInfo,
-  private val bazelInfo: BazelInfo,
-  private val bspClientLogger: BspClientLogger,
 ) {
   fun initializeServer(supportedLanguages: Set<Language>): InitializeBuildResult {
     val languageNames = supportedLanguages.map { it.id }
@@ -129,6 +128,7 @@ class BspProjectMapper(
         jvmRunEnvironmentProvider = true,
         jvmTestEnvironmentProvider = true,
         workspaceLibrariesProvider = true,
+        goDebuggerDataProvider = true,
         workspaceDirectoriesProvider = true,
         workspaceNonModuleTargetsProvider = true,
         workspaceInvalidTargetsProvider = true,
@@ -189,7 +189,7 @@ class BspProjectMapper(
     return NonModuleTargetsResult(nonModuleTargets)
   }
 
-  fun workspaceDirectories(project: AspectSyncProject): WorkspaceDirectoriesResult {
+  fun workspaceDirectories(project: Project): WorkspaceDirectoriesResult {
     val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
     val directoriesSection = workspaceContext.directories
 
@@ -204,11 +204,7 @@ class BspProjectMapper(
   }
 
   fun workspaceBazelRepoMapping(project: Project): WorkspaceBazelRepoMappingResult {
-    val repoMapping =
-      when (project) {
-        is AspectSyncProject -> project.repoMapping
-        is FirstPhaseProject -> project.repoMapping
-      }
+    val repoMapping = project.repoMapping
     return when (repoMapping) {
       is RepoMappingDisabled -> WorkspaceBazelRepoMappingResult(emptyMap(), emptyMap())
       is BzlmodRepoMapping ->
@@ -609,6 +605,16 @@ class BspProjectMapper(
     val toRustWorkspaceResult = languagePluginsService.rustLanguagePlugin::toRustWorkspaceResult
 
     return toRustWorkspaceResult(requestedModules, allRustModules)
+  }
+
+  fun resolveLocalToRemote(cancelChecker: CancelChecker, params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult {
+    val resolve = languagePluginsService.goLanguagePlugin::resolveLocalToRemote
+    return resolve(params)
+  }
+
+  fun resolveRemoteToLocal(cancelChecker: CancelChecker, params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult {
+    val resolve = languagePluginsService.goLanguagePlugin::resolveRemoteToLocal
+    return resolve(params)
   }
 
   companion object {

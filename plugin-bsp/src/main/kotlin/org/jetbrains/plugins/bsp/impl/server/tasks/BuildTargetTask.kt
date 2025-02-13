@@ -20,8 +20,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.await
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.action.saveAllFiles
+import org.jetbrains.plugins.bsp.annotations.PublicApi
 import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.building.TaskConsole
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
@@ -32,6 +34,7 @@ import org.jetbrains.plugins.bsp.taskEvents.TaskId
 import java.util.UUID
 import java.util.concurrent.CancellationException
 
+@ApiStatus.Internal
 public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<CompileResult>("build targets", project) {
   private val log = logger<BuildTargetTask>()
 
@@ -156,6 +159,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
     }
 }
 
+@PublicApi
 public suspend fun runBuildTargetTask(
   targetIds: List<BuildTargetIdentifier>,
   project: Project,

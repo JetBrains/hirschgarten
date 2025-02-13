@@ -36,7 +36,7 @@ private class AndroidFacetEntityUpdaterExtensionImpl : AndroidFacetEntityUpdater
 
 private class AndroidFacetEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithParentModuleUpdater<JavaModule, FacetEntity> {
-  override fun addEntity(entityToAdd: JavaModule, parentModuleEntity: ModuleEntity): FacetEntity {
+  override suspend fun addEntity(entityToAdd: JavaModule, parentModuleEntity: ModuleEntity): FacetEntity {
     val facetType = AndroidFacet.getFacetType()
     val facet = facetType.createDefaultConfiguration()
     val facetState = facet.state

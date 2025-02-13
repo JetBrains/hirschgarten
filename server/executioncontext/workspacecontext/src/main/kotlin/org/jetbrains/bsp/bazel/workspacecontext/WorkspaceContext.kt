@@ -36,6 +36,12 @@ data class WorkspaceContext(
    */
   val buildFlags: BuildFlagsSpec,
   /**
+   * Sync flags which should be added to sync call.
+   *
+   * Obtained from `ProjectView` simply by mapping `sync_flags` section.
+   */
+  val syncFlags: SyncFlagsSpec,
+  /**
    * Path to bazel which should be used in the bazel runner.
    *
    * Obtained from `ProjectView` if not null, otherwise deducted from `PATH`.
@@ -105,6 +111,7 @@ class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDi
       targets = TargetsSpecExtractor.fromProjectView(projectView),
       directories = directoriesSpecExtractor.fromProjectView(projectView),
       buildFlags = BuildFlagsSpecExtractor.fromProjectView(projectView),
+      syncFlags = SyncFlagsSpecExtractor.fromProjectView(projectView),
       bazelBinary = BazelBinarySpecExtractor.fromProjectView(projectView),
       allowManualTargetsSync = AllowManualTargetsSyncSpecExtractor.fromProjectView(projectView),
       dotBazelBspDirPath = DotBazelBspDirPathSpec(dotBazelBspDirPath),

@@ -16,17 +16,8 @@ private const val ALL_PACKAGES_BENEATH = "..."
  */
 sealed interface TargetType
 
-open class SingleTarget(val targetName: String) : TargetType {
+data class SingleTarget(val targetName: String) : TargetType {
   override fun toString(): String = targetName
-
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is SingleTarget) return false
-    if (targetName != other.targetName) return false
-    return true
-  }
-
-  override fun hashCode(): Int = targetName.hashCode()
 }
 
 /**
@@ -44,9 +35,22 @@ data object AllRuleTargets : TargetType {
 }
 
 /**
- * When we parse `//src/Hello.java`, we assume that it's a package named `Hello.java`, but there's no way to know from the label itself.
+ * Label `//src/Hello.java` can mean different things:
+ * - target `Hello.java` in the package `src` (same as `//src:Hello.java`)
+ * - target `Hello.java` in the package `src/Hello.java` (same as `//src/Hello.java:Hello.java`)
+ * - file `src/Hello.java` in the root package (same as `//:src/Hello.java`)
+ *
+ * Unfortunately the meaning depends on the package structure (i.e. which of the folders `src` and `src/Hello.java` exist and whether
+ * there are BUILD files in them).
+ *
+ * Bazel docs say:
+ * > Bazel allows a slash to be used instead of the colon required by the label syntax;
+ * > this is often convenient when using Bash filename expansion. For example, foo/bar/wiz is equivalent to
+ * > //foo/bar:wiz (if there is a package foo/bar) or to //foo:bar/wiz (if there is a package foo).
  */
-class AmbiguousSingleTarget(targetName: String) : SingleTarget(targetName)
+data object AmbiguousEmptyTarget : TargetType {
+  override fun toString(): String = ""
+}
 
 sealed interface PackageType {
   val pathSegments: List<String>
@@ -121,7 +125,7 @@ data class ResolvedLabel(
       }
     }
 
-  override fun toString(): String = "$repo//$targetPathAndName"
+  override fun toString(): String = "$repo//${joinPackagePathAndTarget(packagePath, target)}"
 }
 
 /**
@@ -161,7 +165,15 @@ sealed interface Label {
   val packagePath: PackageType
   val target: TargetType
 
-  val targetName: String get() = target.toString()
+  val targetName: String get() =
+    when (target) {
+      is AmbiguousEmptyTarget ->
+        when (packagePath) {
+          is Package -> (packagePath as Package).name()
+          is AllPackagesBeneath -> ALL_PACKAGES_BENEATH
+        }
+      else -> target.toString()
+    }
 
   val isMainWorkspace: Boolean
     get() = (this as? ResolvedLabel)?.repo is Main || this is SyntheticLabel
@@ -180,24 +192,6 @@ sealed interface Label {
 
   val isApparent: Boolean
     get() = (this as? ResolvedLabel)?.repo is Apparent
-
-  val targetPathAndName
-    get() =
-      when (packagePath) {
-        is Package -> {
-          val packageName = (packagePath as Package).name()
-          when {
-            target is SingleTarget && packageName == target.toString() -> packagePath.toString()
-            else -> joinPackagePathAndTarget(packagePath, target)
-          }
-        }
-        is AllPackagesBeneath ->
-          if (target is AllRuleTargets) {
-            packagePath.toString()
-          } else {
-            joinPackagePathAndTarget(packagePath, target)
-          }
-      }
 
   companion object {
     fun synthetic(targetName: String): Label = SyntheticLabel(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))
@@ -224,7 +218,7 @@ sealed interface Label {
           targetName == ALL -> AllRuleTargets
           targetName == ALL_PACKAGES_BENEATH -> AllRuleTargets // Special case for //...:...
           pathAndName.contains(":") -> SingleTarget(targetName)
-          else -> AmbiguousSingleTarget(targetName)
+          else -> AmbiguousEmptyTarget
         }
 
       if (!value.contains("//")) {
@@ -265,6 +259,6 @@ fun Label.assumeResolved(): ResolvedLabel =
 
 private fun joinPackagePathAndTarget(packagePath: PackageType, target: TargetType) =
   when (target) {
-    is AmbiguousSingleTarget -> packagePath.toString()
+    is AmbiguousEmptyTarget -> packagePath.toString()
     else -> "$packagePath:$target"
   }

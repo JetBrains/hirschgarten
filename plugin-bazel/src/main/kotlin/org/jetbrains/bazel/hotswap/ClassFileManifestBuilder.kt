@@ -37,7 +37,7 @@ import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.flow.sync.query
 import org.jetbrains.plugins.bsp.impl.server.connection.connection
 import org.jetbrains.plugins.bsp.runnerAction.LocalJvmRunnerAction
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.io.File
 import java.util.concurrent.ExecutionException
@@ -125,7 +125,8 @@ object ClassFileManifestBuilder {
   }
 
   private fun BuildTargetIdentifier.isTestTarget(project: Project): Boolean =
-    project.temporaryTargetUtils.targetIdToTargetInfo[this]
+    project.targetUtils
+      .getBuildTargetInfoForId(this)
       ?.capabilities
       ?.canTest == true
 

@@ -13,6 +13,7 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectories
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewIdeJavaHomeOverrideSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ShardSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ShardingApproachSection
@@ -32,6 +33,7 @@ object ProjectViewCLiOptionsProvider {
       bazelBinary = toBazelBinarySection(projectViewCliOptions),
       targets = toTargetsSection(projectViewCliOptions),
       buildFlags = toBuildFlagsSection(projectViewCliOptions),
+      syncFlags = toSyncFlagsSection(projectViewCliOptions),
       directories = toDirectoriesSection(projectViewCliOptions),
       deriveTargetsFromDirectories = toDeriveTargetFlagSection(projectViewCliOptions),
       importDepth = toImportDepthSection(projectViewCliOptions),
@@ -86,6 +88,9 @@ object ProjectViewCLiOptionsProvider {
 
   private fun toBuildFlagsSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewBuildFlagsSection? =
     projectViewCliOptions?.buildFlags?.let { ProjectViewBuildFlagsSection(it) }
+
+  private fun toSyncFlagsSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewSyncFlagsSection? =
+    projectViewCliOptions?.syncFlags?.let { ProjectViewSyncFlagsSection(it) }
 
   private fun toEnabledRulesSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewEnabledRulesSection? =
     projectViewCliOptions?.enabledRules?.let { ProjectViewEnabledRulesSection(it) }

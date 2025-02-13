@@ -220,7 +220,8 @@ class BazelProjectMapper(
       }
     val allModules = mergedModulesFromBazel + rustExternalModules
 
-    val nonModuleTargetIds = removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys
+    val nonModuleTargetIds =
+      (removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys).toSet()
     val nonModuleTargets =
       createNonModuleTargets(
         targets.filterKeys {
@@ -230,14 +231,14 @@ class BazelProjectMapper(
       )
 
     return AspectSyncProject(
-      workspaceRoot,
-      allModules.toList(),
-      librariesToImport,
-      goLibrariesToImport,
-      invalidTargets,
-      nonModuleTargets,
-      bazelInfo.release,
-      repoMapping,
+      workspaceRoot = workspaceRoot,
+      bazelRelease = bazelInfo.release,
+      modules = allModules.toList(),
+      libraries = librariesToImport,
+      goLibraries = goLibrariesToImport,
+      invalidTargets = invalidTargets,
+      nonModuleTargets = nonModuleTargets,
+      repoMapping = repoMapping,
     )
   }
 
@@ -840,15 +841,17 @@ class BazelProjectMapper(
 
   private fun hasKnownPythonSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
-      !it.isExternal && it.relativePath.endsWith(".py")
+      it.relativePath.endsWith(".py")
     }
 
-  private fun hasOtherKnownSources(targetInfo: TargetInfo) =
+  private fun hasKnownGoSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
-      !it.isExternal &&
-        it.relativePath.endsWith(".sh") ||
-        it.relativePath.endsWith(".rs") ||
-        it.relativePath.endsWith(".go")
+      it.relativePath.endsWith(".go")
+    }
+
+  private fun hasKnownRustSources(targetInfo: TargetInfo) =
+    targetInfo.sourcesList.any {
+      it.relativePath.endsWith(".rs")
     }
 
   private fun externalRepositoriesTreatedAsInternal(repoMapping: RepoMapping) =
@@ -870,7 +873,12 @@ class BazelProjectMapper(
           featureFlags.isPythonSupportEnabled &&
           target.hasPythonTargetInfo() &&
           hasKnownPythonSources(target) ||
-          hasOtherKnownSources(target)
+          featureFlags.isGoSupportEnabled &&
+          target.hasGoTargetInfo() &&
+          hasKnownGoSources(target) ||
+          featureFlags.isRustSupportEnabled &&
+          target.hasRustCrateInfo() &&
+          hasKnownRustSources(target)
       )
 
   private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds
@@ -966,12 +974,13 @@ class BazelProjectMapper(
   private fun ResolvedLabel.toDirectoryUri(): URI = bazelPathsResolver.pathToDirectoryUri(this.toBazelPath().toString(), isMainWorkspace)
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): SourceSet {
-    val sources =
+    val (sources, nonExistentSources) =
       (target.sourcesList + languagePlugin.calculateAdditionalSources(target))
         .toSet()
         .map(bazelPathsResolver::resolve)
-        .onEach { if (it.notExists()) it.logNonExistingFile(target.id) }
-        .filter { it.exists() }
+        .partition { it.exists() }
+
+    nonExistentSources.forEach { it.logNonExistingFile(target.id) }
     val generatedSources =
       target.generatedSourcesList
         .toSet()

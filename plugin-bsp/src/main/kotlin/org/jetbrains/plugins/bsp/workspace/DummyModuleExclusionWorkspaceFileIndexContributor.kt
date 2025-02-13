@@ -8,7 +8,14 @@ import org.jetbrains.plugins.bsp.utils.isSourceFile
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspDummyEntitySource
 
 /**
- * If a source file is added to the dummy module but isn't added to any other module, then we should not attempt to index/analyze it.
+ * If a source file is added to a dummy module and is not associated with any other module, it should not be indexed or analyzed.
+ * This functionality is currently disabled due to this [UX issue](https://youtrack.jetbrains.com/issue/BAZEL-1653).
+ * For this contributor to work correctly, [AssignFileToModuleListener] must always precede it.
+ * However, this order is currently not guaranteed,
+ * as when a new file is created,
+ * it is initially added to the umbrella dummy module -> this contributor is invoked -> [AssignFileToModuleListener]
+ * runs in the background at some point -> this contributor is invoked again.
+ * The file handling mechanism needs to be reconsidered to ensure proper coordination between contributors.
  */
 class DummyModuleExclusionWorkspaceFileIndexContributor : WorkspaceFileIndexContributor<ModuleEntity> {
   override val entityClass: Class<ModuleEntity>

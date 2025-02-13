@@ -13,6 +13,7 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDeriveTarge
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -171,6 +172,7 @@ class DefaultProjectViewParserTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
+          syncFlags = null,
           allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
@@ -210,6 +212,13 @@ class DefaultProjectViewParserTest {
               listOf(
                 "--build_flag1.1=value1.1",
                 "--build_flag1.2=value1.2",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag1.1=value1.1",
+                "--sync_flag1.2=value1.2",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
@@ -265,6 +274,16 @@ class DefaultProjectViewParserTest {
                 "--build_flag4.1=value4.1",
                 "--build_flag4.2=value4.2",
                 "--build_flag4.3=value4.3",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag1.1=value1.1",
+                "--sync_flag1.2=value1.2",
+                "--sync_flag4.1=value4.1",
+                "--sync_flag4.2=value4.2",
+                "--sync_flag4.3=value4.3",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
@@ -324,6 +343,16 @@ class DefaultProjectViewParserTest {
                 "--build_flag7.3=value7.3",
               ),
             ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag1.1=value1.1",
+                "--sync_flag1.2=value1.2",
+                "--sync_flag7.1=value7.1",
+                "--sync_flag7.2=value7.2",
+                "--sync_flag7.3=value7.3",
+              ),
+            ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
@@ -370,6 +399,14 @@ class DefaultProjectViewParserTest {
                 "--build_flag8.1=value8.1",
                 "--build_flag8.2=value8.2",
                 "--build_flag8.3=value8.3",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag8.1=value8.1",
+                "--sync_flag8.2=value8.2",
+                "--sync_flag8.3=value8.3",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
@@ -429,6 +466,18 @@ class DefaultProjectViewParserTest {
                 "--build_flag3.1=value3.1",
                 "--build_flag5.1=value5.1",
                 "--build_flag5.2=value5.2",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag1.1=value1.1",
+                "--sync_flag1.2=value1.2",
+                "--sync_flag2.1=value2.1",
+                "--sync_flag2.2=value2.2",
+                "--sync_flag3.1=value3.1",
+                "--sync_flag5.1=value5.1",
+                "--sync_flag5.2=value5.2",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
@@ -494,6 +543,19 @@ class DefaultProjectViewParserTest {
                 "--build_flag4.1=value4.1",
                 "--build_flag4.2=value4.2",
                 "--build_flag4.3=value4.3",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag2.1=value2.1",
+                "--sync_flag2.2=value2.2",
+                "--sync_flag3.1=value3.1",
+                "--sync_flag1.1=value1.1",
+                "--sync_flag1.2=value1.2",
+                "--sync_flag4.1=value4.1",
+                "--sync_flag4.2=value4.2",
+                "--sync_flag4.3=value4.3",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
@@ -564,6 +626,19 @@ class DefaultProjectViewParserTest {
                 "--build_flag4.3=value4.3",
               ),
             ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag2.1=value2.1",
+                "--sync_flag2.2=value2.2",
+                "--sync_flag3.1=value3.1",
+                "--sync_flag1.1=value1.1",
+                "--sync_flag1.2=value1.2",
+                "--sync_flag4.1=value4.1",
+                "--sync_flag4.2=value4.2",
+                "--sync_flag4.3=value4.3",
+              ),
+            ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
           directories =
             ProjectViewDirectoriesSection(
@@ -605,6 +680,7 @@ class DefaultProjectViewParserTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
+          syncFlags = null,
           allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
@@ -636,6 +712,7 @@ class DefaultProjectViewParserTest {
           ),
         bazelBinary = null,
         buildFlags = null,
+        syncFlags = null,
         allowManualTargetsSync = null,
         directories = null,
         deriveTargetsFromDirectories = null,
@@ -673,6 +750,7 @@ class DefaultProjectViewParserTest {
           ),
         bazelBinary = null,
         buildFlags = null,
+        syncFlags = null,
         allowManualTargetsSync = null,
         directories =
           ProjectViewDirectoriesSection(

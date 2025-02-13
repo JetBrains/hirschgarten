@@ -22,7 +22,7 @@ import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
 import org.jetbrains.plugins.bsp.extensionPoints.bspProjectModelExternalSource
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
 import org.jetbrains.plugins.bsp.target.addLibraryModulePrefix
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspDummyEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
@@ -33,7 +33,7 @@ internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<GenericModuleInfo, ModuleEntity> {
-  override fun addEntity(entityToAdd: GenericModuleInfo): ModuleEntity =
+  override suspend fun addEntity(entityToAdd: GenericModuleInfo): ModuleEntity =
     addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
 
   private fun addModuleEntity(builder: MutableEntityStorage, entityToAdd: GenericModuleInfo): ModuleEntity {
@@ -41,7 +41,7 @@ internal class ModuleEntityUpdater(
     val (libraryModulesDependencies, librariesDependencies) =
       entityToAdd.librariesDependencies.partition {
         !entityToAdd.isLibraryModule &&
-          workspaceModelEntityUpdaterConfig.project.temporaryTargetUtils.isLibraryModule(it.libraryName)
+          workspaceModelEntityUpdaterConfig.project.targetUtils.isLibraryModule(it.libraryName)
       }
     val modulesDependencies =
       (entityToAdd.modulesDependencies + libraryModulesDependencies.toLibraryModuleDependencies()).map {

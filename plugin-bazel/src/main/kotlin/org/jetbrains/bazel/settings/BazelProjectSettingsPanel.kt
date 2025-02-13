@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.settings
 
+import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
@@ -30,6 +31,8 @@ import org.jetbrains.plugins.bsp.config.defaultJdkName
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
+import org.jetbrains.plugins.bsp.ui.projectTree.BspTreeStructureSettings
+import org.jetbrains.plugins.bsp.ui.projectTree.BspTreeStructureSettingsProvider
 import java.net.URI
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -45,7 +48,8 @@ data class BazelProjectSettings(
   val selectedServerJdkName: String? = null,
   val customJvmOptions: List<String> = emptyList(),
   val hotSwapEnabled: Boolean = true,
-) {
+  override val showExcludedDirectoriesAsSeparateNode: Boolean = true,
+) : BspTreeStructureSettings {
   fun withNewProjectViewPath(newProjectViewFilePath: Path): BazelProjectSettings = copy(projectViewPath = newProjectViewFilePath)
 
   fun withNewServerJdkName(newServerJdkName: String?): BazelProjectSettings? =
@@ -63,6 +67,7 @@ internal data class BazelProjectSettingsState(
   var selectedServerJdkName: String? = null,
   var customJvmOptions: List<String> = emptyList(),
   var hotSwapEnabled: Boolean = true,
+  var showExcludedDirectoriesAsSeparateNode: Boolean = true,
 ) {
   fun isEmptyState(): Boolean = this == BazelProjectSettingsState()
 }
@@ -84,6 +89,7 @@ internal class BazelProjectSettingsService :
       selectedServerJdkName = settings.selectedServerJdkName,
       customJvmOptions = settings.customJvmOptions,
       hotSwapEnabled = settings.hotSwapEnabled,
+      showExcludedDirectoriesAsSeparateNode = settings.showExcludedDirectoriesAsSeparateNode,
     )
 
   override fun loadState(settingsState: BazelProjectSettingsState) {
@@ -99,6 +105,7 @@ internal class BazelProjectSettingsService :
           selectedServerJdkName = settingsState.selectedServerJdkName,
           customJvmOptions = settingsState.customJvmOptions,
           hotSwapEnabled = settingsState.hotSwapEnabled,
+          showExcludedDirectoriesAsSeparateNode = settingsState.showExcludedDirectoriesAsSeparateNode,
         )
     }
   }
@@ -118,6 +125,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
   private val serverCustomJvmOptions: RawCommandLineEditor
 
   private val hotswapEnabledCheckBox: JBCheckBox
+  private val showExcludedDirectoriesAsSeparateNodeCheckBox: JBCheckBox
 
   private var currentProjectSettings = project.bazelProjectSettings
 
@@ -128,6 +136,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
 
     projectViewPathField = initProjectViewFileField()
     hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
+    showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
   }
 
   private fun initServerJdkComboBox(): JdkComboBox =
@@ -187,6 +196,14 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
       }
     }
 
+  private fun initShowExcludedDirectoriesAsSeparateNodeCheckBox(): JBCheckBox =
+    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.show.excluded.directories.as.separate.node.checkbox.text")).apply {
+      isSelected = currentProjectSettings.showExcludedDirectoriesAsSeparateNode
+      addItemListener {
+        currentProjectSettings = currentProjectSettings.copy(showExcludedDirectoriesAsSeparateNode = isSelected)
+      }
+    }
+
   override fun createComponent(): JComponent =
     panel {
       group(BazelPluginBundle.message("project.settings.server.title"), false) {
@@ -199,6 +216,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
       }
       group(BazelPluginBundle.message("project.settings.plugin.title"), false) {
         row { cell(hotswapEnabledCheckBox).align(Align.FILL) }
+        row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
       }
     }
 
@@ -206,11 +224,18 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
 
   override fun apply() {
     val isProjectViewPathChanged = currentProjectSettings.projectViewPath != project.bazelProjectSettings.projectViewPath
+    val showExcludedDirectoriesAsSeparateNodeChanged =
+      currentProjectSettings.showExcludedDirectoriesAsSeparateNode != project.bazelProjectSettings.showExcludedDirectoriesAsSeparateNode
+
     project.bazelProjectSettings = currentProjectSettings
+
     if (isProjectViewPathChanged) {
       BspCoroutineService.getInstance(project).start {
         ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
       }
+    }
+    if (showExcludedDirectoriesAsSeparateNodeChanged) {
+      ProjectView.getInstance(project).refresh()
     }
   }
 
@@ -223,6 +248,8 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
     }
 
     serverCustomJvmOptions.text = savedCustomJvmOptions()
+
+    showExcludedDirectoriesAsSeparateNodeCheckBox.isSelected = project.bazelProjectSettings.showExcludedDirectoriesAsSeparateNode
 
     currentProjectSettings = project.bazelProjectSettings
   }
@@ -263,3 +290,7 @@ var Project.bazelProjectSettings: BazelProjectSettings
   set(value) {
     BazelProjectSettingsService.getInstance(this).settings = value.copy()
   }
+
+class BazelTreeStructureSettingsProvider : BspTreeStructureSettingsProvider {
+  override fun getBspTreeStructureSettings(project: Project): BspTreeStructureSettings = project.bazelProjectSettings
+}

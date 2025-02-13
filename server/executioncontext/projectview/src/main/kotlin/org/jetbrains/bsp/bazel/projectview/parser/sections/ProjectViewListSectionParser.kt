@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewListSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
 import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSections
 import java.util.regex.Pattern
 
@@ -64,6 +65,13 @@ object ProjectViewBuildFlagsSectionParser :
   override fun mapRawValues(rawValue: String): String = rawValue
 
   override fun createInstance(values: List<String>): ProjectViewBuildFlagsSection = ProjectViewBuildFlagsSection(values)
+}
+
+object ProjectViewSyncFlagsSectionParser :
+  ProjectViewListSectionParser<String, ProjectViewSyncFlagsSection>(ProjectViewSyncFlagsSection.SECTION_NAME) {
+  override fun mapRawValues(rawValue: String): String = rawValue
+
+  override fun createInstance(values: List<String>): ProjectViewSyncFlagsSection = ProjectViewSyncFlagsSection(values)
 }
 
 object ProjectViewEnabledRulesSectionParser :

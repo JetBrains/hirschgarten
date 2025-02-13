@@ -235,17 +235,23 @@ class BuildTargetTree(
 
   override fun isPointSelectable(point: Point): Boolean = treeComponent.getPathForLocation(point.x, point.y) != null
 
-  override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetTree =
-    createNewWithTargetsAndHighlighter(newTargets, labelHighlighter)
+  override fun createNewWithTargets(
+    newTargets: Collection<BuildTargetInfo>,
+    newInvalidTargets: List<BuildTargetIdentifier>,
+  ): BuildTargetTree = createNewWithTargetsAndHighlighter(newTargets, newInvalidTargets, labelHighlighter)
 
-  fun createNewWithTargetsAndHighlighter(newTargets: Collection<BuildTargetInfo>, labelHighlighter: (String) -> String): BuildTargetTree {
+  fun createNewWithTargetsAndHighlighter(
+    newTargets: Collection<BuildTargetInfo>,
+    newInvalidTargets: List<BuildTargetIdentifier>,
+    labelHighlighter: (String) -> String,
+  ): BuildTargetTree {
     val new =
       BuildTargetTree(
         targetIcon = targetIcon,
         invalidTargetIcon = invalidTargetIcon,
         buildToolId = buildToolId,
         targets = newTargets,
-        invalidTargets = emptyList(),
+        invalidTargets = newInvalidTargets,
         labelHighlighter = labelHighlighter,
         showAsList = showAsList,
       )

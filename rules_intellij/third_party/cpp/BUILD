@@ -9,22 +9,25 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])
 
 java_library(
-    name = "scala_internal",
-    visibility = ["//visibility:private"],
+    name = "cpp_internal",
+    visibility = ["//visibility:public"],
     exports = select_for_plugin_api({
-        "intellij-2024.3": ["@scala_2024_3//:scala"],
+        "intellij-2024.3": ["@clion_2024_3//:cpp"],
+        "intellij-2025.1": ["@clion_2025_1//:cpp"],
         "default": [],
     }),
 )
 
 java_library(
-    name = "scala_for_tests",
+    name = "cpp_for_tests",
     testonly = 1,
-    exports = [":scala_internal"],
+    visibility = ["//visibility:public"],
+    exports = [":cpp_internal"],
 )
 
 java_library(
-    name = "scala",
+    name = "cpp",
     neverlink = 1,
-    exports = [":scala_internal"],
+    visibility = ["//visibility:public"],
+    exports = [":cpp_internal"],
 )

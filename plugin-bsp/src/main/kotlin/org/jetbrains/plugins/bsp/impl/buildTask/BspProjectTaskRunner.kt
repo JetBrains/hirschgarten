@@ -19,7 +19,7 @@ import org.jetbrains.concurrency.Promise
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.server.tasks.runBuildTargetTask
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 class BspProjectTaskRunner : ProjectTaskRunner() {
@@ -34,7 +34,7 @@ class BspProjectTaskRunner : ProjectTaskRunner() {
     when (projectTask) {
       is JpsOnlyModuleBuildTask -> false
       is BspOnlyModuleBuildTask -> true
-      is ModuleBuildTask -> !JpsFeatureFlags.isJpsCompilationAsDefaultEnabled
+      is ModuleBuildTask -> !JpsFeatureFlags.isJpsCompilationEnabled
       else -> false
     }
 
@@ -62,7 +62,7 @@ class BspProjectTaskRunner : ProjectTaskRunner() {
   }
 
   private fun obtainTargetsToBuild(project: Project, tasks: List<ModuleBuildTask>): List<BuildTargetInfo> {
-    val temporaryTargetUtils = project.temporaryTargetUtils
+    val temporaryTargetUtils = project.targetUtils
     return tasks.mapNotNull { temporaryTargetUtils.getBuildTargetInfoForModule(it.module) }
   }
 

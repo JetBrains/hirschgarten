@@ -18,7 +18,7 @@ import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.flow.sync.actions.ResyncTargetAction
 import org.jetbrains.plugins.bsp.runnerAction.BuildTargetAction
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
@@ -47,8 +47,8 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     containingFile.virtualFile?.let { virtualFile ->
       val targetId = calculateTargetId(virtualFile) ?: return null
 
-      val realTargetId = project.temporaryTargetUtils.allTargetIds().firstOrNull { it.uri.endsWith(targetId) }
-      val targetInfo = realTargetId?.let { project.temporaryTargetUtils.getBuildTargetInfoForId(it) }
+      val realTargetId = project.targetUtils.allTargetIds().firstOrNull { it.uri.endsWith(targetId) }
+      val targetInfo = realTargetId?.let { project.targetUtils.getBuildTargetInfoForId(it) }
       calculateLineMarkerInfo(project, targetInfo).takeIf { it.actions.isNotEmpty() }
     }
 

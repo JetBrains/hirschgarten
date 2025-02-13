@@ -1,9 +1,6 @@
 #!/bin/bash
 set -e
 
-echo "Install plugins"
-.codecanvas/installPlugins.sh
-
 echo "Copy IDE settings"
 .codecanvas/copyIdeaSettings.sh
 

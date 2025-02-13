@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
@@ -53,9 +54,10 @@ interface BuildTargetContainer {
    * Creates a new instance of this container. The new instance will have similar mouse listeners
    *
    * @param newTargets collection of build targets the new container will contain
+   * @param newInvalidTargets collection of invalid targets the new container will contain
    * @return the newly created container
    */
-  fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetContainer
+  fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>, newInvalidTargets: List<BuildTargetIdentifier>): BuildTargetContainer
 
   /**
    * Returns actions available for a target.

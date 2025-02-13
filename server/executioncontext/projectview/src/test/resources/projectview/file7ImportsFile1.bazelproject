@@ -12,6 +12,11 @@ build_flags:
     --build_flag7.2=value7.2
     --build_flag7.3=value7.3
 
+sync_flags:
+    --sync_flag7.1=value7.1
+    --sync_flag7.2=value7.2
+    --sync_flag7.3=value7.3
+
 allow_manual_targets_sync: true
 
 

@@ -38,6 +38,12 @@ optional_plugin_dep(
 )
 
 optional_plugin_dep(
+    name = "bsp_with_cpp",
+    module = ["com.intellij.clion"],
+    plugin_xml = "//plugin-bsp/src:main/xml/bsp-withCpp.xml",
+)
+
+optional_plugin_dep(
     name = "bsp_performance_testing",
     module = ["com.jetbrains.performancePlugin"],
     plugin_xml = "//plugin-bsp/src:main/xml/bsp-performanceTesting.xml",

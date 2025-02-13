@@ -30,6 +30,8 @@ class BazelRunner(
 
     fun clean(builder: BazelCommand.Clean.() -> Unit = {}) = BazelCommand.Clean(bazelBinary).apply { builder() }
 
+    fun shutDown(builder: BazelCommand.ShutDown.() -> Unit = {}) = BazelCommand.ShutDown(bazelBinary).apply { builder() }
+
     fun info(builder: BazelCommand.Info.() -> Unit = {}) = BazelCommand.Info(bazelBinary).apply { builder() }
 
     fun version(builder: BazelCommand.Version.() -> Unit = {}) = BazelCommand.Version(bazelBinary).apply { builder() }
@@ -48,18 +50,19 @@ class BazelRunner(
       },
     ) = BazelCommand.ModDumpRepoMapping(bazelBinary).apply { builder() }
 
-    fun query(
-      allowManualTargetsSync: Boolean = true,
-      builder: BazelCommand.Query.() -> Unit = {
-      },
-    ) = BazelCommand.Query(bazelBinary, allowManualTargetsSync).apply { builder() }
+    fun query(allowManualTargetsSync: Boolean = true, builder: BazelCommand.Query.() -> Unit = {}) =
+      BazelCommand.Query(bazelBinary, allowManualTargetsSync).apply { builder() }
+
+    /** Special version of `query` for asking Bazel about a file instead of a target */
+    fun fileQuery(filePath: Path, builder: BazelCommand.FileQuery.() -> Unit = {}) =
+      BazelCommand.FileQuery(bazelBinary, filePath.toString()).apply { builder() }
 
     fun cquery(builder: BazelCommand.CQuery.() -> Unit = {}) =
       BazelCommand.CQuery(bazelBinary).apply { builder() }.also { inheritWorkspaceOptions = true }
 
     fun build(builder: BazelCommand.Build.() -> Unit = {}) =
       BazelCommand
-        .Build(bazelBinary)
+        .Build(bazelInfo, bazelBinary)
         .apply { builder() }
         .also { inheritWorkspaceOptions = true }
 
@@ -83,7 +86,7 @@ class BazelRunner(
     val commandBuilder = CommandBuilder()
     val command = doBuild(commandBuilder)
     val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
-    val relativeDotBspFolderPath = workspaceContextProvider.currentWorkspaceContext().dotBazelBspDirPath.value
+    val relativeDotBspFolderPath = workspaceContext.dotBazelBspDirPath.value
 
     command.options.add(
       overrideRepository(
@@ -132,7 +135,10 @@ class BazelRunner(
     serverPidFuture: CompletableFuture<Long>?,
     shouldLogInvocation: Boolean = true,
   ): BazelProcess {
-    val processArgs = command.makeCommandLine()
+    val executionDescriptor = command.buildExecutionDescriptor()
+    val finishCallback = executionDescriptor.finishCallback
+    val processArgs = executionDescriptor.command
+
     val processBuilder = ProcessBuilder(processArgs)
     workspaceRoot?.let { processBuilder.directory(it.toFile()) }
 
@@ -152,6 +158,7 @@ class BazelRunner(
       process,
       outputLogger,
       serverPidFuture,
+      finishCallback,
     )
   }
 

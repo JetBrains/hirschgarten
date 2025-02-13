@@ -10,6 +10,7 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.testFramework.runInEdtAndWait
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntity
@@ -103,15 +104,16 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
     javaModule: JavaModule,
     parentEntity: ModuleEntity,
     builder: MutableEntityStorage,
-  ): KotlinSettingsEntity {
-    val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(
-        builder,
-        virtualFileUrlManager,
-        projectBasePath,
-        project,
-      )
-    val kotlinFacetEntityUpdater = KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
-    return kotlinFacetEntityUpdater.addEntity(javaModule, parentEntity)
-  }
+  ): KotlinSettingsEntity =
+    runBlocking {
+      val workspaceModelEntityUpdaterConfig =
+        WorkspaceModelEntityUpdaterConfig(
+          builder,
+          virtualFileUrlManager,
+          projectBasePath,
+          project,
+        )
+      val kotlinFacetEntityUpdater = KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
+      return@runBlocking kotlinFacetEntityUpdater.addEntity(javaModule, parentEntity)
+    }
 }

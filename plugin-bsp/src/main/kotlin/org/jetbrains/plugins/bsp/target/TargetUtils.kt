@@ -1,23 +1,32 @@
 package org.jetbrains.plugins.bsp.target
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.BuildTargetTag
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
+import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModuleEntity
+import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.plugins.bsp.annotations.PublicApi
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.magicmetamodel.findNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.plugins.bsp.magicmetamodel.orDefault
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
@@ -27,20 +36,22 @@ import java.util.concurrent.ConcurrentHashMap
 
 private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
-data class TemporaryTargetUtilsState(
+@ApiStatus.Internal
+data class TargetUtilsState(
   var idToTargetInfo: Map<String, BuildTargetInfoState> = emptyMap(),
   var moduleIdToBuildTargetId: Map<String, String> = emptyMap(),
   var fileToId: Map<String, List<String>> = emptyMap(),
   var fileToExecutableTargetIds: Map<String, List<String>> = emptyMap(),
 )
 
-// This whole service is very temporary, it will be removed in the following PR
+@PublicApi
 @Service(Service.Level.PROJECT)
 @State(
-  name = "TemporaryTargetUtils",
+  name = "TargetUtils",
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
-class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState> {
+class TargetUtils(private val project: Project) : PersistentStateComponent<TargetUtilsState> {
+  @ApiStatus.Internal
   var targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo> = emptyMap()
     private set
   private var moduleIdToBuildTargetId: Map<String, BuildTargetIdentifier> = emptyMap()
@@ -56,6 +67,7 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
 
   private var listeners: List<(Boolean) -> Unit> = emptyList()
 
+  @ApiStatus.Internal
   suspend fun saveTargets(
     targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>,
     targetIdToModuleEntity: Map<BuildTargetIdentifier, Module>,
@@ -132,30 +144,33 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
   private fun createLibraryModulesLookupTable(libraryModules: List<JavaModule>) =
     libraryModules.map { it.genericModuleInfo.name }.toHashSet()
 
+  @ApiStatus.Internal
   fun fireSyncListeners(targetListChanged: Boolean) {
     listeners.forEach { it(targetListChanged) }
   }
 
+  @ApiStatus.Internal
   fun registerSyncListener(listener: (targetListChanged: Boolean) -> Unit) {
     listeners += listener
   }
 
   fun allTargetIds(): List<BuildTargetIdentifier> = targetIdToTargetInfo.keys.toList()
 
-  fun getTargetsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> =
+  fun getTargetsForFile(file: VirtualFile): List<BuildTargetIdentifier> =
     fileToTargetId[file.url.processUriString().safeCastToURI()]
-      ?: getTargetsFromAncestorsForFile(file, project)
+      ?: getTargetsFromAncestorsForFile(file)
 
-  fun getExecutableTargetsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> {
+  @ApiStatus.Internal
+  fun getExecutableTargetsForFile(file: VirtualFile): List<BuildTargetIdentifier> {
     val executableDirectTargets =
-      getTargetsForFile(file, project).filter { targetId -> targetIdToTargetInfo[targetId]?.capabilities?.isExecutable() == true }
+      getTargetsForFile(file).filter { targetId -> targetIdToTargetInfo[targetId]?.capabilities?.isExecutable() == true }
     if (executableDirectTargets.isEmpty()) {
       return fileToExecutableTargetIds.getOrDefault(file.url.processUriString().safeCastToURI(), emptySet()).toList()
     }
     return executableDirectTargets
   }
 
-  private fun getTargetsFromAncestorsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> {
+  private fun getTargetsFromAncestorsForFile(file: VirtualFile): List<BuildTargetIdentifier> {
     return if (BspFeatureFlags.isRetrieveTargetsForFileFromAncestorsEnabled) {
       val rootDir = project.rootDir
       var iter = file.parent
@@ -170,24 +185,34 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
     }
   }
 
+  @PublicApi // // https://youtrack.jetbrains.com/issue/BAZEL-1632
+  @Suppress("UNUSED")
+  fun isLibrary(id: BuildTargetIdentifier): Boolean = BuildTargetTag.LIBRARY in getBuildTargetInfoForId(id)?.tags.orEmpty()
+
+  @ApiStatus.Internal
   fun getTargetIdForModuleId(moduleId: String): BuildTargetIdentifier? = moduleIdToBuildTargetId[moduleId]
 
+  @ApiStatus.Internal
   fun getBuildTargetInfoForId(buildTargetIdentifier: BuildTargetIdentifier): BuildTargetInfo? = targetIdToTargetInfo[buildTargetIdentifier]
 
-  fun getBuildTargetInfoForModule(module: com.intellij.openapi.module.Module) =
+  @ApiStatus.Internal
+  fun getBuildTargetInfoForModule(module: com.intellij.openapi.module.Module): BuildTargetInfo? =
     getTargetIdForModuleId(module.name)?.let { getBuildTargetInfoForId(it) }
 
+  @ApiStatus.Internal
   fun isLibraryModule(name: String): Boolean = name.addLibraryModulePrefix() in libraryModulesLookupTable
 
-  override fun getState(): TemporaryTargetUtilsState =
-    TemporaryTargetUtilsState(
+  @ApiStatus.Internal
+  override fun getState(): TargetUtilsState =
+    TargetUtilsState(
       idToTargetInfo = targetIdToTargetInfo.mapKeys { it.key.uri }.mapValues { it.value.toState() },
       moduleIdToBuildTargetId = moduleIdToBuildTargetId.mapValues { it.value.uri },
       fileToId = fileToTargetId.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.uri } },
       fileToExecutableTargetIds = fileToExecutableTargetIds.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.uri } },
     )
 
-  override fun loadState(state: TemporaryTargetUtilsState) {
+  @ApiStatus.Internal
+  override fun loadState(state: TargetUtilsState) {
     targetIdToTargetInfo =
       state.idToTargetInfo
         .mapKeys { BuildTargetIdentifier(it.key) }
@@ -200,7 +225,30 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
   }
 }
 
+@ApiStatus.Internal
 fun String.addLibraryModulePrefix() = "_aux.libraries.$this"
 
-val Project.temporaryTargetUtils: TemporaryTargetUtils
-  get() = service<TemporaryTargetUtils>()
+@PublicApi
+val Project.targetUtils: TargetUtils
+  get() = service<TargetUtils>()
+
+@PublicApi
+fun BuildTargetIdentifier.getModule(project: Project): com.intellij.openapi.module.Module? =
+  project.service<TargetUtils>().getBuildTargetInfoForId(this)?.getModule(project)
+
+@PublicApi
+fun BuildTargetIdentifier.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity
+
+val com.intellij.openapi.module.Module.moduleEntity: ModuleEntity?
+  @ApiStatus.Internal
+  get() {
+    val bridge = this as? ModuleBridge ?: return null
+    return bridge.findModuleEntity(bridge.entityStorage.current)
+  }
+
+@ApiStatus.Internal
+fun BuildTargetInfo.getModule(project: Project): com.intellij.openapi.module.Module? {
+  val moduleNameProvider = project.findNameProvider().orDefault()
+  val moduleName = moduleNameProvider(this)
+  return ModuleManager.getInstance(project).findModuleByName(moduleName)
+}

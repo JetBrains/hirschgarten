@@ -35,6 +35,7 @@ PKGS = [
     "java.base/java.util.concurrent.atomic",
     "java.base/jdk.internal.vm",
     "java.base/sun.nio.ch",
+    "java.base/sun.nio.fs",
     "java.base/sun.security.ssl",
     "java.base/sun.security.util",
     "java.desktop/com.apple.eawt",

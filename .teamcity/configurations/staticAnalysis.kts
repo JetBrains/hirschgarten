@@ -10,14 +10,14 @@ import java.io.File
 
 
 open class Analyze(
-vcsRoot: GitVcsRoot,
-cloudToken: String,
-params: ParametrizedWithType.() -> Unit = {},
-repo: String? = null,
-linterImage: String = Utils.CommonParams.DockerQodanaImage,
-unchanged: String? = null,
-diff: String = "0",
-) : BaseConfiguration.BaseBuildType(
+  vcsRoot: GitVcsRoot,
+  cloudToken: String,
+  params: ParametrizedWithType.() -> Unit = {},
+  repo: String? = null,
+  linterImage: String = Utils.CommonParams.DockerQodanaImage,
+  unchanged: String? = null,
+  diff: String = "0",
+  ) : BaseConfiguration.BaseBuildType(
     name = "[analysis] Qodana ${if (repo != null) {"$repo"} else {"Hirschgarten"}}",
     requirements = {
         endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-XLarge")
@@ -40,9 +40,10 @@ diff: String = "0",
     },
     steps = {
       Utils.CommonParams.CrossBuildPlatforms.forEach { platform ->
+        val platformDot = "20${platform.take(2)}.${platform.last()}"
         script {
             name = "add plugins to qodana"
-            id = "add_plugins_to_qodana"
+            id = "add_plugins_to_qodana_$platform"
             scriptContent = """
                 #!/bin/bash
                 set -euxo
@@ -57,35 +58,51 @@ diff: String = "0",
         if (repo != null) {
           script {
             name = "clone $repo"
-            id = "clone_$repo"
+            id = "clone_${repo}_$platform"
             scriptContent = """
               #!/bin/bash
               set -euxo
 
-              git clone --depth 1 https://github.com/JetBrainsBazelBot/$repo %system.agent.persistent.cache%/$repo
+              if [ ! -d "%system.agent.persistent.cache%/$repo" ]; then
+                git clone --depth 1 https://github.com/JetBrainsBazelBot/$repo %system.agent.persistent.cache%/$repo
+              
+                cd %system.agent.persistent.cache%/$repo
+                
+                # Set commit hash
+                echo "##teamcity[setParameter name='env.GIT_COMMIT' value='${'$'}(git rev-parse HEAD)']"
+                echo %env.GIT_COMMIT%
+              
+                # Set repo URL
+                echo "##teamcity[setParameter name='env.GIT_REPO_URL' value='${'$'}(git config --get remote.origin.url)']"
+                echo %env.GIT_REPO_URL%
+              fi
+            """.trimIndent()
+          }
+        } else {
+          script {
+            name = "enable remcache $platform"
+            id = "enable_remcache_$platform"
+            scriptContent = """
+              #!/bin/bash
+              set -euxo
 
-              cd %system.agent.persistent.cache%/$repo
-              # Set commit hash
-              echo "##teamcity[setParameter name='env.GIT_COMMIT' value='${'$'}(git rev-parse HEAD)']"
-              echo %env.GIT_COMMIT%
-
-              # Set repo URL
-              echo "##teamcity[setParameter name='env.GIT_REPO_URL' value='${'$'}(git config --get remote.origin.url)']"
-              echo %env.GIT_REPO_URL%
+              sed -i 's/:remotecache//g' ".cache.bazelrc"
+              sed -i 's/:nocacheupload//g' ".cache.bazelrc"
             """.trimIndent()
           }
         }
         qodana {
             name = "run qodana"
-            id = "run_qodana"
+            id = "run_qodana_$platform"
             reportAsTests = false
-          workingDir = if (repo != null ){ "%system.agent.persistent.cache%/$repo" } else {""}
+            workingDir = if (repo != null ){ "%system.agent.persistent.cache%/$repo" } else {""}
             linter = customLinter {
-                image = linterImage
+                image = "$linterImage:$platformDot-nightly"
             }
             additionalDockerArguments = """
                 -v %system.agent.persistent.cache%/plugins/intellij-bazel:/opt/idea/custom-plugins/intellij-bazel
                 -v %system.agent.persistent.cache%/plugins/intellij-bsp:/opt/idea/custom-plugins/intellij-bsp
+                -v %system.agent.persistent.cache%/.netrc:/root/.netrc
                 ${if (repo != null) {"-v %system.agent.persistent.cache%/$repo/qodana.yaml:%system.agent.persistent.cache%/$repo/qodana.yaml"} else {""}}
                 ${if (repo != null) {"-e QODANA_REMOTE_URL=\"%env.GIT_REPO_URL%\""} else {""}}
                 ${if (repo != null) {"-e QODANA_REVISION=\"%env.GIT_COMMIT%\""} else {""}}
@@ -106,12 +123,12 @@ diff: String = "0",
         if (unchanged != null) {
           script {
             this.name = "create requirements.txt"
-            id = "create_requirements_txt"
+            id = "create_requirements_txt_$platform"
             scriptContent = "echo \"requests\" > %system.teamcity.build.checkoutDir%/requirements.txt"
           }
           python {
             this.name = "check changes for anomalies"
-            id = "check_changes_for_anomalies"
+            id = "check_changes_for_anomalies_$platform"
             environment = venv { }
             command = script {
               content = File("scripts/evaluate_qodana.py").readText()
@@ -126,7 +143,7 @@ diff: String = "0",
       param("env.GIT_REPO_URL", "")
       param("env.GIT_COMMIT", "")
       params(this)
-      if (repo != null) {password("jetbrains.bazel.teamcity.token", "credentialsJSON:f47ac10b-58cc-4372-a567-0e02b2c3d479", label = "jetbrains.bazel.teamcity.token", description = "Bazel TCC token", display = ParameterDisplay.HIDDEN) }
+      if (repo != null) {password("jetbrains.bazel.teamcity.token", Utils.CredentialsStore.BazelTeamcityToken, label = "jetbrains.bazel.teamcity.token", description = "Bazel TCC token", display = ParameterDisplay.HIDDEN) }
     },
     dockerSupport = {
         loginToRegistry = on {

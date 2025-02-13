@@ -56,7 +56,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
 
     val exampleExampleBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//example"),
+        BuildTargetIdentifier("$targetPrefix//example:example"),
         listOf("application"),
         listOf("python"),
         listOf(
@@ -69,7 +69,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           it.canDebug = false
         },
       )
-    exampleExampleBuildTarget.displayName = "$targetPrefix//example"
+    exampleExampleBuildTarget.displayName = "$targetPrefix//example:example"
     exampleExampleBuildTarget.baseDirectory = "file://\$WORKSPACE/example/"
     exampleExampleBuildTarget.data = examplePythonBuildTarget
     exampleExampleBuildTarget.dataKind = BuildTargetDataKind.PYTHON
@@ -99,7 +99,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
 
     val exampleExampleTestBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//test"),
+        BuildTargetIdentifier("$targetPrefix//test:test"),
         listOf("test"),
         listOf("python"),
         listOf(),
@@ -110,7 +110,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           it.canDebug = false
         },
       )
-    exampleExampleTestBuildTarget.displayName = "$targetPrefix//test"
+    exampleExampleTestBuildTarget.displayName = "$targetPrefix//test:test"
     exampleExampleTestBuildTarget.baseDirectory = "file://\$WORKSPACE/test/"
     exampleExampleTestBuildTarget.data = examplePythonBuildTarget
     exampleExampleTestBuildTarget.dataKind = BuildTargetDataKind.PYTHON

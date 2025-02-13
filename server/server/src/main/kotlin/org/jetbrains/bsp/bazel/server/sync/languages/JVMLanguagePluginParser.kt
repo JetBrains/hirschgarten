@@ -10,6 +10,7 @@ import java.nio.file.Paths
 object JVMLanguagePluginParser {
   private val PACKAGE_PATTERN = Regex("^\\s*package\\s+([\\p{L}0-9_.]+)")
   private val ONE_BYTE_CHARSET = Charset.forName("ISO-8859-1")
+  private const val BUFFER_SIZE = 256 // Should be enough to read a Java package name if it's on the first line
 
   fun calculateJVMSourceRootAndAdditionalData(source: Path, multipleLines: Boolean = false): SourceRootAndData {
     val sourcePackage =
@@ -27,10 +28,10 @@ object JVMLanguagePluginParser {
   }
 
   private fun findPackage(source: Path, multipleLines: Boolean): String? =
-    File(source.toUri()).useLines(ONE_BYTE_CHARSET) { lines ->
+    File(source.toUri()).bufferedReader(charset = ONE_BYTE_CHARSET, bufferSize = BUFFER_SIZE).use { bufferedReader ->
       // Not using UTF-8 charset because it is slower to decode
       val packages =
-        lines.mapNotNull { line ->
+        bufferedReader.lineSequence().mapNotNull { line ->
           if (!line.trimStart().startsWith("package")) return@mapNotNull null
           val decodedLine = line.toByteArray(ONE_BYTE_CHARSET).decodeToString()
           PACKAGE_PATTERN

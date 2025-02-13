@@ -7,4 +7,9 @@ class BazelrcAnnotationTest : BazelrcAnnotatorTestCase() {
     myFixture.configureByFile("LabelFlagsTestData.bazelrc")
     myFixture.checkHighlighting(true, true, true)
   }
+
+  fun testOldFlags() {
+    myFixture.configureByFile("OldFlagsTestData.bazelrc")
+    myFixture.checkHighlighting(true, true, true)
+  }
 }

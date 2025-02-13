@@ -14,7 +14,7 @@ import com.intellij.platform.backend.workspace.virtualFile
 import org.jetbrains.plugins.bsp.action.SuspendableAction
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.runnerAction.TestTargetAction
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 internal class RunAllTestsAction :
@@ -53,7 +53,7 @@ internal class RunAllTestsAction :
   private fun VirtualFile.toSubFilesInTestSourceContent(project: Project): Sequence<BuildTargetInfo> {
     val pfIndex = ProjectFileIndex.getInstance(project)
     val vfsManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
-    val targetUtilService = project.temporaryTargetUtils
+    val targetUtilService = project.targetUtils
 
     return this
       .toVirtualFileUrl(vfsManager)
@@ -61,7 +61,7 @@ internal class RunAllTestsAction :
       .asSequence()
       .mapNotNull { it.virtualFile }
       .filter { pfIndex.isInTestSourceContent(it) }
-      .flatMap { targetUtilService.getExecutableTargetsForFile(it, project) }
+      .flatMap { targetUtilService.getExecutableTargetsForFile(it) }
       .distinct()
       .mapNotNull { targetUtilService.getBuildTargetInfoForId(it) }
   }

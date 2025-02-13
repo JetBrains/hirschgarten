@@ -29,6 +29,7 @@ object ProjectTriggerRules {
     -:LICENCE
     -:CODEOWNERS
     -:/.teamcity/**
+    -:/tools/**
     """.trimIndent()
 }
 
@@ -45,17 +46,21 @@ object GitHub : Project({
 // setup pipeline chain for bazel-bsp
   val allSteps =
     sequential {
+      // 1. Run formatter first
       buildType(ProjectFormat.GitHub)
+      // 2. Run build second
+      buildType(ProjectBuild.GitHub)
+      // 3. Run everything else in parallel
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
         onDependencyCancel = FailureAction.CANCEL
       }) {
-        buildType(ProjectBuild.GitHub)
         buildType(ProjectUnitTests.GitHub)
         buildType(PluginBenchmark.BenchmarkDefaultGitHub)
         buildType(PluginBenchmark.BenchmarkWithVersionGitHub)
         buildType(IdeStarterTests.HotswapTestGitHub)
         buildType(IdeStarterTests.ExternalRepoResolveTestGitHub)
+        buildType(IdeStarterTests.JarSourceExcludeTestGitHub) // Added new test
         buildType(ServerE2eTests.SampleRepoGitHub)
         buildType(ServerE2eTests.LocalJdkGitHub)
         buildType(ServerE2eTests.RemoteJdkGitHub)
@@ -114,6 +119,7 @@ object GitHub : Project({
       PluginBenchmark.BenchmarkWithVersionGitHub,
       IdeStarterTests.HotswapTestGitHub,
       IdeStarterTests.ExternalRepoResolveTestGitHub,
+      IdeStarterTests.JarSourceExcludeTestGitHub,
       ServerE2eTests.SampleRepoGitHub,
       ServerE2eTests.LocalJdkGitHub,
       ServerE2eTests.RemoteJdkGitHub,
@@ -135,7 +141,7 @@ object GitHub : Project({
       StaticAnalysis.AndroidTestdpcGitHub,
       StaticAnalysis.BazelGitHub,
       StaticAnalysis.JetpackComposeGitHub,
-      ResultsAggregator.GitHub,
+      ResultsAggregator.GitHub
     )
 })
 
@@ -147,17 +153,21 @@ object Space : Project({
 // setup pipeline chain for bazel-bsp
   val allSteps =
     sequential {
+      // 1. Run formatter first
       buildType(ProjectFormat.Space)
+      // 2. Run build second
+      buildType(ProjectBuild.Space)
+      // 3. Run everything else in parallel
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
         onDependencyCancel = FailureAction.CANCEL
       }) {
-        buildType(ProjectBuild.Space)
         buildType(ProjectUnitTests.Space)
         buildType(PluginBenchmark.SpaceBenchmarkDefault)
         buildType(PluginBenchmark.SpaceBenchmarkWithVersion)
         buildType(IdeStarterTests.HotswapTestSpace)
         buildType(IdeStarterTests.ExternalRepoResolveTestSpace)
+        buildType(IdeStarterTests.JarSourceExcludeTestSpace) // Added new test
         buildType(ServerE2eTests.SampleRepoSpace)
         buildType(ServerE2eTests.LocalJdkSpace)
         buildType(ServerE2eTests.RemoteJdkSpace)
@@ -216,6 +226,7 @@ object Space : Project({
       PluginBenchmark.SpaceBenchmarkWithVersion,
       IdeStarterTests.HotswapTestSpace,
       IdeStarterTests.ExternalRepoResolveTestSpace,
+      IdeStarterTests.JarSourceExcludeTestSpace,
       ServerE2eTests.SampleRepoSpace,
       ServerE2eTests.LocalJdkSpace,
       ServerE2eTests.RemoteJdkSpace,
@@ -237,6 +248,6 @@ object Space : Project({
       StaticAnalysis.AndroidTestdpcSpace,
       StaticAnalysis.BazelSpace,
       StaticAnalysis.JetpackComposeSpace,
-      ResultsAggregator.Space,
+      ResultsAggregator.Space
     )
 })

@@ -21,7 +21,7 @@ import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.building.TaskConsole
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.impl.server.tasks.runBuildTargetTask
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.getModule
+import org.jetbrains.plugins.bsp.target.getModule
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import javax.swing.Icon
 import kotlin.coroutines.cancellation.CancellationException

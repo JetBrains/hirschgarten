@@ -155,3 +155,5 @@ fun BuildTargetCapabilities.toModuleCapabilities() =
 interface Module {
   fun getModuleName(): String
 }
+
+data class CompiledSourceCodeInsideJarExclude(val relativePathsInsideJarToExclude: Set<String>) : WorkspaceModelEntity()

@@ -49,6 +49,7 @@ stamped_plugin_xml(
 java_binary(
     name = "intellij-bazel_exclude",
     main_class = "DummySourceForExclude",
+    tags = ["no-ide"],
     runtime_deps = [
         "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
@@ -73,6 +74,7 @@ intellij_plugin(
 java_binary(
     name = "intellij-bazel_exclude_debug",
     main_class = "DummySourceForExclude",
+    tags = ["no-ide"],
     runtime_deps = [
         "@maven//:io_opentelemetry_opentelemetry_api",
         "@maven//:io_opentelemetry_opentelemetry_exporter_otlp",
@@ -119,6 +121,7 @@ intellij_plugin_debug_target(
 java_binary(
     name = "intellij-bazel-debug_exclude",
     main_class = "DummySourceForExclude",
+    tags = ["no-ide"],
     runtime_deps = [
         "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",

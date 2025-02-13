@@ -41,7 +41,7 @@ fun Label.canonicalize(repoMapping: RepoMapping): Label =
               val apparentRepoName = this.repoName
               val canonicalRepoName =
                 repoMapping.apparentRepoNameToCanonicalName[apparentRepoName] ?: error("No canonical name found for $this")
-              Label.parse("@@$canonicalRepoName//$targetPathAndName")
+              this.copy(repo = Canonical(canonicalRepoName))
             }
           }
         }
@@ -51,6 +51,15 @@ fun Label.canonicalize(repoMapping: RepoMapping): Label =
       }
     }
   }
+
+fun Label.canonicalizeOrNull(repoMapping: RepoMapping): Label? =
+  try {
+    canonicalize(repoMapping)
+  } catch (_: Exception) {
+    null
+  }
+
+val rootRulesToNeededTransitiveRules = mapOf("rules_kotlin" to listOf("rules_java"))
 
 fun calculateRepoMapping(
   workspaceContext: WorkspaceContext,
@@ -71,6 +80,13 @@ fun calculateRepoMapping(
       bspClientLogger.error(e.toString())
       return RepoMappingDisabled
     }
+
+  val moduleApparentNameToCanonicalNameForNeededTransitiveRules =
+    rootRulesToNeededTransitiveRules.keys
+      .mapNotNull { moduleApparentNameToCanonicalName[it] }
+      .map { moduleResolver.getRepoMapping(it) {} }
+      .reduceOrNull { acc, map -> acc + map }
+      .orEmpty()
 
   for (externalRepo in workspaceContext.externalRepositoriesTreatedAsInternal) {
     try {
@@ -103,5 +119,9 @@ fun calculateRepoMapping(
     moduleCanonicalNameToPath[canonicalName] = repoPath
   }
 
-  return BzlmodRepoMapping(moduleCanonicalNameToLocalPath, moduleApparentNameToCanonicalName, moduleCanonicalNameToPath)
+  return BzlmodRepoMapping(
+    moduleCanonicalNameToLocalPath,
+    moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName,
+    moduleCanonicalNameToPath,
+  )
 }

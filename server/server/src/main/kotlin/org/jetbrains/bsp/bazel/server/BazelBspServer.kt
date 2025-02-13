@@ -83,7 +83,7 @@ class BazelBspServer(
       )
     setupTelemetry(telemetryConfig)
 
-    val languagePluginsService = createLanguagePluginsService(bazelPathsResolver)
+    val languagePluginsService = createLanguagePluginsService(bazelPathsResolver, bspClientLogger)
     val featureFlags = initializeBuildData.featureFlags ?: FeatureFlags()
     val projectProvider =
       createProjectProvider(
@@ -104,8 +104,6 @@ class BazelBspServer(
         bazelPathsResolver = bazelPathsResolver,
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,
-        bazelInfo = bazelInfo,
-        bspClientLogger = bspClientLogger,
       )
     val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
     val projectSyncService =
@@ -134,7 +132,10 @@ class BazelBspServer(
     return bazelDataResolver.resolveBazelInfo { }
   }
 
-  private fun createLanguagePluginsService(bazelPathsResolver: BazelPathsResolver): LanguagePluginsService {
+  private fun createLanguagePluginsService(
+    bazelPathsResolver: BazelPathsResolver,
+    bspClientLogger: BspClientLogger,
+  ): LanguagePluginsService {
     val jdkResolver = JdkResolver(bazelPathsResolver, JdkVersionResolver())
     val javaLanguagePlugin = JavaLanguagePlugin(workspaceContextProvider, bazelPathsResolver, jdkResolver)
     val scalaLanguagePlugin = ScalaLanguagePlugin(javaLanguagePlugin, bazelPathsResolver)
@@ -145,7 +146,7 @@ class BazelBspServer(
     val rustLanguagePlugin = RustLanguagePlugin(bazelPathsResolver)
     val androidLanguagePlugin =
       AndroidLanguagePlugin(workspaceContextProvider, javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
-    val goLanguagePlugin = GoLanguagePlugin(bazelPathsResolver)
+    val goLanguagePlugin = GoLanguagePlugin(bazelPathsResolver, bspClientLogger)
 
     return LanguagePluginsService(
       scalaLanguagePlugin,
@@ -188,7 +189,7 @@ class BazelBspServer(
       )
     val bazelToolchainManager = BazelToolchainManager(bazelRunner, featureFlags)
     val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver)
-    val bazelLabelExpander = BazelLabelExpander(bazelRunner, workspaceContextProvider)
+    val bazelLabelExpander = BazelLabelExpander(bazelRunner)
     val targetTagsResolver = TargetTagsResolver()
     val mavenCoordinatesResolver = MavenCoordinatesResolver()
     val kotlinAndroidModulesMerger = KotlinAndroidModulesMerger(featureFlags)

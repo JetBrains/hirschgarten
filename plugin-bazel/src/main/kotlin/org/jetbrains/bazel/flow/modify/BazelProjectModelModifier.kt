@@ -19,7 +19,7 @@ import org.jetbrains.concurrency.resolvedPromise
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.flow.sync.PartialProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 
 private val log = logger<BazelProjectModelModifier>()
@@ -40,8 +40,8 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
   }
 
   private fun tryAddingModuleDependencyToBuildFile(from: Module, to: Module): Boolean {
-    val fromBuildTargetInfo = from.project.temporaryTargetUtils.getBuildTargetInfoForModule(from) ?: return false
-    val toBuildTargetInfo = to.project.temporaryTargetUtils.getBuildTargetInfoForModule(to) ?: return false
+    val fromBuildTargetInfo = from.project.targetUtils.getBuildTargetInfoForModule(from) ?: return false
+    val toBuildTargetInfo = to.project.targetUtils.getBuildTargetInfoForModule(to) ?: return false
     val targetBuildFile = findBuildFile(from.project, fromBuildTargetInfo) as? StarlarkFile ?: return false
     val targetRuleLabel = Label.parseOrNull(fromBuildTargetInfo.id.uri) ?: return false
     val ruleTarget = targetBuildFile.findRuleTarget(targetRuleLabel.targetName) ?: return false
@@ -53,13 +53,14 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
         ?.first { it is StarlarkListLiteralExpression } as? StarlarkListLiteralExpression
         ?: return false
     var insertSuccessful = false
+    val targetStringToInsert = toBuildTargetInfo.buildTargetName.trimStart('@')
     try {
       WriteCommandAction.runWriteCommandAction(from.project) {
-        depsList.insertString(toBuildTargetInfo.buildTargetName.trimStart('@'))
+        depsList.insertString(targetStringToInsert)
         insertSuccessful = true
       }
-    } catch (_: Exception) {
-      log.warn("Failed to write to BUILD file")
+    } catch (e: Exception) {
+      log.warn("Failed to insert target $targetStringToInsert as a dependency for target $targetRuleLabel", e)
     }
 
     val syncScope = PartialProjectSync(targetsToSync = listOf(fromBuildTargetInfo.id))
@@ -104,7 +105,7 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
   }
 
   private fun Module.jumpToBuildFile() {
-    val buildTargetInfo = project.temporaryTargetUtils.getBuildTargetInfoForModule(this) ?: return
+    val buildTargetInfo = project.targetUtils.getBuildTargetInfoForModule(this) ?: return
     val buildFile = findBuildFile(project, buildTargetInfo) ?: return
     EditorHelper.openInEditor(buildFile, true, true)
   }

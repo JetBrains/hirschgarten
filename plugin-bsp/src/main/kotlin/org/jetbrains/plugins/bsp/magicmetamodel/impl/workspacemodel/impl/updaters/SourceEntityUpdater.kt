@@ -15,7 +15,7 @@ internal open class SourceEntityUpdater(
 ) : WorkspaceModelEntityWithParentModuleUpdater<GenericSourceRoot, SourceRootEntity> {
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
-  override fun addEntities(entitiesToAdd: List<GenericSourceRoot>, parentModuleEntity: ModuleEntity): List<SourceRootEntity> {
+  override suspend fun addEntities(entitiesToAdd: List<GenericSourceRoot>, parentModuleEntity: ModuleEntity): List<SourceRootEntity> {
     return if (workspaceModelEntityFolderMarkerExists) {
       val commonContentRoot = addSingleContentRootEntity(entitiesToAdd, parentModuleEntity) ?: return emptyList()
       entitiesToAdd.map { addSourceRootEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, commonContentRoot, it) }
@@ -34,7 +34,10 @@ internal open class SourceEntityUpdater(
   /**
    * this is specifically used for the workspacemodel module in hirschgarten
    */
-  private fun addSingleContentRootEntity(entitiesToAdd: List<GenericSourceRoot>, parentModuleEntity: ModuleEntity): ContentRootEntity? {
+  private suspend fun addSingleContentRootEntity(
+    entitiesToAdd: List<GenericSourceRoot>,
+    parentModuleEntity: ModuleEntity,
+  ): ContentRootEntity? {
     if (entitiesToAdd.isEmpty()) return null
 
     val commonContentRoot = calculateCommonContentRoot(entitiesToAdd) ?: return null
@@ -52,7 +55,10 @@ internal open class SourceEntityUpdater(
         )
     }
 
-  private fun addContentRootEntities(entitiesToAdd: List<GenericSourceRoot>, parentModuleEntity: ModuleEntity): List<ContentRootEntity> {
+  private suspend fun addContentRootEntities(
+    entitiesToAdd: List<GenericSourceRoot>,
+    parentModuleEntity: ModuleEntity,
+  ): List<ContentRootEntity> {
     val contentRoots =
       entitiesToAdd.map { entityToAdd ->
         ContentRoot(
@@ -84,6 +90,6 @@ internal open class SourceEntityUpdater(
     return updatedContentRootEntity.sourceRoots.last()
   }
 
-  override fun addEntity(entityToAdd: GenericSourceRoot, parentModuleEntity: ModuleEntity): SourceRootEntity =
+  override suspend fun addEntity(entityToAdd: GenericSourceRoot, parentModuleEntity: ModuleEntity): SourceRootEntity =
     addEntities(listOf(entityToAdd), parentModuleEntity).single()
 }

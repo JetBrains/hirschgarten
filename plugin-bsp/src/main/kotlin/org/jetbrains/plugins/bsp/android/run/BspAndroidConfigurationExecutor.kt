@@ -32,8 +32,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.workspaceModel.ide.toPath
 import com.intellij.xdebugger.impl.XDebugSessionImpl
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.getModuleEntity
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
+import org.jetbrains.plugins.bsp.target.getModuleEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.androidAddendumEntity
 import java.nio.file.Path
 import kotlin.io.path.exists

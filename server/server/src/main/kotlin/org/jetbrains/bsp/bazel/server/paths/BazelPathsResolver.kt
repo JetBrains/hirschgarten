@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.exists
 import kotlin.io.path.toPath
 
-private val BAZEL_COMPONENT_SEPARATOR = "/"
+private const val BAZEL_COMPONENT_SEPARATOR = "/"
 
 class BazelPathsResolver(private val bazelInfo: BazelInfo) {
   private val uris = ConcurrentHashMap<Path, URI>()
@@ -103,4 +103,11 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
       .relativize(path)
       .toString()
       .replace(File.separator, BAZEL_COMPONENT_SEPARATOR)
+
+  fun resolve(path: String): File =
+    when {
+      Paths.get(path).isAbsolute -> File(path)
+      path.startsWith("external/") -> bazelInfo.outputBase.resolve(path).toFile()
+      else -> bazelInfo.workspaceRoot.resolve(path).toFile()
+    }
 }

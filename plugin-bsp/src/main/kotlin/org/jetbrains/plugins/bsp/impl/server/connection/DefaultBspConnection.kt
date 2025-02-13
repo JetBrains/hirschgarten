@@ -158,8 +158,8 @@ class DefaultBspConnection(
         } catch (disconnectException: Exception) {
           // connectException is probably more informative to the user, throw it instead of disconnectException
           connectException.addSuppressed(disconnectException)
-          throw connectException
         }
+        throw connectException
       }
     }
   }

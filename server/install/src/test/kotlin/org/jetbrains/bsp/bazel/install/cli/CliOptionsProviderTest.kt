@@ -398,6 +398,24 @@ class CliOptionsProviderTest {
     }
 
     @Nested
+    @DisplayName("cliOptions.projectViewCliOptions.syncFlags test")
+    inner class SyncFlagsTest {
+      @Test
+      fun `should return success if sync flags are specified`() {
+        // given
+        val args = arrayOf("-s", "--sync_flag1=value1", "--sync_flag1=value2", "--sync_flag1=value3")
+
+        // when
+        val provider = CliOptionsProvider(args)
+        val cliOptions = provider.getOptions()
+
+        // then
+        val expectedSyncFlags = listOf("--sync_flag1=value1", "--sync_flag1=value2", "--sync_flag1=value3")
+        cliOptions.projectViewCliOptions?.syncFlags shouldBe expectedSyncFlags
+      }
+    }
+
+    @Nested
     @DisplayName("cliOptions.projectViewCliOptions.allowManualTargetsSync test")
     inner class AllowManualTargetsSyncTest {
       @Test
@@ -577,6 +595,10 @@ class CliOptionsProviderTest {
           "--build_flag1=value1",
           "--build_flag1=value2",
           "--build_flag1=value3",
+          "-s",
+          "--sync_flag1=value1",
+          "--sync_flag1=value2",
+          "--sync_flag1=value3",
           "-m",
           "-r",
           "included_dir1",
@@ -626,6 +648,9 @@ class CliOptionsProviderTest {
 
       val expectedBuildFlags = listOf("--build_flag1=value1", "--build_flag1=value2", "--build_flag1=value3")
       cliOptions.projectViewCliOptions?.buildFlags shouldBe expectedBuildFlags
+
+      val expectedSyncFlags = listOf("--sync_flag1=value1", "--sync_flag1=value2", "--sync_flag1=value3")
+      cliOptions.projectViewCliOptions?.syncFlags shouldBe expectedSyncFlags
 
       cliOptions.projectViewCliOptions?.allowManualTargetsSync shouldBe true
 

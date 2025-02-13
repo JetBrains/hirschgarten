@@ -17,6 +17,7 @@ data class FeatureFlags(
   val isPropagateExportsFromDepsEnabled: Boolean = true,
   /** Bazel specific */
   val bazelSymlinksScanMaxDepth: Int = 2,
+  val bazelShutDownBeforeShardBuild: Boolean = false,
 ) {
   fun merge(anotherFeatureFlags: FeatureFlags): FeatureFlags =
     FeatureFlags(

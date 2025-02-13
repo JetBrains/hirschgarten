@@ -9,9 +9,9 @@ import java.nio.file.Path
 
 internal class GeneratedJavaSourceEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithoutParentModuleUpdater<JavaSourceRoot, GeneratedJavaSourceRootEntity> {
-  override fun addEntity(entityToAdd: JavaSourceRoot): GeneratedJavaSourceRootEntity = addEntities(listOf(entityToAdd)).single()
+  override suspend fun addEntity(entityToAdd: JavaSourceRoot): GeneratedJavaSourceRootEntity = addEntities(listOf(entityToAdd)).single()
 
-  override fun addEntities(entitiesToAdd: List<JavaSourceRoot>): List<GeneratedJavaSourceRootEntity> {
+  override suspend fun addEntities(entitiesToAdd: List<JavaSourceRoot>): List<GeneratedJavaSourceRootEntity> {
     val packages = mutableMapOf<String, MutableList<Path>>()
     for (entity in entitiesToAdd) {
       if (!entity.generated) continue
