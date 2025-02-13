@@ -6,7 +6,11 @@ kt_jvm_library(
     visibility = ["//plugin-bsp:__subpackages__"],
     deps = [
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/config",
-        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/impl",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/coroutines",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/projectAware",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/sync",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/sync/scope",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/sync/status",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

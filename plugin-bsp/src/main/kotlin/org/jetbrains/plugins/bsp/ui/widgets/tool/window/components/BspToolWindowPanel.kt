@@ -40,9 +40,9 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
 
   init {
     val actionManager = ActionManager.getInstance()
-    val temporaryTargetUtils = project.targetUtils
+    val targetUtils = project.targetUtils
 
-    loadedTargetsPanel = createLoadedTargetsPanel(project, temporaryTargetUtils)
+    loadedTargetsPanel = createLoadedTargetsPanel(project, targetUtils)
 
     val defaultActions = actionManager.getAction("Bsp.ActionsToolbar")
     val actionGroup =
@@ -63,7 +63,7 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
     this.toolbar = actionToolbar.component
     setContent(loadedTargetsPanel.withScrollAndSearch())
 
-    temporaryTargetUtils.registerSyncListener { targetListChanged ->
+    targetUtils.registerSyncListener { targetListChanged ->
       if (targetListChanged) {
         ApplicationManager.getApplication().invokeLater {
           rerenderComponents()
@@ -86,10 +86,10 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
     }
 
   private fun rerenderComponents() {
-    val temporaryTargetUtils = project.targetUtils
+    val targetUtils = project.targetUtils
     searchBarPanel.clearAllListeners()
     loadedTargetsPanel =
-      loadedTargetsPanel.createNewWithTargets(targetFilter.getMatchingLoadedTargets(temporaryTargetUtils), project.invalidTargets)
+      loadedTargetsPanel.createNewWithTargets(targetFilter.getMatchingLoadedTargets(targetUtils), project.invalidTargets)
     setContent(loadedTargetsPanel.withScrollAndSearch())
   }
 

@@ -22,19 +22,19 @@
                         interface="org.jetbrains.plugins.bsp.run.BspRunHandlerProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspProjectOpenProcessorExtension"
-                        interface="org.jetbrains.plugins.bsp.impl.flow.open.BspProjectOpenProcessorExtension"
+                        interface="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessorExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.buildToolAssetsExtension"
                         interface="org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspProjectAwareExtension"
-                        interface="org.jetbrains.plugins.bsp.impl.projectAware.BspProjectAwareExtension"
+                        interface="org.jetbrains.plugins.bsp.projectAware.BspProjectAwareExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.connectionDetailsProviderExtension"
-                        interface="org.jetbrains.plugins.bsp.impl.server.connection.ConnectionDetailsProviderExtension"
+                        interface="org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.connectionDetailsProviderExtensionJavaShim"
-                        interface="org.jetbrains.plugins.bsp.impl.server.connection.ConnectionDetailsProviderExtensionJavaShim"
+                        interface="org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtensionJavaShim"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.buildToolWindowTargetActionProviderExtension"
                         interface="org.jetbrains.plugins.bsp.extensionPoints.BuildToolWindowTargetActionProviderExtension"
@@ -55,22 +55,22 @@
                         interface="org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.projectSyncHook"
-                        interface="org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook"
+                        interface="org.jetbrains.plugins.bsp.sync.ProjectSyncHook"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.projectPreSyncHook"
-                        interface="org.jetbrains.plugins.bsp.impl.flow.sync.ProjectPreSyncHook"
+                        interface="org.jetbrains.plugins.bsp.sync.ProjectPreSyncHook"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.projectPostSyncHook"
-                        interface="org.jetbrains.plugins.bsp.impl.flow.sync.ProjectPostSyncHook"
+                        interface="org.jetbrains.plugins.bsp.sync.ProjectPostSyncHook"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.defaultProjectSyncHooksDisabler"
-                        interface="org.jetbrains.plugins.bsp.impl.flow.sync.DefaultProjectSyncHooksDisabler"
+                        interface="org.jetbrains.plugins.bsp.sync.DefaultProjectSyncHooksDisabler"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.projectStructureProvider"
-                        interface="org.jetbrains.plugins.bsp.projectStructure.ProjectStructureProvider"
+                        interface="org.jetbrains.plugins.bsp.sync.projectStructure.ProjectStructureProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.startBuiltInServerExtension"
-                        interface="org.jetbrains.plugins.bsp.impl.server.client.BspServerProvider"
+                        interface="org.jetbrains.plugins.bsp.server.client.BspServerProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.runConfigurationTypeProvider"
                         interface="org.jetbrains.plugins.bsp.run.config.BspRunConfigurationTypeProvider"
@@ -97,21 +97,21 @@
                 implementation="org.jetbrains.plugins.bsp.extensionPoints.DefaultBuildTargetClassifierExtension"/>
 
         <connectionDetailsProviderExtension
-                implementation="org.jetbrains.plugins.bsp.impl.server.connection.DefaultConnectionDetailsProviderExtension"/>
+                implementation="org.jetbrains.plugins.bsp.server.connection.DefaultConnectionDetailsProviderExtension"/>
 
-        <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.jvm.JvmBspRunHandler$JvmBspRunHandlerProvider"
+        <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.jvm.run.JvmBspRunHandler$JvmBspRunHandlerProvider"
                                id="JvmRunHandlerProvider"/>
         <bspRunHandlerProvider
-                implementation="org.jetbrains.plugins.bsp.jvm.JvmBspTestHandler$JvmBspTestHandlerProvider"
+                implementation="org.jetbrains.plugins.bsp.jvm.run.JvmBspTestHandler$JvmBspTestHandlerProvider"
                 id="JvmTestHandlerProvider"/>
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspRunHandlerProvider"
                                order="last"/>
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspTestHandlerProvider"
                                order="last"/>
-        <projectSyncHook implementation="org.jetbrains.plugins.bsp.projectDetails.CollectProjectDetailsSyncHook"/>
-        <projectSyncHook implementation="org.jetbrains.plugins.bsp.impl.flow.sync.OutputPathUrisSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.plugins.bsp.jvm.sync.JvmSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.plugins.bsp.sync.defaults.OutputPathUrisSyncHook"/>
         <projectStructureProvider
-                implementation="org.jetbrains.plugins.bsp.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
+                implementation="org.jetbrains.plugins.bsp.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
         <runConfigurationTypeProvider
                 implementation="org.jetbrains.plugins.bsp.run.config.DefaultBspRunConfigurationTypeProvider"/>
         <bspFeatureFlagsProvider implementation="org.jetbrains.plugins.bsp.config.DefaultBspFeatureFlagsProvider"/>
@@ -152,11 +152,11 @@
         <workspaceModel.fileIndexContributor
                 implementation="org.jetbrains.plugins.bsp.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
 
-        <java.programPatcher implementation="org.jetbrains.plugins.bsp.jvm.BspJvmEnvironmentProgramPatcher"/>
+        <java.programPatcher implementation="org.jetbrains.plugins.bsp.jvm.run.BspJvmEnvironmentProgramPatcher"/>
         <java.elementFinder implementation="org.jetbrains.plugins.bsp.services.GeneratedClassFinder"/>
 
         <projectOpenProcessor
-                implementation="org.jetbrains.plugins.bsp.impl.flow.open.BspProjectOpenProcessor"/>
+                implementation="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessor"/>
 
         <postStartupActivity
                 implementation="org.jetbrains.plugins.bsp.startup.BspStartupActivity"/>
@@ -166,10 +166,10 @@
                 implementation="org.jetbrains.plugins.bsp.ui.projectTree.BspProjectViewNodeDecorator"/>
         <projectTaskRunner
                 implementation="org.jetbrains.plugins.bsp.buildTask.BspProjectTaskRunner"/>
-        <programRunner implementation="org.jetbrains.plugins.bsp.jvm.BspJvmDebugRunner"/>
+        <programRunner implementation="org.jetbrains.plugins.bsp.jvm.run.BspJvmDebugRunner"/>
 
         <directoryProjectConfigurator
-                implementation="org.jetbrains.plugins.bsp.impl.flow.open.CounterPlatformProjectConfigurator"
+                implementation="org.jetbrains.plugins.bsp.flow.open.CounterPlatformProjectConfigurator"
                 order="last"/>
 
         <!--    <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"-->
@@ -177,7 +177,7 @@
         <!--                    overrides="true"/>-->
 
         <runLineMarkerContributor
-                implementationClass="org.jetbrains.plugins.bsp.ui.gutters.BspJVMRunLineMarkerContributor"
+                implementationClass="org.jetbrains.plugins.bsp.jvm.ui.gutters.BspJVMRunLineMarkerContributor"
                 language="JVM"/>
         <registryKey defaultValue="600" description="Timeout for BSP requests in seconds"
                      key="bsp.request.timeout.seconds"/>
@@ -224,7 +224,7 @@
         <toolWindowExtractor
                 implementation="org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspToolWindowViewModelExtractor"/>
 
-        <consoleFilterProvider implementation="org.jetbrains.plugins.bsp.console.BspConsoleFilterProvider"/>
+        <consoleFilterProvider implementation="org.jetbrains.plugins.bsp.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"/>
 
         <iconMapper mappingFile="BSPIconMappings.json"/>
 
@@ -253,18 +253,18 @@
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
-        <action id="Bsp.DisconnectAction" class="org.jetbrains.plugins.bsp.impl.actions.registered.DisconnectAction"
+        <action id="Bsp.DisconnectAction" class="org.jetbrains.plugins.bsp.action.registered.DisconnectAction"
                 icon="/icons/disconnect.svg"/>
-        <action id="Bsp.ResyncAction" class="org.jetbrains.plugins.bsp.impl.actions.registered.ResyncAction"
+        <action id="Bsp.ResyncAction" class="org.jetbrains.plugins.bsp.action.registered.ResyncAction"
                 icon="/icons/resync.svg"/>
         <action id="Bsp.BuildAndResyncAction"
-                class="org.jetbrains.plugins.bsp.impl.actions.registered.BuildAndResyncAction"
+                class="org.jetbrains.plugins.bsp.action.registered.BuildAndResyncAction"
                 icon="/icons/buildAndResync.svg"/>
         <action id="Bsp.Compile.CompileProjectWithBspAction"
-                class="org.jetbrains.plugins.bsp.building.action.CompileProjectWithBspAction"
+                class="org.jetbrains.plugins.bsp.action.registered.CompileProjectWithBspAction"
                 icon="AllIcons.Actions.Compile"/>
         <action id="Bsp.Compile.CompileProjectWithJpsAction"
-                class="org.jetbrains.plugins.bsp.building.action.CompileProjectWithJpsAction"
+                class="org.jetbrains.plugins.bsp.action.registered.CompileProjectWithJpsAction"
                 icon="AllIcons.Actions.Compile"/>
 
         <group id="Bsp.ActionsToolbar">
@@ -275,7 +275,7 @@
     </actions>
 
     <applicationListeners>
-        <listener class="org.jetbrains.plugins.bsp.impl.flow.close.ProjectClosingListener"
+        <listener class="org.jetbrains.plugins.bsp.flow.close.ProjectClosingListener"
                   topic="com.intellij.openapi.project.ProjectManagerListener"/>
 
         <listener class="org.jetbrains.plugins.bsp.workspace.AssignFileToModuleListener"

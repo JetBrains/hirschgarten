@@ -20,8 +20,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
-import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
+import org.jetbrains.plugins.bsp.sync.scope.SecondPhaseSync
+import org.jetbrains.plugins.bsp.sync.task.ProjectSyncTask
 import java.util.concurrent.atomic.AtomicReference
 
 class BspBuildSystemFilePreviewServices : BuildSystemFilePreviewServices<BspAndroidProjectSystem, BspBuildTargetReference> {

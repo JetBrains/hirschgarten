@@ -9,8 +9,9 @@ kt_jvm_library(
     deps = [
         "//plugin-bsp/protocol/src/main/kotlin/org/jetbrains/bsp/protocol/utils",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/config",
-        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/impl",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/run",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/server/tasks",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/target",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/ui/notifications",
         "//plugin-bsp/workspacemodel/src:workspacemodel",
         "//protocol",

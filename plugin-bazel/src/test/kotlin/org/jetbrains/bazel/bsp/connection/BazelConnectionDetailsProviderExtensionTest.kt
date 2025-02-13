@@ -28,7 +28,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.settings.BazelProjectSettings
 import org.jetbrains.bazel.settings.bazelProjectSettings
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.impl.server.connection.ConnectionDetailsProviderExtension
+import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName

@@ -23,7 +23,7 @@ import org.jetbrains.bsp.bazel.installationcontext.InstallationContextJavaPathEn
 import org.jetbrains.bsp.protocol.utils.parseBspConnectionDetails
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.impl.server.connection.ConnectionDetailsProviderExtension
+import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists

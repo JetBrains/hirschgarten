@@ -10,9 +10,9 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.settings.bazelProjectSettings
 import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.impl.flow.open.BaseBspProjectOpenProcessor
-import org.jetbrains.plugins.bsp.impl.flow.open.BspProjectOpenProcessor
-import org.jetbrains.plugins.bsp.impl.flow.open.BspProjectOpenProcessorExtension
+import org.jetbrains.plugins.bsp.flow.open.BaseBspProjectOpenProcessor
+import org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessor
+import org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessorExtension
 import javax.swing.Icon
 
 internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelBspBuildToolId) {
