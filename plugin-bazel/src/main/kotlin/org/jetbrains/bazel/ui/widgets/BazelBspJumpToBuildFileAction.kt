@@ -32,6 +32,7 @@ class BazelBspJumpToBuildFileAction(private val buildTargetInfo: BuildTargetInfo
   constructor() : this(null)
 
   override fun update(project: Project, e: AnActionEvent) {
+    // If created via the primary constructor, then we should show ourselves in any case
     if (buildTargetInfo != null) return
 
     e.presentation.isEnabledAndVisible = (e.place == ActionPlaces.EDITOR_POPUP || e.place == ActionPlaces.KEYBOARD_SHORTCUT) &&
