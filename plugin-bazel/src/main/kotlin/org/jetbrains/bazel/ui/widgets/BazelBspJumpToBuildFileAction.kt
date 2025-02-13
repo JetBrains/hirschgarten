@@ -4,7 +4,6 @@ import com.intellij.icons.AllIcons
 import com.intellij.ide.util.EditorHelper
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.project.Project
@@ -36,7 +35,7 @@ class BazelBspJumpToBuildFileAction(private val buildTargetInfo: BuildTargetInfo
     if (buildTargetInfo != null) return
 
     e.presentation.isEnabledAndVisible = (e.place == ActionPlaces.EDITOR_POPUP || e.place == ActionPlaces.KEYBOARD_SHORTCUT) &&
-      CommonDataKeys.PSI_FILE.getData(e.dataContext)?.virtualFile?.let {
+      e.getPsiFile()?.virtualFile?.let {
         project.targetUtils.getTargetsForFile(it).isNotEmpty()
       } == true
   }
