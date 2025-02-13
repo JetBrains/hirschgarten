@@ -1,7 +1,9 @@
 package org.jetbrains.bazel.flow.open
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
@@ -13,8 +15,32 @@ import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.flow.open.BaseBspProjectOpenProcessor
 import org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessor
 import org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessorExtension
+import java.io.IOException
+import java.nio.file.Path
 import javax.swing.Icon
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.listDirectoryEntries
 
+private val log = logger<BazelBspProjectOpenProcessor>()
+
+internal val ALL_ELIGIBLE_FILES_GLOB =
+  buildString {
+    append("{")
+    append(BAZELBSP_JSON_FILE_NAME)
+    append(",")
+    append(BazelPluginConstants.WORKSPACE_FILE_NAMES.joinToString(","))
+    append(",")
+    append(BazelPluginConstants.BUILD_FILE_NAMES.joinToString(","))
+    append(",*.")
+    append(BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION)
+    append("}")
+  }
+
+internal val BUILD_FILE_GLOB = "{${BazelPluginConstants.BUILD_FILE_NAMES.joinToString(",")}}"
+
+/**
+ * Refrain from using [VirtualFile.getChildren] as it causes performance issues in large projects, such as [BAZEL-1717](https://youtrack.jetbrains.com/issue/BAZEL-1717)
+ */
 internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelBspBuildToolId) {
   override fun calculateProjectFolderToOpen(virtualFile: VirtualFile): VirtualFile =
     when {
@@ -34,8 +60,22 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
   override fun canOpenProject(file: VirtualFile): Boolean =
     when {
       file.isEligibleFile() -> true
-      else -> file.children?.any { it.isEligibleFile() } == true
+      else -> file.containsEligibleFile() == true
     }
+
+  private fun VirtualFile.containsEligibleFile(): Boolean {
+    try {
+      if (!isDirectory) return false
+      val path = toNioPath()
+      return path
+        .listDirectoryEntries(
+          glob = ALL_ELIGIBLE_FILES_GLOB,
+        ).any { it.isRegularFile() }
+    } catch (e: IOException) {
+      log.warn("Cannot check if directory $this contains a Bazel eligible file to open", e)
+      return false
+    }
+  }
 
   private fun VirtualFile.isEligibleFile() = isBazelBspConnectionFile() || isWorkspaceFile() || isBuildFile() || isProjectViewFile()
 
@@ -52,15 +92,27 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
       originalVFile.isWorkspaceFile() -> { project -> }
       originalVFile.isWorkspaceRoot() -> { project -> }
       else -> {
-        val buildFile = calculateBuildFileFromDirectory(originalVFile)
+        val buildFile = originalVFile.getContainingBuildFile()
         buildFile?.let { buildFileBeforeOpenCallback(it) } ?: {}
       }
     }
 
-  private fun VirtualFile.isWorkspaceRoot(): Boolean = isDirectory && children?.any { it.isWorkspaceFile() } == true
+  private fun VirtualFile.getContainingBuildFile(): VirtualFile? {
+    try {
+      if (!isDirectory) return null
+      val path = toNioPath()
+      return path
+        .listDirectoryEntries(
+          glob = BUILD_FILE_GLOB,
+        ).firstOrNull { it.isRegularFile() }
+        ?.toVirtualFile()
+    } catch (e: IOException) {
+      log.warn("Cannot retrieve Bazel BUILD file from directory $this", e)
+      return null
+    }
+  }
 
-  private fun calculateBuildFileFromDirectory(originalVFile: VirtualFile): VirtualFile? =
-    originalVFile.children?.firstOrNull { it.isBuildFile() }
+  private fun Path.toVirtualFile(): VirtualFile? = LocalFileSystem.getInstance().findFileByNioFile(this)
 
   private fun buildFileBeforeOpenCallback(originalVFile: VirtualFile): (Project) -> Unit =
     fun(project) {
@@ -94,11 +146,15 @@ internal class BazelBspProjectOpenProcessorExtension : BspProjectOpenProcessorEx
 tailrec fun findProjectFolderFromEligibleFile(vFile: VirtualFile?): VirtualFile? =
   when {
     vFile == null -> null
-    vFile.containsWorkspaceFile() -> vFile
+    vFile.isWorkspaceRoot() -> vFile
     else -> findProjectFolderFromEligibleFile(vFile.parent)
   }
 
-private fun VirtualFile.containsWorkspaceFile() = isDirectory && children?.any { it.isWorkspaceFile() } == true
+private fun VirtualFile.isWorkspaceRoot(): Boolean {
+  if (!isDirectory) return false
+  val path = toNioPath()
+  return BazelPluginConstants.WORKSPACE_FILE_NAMES.any { path.resolve(it).isRegularFile() }
+}
 
 private fun VirtualFile.isWorkspaceFile() = isFile && name in BazelPluginConstants.WORKSPACE_FILE_NAMES
 
