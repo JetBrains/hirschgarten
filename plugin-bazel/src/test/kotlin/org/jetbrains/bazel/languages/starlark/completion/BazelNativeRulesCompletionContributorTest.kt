@@ -8,7 +8,6 @@ import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
-
   @Test
   fun `should complete cc native rule`() {
     // given
@@ -19,17 +18,18 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     val ccLookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    ccLookups shouldContainAll listOf(
-      "cc_binary",
-      "cc_import",
-      "cc_library",
-      "cc_test",
-      "cc_toolchain",
-      "cc_shared_library",
-      "cc_static_library",
-      "cc_proto_library",
-      "cc_toolchain_suite",
-    )
+    ccLookups shouldContainAll
+      listOf(
+        "cc_binary",
+        "cc_import",
+        "cc_library",
+        "cc_test",
+        "cc_toolchain",
+        "cc_shared_library",
+        "cc_static_library",
+        "cc_proto_library",
+        "cc_toolchain_suite",
+      )
 
     // when
     myFixture.configureByText("BUILD", "")
@@ -37,10 +37,11 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     val fdoLookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    fdoLookups shouldContainAll listOf(
-      "fdo_profile",
-      "fdo_prefetch_hints",
-    )
+    fdoLookups shouldContainAll
+      listOf(
+        "fdo_profile",
+        "fdo_prefetch_hints",
+      )
 
     // when
     myFixture.configureByText("BUILD", "")
@@ -48,9 +49,10 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     val propLookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    propLookups shouldContainAll listOf(
-      "propeller_optimize",
-    )
+    propLookups shouldContainAll
+      listOf(
+        "propeller_optimize",
+      )
   }
 
   @Test
@@ -63,18 +65,19 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldContainAll listOf(
-      "java_binary",
-      "java_import",
-      "java_library",
-      "java_plugin",
-      "java_runtime",
-      "java_test",
-      "java_toolchain",
-      "java_package_configuration",
-      "java_single_jar",
-      "java_proto_library"
-    )
+    lookups shouldContainAll
+      listOf(
+        "java_binary",
+        "java_import",
+        "java_library",
+        "java_plugin",
+        "java_runtime",
+        "java_test",
+        "java_toolchain",
+        "java_package_configuration",
+        "java_single_jar",
+        "java_proto_library",
+      )
   }
 
   @Test
@@ -87,10 +90,11 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldContainAll listOf(
-      "objc_library",
-      "objc_import",
-    )
+    lookups shouldContainAll
+      listOf(
+        "objc_library",
+        "objc_import",
+      )
   }
 
   @Test
@@ -103,15 +107,16 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldContainAll listOf(
-      "cc_proto_library",
-      "java_lite_proto_library",
-      "java_proto_library",
-      "proto_library",
-      "py_proto_library",
-      "proto_lang_toolchain",
-      "proto_toolchain",
-    )
+    lookups shouldContainAll
+      listOf(
+        "cc_proto_library",
+        "java_lite_proto_library",
+        "java_proto_library",
+        "proto_library",
+        "py_proto_library",
+        "proto_lang_toolchain",
+        "proto_toolchain",
+      )
   }
 
   @Test
@@ -124,12 +129,13 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldContainAll listOf(
-      "py_binary",
-      "py_library",
-      "py_test",
-      "py_runtime",
-    )
+    lookups shouldContainAll
+      listOf(
+        "py_binary",
+        "py_library",
+        "py_test",
+        "py_runtime",
+      )
   }
 
   @Test
@@ -142,11 +148,12 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldContainAll listOf(
-      "sh_binary",
-      "sh_library",
-      "sh_test",
-    )
+    lookups shouldContainAll
+      listOf(
+        "sh_binary",
+        "sh_library",
+        "sh_test",
+      )
   }
 
   @Test

@@ -19,17 +19,18 @@ class BazelNativeRulesArgumentCompletionContributorTest : BasePlatformTestCase()
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldContainAll listOf(
-      "name",
-      "deps",
-      "resources",
-      "add_opens",
-      "classpath_resources",
-      "compatible_with",
-      "deploy_env",
-      "deploy_manifest_lines",
-      "deprecation",
-    )
+    lookups shouldContainAll
+      listOf(
+        "name",
+        "deps",
+        "resources",
+        "add_opens",
+        "classpath_resources",
+        "compatible_with",
+        "deploy_env",
+        "deploy_manifest_lines",
+        "deprecation",
+      )
   }
 
   @Test
