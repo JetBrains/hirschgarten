@@ -4,12 +4,17 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.components.BaseState
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 
-class StarlarkDebugConfigurationFactory(type: ConfigurationType) : ConfigurationFactory(type) {
+class StarlarkDebugConfigurationFactory(type: ConfigurationType) :
+  ConfigurationFactory(type),
+  DumbAware {
   override fun createTemplateConfiguration(project: Project): RunConfiguration = StarlarkDebugConfiguration(project, this, "")
 
   override fun getOptionsClass(): Class<out BaseState> = StarlarkDebugConfiguration.Options::class.java
 
   override fun getId(): String = "StarlarkDebugFactory"
+
+  override fun isEditableInDumbMode(): Boolean = true
 }

@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.jvm.ui.gutters
 
+import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
@@ -12,12 +13,14 @@ import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.ui.gutters.BspRunLineMarkerContributor
 
 class BspJVMRunLineMarkerContributor : BspRunLineMarkerContributor() {
+  override fun isDumbAware(): Boolean = true
+
   override fun PsiElement.shouldAddMarker(): Boolean =
     !isInsideJar() &&
       getStrictParentOfType<PsiNameIdentifierOwner>()
         ?.isClassOrMethod() ?: false
 
-  private fun PsiElement.isInsideJar() = containingFile.virtualFile?.url?.startsWith("jar://") ?: false
+  private fun PsiElement.isInsideJar() = containingFile.virtualFile?.fileSystem is JarFileSystem
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1316
   override fun getSingleTestFilter(element: PsiElement): String? =
