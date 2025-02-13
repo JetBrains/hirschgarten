@@ -13,11 +13,9 @@ import com.intellij.patterns.PatternCondition
 import com.intellij.patterns.PlatformPatterns.psiComment
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.patterns.PlatformPatterns.psiFile
-import com.intellij.psi.util.elementType
 import com.intellij.psi.util.findParentOfType
 import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
-import com.jetbrains.python.ast.findChildByType
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRuleArgument
@@ -26,8 +24,6 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
-import org.jetbrains.kotlin.idea.kdoc.insert
-import org.jetbrains.kotlin.idea.util.CommentSaver.Companion.tokenType
 
 class BazelNativeRulesArgumentCompletionContributor : CompletionContributor() {
   init {
@@ -75,9 +71,10 @@ class BazelNativeRulesArgumentCompletionContributor : CompletionContributor() {
       var args = BazelNativeRules.getRuleArguments(functionName)
       val argumentListText = starlarkCallExpression.lastChild.text
 
-      val filtered = args.filter {
-        !argumentListText.contains(it.name)
-      }
+      val filtered =
+        args.filter {
+          !argumentListText.contains(it.name)
+        }
 
       filtered.forEach { result.addElement(functionLookupElement(it)) }
     }
