@@ -23,6 +23,8 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleAc
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
+  override fun isDumbAware(): Boolean = true
+
   override fun getInfo(element: PsiElement): Info? {
     val grandParent = element.parent?.parent ?: return null
     return if (element.shouldAddMarker(grandParent)) {
