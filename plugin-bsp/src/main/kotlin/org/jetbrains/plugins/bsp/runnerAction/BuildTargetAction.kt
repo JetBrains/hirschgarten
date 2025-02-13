@@ -8,9 +8,9 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.action.SuspendableAction
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.server.tasks.runBuildTargetTask
+import org.jetbrains.plugins.bsp.server.tasks.runBuildTargetTask
 
-public class BuildTargetAction(private val targetId: BuildTargetIdentifier) :
+class BuildTargetAction(private val targetId: BuildTargetIdentifier) :
   SuspendableAction(
     text = { BspPluginBundle.message("widget.build.target.popup.message") },
     icon = AllIcons.Toolwindows.ToolWindowBuild,
@@ -19,10 +19,10 @@ public class BuildTargetAction(private val targetId: BuildTargetIdentifier) :
     buildTarget(project, targetId)
   }
 
-  public companion object {
+  companion object {
     private val log = logger<BuildTargetAction>()
 
-    public fun buildTarget(project: Project, targetId: BuildTargetIdentifier) {
+    fun buildTarget(project: Project, targetId: BuildTargetIdentifier) {
       BspCoroutineService.getInstance(project).start {
         runBuildTargetTask(listOf(targetId), project, log)
       }

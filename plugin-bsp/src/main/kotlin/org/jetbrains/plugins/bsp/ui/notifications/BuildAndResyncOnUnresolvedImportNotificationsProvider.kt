@@ -21,9 +21,9 @@ import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
-import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
-import org.jetbrains.plugins.bsp.impl.projectAware.isSyncInProgress
+import org.jetbrains.plugins.bsp.sync.scope.SecondPhaseSync
+import org.jetbrains.plugins.bsp.sync.status.isSyncInProgress
+import org.jetbrains.plugins.bsp.sync.task.ProjectSyncTask
 import java.util.function.Function
 import javax.swing.JComponent
 

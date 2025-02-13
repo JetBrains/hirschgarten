@@ -9,7 +9,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.plugins.bsp.action.SuspendableAction
-import org.jetbrains.plugins.bsp.impl.actions.registered.ResyncAction
+import org.jetbrains.plugins.bsp.action.registered.ResyncAction
 
 internal class LoadProjectViewFileAction :
   SuspendableAction({
