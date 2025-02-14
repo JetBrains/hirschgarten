@@ -47,7 +47,7 @@ Might be useful during development.
    the `server/src/main/kotlin/org/jetbrains/bsp/bazel/BUILD` file
 4. Publish a new version:
    ```shell
-   bazel run --stamp --define "maven_repo=file://$HOME/.m2/repository" //server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp.publish
+   bazel run --stamp --define "maven_repo=file://$HOME/.m2/repository" //server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp.publish
    ```
 5. Enter the directory where Bazel BSP should be installed
 6. Install your version:

@@ -56,6 +56,7 @@ class BazelBspAspectsManager(
         rulesetName?.let { RulesetLanguage(it, language) }
       }.removeDisabledLanguages()
       .addNativeAndroidLanguageIfNeeded()
+      .addExternalPythonLanguageIfNeeded(externalRulesetNames)
 
   private fun List<RulesetLanguage>.removeDisabledLanguages(): List<RulesetLanguage> {
     val disabledLanguages =
@@ -72,6 +73,11 @@ class BazelBspAspectsManager(
     if (!featureFlags.isAndroidSupportEnabled) return this
     if (!workspaceContextProvider.currentWorkspaceContext().enableNativeAndroidRules.value) return this
     return this.filterNot { it.language == Language.Android } + RulesetLanguage(null, Language.Android)
+  }
+
+  private fun List<RulesetLanguage>.addExternalPythonLanguageIfNeeded(externalRulesetNames: List<String>): List<RulesetLanguage> {
+    val rulesetName = Language.Python.rulesetNames.firstOrNull { externalRulesetNames.contains(it) }
+    return this.filterNot { it.language == Language.Python } + RulesetLanguage(rulesetName, Language.Python)
   }
 
   fun generateAspectsFromTemplates(
