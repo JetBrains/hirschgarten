@@ -11,6 +11,7 @@ load(
     "@rules_intellij//build_defs:intellij_plugin_debug_target.bzl",
     "intellij_plugin_debug_target",
 )
+load("@rules_java//java:java_single_jar.bzl", "java_single_jar")
 load("//:versions.bzl", "INTELLIJ_BSP_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
 
 # Changelog file
@@ -109,6 +110,14 @@ intellij_plugin(
 
 intellij_plugin_debug_target(
     name = "plugin-bsp-debug",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":intellij-bsp_single_jar_for_debug",
+    ],
+)
+
+java_single_jar(
+    name = "intellij-bsp_single_jar_for_debug",
     visibility = ["//visibility:public"],
     deps = [
         ":intellij-bsp",
