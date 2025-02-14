@@ -8,7 +8,7 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.SlowOperations
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.moduleEntity
+import org.jetbrains.plugins.bsp.target.moduleEntity
 import org.jetbrains.plugins.bsp.utils.isSourceFile
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspDummyEntitySource
 

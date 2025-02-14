@@ -5,7 +5,6 @@ import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
-import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.buildToolId
@@ -14,12 +13,13 @@ import org.jetbrains.plugins.bsp.config.isBspProjectLoaded
 import org.jetbrains.plugins.bsp.config.openedTimesSinceLastStartupResync
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.config.workspaceModelLoadedFromCache
-import org.jetbrains.plugins.bsp.impl.flow.sync.PhasedSync
-import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
-import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
-import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
-import org.jetbrains.plugins.bsp.impl.server.connection.connectionDetailsProvider
+import org.jetbrains.plugins.bsp.projectAware.BspWorkspace
+import org.jetbrains.plugins.bsp.server.connection.connectionDetailsProvider
+import org.jetbrains.plugins.bsp.sync.scope.SecondPhaseSync
+import org.jetbrains.plugins.bsp.sync.task.PhasedSync
+import org.jetbrains.plugins.bsp.sync.task.ProjectSyncTask
 import org.jetbrains.plugins.bsp.target.targetUtils
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.fileTargets.updateBspFileTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.registerBspToolWindow
 import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler

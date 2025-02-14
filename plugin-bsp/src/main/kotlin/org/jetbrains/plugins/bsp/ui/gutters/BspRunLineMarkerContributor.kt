@@ -31,11 +31,11 @@ abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
 
   private fun PsiElement.calculateLineMarkerInfo(): Info? =
     containingFile.virtualFile?.let { url ->
-      val temporaryTargetUtils = project.targetUtils
+      val targetUtils = project.targetUtils
       val targetInfos =
-        temporaryTargetUtils
-          .getExecutableTargetsForFile(url, project)
-          .mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) }
+        targetUtils
+          .getExecutableTargetsForFile(url)
+          .mapNotNull { targetUtils.getBuildTargetInfoForId(it) }
       calculateLineMarkerInfo(project, targetInfos, getSingleTestFilter(this))
     }
 

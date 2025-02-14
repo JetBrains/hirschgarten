@@ -16,7 +16,6 @@ import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.getModule
 import org.jetbrains.plugins.bsp.run.BspProcessHandler
 import org.jetbrains.plugins.bsp.run.BspRunHandler
 import org.jetbrains.plugins.bsp.run.BspRunHandlerProvider
@@ -26,6 +25,7 @@ import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 import org.jetbrains.plugins.bsp.run.config.BspRunConfigurationType
 import org.jetbrains.plugins.bsp.run.state.GenericRunState
 import org.jetbrains.plugins.bsp.run.task.BspRunTaskListener
+import org.jetbrains.plugins.bsp.target.getModule
 import org.jetbrains.plugins.bsp.taskEvents.BspTaskListener
 import org.jetbrains.plugins.bsp.taskEvents.OriginId
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo

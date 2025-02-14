@@ -13,6 +13,7 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
+import org.jetbrains.plugins.bsp.annotations.PublicApi
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
 
 data class BspProjectPropertiesState(
@@ -109,6 +110,7 @@ var Project.openedTimesSinceLastStartupResync: Int
     bspProjectProperties.openedTimesSinceLastStartupResync = value
   }
 
+@PublicApi
 var Project.rootDir: VirtualFile
   get() =
     bspProjectProperties.rootDir

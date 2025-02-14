@@ -29,8 +29,8 @@ import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.plugins.bsp.config.defaultJdkName
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
-import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
+import org.jetbrains.plugins.bsp.sync.scope.SecondPhaseSync
+import org.jetbrains.plugins.bsp.sync.task.ProjectSyncTask
 import org.jetbrains.plugins.bsp.ui.projectTree.BspTreeStructureSettings
 import org.jetbrains.plugins.bsp.ui.projectTree.BspTreeStructureSettingsProvider
 import java.net.URI
