@@ -7,9 +7,9 @@ import com.android.tools.idea.projectsystem.ProjectSystemBuildManager.BuildStatu
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
-import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
-import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspaceListener
+import org.jetbrains.plugins.bsp.sync.scope.SecondPhaseSync
+import org.jetbrains.plugins.bsp.sync.status.SyncStatusListener
+import org.jetbrains.plugins.bsp.sync.task.ProjectSyncTask
 
 class BspProjectSystemBuildManager(private val project: Project) : ProjectSystemBuildManager {
   @Deprecated("Do not add new uses of this method as it's error prone")
@@ -22,8 +22,8 @@ class BspProjectSystemBuildManager(private val project: Project) : ProjectSystem
 
   override fun addBuildListener(parentDisposable: Disposable, buildListener: ProjectSystemBuildManager.BuildListener) {
     project.messageBus.connect(parentDisposable).subscribe(
-      BspWorkspaceListener.TOPIC,
-      object : BspWorkspaceListener {
+      SyncStatusListener.TOPIC,
+      object : SyncStatusListener {
         override fun syncStarted() {
           buildListener.buildStarted(BuildMode.COMPILE_OR_ASSEMBLE)
         }

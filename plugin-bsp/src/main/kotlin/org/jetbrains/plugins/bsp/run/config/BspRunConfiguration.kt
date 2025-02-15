@@ -10,7 +10,6 @@ import com.intellij.execution.testframework.sm.runner.SMRunnerConsolePropertiesP
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element
@@ -24,8 +23,7 @@ class BspRunConfiguration internal constructor(
   configurationType: BspRunConfigurationType,
 ) : LocatableConfigurationBase<RunProfileState>(project, configurationType, name),
   RunConfigurationWithSuppressedDefaultDebugAction,
-  SMRunnerConsolePropertiesProvider,
-  DumbAware {
+  SMRunnerConsolePropertiesProvider {
   private val logger: Logger = logger<BspRunConfiguration>()
 
   /** The BSP-specific parts of the last serialized state of this run configuration. */

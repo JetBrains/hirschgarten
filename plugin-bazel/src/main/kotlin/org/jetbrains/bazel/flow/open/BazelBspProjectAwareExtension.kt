@@ -5,7 +5,7 @@ import com.intellij.openapi.externalSystem.ui.ExternalSystemIconProvider
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.plugins.bsp.impl.projectAware.BspProjectAwareExtension
+import org.jetbrains.plugins.bsp.projectAware.BspProjectAwareExtension
 import javax.swing.Icon
 
 class BazelBspProjectAwareExtension : BspProjectAwareExtension {

@@ -2,7 +2,9 @@ package org.jetbrains.plugins.bsp.impl.flow.sync
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook.ProjectSyncHookEnvironment
+import org.jetbrains.plugins.bsp.sync.DefaultProjectSyncHooksDisabler
+import org.jetbrains.plugins.bsp.sync.ProjectSyncHook
+import org.jetbrains.plugins.bsp.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 
 open class TestProjectSyncHook(override val buildToolId: BuildToolId) : ProjectSyncHook {
   var wasCalled: Boolean = false

@@ -7,8 +7,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
-import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspaceListener
-import org.jetbrains.plugins.bsp.impl.projectAware.isSyncInProgress
+import org.jetbrains.plugins.bsp.sync.status.SyncStatusListener
+import org.jetbrains.plugins.bsp.sync.status.isSyncInProgress
 import org.jetbrains.plugins.bsp.target.targetUtils
 
 private const val SYNC_START_TIMEOUT_MS = 10000L
@@ -27,8 +27,8 @@ internal class WaitForBazelSyncCommand(text: String, line: Int) : PlaybackComman
 
       @Suppress("UnstableApiUsage")
       project.messageBus.connect(nestedDisposable()).subscribe(
-        BspWorkspaceListener.TOPIC,
-        object : BspWorkspaceListener {
+        SyncStatusListener.TOPIC,
+        object : SyncStatusListener {
           override fun syncStarted() {
             runBlocking { syncStarted.send(Unit) }
           }

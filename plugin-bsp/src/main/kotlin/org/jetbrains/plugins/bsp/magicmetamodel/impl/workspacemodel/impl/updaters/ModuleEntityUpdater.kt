@@ -20,7 +20,7 @@ import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsConstants
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
 import org.jetbrains.plugins.bsp.extensionPoints.bspProjectModelExternalSource
-import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
+import org.jetbrains.plugins.bsp.projectAware.BspWorkspace
 import org.jetbrains.plugins.bsp.target.addLibraryModulePrefix
 import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspDummyEntitySource

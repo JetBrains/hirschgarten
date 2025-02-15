@@ -7,9 +7,9 @@ import org.jetbrains.bazel.settings.bazelProjectSettings
 import org.jetbrains.bsp.inmem.Connection
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.extensionPoints.GenericConnection
-import org.jetbrains.plugins.bsp.impl.server.client.BspClient
-import org.jetbrains.plugins.bsp.impl.server.client.BspServerProvider
+import org.jetbrains.plugins.bsp.server.client.BspClient
+import org.jetbrains.plugins.bsp.server.client.BspServerProvider
+import org.jetbrains.plugins.bsp.server.client.GenericConnection
 import java.nio.file.Path
 
 class InMemServerProviderImpl : BspServerProvider {

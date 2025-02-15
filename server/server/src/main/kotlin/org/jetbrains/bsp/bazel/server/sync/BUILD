@@ -21,6 +21,7 @@ kt_jvm_library(
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bsp/utils",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/dependencygraph",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/paths",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/firstPhase",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/languages",

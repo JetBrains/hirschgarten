@@ -15,10 +15,10 @@ import org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook
-import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.plugins.bsp.impl.flow.sync.query
-import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelDiff
+import org.jetbrains.plugins.bsp.sync.ProjectSyncHook
+import org.jetbrains.plugins.bsp.sync.ProjectSyncHook.ProjectSyncHookEnvironment
+import org.jetbrains.plugins.bsp.sync.projectStructure.workspaceModel.workspaceModelDiff
+import org.jetbrains.plugins.bsp.sync.task.query
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 import java.nio.file.Path

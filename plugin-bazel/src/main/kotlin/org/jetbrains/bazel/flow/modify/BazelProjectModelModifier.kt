@@ -17,8 +17,8 @@ import org.jetbrains.bazel.ui.widgets.findBuildFile
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.resolvedPromise
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.flow.sync.PartialProjectSync
-import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
+import org.jetbrains.plugins.bsp.sync.scope.PartialProjectSync
+import org.jetbrains.plugins.bsp.sync.task.ProjectSyncTask
 import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 

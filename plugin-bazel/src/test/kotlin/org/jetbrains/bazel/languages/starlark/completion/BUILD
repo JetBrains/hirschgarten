@@ -15,7 +15,10 @@ kt_intellij_junit4_test(
     runtime_deps = [
         "//plugin-bsp:intellij-bsp",
     ],
-    deps = ["//plugin-bazel:intellij-bazel"],
+    deps = [
+        "//plugin-bazel:intellij-bazel",
+        "@rules_intellij//intellij_platform_sdk:plugin_api",
+    ],
 )
 
 kt_intellij_junit4_test(

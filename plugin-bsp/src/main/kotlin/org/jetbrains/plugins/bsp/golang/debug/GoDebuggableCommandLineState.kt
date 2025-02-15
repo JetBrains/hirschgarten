@@ -16,9 +16,9 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.server.connection.connection
 import org.jetbrains.plugins.bsp.run.BspProcessHandler
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
+import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.taskEvents.BspTaskEventsService
 import org.jetbrains.plugins.bsp.taskEvents.BspTaskListener
 import org.jetbrains.plugins.bsp.taskEvents.OriginId

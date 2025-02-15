@@ -16,13 +16,15 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpres
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.impl.flow.sync.actions.ResyncTargetAction
 import org.jetbrains.plugins.bsp.runnerAction.BuildTargetAction
+import org.jetbrains.plugins.bsp.sync.action.ResyncTargetAction
 import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
+  override fun isDumbAware(): Boolean = true
+
   override fun getInfo(element: PsiElement): Info? {
     val grandParent = element.parent?.parent ?: return null
     return if (element.shouldAddMarker(grandParent)) {

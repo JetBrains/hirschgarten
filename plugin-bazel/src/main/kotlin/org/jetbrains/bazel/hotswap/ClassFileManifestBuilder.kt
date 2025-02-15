@@ -34,9 +34,9 @@ import org.jetbrains.bazel.config.BazelHotSwapBundle
 import org.jetbrains.bazel.hotswap.BazelHotSwapManager.HotSwappableDebugSession
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.flow.sync.query
-import org.jetbrains.plugins.bsp.impl.server.connection.connection
 import org.jetbrains.plugins.bsp.runnerAction.LocalJvmRunnerAction
+import org.jetbrains.plugins.bsp.server.connection.connection
+import org.jetbrains.plugins.bsp.sync.task.query
 import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.io.File

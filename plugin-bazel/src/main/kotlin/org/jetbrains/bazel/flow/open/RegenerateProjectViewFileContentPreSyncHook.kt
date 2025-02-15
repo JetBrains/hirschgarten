@@ -3,7 +3,7 @@ package org.jetbrains.bazel.flow.open
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.settings.bazelProjectSettings
 import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectPreSyncHook
+import org.jetbrains.plugins.bsp.sync.ProjectPreSyncHook
 import kotlin.io.path.isRegularFile
 
 class RegenerateProjectViewFileContentPreSyncHook : ProjectPreSyncHook {

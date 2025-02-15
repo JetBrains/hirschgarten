@@ -9,7 +9,7 @@ kt_jvm_library(
     deps = [
         "//plugin-bsp/protocol/src/main/kotlin/org/jetbrains/bsp/protocol/utils",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/action",
-        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/impl",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/projectAware",
         "//plugin-bsp/workspacemodel/src:workspacemodel",
         "//protocol",
         "//sdkcompat",
