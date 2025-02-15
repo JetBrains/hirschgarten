@@ -21,6 +21,7 @@ exclude:
       - .teamcity
       # test projects, not needed for qodana, may produce false positives
       - server/e2e/test-projects
+      - server/executioncontext/projectview/src/test/resources/projectview
   - name: CheckDependencyLicenses
   - name: UnnecessaryUnicodeEscape
   - name: UnstableApiUsage
