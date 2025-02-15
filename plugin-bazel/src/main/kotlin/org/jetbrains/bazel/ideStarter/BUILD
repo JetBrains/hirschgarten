@@ -5,7 +5,9 @@ kt_jvm_library(
     srcs = glob(["**/*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//plugin-bazel/src:intellij-bsp",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/plugins/bsp/runnerAction",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/plugins/bsp/target",
+        "@maven//:ch_epfl_scala_bsp4j",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
         "@rules_intellij//third_party/performance",
     ],

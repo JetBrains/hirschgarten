@@ -6,7 +6,7 @@ kt_jvm_library(
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
         "//plugin-bazel/src:intellij-bazel-resources",
-        "//plugin-bazel/src:intellij-bsp",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/plugins/bsp/config",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

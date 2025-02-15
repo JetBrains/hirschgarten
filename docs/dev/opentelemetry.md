@@ -41,7 +41,7 @@ All the metrics are then exported by IDEA however it's configured, but usually a
 To populate the performance dashboard for IntelliJ-BSP we use `intellij-ide-starter` (see `BazelTest.kt`) which collects the metrics and exports them as a TeamCity artifact.
 
 ### Run IntelliJ-BSP benchmark locally
-To run the benchmark locally, run the following command: `bazel test //plugin-bsp/performance-testing:performance-testing --jvmopt="-Dbsp.benchmark.cache.directory=/Users/<username>/IdeaProjects/hirschgarten -Dbsp.benchmark.project.path=/Users/<username>/IdeaProjects/<project-to-benchmark-on>" --sandbox_writable_path=/ --action-env=PATH`. It will download IDEA, launch it, open the project and wait for it to import. Then it collects the metrics from IDEA and saves them as a TeamCity artifact.
+To run the benchmark locally, run the following command: `bazel test //plugin-bazel/performance-testing:performance-testing --jvmopt="-Dbsp.benchmark.cache.directory=/Users/<username>/IdeaProjects/hirschgarten -Dbsp.benchmark.project.path=/Users/<username>/IdeaProjects/<project-to-benchmark-on>" --sandbox_writable_path=/ --action-env=PATH`. It will download IDEA, launch it, open the project and wait for it to import. Then it collects the metrics from IDEA and saves them as a TeamCity artifact.
 
 ### Run IDEA while exporting to Jaeger
 If you want to use IDEA yourself but still get the metrics from the sync, you can do that by exporting metrics via Jaeger. Here's how:
@@ -99,7 +99,7 @@ tracer.spanBuilder("Resolve project").use {
 Memory metrics are collected in the same hacky way as in IntelliJ-BSP (see `MemoryProfiler.kt` in the server).
 ### Run Bazel-BSP benchmark locally
 ```
-bazel run //server/bspcli:bspcli /path/to/project /path/to/output/metrics.txt //...
+bazel run //plugin-bazel/bspcli:bspcli /path/to/project /path/to/output/metrics.txt //...
 ```
 Then `metrics.txt` will contain the metrics.
 ### Run Bazel-BSP benchmark on TeamCity

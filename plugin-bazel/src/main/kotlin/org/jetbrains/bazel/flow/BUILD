@@ -9,7 +9,7 @@ kt_jvm_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/constants",
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/symlinks",
-        "//plugin-bazel/src:intellij-bsp",
+#         "//plugin-bazel/src:intellij-bazel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui",

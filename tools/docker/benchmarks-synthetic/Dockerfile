@@ -18,10 +18,10 @@ USER hirschuser
 RUN git clone --depth 1 https://github.com/JetBrains/hirschgarten.git /home/hirschuser/hirschgarten
 
 RUN cd /home/hirschuser/hirschgarten \
-    && bazel run //server/bspcli:generator -- /home/hirschuser/project_1000 1000 --targetssize 1 \
-    && bazel run //server/bspcli:generator -- /home/hirschuser/project_5000 5000 --targetssize 1 \
-    && bazel run //server/bspcli:generator -- /home/hirschuser/project_10000 10000 --targetssize 1 \
-    && bazel run //server/bspcli:generator -- /home/hirschuser/project_20000 20000 --targetssize 1 \
-    && bazel run //server/bspcli:generator -- /home/hirschuser/project_1 1 --targetssize 50000 \
+    && bazel run //plugin-bazel/bspcli:generator -- /home/hirschuser/project_1000 1000 --targetssize 1 \
+    && bazel run //plugin-bazel/bspcli:generator -- /home/hirschuser/project_5000 5000 --targetssize 1 \
+    && bazel run //plugin-bazel/bspcli:generator -- /home/hirschuser/project_10000 10000 --targetssize 1 \
+    && bazel run //plugin-bazel/bspcli:generator -- /home/hirschuser/project_20000 20000 --targetssize 1 \
+    && bazel run //plugin-bazel/bspcli:generator -- /home/hirschuser/project_1 1 --targetssize 50000 \
     && cd /home/hirschuser \
     && rm -rf /home/hirschuser/hirschgarten

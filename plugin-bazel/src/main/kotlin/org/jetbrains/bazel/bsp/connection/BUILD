@@ -7,11 +7,11 @@ kt_jvm_library(
     # Do not change this to __subpackages__
     visibility = ["//plugin-bazel/src:__pkg__"],
     deps = [
-        "//plugin-bazel/src:intellij-bsp",
+#         "//plugin-bazel/src:intellij-bazel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
+        "//plugin-bazel/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

@@ -166,15 +166,6 @@ python.toolchain(
 )
 
 bazel_dep(
-    name = "bsp-testkit2",
-    dev_dependency = True,
-)
-local_path_override(
-    module_name = "bsp-testkit2",
-    path = "bsp-testkit2",
-)
-
-bazel_dep(
     name = "aspect_rules_lint",
     dev_dependency = True,
 )
