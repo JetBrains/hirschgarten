@@ -8,6 +8,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
+import java.io.IOException
 import java.nio.file.Path
 import kotlin.io.path.reader
 

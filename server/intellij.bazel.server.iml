@@ -26,12 +26,33 @@
     <orderEntry type="library" name="kotlinx-coroutines-core" level="project" />
     <orderEntry type="library" name="gson" level="project" />
     <orderEntry type="library" name="Guava" level="project" />
+    <orderEntry type="library" name="grpc-protobuf" level="project" />
+    <orderEntry type="library" name="grpc-core" level="project" />
+    <orderEntry type="library" name="grpc-stub" level="project" />
+    <orderEntry type="library" name="jackson" level="project" />
+    <orderEntry type="library" name="jackson-databind" level="project" />
+    <orderEntry type="library" name="jackson-dataformat-xml" level="project" />
+    <orderEntry type="library" name="jackson-module-kotlin" level="project" />
+    <orderEntry type="library" name="protobuf" level="project" />
     <orderEntry type="library" name="opentelemetry" level="project" />
-    <orderEntry type="library" name="opentelemetry_exporter_otlp" level="project" />
-    <orderEntry type="library" name="opentelemetry_exporter_otlp_common" level="project" />
-    <orderEntry type="library" name="opentelemetry_extension_kotlin" level="project" />
+    <orderEntry type="library" name="opentelemetry-exporter-otlp" level="project" />
+    <orderEntry type="library" name="opentelemetry-exporter-otlp-common" level="project" />
+    <orderEntry type="library" name="opentelemetry-extension-kotlin" level="project" />
+    <orderEntry type="library" name="opentelemetry-semconv" level="project" />
     <orderEntry type="library" name="Velocity" level="project" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/libs/bsp_target_info_proto.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/bazel_build_proto.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/googleapis_build_proto.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/googleapis_build_grpc.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/build_event_stream_proto.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/deps_proto.jar!/" />
+        </CLASSES>
+      </library>
+    </orderEntry>
 
   </component>
 </module>

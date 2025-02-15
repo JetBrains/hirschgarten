@@ -83,6 +83,15 @@
     <orderEntry type="library" name="Guava" level="project" />
     <orderEntry type="module" module-name="intellij.android.execution.common" />
     <orderEntry type="library" name="kotlinx-coroutines-guava" level="project" />
+    <orderEntry type="library" name="protobuf" level="project" />
+    <orderEntry type="library" name="grpc-protobuf" level="project" />
     <orderEntry type="module" module-name="intellij.android.deploy" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/libs/intellij_plugin_deploy_target_info.jar!/" />
+        </CLASSES>
+      </library>
+    </orderEntry>
   </component>
 </module>

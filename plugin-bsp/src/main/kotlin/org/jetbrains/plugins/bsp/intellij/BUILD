@@ -8,6 +8,7 @@ proto_library(
 
 java_proto_library(
     name = "intellij_plugin_deploy_target_info",
+    visibility = ["//visibility:public"],
     deps = [":intellij_plugin_deploy_target_info_lib"],
 )
 
