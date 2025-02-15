@@ -261,7 +261,7 @@
         <action id="Bazel.NewBazelPackageAction"
                 class="org.jetbrains.bazel.action.NewBazelPackageAction"
                 text="New Bazel Package">
-                <add-to-group group-id="NewGroup" relative-to-action="NewDir" anchor="after"/>
+            <add-to-group group-id="NewGroup" relative-to-action="NewDir" anchor="after"/>
         </action>
 
     </actions>

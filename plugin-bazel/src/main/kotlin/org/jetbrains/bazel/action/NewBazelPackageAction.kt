@@ -4,10 +4,10 @@ import com.intellij.ide.actions.CreateDirectoryOrPackageHandler
 import com.intellij.ide.actions.OpenFileAction
 import com.intellij.ide.util.DirectoryChooserUtil
 import com.intellij.openapi.actionSystem.ActionUpdateThread
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.LangDataKeys
 import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.psi.PsiDirectory
@@ -20,14 +20,14 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import javax.swing.Icon
 
-class NewBazelPackageAction : AnAction {
-  protected constructor() : super()
+class NewBazelPackageAction : DumbAwareAction {
+  constructor() : super()
 
-  protected constructor(icon: Icon?) : super(icon)
+  constructor(icon: Icon?) : super(icon)
 
-  protected constructor(text: String?) : super(text)
+  constructor(text: String?) : super(text)
 
-  protected constructor(text: String?, description: String?, icon: Icon?) : super(text, description, icon)
+  constructor(text: String?, description: String?, icon: Icon?) : super(text, description, icon)
 
   override fun update(e: AnActionEvent) {
     val project = e.project
