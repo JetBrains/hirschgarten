@@ -20,6 +20,10 @@ import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewFile
 
 class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
+  companion object {
+    const val INDENT = 2
+  }
+
   fun isApplicable(file: PsiFile, dataContext: DataContext): Boolean {
     if (file !is ProjectViewFile) {
       return false
@@ -66,7 +70,6 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
     if (!isApplicable(file, dataContext) || !insertIndent(file, offset)) {
       return EnterHandlerDelegate.Result.Continue
     }
-    val indent = 2
 
     editor.caretModel.moveToOffset(offset)
     val doc = editor.document
@@ -74,11 +77,11 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
 
     originalHandler?.execute(editor, editor.caretModel.currentCaret, dataContext)
     val position = editor.caretModel.logicalPosition
-    if (position.column < indent) {
-      val spacesPadding = StringUtil.repeat(" ", indent - position.column)
+    if (position.column < INDENT) {
+      val spacesPadding = StringUtil.repeat(" ", INDENT - position.column)
       doc.insertString(editor.caretModel.offset, spacesPadding)
     }
-    editor.caretModel.moveToLogicalPosition(LogicalPosition(position.line, indent))
+    editor.caretModel.moveToLogicalPosition(LogicalPosition(position.line, INDENT))
     return EnterHandlerDelegate.Result.Stop
   }
 }
