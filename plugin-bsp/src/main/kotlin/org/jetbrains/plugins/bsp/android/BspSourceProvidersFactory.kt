@@ -11,7 +11,7 @@ import com.android.tools.idea.projectsystem.TestComponentType.HostTest
 import com.android.tools.idea.projectsystem.emptySourceProvider
 import org.jetbrains.android.facet.AndroidFacet
 import org.jetbrains.android.facet.createSourceProvidersForLegacyModule
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.moduleEntity
+import org.jetbrains.plugins.bsp.target.moduleEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.androidAddendumEntity
 
 class BspSourceProvidersFactory : SourceProvidersFactory {

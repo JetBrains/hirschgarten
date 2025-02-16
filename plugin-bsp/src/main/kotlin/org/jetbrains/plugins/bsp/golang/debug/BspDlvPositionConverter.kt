@@ -27,7 +27,7 @@ import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
-import org.jetbrains.plugins.bsp.impl.server.connection.connection
+import org.jetbrains.plugins.bsp.server.connection.connection
 import java.io.File
 
 class BspDlvPositionConverter(

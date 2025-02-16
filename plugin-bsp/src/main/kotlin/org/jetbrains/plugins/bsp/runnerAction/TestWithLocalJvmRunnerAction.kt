@@ -3,7 +3,7 @@ package org.jetbrains.plugins.bsp.runnerAction
 import ch.epfl.scala.bsp4j.JvmEnvironmentItem
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.impl.server.tasks.JvmTestEnvironmentTask
+import org.jetbrains.plugins.bsp.server.tasks.JvmTestEnvironmentTask
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 public class TestWithLocalJvmRunnerAction(

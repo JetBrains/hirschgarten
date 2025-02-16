@@ -21,8 +21,8 @@ import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.extensionPoints.targetActionProvider
-import org.jetbrains.plugins.bsp.impl.flow.sync.actions.ResyncTargetAction
 import org.jetbrains.plugins.bsp.runnerAction.BuildTargetAction
+import org.jetbrains.plugins.bsp.sync.action.ResyncTargetAction
 import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
@@ -53,7 +53,7 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
     }
 
   private fun activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file: VirtualFile, icon: Icon): WidgetState {
-    val targets = project.targetUtils.getTargetsForFile(file, project)
+    val targets = project.targetUtils.getTargetsForFile(file)
     return if (targets.isEmpty()) {
       inactiveWidgetState(icon)
     } else {
@@ -88,8 +88,8 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
 
   private fun calculatePopupGroup(file: VirtualFile): ActionGroup {
     val targetUtils = project.targetUtils
-    val targetIds = targetUtils.getTargetsForFile(file, project)
-    val executableTargetIds = targetUtils.getExecutableTargetsForFile(file, project) - targetIds.toSet()
+    val targetIds = targetUtils.getTargetsForFile(file)
+    val executableTargetIds = targetUtils.getExecutableTargetsForFile(file) - targetIds.toSet()
 
     val targets = targetIds.getTargetInfos()
     val executableTargets = executableTargetIds.getTargetInfos()

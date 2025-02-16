@@ -38,10 +38,10 @@ import org.jetbrains.kotlin.config.KOTLIN_SOURCE_ROOT_TYPE_ID
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.projectAware.BspSyncStatusService
-import org.jetbrains.plugins.bsp.impl.server.connection.connection
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.findNameProvider
+import org.jetbrains.plugins.bsp.server.connection.connection
+import org.jetbrains.plugins.bsp.sync.status.BspSyncStatusService
 import org.jetbrains.plugins.bsp.target.TargetUtils
 import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.utils.isSourceFile
@@ -156,7 +156,7 @@ private suspend fun processFileRemoved(
 ) {
   val url = file.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   targetUtils
-    .getTargetsForFile(file, project)
+    .getTargetsForFile(file)
     .mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
     .forEach {
       url.removeFromModule(workspaceModel, it)

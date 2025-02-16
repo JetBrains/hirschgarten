@@ -61,7 +61,7 @@ internal class RunAllTestsAction :
       .asSequence()
       .mapNotNull { it.virtualFile }
       .filter { pfIndex.isInTestSourceContent(it) }
-      .flatMap { targetUtilService.getExecutableTargetsForFile(it, project) }
+      .flatMap { targetUtilService.getExecutableTargetsForFile(it) }
       .distinct()
       .mapNotNull { targetUtilService.getBuildTargetInfoForId(it) }
   }

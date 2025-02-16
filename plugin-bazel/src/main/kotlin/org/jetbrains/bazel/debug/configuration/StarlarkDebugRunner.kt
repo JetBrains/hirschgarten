@@ -34,7 +34,7 @@ import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.server.connection.connection
+import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.taskEvents.BspTaskEventsService
 import java.net.ConnectException
 import java.util.UUID
