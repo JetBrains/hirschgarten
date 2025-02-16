@@ -152,6 +152,8 @@
                 fieldName="INSTANCE"
                 language="ProjectView"
                 extensions="bazelproject"/>
+        <langCodeStyleSettingsProvider implementation="org.jetbrains.bazel.languages.projectview.formatting.ProjectViewCodeStyleSettingsProvider"/>
+<!--        <codeStyleSettingsProvider implementation="org.jetbrains.bazel.languages.projectview.formatting.ProjectViewCodeStyleSettingsProvider"/>-->
         <lang.syntaxHighlighterFactory
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"/>
