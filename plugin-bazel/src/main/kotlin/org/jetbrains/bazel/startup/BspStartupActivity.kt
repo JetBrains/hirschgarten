@@ -1,25 +1,19 @@
 package org.jetbrains.bazel.startup
 
-import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
 import org.jetbrains.bazel.config.BspFeatureFlags
-import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.buildToolId
 import org.jetbrains.bazel.config.isBspProjectInitialized
-import org.jetbrains.bazel.config.isBspProjectLoaded
 import org.jetbrains.bazel.config.openedTimesSinceLastStartupResync
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
 import org.jetbrains.bazel.projectAware.BspWorkspace
-import org.jetbrains.bazel.server.connection.connectionDetailsProvider
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.PhasedSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.widgets.fileTargets.updateBspFileTargetsWidget
 import org.jetbrains.bazel.ui.widgets.tool.window.all.targets.registerBspToolWindow
 import org.jetbrains.bazel.utils.RunConfigurationProducersDisabler
@@ -48,8 +42,6 @@ class BspStartupActivity : BspProjectActivity() {
     BspStartupActivityTracker.startConfigurationPhase(this)
     executeEveryTime()
 
-    executeForNewProject()
-
     resyncProjectIfNeeded()
 
     updateProjectProperties()
@@ -69,37 +61,6 @@ class BspStartupActivity : BspProjectActivity() {
     updateBspFileTargetsWidget()
     RunConfigurationProducersDisabler(this)
     BspWorkspace.getInstance(this).initialize()
-  }
-
-  private suspend fun Project.executeForNewProject() {
-    log.debug("Executing BSP startup activities only for new project")
-    try {
-      if (!isBspProjectLoaded) {
-        runOnFirstOpening()
-      }
-    } catch (e: Exception) {
-      val bspSyncConsole = BspConsoleService.getInstance(this).bspSyncConsole
-      log.info("BSP sync has failed", e)
-      bspSyncConsole.startTask(
-        taskId = "bsp-pre-import",
-        title = BspPluginBundle.message("console.task.pre.import.title"),
-        message = BspPluginBundle.message("console.task.pre.import.in.progress"),
-      )
-      bspSyncConsole.finishTask(
-        taskId = "bsp-pre-import",
-        message = BspPluginBundle.message("console.task.pre.import.failed"),
-        result = FailureResultImpl(e),
-      )
-    }
-  }
-
-  private suspend fun Project.runOnFirstOpening() {
-    val wasFirstOpeningSuccessful = connectionDetailsProvider.onFirstOpening(this, rootDir)
-    log.debug("Was onFirstOpening successful: $wasFirstOpeningSuccessful")
-
-    if (!wasFirstOpeningSuccessful) {
-      handleFailedFirstOpening()
-    }
   }
 
   private fun Project.handleFailedFirstOpening() {

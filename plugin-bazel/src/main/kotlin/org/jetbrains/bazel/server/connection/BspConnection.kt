@@ -49,7 +49,7 @@ fun Project.setMockTestConnection(newConnection: BspConnection) {
 
 @Service(Service.Level.PROJECT)
 class BspConnectionService(project: Project) {
-  var connection: BspConnection = DefaultBspConnection(project, project.connectionDetailsProvider)
+  var connection: BspConnection = DefaultBspConnection(project)
     @Synchronized get
 
     @Synchronized set

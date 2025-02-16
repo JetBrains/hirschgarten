@@ -143,13 +143,7 @@ class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectP
   }
 }
 
-class DefaultBspConnection(
-  private val project: Project,
-  private val connectionDetailsProviderExtension: ConnectionDetailsProviderExtension,
-) : BspConnection {
-  private var connectionDetails: BspConnectionDetails? = null
-  private var initializeBuildParams: InitializeBuildParams? = null
-
+class DefaultBspConnection(private val project: Project) : BspConnection {
   @Volatile
   private var server: JoinedBuildServer? = null
   private var capabilities: BazelBuildServerCapabilities? = null

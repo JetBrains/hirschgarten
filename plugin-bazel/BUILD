@@ -70,16 +70,17 @@ intellij_plugin_library(
         "com.intellij.java",
         "org.jetbrains.kotlin",
     ],
-    #     plugin_xmls = ["//plugin-bazel/src:main/xml/base.xml"],
     plugin_xmls = [
-        "//plugin-bazel/src:main/resources/META-INF/base.xml",
+        "//plugin-bazel/src:main/xml/base.xml",
         # bazel plugin depends on bsp plugin, which already adds performance plugin as optional plugin dep
         "//plugin-bazel/src:test/resources/META-INF/bazel-ide-starter-test.xml",
     ],
     visibility = ["//visibility:public"],
     deps = [
         "//plugin-bazel/jps-compilation/src:jps-compilation",
+        "//plugin-bazel/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
         "//plugin-bazel/src:intellij-bazel",
+        "//plugin-bazel/src:intellij-bsp",
         "//plugin-bazel/workspacemodel/src:workspacemodel",
         "//protocol",
     ],
@@ -101,8 +102,13 @@ java_binary(
     main_class = "DummySourceForExclude",
     tags = ["no-ide"],
     runtime_deps = [
-        "//protocol",
-        "@maven//:ch_epfl_scala_bsp4j",
+        "@maven//:io_opentelemetry_opentelemetry_api",
+        "@maven//:io_opentelemetry_opentelemetry_exporter_otlp",
+        "@maven//:io_opentelemetry_opentelemetry_extension_kotlin",
+        "@maven//:io_opentelemetry_opentelemetry_sdk",
+        "@maven//:io_opentelemetry_opentelemetry_sdk_trace",
+        "@maven//:io_opentelemetry_semconv_opentelemetry_semconv",
+        "@maven//:org_apache_velocity_velocity_engine_core",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",
     ],
@@ -113,7 +119,7 @@ intellij_plugin(
     deploy_env = [
         "intellij-bazel_exclude",
     ],
-    plugin_deps = ["org.jetbrains.bsp"],
+    plugin_deps = [],
     plugin_xml = ":stamped_plugin_xml",
     visibility = ["//visibility:public"],
     deps = [

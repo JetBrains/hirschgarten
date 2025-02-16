@@ -10,7 +10,6 @@ import org.jetbrains.bazel.action.registered.ResyncAction
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.server.connection.stateService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
 internal class LoadProjectViewFileAction :
@@ -32,10 +31,8 @@ internal class LoadProjectViewFileAction :
     val psiFile = CommonDataKeys.PSI_FILE.getData(e.dataContext) ?: return false
     return when {
       !project.isBazelProject -> false
-      project.stateService.connectionFile == null &&
-        // project view file can only be set when connection file is not used
-        psiFile.isProjectViewFile() &&
-        psiFile.isDifferentProjectViewFileSelected() -> return true
+      psiFile.isProjectViewFile() &&
+        psiFile.isDifferentProjectViewFileSelected() -> true
       else -> false
     }
   }

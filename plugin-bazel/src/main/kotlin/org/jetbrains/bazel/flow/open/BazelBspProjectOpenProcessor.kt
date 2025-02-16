@@ -10,10 +10,6 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants.BAZELBSP_JSON_FILE_NAME
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.bazel.config.BuildToolId
-import org.jetbrains.bazel.flow.open.BaseBspProjectOpenProcessor
-import org.jetbrains.bazel.flow.open.BspProjectOpenProcessor
-import org.jetbrains.bazel.flow.open.BspProjectOpenProcessorExtension
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import java.io.IOException
 import java.nio.file.Path
@@ -43,10 +39,8 @@ val BUILD_FILE_GLOB = "{${BazelPluginConstants.BUILD_FILE_NAMES.joinToString(","
  */
 internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelBspBuildToolId) {
   override fun calculateProjectFolderToOpen(virtualFile: VirtualFile): VirtualFile =
-    when {
-      virtualFile.isBazelBspConnectionFile() -> BspProjectOpenProcessor().calculateProjectFolderToOpen(virtualFile)
-      else -> findProjectFolderFromEligibleFile(virtualFile)
-    } ?: error("Cannot find the suitable Bazel project folder to open for the given file $virtualFile.")
+    findProjectFolderFromEligibleFile(virtualFile)
+      ?: error("Cannot find the suitable Bazel project folder to open for the given file $virtualFile.")
 
   override val icon: Icon = BazelPluginIcons.bazel
 
@@ -86,7 +80,6 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
 
   override fun calculateBeforeOpenCallback(originalVFile: VirtualFile): (Project) -> Unit =
     when {
-      originalVFile.isBazelBspConnectionFile() -> BspProjectOpenProcessor().calculateBeforeOpenCallback(originalVFile)
       originalVFile.isProjectViewFile() -> projectViewFileBeforeOpenCallback(originalVFile)
       originalVFile.isBuildFile() -> buildFileBeforeOpenCallback(originalVFile)
       originalVFile.isWorkspaceFile() -> { project -> }
@@ -135,12 +128,6 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
     }
 
   private fun VirtualFile.isProjectViewFile() = extension == BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION
-}
-
-internal class BazelBspProjectOpenProcessorExtension : BspProjectOpenProcessorExtension {
-  override val buildToolId: BuildToolId = bazelBspBuildToolId
-
-  override val shouldBspProjectOpenProcessorBeAvailable: Boolean = false
 }
 
 tailrec fun findProjectFolderFromEligibleFile(vFile: VirtualFile?): VirtualFile? =

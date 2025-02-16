@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.ui.console
+package org.jetbrains.bazel.ui.console.task
 
 import com.intellij.build.BuildProgressListener
 import com.intellij.build.events.BuildEvent
@@ -17,6 +17,7 @@ import com.intellij.openapi.project.Project
 import io.kotest.matchers.maps.shouldContainExactly
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.commons.utils.OsFamily
+import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.Test
 import kotlin.reflect.KClass

@@ -10,7 +10,6 @@ kt_jvm_library(
         "//plugin-bazel/server/src/main/kotlin/org/jetbrains/bsp/bazel/server",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow/open/wizard",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/chunking",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/client",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/utils",
