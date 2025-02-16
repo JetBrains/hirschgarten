@@ -51,7 +51,7 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
     caretOffset: Ref<Int?>,
     caretAdvance: Ref<Int?>,
     dataContext: DataContext,
-    originalHandler: EditorActionHandler?
+    originalHandler: EditorActionHandler?,
   ): EnterHandlerDelegate.Result? {
     var offset = caretOffset.get()!!
     var file = file // now it's mutable
@@ -81,5 +81,4 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
     editor.caretModel.moveToLogicalPosition(LogicalPosition(position.line, indent))
     return EnterHandlerDelegate.Result.Stop
   }
-
 }

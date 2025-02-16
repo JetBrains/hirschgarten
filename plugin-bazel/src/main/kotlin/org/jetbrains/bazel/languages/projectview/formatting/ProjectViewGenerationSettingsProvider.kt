@@ -11,23 +11,14 @@ import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 
 class ProjectViewGenerationSettingsProvider : CodeStyleSettingsProvider() {
   @Deprecated("Deprecated in Java")
-  override fun createSettingsPage(settings: CodeStyleSettings, originalSettings: CodeStyleSettings): Configurable {
-    return CodeStyleGenerationConfigurable(settings)
-  }
+  override fun createSettingsPage(settings: CodeStyleSettings, originalSettings: CodeStyleSettings): Configurable =
+    CodeStyleGenerationConfigurable(settings)
 
-  override fun getConfigurableDisplayName(): String {
-    return ApplicationBundle.message("title.code.generation", *arrayOfNulls<Any>(0))
-  }
+  override fun getConfigurableDisplayName(): String = ApplicationBundle.message("title.code.generation", *arrayOfNulls<Any>(0))
 
-  override fun getPriority(): DisplayPriority {
-    return DisplayPriority.CODE_SETTINGS
-  }
+  override fun getPriority(): DisplayPriority = DisplayPriority.CODE_SETTINGS
 
-  override fun hasSettingsPage(): Boolean {
-    return false
-  }
+  override fun hasSettingsPage(): Boolean = false
 
-  override fun getLanguage(): Language? {
-    return ProjectViewLanguage
-  }
+  override fun getLanguage(): Language? = ProjectViewLanguage
 }

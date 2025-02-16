@@ -11,10 +11,10 @@ kt_jvm_library(
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/label",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/base",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/formatting",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/highlighting:higlighting",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/parser",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/formatting",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

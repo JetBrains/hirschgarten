@@ -5,10 +5,10 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/base:base",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer:lexer",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/parser:parser",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/psi:psi",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/base",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/parser",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/psi",
     ],
 )
