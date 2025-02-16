@@ -20,7 +20,7 @@ import com.intellij.testFramework.rules.ProjectModelExtension
 import com.intellij.testFramework.workspaceModel.updateProjectModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.bazel.config.rootDir
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path

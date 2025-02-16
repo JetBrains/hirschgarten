@@ -1,7 +1,7 @@
 package utils
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.plugins.bsp.utils.StringUtils
+import org.jetbrains.bazel.utils.StringUtils
 import org.junit.jupiter.api.Test
 
 class StringUtilsTest {

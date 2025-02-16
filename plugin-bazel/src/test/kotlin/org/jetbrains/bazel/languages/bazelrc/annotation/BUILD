@@ -7,7 +7,6 @@ kt_intellij_junit4_test(
         "//plugin-bazel/src/test/testData/bazelrc/annotation:LabelFlagsTestData.bazelrc",
         "//plugin-bazel/src/test/testData/bazelrc/annotation:OldFlagsTestData.bazelrc",
     ],
-
     deps = [
         "//plugin-bazel:intellij-bazel",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/bazelrc/fixtures",

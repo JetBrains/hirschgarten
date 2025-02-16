@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.workspacemodel.entities
+package org.jetbrains.bazel.workspacemodel.entities
 
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bsp.protocol.AndroidTargetType

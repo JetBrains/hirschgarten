@@ -9,7 +9,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.testFramework.rules.ProjectModelExtension
-import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.bazel.config.rootDir
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path

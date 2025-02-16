@@ -4,180 +4,180 @@
     <vendor>JetBrains</vendor>
     <extensionPoints>
         <extensionPoint qualifiedName="org.jetbrains.bsp.sourceTypeIconProvider"
-                        interface="org.jetbrains.plugins.bsp.utils.SourceTypeIconProvider"
+                        interface="org.jetbrains.bazel.utils.SourceTypeIconProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.buildTargetClassifierExtension"
-                        interface="org.jetbrains.plugins.bsp.extensionPoints.BuildTargetClassifierExtension"
+                        interface="org.jetbrains.bazel.extensionPoints.BuildTargetClassifierExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.scalaSdkExtension"
-                        interface="org.jetbrains.plugins.bsp.scala.sdk.ScalaSdkExtension"
+                        interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.androidSdkGetterExtension"
-                        interface="org.jetbrains.plugins.bsp.android.AndroidSdkGetterExtension"
+                        interface="org.jetbrains.bazel.android.AndroidSdkGetterExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.androidFacetEntityUpdaterExtension"
-                        interface="org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
+                        interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspRunHandlerProvider"
-                        interface="org.jetbrains.plugins.bsp.run.BspRunHandlerProvider"
+                        interface="org.jetbrains.bazel.run.BspRunHandlerProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspProjectOpenProcessorExtension"
-                        interface="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessorExtension"
+                        interface="org.jetbrains.bazel.flow.open.BspProjectOpenProcessorExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.buildToolAssetsExtension"
-                        interface="org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension"
+                        interface="org.jetbrains.bazel.assets.BuildToolAssetsExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspProjectAwareExtension"
-                        interface="org.jetbrains.plugins.bsp.projectAware.BspProjectAwareExtension"
+                        interface="org.jetbrains.bazel.projectAware.BspProjectAwareExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.connectionDetailsProviderExtension"
-                        interface="org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension"
+                        interface="org.jetbrains.bazel.server.connection.ConnectionDetailsProviderExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.connectionDetailsProviderExtensionJavaShim"
-                        interface="org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtensionJavaShim"
+                        interface="org.jetbrains.bazel.server.connection.ConnectionDetailsProviderExtensionJavaShim"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.buildToolWindowTargetActionProviderExtension"
-                        interface="org.jetbrains.plugins.bsp.extensionPoints.BuildToolWindowTargetActionProviderExtension"
+                        interface="org.jetbrains.bazel.extensionPoints.BuildToolWindowTargetActionProviderExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspToolWindowSettingsProviderExtension"
-                        interface="org.jetbrains.plugins.bsp.extensionPoints.BspToolWindowSettingsProviderExtension"
+                        interface="org.jetbrains.bazel.extensionPoints.BspToolWindowSettingsProviderExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspToolWindowConfigFileProviderExtension"
-                        interface="org.jetbrains.plugins.bsp.extensionPoints.BspToolWindowConfigFileProviderExtension"
+                        interface="org.jetbrains.bazel.extensionPoints.BspToolWindowConfigFileProviderExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspProjectModelExternalSource"
-                        interface="org.jetbrains.plugins.bsp.extensionPoints.BspProjectModelExternalSourceExtension"
+                        interface="org.jetbrains.bazel.extensionPoints.BspProjectModelExternalSourceExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspRunConfigurationExtension"
-                        interface="org.jetbrains.plugins.bsp.run.config.BspRunConfigurationExtensionManager"
+                        interface="org.jetbrains.bazel.run.config.BspRunConfigurationExtensionManager"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.invalidTargetsProviderExtension"
-                        interface="org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension"
+                        interface="org.jetbrains.bazel.services.InvalidTargetsProviderExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.projectSyncHook"
-                        interface="org.jetbrains.plugins.bsp.sync.ProjectSyncHook"
+                        interface="org.jetbrains.bazel.sync.ProjectSyncHook"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.projectPreSyncHook"
-                        interface="org.jetbrains.plugins.bsp.sync.ProjectPreSyncHook"
+                        interface="org.jetbrains.bazel.sync.ProjectPreSyncHook"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.projectPostSyncHook"
-                        interface="org.jetbrains.plugins.bsp.sync.ProjectPostSyncHook"
+                        interface="org.jetbrains.bazel.sync.ProjectPostSyncHook"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.defaultProjectSyncHooksDisabler"
-                        interface="org.jetbrains.plugins.bsp.sync.DefaultProjectSyncHooksDisabler"
+                        interface="org.jetbrains.bazel.sync.DefaultProjectSyncHooksDisabler"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.projectStructureProvider"
-                        interface="org.jetbrains.plugins.bsp.sync.projectStructure.ProjectStructureProvider"
+                        interface="org.jetbrains.bazel.sync.projectStructure.ProjectStructureProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.startBuiltInServerExtension"
-                        interface="org.jetbrains.plugins.bsp.server.client.BspServerProvider"
+                        interface="org.jetbrains.bazel.server.client.BspServerProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.runConfigurationTypeProvider"
-                        interface="org.jetbrains.plugins.bsp.run.config.BspRunConfigurationTypeProvider"
+                        interface="org.jetbrains.bazel.run.config.BspRunConfigurationTypeProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspFeatureFlagsProvider"
-                        interface="org.jetbrains.plugins.bsp.config.BspFeatureFlagsProvider"
+                        interface="org.jetbrains.bazel.config.BspFeatureFlagsProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspAdditionalProjectTaskRunnerProvider"
-                        interface="org.jetbrains.plugins.bsp.buildTask.BspAdditionalProjectTaskRunnerProvider"
+                        interface="org.jetbrains.bazel.buildTask.BspAdditionalProjectTaskRunnerProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspTreeStructureSettingsExtension"
-                        interface="org.jetbrains.plugins.bsp.ui.projectTree.BspTreeStructureSettingsProvider"
+                        interface="org.jetbrains.bazel.ui.projectTree.BspTreeStructureSettingsProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspJvmBinaryJarsExtension"
-                        interface="org.jetbrains.plugins.bsp.extensionPoints.JvmBinaryJarsExtension"
+                        interface="org.jetbrains.bazel.extensionPoints.JvmBinaryJarsExtension"
                         dynamic="true"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="org.jetbrains.bsp">
         <buildToolAssetsExtension
-                implementation="org.jetbrains.plugins.bsp.assets.BspAssetsExtension"/>
+                implementation="org.jetbrains.bazel.assets.BspAssetsExtension"/>
 
         <buildTargetClassifierExtension
-                implementation="org.jetbrains.plugins.bsp.extensionPoints.DefaultBuildTargetClassifierExtension"/>
+                implementation="org.jetbrains.bazel.extensionPoints.DefaultBuildTargetClassifierExtension"/>
 
         <connectionDetailsProviderExtension
-                implementation="org.jetbrains.plugins.bsp.server.connection.DefaultConnectionDetailsProviderExtension"/>
+                implementation="org.jetbrains.bazel.server.connection.DefaultConnectionDetailsProviderExtension"/>
 
-        <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.jvm.run.JvmBspRunHandler$JvmBspRunHandlerProvider"
+        <bspRunHandlerProvider implementation="org.jetbrains.bazel.jvm.run.JvmBspRunHandler$JvmBspRunHandlerProvider"
                                id="JvmRunHandlerProvider"/>
         <bspRunHandlerProvider
-                implementation="org.jetbrains.plugins.bsp.jvm.run.JvmBspTestHandler$JvmBspTestHandlerProvider"
+                implementation="org.jetbrains.bazel.jvm.run.JvmBspTestHandler$JvmBspTestHandlerProvider"
                 id="JvmTestHandlerProvider"/>
-        <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspRunHandlerProvider"
+        <bspRunHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericBspRunHandlerProvider"
                                order="last"/>
-        <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspTestHandlerProvider"
+        <bspRunHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericBspTestHandlerProvider"
                                order="last"/>
-        <projectSyncHook implementation="org.jetbrains.plugins.bsp.jvm.sync.JvmSyncHook"/>
-        <projectSyncHook implementation="org.jetbrains.plugins.bsp.sync.defaults.OutputPathUrisSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.sync.defaults.OutputPathUrisSyncHook"/>
         <projectStructureProvider
-                implementation="org.jetbrains.plugins.bsp.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
+                implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
         <runConfigurationTypeProvider
-                implementation="org.jetbrains.plugins.bsp.run.config.DefaultBspRunConfigurationTypeProvider"/>
-        <bspFeatureFlagsProvider implementation="org.jetbrains.plugins.bsp.config.DefaultBspFeatureFlagsProvider"/>
-        <sourceTypeIconProvider implementation="org.jetbrains.plugins.bsp.java.JavaSourceTypeIconProvider"/>
-        <sourceTypeIconProvider implementation="org.jetbrains.plugins.bsp.kotlin.KotlinSourceTypeIconProvider"/>
+                implementation="org.jetbrains.bazel.run.config.DefaultBspRunConfigurationTypeProvider"/>
+        <bspFeatureFlagsProvider implementation="org.jetbrains.bazel.config.DefaultBspFeatureFlagsProvider"/>
+        <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.JavaSourceTypeIconProvider"/>
+        <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.KotlinSourceTypeIconProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
 
-        <activityTracker implementation="org.jetbrains.plugins.bsp.startup.BspStartupActivityTracker"/>
+        <activityTracker implementation="org.jetbrains.bazel.startup.BspStartupActivityTracker"/>
 
         <projectService serviceInterface="com.intellij.openapi.project.BaseProjectDirectories"
-                        serviceImplementation="org.jetbrains.plugins.bsp.services.BspBaseProjectDirectories"
+                        serviceImplementation="org.jetbrains.bazel.services.BspBaseProjectDirectories"
                         overrides="true"/>
         <projectService serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
-                        serviceImplementation="org.jetbrains.plugins.bsp.services.BspExternalAnnotationsManager"
+                        serviceImplementation="org.jetbrains.bazel.services.BspExternalAnnotationsManager"
                         overrides="true"/>
         <moduleService serviceInterface="com.intellij.openapi.roots.ModuleFileIndex"
-                       serviceImplementation="org.jetbrains.plugins.bsp.services.BspModuleFileIndex"
+                       serviceImplementation="org.jetbrains.bazel.services.BspModuleFileIndex"
                        overrides="true"/>
 
         <commandLineInspectionProjectConfigurator
-                implementation="org.jetbrains.plugins.bsp.startup.BspCommandLineInspectionConfigurator"/>
-        <configurationType implementation="org.jetbrains.plugins.bsp.run.config.BspRunConfigurationType"/>
+                implementation="org.jetbrains.bazel.startup.BspCommandLineInspectionConfigurator"/>
+        <configurationType implementation="org.jetbrains.bazel.run.config.BspRunConfigurationType"/>
 
         <notificationGroup id="Bazel" displayType="STICKY_BALLOON"/>
 
         <workspaceModel.fileIndexContributor
-                implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
+                implementation="org.jetbrains.bazel.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
         <!--        <workspaceModel.fileIndexContributor-->
-        <!--                implementation="org.jetbrains.plugins.bsp.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"/>-->
+        <!--                implementation="org.jetbrains.bazel.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"/>-->
         <fileTypeOverrider
-                implementation="org.jetbrains.plugins.bsp.workspace.DummyModuleSourcePlainTextTypeOverrider"/>
+                implementation="org.jetbrains.bazel.workspace.DummyModuleSourcePlainTextTypeOverrider"/>
         <fileType name="BSP_PLAIN_TEXT"
                   language="TEXT"
-                  implementationClass="org.jetbrains.plugins.bsp.workspace.BspPlainTextFileType"
+                  implementationClass="org.jetbrains.bazel.workspace.BspPlainTextFileType"
                   fieldName="INSTANCE"/>
         <workspaceModel.fileIndexContributor
-                implementation="org.jetbrains.plugins.bsp.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
+                implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
 
-        <java.programPatcher implementation="org.jetbrains.plugins.bsp.jvm.run.BspJvmEnvironmentProgramPatcher"/>
-        <java.elementFinder implementation="org.jetbrains.plugins.bsp.services.GeneratedClassFinder"/>
+        <java.programPatcher implementation="org.jetbrains.bazel.jvm.run.BspJvmEnvironmentProgramPatcher"/>
+        <java.elementFinder implementation="org.jetbrains.bazel.services.GeneratedClassFinder"/>
 
         <projectOpenProcessor
-                implementation="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessor"/>
+                implementation="org.jetbrains.bazel.flow.open.BspProjectOpenProcessor"/>
 
         <postStartupActivity
-                implementation="org.jetbrains.plugins.bsp.startup.BspStartupActivity"/>
+                implementation="org.jetbrains.bazel.startup.BspStartupActivity"/>
 
-        <treeStructureProvider implementation="org.jetbrains.plugins.bsp.ui.projectTree.BspTreeStructureProvider"/>
+        <treeStructureProvider implementation="org.jetbrains.bazel.ui.projectTree.BspTreeStructureProvider"/>
         <projectViewNodeDecorator
-                implementation="org.jetbrains.plugins.bsp.ui.projectTree.BspProjectViewNodeDecorator"/>
+                implementation="org.jetbrains.bazel.ui.projectTree.BspProjectViewNodeDecorator"/>
         <projectTaskRunner
-                implementation="org.jetbrains.plugins.bsp.buildTask.BspProjectTaskRunner"/>
-        <programRunner implementation="org.jetbrains.plugins.bsp.jvm.run.BspJvmDebugRunner"/>
+                implementation="org.jetbrains.bazel.buildTask.BspProjectTaskRunner"/>
+        <programRunner implementation="org.jetbrains.bazel.jvm.run.BspJvmDebugRunner"/>
 
         <directoryProjectConfigurator
-                implementation="org.jetbrains.plugins.bsp.flow.open.CounterPlatformProjectConfigurator"
+                implementation="org.jetbrains.bazel.flow.open.CounterPlatformProjectConfigurator"
                 order="last"/>
 
         <!--    <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"-->
-        <!--                    serviceImplementation="org.jetbrains.plugins.bsp.services.SingleFileSourcesTrackerImpl"-->
+        <!--                    serviceImplementation="org.jetbrains.bazel.services.SingleFileSourcesTrackerImpl"-->
         <!--                    overrides="true"/>-->
 
         <runLineMarkerContributor
-                implementationClass="org.jetbrains.plugins.bsp.jvm.ui.gutters.BspJVMRunLineMarkerContributor"
+                implementationClass="org.jetbrains.bazel.jvm.ui.gutters.BspJVMRunLineMarkerContributor"
                 language="JVM"/>
         <registryKey defaultValue="600" description="Timeout for BSP requests in seconds"
                      key="bsp.request.timeout.seconds"/>
@@ -218,24 +218,24 @@
                      key="bsp.exclude.compiled.source.code.inside.jars"/>
 
         <statusBarWidgetFactory id="BspFileTargetsWidget"
-                                implementation="org.jetbrains.plugins.bsp.ui.widgets.fileTargets.BspFileTargetsWidgetFactory"/>
+                                implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BspFileTargetsWidgetFactory"/>
 
         <toolWindowAllowlist id="BSP"/>
         <toolWindowExtractor
-                implementation="org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspToolWindowViewModelExtractor"/>
+                implementation="org.jetbrains.bazel.ui.widgets.tool.window.all.targets.BspToolWindowViewModelExtractor"/>
 
-        <consoleFilterProvider implementation="org.jetbrains.plugins.bsp.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"/>
+        <consoleFilterProvider implementation="org.jetbrains.bazel.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"/>
 
         <iconMapper mappingFile="BSPIconMappings.json"/>
 
         <notificationGroup displayType="BALLOON" id="BSP Plugin"/>
         <editorNotificationProvider
-                implementation="org.jetbrains.plugins.bsp.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"/>
+                implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
         <projectConfigurator
-                implementation="org.jetbrains.plugins.bsp.kotlin.BspKotlinProjectConfigurator"
+                implementation="org.jetbrains.bazel.kotlin.BspKotlinProjectConfigurator"
                 order="first"
         />
 
@@ -249,22 +249,22 @@
     </extensions>
 
     <actions>
-        <action class="org.jetbrains.plugins.bsp.ui.projectTree.action.RunAllTestsAction">
+        <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsAction">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
-        <action id="Bsp.DisconnectAction" class="org.jetbrains.plugins.bsp.action.registered.DisconnectAction"
+        <action id="Bsp.DisconnectAction" class="org.jetbrains.bazel.action.registered.DisconnectAction"
                 icon="/icons/disconnect.svg"/>
-        <action id="Bsp.ResyncAction" class="org.jetbrains.plugins.bsp.action.registered.ResyncAction"
+        <action id="Bsp.ResyncAction" class="org.jetbrains.bazel.action.registered.ResyncAction"
                 icon="/icons/resync.svg"/>
         <action id="Bsp.BuildAndResyncAction"
-                class="org.jetbrains.plugins.bsp.action.registered.BuildAndResyncAction"
+                class="org.jetbrains.bazel.action.registered.BuildAndResyncAction"
                 icon="/icons/buildAndResync.svg"/>
         <action id="Bsp.Compile.CompileProjectWithBspAction"
-                class="org.jetbrains.plugins.bsp.action.registered.CompileProjectWithBspAction"
+                class="org.jetbrains.bazel.action.registered.CompileProjectWithBspAction"
                 icon="AllIcons.Actions.Compile"/>
         <action id="Bsp.Compile.CompileProjectWithJpsAction"
-                class="org.jetbrains.plugins.bsp.action.registered.CompileProjectWithJpsAction"
+                class="org.jetbrains.bazel.action.registered.CompileProjectWithJpsAction"
                 icon="AllIcons.Actions.Compile"/>
 
         <group id="Bsp.ActionsToolbar">
@@ -275,10 +275,10 @@
     </actions>
 
     <applicationListeners>
-        <listener class="org.jetbrains.plugins.bsp.flow.close.ProjectClosingListener"
+        <listener class="org.jetbrains.bazel.flow.close.ProjectClosingListener"
                   topic="com.intellij.openapi.project.ProjectManagerListener"/>
 
-        <listener class="org.jetbrains.plugins.bsp.workspace.AssignFileToModuleListener"
+        <listener class="org.jetbrains.bazel.workspace.AssignFileToModuleListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
     </applicationListeners>
 </idea-plugin>

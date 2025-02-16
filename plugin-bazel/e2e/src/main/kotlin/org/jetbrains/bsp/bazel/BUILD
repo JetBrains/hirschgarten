@@ -89,10 +89,10 @@ kt_jvm_binary(
     resources = ["//plugin-bazel/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//plugin-bazel/e2e:__subpackages__"],
     deps = [
-        "//protocol",
         "//plugin-bazel/commons",
         "//plugin-bazel/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
         "//plugin-bazel/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
+        "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -105,10 +105,10 @@ kt_jvm_binary(
     visibility = ["//plugin-bazel/e2e:__subpackages__"],
     deps = [
         ":BazelBspKotlinProjectTest",
-        "//protocol",
         "//plugin-bazel/commons",
         "//plugin-bazel/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
         "//plugin-bazel/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -146,10 +146,10 @@ kt_jvm_binary(
     resources = ["//plugin-bazel/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//plugin-bazel/e2e:__subpackages__"],
     deps = [
-        "//protocol",
         "//plugin-bazel/commons",
         "//plugin-bazel/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/android",
         "//plugin-bazel/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
+        "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -161,11 +161,11 @@ kt_jvm_binary(
     resources = ["//plugin-bazel/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//plugin-bazel/e2e:__subpackages__"],
     deps = [
-        "//protocol",
         "//plugin-bazel/commons",
         "//plugin-bazel/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/android",
         "//plugin-bazel/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
         "//plugin-bazel/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
+        "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -190,9 +190,9 @@ kt_jvm_binary(
     resources = ["//plugin-bazel/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//plugin-bazel/e2e:__subpackages__"],
     deps = [
-        "//protocol",
         "//plugin-bazel/commons",
         "//plugin-bazel/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
+        "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )

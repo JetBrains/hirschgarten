@@ -12,6 +12,8 @@ import com.intellij.psi.PsiReferenceBase
 import org.jetbrains.bazel.commons.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bazel.commons.label.ResolvedLabel
+import org.jetbrains.bazel.config.isBspProject
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
@@ -19,9 +21,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 import org.jetbrains.bazel.languages.starlark.repomapping.apparentRepoNameToCanonicalName
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 import org.jetbrains.bazel.languages.starlark.repomapping.repositoryPaths
-import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.utils.allAncestorsSequence
+import org.jetbrains.bazel.utils.allAncestorsSequence
 import java.nio.file.Path
 
 public val BUILD_FILE_NAMES = sequenceOf("BUILD.bazel", "BUILD")

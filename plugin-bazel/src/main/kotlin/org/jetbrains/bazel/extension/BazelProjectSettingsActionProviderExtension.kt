@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.extension
 
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.bazel.settings.BAZEL_PROJECT_SETTINGS_DISPLAY_NAME
-import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.extensionPoints.BspToolWindowSettingsProviderExtension
+import org.jetbrains.bazel.config.BuildToolId
+import org.jetbrains.bazel.extensionPoints.BspToolWindowSettingsProviderExtension
+import org.jetbrains.bazel.ui.settings.BAZEL_PROJECT_SETTINGS_DISPLAY_NAME
 
 class BazelProjectSettingsActionProviderExtension : BspToolWindowSettingsProviderExtension {
   override val buildToolId: BuildToolId = bazelBspBuildToolId

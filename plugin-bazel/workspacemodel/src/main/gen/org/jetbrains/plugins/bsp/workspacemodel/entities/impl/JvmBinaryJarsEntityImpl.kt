@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.workspacemodel.entities.impl
+package org.jetbrains.bazel.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.ConnectionId
@@ -23,7 +23,7 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.instrumentation.MutableEntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
-import org.jetbrains.plugins.bsp.workspacemodel.entities.JvmBinaryJarsEntity
+import org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity
 
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
@@ -221,7 +221,7 @@ internal class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity
   }
 
   override fun getMetadata(): EntityMetadata {
-    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.plugins.bsp.workspacemodel.entities.JvmBinaryJarsEntity") as EntityMetadata
+    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity") as EntityMetadata
   }
 
   override fun clone(): JvmBinaryJarsEntityData {

@@ -11,7 +11,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.remoteDev.util.addPathSuffix
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import java.net.URI
 import javax.swing.JComponent
 import kotlin.io.path.toPath

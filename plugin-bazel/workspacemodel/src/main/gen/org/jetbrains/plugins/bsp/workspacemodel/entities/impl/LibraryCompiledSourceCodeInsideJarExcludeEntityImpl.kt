@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.workspacemodel.entities.impl
+package org.jetbrains.bazel.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.jps.entities.LibraryId
 import com.intellij.platform.workspace.storage.ConnectionId
@@ -17,8 +17,8 @@ import com.intellij.platform.workspace.storage.impl.indices.WorkspaceMutableInde
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
-import org.jetbrains.plugins.bsp.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
-import org.jetbrains.plugins.bsp.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
+import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
+import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
 
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
@@ -226,7 +226,7 @@ internal class LibraryCompiledSourceCodeInsideJarExcludeEntityData :
   }
 
   override fun getMetadata(): EntityMetadata {
-    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.plugins.bsp.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity") as EntityMetadata
+    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity") as EntityMetadata
   }
 
   override fun getEntityInterface(): Class<out WorkspaceEntity> {

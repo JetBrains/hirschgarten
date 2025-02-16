@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.workspacemodel.entities
+package org.jetbrains.bazel.workspacemodel.entities
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
@@ -9,7 +9,7 @@ import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.annotations.Child
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
-import org.jetbrains.plugins.bsp.annotations.PublicApi
+import org.jetbrains.bazel.annotations.PublicApi
 
 @PublicApi
 interface JvmBinaryJarsEntity : WorkspaceEntity {

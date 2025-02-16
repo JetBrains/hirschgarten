@@ -1,12 +1,12 @@
-package org.jetbrains.plugins.bsp.workspacemodel.entities
+package org.jetbrains.bazel.workspacemodel.entities
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bsp.protocol.MavenCoordinates
-import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.nio.file.Path
 
 data class BuildTargetInfo(

@@ -11,16 +11,16 @@ import com.intellij.openapi.roots.libraries.Library
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
+import org.jetbrains.bazel.sync.scope.PartialProjectSync
+import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
 import org.jetbrains.bazel.ui.widgets.findBuildFile
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.resolvedPromise
-import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.sync.scope.PartialProjectSync
-import org.jetbrains.plugins.bsp.sync.task.ProjectSyncTask
-import org.jetbrains.plugins.bsp.target.targetUtils
-import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 
 private val log = logger<BazelProjectModelModifier>()
 

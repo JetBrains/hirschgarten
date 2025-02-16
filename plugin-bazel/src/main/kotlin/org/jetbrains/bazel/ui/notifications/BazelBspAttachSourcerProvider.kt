@@ -11,7 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
+import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
 
 /**
  * See https://github.com/bazelbuild/bazel/issues/10692

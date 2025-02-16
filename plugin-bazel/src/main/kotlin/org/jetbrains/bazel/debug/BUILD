@@ -10,6 +10,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
         "//plugin-bazel/src/main/proto",
         "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",

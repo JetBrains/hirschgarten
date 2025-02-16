@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.workspacemodel.entities
+package org.jetbrains.bazel.workspacemodel.entities
 
 public typealias LanguageIds = List<String>
 

@@ -3,7 +3,7 @@ package org.jetbrains.workspace.model.test.framework
 import com.intellij.testFramework.registerOrReplaceServiceInstance
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
+import org.jetbrains.bazel.coroutines.BspCoroutineService
 
 /**
  * Base test class for testing code which does some background operations using `BspCoroutineService`.

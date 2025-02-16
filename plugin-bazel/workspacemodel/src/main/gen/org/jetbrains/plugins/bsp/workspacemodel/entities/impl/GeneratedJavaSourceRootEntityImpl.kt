@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.workspacemodel.entities.impl
+package org.jetbrains.bazel.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
@@ -21,8 +21,8 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
-import org.jetbrains.plugins.bsp.workspacemodel.entities.GeneratedJavaSourceRootEntity
-import org.jetbrains.plugins.bsp.workspacemodel.entities.PackageNameId
+import org.jetbrains.bazel.workspacemodel.entities.GeneratedJavaSourceRootEntity
+import org.jetbrains.bazel.workspacemodel.entities.PackageNameId
 
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
@@ -236,7 +236,7 @@ internal class GeneratedJavaSourceRootEntityData : WorkspaceEntityData<Generated
   }
 
   override fun getMetadata(): EntityMetadata {
-    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.plugins.bsp.workspacemodel.entities.GeneratedJavaSourceRootEntity") as EntityMetadata
+    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.bazel.workspacemodel.entities.GeneratedJavaSourceRootEntity") as EntityMetadata
   }
 
   override fun clone(): GeneratedJavaSourceRootEntityData {

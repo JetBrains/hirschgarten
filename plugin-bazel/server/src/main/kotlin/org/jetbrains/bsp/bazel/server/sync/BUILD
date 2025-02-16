@@ -8,7 +8,6 @@ kt_jvm_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        "//protocol",
         "//plugin-bazel/bazelrunner",
         "//plugin-bazel/bazelrunner/src/main/kotlin/org/jetbrains/bsp/bazel/bazelrunner/utils",
         "//plugin-bazel/commons",
@@ -27,6 +26,7 @@ kt_jvm_library(
         "//plugin-bazel/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/languages",
         "//plugin-bazel/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:bsp_target_info_java_proto",
         "//plugin-bazel/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/sharding",
+        "//protocol",
         "@bazel_bep//jar",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:com_google_protobuf_protobuf_java",

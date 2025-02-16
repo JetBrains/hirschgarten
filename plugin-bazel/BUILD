@@ -13,7 +13,6 @@ load(
 )
 load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
 
-
 optional_plugin_dep(
     name = "bsp_with_python",
     module = ["com.intellij.modules.python"],
@@ -71,8 +70,7 @@ intellij_plugin_library(
         "com.intellij.java",
         "org.jetbrains.kotlin",
     ],
-#     plugin_xmls = ["//plugin-bazel/src:main/xml/base.xml"],
-
+    #     plugin_xmls = ["//plugin-bazel/src:main/xml/base.xml"],
     plugin_xmls = [
         "//plugin-bazel/src:main/resources/META-INF/base.xml",
         # bazel plugin depends on bsp plugin, which already adds performance plugin as optional plugin dep
@@ -80,8 +78,8 @@ intellij_plugin_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//plugin-bazel/src:intellij-bazel",
         "//plugin-bazel/jps-compilation/src:jps-compilation",
+        "//plugin-bazel/src:intellij-bazel",
         "//plugin-bazel/workspacemodel/src:workspacemodel",
         "//protocol",
     ],

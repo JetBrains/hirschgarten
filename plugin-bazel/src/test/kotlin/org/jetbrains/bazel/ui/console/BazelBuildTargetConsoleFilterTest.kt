@@ -9,7 +9,7 @@ import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.bazel.config.rootDir
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4

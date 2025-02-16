@@ -7,9 +7,9 @@ kt_jvm_library(
     ]),
     visibility = ["//plugin-bazel/logger:__subpackages__"],
     deps = [
-        "//protocol",
         "//plugin-bazel/commons",
         "//plugin-bazel/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
+        "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )

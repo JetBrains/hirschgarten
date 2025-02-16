@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.workspacemodel.entities.impl
+package org.jetbrains.bazel.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
@@ -18,8 +18,8 @@ import com.intellij.platform.workspace.storage.impl.indices.WorkspaceMutableInde
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
-import org.jetbrains.plugins.bsp.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
-import org.jetbrains.plugins.bsp.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
+import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity
+import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
 
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
@@ -237,7 +237,7 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData :
   }
 
   override fun getMetadata(): EntityMetadata {
-    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.plugins.bsp.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity") as EntityMetadata
+    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity") as EntityMetadata
   }
 
   override fun clone(): CompiledSourceCodeInsideJarExcludeEntityData {

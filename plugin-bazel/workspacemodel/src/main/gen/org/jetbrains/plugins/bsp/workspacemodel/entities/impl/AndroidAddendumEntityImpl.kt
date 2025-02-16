@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.workspacemodel.entities.impl
+package org.jetbrains.bazel.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.ConnectionId
@@ -21,8 +21,8 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.instrumentation.MutableEntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
-import org.jetbrains.plugins.bsp.workspacemodel.entities.AndroidAddendumEntity
-import org.jetbrains.plugins.bsp.workspacemodel.entities.AndroidTargetType
+import org.jetbrains.bazel.workspacemodel.entities.AndroidAddendumEntity
+import org.jetbrains.bazel.workspacemodel.entities.AndroidTargetType
 
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
@@ -380,7 +380,7 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
 
   override fun getMetadata(): EntityMetadata {
     return MetadataStorageImpl.getMetadataByTypeFqn(
-      "org.jetbrains.plugins.bsp.workspacemodel.entities.AndroidAddendumEntity") as EntityMetadata
+      "org.jetbrains.bazel.workspacemodel.entities.AndroidAddendumEntity") as EntityMetadata
   }
 
   override fun clone(): AndroidAddendumEntityData {

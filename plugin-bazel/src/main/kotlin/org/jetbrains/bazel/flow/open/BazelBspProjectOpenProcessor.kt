@@ -10,11 +10,11 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants.BAZELBSP_JSON_FILE_NAME
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.bazel.settings.bazelProjectSettings
-import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.flow.open.BaseBspProjectOpenProcessor
-import org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessor
-import org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessorExtension
+import org.jetbrains.bazel.config.BuildToolId
+import org.jetbrains.bazel.flow.open.BaseBspProjectOpenProcessor
+import org.jetbrains.bazel.flow.open.BspProjectOpenProcessor
+import org.jetbrains.bazel.flow.open.BspProjectOpenProcessorExtension
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import java.io.IOException
 import java.nio.file.Path
 import javax.swing.Icon
@@ -23,7 +23,7 @@ import kotlin.io.path.listDirectoryEntries
 
 private val log = logger<BazelBspProjectOpenProcessor>()
 
-internal val ALL_ELIGIBLE_FILES_GLOB =
+val ALL_ELIGIBLE_FILES_GLOB =
   buildString {
     append("{")
     append(BAZELBSP_JSON_FILE_NAME)
@@ -36,7 +36,7 @@ internal val ALL_ELIGIBLE_FILES_GLOB =
     append("}")
   }
 
-internal val BUILD_FILE_GLOB = "{${BazelPluginConstants.BUILD_FILE_NAMES.joinToString(",")}}"
+val BUILD_FILE_GLOB = "{${BazelPluginConstants.BUILD_FILE_NAMES.joinToString(",")}}"
 
 /**
  * Refrain from using [VirtualFile.getChildren] as it causes performance issues in large projects, such as [BAZEL-1717](https://youtrack.jetbrains.com/issue/BAZEL-1717)

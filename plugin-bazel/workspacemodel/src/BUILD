@@ -11,8 +11,8 @@ kt_jvm_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/plugins/bsp/annotations",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/plugins/bsp/utils",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/annotations",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
         "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:com_google_code_gson_gson",

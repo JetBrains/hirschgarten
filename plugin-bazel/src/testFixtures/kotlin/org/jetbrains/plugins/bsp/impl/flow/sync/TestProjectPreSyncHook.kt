@@ -1,8 +1,8 @@
-package org.jetbrains.plugins.bsp.impl.flow.sync
+package org.jetbrains.bazel.impl.flow.sync
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.sync.ProjectPreSyncHook
+import org.jetbrains.bazel.config.BuildToolId
+import org.jetbrains.bazel.sync.ProjectPreSyncHook
 
 open class TestProjectPreSyncHook(override val buildToolId: BuildToolId) : ProjectPreSyncHook {
   var wasCalled: Boolean = false
