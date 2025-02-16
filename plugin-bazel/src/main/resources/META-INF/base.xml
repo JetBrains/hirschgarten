@@ -165,6 +165,9 @@
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.commenter.ProjectViewCommenter"/>
 
+        <enterHandlerDelegate
+                implementation="org.jetbrains.bazel.languages.projectview.formatting.ProjectViewEnterHandler" />
+
         <formattingService
                 implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService"/>
 

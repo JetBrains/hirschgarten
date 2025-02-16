@@ -6,6 +6,9 @@ kt_jvm_library(
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/base:base",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer:lexer",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/parser:parser",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/psi:psi",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
     ],
 )
