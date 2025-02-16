@@ -1,0 +1,2 @@
+- regenerate and check in jps-resources/plugin.xml from stamped_plugin_xml
+- add a single target that checks in all the generated files
