@@ -11,7 +11,6 @@ import kotlin.text.indexOf
 
 object PythonDebugUtils {
   fun guessRunScriptName(project: Project, targetId: BuildTargetIdentifier): Path {
-    val targetUri = targetId.uri
     val bazelBinPath = getBazelBinPath(project)
     val splitTargetId = targetId.dropRepo().split('/', ':').toTypedArray()
     return Paths.get(bazelBinPath, *splitTargetId)
@@ -23,8 +22,9 @@ object PythonDebugUtils {
     filePath: String,
   ): String {
     val bazelBin = getBazelBinPath(project)
-    val cleanTargetId = targetId.dropRepo().replace(':', '/')
-    val runFilesPath = "$bazelBin/$cleanTargetId.runfiles/_main"
+    val splitTargetId = targetId.dropRepo().split('/', ':')
+    val runFilesPathElements = splitTargetId.let { it.dropLast(1) + "${it.last()}.runfiles" + "_main" }.toTypedArray()
+    val runFilesPath = Paths.get(bazelBin, *runFilesPathElements).toString()
     return if (filePath.startsWith(runFilesPath)) {
       val basePath = project.basePath ?: error(BazelPluginBundle.message("project.base.path.not.found"))
       filePath.replaceFirst(runFilesPath, basePath)

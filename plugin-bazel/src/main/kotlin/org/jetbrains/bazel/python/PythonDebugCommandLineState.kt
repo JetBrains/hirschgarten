@@ -40,11 +40,7 @@ class PythonDebugCommandLineState(
   private val settings: GenericRunState,
 ) : BspCommandLineStateBase(env, originId) {
   val targetId: BuildTargetIdentifier? = (env.runProfile as? BspRunConfiguration)?.targets?.singleOrNull()
-  private val scriptName: Path?
-
-  init {
-    scriptName = targetId?.let { PythonDebugUtils.guessRunScriptName(env.project, it) }
-  }
+  private val scriptName = targetId?.let { PythonDebugUtils.guessRunScriptName(env.project, it) }
 
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspRunTaskListener(handler)
 
@@ -71,7 +67,7 @@ class PythonDebugCommandLineState(
           .getInstance()
           .factory
           .createTemplateConfiguration(environment.project)
-          as PythonRunConfiguration
+          as PythonRunConfiguration // should always succeed; that's what PythonConfigurationFactory produces
       templateConfig.also {
         it.scriptName = scriptName.toAbsolutePath().toString()
         it.sdk = getSdkForTarget(environment.project, targetId)
