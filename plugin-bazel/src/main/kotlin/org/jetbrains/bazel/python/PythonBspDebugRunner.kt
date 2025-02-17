@@ -17,6 +17,7 @@ import com.jetbrains.python.debugger.PyDebugRunner
 import com.jetbrains.python.run.PythonCommandLineState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.commons.label.label
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
@@ -78,7 +79,7 @@ class PythonBspDebugRunner : PyDebugRunner() {
   private fun PyDebugProcess.withPositionConverter(): PyDebugProcess =
     also {
       val targetId = (session.runProfile as BspRunConfiguration).targets.single() // canRun(...) checks that, should never fail
-      it.positionConverter = BazelPyDebugPositionConverter(session.project, targetId)
+      it.positionConverter = BazelPyDebugPositionConverter(session.project, targetId.label())
     }
 
   companion object {

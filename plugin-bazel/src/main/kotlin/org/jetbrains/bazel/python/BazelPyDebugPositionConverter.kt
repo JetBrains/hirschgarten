@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.python
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.xdebugger.XDebuggerUtil
@@ -8,8 +7,9 @@ import com.intellij.xdebugger.XSourcePosition
 import com.jetbrains.python.debugger.PyPositionConverter
 import com.jetbrains.python.debugger.PySignature
 import com.jetbrains.python.debugger.PySourcePosition
+import org.jetbrains.bazel.commons.label.Label
 
-class BazelPyDebugPositionConverter(private val project: Project, private val targetId: BuildTargetIdentifier) : PyPositionConverter {
+class BazelPyDebugPositionConverter(private val project: Project, private val target: Label) : PyPositionConverter {
   @Deprecated("Deprecated in the interface")
   override fun create(filePath: String, line: Int): PySourcePosition = OurPySourcePosition(filePath, line)
 
@@ -22,7 +22,7 @@ class BazelPyDebugPositionConverter(private val project: Project, private val ta
   override fun convertFromPython(position: PySourcePosition, frameName: String?): XSourcePosition? = convertFromPython(position)
 
   override fun convertFromPython(position: PySourcePosition): XSourcePosition? {
-    val file = PythonDebugUtils.findRealSourceFile(project, targetId, position.file)
+    val file = PythonDebugUtils.findRealSourceFile(project, target, position.file)
     val line = position.line - 1
     return getXSourcePosition(file, line)
   }

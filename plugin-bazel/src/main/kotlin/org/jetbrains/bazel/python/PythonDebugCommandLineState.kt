@@ -16,6 +16,8 @@ import com.jetbrains.python.run.PythonConfigurationType
 import com.jetbrains.python.run.PythonRunConfiguration
 import com.jetbrains.python.run.PythonScriptCommandLineState
 import com.jetbrains.python.sdk.PythonSdkUtil
+import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.label.label
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -32,15 +34,15 @@ import org.jetbrains.plugins.bsp.target.TargetUtils
 import org.jetbrains.plugins.bsp.target.targetUtils
 import org.jetbrains.plugins.bsp.taskEvents.BspTaskListener
 import org.jetbrains.plugins.bsp.taskEvents.OriginId
-import java.nio.file.Path
 
 class PythonDebugCommandLineState(
   env: ExecutionEnvironment,
   originId: OriginId,
   private val settings: GenericRunState,
 ) : BspCommandLineStateBase(env, originId) {
-  val targetId: BuildTargetIdentifier? = (env.runProfile as? BspRunConfiguration)?.targets?.singleOrNull()
-  private val scriptName = targetId?.let { PythonDebugUtils.guessRunScriptName(env.project, it) }
+  val targetId: BuildTargetIdentifier? = (env.runProfile as? BspRunConfiguration)?.targets?.singleOrNull() // temporary, for BSP cooperation
+  val target: Label? = targetId?.label()
+  private val scriptName = target?.let { PythonDebugUtils.guessRunScriptName(env.project, it) }
 
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspRunTaskListener(handler)
 
@@ -57,10 +59,10 @@ class PythonDebugCommandLineState(
   fun asPythonState(): PythonCommandLineState = PythonScriptCommandLineState(pythonConfig(), environment)
 
   private fun pythonConfig(): PythonRunConfiguration =
-    if (targetId == null) {
+    if (targetId == null || target == null) {
       error(BazelPluginBundle.message("python.debug.error.no.id"))
     } else if (scriptName == null) {
-      error(BazelPluginBundle.message("python.debug.error.no.script", targetId.uri))
+      error(BazelPluginBundle.message("python.debug.error.no.script", target))
     } else {
       val templateConfig =
         PythonConfigurationType
