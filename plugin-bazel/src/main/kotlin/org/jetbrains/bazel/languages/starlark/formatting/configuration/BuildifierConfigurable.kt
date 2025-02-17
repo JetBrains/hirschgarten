@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.IdeActions
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.keymap.KeymapUtil
-import com.intellij.openapi.options.BoundConfigurable
+import com.intellij.openapi.options.BoundSearchableConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
@@ -23,7 +23,7 @@ import org.jetbrains.bazel.languages.starlark.formatting.BuildifierUtil
 import java.io.File
 import javax.swing.JCheckBox
 
-class BuildifierConfigurable(val project: Project) : BoundConfigurable(BazelPluginBundle.message("buildifier.configurable.name")) {
+class BuildifierConfigurable(val project: Project) : BoundSearchableConfigurable(BazelPluginBundle.message(DISPLAY_NAME_KEY), ID) {
   private var detectedBuildifierExecutable: File? = null
   private var storedState = BuildifierConfiguration.getBuildifierConfiguration(project)
 
@@ -130,4 +130,16 @@ class BuildifierConfigurable(val project: Project) : BoundConfigurable(BazelPlug
     BuildifierUtil.validateBuildifierExecutable(
       buildifierExecutablePathField.text.nullize() ?: BuildifierUtil.detectBuildifierExecutable()?.absolutePath,
     )
+
+  companion object {
+    const val ID = "bazel.buildifier.settings"
+    const val DISPLAY_NAME_KEY = "buildifier.configurable.display.name"
+  }
+
+  object SearchIndex { // the companion object of a Configurable is not allowed to have non-const members
+    val keys =
+      listOf(
+        "buildifier.enable.buildifier.checkbox.label",
+      )
+  }
 }

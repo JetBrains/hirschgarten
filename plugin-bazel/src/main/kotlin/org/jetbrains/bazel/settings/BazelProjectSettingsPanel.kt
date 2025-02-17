@@ -40,9 +40,6 @@ import javax.swing.JComponent
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
-private const val BAZEL_PROJECT_SETTINGS_ID = "bazel.project.settings"
-const val BAZEL_PROJECT_SETTINGS_DISPLAY_NAME = "Bazel"
-
 data class BazelProjectSettings(
   val projectViewPath: Path? = null,
   val selectedServerJdkName: String? = null,
@@ -116,7 +113,7 @@ internal class BazelProjectSettingsService :
   }
 }
 
-internal class BazelProjectSettingsConfigurable(private val project: Project) : SearchableConfigurable {
+class BazelProjectSettingsConfigurable(private val project: Project) : SearchableConfigurable {
   private val projectViewPathField: TextFieldWithBrowseButton
 
   private val serverJdkComboBoxModel: ProjectSdksModel = ProjectSdksModel()
@@ -270,14 +267,32 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
       .customJvmOptions
       .joinToString("\n")
 
-  override fun getDisplayName(): String = BAZEL_PROJECT_SETTINGS_DISPLAY_NAME
+  override fun getDisplayName(): String = BazelPluginBundle.message(DISPLAY_NAME_KEY)
 
-  override fun getId(): String = BAZEL_PROJECT_SETTINGS_ID
+  override fun getId(): String = ID
 
   override fun disposeUIResources() {
     serverJdkComboBoxModel.disposeUIResources()
     projectViewPathField.dispose()
     super.disposeUIResources()
+  }
+
+  companion object {
+    const val ID = "bazel.project.settings"
+    const val DISPLAY_NAME_KEY = "project.settings.display.name"
+  }
+
+  object SearchIndex { // the companion object of a Configurable is not allowed to have non-const members
+    val keys =
+      listOf(
+        "project.settings.server.title",
+        "project.settings.project.view.label",
+        "project.settings.server.jdk.label",
+        "project.settings.server.jvm.options.label",
+        "project.settings.plugin.title",
+        "project.settings.plugin.hotswap.enabled.checkbox.text",
+        "project.settings.plugin.show.excluded.directories.as.separate.node.checkbox.text",
+      )
   }
 }
 
