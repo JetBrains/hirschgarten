@@ -1,4 +1,4 @@
 alias(
     name = "bspcli",
-    actual = "//plugin-bazel/bspcli"
+    actual = "//plugin-bazel/bspcli",
 )
