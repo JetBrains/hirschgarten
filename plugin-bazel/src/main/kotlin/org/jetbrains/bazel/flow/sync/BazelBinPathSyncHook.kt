@@ -44,5 +44,5 @@ class BazelBinPathService : PersistentStateComponent<BazelBinPathService.State> 
     fun getInstance(project: Project): BazelBinPathService = project.service<BazelBinPathService>()
   }
 
-  data class State(var path: String)
+  data class State(var path: String? = null)
 }
