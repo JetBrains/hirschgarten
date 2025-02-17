@@ -49,7 +49,7 @@ open class E2ETest(
 open class SampleRepo(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//plugin-bazel/e2e:sample_repo_test",
+    targets = "//server/e2e:sample_repo_test",
   )
 
 object SampleRepoGitHub : SampleRepo(
@@ -63,7 +63,7 @@ object SampleRepoSpace : SampleRepo(
 open class LocalJdk(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//plugin-bazel/e2e:local_jdk_test",
+    targets = "//server/e2e:local_jdk_test",
   )
 
 object LocalJdkGitHub : LocalJdk(
@@ -77,7 +77,7 @@ object LocalJdkSpace : LocalJdk(
 open class RemoteJdk(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//plugin-bazel/e2e:remote_jdk_test",
+    targets = "//server/e2e:remote_jdk_test",
   )
 
 object RemoteJdkGitHub : RemoteJdk(
@@ -91,7 +91,7 @@ object RemoteJdkSpace : RemoteJdk(
 open class ServerDownloadsBazelisk(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//plugin-bazel/e2e:server_downloads_bazelisk_test",
+    targets = "//server/e2e:server_downloads_bazelisk_test",
     failureConditions = {
       testFailure = false
       nonZeroExitCode = false
@@ -110,7 +110,7 @@ object ServerDownloadsBazeliskSpace : ServerDownloadsBazelisk(
 open class KotlinProject(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//plugin-bazel/e2e:kotlin_project_test",
+    targets = "//server/e2e:kotlin_project_test",
   )
 
 object KotlinProjectGitHub : KotlinProject(
@@ -124,7 +124,7 @@ object KotlinProjectSpace : KotlinProject(
 open class AndroidProject(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit)? = null) :
   E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//plugin-bazel/e2e:android_project_test",
+    targets = "//server/e2e:android_project_test",
     requirements = requirements,
     failureConditions = {
       testFailure = false
@@ -147,7 +147,7 @@ object AndroidProjectSpace : AndroidProject(
 open class AndroidKotlinProject(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit)? = null) :
   E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//plugin-bazel/e2e:android_kotlin_project_test",
+    targets = "//server/e2e:android_kotlin_project_test",
     requirements = requirements,
     failureConditions = {
       testFailure = false
@@ -170,7 +170,7 @@ object AndroidKotlinProjectSpace : AndroidKotlinProject(
 open class ScalaProject(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//plugin-bazel/e2e:enabled_rules_test",
+    targets = "//server/e2e:enabled_rules_test",
   )
 
 object ScalaProjectGitHub : ScalaProject(
@@ -184,7 +184,7 @@ object ScalaProjectSpace : ScalaProject(
 open class PythonProject(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//plugin-bazel/e2e:python_project_test",
+    targets = "//server/e2e:python_project_test",
   )
 
 object PythonProjectGitHub : PythonProject(
@@ -198,7 +198,7 @@ object PythonProjectSpace : PythonProject(
 open class JavaDiagnostics(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//plugin-bazel/e2e:java_diagnostics_test",
+    targets = "//server/e2e:java_diagnostics_test",
   )
 
 object JavaDiagnosticsGitHub : JavaDiagnostics(
@@ -212,7 +212,7 @@ object JavaDiagnosticsSpace : JavaDiagnostics(
 open class ManualTargets(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//plugin-bazel/e2e:allow_manual_targets_sync_test",
+    targets = "//server/e2e:allow_manual_targets_sync_test",
   )
 
 object ManualTargetsGitHub : ManualTargets(
@@ -226,7 +226,7 @@ object ManualTargetsSpace : ManualTargets(
 open class BuildSync(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//plugin-bazel/e2e:build_and_sync_test",
+    targets = "//server/e2e:build_and_sync_test",
   )
 
 object BuildSyncGitHub : BuildSync(
@@ -240,7 +240,7 @@ object BuildSyncSpace : BuildSync(
 open class FirstPhaseSync(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//plugin-bazel/e2e:first_phase_sync_test",
+    targets = "//server/e2e:first_phase_sync_test",
   )
 
 object FirstPhaseSyncGitHub : FirstPhaseSync(
@@ -254,7 +254,7 @@ object FirstPhaseSyncSpace : FirstPhaseSync(
 open class PartialSync(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//plugin-bazel/e2e:partial_sync_test",
+    targets = "//server/e2e:partial_sync_test",
   )
 
 object PartialSyncGitHub : PartialSync(
@@ -268,7 +268,7 @@ object PartialSyncSpace : PartialSync(
 open class NestedModules(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//plugin-bazel/e2e:nested_modules_test",
+    targets = "//server/e2e:nested_modules_test",
   )
 
 object NestedModulesGitHub : NestedModules(

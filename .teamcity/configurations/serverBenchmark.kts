@@ -15,7 +15,7 @@ open class Benchmark(vcsRoot: GitVcsRoot) :
         name = "run benchmark 10 targets"
         id = "run_benchmark"
         command = "run"
-        targets = "//plugin-bazel/bspcli:bspcli /home/hirschuser/project_10 %system.teamcity.build.checkoutDir%/metrics.txt"
+        targets = "//server/bspcli:bspcli /home/hirschuser/project_10 %system.teamcity.build.checkoutDir%/metrics.txt"
         arguments = Utils.CommonParams.BazelCiSpecificArgs
         toolPath = "/usr/local/bin"
         logging = BazelStep.Verbosity.Diagnostic

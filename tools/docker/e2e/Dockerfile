@@ -22,6 +22,6 @@ RUN git clone --depth 1 https://github.com/JetBrains/hirschgarten.git /home/hirs
 
 # Generate synthetic 10 benchmark project
 RUN cd /home/hirschuser/hirschgarten \
-    && bazel run //plugin-bazel/bspcli:generator -- /home/hirschuser/project_10 10 --targetssize 1 \
+    && bazel run //server/bspcli:generator -- /home/hirschuser/project_10 10 --targetssize 1 \
     && cd /home/hirschuser \
     && rm -rf /home/hirschuser/hirschgarten

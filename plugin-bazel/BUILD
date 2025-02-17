@@ -78,11 +78,11 @@ intellij_plugin_library(
     visibility = ["//visibility:public"],
     deps = [
         "//plugin-bazel/jps-compilation/src:jps-compilation",
-        "//plugin-bazel/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
         "//plugin-bazel/src:intellij-bazel",
         "//plugin-bazel/src:intellij-bsp",
         "//plugin-bazel/workspacemodel/src:workspacemodel",
         "//protocol",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
     ],
 )
 

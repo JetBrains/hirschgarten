@@ -99,7 +99,7 @@ tracer.spanBuilder("Resolve project").use {
 Memory metrics are collected in the same hacky way as in IntelliJ-BSP (see `MemoryProfiler.kt` in the server).
 ### Run Bazel-BSP benchmark locally
 ```
-bazel run //plugin-bazel/bspcli:bspcli /path/to/project /path/to/output/metrics.txt //...
+bazel run //server/bspcli:bspcli /path/to/project /path/to/output/metrics.txt //...
 ```
 Then `metrics.txt` will contain the metrics.
 ### Run Bazel-BSP benchmark on TeamCity

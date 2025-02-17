@@ -117,7 +117,6 @@ kt_jvm_library(
         "//plugin-bazel/src/test:__subpackages__",
     ],
     exports = [
-        "//plugin-bazel/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
@@ -130,6 +129,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
     ],
 )
 

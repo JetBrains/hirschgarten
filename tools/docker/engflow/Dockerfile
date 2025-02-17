@@ -41,7 +41,7 @@ RUN apt-get update --quiet --quiet --yes && \
 #
 ## Generate synthetic 10 benchmark project
 #RUN cd /home/engflow/hirschgarten \
-#    && bazel run //plugin-bazel/bspcli:generator -- /home/engflow/project_10 10 --targetssize 1 \
+#    && bazel run //server/bspcli:generator -- /home/engflow/project_10 10 --targetssize 1 \
 #    && cd /home/engflow \
 #    && rm -rf /home/engflow/hirschgarten
 #
