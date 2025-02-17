@@ -22,7 +22,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.server.tasks.runBuildTargetTask
+import org.jetbrains.plugins.bsp.server.tasks.runBuildTargetTask
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 import java.net.ServerSocket
 import kotlin.String
