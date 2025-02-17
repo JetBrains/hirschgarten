@@ -39,6 +39,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings/search",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
     ],

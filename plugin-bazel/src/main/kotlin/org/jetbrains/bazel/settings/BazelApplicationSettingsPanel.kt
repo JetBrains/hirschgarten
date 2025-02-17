@@ -17,9 +17,6 @@ import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.config.BazelPluginBundle
 import javax.swing.JComponent
 
-private const val BAZEL_APPLICATION_SETTINGS_ID = "bazel.application.settings"
-private const val BAZEL_APPLICATION_SETTINGS_DISPLAY_NAME = "Advanced Settings"
-
 @Service(Service.Level.APP)
 @State(
   name = "BazelApplicationSettingsService",
@@ -47,7 +44,7 @@ internal class BazelApplicationSettingsService : PersistentStateComponent<BazelA
 
 internal data class BazelApplicationSettings(var updateChannel: UpdateChannel = UpdateChannel.RELEASE)
 
-internal class BazelApplicationSettingsConfigurable : SearchableConfigurable {
+class BazelApplicationSettingsConfigurable : SearchableConfigurable {
   private val panelApplicationSettings = BazelApplicationSettingsService.getInstance().settings.copy()
 
   private val updateChannelComboBox: ComboBox<UpdateChannel> = ComboBox<UpdateChannel>()
@@ -65,9 +62,9 @@ internal class BazelApplicationSettingsConfigurable : SearchableConfigurable {
     }
   }
 
-  override fun getId(): String = BAZEL_APPLICATION_SETTINGS_ID
+  override fun getId(): String = ID
 
-  override fun getDisplayName(): String? = BAZEL_APPLICATION_SETTINGS_DISPLAY_NAME
+  override fun getDisplayName(): String? = BazelPluginBundle.message(DISPLAY_NAME_KEY)
 
   override fun createComponent(): JComponent? =
     panel {
@@ -86,6 +83,19 @@ internal class BazelApplicationSettingsConfigurable : SearchableConfigurable {
     BazelPluginUpdater.updatePlugins()
 
     BazelApplicationSettingsService.getInstance().settings = panelApplicationSettings.copy()
+  }
+
+  companion object {
+    const val ID = "bazel.application.settings"
+    const val DISPLAY_NAME_KEY = "application.settings.display.name"
+  }
+
+  object SearchIndex { // the companion object of a Configurable is not allowed to have non-const members
+    val keys =
+      listOf(
+        "application.settings.updates.title",
+        "application.settings.update.channel.dropdown.title",
+      )
   }
 }
 
