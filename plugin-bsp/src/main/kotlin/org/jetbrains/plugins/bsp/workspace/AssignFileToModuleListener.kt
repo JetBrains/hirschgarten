@@ -58,7 +58,7 @@ class AssignFileToModuleListener : BulkFileListener {
       val file = it.getAffectedFile() ?: return
       val isSource =
         if (it is VFileDeleteEvent) {
-          file.path.safeCastToURI().isSourceFile() // file does not exist any more, so it is not a source itself
+          file.url.safeCastToURI().isSourceFile() // file does not exist any more, so it is not a source itself
         } else {
           file.isSourceFile()
         }
