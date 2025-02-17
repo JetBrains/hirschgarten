@@ -3,7 +3,7 @@ py_binary(
     srcs = ["munich.py"],
     imports = ["."],
     deps = [
-        "//plugin-bazel/example/amsterdam",
-        "//plugin-bazel/example/krakow",
+        "//server/example/amsterdam",
+        "//server/example/krakow",
     ],
 )

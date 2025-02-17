@@ -6,10 +6,10 @@
     <file name="plugin-bazel/e2e/test-projects/workspace/kotlin-project/plugin_allopen_test/User.kt">
         <error line="3" column="1" source="standard:no-wildcard-imports" />
     </file>
-    <file name="plugin-bazel/example/kotlincplugin/User.kt">
+    <file name="server/example/kotlincplugin/User.kt">
         <error line="3" column="1" source="standard:no-wildcard-imports" />
     </file>
-    <file name="plugin-bazel/example/kotlincplugin/UserIsOpenTest.kt">
+    <file name="server/example/kotlincplugin/UserIsOpenTest.kt">
         <error line="1" column="1" source="standard:filename" />
         <error line="3" column="1" source="standard:no-wildcard-imports" />
     </file>
