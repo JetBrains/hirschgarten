@@ -11,16 +11,16 @@ import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
+import org.jetbrains.bazel.config.BuildToolId
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeService
+import org.jetbrains.bazel.sync.ProjectSyncHook
+import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
+import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
+import org.jetbrains.bazel.sync.task.query
+import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
-import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.sync.ProjectSyncHook
-import org.jetbrains.plugins.bsp.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.plugins.bsp.sync.projectStructure.workspaceModel.workspaceModelDiff
-import org.jetbrains.plugins.bsp.sync.task.query
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 import java.nio.file.Path
 
 class DirectoriesSyncHook : ProjectSyncHook {

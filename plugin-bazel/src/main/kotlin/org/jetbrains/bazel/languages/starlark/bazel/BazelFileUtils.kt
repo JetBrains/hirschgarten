@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.bazel.config.rootDir
 import java.io.File
 
 private const val MAX_PATH_LENGTH = 25

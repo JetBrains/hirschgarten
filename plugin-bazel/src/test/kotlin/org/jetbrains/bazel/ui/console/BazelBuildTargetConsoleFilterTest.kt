@@ -9,7 +9,7 @@ import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.bazel.config.rootDir
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -37,7 +37,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   fun `should match an absolute bazel target without @`() {
     // given
     createBazelFileInProject("plugin-bsp/src")
-    val bazelTarget = "//plugin-bsp/src:test_fixtures"
+    val bazelTarget = "//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
@@ -54,7 +54,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   fun `should match an absolute bazel target with a @`() {
     // given
     createBazelFileInProject("plugin-bsp/src")
-    val bazelTarget = "@//plugin-bsp/src:test_fixtures"
+    val bazelTarget = "@//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
@@ -71,7 +71,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   fun `should match an absolute bazel target with @@`() {
     // given
     createBazelFileInProject("plugin-bsp/src")
-    val bazelTarget = "@@//plugin-bsp/src:test_fixtures"
+    val bazelTarget = "@@//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
@@ -88,7 +88,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   fun `should not match an external target with @`() {
     // given
     createBazelFileInProject("plugin-bsp/src")
-    val bazelTarget = "@external//plugin-bsp/src:test_fixtures"
+    val bazelTarget = "@external//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
@@ -102,7 +102,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   fun `should not match an external target with @@`() {
     // given
     createBazelFileInProject("plugin-bsp/src")
-    val bazelTarget = "@@external//plugin-bsp/src:test_fixtures"
+    val bazelTarget = "@@external//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
@@ -116,7 +116,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   fun `should not match non-existing folder`() {
     // given
     createBazelFileInProject("plugin-bsp/src")
-    val bazelTarget = "@@external//plugin-bsp/test:test_fixtures"
+    val bazelTarget = "@@external//plugin-bazel/test:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
@@ -146,7 +146,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   fun `should match an absolute bazel target without @ to BUILD_bazel`() {
     // given
     createBazelFileInProject("plugin-bsp/src", "BUILD.bazel")
-    val bazelTarget = "//plugin-bsp/src:test_fixtures"
+    val bazelTarget = "//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
@@ -191,7 +191,7 @@ proto_library(
     val path = createBazelFileInProject("plugin-bsp/src")
     val tmp = path.readLines().joinToString("\n")
     println(tmp)
-    val bazelTarget = "//plugin-bsp/src:test_fixtures"
+    val bazelTarget = "//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when

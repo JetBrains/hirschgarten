@@ -9,12 +9,12 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
+import org.jetbrains.bazel.config.BuildToolId
+import org.jetbrains.bazel.sync.ProjectSyncHook
+import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
+import org.jetbrains.bazel.sync.task.queryIf
+import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
-import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.sync.ProjectSyncHook
-import org.jetbrains.plugins.bsp.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.plugins.bsp.sync.task.queryIf
-import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.toPath

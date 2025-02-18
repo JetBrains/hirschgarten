@@ -7,11 +7,11 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationNamesInfo
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.BspFeatureFlags.isKotlinPluginK2Mode
+import org.jetbrains.bazel.startup.BspProjectActivity
 import org.jetbrains.kotlin.idea.KotlinIcons
 import org.jetbrains.kotlin.idea.configuration.ui.KotlinPluginKindSwitcherController
 import org.jetbrains.kotlin.idea.configuration.ui.USE_K2_PLUGIN_VM_OPTION_PREFIX
-import org.jetbrains.plugins.bsp.config.BspFeatureFlags.isKotlinPluginK2Mode
-import org.jetbrains.plugins.bsp.startup.BspProjectActivity
 
 private const val SUGGEST_ENABLE_K2_NOTIFICATION_GROUP = "Enable K2 Compiler Mode with Bazel"
 

@@ -9,9 +9,9 @@ import com.intellij.psi.ResolveResult
 import com.intellij.psi.impl.source.resolve.reference.impl.providers.FileReference
 import com.intellij.psi.impl.source.resolve.reference.impl.providers.FileReferenceSet
 import com.intellij.psi.util.PsiUtil
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.bazelrc.BazelrcFileType
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcImport
-import org.jetbrains.plugins.bsp.config.rootDir
 
 class BazelrcImportReference(
   referenceSet: FileReferenceSet,
