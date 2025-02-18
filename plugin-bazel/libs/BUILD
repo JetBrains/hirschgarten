@@ -7,9 +7,17 @@ output_files(
     target = "//third_party/bazel/src/main/java/com/google/devtools/build/lib/starlarkdebug/proto:starlark_debugging_java_proto",
 )
 
+output_files(
+    name = "intellij_plugin_deploy_target_proto_jar",
+    paths = ["plugin-bazel/src/main/kotlin/org/jetbrains/bazel/intellij/libintellij_plugin_deploy_target_info_lib-speed.jar"],
+    target = "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/intellij:intellij_plugin_deploy_target_info",
+)
+
 write_source_files(
     name = "check_in_proto_jar",
     files = {
         "starlark_debugging_proto.jar": ":starlark_debugging_proto_jar",
+        "intellij_plugin_deploy_target_info.jar": ":intellij_plugin_deploy_target_proto_jar",
     },
 )
+

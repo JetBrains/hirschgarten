@@ -11,7 +11,7 @@ kt_jvm_library(
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bsp/utils",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/languages",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:build_java_proto",
+        "//third_party/bazel/src/main/protobuf:build_java_proto",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:org_eclipse_lsp4j_org_eclipse_lsp4j_jsonrpc",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
