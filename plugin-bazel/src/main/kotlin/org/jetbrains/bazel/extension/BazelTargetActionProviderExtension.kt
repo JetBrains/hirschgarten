@@ -19,7 +19,7 @@ class BazelTargetActionProviderExtension : BuildToolWindowTargetActionProviderEx
     buildTargetInfo: BuildTargetInfo,
   ): List<AnAction> =
     listOfNotNull(
-      BazelBspJumpToBuildFileAction(component, project, buildTargetInfo),
+      BazelBspJumpToBuildFileAction(buildTargetInfo),
       if (StarlarkDebugAction.isApplicableTo(buildTargetInfo)) StarlarkDebugAction(buildTargetInfo.id) else null,
     )
 }

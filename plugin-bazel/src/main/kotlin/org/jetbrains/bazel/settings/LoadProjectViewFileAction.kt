@@ -6,6 +6,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.action.SuspendableAction
+import org.jetbrains.bazel.action.getPsiFile
 import org.jetbrains.bazel.action.registered.ResyncAction
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
@@ -18,7 +19,7 @@ internal class LoadProjectViewFileAction :
   }),
   DumbAware {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    val projectViewFile = CommonDataKeys.PSI_FILE.getData(e.dataContext)?.virtualFile ?: return
+    val projectViewFile = e.getPsiFile()?.virtualFile ?: return
     project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectViewFile.toNioPath().toAbsolutePath())
     ResyncAction().actionPerformed(e)
   }
