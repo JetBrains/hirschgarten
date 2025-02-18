@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.java
 
+import com.intellij.execution.configurations.GeneralCommandLine
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
@@ -29,9 +30,9 @@ class JdkVersionResolver {
 
   private fun firstLineOfJavaVersionOutput(javaPath: Path): String? {
     val process =
-      ProcessBuilder(javaPath.toString(), "-version")
-        .redirectErrorStream(true)
-        .start()
+      GeneralCommandLine(javaPath.toString(), "-version")
+        .withRedirectErrorStream(true)
+        .createProcess()
     val result = process.waitFor()
 
     return if (result == 0) readLines(process).firstOrNull() else null
