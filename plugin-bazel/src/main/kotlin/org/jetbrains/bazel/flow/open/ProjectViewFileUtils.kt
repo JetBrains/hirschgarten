@@ -7,8 +7,8 @@ import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE
 import org.jetbrains.bazel.commons.constants.Constants.DOT_BAZELBSP_DIR_NAME
 import org.jetbrains.bazel.commons.constants.Constants.LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.config.BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION
-import org.jetbrains.bazel.settings.bazelProjectSettings
-import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption

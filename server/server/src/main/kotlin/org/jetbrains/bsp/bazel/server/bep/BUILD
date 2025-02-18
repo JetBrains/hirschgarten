@@ -1,7 +1,7 @@
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 # This is a workaround; for some reason bazel fails with
-#  in deps attribute of kt_jvm_library rule //server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bep:bep:
+#  in deps attribute of kt_jvm_library rule //plugin-bazel/src/main/kotlin/org/jetbrains/bsp/bazel/server/bep:bep:
 #    '@googleapis//:google_devtools_build_v1_publish_build_event_proto' does not have mandatory providers: 'JavaInfo'
 # if these libraries are depended on directly from a kt_jvm_library.
 

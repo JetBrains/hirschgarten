@@ -1,0 +1,29 @@
+package org.jetbrains.bazel.flow.close
+
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManagerListener
+import com.intellij.platform.ide.progress.runWithModalProgressBlocking
+import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.isBspProject
+import org.jetbrains.bazel.server.connection.connection
+
+private val log = logger<ProjectClosingListener>()
+
+class ProjectClosingListener : ProjectManagerListener {
+  override fun projectClosing(project: Project) {
+    if (project.isBspProject) {
+      doProjectClosing(project)
+    }
+  }
+
+  private fun doProjectClosing(project: Project) {
+    runWithModalProgressBlocking(project, BspPluginBundle.message("progress.bar.project.close.disconnect")) {
+      try {
+        project.connection.disconnect()
+      } catch (e: Exception) {
+        log.warn("One of the disconnect actions has failed!", e)
+      }
+    }
+  }
+}

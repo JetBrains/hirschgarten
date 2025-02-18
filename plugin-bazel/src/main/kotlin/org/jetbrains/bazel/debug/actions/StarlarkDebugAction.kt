@@ -10,11 +10,11 @@ import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.debug.configuration.StarlarkDebugConfiguration
 import org.jetbrains.bazel.debug.configuration.StarlarkDebugConfigurationType
-import org.jetbrains.plugins.bsp.action.SuspendableAction
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
 class StarlarkDebugAction(private val targetId: BuildTargetIdentifier) :
   SuspendableAction(

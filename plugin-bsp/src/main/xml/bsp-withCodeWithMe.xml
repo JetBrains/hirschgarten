@@ -1,6 +1,0 @@
-<idea-plugin>
-    <applicationListeners>
-        <listener topic="com.jetbrains.rdserver.core.RemoteClientSessionListener"
-                  class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspRemoteClientSessionListener"/>
-    </applicationListeners>
-</idea-plugin>

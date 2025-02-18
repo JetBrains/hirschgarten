@@ -3,9 +3,9 @@ package org.jetbrains.bazel.extension
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bazel.commons.label.ResolvedLabel
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.extensionPoints.BuildTargetClassifierExtension
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bazel.config.BuildToolId
+import org.jetbrains.bazel.extensionPoints.BuildTargetClassifierExtension
+import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
 internal class BazelBuildTargetClassifier : BuildTargetClassifierExtension {
   override val buildToolId: BuildToolId = bazelBspBuildToolId

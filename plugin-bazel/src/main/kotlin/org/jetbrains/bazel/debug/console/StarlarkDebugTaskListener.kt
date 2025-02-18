@@ -4,7 +4,7 @@ import com.intellij.execution.process.AnsiEscapeDecoder
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
-import org.jetbrains.plugins.bsp.taskEvents.BspTaskListener
+import org.jetbrains.bazel.taskEvents.BspTaskListener
 
 class StarlarkDebugTaskListener(private val console: ConsoleView) : BspTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
