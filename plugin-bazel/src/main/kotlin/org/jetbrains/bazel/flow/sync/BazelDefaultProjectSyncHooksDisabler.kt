@@ -2,10 +2,10 @@ package org.jetbrains.bazel.flow.sync
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.sync.DefaultProjectSyncHooksDisabler
-import org.jetbrains.plugins.bsp.sync.ProjectSyncHook
-import org.jetbrains.plugins.bsp.sync.defaults.OutputPathUrisSyncHook
+import org.jetbrains.bazel.config.BuildToolId
+import org.jetbrains.bazel.sync.DefaultProjectSyncHooksDisabler
+import org.jetbrains.bazel.sync.ProjectSyncHook
+import org.jetbrains.bazel.sync.defaults.OutputPathUrisSyncHook
 
 class BazelDefaultProjectSyncHooksDisabler : DefaultProjectSyncHooksDisabler {
   override val buildToolId: BuildToolId = bazelBspBuildToolId

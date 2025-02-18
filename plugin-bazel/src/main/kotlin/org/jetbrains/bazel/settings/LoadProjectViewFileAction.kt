@@ -5,11 +5,12 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import org.jetbrains.bazel.action.SuspendableAction
+import org.jetbrains.bazel.action.registered.ResyncAction
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.plugins.bsp.action.SuspendableAction
-import org.jetbrains.plugins.bsp.action.registered.ResyncAction
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
 internal class LoadProjectViewFileAction :
   SuspendableAction({
@@ -30,10 +31,8 @@ internal class LoadProjectViewFileAction :
     val psiFile = CommonDataKeys.PSI_FILE.getData(e.dataContext) ?: return false
     return when {
       !project.isBazelProject -> false
-      project.stateService.connectionFile == null &&
-        // project view file can only be set when connection file is not used
-        psiFile.isProjectViewFile() &&
-        psiFile.isDifferentProjectViewFileSelected() -> return true
+      psiFile.isProjectViewFile() &&
+        psiFile.isDifferentProjectViewFileSelected() -> true
       else -> false
     }
   }

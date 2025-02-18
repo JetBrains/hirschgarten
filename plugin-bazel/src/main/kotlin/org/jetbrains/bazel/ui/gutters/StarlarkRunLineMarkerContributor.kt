@@ -9,18 +9,18 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
+import org.jetbrains.bazel.config.isBspProject
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
-import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.runnerAction.BuildTargetAction
-import org.jetbrains.plugins.bsp.sync.action.ResyncTargetAction
-import org.jetbrains.plugins.bsp.target.targetUtils
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bazel.runnerAction.BuildTargetAction
+import org.jetbrains.bazel.sync.action.ResyncTargetAction
+import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
+import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
 internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
   override fun isDumbAware(): Boolean = true

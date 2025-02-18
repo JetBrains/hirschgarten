@@ -8,6 +8,7 @@ import com.intellij.ui.SimpleTextAttributes
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bsp.sdkcompat.ProjectViewNodeDecoratorCompat
 
 class ProjectViewFileNodeDecorator(private val project: Project) : ProjectViewNodeDecoratorCompat {

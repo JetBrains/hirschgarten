@@ -33,5 +33,6 @@ kt_jvm_library(
         "@maven//:io_grpc_grpc_stub",
         "@maven//:org_eclipse_lsp4j_org_eclipse_lsp4j_jsonrpc",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
+        "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )
