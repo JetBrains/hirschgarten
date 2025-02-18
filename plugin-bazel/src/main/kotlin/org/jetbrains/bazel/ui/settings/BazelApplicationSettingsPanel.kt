@@ -79,7 +79,7 @@ class BazelApplicationSettingsConfigurable : SearchableConfigurable {
   override fun isModified(): Boolean = panelApplicationSettings != BazelApplicationSettingsService.getInstance().settings
 
   override fun apply() {
-    BazelPluginUpdater.updatePluginsHosts(panelApplicationSettings.updateChannel)
+    BazelPluginUpdater.updatePluginsHost(panelApplicationSettings.updateChannel)
     BazelPluginUpdater.updatePlugins()
 
     BazelApplicationSettingsService.getInstance().settings = panelApplicationSettings.copy()
