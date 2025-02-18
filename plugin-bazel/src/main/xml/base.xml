@@ -522,7 +522,14 @@
 
         <action class="org.jetbrains.bazel.ui.widgets.CopyTargetIdAction"
                 icon="/icons/bazel.svg">
-            <add-to-group group-id="Copy.Paste.Special" anchor="after" relative-to-action="CopyReference"/>
+            <add-to-group group-id="EditorPopupMenu"/>
+            <!-- This shortcut doesn't mean anything, it's just not taken by anyone and is easy to type -->
+            <keyboard-shortcut first-keystroke="control alt G" second-keystroke="H" keymap="$default" />
+        </action>
+
+        <action class="org.jetbrains.bazel.ui.widgets.BazelBspJumpToBuildFileAction">
+            <add-to-group group-id="EditorPopupMenu"/>
+            <keyboard-shortcut first-keystroke="control alt G" second-keystroke="J" keymap="$default" />
         </action>
 
         <action id="Bazel.ImportExternalProject"

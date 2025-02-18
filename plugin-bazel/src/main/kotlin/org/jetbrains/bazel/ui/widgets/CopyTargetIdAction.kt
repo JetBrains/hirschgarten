@@ -4,43 +4,65 @@ import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.readAction
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.util.elementType
 import com.intellij.psi.util.findParentOfType
 import com.intellij.util.ui.TextTransferable
 import org.jetbrains.bazel.action.SuspendableAction
+import org.jetbrains.bazel.action.getEditor
+import org.jetbrains.bazel.action.getPsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
+import org.jetbrains.bazel.target.targetUtils
 
 // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1158
 
 /**
- Action is available in a BUILD file in the right click Editor Popup Menu under Copy/Paste Special
- while pressing on rule's name or value of the name argument of that rule
+ * Action is available in a BUILD file in the right click Editor Popup Menu under Copy/Paste Special
+ * while pressing on rule's name or value of the name argument of that rule.
+ * Also available in the right click menu on regular source files that are included in project.
  */
 internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.message("editor.action.copy.target.id") }) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    readAction {
-      val psiElement = e.getPsiElement()
-      performCopyTargetIdAction(psiElement)
-    }
+    performCopyTargetIdAction(e.getPsiFile() ?: return, readAction { e.getPsiElement() }, e.getEditor())
   }
 
-  private fun performCopyTargetIdAction(psiElement: PsiElement?) {
-    val starlarkCallExpression = psiElement?.findParentOfType<StarlarkCallExpression>() ?: return
-    val targetId = starlarkCallExpression.calculateTargetId() ?: return
+  private suspend fun performCopyTargetIdAction(
+    psiFile: PsiFile,
+    psiElement: PsiElement?,
+    editor: Editor?,
+  ) {
+    val targetId = calculateTargetId(psiFile, psiElement, editor) ?: return
     val clipboard = CopyPasteManager.getInstance()
     val transferable = TextTransferable(targetId as CharSequence)
     clipboard.setContents(transferable)
+  }
+
+  private suspend fun calculateTargetId(
+    psiFile: PsiFile,
+    psiElement: PsiElement?,
+    editor: Editor?,
+  ): String? {
+    if (psiFile is StarlarkFile) {
+      return readAction { psiElement?.findParentOfType<StarlarkCallExpression>()?.calculateTargetId() }
+    } else {
+      val virtualFile = readAction { psiFile.virtualFile } ?: return null
+      return psiFile.project.targetUtils
+        .getTargetsForFile(virtualFile)
+        .chooseTarget(editor)
+        ?.uri
+        ?.removeLeadingAtSign()
+    }
   }
 
   private fun StarlarkCallExpression.calculateTargetId(): String? {
@@ -49,36 +71,38 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
     val targetBaseDirectory = containingFile?.virtualFile?.parent ?: return null
     val relativeTargetBaseDirectory = VfsUtilCore.getRelativePath(targetBaseDirectory, projectBaseDirectory) ?: return null
 
-    return "@//$relativeTargetBaseDirectory:$targetName"
+    return "//$relativeTargetBaseDirectory:$targetName"
   }
+
+  private fun String.removeLeadingAtSign() = if (startsWith("@//")) substring(1) else this
 
   override fun update(project: Project, e: AnActionEvent) {
-    e.presentation.isEnabledAndVisible =
-      e.place == ActionPlaces.EDITOR_POPUP &&
-      shouldAddActionToFile(project, e) &&
-      shouldAddActionToElement(e)
+    e.presentation.isEnabledAndVisible = shouldBeEnabledAndVisible(project, e)
   }
 
-  private fun shouldAddActionToFile(project: Project, e: AnActionEvent): Boolean {
-    val starlarkFile = e.getPsiFile() as? StarlarkFile
-    return project.isBspProject &&
-      starlarkFile != null &&
-      starlarkFile.project == project &&
-      starlarkFile.isBuildFile()
+  private fun shouldBeEnabledAndVisible(project: Project, e: AnActionEvent): Boolean {
+    if (e.place != ActionPlaces.EDITOR_POPUP && e.place != ActionPlaces.KEYBOARD_SHORTCUT) return false
+    val file = e.getPsiFile() ?: return false
+    return if (file is StarlarkFile) {
+      shouldAddActionToStarlarkFile(file, e)
+    } else {
+      file.virtualFile?.let { virtualFile ->
+        project.targetUtils.getTargetsForFile(virtualFile).isNotEmpty()
+      } ?: false
+    }
   }
 
-  private fun shouldAddActionToElement(e: AnActionEvent): Boolean {
-    val psiElement = e.getPsiElement()
-    return psiElement != null &&
+  private fun shouldAddActionToStarlarkFile(file: StarlarkFile, e: AnActionEvent): Boolean =
+    file.isBuildFile() && shouldAddActionToElement(e.getPsiElement())
+
+  private fun shouldAddActionToElement(psiElement: PsiElement?): Boolean =
+    psiElement != null &&
       (psiElement.isValidTarget() || psiElement.isNameArgumentOfValidTarget())
-  }
 
   private fun AnActionEvent.getPsiElement(): PsiElement? {
     val psiFile = getPsiFile()
     return getData(CommonDataKeys.CARET)?.offset?.let { psiFile?.findElementAt(it) }
   }
-
-  private fun AnActionEvent.getPsiFile(): PsiElement? = CommonDataKeys.PSI_FILE.getData(dataContext)
 
   private fun PsiElement.isValidTarget(): Boolean =
     this.elementType == StarlarkTokenTypes.IDENTIFIER &&

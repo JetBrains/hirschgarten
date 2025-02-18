@@ -10,9 +10,8 @@ kt_jvm_library(
     deps = [
         "//server/bazelrunner",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync",
-        "@bazel_bep//jar",
+        "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
         "@maven//:ch_epfl_scala_bsp4j",
-        "@maven//:com_google_protobuf_protobuf_java",
         "@maven//:io_grpc_grpc_stub",
         "@maven//:org_apache_logging_log4j_log4j_api",
         "@maven//:org_apache_logging_log4j_log4j_core",
