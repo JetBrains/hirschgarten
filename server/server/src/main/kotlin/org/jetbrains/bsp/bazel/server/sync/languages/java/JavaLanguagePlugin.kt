@@ -58,7 +58,7 @@ class JavaLanguagePlugin(
   private fun getJdk(): Jdk = jdk ?: throw RuntimeException("Failed to resolve JDK for project")
 
   // Provided via workspace/libraries in intellij
-  override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<URI> = 
+  override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<URI> =
     if (featureFlags.isDependencySourcesEnabled) {
       targetInfo
         .getJvmTargetInfoOrNull()
@@ -69,7 +69,9 @@ class JavaLanguagePlugin(
             .map(bazelPathsResolver::resolveUri)
             .toSet()
         }.orEmpty()
-      } else emptySet()
+    } else {
+      emptySet()
+    }
 
   private fun getSourceJars(targetInfo: TargetInfo): List<FileLocation> =
     targetInfo
