@@ -20,4 +20,3 @@ write_source_files(
         "intellij_plugin_deploy_target_info.jar": ":intellij_plugin_deploy_target_proto_jar",
     },
 )
-
