@@ -33,6 +33,7 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BazelHotSwapBundle
 import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.hotswap.BazelHotSwapManager.HotSwappableDebugSession
+import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.runnerAction.LocalJvmRunnerAction
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.task.query
@@ -126,7 +127,7 @@ object ClassFileManifestBuilder {
 
   private fun BuildTargetIdentifier.isTestTarget(project: Project): Boolean =
     project.targetUtils
-      .getBuildTargetInfoForId(this)
+      .getBuildTargetInfoForLabel(this.label())
       ?.capabilities
       ?.canTest == true
 

@@ -5,6 +5,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
@@ -50,7 +51,7 @@ interface BspRunHandlerProvider {
     fun getRunHandlerProvider(project: Project, targets: List<BuildTargetIdentifier>): BspRunHandlerProvider {
       val targetInfos =
         targets.mapNotNull {
-          project.service<TargetUtils>().getBuildTargetInfoForId(it)
+          project.service<TargetUtils>().getBuildTargetInfoForLabel(it.label())
         }
       if (targetInfos.size != targets.size) {
         thisLogger().warn("Some targets could not be found: ${targets - targetInfos.map { it.id }.toSet()}")

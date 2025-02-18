@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bsp.bazel.server.sync.sharding
 
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 
 /** Partitioned list of Bazel targets.  */

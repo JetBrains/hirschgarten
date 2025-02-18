@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.ui.widgets.fileTargets
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
@@ -21,6 +20,7 @@ import org.jetbrains.bazel.assets.assets
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.extensionPoints.targetActionProvider
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.target.targetUtils
@@ -69,8 +69,8 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
   }
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-988
-  private fun activeWidgetState(loadedTarget: BuildTargetIdentifier?, icon: Icon): WidgetState {
-    val text = loadedTarget?.uri ?: ""
+  private fun activeWidgetState(loadedTarget: Label?, icon: Icon): WidgetState {
+    val text = loadedTarget?.toString() ?: ""
     val state = WidgetState(BspPluginBundle.message("widget.tooltip.text.active"), text, true)
     state.icon = icon
 
@@ -101,8 +101,7 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
     }
   }
 
-  private fun List<BuildTargetIdentifier>.getTargetInfos(): List<BuildTargetInfo> =
-    this.mapNotNull { project.targetUtils.getBuildTargetInfoForId(it) }
+  private fun List<Label>.getTargetInfos(): List<BuildTargetInfo> = this.mapNotNull { project.targetUtils.getBuildTargetInfoForLabel(it) }
 
   private fun BuildTargetInfo.calculatePopupGroup(): ActionGroup =
     DefaultActionGroup(id.uri, true).also {

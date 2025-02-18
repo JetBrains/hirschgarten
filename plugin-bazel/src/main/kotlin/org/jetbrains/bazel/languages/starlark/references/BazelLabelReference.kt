@@ -9,11 +9,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReferenceBase
-import org.jetbrains.bazel.commons.label.AmbiguousEmptyTarget
-import org.jetbrains.bazel.commons.label.Label
-import org.jetbrains.bazel.commons.label.ResolvedLabel
 import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.label.AmbiguousEmptyTarget
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression

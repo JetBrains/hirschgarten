@@ -15,7 +15,7 @@ public class TargetFilter(private val onFilterChange: () -> Unit) {
   public fun isFilterOn(): Boolean = currentFilter != FILTER.OFF
 
   public fun getMatchingLoadedTargets(xd: TargetUtils): List<BuildTargetInfo> =
-    xd.allTargetIds().mapNotNull { xd.getBuildTargetInfoForId(it) }.filterTargets()
+    xd.allTargets().mapNotNull { xd.getBuildTargetInfoForLabel(it) }.filterTargets()
 
   private fun List<BuildTargetInfo>.filterTargets(): List<BuildTargetInfo> = this.filter(currentFilter.predicate)
 

@@ -7,7 +7,6 @@ import com.intellij.openapi.updateSettings.impl.UpdateChecker
 import com.intellij.openapi.updateSettings.impl.UpdateSettings
 
 const val BAZEL_PLUGIN_ID = "org.jetbrains.bazel"
-const val BSP_PLUGIN_ID = "org.jetbrains.bsp"
 
 @Suppress("UnstableApiUsage")
 object BazelPluginUpdater {
@@ -15,24 +14,19 @@ object BazelPluginUpdater {
     UpdateChecker.updateAndShowResult(null, UpdateSettings.getInstance())
   }
 
-  fun updatePluginsHosts(newUpdateChannel: UpdateChannel) {
+  fun updatePluginsHost(newUpdateChannel: UpdateChannel) {
     val currentUpdateChannel = BazelApplicationSettingsService.getInstance().settings.updateChannel
-    updatePluginHost(BAZEL_PLUGIN_ID, newUpdateChannel, currentUpdateChannel)
-    updatePluginHost(BSP_PLUGIN_ID, newUpdateChannel, currentUpdateChannel)
+    updatePluginHost(newUpdateChannel, currentUpdateChannel)
   }
 
-  private fun updatePluginHost(
-    id: String,
-    newUpdateChannel: UpdateChannel,
-    currentUpdateChannel: UpdateChannel,
-  ) {
+  private fun updatePluginHost(newUpdateChannel: UpdateChannel, currentUpdateChannel: UpdateChannel) {
     if (newUpdateChannel == currentUpdateChannel) return
     // go from a presumably higher version (e.g., nightly) to a smaller version (e.g., release)
     if (newUpdateChannel < currentUpdateChannel) {
-      getPluginDescriptorForId(id)?.let { patchPluginVersion("0.0.0", it) }
+      getPluginDescriptorForId(BAZEL_PLUGIN_ID)?.let { patchPluginVersion("0.0.0", it) }
     }
     val updateSettings = UpdateSettings.getInstance()
-    val nightlyRepo = UpdateChannel.NIGHTLY.getPluginUrlFromId(id)
+    val nightlyRepo = UpdateChannel.NIGHTLY.getPluginUrlFromId(BAZEL_PLUGIN_ID)
     updateSettings.storedPluginHosts.remove(nightlyRepo)
 
     when (newUpdateChannel) {

@@ -78,7 +78,7 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
       invalidTargetIcon = project.assets.errorTargetIcon,
       buildToolId = project.buildToolId,
       toolName = project.assets.presentableName,
-      targets = targetUtils.allTargetIds().mapNotNull { targetUtils.getBuildTargetInfoForId(it) },
+      targets = targetUtils.allTargets().mapNotNull { targetUtils.getBuildTargetInfoForLabel(it) },
       invalidTargets = project.invalidTargets,
       searchBarPanel = searchBarPanel,
     ).apply {

@@ -3,7 +3,7 @@ package org.jetbrains.bsp.bazel.server.model
 import io.kotest.assertions.throwables.shouldThrowWithMessage
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested

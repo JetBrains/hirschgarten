@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.bazel.install
 
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.install.cli.CliOptions
 import org.jetbrains.bsp.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bsp.bazel.projectview.generator.DefaultProjectViewGenerator

@@ -3,7 +3,7 @@ package org.jetbrains.bsp.bazel.server.sync
 import ch.epfl.scala.bsp4j.MavenDependencyModule
 import ch.epfl.scala.bsp4j.MavenDependencyModuleArtifact
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.Library

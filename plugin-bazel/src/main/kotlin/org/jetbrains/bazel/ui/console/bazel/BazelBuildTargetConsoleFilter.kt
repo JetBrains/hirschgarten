@@ -13,9 +13,9 @@ import com.intellij.openapi.vfs.findPsiFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
-import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.references.BUILD_FILE_NAMES
 

@@ -7,9 +7,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.commons.label.Label
-import org.jetbrains.bazel.commons.label.ResolvedLabel
-import org.jetbrains.bazel.commons.label.assumeResolved
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.FileLocation

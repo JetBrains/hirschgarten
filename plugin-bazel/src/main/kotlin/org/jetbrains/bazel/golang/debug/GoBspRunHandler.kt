@@ -12,6 +12,7 @@ import com.intellij.openapi.module.Module
 import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.assets.assets
 import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.run.BspProcessHandler
 import org.jetbrains.bazel.run.BspRunHandler
 import org.jetbrains.bazel.run.BspRunHandlerProvider
@@ -43,7 +44,7 @@ class GoBspRunHandler(private val configuration: BspRunConfiguration) : BspRunHa
       executor is DefaultDebugExecutor -> {
         val config = GoApplicationConfiguration(environment.project, "default", BspRunConfigurationType())
         val target = getTargetId(environment)
-        val module = target.getModule(environment.project) ?: error("Could not find module for target $target")
+        val module = target.label().getModule(environment.project) ?: error("Could not find module for target $target")
         GoRunWithDebugCommandLineState(environment, UUID.randomUUID().toString(), module, config, state)
       }
 
