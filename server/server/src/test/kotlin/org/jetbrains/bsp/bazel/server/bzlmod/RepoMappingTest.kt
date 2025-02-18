@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.server.bzlmod
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 

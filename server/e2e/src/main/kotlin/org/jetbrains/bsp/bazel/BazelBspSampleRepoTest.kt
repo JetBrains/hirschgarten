@@ -41,8 +41,8 @@ import ch.epfl.scala.bsp4j.StatusCode
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import kotlinx.coroutines.future.await
-import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bazel.commons.utils.OsFamily
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult

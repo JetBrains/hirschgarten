@@ -9,9 +9,9 @@ import com.intellij.openapi.roots.ExternalLibraryDescriptor
 import com.intellij.openapi.roots.JavaProjectModelModifier
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.pom.java.LanguageLevel
-import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.sync.scope.PartialProjectSync

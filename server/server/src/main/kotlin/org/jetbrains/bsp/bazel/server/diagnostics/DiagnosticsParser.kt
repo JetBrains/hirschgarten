@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.bazel.server.diagnostics
 
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 
 interface DiagnosticsParser {
   fun parse(bazelOutput: String, target: Label): List<Diagnostic>

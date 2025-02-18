@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.commons.label
+package org.jetbrains.bazel.label
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe

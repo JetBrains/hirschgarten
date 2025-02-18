@@ -36,7 +36,7 @@ import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.server.model.Language

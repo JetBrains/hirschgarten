@@ -32,6 +32,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.workspaceModel.ide.toPath
 import com.intellij.xdebugger.impl.XDebugSessionImpl
 import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.target.getModuleEntity
 import org.jetbrains.bazel.workspacemodel.entities.androidAddendumEntity
@@ -180,7 +181,7 @@ class BspAndroidConfigurationExecutor(private val environment: ExecutionEnvironm
   }
 
   private fun getApkPath(project: Project, targetId: BuildTargetIdentifier): Path? {
-    val moduleEntity = targetId.getModuleEntity(project) ?: return null
+    val moduleEntity = targetId.label().getModuleEntity(project) ?: return null
     val androidAddendumEntity = moduleEntity.androidAddendumEntity ?: return null
     return androidAddendumEntity.apk?.toPath()
   }
