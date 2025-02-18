@@ -21,6 +21,7 @@ kt_jvm_library(
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bsp/utils",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/dependencygraph",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/paths",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/firstPhase",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/languages",
@@ -32,5 +33,6 @@ kt_jvm_library(
         "@maven//:io_grpc_grpc_stub",
         "@maven//:org_eclipse_lsp4j_org_eclipse_lsp4j_jsonrpc",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
+        "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

@@ -11,7 +11,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.plugins.bsp.config.isBrokenBspProject
+import org.jetbrains.bazel.config.isBrokenBspProject
 
 internal class BazelBspUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
   override val systemId: ProjectSystemId = BazelPluginConstants.SYSTEM_ID

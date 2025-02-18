@@ -1,5 +1,6 @@
 load("@rules_sonatype//:defs.bzl", "sonatype_java_export")
 
+# Disabled because now server depends on IJ SDK
 # sonatype_java_export(
 #     name = "bsp",
 #     maven_coordinates = "org.jetbrains.bsp:bazel-bsp:3.2.0",

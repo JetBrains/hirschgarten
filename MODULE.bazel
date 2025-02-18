@@ -159,7 +159,7 @@ single_version_override(
 
 bazel_dep(name = "rules_proto", version = "7.1.0")
 bazel_dep(name = "protobuf", version = "29.3")
-bazel_dep(name = "rules_cc", version = "0.1.0")
+bazel_dep(name = "rules_cc", version = "0.1.1")
 bazel_dep(name = "rules_python", version = "1.1.0")
 bazel_dep(name = "platforms", version = "0.0.11")
 
@@ -169,15 +169,6 @@ python.toolchain(
     ignore_root_user_error = True,
     is_default = True,
     python_version = "3.12",
-)
-
-bazel_dep(
-    name = "bsp-testkit2",
-    dev_dependency = True,
-)
-local_path_override(
-    module_name = "bsp-testkit2",
-    path = "bsp-testkit2",
 )
 
 bazel_dep(

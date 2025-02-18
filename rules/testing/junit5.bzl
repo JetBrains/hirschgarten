@@ -1,7 +1,9 @@
 load(":commons.bzl", "kt_test")
 
 JUNIT5_DEPS = [
+    "@maven//:org_junit_jupiter_junit_jupiter_api",
     "@maven//:org_junit_jupiter_junit_jupiter",
+    "@maven//:org_junit_jupiter_junit_jupiter_params",
     "@maven//:org_junit_platform_junit_platform_console",
 ]
 

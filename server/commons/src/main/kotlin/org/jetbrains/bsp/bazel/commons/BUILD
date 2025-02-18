@@ -9,5 +9,6 @@ kt_jvm_library(
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:com_google_guava_guava",
         "@maven//:org_apache_logging_log4j_log4j_api",
+        "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

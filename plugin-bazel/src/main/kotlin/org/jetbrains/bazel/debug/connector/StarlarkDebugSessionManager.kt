@@ -14,10 +14,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.debug.console.StarlarkDebugTaskListener
 import org.jetbrains.bazel.debug.platform.StarlarkBreakpointHandler
 import org.jetbrains.bazel.debug.platform.StarlarkDebugProcess
-import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import java.io.IOException
 import java.util.concurrent.CancellationException
 

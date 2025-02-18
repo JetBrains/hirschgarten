@@ -9,9 +9,9 @@ import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.coroutines.CoroutineService
-import org.jetbrains.plugins.bsp.impl.flow.open.CounterPlatformProjectConfigurator
-import org.jetbrains.plugins.bsp.impl.flow.open.initProperties
-import org.jetbrains.plugins.bsp.startup.BspStartupActivity
+import org.jetbrains.bazel.flow.open.CounterPlatformProjectConfigurator
+import org.jetbrains.bazel.flow.open.initProperties
+import org.jetbrains.bazel.startup.BspStartupActivity
 
 internal class BazelBspOpenProjectProvider : AbstractOpenProjectProvider() {
   private val log = logger<BazelBspOpenProjectProvider>()

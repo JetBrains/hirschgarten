@@ -11,12 +11,12 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook
-import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.plugins.bsp.impl.flow.sync.queryIf
-import org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension
-import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
+import org.jetbrains.bazel.config.BuildToolId
+import org.jetbrains.bazel.services.InvalidTargetsProviderExtension
+import org.jetbrains.bazel.sync.ProjectSyncHook
+import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
+import org.jetbrains.bazel.sync.task.queryIf
+import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
 
 internal class InvalidTargetsProjectSyncHook : ProjectSyncHook {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
