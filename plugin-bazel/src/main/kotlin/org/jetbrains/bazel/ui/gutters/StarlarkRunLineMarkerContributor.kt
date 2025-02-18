@@ -49,8 +49,8 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     containingFile.virtualFile?.let { virtualFile ->
       val targetId = calculateTargetId(virtualFile) ?: return null
 
-      val realTargetId = project.targetUtils.allTargetIds().firstOrNull { it.uri.endsWith(targetId) }
-      val targetInfo = realTargetId?.let { project.targetUtils.getBuildTargetInfoForId(it) }
+      val realTargetId = project.targetUtils.allTargets().firstOrNull { it.toString().endsWith(targetId) }
+      val targetInfo = realTargetId?.let { project.targetUtils.getBuildTargetInfoForLabel(it) }
       calculateLineMarkerInfo(project, targetInfo).takeIf { it.actions.isNotEmpty() }
     }
 

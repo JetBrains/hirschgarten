@@ -63,6 +63,6 @@ internal class RunAllTestsAction :
       .filter { pfIndex.isInTestSourceContent(it) }
       .flatMap { targetUtilService.getExecutableTargetsForFile(it) }
       .distinct()
-      .mapNotNull { targetUtilService.getBuildTargetInfoForId(it) }
+      .mapNotNull { targetUtilService.getBuildTargetInfoForLabel(it) }
   }
 }

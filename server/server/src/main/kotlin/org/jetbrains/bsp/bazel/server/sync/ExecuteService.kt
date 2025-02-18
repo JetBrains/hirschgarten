@@ -19,8 +19,8 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.eclipse.lsp4j.jsonrpc.ResponseErrorException
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseError
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode
-import org.jetbrains.bazel.commons.label.Label
-import org.jetbrains.bazel.commons.label.label
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.label
 import org.jetbrains.bsp.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.HasAdditionalBazelOptions

@@ -1,4 +1,5 @@
-package org.jetbrains.bazel.commons.label
+// Do not change this package, see https://youtrack.jetbrains.com/issue/BAZEL-1632
+package org.jetbrains.bazel.label
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import java.nio.file.Path

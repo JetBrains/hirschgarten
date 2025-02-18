@@ -48,6 +48,6 @@ internal class WaitForBazelSyncCommand(text: String, line: Int) : PlaybackComman
         syncFinished.receive()
       }
 
-      check(project.targetUtils.allTargetIds().isNotEmpty()) { "Target id list is empty after sync" }
+      check(project.targetUtils.allTargets().isNotEmpty()) { "Target id list is empty after sync" }
     }
 }

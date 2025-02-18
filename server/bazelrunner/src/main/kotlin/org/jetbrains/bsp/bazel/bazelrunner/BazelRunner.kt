@@ -2,7 +2,7 @@ package org.jetbrains.bsp.bazel.bazelrunner
 
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.enableWorkspace
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.overrideRepository
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo

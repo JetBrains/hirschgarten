@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.rust
 
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.SourceSet

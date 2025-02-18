@@ -89,7 +89,7 @@ class BspStartupActivity : BspProjectActivity() {
     }
   }
 
-  private fun Project.isProjectInIncompleteState() = targetUtils.allTargetIds().isEmpty() || !workspaceModelLoadedFromCache
+  private fun Project.isProjectInIncompleteState() = targetUtils.allTargets().isEmpty() || !workspaceModelLoadedFromCache
 
   private fun Project.updateProjectProperties() {
     isBspProjectInitialized = true
