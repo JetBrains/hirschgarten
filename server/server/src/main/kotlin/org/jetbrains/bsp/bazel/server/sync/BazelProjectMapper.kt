@@ -84,9 +84,10 @@ class BazelProjectMapper(
       measure("Build dependency tree") {
         DependencyGraph(rootTargets, targets)
       }
+    val transitiveCompileTimeJarsTargetKinds = workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toSet()
     val targetsToImport =
       measure("Select targets") {
-        selectTargetsToImport(workspaceContext, rootTargets, dependencyGraph, repoMapping)
+        selectTargetsToImport(workspaceContext, rootTargets, dependencyGraph, repoMapping, transitiveCompileTimeJarsTargetKinds)
       }
     val interfacesAndBinariesFromTargetsToImport =
       measure("Collect interfaces and classes from targets to import") {
@@ -126,13 +127,14 @@ class BazelProjectMapper(
       measure("Create go libraries") {
         calculateGoLibrariesMapper(targetsToImport)
       }
+
     val librariesFromTransitiveCompileTimeJars =
       measure("Libraries from transitive compile-time jars") {
         createLibrariesFromTransitiveCompileTimeJars(
           targetsToImport,
           workspaceContext,
           interfacesAndBinariesFromTargetsToImport,
-          targets,
+          targets.filter { it.value.kind in transitiveCompileTimeJarsTargetKinds },
         )
       }
     val librariesFromDeps =
@@ -161,6 +163,7 @@ class BazelProjectMapper(
           librariesFromDeps,
           librariesFromDepsAndTargets,
           interfacesAndBinariesFromTargetsToImport,
+          transitiveCompileTimeJarsTargetKinds,
         )
       }
     val workspaceRoot = bazelPathsResolver.workspaceRoot()
@@ -174,6 +177,7 @@ class BazelProjectMapper(
             extraLibrariesFromJdeps,
             librariesFromTransitiveCompileTimeJars,
           ),
+          transitiveCompileTimeJarsTargetKinds,
         )
       }
     val mergedModulesFromBazel =
@@ -208,7 +212,7 @@ class BazelProjectMapper(
         predicate = { featureFlags.isRustSupportEnabled },
         ifFalse = emptySequence(),
       ) {
-        selectRustExternalTargetsToImport(rootTargets, dependencyGraph, repoMapping)
+        selectRustExternalTargetsToImport(rootTargets, dependencyGraph, repoMapping, transitiveCompileTimeJarsTargetKinds)
       }
     val rustExternalModules =
       measureIf(
@@ -228,6 +232,7 @@ class BazelProjectMapper(
           nonModuleTargetIds.contains(it) &&
             isTargetTreatedAsInternal(it.assumeResolved(), repoMapping)
         },
+        transitiveCompileTimeJarsTargetKinds,
       )
 
     return AspectSyncProject(
@@ -463,8 +468,10 @@ class BazelProjectMapper(
     libraryDependencies: Map<Label, List<Library>>,
     librariesToImport: Map<Label, Library>,
     interfacesAndBinariesFromTargetsToImport: Map<Label, Set<URI>>,
+    transitiveCompileTimeJarsTargetKinds: Set<String>,
   ): Map<Label, List<Library>> {
-    val targetsToJdepsJars = getAllJdepsDependencies(targetsToImport, libraryDependencies, librariesToImport)
+    val targetsToJdepsJars =
+      getAllJdepsDependencies(targetsToImport, libraryDependencies, librariesToImport, transitiveCompileTimeJarsTargetKinds)
     val libraryNameToLibraryValueMap = HashMap<Label, Library>()
     return targetsToJdepsJars.mapValues { target ->
       val interfacesAndBinariesFromTarget =
@@ -491,11 +498,12 @@ class BazelProjectMapper(
     targetsToImport: Map<Label, TargetInfo>,
     libraryDependencies: Map<Label, List<Library>>,
     librariesToImport: Map<Label, Library>,
+    transitiveCompileTimeJarsTargetKinds: Set<String>,
   ): Map<Label, Set<Path>> {
     val jdepsJars =
       withContext(Dispatchers.IO) {
         targetsToImport.values
-          .filter { targetSupportsJdeps(it) }
+          .filter { targetSupportsJdeps(it, transitiveCompileTimeJarsTargetKinds) }
           .map { target ->
             async {
               target.label() to dependencyJarsFromJdepsFiles(target)
@@ -594,8 +602,9 @@ class BazelProjectMapper(
    */
   private fun Deps.Dependency.isRelevant() = kind in sequenceOf(Deps.Dependency.Kind.EXPLICIT, Deps.Dependency.Kind.IMPLICIT)
 
-  private fun targetSupportsJdeps(targetInfo: TargetInfo): Boolean {
-    val languages = inferLanguages(targetInfo)
+  private fun targetSupportsJdeps(targetInfo: TargetInfo, transitiveCompileTimeJarsTargetKinds: Set<String>): Boolean {
+    if (targetInfo.kind in transitiveCompileTimeJarsTargetKinds) return false
+    val languages = inferLanguages(targetInfo, transitiveCompileTimeJarsTargetKinds)
     return setOf(Language.JAVA, Language.KOTLIN, Language.SCALA, Language.ANDROID).containsAll(languages)
   }
 
@@ -617,12 +626,15 @@ class BazelProjectMapper(
     )
   }
 
-  private fun createNonModuleTargets(targets: Map<Label, TargetInfo>): List<NonModuleTarget> =
+  private fun createNonModuleTargets(
+    targets: Map<Label, TargetInfo>,
+    transitiveCompileTimeJarsTargetKinds: Set<String>
+  ): List<NonModuleTarget> =
     targets
       .map { (label, targetInfo) ->
         NonModuleTarget(
           label = label,
-          languages = inferLanguages(targetInfo),
+          languages = inferLanguages(targetInfo, transitiveCompileTimeJarsTargetKinds),
           tags = targetTagsResolver.resolveTags(targetInfo),
           baseDirectory = label.assumeResolved().toDirectoryUri(),
         )
@@ -708,20 +720,15 @@ class BazelProjectMapper(
     targetsMap: Map<Label, TargetInfo>,
   ): Map<Label, List<Library>> =
     if (workspaceContext.experimentalAddTransitiveCompileTimeJars.value) {
-      val explicitCompileTimeInterfaces = calculateExplicitCompileTimeInterfaces(targetsToImport, targetsMap)
       val res = HashMap<Label, Library>()
       targetsToImport.associate { targetInfo ->
         val interfacesAndBinariesFromTarget =
           interfacesAndClassesFromTargetsToImport.getOrDefault(targetInfo.label(), emptySet())
-        val explicitCompileTimeInterfacesFromTarget =
-          explicitCompileTimeInterfaces.getOrDefault(targetInfo.label(), emptySet())
         targetInfo.label() to
           targetInfo.jvmTargetInfo.transitiveCompileTimeJarsList
             .map { bazelPathsResolver.resolve(it).toUri() }
-            .filter {
-              it !in interfacesAndBinariesFromTarget &&
-                it in explicitCompileTimeInterfacesFromTarget
-            }.map { uri ->
+            .filter { it !in interfacesAndBinariesFromTarget }
+            .map { uri ->
               val label = syntheticLabel(uri)
               res.computeIfAbsent(label) {
                 Library(
@@ -804,23 +811,25 @@ class BazelProjectMapper(
     rootTargets: Set<Label>,
     graph: DependencyGraph,
     repoMapping: RepoMapping,
+    transitiveCompileTimeJarsTargetKinds: Set<String>,
   ): Sequence<TargetInfo> =
     graph
       .allTargetsAtDepth(-1, rootTargets)
       .asSequence()
-      .filter { !isWorkspaceTarget(it, repoMapping) && isRustTarget(it) }
+      .filter { !isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds) && isRustTarget(it) }
 
   private fun selectTargetsToImport(
     workspaceContext: WorkspaceContext,
     rootTargets: Set<Label>,
     graph: DependencyGraph,
     repoMapping: RepoMapping,
+    transitiveCompileTimeJarsTargetKinds: Set<String>,
   ): Sequence<TargetInfo> =
     graph
       .allTargetsAtDepth(
         workspaceContext.importDepth.value,
         rootTargets,
-      ).filter { isWorkspaceTarget(it, repoMapping) }
+      ).filter { isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds) }
       .asSequence()
 
   private fun collectInterfacesAndClasses(targets: Sequence<TargetInfo>) =
@@ -864,10 +873,10 @@ class BazelProjectMapper(
     target.isMainWorkspace || target.repo.repoName in externalRepositoriesTreatedAsInternal(repoMapping)
 
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
-  private fun isWorkspaceTarget(target: TargetInfo, repoMapping: RepoMapping): Boolean =
+  private fun isWorkspaceTarget(target: TargetInfo, repoMapping: RepoMapping, transitiveCompileTimeJarsTargetKinds: Set<String>): Boolean =
     isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
       (
-        shouldImportTargetKind(target.kind) ||
+        shouldImportTargetKind(target.kind, transitiveCompileTimeJarsTargetKinds) ||
           target.hasJvmTargetInfo() &&
           hasKnownJvmSources(target) ||
           featureFlags.isPythonSupportEnabled &&
@@ -881,7 +890,8 @@ class BazelProjectMapper(
           hasKnownRustSources(target)
       )
 
-  private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds
+  private fun shouldImportTargetKind(kind: String, transitiveCompileTimeJarsTargetKinds: Set<String>): Boolean =
+    kind in workspaceTargetKinds || kind in transitiveCompileTimeJarsTargetKinds
 
   private val workspaceTargetKinds =
     setOf(
@@ -914,6 +924,7 @@ class BazelProjectMapper(
     targetsToImport: Sequence<TargetInfo>,
     dependencyGraph: DependencyGraph,
     generatedLibraries: Map<Label, Collection<Library>>,
+    transitiveCompileTimeJarsTargetKinds: Set<String>,
   ): List<Module> =
     withContext(Dispatchers.Default) {
       targetsToImport
@@ -924,6 +935,7 @@ class BazelProjectMapper(
               it,
               dependencyGraph,
               generatedLibraries[it.label()].orEmpty(),
+              transitiveCompileTimeJarsTargetKinds,
             )
           }
         }.awaitAll()
@@ -934,11 +946,15 @@ class BazelProjectMapper(
     target: TargetInfo,
     dependencyGraph: DependencyGraph,
     extraLibraries: Collection<Library>,
+    transitiveCompileTimeJarsTargetKinds: Set<String>,
   ): Module {
     val label = target.label().assumeResolved()
+    // Only transitive compile jars are needed from these target kinds
+    val initialDirectDependencies =
+      if (target.kind in transitiveCompileTimeJarsTargetKinds) emptyList() else resolveDirectDependencies(target)
     // extra libraries can override some library versions, so they should be put before
-    val directDependencies = extraLibraries.map { it.label } + resolveDirectDependencies(target)
-    val languages = inferLanguages(target)
+    val directDependencies = extraLibraries.map { it.label } + initialDirectDependencies
+    val languages = inferLanguages(target, transitiveCompileTimeJarsTargetKinds)
     val tags = targetTagsResolver.resolveTags(target)
     val baseDirectory = label.toDirectoryUri()
     val languagePlugin = languagePluginsService.getPlugin(languages)
@@ -965,8 +981,8 @@ class BazelProjectMapper(
 
   private fun resolveDirectDependencies(target: TargetInfo): List<Label> = target.dependenciesList.map { it.label() }
 
-  private fun inferLanguages(target: TargetInfo): Set<Language> {
-    val languagesForTarget = Language.allOfKind(target.kind)
+  private fun inferLanguages(target: TargetInfo, transitiveCompileTimeJarsTargetKinds: Set<String>): Set<Language> {
+    val languagesForTarget = Language.allOfKind(target.kind, transitiveCompileTimeJarsTargetKinds)
     val languagesForSources = target.sourcesList.flatMap { Language.allOfSource(it.relativePath) }.toHashSet()
     return languagesForTarget + languagesForSources
   }
@@ -1039,7 +1055,7 @@ class BazelProjectMapper(
     dependencyGraph: DependencyGraph,
     generatedLibraries: Map<Label, Collection<Library>>,
   ): Sequence<Module> {
-    val modules = createModules(targetsToImport, dependencyGraph, generatedLibraries)
+    val modules = createModules(targetsToImport, dependencyGraph, generatedLibraries, emptySet())
     return modules.asSequence().onEach {
       (it.languageData as? RustModule)?.isExternalModule = true
     }

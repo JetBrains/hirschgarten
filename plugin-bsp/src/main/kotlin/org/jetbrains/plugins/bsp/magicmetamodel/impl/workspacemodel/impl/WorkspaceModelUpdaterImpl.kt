@@ -40,7 +40,7 @@ class WorkspaceModelUpdaterImpl(
 
   init {
     // store generated IML files outside the project directory
-    ExternalProjectsManagerImpl.getInstance(project).setStoreExternally(true)
+    ExternalProjectsManagerImpl.getInstance(project).setStoreExternally(false)
   }
 
   override suspend fun loadModules(moduleEntities: List<Module>) {

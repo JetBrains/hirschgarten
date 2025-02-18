@@ -21,13 +21,9 @@ import org.jetbrains.bsp.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.EnhancedSourceItem
 import java.nio.file.Path
-import kotlin.collections.filter
-import kotlin.collections.map
-import kotlin.collections.mapNotNull
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
-import kotlin.toString
 
 class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: WorkspaceContextProvider, private val workspaceRoot: Path) {
   fun toWorkspaceBuildTargetsResult(project: FirstPhaseProject): WorkspaceBuildTargetsResult {
@@ -70,7 +66,7 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
     }
 
   private fun Target.inferLanguages(): Set<Language> {
-    val languagesForTarget = Language.allOfKind(kind)
+    val languagesForTarget = Language.allOfKind(kind, emptySet())
     val languagesForSources = srcs.flatMap { Language.allOfSource(it) }.toHashSet()
     return languagesForTarget + languagesForSources
   }
@@ -84,7 +80,7 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
     }
 
   private fun Target.isSupported(): Boolean {
-    val isRuleSupported = Language.allOfKind(kind).isNotEmpty()
+    val isRuleSupported = Language.allOfKind(kind, emptySet()).isNotEmpty()
     val areSourcesSupported =
       srcs
         .map { it.substringAfterLast('.') }

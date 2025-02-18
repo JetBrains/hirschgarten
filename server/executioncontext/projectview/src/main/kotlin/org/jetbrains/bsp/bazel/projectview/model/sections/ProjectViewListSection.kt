@@ -21,3 +21,10 @@ data class ProjectViewEnabledRulesSection(override val values: List<String>) : P
     const val SECTION_NAME = "enabled_rules"
   }
 }
+
+data class ExperimentalTransitiveCompileTimeJarsTargetKindsSection(override val values: List<String>) :
+  ProjectViewListSection<String>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "experimental_transitive_compile_time_jars_target_kinds"
+  }
+}

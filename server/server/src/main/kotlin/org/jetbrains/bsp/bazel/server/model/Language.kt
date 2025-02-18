@@ -16,6 +16,7 @@ enum class Language(
         "java_binary",
         "java_test",
         "intellij_plugin_debug_target", // a workaround to register this target type as Java module in IntelliJ IDEA
+        "resolved_compile_classpath",
       ),
   ),
   KOTLIN("kotlin", hashSetOf(".kt"), setOf("kt_jvm_binary", "kt_jvm_library", "kt_jvm_test"), hashSetOf(JAVA.id)),
@@ -39,7 +40,9 @@ enum class Language(
 
     fun all() = ALL
 
-    fun allOfKind(targetKind: String): Set<Language> = all().filter { it.targetKinds.contains(targetKind) }.toHashSet()
+    fun allOfKind(targetKind: String, transitiveCompileTimeJarsTargetKinds: Set<String>): Set<Language> =
+      all().filterTo(mutableSetOf()) { it.targetKinds.contains(targetKind) }
+        .apply { if (targetKind in transitiveCompileTimeJarsTargetKinds) add(JAVA) }
 
     fun allOfSource(path: String): Set<Language> = all().filter { lang -> lang.extensions.any { path.endsWith(it) } }.toHashSet()
   }

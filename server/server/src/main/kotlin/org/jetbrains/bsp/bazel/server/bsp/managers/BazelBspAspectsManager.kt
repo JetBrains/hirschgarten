@@ -98,6 +98,8 @@ class BazelBspAspectsManager(
           "rulesetName" to ruleLanguage?.calculateCanonicalName(repoMapping),
           "addTransitiveCompileTimeJars" to
             workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
+          "transitiveCompileTimeJarsTargetKinds" to
+            workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toStarlarkString(),
           "kotlinEnabled" to kotlinEnabled.toString(),
           "javaEnabled" to javaEnabled.toString(),
           "pythonEnabled" to pythonEnabled.toString(),
@@ -148,6 +150,8 @@ class BazelBspAspectsManager(
     }
 
   private fun Boolean.toStarlarkString(): String = if (this) "True" else "False"
+
+  private fun List<String>.toStarlarkString(): String = joinToString(prefix = "[", postfix = "]", separator = ", ") { "\"$it\"" }
 
   suspend fun fetchFilesFromOutputGroups(
     cancelChecker: CancelChecker,
