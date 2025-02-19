@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BuildToolId
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 
-open class TestProjectPostSyncHook(override val buildToolId: BuildToolId) : ProjectPostSyncHook {
+open class TestProjectPostSyncHook : ProjectPostSyncHook {
   var wasCalled: Boolean = false
 
   override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
@@ -12,6 +12,6 @@ open class TestProjectPostSyncHook(override val buildToolId: BuildToolId) : Proj
   }
 }
 
-class DisabledTestProjectPostSyncHook(override val buildToolId: BuildToolId) : TestProjectPostSyncHook(buildToolId) {
+class DisabledTestProjectPostSyncHook : TestProjectPostSyncHook() {
   override fun isEnabled(project: Project): Boolean = false
 }

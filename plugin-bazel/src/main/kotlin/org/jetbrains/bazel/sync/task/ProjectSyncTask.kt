@@ -34,7 +34,7 @@ import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.additionalProjectPostSyncHooks
 import org.jetbrains.bazel.sync.additionalProjectPreSyncHooks
 import org.jetbrains.bazel.sync.additionalProjectSyncHooks
-import org.jetbrains.bazel.sync.defaultProjectPostSyncHooks
+import org.jetbrains.bazel.sync.projectPostSyncHooks
 import org.jetbrains.bazel.sync.defaultProjectPreSyncHooks
 import org.jetbrains.bazel.sync.defaultProjectSyncHooks
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
@@ -184,10 +184,7 @@ class ProjectSyncTask(private val project: Project) {
         progressReporter = progressReporter,
       )
 
-    project.defaultProjectPostSyncHooks.forEach {
-      it.onPostSync(environment)
-    }
-    project.additionalProjectPostSyncHooks.forEach {
+    project.projectPostSyncHooks.forEach {
       it.onPostSync(environment)
     }
   }
