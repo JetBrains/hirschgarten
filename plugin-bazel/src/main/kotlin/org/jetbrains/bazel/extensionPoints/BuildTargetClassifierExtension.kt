@@ -49,7 +49,7 @@ public interface BuildTargetClassifierExtension : WithBuildToolId {
 
   public companion object {
     val ep =
-      ExtensionPointName.create<BuildTargetClassifierExtension>("org.jetbrains.bsp.buildTargetClassifierExtension")
+      ExtensionPointName.create<BuildTargetClassifierExtension>("org.jetbrains.bazel.buildTargetClassifierExtension")
   }
 }
 

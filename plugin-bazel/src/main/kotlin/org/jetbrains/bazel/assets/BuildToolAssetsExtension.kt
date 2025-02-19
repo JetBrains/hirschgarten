@@ -24,7 +24,7 @@ public interface BuildToolAssetsExtension : WithBuildToolId {
 
   public companion object {
     internal val ep =
-      ExtensionPointName.create<BuildToolAssetsExtension>("org.jetbrains.bsp.buildToolAssetsExtension")
+      ExtensionPointName.create<BuildToolAssetsExtension>("org.jetbrains.bazel.buildToolAssetsExtension")
   }
 }
 

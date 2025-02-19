@@ -34,7 +34,7 @@ interface BspRunHandlerProvider {
 
   companion object {
     val ep: ExtensionPointName<BspRunHandlerProvider> =
-      ExtensionPointName.create("org.jetbrains.bsp.bspRunHandlerProvider")
+      ExtensionPointName.create("org.jetbrains.bazel.bspRunHandlerProvider")
 
     /** Finds a BspRunHandlerProvider that will be able to create a BspRunHandler for the given targets */
     fun getRunHandlerProvider(targetInfos: List<BuildTargetInfo>, isDebug: Boolean = false): BspRunHandlerProvider? =

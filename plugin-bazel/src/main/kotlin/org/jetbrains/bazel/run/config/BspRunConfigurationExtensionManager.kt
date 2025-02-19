@@ -13,7 +13,7 @@ public class BspRunConfigurationExtensionManager :
   RunConfigurationExtensionsManager<BspRunConfiguration, BspRunConfigurationExtension>(ep) {
   public companion object {
     internal val ep =
-      ExtensionPointName.create<BspRunConfigurationExtension>("org.jetbrains.bsp.bspRunConfigurationExtension")
+      ExtensionPointName.create<BspRunConfigurationExtension>("org.jetbrains.bazel.bspRunConfigurationExtension")
 
     public fun getInstance(): BspRunConfigurationExtensionManager = service()
   }

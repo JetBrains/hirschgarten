@@ -7,7 +7,7 @@ import java.nio.file.Path
 
 interface BspServerProvider {
   companion object {
-    val ep = ExtensionPointName.create<BspServerProvider>("org.jetbrains.bsp.startBuiltInServerExtension")
+    val ep = ExtensionPointName.create<BspServerProvider>("org.jetbrains.bazel.startBuiltInServerExtension")
 
     fun getBspServer() = ep.extensionList.firstOrNull()
   }

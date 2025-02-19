@@ -14,7 +14,7 @@ interface BspRunConfigurationTypeProvider : WithBuildToolId {
 
   companion object {
     val ep =
-      ExtensionPointName.create<BspRunConfigurationTypeProvider>("org.jetbrains.bsp.runConfigurationTypeProvider")
+      ExtensionPointName.create<BspRunConfigurationTypeProvider>("org.jetbrains.bazel.runConfigurationTypeProvider")
 
     fun getConfigurationType(project: Project): BspRunConfigurationType =
       ep.withBuildToolIdOrDefault(project.buildToolIdOrDefault).runConfigurationType

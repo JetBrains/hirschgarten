@@ -1,5 +1,5 @@
 <idea-plugin>
-  <extensions defaultExtensionNs="org.jetbrains.bsp">
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
     <androidSdkGetterExtension
       implementation="org.jetbrains.bazel.android.AndroidSdkGetter" />
     <androidFacetEntityUpdaterExtension
