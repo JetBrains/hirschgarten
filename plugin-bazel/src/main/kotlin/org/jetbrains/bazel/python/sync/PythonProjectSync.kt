@@ -29,6 +29,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.jetbrains.python.sdk.PyDetectedSdk
 import com.jetbrains.python.sdk.PythonSdkAdditionalData
 import com.jetbrains.python.sdk.PythonSdkType
+import com.jetbrains.python.sdk.PythonSdkUpdater
 import com.jetbrains.python.sdk.detectSystemWideSdks
 import com.jetbrains.python.sdk.guessedLanguageLevel
 import kotlinx.coroutines.coroutineScope
@@ -69,6 +70,8 @@ class PythonProjectSync : ProjectSyncHook {
     val moduleNameProvider = environment.project.findNameProvider().orDefault()
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
     val sdks = calculateAndAddSdks(pythonTargets, environment, virtualFileUrlManager)
+
+    sdks.values.updateAll(environment.project)
 
     pythonTargets.forEach {
       val moduleName = moduleNameProvider(BuildTargetInfo(id = it.target.id))
@@ -316,4 +319,9 @@ class PythonProjectSync : ProjectSyncHook {
   private fun getSystemSdk(): PyDetectedSdk? =
     detectSystemWideSdks(null, emptyList())
       .firstOrNull { it.homePath != null && it.guessedLanguageLevel?.isPy3K == true }
+
+  private fun Collection<Sdk>.updateAll(project: Project) =
+    forEach {
+      PythonSdkUpdater.scheduleUpdate(it, project)
+    }
 }
