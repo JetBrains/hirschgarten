@@ -3,8 +3,6 @@ package org.jetbrains.bazel.sync
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
-import org.jetbrains.bazel.config.allWithBuildToolId
-import org.jetbrains.bazel.config.bspBuildToolId
 
 /**
  * Represents a pre-sync hook which will be executed before each sync (if `isEnabled` returns true).

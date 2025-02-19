@@ -51,5 +51,6 @@ interface ProjectSyncHook {
 }
 
 val Project.projectSyncHooks: List<ProjectSyncHook>
-  get() = ProjectSyncHook.ep.extensionList
+  get() =
+    ProjectSyncHook.ep.extensionList
       .filter { it.isEnabled(this) }

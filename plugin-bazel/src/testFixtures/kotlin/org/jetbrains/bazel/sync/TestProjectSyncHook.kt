@@ -3,7 +3,7 @@ package org.jetbrains.bazel.sync
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 
-open class TestProjectSyncHook() : ProjectSyncHook {
+open class TestProjectSyncHook : ProjectSyncHook {
   var wasCalled: Boolean = false
 
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
