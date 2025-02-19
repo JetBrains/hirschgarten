@@ -14,12 +14,6 @@ load(
 load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
 
 optional_plugin_dep(
-    name = "bazel_with_python",
-    module = ["com.intellij.modules.python"],
-    plugin_xml = "//plugin-bazel/src:main/xml/bazel-withPython.xml",
-)
-
-optional_plugin_dep(
     name = "bsp_with_python",
     module = ["com.intellij.modules.python"],
     plugin_xml = "//plugin-bazel/src:main/xml/bsp-withPython.xml",
@@ -64,7 +58,6 @@ optional_plugin_dep(
 intellij_plugin_library(
     name = "plugin_library",
     optional_plugin_deps = [
-        ":bazel_with_python",
         ":bsp_with_python",
         ":bsp_with_android",
         ":bsp_with_go",
