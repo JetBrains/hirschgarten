@@ -6,7 +6,7 @@
                 language="go"/>
     </extensions>
 
-    <extensions defaultExtensionNs="org.jetbrains.bsp">
+    <extensions defaultExtensionNs="org.jetbrains.bazel">
         <projectSyncHook implementation="org.jetbrains.bazel.golang.sync.GoProjectSync"/>
         <bspRunHandlerProvider implementation="org.jetbrains.bazel.golang.debug.GoBspRunHandler$GoBspRunHandlerProvider"/>
     </extensions>

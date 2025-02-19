@@ -15,7 +15,7 @@ interface BspTreeStructureSettingsProvider {
   fun getBspTreeStructureSettings(project: Project): BspTreeStructureSettings?
 
   companion object {
-    val EP_NAME: ExtensionPointName<BspTreeStructureSettingsProvider> = create("org.jetbrains.bsp.bspTreeStructureSettingsExtension")
+    val EP_NAME: ExtensionPointName<BspTreeStructureSettingsProvider> = create("org.jetbrains.bazel.bspTreeStructureSettingsExtension")
   }
 }
 

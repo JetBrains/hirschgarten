@@ -12,7 +12,7 @@ interface BspProjectModelExternalSourceExtension :
   WithBuildToolId {
   companion object {
     val ep: ExtensionPointName<BspProjectModelExternalSourceExtension> =
-      ExtensionPointName.create("org.jetbrains.bsp.bspProjectModelExternalSource")
+      ExtensionPointName.create("org.jetbrains.bazel.bspProjectModelExternalSource")
   }
 }
 

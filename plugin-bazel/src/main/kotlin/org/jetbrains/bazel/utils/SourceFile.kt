@@ -26,7 +26,7 @@ interface SourceTypeIconProvider {
   fun getIcon(): Icon?
 
   companion object {
-    val ep = ExtensionPointName<SourceTypeIconProvider>("org.jetbrains.bsp.sourceTypeIconProvider")
+    val ep = ExtensionPointName<SourceTypeIconProvider>("org.jetbrains.bazel.sourceTypeIconProvider")
 
     fun getIconBySourceType(sourceType: SourceType?): Icon? =
       sourceType?.let { ep.extensionList.find { it.getSourceType() == sourceType }?.getIcon() }
