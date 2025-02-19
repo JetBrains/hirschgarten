@@ -16,7 +16,7 @@ load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VER
 optional_plugin_dep(
     name = "bazel_with_python",
     module = ["com.intellij.modules.python"],
-    plugin_xml = "//plugin-bazel/src:main/resources/META-INF/bazel-withPython.xml",
+    plugin_xml = "//plugin-bazel/src:main/xml/bazel-withPython.xml",
 )
 
 optional_plugin_dep(

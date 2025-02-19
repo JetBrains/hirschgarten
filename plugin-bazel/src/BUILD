@@ -3,7 +3,6 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 exports_files([
     "main/resources/META-INF/base.xml",
-    "main/resources/META-INF/bazel-withPython.xml",
     "test/resources/META-INF/bazel-ide-starter-test.xml",
 ] + glob(["main/xml/*.xml"]))
 

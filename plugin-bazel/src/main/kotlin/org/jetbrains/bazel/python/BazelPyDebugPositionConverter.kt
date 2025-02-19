@@ -7,7 +7,7 @@ import com.intellij.xdebugger.XSourcePosition
 import com.jetbrains.python.debugger.PyPositionConverter
 import com.jetbrains.python.debugger.PySignature
 import com.jetbrains.python.debugger.PySourcePosition
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 
 class BazelPyDebugPositionConverter(private val project: Project, private val target: Label) : PyPositionConverter {
   @Deprecated("Deprecated in the interface")

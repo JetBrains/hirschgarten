@@ -4,13 +4,13 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
-import org.jetbrains.plugins.bsp.assets.assets
-import org.jetbrains.plugins.bsp.run.BspRunHandler
-import org.jetbrains.plugins.bsp.run.BspRunHandlerProvider
-import org.jetbrains.plugins.bsp.run.commandLine.BspRunCommandLineState
-import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
-import org.jetbrains.plugins.bsp.run.state.GenericRunState
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bazel.assets.assets
+import org.jetbrains.bazel.run.BspRunHandler
+import org.jetbrains.bazel.run.BspRunHandlerProvider
+import org.jetbrains.bazel.run.commandLine.BspRunCommandLineState
+import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.run.state.GenericRunState
+import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import java.util.UUID
 
 class PythonBspRunHandler(configuration: BspRunConfiguration) : BspRunHandler {

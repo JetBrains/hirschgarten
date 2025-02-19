@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.python
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
@@ -17,13 +16,15 @@ import com.jetbrains.python.debugger.PyDebugRunner
 import com.jetbrains.python.run.PythonCommandLineState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.commons.label.label
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.label.toBspIdentifier
+import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
-import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.server.tasks.runBuildTargetTask
-import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 import java.net.ServerSocket
 import kotlin.String
 
@@ -40,9 +41,9 @@ class PythonBspDebugRunner : PyDebugRunner() {
   override fun execute(environment: ExecutionEnvironment, state: RunProfileState): Promise<RunContentDescriptor?> {
     val debugState = state as? PythonDebugCommandLineState ?: error(BazelPluginBundle.message("python.debug.error.wrong.state"))
     val nativeState = debugState.asPythonState()
-    val targetId = state.targetId ?: error(BazelPluginBundle.message("python.debug.error.no.id"))
+    val target = state.target ?: error(BazelPluginBundle.message("python.debug.error.no.id"))
     val promise = AsyncPromise<RunContentDescriptor?>()
-    buildTarget(environment.project, targetId) {
+    buildTarget(environment.project, target) {
       val superResult = ReadAction.compute<Promise<RunContentDescriptor?>, Throwable> { super.execute(environment, nativeState) }
       superResult.onSuccess { promise.setResult(it) }
       superResult.onError { promise.setError(it) }
@@ -52,11 +53,11 @@ class PythonBspDebugRunner : PyDebugRunner() {
 
   private fun buildTarget(
     project: Project,
-    targetId: BuildTargetIdentifier,
+    targetId: Label,
     onBuildComplete: () -> Unit,
   ) {
     BspCoroutineService.getInstance(project).start {
-      runBuildTargetTask(listOf(targetId), project, log)
+      runBuildTargetTask(listOf(targetId.toBspIdentifier()), project, log)
       withContext(Dispatchers.EDT) {
         onBuildComplete()
       }

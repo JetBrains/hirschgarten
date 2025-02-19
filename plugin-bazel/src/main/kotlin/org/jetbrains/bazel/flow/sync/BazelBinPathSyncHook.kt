@@ -9,9 +9,9 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.sync.ProjectSyncHook
-import org.jetbrains.plugins.bsp.sync.task.query
+import org.jetbrains.bazel.config.BuildToolId
+import org.jetbrains.bazel.sync.ProjectSyncHook
+import org.jetbrains.bazel.sync.task.query
 
 class BazelBinPathSyncHook : ProjectSyncHook {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
