@@ -19,8 +19,6 @@ import org.jetbrains.bazel.sync.task.queryIf
 import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
 
 internal class InvalidTargetsProjectSyncHook : ProjectSyncHook {
-  override val buildToolId: BuildToolId = bazelBspBuildToolId
-
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     coroutineScope {
       val bazelInvalidTargetsService = BazelInvalidTargetsService.getInstance(environment.project)

@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.assets
 
-import org.jetbrains.bazel.assets.BuildToolAssetsExtension
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.config.BuildToolId
