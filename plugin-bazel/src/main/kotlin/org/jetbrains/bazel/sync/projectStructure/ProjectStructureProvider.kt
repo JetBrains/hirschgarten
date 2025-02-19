@@ -51,7 +51,7 @@ interface ProjectStructureProvider<TDiff : ProjectStructureDiff> {
   fun newDiff(project: Project): TDiff
 
   companion object {
-    internal val ep = ExtensionPointName.create<ProjectStructureProvider<*>>("org.jetbrains.bsp.projectStructureProvider")
+    internal val ep = ExtensionPointName.create<ProjectStructureProvider<*>>("org.jetbrains.bazel.projectStructureProvider")
   }
 }
 

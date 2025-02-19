@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.bazel.workspacecontext
 
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtractor
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtractorException
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextExcludableListEntity

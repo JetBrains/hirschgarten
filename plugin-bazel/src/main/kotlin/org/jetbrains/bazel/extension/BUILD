@@ -7,7 +7,7 @@ kt_jvm_library(
     ]),
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/label",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/label",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/debug",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extensionPoints",

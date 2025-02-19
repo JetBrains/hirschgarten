@@ -59,9 +59,9 @@ import ch.epfl.scala.bsp4j.TestProvider
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.commons.label.Label
-import org.jetbrains.bazel.commons.label.label
-import org.jetbrains.bazel.commons.label.toBspIdentifier
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.label.toBspIdentifier
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bsp.bazel.server.bzlmod.BzlmodRepoMapping

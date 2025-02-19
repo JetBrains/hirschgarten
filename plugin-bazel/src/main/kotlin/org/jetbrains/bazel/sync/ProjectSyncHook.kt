@@ -30,7 +30,7 @@ interface ProjectSyncHook : WithBuildToolId {
   suspend fun onSync(environment: ProjectSyncHookEnvironment)
 
   companion object {
-    val ep = ExtensionPointName.create<ProjectSyncHook>("org.jetbrains.bsp.projectSyncHook")
+    val ep = ExtensionPointName.create<ProjectSyncHook>("org.jetbrains.bazel.projectSyncHook")
   }
 
   /**
@@ -66,7 +66,7 @@ interface DefaultProjectSyncHooksDisabler : WithBuildToolId {
 
   companion object {
     internal val ep =
-      ExtensionPointName.create<DefaultProjectSyncHooksDisabler>("org.jetbrains.bsp.defaultProjectSyncHooksDisabler")
+      ExtensionPointName.create<DefaultProjectSyncHooksDisabler>("org.jetbrains.bazel.defaultProjectSyncHooksDisabler")
   }
 }
 

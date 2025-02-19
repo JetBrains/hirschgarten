@@ -27,7 +27,7 @@ interface ProjectPreSyncHook : WithBuildToolId {
   suspend fun onPreSync(environment: ProjectPreSyncHookEnvironment)
 
   companion object {
-    val ep = ExtensionPointName.create<ProjectPreSyncHook>("org.jetbrains.bsp.projectPreSyncHook")
+    val ep = ExtensionPointName.create<ProjectPreSyncHook>("org.jetbrains.bazel.projectPreSyncHook")
   }
 
   /**

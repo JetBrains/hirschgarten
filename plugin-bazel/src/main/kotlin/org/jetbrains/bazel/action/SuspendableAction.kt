@@ -4,11 +4,14 @@ import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.coroutines.BspCoroutineService
 import javax.swing.Icon
@@ -68,3 +71,7 @@ abstract class SuspendableAction(text: () -> String, icon: Icon? = null) :
 
   override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 }
+
+fun AnActionEvent.getPsiFile(): PsiFile? = CommonDataKeys.PSI_FILE.getData(dataContext)
+
+fun AnActionEvent.getEditor(): Editor? = CommonDataKeys.EDITOR.getData(dataContext)

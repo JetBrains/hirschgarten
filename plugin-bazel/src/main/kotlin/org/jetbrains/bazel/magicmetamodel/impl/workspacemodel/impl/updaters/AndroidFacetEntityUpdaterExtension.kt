@@ -22,7 +22,7 @@ internal interface AndroidFacetEntityUpdaterExtension {
 
 private val ep =
   ExtensionPointName.create<AndroidFacetEntityUpdaterExtension>(
-    "org.jetbrains.bsp.androidFacetEntityUpdaterExtension",
+    "org.jetbrains.bazel.androidFacetEntityUpdaterExtension",
   )
 
 internal fun androidFacetEntityUpdaterExtension(): AndroidFacetEntityUpdaterExtension? = ep.extensionList.firstOrNull()

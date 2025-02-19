@@ -1,5 +1,5 @@
 <idea-plugin>
-  <extensions defaultExtensionNs="org.jetbrains.bsp">
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
     <projectSyncHook implementation="org.jetbrains.bazel.python.sync.PythonProjectSync"/>
       <sourceTypeIconProvider
               implementation="org.jetbrains.bazel.python.sync.PythonSourceIconProvider"/>

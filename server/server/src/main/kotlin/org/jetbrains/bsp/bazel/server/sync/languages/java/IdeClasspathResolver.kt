@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.java
 
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import java.net.URI
 
 class IdeClasspathResolver(
