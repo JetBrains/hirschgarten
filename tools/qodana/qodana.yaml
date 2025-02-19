@@ -12,7 +12,7 @@ exclude:
       - plugin-bazel/src/test/testData/bazelrc
       - plugin-bazel/src/test/testData/starlark
       # generated workspace entities are full of various things, boring for qodana
-      - plugin-bsp/workspacemodel/src/main/gen
+      - plugin-bazel/workspacemodel/src/main/gen
       # aspects should be boring for qodana
       - server/aspects
       # server/example contains small examples of edge cases, boring for qodana
