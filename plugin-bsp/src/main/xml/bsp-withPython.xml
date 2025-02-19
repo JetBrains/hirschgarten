@@ -1,7 +1,2 @@
 <idea-plugin>
-  <extensions defaultExtensionNs="org.jetbrains.bsp">
-    <projectSyncHook implementation="org.jetbrains.plugins.bsp.python.sync.PythonProjectSync"/>
-      <sourceTypeIconProvider
-              implementation="org.jetbrains.plugins.bsp.python.sync.PythonSourceIconProvider"/>
-  </extensions>
 </idea-plugin>

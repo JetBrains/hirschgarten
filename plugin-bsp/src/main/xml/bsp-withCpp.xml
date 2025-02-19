@@ -1,5 +1,2 @@
 <idea-plugin>
-    <extensions defaultExtensionNs="org.jetbrains.bsp">
-        <projectSyncHook implementation="org.jetbrains.plugins.bsp.impl.flow.sync.languages.cpp.CppProjectSync"/>
-    </extensions>
 </idea-plugin>
