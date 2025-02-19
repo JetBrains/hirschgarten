@@ -87,9 +87,6 @@
     </extensionPoints>
 
     <extensions defaultExtensionNs="org.jetbrains.bazel">
-        <buildToolAssetsExtension
-                implementation="org.jetbrains.bazel.assets.BspAssetsExtension"/>
-
         <buildTargetClassifierExtension
                 implementation="org.jetbrains.bazel.extensionPoints.DefaultBuildTargetClassifierExtension"/>
 
@@ -106,11 +103,8 @@
         <bspRunHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericBspTestHandlerProvider"
                                order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"/>
-        <projectSyncHook implementation="org.jetbrains.bazel.sync.defaults.OutputPathUrisSyncHook"/>
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
-        <runConfigurationTypeProvider
-                implementation="org.jetbrains.bazel.run.config.DefaultBspRunConfigurationTypeProvider"/>
         <bspFeatureFlagsProvider implementation="org.jetbrains.bazel.config.DefaultBspFeatureFlagsProvider"/>
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.JavaSourceTypeIconProvider"/>
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.KotlinSourceTypeIconProvider"/>
@@ -307,9 +301,6 @@
         <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"/>
-
-        <defaultProjectSyncHooksDisabler
-                implementation="org.jetbrains.bazel.flow.sync.BazelDefaultProjectSyncHooksDisabler"/>
 
         <invalidTargetsProviderExtension
                 implementation="org.jetbrains.bazel.flow.open.BazelInvalidTargetsProviderExtension"/>
