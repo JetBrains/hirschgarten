@@ -1,7 +1,6 @@
-package org.jetbrains.bazel.impl.flow.sync
+package org.jetbrains.bazel.sync
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.sync.ProjectPreSyncHook
 
 open class TestProjectPreSyncHook : ProjectPreSyncHook {
   var wasCalled: Boolean = false

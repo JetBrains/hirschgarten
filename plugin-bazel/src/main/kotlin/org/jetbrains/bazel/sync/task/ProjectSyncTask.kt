@@ -31,10 +31,9 @@ import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.bazel.sync.additionalProjectSyncHooks
 import org.jetbrains.bazel.sync.projectPostSyncHooks
 import org.jetbrains.bazel.sync.projectPreSyncHooks
-import org.jetbrains.bazel.sync.defaultProjectSyncHooks
+import org.jetbrains.bazel.sync.projectSyncHooks
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.status.BspSyncStatusService
@@ -159,10 +158,7 @@ class ProjectSyncTask(private val project: Project) {
             syncScope = syncScope,
           )
 
-        project.defaultProjectSyncHooks.forEach {
-          it.onSync(environment)
-        }
-        project.additionalProjectSyncHooks.forEach {
+        project.projectSyncHooks.forEach {
           it.onSync(environment)
         }
       }

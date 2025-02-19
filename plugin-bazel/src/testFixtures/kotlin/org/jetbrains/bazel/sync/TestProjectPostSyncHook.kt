@@ -1,8 +1,6 @@
-package org.jetbrains.bazel.impl.flow.sync
+package org.jetbrains.bazel.sync
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.config.BuildToolId
-import org.jetbrains.bazel.sync.ProjectPostSyncHook
 
 open class TestProjectPostSyncHook : ProjectPostSyncHook {
   var wasCalled: Boolean = false

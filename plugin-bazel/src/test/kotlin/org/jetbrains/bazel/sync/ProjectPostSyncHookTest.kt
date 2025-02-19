@@ -2,8 +2,6 @@ package org.jetbrains.bazel.sync
 
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
-import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook
-import org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook
 import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
