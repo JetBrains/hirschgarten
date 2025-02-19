@@ -53,7 +53,6 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/startup",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/action",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/defaults",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/projectStructure",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/projectStructure/workspaceModel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/scope",
