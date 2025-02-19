@@ -53,7 +53,7 @@ object BspFeatureFlags {
     get() = Registry.`is`(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS)
 }
 
-class DefaultBspFeatureFlagsProvider : BspFeatureFlagsProvider {
+class DefaultBspFeatureFlagsProvider : FeatureFlagsProvider {
   override fun getFeatureFlags(): FeatureFlags =
     with(BspFeatureFlags) {
       FeatureFlags(

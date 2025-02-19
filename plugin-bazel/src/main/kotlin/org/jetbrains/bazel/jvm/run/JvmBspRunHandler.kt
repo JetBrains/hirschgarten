@@ -10,7 +10,7 @@ import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.assets.assets
 import org.jetbrains.bazel.run.BspProcessHandler
 import org.jetbrains.bazel.run.BspRunHandler
-import org.jetbrains.bazel.run.BspRunHandlerProvider
+import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.commandLine.BspRunCommandLineState
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BspRunConfiguration
@@ -44,7 +44,7 @@ class JvmBspRunHandler(val configuration: BspRunConfiguration) : BspRunHandler {
       }
     }
 
-  class JvmBspRunHandlerProvider : BspRunHandlerProvider {
+  class JvmBspRunHandlerProvider : RunHandlerProvider {
     override val id: String = "JvmBspRunHandlerProvider"
 
     override fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler = JvmBspRunHandler(configuration)

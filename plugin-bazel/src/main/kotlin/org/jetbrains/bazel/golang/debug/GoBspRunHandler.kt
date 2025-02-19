@@ -15,7 +15,7 @@ import org.jetbrains.bazel.config.BspFeatureFlags
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.run.BspProcessHandler
 import org.jetbrains.bazel.run.BspRunHandler
-import org.jetbrains.bazel.run.BspRunHandlerProvider
+import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.commandLine.BspRunCommandLineState
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BspRunConfiguration
@@ -57,7 +57,7 @@ class GoBspRunHandler(private val configuration: BspRunConfiguration) : BspRunHa
     (environment.runProfile as? BspRunConfiguration)?.targets?.singleOrNull()
       ?: throw ExecutionException("Couldn't get BSP target from run configuration")
 
-  class GoBspRunHandlerProvider : BspRunHandlerProvider {
+  class GoBspRunHandlerProvider : RunHandlerProvider {
     override val id: String = "GoBspRunHandlerProvider"
 
     override fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler = GoBspRunHandler(configuration)

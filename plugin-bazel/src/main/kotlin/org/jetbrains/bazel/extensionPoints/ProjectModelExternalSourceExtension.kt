@@ -7,15 +7,15 @@ import org.jetbrains.bazel.config.WithBuildToolId
 import org.jetbrains.bazel.config.buildToolId
 import org.jetbrains.bazel.config.withBuildToolId
 
-interface BspProjectModelExternalSourceExtension :
+interface ProjectModelExternalSourceExtension :
   ProjectModelExternalSource,
   WithBuildToolId {
   companion object {
-    val ep: ExtensionPointName<BspProjectModelExternalSourceExtension> =
-      ExtensionPointName.create("org.jetbrains.bazel.bspProjectModelExternalSource")
+    val ep: ExtensionPointName<ProjectModelExternalSourceExtension> =
+      ExtensionPointName.create("org.jetbrains.bazel.projectModelExternalSource")
   }
 }
 
-val Project.bspProjectModelExternalSource: ProjectModelExternalSource?
+val Project.projectModelExternalSource: ProjectModelExternalSource?
   get() =
-    BspProjectModelExternalSourceExtension.ep.withBuildToolId(buildToolId)
+    ProjectModelExternalSourceExtension.ep.withBuildToolId(buildToolId)

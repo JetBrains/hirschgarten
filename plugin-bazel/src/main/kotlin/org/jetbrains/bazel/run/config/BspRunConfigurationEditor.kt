@@ -25,7 +25,7 @@ import org.jetbrains.bazel.run.BspRunConfigurationState
 class BspRunConfigurationEditor(private val runConfiguration: BspRunConfiguration) :
   RunConfigurationFragmentedEditor<BspRunConfiguration>(
     runConfiguration,
-    BspRunConfigurationExtensionManager.getInstance(),
+    RunConfigurationExtensionManager.getInstance(),
   ) {
   override fun createRunFragments(): List<SettingsEditorFragment<BspRunConfiguration, *>> =
     SettingsEditorFragmentContainer.fragments {

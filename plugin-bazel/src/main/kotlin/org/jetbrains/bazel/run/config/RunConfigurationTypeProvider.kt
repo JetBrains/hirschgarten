@@ -9,12 +9,12 @@ import org.jetbrains.bazel.config.withBuildToolIdOrDefault
 /**
  * Provides the type of run configuration for BSP, containing the icon and the name of the build tool.
  */
-interface BspRunConfigurationTypeProvider : WithBuildToolId {
+interface RunConfigurationTypeProvider : WithBuildToolId {
   val runConfigurationType: BspRunConfigurationType
 
   companion object {
     val ep =
-      ExtensionPointName.create<BspRunConfigurationTypeProvider>("org.jetbrains.bazel.runConfigurationTypeProvider")
+      ExtensionPointName.create<RunConfigurationTypeProvider>("org.jetbrains.bazel.runConfigurationTypeProvider")
 
     fun getConfigurationType(project: Project): BspRunConfigurationType =
       ep.withBuildToolIdOrDefault(project.buildToolIdOrDefault).runConfigurationType

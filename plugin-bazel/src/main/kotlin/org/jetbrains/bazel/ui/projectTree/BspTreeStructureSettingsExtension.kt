@@ -4,21 +4,21 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.extensions.ExtensionPointName.Companion.create
 import com.intellij.openapi.project.Project
 
-val Project.bspTreeStructureSettings: BspTreeStructureSettings?
+val Project.treeStructureSettings: TreeStructureSettings?
   get() =
-    BspTreeStructureSettingsProvider.EP_NAME.extensions
+    TreeStructureSettingsProvider.EP_NAME.extensions
       .asSequence()
-      .map { it.getBspTreeStructureSettings(this) }
+      .map { it.getTreeStructureSettings(this) }
       .firstOrNull()
 
-interface BspTreeStructureSettingsProvider {
-  fun getBspTreeStructureSettings(project: Project): BspTreeStructureSettings?
+interface TreeStructureSettingsProvider {
+  fun getTreeStructureSettings(project: Project): TreeStructureSettings?
 
   companion object {
-    val EP_NAME: ExtensionPointName<BspTreeStructureSettingsProvider> = create("org.jetbrains.bazel.bspTreeStructureSettingsExtension")
+    val EP_NAME: ExtensionPointName<TreeStructureSettingsProvider> = create("org.jetbrains.bazel.treeStructureSettingsExtension")
   }
 }
 
-interface BspTreeStructureSettings {
+interface TreeStructureSettings {
   val showExcludedDirectoriesAsSeparateNode: Boolean
 }
