@@ -132,8 +132,9 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
     element.parent is StarlarkExpressionStatement && element.parent?.parent is StarlarkFile
 }
 
-private val ALLOWED_ACTION_PLACES = listOf(
-  ActionPlaces.EDITOR_POPUP,
-  ActionPlaces.KEYBOARD_SHORTCUT,
-  ActionPlaces.ACTION_SEARCH,
-)
+private val ALLOWED_ACTION_PLACES =
+  listOf(
+    ActionPlaces.EDITOR_POPUP,
+    ActionPlaces.KEYBOARD_SHORTCUT,
+    ActionPlaces.ACTION_SEARCH,
+  )
