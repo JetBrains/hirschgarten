@@ -25,15 +25,12 @@ class TelemetryContextPropagatingLauncherBuilder<T> : Launcher.Builder<T>() {
   }
 }
 
-val TEXT_MAP_GETTER: TextMapGetter<Map<String, String>> = object : TextMapGetter<Map<String, String>> {
-  override fun keys(carrier: Map<String, String>): Set<String> {
-    return carrier.keys
-  }
+val TEXT_MAP_GETTER: TextMapGetter<Map<String, String>> =
+  object : TextMapGetter<Map<String, String>> {
+    override fun keys(carrier: Map<String, String>): Set<String> = carrier.keys
 
-  override fun get(carrier: Map<String, String>?, key: String): String? {
-    return carrier?.get(key)
+    override fun get(carrier: Map<String, String>?, key: String): String? = carrier?.get(key)
   }
-}
 
 internal class CaseInsensitiveMap : HashMap<String, String> {
   constructor(carrier: Map<String, String>) {
