@@ -13,7 +13,6 @@
       <sourceFolder url="file://$MODULE_DIR$/executioncontext/projectview/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/executioncontext/workspacecontext/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/aspects" type="java-resource" />
-
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -45,6 +44,8 @@
         <CLASSES>
           <root url="jar://$MODULE_DIR$/libs/bsp_target_info_proto.jar!/" />
         </CLASSES>
+        <JAVADOC />
+        <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="module-library">
@@ -52,6 +53,8 @@
         <CLASSES>
           <root url="jar://$MODULE_DIR$/libs/bazel_build_proto.jar!/" />
         </CLASSES>
+        <JAVADOC />
+        <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="module-library">
@@ -59,6 +62,8 @@
         <CLASSES>
           <root url="jar://$MODULE_DIR$/libs/googleapis_build_proto.jar!/" />
         </CLASSES>
+        <JAVADOC />
+        <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="module-library">
@@ -66,6 +71,8 @@
         <CLASSES>
           <root url="jar://$MODULE_DIR$/libs/googleapis_build_grpc.jar!/" />
         </CLASSES>
+        <JAVADOC />
+        <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="module-library">
@@ -73,6 +80,8 @@
         <CLASSES>
           <root url="jar://$MODULE_DIR$/libs/build_event_stream_proto.jar!/" />
         </CLASSES>
+        <JAVADOC />
+        <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="module-library">
@@ -80,7 +89,11 @@
         <CLASSES>
           <root url="jar://$MODULE_DIR$/libs/deps_proto.jar!/" />
         </CLASSES>
+        <JAVADOC />
+        <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module" module-name="intellij.platform.util" />
+    <orderEntry type="module" module-name="intellij.platform.ide.util.io" />
   </component>
 </module>
