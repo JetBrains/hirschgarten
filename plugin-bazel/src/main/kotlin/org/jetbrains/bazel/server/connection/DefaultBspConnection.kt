@@ -17,8 +17,8 @@ import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.eclipse.lsp4j.jsonrpc.Launcher
-import org.jetbrains.bazel.config.BspFeatureFlagsProvider
 import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.server.chunking.ChunkingBuildServer
 import org.jetbrains.bazel.server.client.BspClient
@@ -296,7 +296,7 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
       InitializeBuildData(
         clientClassesRootDir = "$projectBaseDir/out",
         openTelemetryEndpoint = getOpenTelemetryEndPoint(),
-        featureFlags = BspFeatureFlagsProvider.accumulateFeatureFlags(),
+        featureFlags = FeatureFlagsProvider.accumulateFeatureFlags(),
       )
     params.data = initializeBuildData
 

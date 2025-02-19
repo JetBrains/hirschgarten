@@ -14,7 +14,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element
 import org.jetbrains.bazel.run.BspRunHandler
-import org.jetbrains.bazel.run.BspRunHandlerProvider
+import org.jetbrains.bazel.run.RunHandlerProvider
 
 // Use BspRunConfigurationType.createTemplateConfiguration(project) to create a new BspRunConfiguration.
 class BspRunConfiguration internal constructor(
@@ -34,14 +34,14 @@ class BspRunConfiguration internal constructor(
 
   fun updateTargets(newTargets: List<BuildTargetIdentifier>) {
     targets = newTargets
-    updateHandlerIfDifferentProvider(BspRunHandlerProvider.getRunHandlerProvider(project, newTargets))
+    updateHandlerIfDifferentProvider(RunHandlerProvider.getRunHandlerProvider(project, newTargets))
   }
 
-  private var handlerProvider: BspRunHandlerProvider? = null
+  private var handlerProvider: RunHandlerProvider? = null
 
   var handler: BspRunHandler? = null
 
-  private fun updateHandlerIfDifferentProvider(newProvider: BspRunHandlerProvider) {
+  private fun updateHandlerIfDifferentProvider(newProvider: RunHandlerProvider) {
     if (newProvider == handlerProvider) return
     try {
       handler?.state?.writeExternal(bspElementState)
@@ -87,7 +87,7 @@ class BspRunConfiguration internal constructor(
 
     bspElementState = bspElement
 
-    val provider = BspRunHandlerProvider.findRunHandlerProvider(providerId)
+    val provider = RunHandlerProvider.findRunHandlerProvider(providerId)
     if (provider != null) {
       updateHandlerIfDifferentProvider(provider)
       // TODO the above already reads
@@ -101,7 +101,7 @@ class BspRunConfiguration internal constructor(
       }
     } else {
       logger.warn("Failed to find run handler provider with ID $providerId")
-      val newProvider = BspRunHandlerProvider.getRunHandlerProvider(project, this.targets)
+      val newProvider = RunHandlerProvider.getRunHandlerProvider(project, this.targets)
       updateHandlerIfDifferentProvider(newProvider)
     }
   }

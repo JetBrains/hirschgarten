@@ -69,7 +69,7 @@ class BspExternalServicesSubscriber(private val project: Project) {
   }
 
   private fun shouldNotifyOnEvents(events: List<VFileEvent>): Boolean {
-    val projectAwareExtension = BspProjectAwareExtension.ep.extensionList.firstOrNull() ?: return false
+    val projectAwareExtension = ProjectAwareExtension.ep.extensionList.firstOrNull() ?: return false
     val projectFileIndex = ProjectFileIndex.getInstance(project)
     return events.any {
       it.file?.let { vFile ->

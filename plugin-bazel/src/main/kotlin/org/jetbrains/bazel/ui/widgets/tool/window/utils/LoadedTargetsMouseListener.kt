@@ -9,7 +9,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import org.jetbrains.bazel.coroutines.BspCoroutineService
-import org.jetbrains.bazel.run.BspRunHandlerProvider
+import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.runnerAction.BspRunnerAction
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
 import org.jetbrains.bazel.runnerAction.RunTargetAction
@@ -100,7 +100,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
   verboseText: Boolean,
   singleTestFilter: String? = null,
 ): DefaultActionGroup {
-  val canBeDebugged = BspRunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
+  val canBeDebugged = RunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
   if (target.capabilities.canRun) {
     addAction(RunTargetAction(target, verboseText = verboseText, project = project))
     if (canBeDebugged) {

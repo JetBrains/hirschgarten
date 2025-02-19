@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.run.handler
 
 import org.jetbrains.bazel.run.BspRunHandler
-import org.jetbrains.bazel.run.BspRunHandlerProvider
+import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
-class GenericBspRunHandlerProvider : BspRunHandlerProvider {
+class GenericBspRunHandlerProvider : RunHandlerProvider {
   override val id: String = "GenericBspRunHandlerProvider"
 
   override fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler = GenericBspRunHandler()

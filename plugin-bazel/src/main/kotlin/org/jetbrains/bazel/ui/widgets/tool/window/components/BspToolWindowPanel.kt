@@ -20,9 +20,9 @@ import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.assets.assets
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.buildToolId
-import org.jetbrains.bazel.extensionPoints.BspToolWindowConfigFileProviderExtension
-import org.jetbrains.bazel.extensionPoints.bspToolWindowConfigFileProvider
-import org.jetbrains.bazel.extensionPoints.bspToolWindowSettingsProvider
+import org.jetbrains.bazel.extensionPoints.ToolWindowConfigFileProviderExtension
+import org.jetbrains.bazel.extensionPoints.toolWindowConfigFileProvider
+import org.jetbrains.bazel.extensionPoints.toolWindowSettingsProvider
 import org.jetbrains.bazel.services.invalidTargets
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.targetUtils
@@ -94,13 +94,13 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
   }
 
   private fun DefaultActionGroup.addSettingsActionIfAvailable(project: Project) {
-    val settingsActionProvider = project.bspToolWindowSettingsProvider ?: return
+    val settingsActionProvider = project.toolWindowSettingsProvider ?: return
     addSeparator()
     add(BspToolWindowSettingsAction(settingsActionProvider.getSettingsName()))
   }
 
   private fun DefaultActionGroup.addConfigFileOpeningActionIfAvailable(project: Project) {
-    val configFileProvider = project.bspToolWindowConfigFileProvider ?: return
+    val configFileProvider = project.toolWindowConfigFileProvider ?: return
     addSeparator()
     add(BspToolWindowConfigFileOpenAction(configFileProvider))
   }
@@ -121,7 +121,7 @@ private class BspToolWindowSettingsAction(private val settingsDisplayName: Strin
   }
 }
 
-private class BspToolWindowConfigFileOpenAction(private val configFileProvider: BspToolWindowConfigFileProviderExtension) :
+private class BspToolWindowConfigFileOpenAction(private val configFileProvider: ToolWindowConfigFileProviderExtension) :
   SuspendableAction(
     { BspPluginBundle.message("widget.config.file.popup.message", configFileProvider.getConfigFileGenericName()) },
     configFileProvider.getConfigFileIcon(),

@@ -11,7 +11,7 @@ import com.intellij.execution.runners.ProgramRunner
 import kotlinx.coroutines.future.asDeferred
 import org.jetbrains.bazel.run.BspProcessHandler
 import org.jetbrains.bazel.run.BspRunHandler
-import org.jetbrains.bazel.run.BspRunHandlerProvider
+import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.commandLine.BspTestCommandLineState
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BspRunConfiguration
@@ -43,7 +43,7 @@ class JvmBspTestHandler : BspRunHandler {
       }
     }
 
-  class JvmBspTestHandlerProvider : BspRunHandlerProvider {
+  class JvmBspTestHandlerProvider : RunHandlerProvider {
     override val id: String = "JvmBspTestHandlerProvider"
 
     override fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler = JvmBspTestHandler()

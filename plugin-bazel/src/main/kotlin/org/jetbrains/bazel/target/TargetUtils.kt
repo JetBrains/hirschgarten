@@ -191,7 +191,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   @Suppress("UNUSED")
   fun isLibrary(target: Label): Boolean = BuildTargetTag.LIBRARY in getBuildTargetInfoForLabel(target)?.tags.orEmpty()
 
-  @ApiStatus.Internal
+  @PublicApi
   fun getTargetForModuleId(moduleId: String): Label? = moduleIdToTarget[moduleId]
 
   @ApiStatus.Internal

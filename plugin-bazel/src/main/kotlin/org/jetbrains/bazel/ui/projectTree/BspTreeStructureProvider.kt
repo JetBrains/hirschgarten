@@ -62,7 +62,7 @@ internal class BspTreeStructureProvider : TreeStructureProvider {
     val rootDirectory =
       project.service<PsiManager>().findDirectory(project.rootDir) ?: return children // should never happen
 
-    val showExcludedDirectoriesAsSeparateNode = project.bspTreeStructureSettings?.showExcludedDirectoriesAsSeparateNode ?: true
+    val showExcludedDirectoriesAsSeparateNode = project.treeStructureSettings?.showExcludedDirectoriesAsSeparateNode ?: true
 
     val rootDirectoryNodeFilter =
       if (showExcludedDirectoriesAsSeparateNode) {

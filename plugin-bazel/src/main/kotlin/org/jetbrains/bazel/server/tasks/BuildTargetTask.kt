@@ -22,7 +22,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.await
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
-import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.taskEvents.BspTaskEventsService
@@ -159,7 +158,6 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
     }
 }
 
-@PublicApi
 public suspend fun runBuildTargetTask(
   targetIds: List<BuildTargetIdentifier>,
   project: Project,
