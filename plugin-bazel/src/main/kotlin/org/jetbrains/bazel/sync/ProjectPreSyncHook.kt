@@ -3,10 +3,8 @@ package org.jetbrains.bazel.sync
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
-import org.jetbrains.bazel.config.WithBuildToolId
 import org.jetbrains.bazel.config.allWithBuildToolId
 import org.jetbrains.bazel.config.bspBuildToolId
-import org.jetbrains.bazel.config.buildToolId
 
 /**
  * Represents a pre-sync hook which will be executed before each sync (if `isEnabled` returns true).
@@ -14,7 +12,7 @@ import org.jetbrains.bazel.config.buildToolId
  * It should be used to perform pre-sync actions, e.g., run code generation before sync.
  * It's guaranteed that hook will be called *before* all [ProjectSyncHook] calls.
  */
-interface ProjectPreSyncHook : WithBuildToolId {
+interface ProjectPreSyncHook {
   /**
    * Tells the sync mechanism whatever this hook should be executed before a sync.
    * It will always be called before each `onPreSync` call.
@@ -42,16 +40,7 @@ interface ProjectPreSyncHook : WithBuildToolId {
   )
 }
 
-val Project.defaultProjectPreSyncHooks: List<ProjectPreSyncHook>
+val Project.projectPreSyncHooks: List<ProjectPreSyncHook>
   get() =
-    ProjectPreSyncHook.ep
-      .allWithBuildToolId(bspBuildToolId)
+    ProjectPreSyncHook.ep.extensionList
       .filter { it.isEnabled(this) }
-
-val Project.additionalProjectPreSyncHooks: List<ProjectPreSyncHook>
-  get() =
-    if (buildToolId != bspBuildToolId) {
-      ProjectPreSyncHook.ep.allWithBuildToolId(buildToolId).filter { it.isEnabled(this) }
-    } else {
-      emptyList()
-    }

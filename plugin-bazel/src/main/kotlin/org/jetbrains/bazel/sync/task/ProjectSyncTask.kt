@@ -31,11 +31,9 @@ import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.bazel.sync.additionalProjectPostSyncHooks
-import org.jetbrains.bazel.sync.additionalProjectPreSyncHooks
 import org.jetbrains.bazel.sync.additionalProjectSyncHooks
 import org.jetbrains.bazel.sync.projectPostSyncHooks
-import org.jetbrains.bazel.sync.defaultProjectPreSyncHooks
+import org.jetbrains.bazel.sync.projectPreSyncHooks
 import org.jetbrains.bazel.sync.defaultProjectSyncHooks
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
@@ -135,10 +133,7 @@ class ProjectSyncTask(private val project: Project) {
         progressReporter = progressReporter,
       )
 
-    project.defaultProjectPreSyncHooks.forEach {
-      it.onPreSync(environment)
-    }
-    project.additionalProjectPreSyncHooks.forEach {
+    project.projectPreSyncHooks.forEach {
       it.onPreSync(environment)
     }
   }
