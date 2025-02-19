@@ -28,6 +28,9 @@ class StarlarkNamedArgumentExpression(node: ASTNode) :
 
   fun isDepsArgument(): Boolean = containsArgumentWithName("deps")
 
+  // Some companies may have custom macros that use another name
+  fun isDependenciesArgument(): Boolean = containsArgumentWithName("dependencies")
+
   fun containsArgumentWithName(name: String): Boolean = node.findChildByType(StarlarkTokenTypes.IDENTIFIER)?.text == name
 
   fun getArgumentStringValue(): String? = findChildByClass(StarlarkStringLiteralExpression::class.java)?.getStringContents()

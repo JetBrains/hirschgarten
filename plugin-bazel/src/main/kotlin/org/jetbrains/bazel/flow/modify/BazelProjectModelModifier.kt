@@ -12,7 +12,6 @@ import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
@@ -42,7 +41,7 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
   private fun tryAddingModuleDependencyToBuildFile(from: Module, to: Module): Boolean {
     val fromBuildTargetInfo = from.project.targetUtils.getBuildTargetInfoForModule(from) ?: return false
     val toBuildTargetInfo = to.project.targetUtils.getBuildTargetInfoForModule(to) ?: return false
-    val targetBuildFile = findBuildFile(from.project, fromBuildTargetInfo) as? StarlarkFile ?: return false
+    val targetBuildFile = findBuildFile(from.project, fromBuildTargetInfo) ?: return false
     val targetRuleLabel = Label.parseOrNull(fromBuildTargetInfo.id.uri) ?: return false
     val ruleTarget = targetBuildFile.findRuleTarget(targetRuleLabel.targetName) ?: return false
     val depsList =
@@ -53,14 +52,15 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
         ?.first { it is StarlarkListLiteralExpression } as? StarlarkListLiteralExpression
         ?: return false
     var insertSuccessful = false
-    val targetStringToInsert = toBuildTargetInfo.buildTargetName.trimStart('@')
+
+    val labelToInsert = Label.parseOrNull(toBuildTargetInfo.buildTargetName) ?: return false
     try {
       WriteCommandAction.runWriteCommandAction(from.project) {
-        depsList.insertString(targetStringToInsert)
+        depsList.insertString(labelToInsert.toShortString())
         insertSuccessful = true
       }
     } catch (e: Exception) {
-      log.warn("Failed to insert target $targetStringToInsert as a dependency for target $targetRuleLabel", e)
+      log.warn("Failed to insert target $labelToInsert as a dependency for target $targetRuleLabel", e)
     }
 
     val syncScope = PartialProjectSync(targetsToSync = listOf(fromBuildTargetInfo.id))
