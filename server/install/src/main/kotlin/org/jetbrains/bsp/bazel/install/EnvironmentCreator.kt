@@ -42,8 +42,15 @@ abstract class EnvironmentCreator(private val projectRootDir: Path) {
 
   private fun copyAspectsFromResources(aspectsJarPath: String, destinationPath: Path) =
     javaClass.getResource(aspectsJarPath)?.let {
-      FileSystems.newFileSystem(it.toURI(), emptyMap<String, String>()).use { fileSystem ->
-        copyFileTree(fileSystem.getPath(aspectsJarPath), destinationPath)
+      val uri = it.toURI()
+      // this is the case in bazel build
+      if (uri.scheme == "jar") {
+        FileSystems.newFileSystem(uri, emptyMap<String, String>()).use { fileSystem ->
+          copyFileTree(fileSystem.getPath(aspectsJarPath), destinationPath)
+        }
+      // and this in JPS
+      } else if (uri.scheme == "file") {
+        copyFileTree(Path.of(uri), destinationPath)
       }
     } ?: error("Missing aspects resource")
 
