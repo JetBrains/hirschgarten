@@ -27,7 +27,7 @@ interface ProjectPostSyncHook : WithBuildToolId {
   suspend fun onPostSync(environment: ProjectPostSyncHookEnvironment)
 
   companion object {
-    val ep = ExtensionPointName.create<ProjectPostSyncHook>("org.jetbrains.bsp.projectPostSyncHook")
+    val ep = ExtensionPointName.create<ProjectPostSyncHook>("org.jetbrains.bazel.projectPostSyncHook")
   }
 
   /**

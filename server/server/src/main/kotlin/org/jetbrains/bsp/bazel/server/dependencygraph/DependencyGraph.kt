@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.bazel.server.dependencygraph
 
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.Dependency
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.server.label.label

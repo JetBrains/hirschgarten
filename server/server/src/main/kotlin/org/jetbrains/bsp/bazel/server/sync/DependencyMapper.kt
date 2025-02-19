@@ -2,7 +2,7 @@ package org.jetbrains.bsp.bazel.server.sync
 
 import ch.epfl.scala.bsp4j.MavenDependencyModule
 import ch.epfl.scala.bsp4j.MavenDependencyModuleArtifact
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.Library
 import org.jetbrains.bsp.bazel.server.model.Module

@@ -19,7 +19,7 @@ interface BspToolWindowConfigFileProviderExtension : WithBuildToolId {
   companion object {
     internal val ep =
       ExtensionPointName.create<BspToolWindowConfigFileProviderExtension>(
-        "org.jetbrains.bsp.bspToolWindowConfigFileProviderExtension",
+        "org.jetbrains.bazel.bspToolWindowConfigFileProviderExtension",
       )
   }
 }

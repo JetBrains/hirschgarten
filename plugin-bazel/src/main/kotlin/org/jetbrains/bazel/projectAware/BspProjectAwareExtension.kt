@@ -11,6 +11,6 @@ interface BspProjectAwareExtension {
   val eligibleConfigFileExtensions: List<String>
 
   companion object {
-    val ep: ExtensionPointName<BspProjectAwareExtension> = ExtensionPointName.create("org.jetbrains.bsp.bspProjectAwareExtension")
+    val ep: ExtensionPointName<BspProjectAwareExtension> = ExtensionPointName.create("org.jetbrains.bazel.bspProjectAwareExtension")
   }
 }

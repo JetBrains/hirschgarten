@@ -18,9 +18,9 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.action.getEditor
 import org.jetbrains.bazel.action.getPsiFile
-import org.jetbrains.bazel.commons.label.SingleTarget
-import org.jetbrains.bazel.commons.label.label
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.label.SingleTarget
+import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
@@ -60,8 +60,8 @@ class BazelBspJumpToBuildFileAction(private val buildTargetInfo: BuildTargetInfo
     file: VirtualFile,
     editor: Editor?,
   ): BuildTargetInfo? {
-    val targetId = project.targetUtils.getTargetsForFile(file).chooseTarget(editor) ?: return null
-    return project.targetUtils.getBuildTargetInfoForId(targetId)
+    val target = project.targetUtils.getTargetsForFile(file).chooseTarget(editor) ?: return null
+    return project.targetUtils.getBuildTargetInfoForLabel(target)
   }
 }
 

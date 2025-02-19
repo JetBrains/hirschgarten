@@ -15,7 +15,7 @@ public interface AndroidSdkGetterExtension {
 
 private val ep =
   ExtensionPointName.create<AndroidSdkGetterExtension>(
-    "org.jetbrains.bsp.androidSdkGetterExtension",
+    "org.jetbrains.bazel.androidSdkGetterExtension",
   )
 
 public fun androidSdkGetterExtension(): AndroidSdkGetterExtension? = ep.extensionList.firstOrNull()

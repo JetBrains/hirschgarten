@@ -37,6 +37,8 @@ import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.server.connection.connection
@@ -142,7 +144,7 @@ private suspend fun processFileCreated(
 ) {
   val url = file.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   getTargetsForFile(project, url)
-    ?.mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
+    ?.mapNotNull { it.label().toModuleEntity(storage, moduleNameProvider, targetUtils) }
     ?.forEach { url.addToModule(workspaceModel, it, file.extension) }
 }
 
@@ -175,7 +177,7 @@ private suspend fun processFileMoved(
   val inverseSourcesResult = getTargetsForFile(project, url) ?: return
   val applicableModules =
     inverseSourcesResult
-      .mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
+      .mapNotNull { it.label().toModuleEntity(storage, moduleNameProvider, targetUtils) }
       .toSet()
 
   applicableModules.forEach { url.addToModule(workspaceModel, it, file.extension) }
@@ -206,12 +208,12 @@ private suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileU
     }
   }
 
-private fun BuildTargetIdentifier.toModuleEntity(
+private fun Label.toModuleEntity(
   storage: ImmutableEntityStorage,
   moduleNameProvider: TargetNameReformatProvider,
   targetUtils: TargetUtils,
 ): ModuleEntity? {
-  val targetInfo = targetUtils.getBuildTargetInfoForId(this) ?: return null
+  val targetInfo = targetUtils.getBuildTargetInfoForLabel(this) ?: return null
   val moduleName = moduleNameProvider(targetInfo)
   val moduleId = ModuleId(moduleName)
   return storage.resolve(moduleId)

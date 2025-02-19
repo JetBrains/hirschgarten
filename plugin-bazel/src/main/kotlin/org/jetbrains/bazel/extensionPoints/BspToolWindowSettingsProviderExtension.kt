@@ -12,7 +12,7 @@ interface BspToolWindowSettingsProviderExtension : WithBuildToolId {
   companion object {
     internal val ep =
       ExtensionPointName.create<BspToolWindowSettingsProviderExtension>(
-        "org.jetbrains.bsp.bspToolWindowSettingsProviderExtension",
+        "org.jetbrains.bazel.bspToolWindowSettingsProviderExtension",
       )
   }
 }

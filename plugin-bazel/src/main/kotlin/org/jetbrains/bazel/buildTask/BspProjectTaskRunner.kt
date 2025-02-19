@@ -104,6 +104,6 @@ interface BspAdditionalProjectTaskRunnerProvider {
 
   companion object {
     val ep: ExtensionPointName<BspAdditionalProjectTaskRunnerProvider> =
-      ExtensionPointName.create("org.jetbrains.bsp.bspAdditionalProjectTaskRunnerProvider")
+      ExtensionPointName.create("org.jetbrains.bazel.bspAdditionalProjectTaskRunnerProvider")
   }
 }

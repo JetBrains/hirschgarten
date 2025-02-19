@@ -29,6 +29,7 @@ import org.jetbrains.bazel.config.bspProjectName
 import org.jetbrains.bazel.config.defaultJdkName
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.extensionPoints.shouldImportJvmBinaryJars
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
@@ -287,7 +288,7 @@ class CollectProjectDetailsTask(
               if (syncScope is FullProjectSync) {
                 syncedTargetIdToTargetInfo
               } else {
-                project.targetUtils.targetIdToTargetInfo +
+                project.targetUtils.labelToTargetInfo.mapKeys { BuildTargetIdentifier(it.key.toString()) } +
                   syncedTargetIdToTargetInfo
               }
             val targetIdToModuleEntityMap =
@@ -445,27 +446,27 @@ class CollectProjectDetailsTask(
     }
 
   private fun checkOverlappingSources() {
-    val fileToTargetId = project.targetUtils.fileToTargetId
-    for ((file, targetIds) in fileToTargetId) {
-      if (targetIds.size <= 1) continue
+    val fileToTarget = project.targetUtils.fileToTarget
+    for ((file, targets) in fileToTarget) {
+      if (targets.size <= 1) continue
       if (!file.isSourceFile()) continue
       if (IGNORED_NAMES_FOR_OVERLAPPING_SOURCES.any { file.path.endsWith(it) }) continue
-      warnOverlappingSources(targetIds[0], targetIds[1], file)
+      warnOverlappingSources(targets[0], targets[1], file)
       break
     }
   }
 
   private fun warnOverlappingSources(
-    firstTargetId: BuildTargetIdentifier,
-    secondTargetId: BuildTargetIdentifier,
+    firstTarget: Label,
+    secondTarget: Label,
     source: URI,
   ) {
     BspBalloonNotifier.warn(
       BspPluginBundle.message("widget.collect.targets.overlapping.sources.title"),
       BspPluginBundle.message(
         "widget.collect.targets.overlapping.sources.message",
-        firstTargetId.uri,
-        secondTargetId.uri,
+        firstTarget.toString(),
+        secondTarget.toString(),
         source.toPath().fileName,
       ),
     )

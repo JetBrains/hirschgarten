@@ -1,12 +1,12 @@
 package org.jetbrains.bsp.bazel.server.bzlmod
 
-import org.jetbrains.bazel.commons.label.Apparent
-import org.jetbrains.bazel.commons.label.Canonical
-import org.jetbrains.bazel.commons.label.Label
-import org.jetbrains.bazel.commons.label.Main
-import org.jetbrains.bazel.commons.label.RelativeLabel
-import org.jetbrains.bazel.commons.label.ResolvedLabel
-import org.jetbrains.bazel.commons.label.SyntheticLabel
+import org.jetbrains.bazel.label.Apparent
+import org.jetbrains.bazel.label.Canonical
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.Main
+import org.jetbrains.bazel.label.RelativeLabel
+import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.SyntheticLabel
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.ModuleOutputParser
 import org.jetbrains.bsp.bazel.bazelrunner.ModuleResolver

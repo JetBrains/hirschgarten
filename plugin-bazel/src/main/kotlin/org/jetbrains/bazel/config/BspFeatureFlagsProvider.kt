@@ -7,7 +7,7 @@ interface BspFeatureFlagsProvider {
   fun getFeatureFlags(): FeatureFlags
 
   companion object {
-    internal val ep = ExtensionPointName.create<BspFeatureFlagsProvider>("org.jetbrains.bsp.bspFeatureFlagsProvider")
+    internal val ep = ExtensionPointName.create<BspFeatureFlagsProvider>("org.jetbrains.bazel.bspFeatureFlagsProvider")
 
     /**
      * retrieve and merge all the [FeatureFlags] objects from the providers

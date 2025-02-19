@@ -1,5 +1,5 @@
 <idea-plugin>
-    <extensions defaultExtensionNs="org.jetbrains.bsp">
+    <extensions defaultExtensionNs="org.jetbrains.bazel">
         <bspRunHandlerProvider order="before JvmRunHandlerProvider" implementation="org.jetbrains.bazel.intellij.IntellijPluginRunHandlerProvider" />
     </extensions>
     <extensions defaultExtensionNs="com.intellij">

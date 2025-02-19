@@ -18,7 +18,7 @@ public interface BuildToolWindowTargetActionProviderExtension : WithBuildToolId 
 
   public companion object {
     val ep: ExtensionPointName<BuildToolWindowTargetActionProviderExtension> =
-      ExtensionPointName.create("org.jetbrains.bsp.buildToolWindowTargetActionProviderExtension")
+      ExtensionPointName.create("org.jetbrains.bazel.buildToolWindowTargetActionProviderExtension")
   }
 }
 

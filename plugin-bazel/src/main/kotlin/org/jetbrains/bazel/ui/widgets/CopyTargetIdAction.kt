@@ -60,7 +60,7 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
       return psiFile.project.targetUtils
         .getTargetsForFile(virtualFile)
         .chooseTarget(editor)
-        ?.uri
+        ?.toString()
         ?.removeLeadingAtSign()
     }
   }

@@ -2,7 +2,7 @@ package org.jetbrains.bsp.bazel.server.bsp.managers
 
 import io.kotest.matchers.equals.shouldBeEqual
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.install.EnvironmentCreator
 import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
