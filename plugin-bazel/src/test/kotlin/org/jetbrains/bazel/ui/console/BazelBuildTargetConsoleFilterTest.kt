@@ -202,6 +202,7 @@ proto_library(
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
   }
+
   @Test
   fun `should not match an file URI followed by colon`() {
     val uri = Path.of("/plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action/SuspendableAction.kt").toAbsolutePath().toUri()
@@ -213,6 +214,7 @@ proto_library(
     // then
     result!!.resultItems.size shouldBe 0
   }
+
   private fun createBazelFileInProject(relativePath: String, buildFileName: String = "BUILD"): Path =
     runWriteAction {
       project.rootDir
