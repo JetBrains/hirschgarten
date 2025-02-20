@@ -9,7 +9,6 @@
       <sourceFolder url="file://$MODULE_DIR$/commons/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/bazelrunner/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/executioncontext/api/src/main/kotlin" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/executioncontext/installationcontext/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/executioncontext/projectview/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/executioncontext/workspacecontext/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
