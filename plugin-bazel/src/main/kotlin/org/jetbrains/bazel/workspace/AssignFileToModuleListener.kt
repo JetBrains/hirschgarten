@@ -47,6 +47,7 @@ import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.status.BspSyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.isSourceFile
 import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.kotlin.config.KOTLIN_SOURCE_ROOT_TYPE_ID
@@ -60,7 +61,7 @@ class AssignFileToModuleListener : BulkFileListener {
       val file = it.getAffectedFile() ?: return
       val isSource =
         if (it is VFileDeleteEvent) {
-          file.url.safeCastToURI().isSourceFile() // file does not exist any more, so it is not a source itself
+          file.extension?.let { SourceType.fromExtension(it) } != null
         } else {
           file.isSourceFile()
         }
