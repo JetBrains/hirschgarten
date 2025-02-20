@@ -61,7 +61,7 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
 
   private fun calculatePopupGroup(target: BuildTargetInfo): ActionGroup =
     DefaultActionGroup().apply {
-      addAction(ResyncTargetAction(target.id))
+      ResyncTargetAction.createIfEnabled(target.id)?.let { addAction(it) }
       addAction(container.copyTargetIdAction)
       addSeparator()
       if (target.capabilities.canCompile) {

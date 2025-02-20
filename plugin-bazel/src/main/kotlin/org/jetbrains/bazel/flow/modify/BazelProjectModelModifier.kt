@@ -3,41 +3,54 @@ package org.jetbrains.bazel.flow.modify
 import com.intellij.application.options.CodeStyle
 import com.intellij.formatting.FormattingContext
 import com.intellij.formatting.FormattingMode
-import com.intellij.ide.util.EditorHelper
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.DependencyScope
 import com.intellij.openapi.roots.ExternalLibraryDescriptor
 import com.intellij.openapi.roots.JavaProjectModelModifier
+import com.intellij.openapi.roots.impl.IdeaProjectModelModifier
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.util.TextRange
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.BspFeatureFlags
 import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.label.Apparent
+import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
-import org.jetbrains.bazel.sync.scope.PartialProjectSync
-import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToApparentName
+import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
 import org.jetbrains.bazel.ui.widgets.findBuildFile
+import org.jetbrains.bazel.ui.widgets.jumpToBuildFile
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.resolvedPromise
 
 private val log = logger<BazelProjectModelModifier>()
 
-class BazelProjectModelModifier : JavaProjectModelModifier() {
+class BazelProjectModelModifier(private val project: Project) : JavaProjectModelModifier() {
+  private val ideaProjectModelModifier = IdeaProjectModelModifier(project)
+
   override fun addModuleDependency(
     from: Module,
     to: Module,
     scope: DependencyScope,
     exported: Boolean,
   ): Promise<Void>? {
-    if (!tryAddingModuleDependencyToBuildFile(from, to)) {
+    val labelToInsert = project.targetUtils.getTargetForModuleId(to.name)
+    if (tryAddingModuleDependencyToBuildFile(from, labelToInsert)) {
+      // We used to do a partial resync here, but simply modifying the project model is quicker
+      ideaProjectModelModifier.addModuleDependency(from, to, scope, true)
+    } else {
       from.jumpToBuildFile()
       notifyAutomaticDependencyAdditionFailure()
     }
@@ -45,9 +58,37 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
     return resolvedPromise()
   }
 
-  private fun tryAddingModuleDependencyToBuildFile(from: Module, to: Module): Boolean {
+  override fun addLibraryDependency(
+    from: Module,
+    library: Library,
+    scope: DependencyScope,
+    exported: Boolean,
+  ): Promise<Void>? {
+    val labelToInsert = library.name?.let { libraryId -> project.targetUtils.getTargetForLibraryId(libraryId) }
+    if (tryAddingModuleDependencyToBuildFile(from, labelToInsert)) {
+      if (BspFeatureFlags.isWrapLibrariesInsideModulesEnabled) {
+        // In this case we should actually depend on the library module, not the library itself
+        val libraryModuleName = checkNotNull(library.name).addLibraryModulePrefix()
+        val libraryModule = ModuleManager.getInstance(project).findModuleByName(libraryModuleName)
+        if (libraryModule != null) {
+          ideaProjectModelModifier.addModuleDependency(from, libraryModule, scope, true)
+          return resolvedPromise()
+        } else {
+          log.warn("Can't find library module $libraryModuleName")
+        }
+      }
+      ideaProjectModelModifier.addLibraryDependency(from, library, scope, true)
+    } else {
+      from.jumpToBuildFile()
+      notifyAutomaticDependencyAdditionFailure()
+    }
+
+    return resolvedPromise()
+  }
+
+  private fun tryAddingModuleDependencyToBuildFile(from: Module, labelToInsert: Label?): Boolean {
+    if (labelToInsert == null) return false
     val fromBuildTargetInfo = from.project.targetUtils.getBuildTargetInfoForModule(from) ?: return false
-    val toBuildTargetInfo = to.project.targetUtils.getBuildTargetInfoForModule(to) ?: return false
     val targetBuildFile = findBuildFile(from.project, fromBuildTargetInfo) ?: return false
     val targetRuleLabel = Label.parseOrNull(fromBuildTargetInfo.id.uri) ?: return false
     val ruleTarget = targetBuildFile.findRuleTarget(targetRuleLabel.targetName) ?: return false
@@ -60,25 +101,27 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
         ?: return false
     var insertSuccessful = false
 
-    val labelToInsert = Label.parseOrNull(toBuildTargetInfo.buildTargetName) ?: return false
     try {
       WriteCommandAction.runWriteCommandAction(from.project) {
-        depsList.insertString(labelToInsert.toShortString())
+        depsList.insertString(labelToInsert.convertToApparentLabel().toShortString())
         insertSuccessful = true
       }
     } catch (e: Exception) {
       log.warn("Failed to insert target $labelToInsert as a dependency for target $targetRuleLabel", e)
     }
-
-    val syncScope = PartialProjectSync(targetsToSync = listOf(fromBuildTargetInfo.id))
     if (insertSuccessful) {
       BspCoroutineService.getInstance(from.project).start {
         formatBuildFile(targetBuildFile)
-        ProjectSyncTask(from.project).sync(syncScope = syncScope, buildProject = false)
       }
-      return true
     }
-    return false
+    return insertSuccessful
+  }
+
+  private fun Label.convertToApparentLabel(): Label {
+    if (this !is ResolvedLabel) return this
+    if (this.repo !is Canonical) return this
+    val apparentRepoName = project.canonicalRepoNameToApparentName[this.repo.repoName] ?: return this
+    return this.copy(repo = Apparent(apparentRepoName))
   }
 
   private suspend fun formatBuildFile(buildFile: StarlarkFile) {
@@ -97,16 +140,6 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
     )
   }
 
-  override fun addLibraryDependency(
-    from: Module,
-    library: Library,
-    scope: DependencyScope,
-    exported: Boolean,
-  ): Promise<Void>? {
-    from.jumpToBuildFile()
-    return resolvedPromise()
-  }
-
   override fun addExternalLibraryDependency(
     modules: Collection<Module>,
     descriptor: ExternalLibraryDescriptor,
@@ -122,8 +155,9 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
   }
 
   private fun Module.jumpToBuildFile() {
-    val buildTargetInfo = project.targetUtils.getBuildTargetInfoForModule(this) ?: return
-    val buildFile = findBuildFile(project, buildTargetInfo) ?: return
-    EditorHelper.openInEditor(buildFile, true, true)
+    BspCoroutineService.getInstance(project).start {
+      val buildTargetInfo = project.targetUtils.getBuildTargetInfoForModule(this) ?: return@start
+      jumpToBuildFile(project, buildTargetInfo)
+    }
   }
 }

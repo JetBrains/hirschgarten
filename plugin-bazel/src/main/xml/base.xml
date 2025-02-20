@@ -201,6 +201,10 @@
         <registryKey defaultValue="true"
                      description="Exclude class files inside jars (and source files inside source jars) if they match up with a source file in the current project."
                      key="bsp.exclude.compiled.source.code.inside.jars"/>
+        <!-- https://youtrack.jetbrains.com/issue/BAZEL-1734 -->
+        <registryKey defaultValue="false"
+                     description="Enable partial sync action for a target."
+                     key="bsp.enable.partial.sync"/>
 
         <statusBarWidgetFactory id="BspFileTargetsWidget"
                                 implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BspFileTargetsWidgetFactory"/>
