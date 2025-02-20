@@ -38,15 +38,16 @@
     <orderEntry type="library" name="gson" level="project" />
     <orderEntry type="library" name="kotlin-stdlib" level="project" />
     <orderEntry type="library" name="kotlin-tooling-core" level="project" />
-    <orderEntry type="library" name="kotlinc.analysis-api-platform-interface" level="project" />
+    <!-- TODO: Probably some other things need to be marked as provided but idk the rules for determining that -->
+    <!-- This one was just causing a LinkageError on startup -->
+    <orderEntry type="library" name="kotlinc.analysis-api-platform-interface" scope="PROVIDED" level="project" />
     <orderEntry type="library" name="kotlinc.kotlin-compiler-common" level="project" />
     <orderEntry type="library" name="kotlinc.kotlin-jps-plugin-classpath" level="project" />
     <orderEntry type="library" name="kotlinx-collections-immutable" level="project" />
     <orderEntry type="library" name="kotlinx-coroutines-guava" level="project" />
     <orderEntry type="library" name="kotlinx-datetime-jvm" level="project" />
     <orderEntry type="library" name="opentelemetry" level="project" />
-    <orderEntry type="library" name="protobuf" level="project" />
-    <orderEntry type="library" name="protobuf" level="project" />
+    <orderEntry type="library" name="protobuf4" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="studio-platform" level="project" />
     <orderEntry type="module" module-name="intellij.android.common" />
     <orderEntry type="module" module-name="intellij.android.core" />

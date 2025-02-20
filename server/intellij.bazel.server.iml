@@ -153,7 +153,7 @@
     <orderEntry type="library" name="opentelemetry-extension-kotlin" level="project" />
     <orderEntry type="library" name="opentelemetry-semconv" level="project" />
     <orderEntry type="library" name="org.apache.logging.log4j" level="project" />
-    <orderEntry type="library" name="protobuf" level="project" />
+    <orderEntry type="library" name="protobuf4" level="project" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
     <orderEntry type="module" module-name="intellij.bsp.protocol" />
     <orderEntry type="module" module-name="intellij.platform.ide.util.io" />
