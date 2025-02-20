@@ -32,6 +32,49 @@ output_files(
 )
 
 output_files(
+    name = "package_load_metrics_proto_jar",
+    paths = ["third_party/bazel/src/main/java/com/google/devtools/build/lib/packages/metrics/libpackage_load_metrics_proto-speed.jar"],
+    target = "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
+)
+
+output_files(
+    name = "action_cache_proto_jar",
+    paths = ["third_party/bazel/src/main/protobuf/libaction_cache_proto-speed.jar"],
+    target = "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
+)
+
+output_files(
+    name = "option_filters_proto_jar",
+    paths = ["third_party/bazel/src/main/protobuf/liboption_filters_proto-speed.jar"],
+    target = "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
+)
+
+output_files(
+    name = "command_line_proto_jar",
+    paths = ["third_party/bazel/src/main/protobuf/libcommand_line_proto-speed.jar"],
+    target = "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
+)
+
+output_files(
+    name = "failure_details_proto_jar",
+    paths = ["third_party/bazel/src/main/protobuf/libfailure_details_proto-speed.jar"],
+    target = "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
+)
+
+output_files(
+    name = "strategy_policy_proto_jar",
+    paths = ["third_party/bazel/src/main/protobuf/libstrategy_policy_proto-speed.jar"],
+    target = "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
+)
+
+output_files(
+    name = "invocation_policy_proto_jar",
+    paths = ["third_party/bazel/src/main/protobuf/libinvocation_policy_proto-speed.jar"],
+    target = "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
+)
+
+
+output_files(
     name = "deps_proto_jar",
     paths = ["third_party/bazel/src/main/protobuf/libdeps_proto-speed.jar"],
     target = "//third_party/bazel/src/main/protobuf:deps_java_proto",
@@ -46,5 +89,12 @@ write_source_files(
         "build_event_stream_proto.jar": ":build_event_stream_proto_jar",
         "deps_proto.jar": ":deps_proto_jar",
         "bazel_build_proto.jar": ":bazel_build_proto_jar",
+        "package_load_metrics_proto.jar": ":package_load_metrics_proto_jar",
+        "action_cache_proto.jar": ":action_cache_proto_jar",
+        "option_filters_proto.jar": ":option_filters_proto_jar",
+        "command_line_proto.jar": ":command_line_proto_jar",
+        "failure_details_proto.jar": ":failure_details_proto_jar",
+        "strategy_policy_proto.jar": ":strategy_policy_proto_jar",
+        "invocation_policy_proto.jar": ":invocation_policy_proto_jar",
     },
 )
