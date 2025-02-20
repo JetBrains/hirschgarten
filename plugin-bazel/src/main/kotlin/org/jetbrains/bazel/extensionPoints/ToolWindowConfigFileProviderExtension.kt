@@ -9,7 +9,7 @@ import org.jetbrains.bazel.config.withBuildToolId
 import java.nio.file.Path
 import javax.swing.Icon
 
-interface BspToolWindowConfigFileProviderExtension : WithBuildToolId {
+interface ToolWindowConfigFileProviderExtension : WithBuildToolId {
   fun getConfigFileGenericName(): String
 
   fun getConfigFile(project: Project): Path?
@@ -18,11 +18,11 @@ interface BspToolWindowConfigFileProviderExtension : WithBuildToolId {
 
   companion object {
     internal val ep =
-      ExtensionPointName.create<BspToolWindowConfigFileProviderExtension>(
-        "org.jetbrains.bazel.bspToolWindowConfigFileProviderExtension",
+      ExtensionPointName.create<ToolWindowConfigFileProviderExtension>(
+        "org.jetbrains.bazel.toolWindowConfigFileProviderExtension",
       )
   }
 }
 
-val Project.bspToolWindowConfigFileProvider: BspToolWindowConfigFileProviderExtension?
-  get() = BspToolWindowConfigFileProviderExtension.ep.withBuildToolId(buildToolId)
+val Project.toolWindowConfigFileProvider: ToolWindowConfigFileProviderExtension?
+  get() = ToolWindowConfigFileProviderExtension.ep.withBuildToolId(buildToolId)

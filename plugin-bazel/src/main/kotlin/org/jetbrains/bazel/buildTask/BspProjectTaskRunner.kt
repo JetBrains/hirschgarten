@@ -45,11 +45,11 @@ class BspProjectTaskRunner : ProjectTaskRunner() {
   ): Promise<Result> {
     val result = AsyncPromise<Result>()
 
-    BspAdditionalProjectTaskRunnerProvider.ep.extensionList.forEach { it.preRun(project, projectTaskContext, *tasks) }
+    AdditionalProjectTaskRunnerProvider.ep.extensionList.forEach { it.preRun(project, projectTaskContext, *tasks) }
 
     val res = runModuleBuildTasks(project, tasks.filterIsInstance<ModuleBuildTask>())
     res.then {
-      BspAdditionalProjectTaskRunnerProvider.ep.extensionList.forEach { it.postRun(project, projectTaskContext, *tasks) }
+      AdditionalProjectTaskRunnerProvider.ep.extensionList.forEach { it.postRun(project, projectTaskContext, *tasks) }
       result.setResult(it)
     }
 
@@ -89,7 +89,7 @@ class BspProjectTaskRunner : ProjectTaskRunner() {
 /**
  * This extension is useful when there is a need to inject before and after actions with respect to the project task runner
  */
-interface BspAdditionalProjectTaskRunnerProvider {
+interface AdditionalProjectTaskRunnerProvider {
   fun preRun(
     project: Project,
     projectTaskContext: ProjectTaskContext,
@@ -103,7 +103,7 @@ interface BspAdditionalProjectTaskRunnerProvider {
   )
 
   companion object {
-    val ep: ExtensionPointName<BspAdditionalProjectTaskRunnerProvider> =
-      ExtensionPointName.create("org.jetbrains.bazel.bspAdditionalProjectTaskRunnerProvider")
+    val ep: ExtensionPointName<AdditionalProjectTaskRunnerProvider> =
+      ExtensionPointName.create("org.jetbrains.bazel.additionalProjectTaskRunnerProvider")
   }
 }

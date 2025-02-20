@@ -51,7 +51,7 @@ abstract class BspProjectAware(private val workspace: BspWorkspace) : ExternalSy
   companion object {
     @JvmStatic
     fun initialize(workspace: BspWorkspace) {
-      val projectAwareExtension = BspProjectAwareExtension.ep.extensionList.firstOrNull()
+      val projectAwareExtension = ProjectAwareExtension.ep.extensionList.firstOrNull()
       projectAwareExtension?.also {
         val project = workspace.project
         val projectAware =
@@ -67,7 +67,7 @@ abstract class BspProjectAware(private val workspace: BspWorkspace) : ExternalSy
 
     @JvmStatic
     fun notify(project: Project) {
-      val projectAwareExtension = BspProjectAwareExtension.ep.extensionList.firstOrNull()
+      val projectAwareExtension = ProjectAwareExtension.ep.extensionList.firstOrNull()
       projectAwareExtension?.also {
         val projectTracker = ExternalSystemProjectTracker.getInstance(project)
         projectTracker.markDirty(it.getProjectId(project.rootDir))

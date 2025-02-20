@@ -33,9 +33,13 @@ class StarlarkListLiteralExpression(node: ASTNode) : StarlarkBaseElement(node) {
     } else {
       val next = StarlarkUtils.getNextNonWhitespaceSibling(closingTokens.last())
       if (next != null) {
+        val whitespaceToAdd = (next.treePrev as? PsiWhiteSpace)?.text
+        exprNode.addChild(add, next)
         val comma = createComma()
         exprNode.addChild(comma, next)
-        exprNode.addChild(add, comma)
+        whitespaceToAdd?.let {
+          exprNode.addLeaf(StarlarkTokenTypes.SPACE, whitespaceToAdd, next)
+        }
       } else {
         exprNode.addChild(add)
       }

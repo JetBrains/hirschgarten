@@ -60,8 +60,7 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
       return psiFile.project.targetUtils
         .getTargetsForFile(virtualFile)
         .chooseTarget(editor)
-        ?.toString()
-        ?.removeLeadingAtSign()
+        ?.toShortString()
     }
   }
 
@@ -73,8 +72,6 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
 
     return "//$relativeTargetBaseDirectory:$targetName"
   }
-
-  private fun String.removeLeadingAtSign() = if (startsWith("@//")) substring(1) else this
 
   override fun update(project: Project, e: AnActionEvent) {
     e.presentation.isEnabledAndVisible = shouldBeEnabledAndVisible(project, e)

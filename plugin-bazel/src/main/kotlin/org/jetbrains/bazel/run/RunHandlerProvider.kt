@@ -10,7 +10,7 @@ import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
-interface BspRunHandlerProvider {
+interface RunHandlerProvider {
   /**
    * Returns the unique ID of this {@link BspRunHandlerProvider}. The ID is
    * used to store configuration settings and must not change between plugin versions.
@@ -33,11 +33,11 @@ interface BspRunHandlerProvider {
   fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean
 
   companion object {
-    val ep: ExtensionPointName<BspRunHandlerProvider> =
-      ExtensionPointName.create("org.jetbrains.bazel.bspRunHandlerProvider")
+    val ep: ExtensionPointName<RunHandlerProvider> =
+      ExtensionPointName.create("org.jetbrains.bazel.runHandlerProvider")
 
     /** Finds a BspRunHandlerProvider that will be able to create a BspRunHandler for the given targets */
-    fun getRunHandlerProvider(targetInfos: List<BuildTargetInfo>, isDebug: Boolean = false): BspRunHandlerProvider? =
+    fun getRunHandlerProvider(targetInfos: List<BuildTargetInfo>, isDebug: Boolean = false): RunHandlerProvider? =
       ep.extensionList.firstOrNull {
         if (isDebug) {
           it.canDebug(targetInfos)
@@ -48,7 +48,7 @@ interface BspRunHandlerProvider {
 
     /** Finds a BspRunHandlerProvider that will be able to create a BspRunHandler for the given targets.
      *  Needs to query WM for Build Target Infos. */
-    fun getRunHandlerProvider(project: Project, targets: List<BuildTargetIdentifier>): BspRunHandlerProvider {
+    fun getRunHandlerProvider(project: Project, targets: List<BuildTargetIdentifier>): RunHandlerProvider {
       val targetInfos =
         targets.mapNotNull {
           project.service<TargetUtils>().getBuildTargetInfoForLabel(it.label())
@@ -62,6 +62,6 @@ interface BspRunHandlerProvider {
     }
 
     /** Finds a BspRunHandlerProvider by its unique ID */
-    fun findRunHandlerProvider(id: String): BspRunHandlerProvider? = ep.extensionList.firstOrNull { it.id == id }
+    fun findRunHandlerProvider(id: String): RunHandlerProvider? = ep.extensionList.firstOrNull { it.id == id }
   }
 }

@@ -6,16 +6,16 @@ import org.jetbrains.bazel.config.WithBuildToolId
 import org.jetbrains.bazel.config.buildToolId
 import org.jetbrains.bazel.config.withBuildToolId
 
-interface BspToolWindowSettingsProviderExtension : WithBuildToolId {
+interface ToolWindowSettingsProviderExtension : WithBuildToolId {
   fun getSettingsName(): String
 
   companion object {
     internal val ep =
-      ExtensionPointName.create<BspToolWindowSettingsProviderExtension>(
-        "org.jetbrains.bazel.bspToolWindowSettingsProviderExtension",
+      ExtensionPointName.create<ToolWindowSettingsProviderExtension>(
+        "org.jetbrains.bazel.toolWindowSettingsProviderExtension",
       )
   }
 }
 
-val Project.bspToolWindowSettingsProvider: BspToolWindowSettingsProviderExtension?
-  get() = BspToolWindowSettingsProviderExtension.ep.withBuildToolId(buildToolId)
+val Project.toolWindowSettingsProvider: ToolWindowSettingsProviderExtension?
+  get() = ToolWindowSettingsProviderExtension.ep.withBuildToolId(buildToolId)

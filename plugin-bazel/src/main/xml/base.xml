@@ -18,14 +18,14 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.androidFacetEntityUpdaterExtension"
                         interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.bspRunHandlerProvider"
-                        interface="org.jetbrains.bazel.run.BspRunHandlerProvider"
+        <extensionPoint qualifiedName="org.jetbrains.bazel.runHandlerProvider"
+                        interface="org.jetbrains.bazel.run.RunHandlerProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.buildToolAssetsExtension"
                         interface="org.jetbrains.bazel.assets.BuildToolAssetsExtension"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.bspProjectAwareExtension"
-                        interface="org.jetbrains.bazel.projectAware.BspProjectAwareExtension"
+        <extensionPoint qualifiedName="org.jetbrains.bazel.projectAwareExtension"
+                        interface="org.jetbrains.bazel.projectAware.ProjectAwareExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.connectionDetailsProviderExtension"
                         interface="org.jetbrains.bazel.server.connection.ConnectionDetailsProviderExtension"
@@ -36,17 +36,17 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.buildToolWindowTargetActionProviderExtension"
                         interface="org.jetbrains.bazel.extensionPoints.BuildToolWindowTargetActionProviderExtension"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.bspToolWindowSettingsProviderExtension"
-                        interface="org.jetbrains.bazel.extensionPoints.BspToolWindowSettingsProviderExtension"
+        <extensionPoint qualifiedName="org.jetbrains.bazel.toolWindowSettingsProviderExtension"
+                        interface="org.jetbrains.bazel.extensionPoints.ToolWindowSettingsProviderExtension"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.bspToolWindowConfigFileProviderExtension"
-                        interface="org.jetbrains.bazel.extensionPoints.BspToolWindowConfigFileProviderExtension"
+        <extensionPoint qualifiedName="org.jetbrains.bazel.toolWindowConfigFileProviderExtension"
+                        interface="org.jetbrains.bazel.extensionPoints.ToolWindowConfigFileProviderExtension"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.bspProjectModelExternalSource"
-                        interface="org.jetbrains.bazel.extensionPoints.BspProjectModelExternalSourceExtension"
+        <extensionPoint qualifiedName="org.jetbrains.bazel.projectModelExternalSource"
+                        interface="org.jetbrains.bazel.extensionPoints.ProjectModelExternalSourceExtension"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.bspRunConfigurationExtension"
-                        interface="org.jetbrains.bazel.run.config.BspRunConfigurationExtensionManager"
+        <extensionPoint qualifiedName="org.jetbrains.bazel.runConfigurationExtension"
+                        interface="org.jetbrains.bazel.run.config.RunConfigurationExtensionManager"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.invalidTargetsProviderExtension"
                         interface="org.jetbrains.bazel.services.InvalidTargetsProviderExtension"
@@ -63,22 +63,19 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.projectStructureProvider"
                         interface="org.jetbrains.bazel.sync.projectStructure.ProjectStructureProvider"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.startBuiltInServerExtension"
-                        interface="org.jetbrains.bazel.server.client.BspServerProvider"
-                        dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.runConfigurationTypeProvider"
-                        interface="org.jetbrains.bazel.run.config.BspRunConfigurationTypeProvider"
+                        interface="org.jetbrains.bazel.run.config.RunConfigurationTypeProvider"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.bspFeatureFlagsProvider"
-                        interface="org.jetbrains.bazel.config.BspFeatureFlagsProvider"
+        <extensionPoint qualifiedName="org.jetbrains.bazel.featureFlagsProvider"
+                        interface="org.jetbrains.bazel.config.FeatureFlagsProvider"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.bspAdditionalProjectTaskRunnerProvider"
-                        interface="org.jetbrains.bazel.buildTask.BspAdditionalProjectTaskRunnerProvider"
+        <extensionPoint qualifiedName="org.jetbrains.bazel.additionalProjectTaskRunnerProvider"
+                        interface="org.jetbrains.bazel.buildTask.AdditionalProjectTaskRunnerProvider"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.bspTreeStructureSettingsExtension"
-                        interface="org.jetbrains.bazel.ui.projectTree.BspTreeStructureSettingsProvider"
+        <extensionPoint qualifiedName="org.jetbrains.bazel.treeStructureSettingsExtension"
+                        interface="org.jetbrains.bazel.ui.projectTree.TreeStructureSettingsProvider"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.bspJvmBinaryJarsExtension"
+        <extensionPoint qualifiedName="org.jetbrains.bazel.jvmBinaryJarsExtension"
                         interface="org.jetbrains.bazel.extensionPoints.JvmBinaryJarsExtension"
                         dynamic="true"/>
     </extensionPoints>
@@ -90,19 +87,19 @@
         <connectionDetailsProviderExtension
                 implementation="org.jetbrains.bazel.server.connection.DefaultConnectionDetailsProviderExtension"/>
 
-        <bspRunHandlerProvider implementation="org.jetbrains.bazel.jvm.run.JvmBspRunHandler$JvmBspRunHandlerProvider"
-                               id="JvmRunHandlerProvider"/>
-        <bspRunHandlerProvider
+        <runHandlerProvider implementation="org.jetbrains.bazel.jvm.run.JvmBspRunHandler$JvmBspRunHandlerProvider"
+                            id="JvmRunHandlerProvider"/>
+        <runHandlerProvider
                 implementation="org.jetbrains.bazel.jvm.run.JvmBspTestHandler$JvmBspTestHandlerProvider"
                 id="JvmTestHandlerProvider"/>
-        <bspRunHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericBspRunHandlerProvider"
-                               order="last"/>
-        <bspRunHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericBspTestHandlerProvider"
-                               order="last"/>
+        <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericBspRunHandlerProvider"
+                            order="last"/>
+        <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericBspTestHandlerProvider"
+                            order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"/>
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
-        <bspFeatureFlagsProvider implementation="org.jetbrains.bazel.config.DefaultBspFeatureFlagsProvider"/>
+        <featureFlagsProvider implementation="org.jetbrains.bazel.config.DefaultBspFeatureFlagsProvider"/>
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.JavaSourceTypeIconProvider"/>
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.KotlinSourceTypeIconProvider"/>
     </extensions>
@@ -209,7 +206,8 @@
         <toolWindowExtractor
                 implementation="org.jetbrains.bazel.ui.widgets.tool.window.all.targets.BspToolWindowViewModelExtractor"/>
 
-        <consoleFilterProvider implementation="org.jetbrains.bazel.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"/>
+        <consoleFilterProvider
+                implementation="org.jetbrains.bazel.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"/>
 
         <iconMapper mappingFile="BSPIconMappings.json"/>
 
@@ -238,8 +236,6 @@
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
-        <action id="Bsp.DisconnectAction" class="org.jetbrains.bazel.action.registered.DisconnectAction"
-                icon="/icons/disconnect.svg"/>
         <action id="Bsp.ResyncAction" class="org.jetbrains.bazel.action.registered.ResyncAction"
                 icon="/icons/resync.svg"/>
         <action id="Bsp.BuildAndResyncAction"
@@ -260,8 +256,6 @@
     </actions>
 
     <applicationListeners>
-        <listener class="org.jetbrains.bazel.flow.close.ProjectClosingListener"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
 
         <listener class="org.jetbrains.bazel.workspace.AssignFileToModuleListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
@@ -271,25 +265,22 @@
         <buildToolAssetsExtension
                 implementation="org.jetbrains.bazel.assets.BazelAssetsExtension"/>
 
-        <connectionDetailsProviderExtension
-                implementation="org.jetbrains.bazel.bsp.connection.BazelConnectionDetailsProviderExtension"/>
-
         <buildTargetClassifierExtension
                 implementation="org.jetbrains.bazel.extension.BazelBuildTargetClassifier"/>
 
         <buildToolWindowTargetActionProviderExtension
                 implementation="org.jetbrains.bazel.extension.BazelTargetActionProviderExtension"/>
 
-        <bspToolWindowSettingsProviderExtension
+        <toolWindowSettingsProviderExtension
                 implementation="org.jetbrains.bazel.extension.BazelProjectSettingsActionProviderExtension"/>
 
-        <bspToolWindowConfigFileProviderExtension
+        <toolWindowConfigFileProviderExtension
                 implementation="org.jetbrains.bazel.extension.BazelToolWindowConfigFileProviderExtension"/>
 
-        <bspProjectModelExternalSource
+        <projectModelExternalSource
                 implementation="org.jetbrains.bazel.extension.BazelProjectModelExternalSourceExtension"/>
 
-        <bspProjectAwareExtension
+        <projectAwareExtension
                 implementation="org.jetbrains.bazel.flow.open.BazelBspProjectAwareExtension"/>
 
         <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook"/>
@@ -303,8 +294,8 @@
                 implementation="org.jetbrains.bazel.flow.open.BazelInvalidTargetsProviderExtension"/>
 
         <runConfigurationTypeProvider implementation="org.jetbrains.bazel.run.BazelRunConfigurationTypeProvider"/>
-        <bspFeatureFlagsProvider implementation="org.jetbrains.bazel.config.BazelBspFeatureFlagsProvider"/>
-        <bspAdditionalProjectTaskRunnerProvider
+        <featureFlagsProvider implementation="org.jetbrains.bazel.config.BazelBspFeatureFlagsProvider"/>
+        <additionalProjectTaskRunnerProvider
                 implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
 
     </extensions>
@@ -512,12 +503,12 @@
                 icon="/icons/bazel.svg">
             <add-to-group group-id="EditorPopupMenu"/>
             <!-- This shortcut doesn't mean anything, it's just not taken by anyone and is easy to type -->
-            <keyboard-shortcut first-keystroke="control alt G" second-keystroke="H" keymap="$default" />
+            <keyboard-shortcut first-keystroke="control alt G" second-keystroke="H" keymap="$default"/>
         </action>
 
         <action class="org.jetbrains.bazel.ui.widgets.BazelBspJumpToBuildFileAction">
             <add-to-group group-id="EditorPopupMenu"/>
-            <keyboard-shortcut first-keystroke="control alt G" second-keystroke="J" keymap="$default" />
+            <keyboard-shortcut first-keystroke="control alt G" second-keystroke="J" keymap="$default"/>
         </action>
 
         <action id="Bazel.ImportExternalProject"

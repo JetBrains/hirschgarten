@@ -1,6 +1,6 @@
 <idea-plugin>
     <extensions defaultExtensionNs="org.jetbrains.bazel">
-        <bspRunHandlerProvider order="before JvmRunHandlerProvider" implementation="org.jetbrains.bazel.intellij.IntellijPluginRunHandlerProvider" />
+        <runHandlerProvider order="before JvmRunHandlerProvider" implementation="org.jetbrains.bazel.intellij.IntellijPluginRunHandlerProvider" />
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <stepsBeforeRunProvider implementation="org.jetbrains.bazel.intellij.BuildPluginBeforeRunTaskProvider" />

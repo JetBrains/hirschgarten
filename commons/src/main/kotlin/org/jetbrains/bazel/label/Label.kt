@@ -127,6 +127,18 @@ data class ResolvedLabel(
     }
 
   override fun toString(): String = "$repo//${joinPackagePathAndTarget(packagePath, target)}"
+
+  override fun toShortString(): String {
+    val repoPart = if (repo !is Main) repo.toString() else ""
+    val packagePart = packagePath.toString()
+    val targetPart =
+      when {
+        target is AmbiguousEmptyTarget -> ""
+        target is SingleTarget && target.targetName == (packagePath as? Package)?.name() -> ""
+        else -> ":$target"
+      }
+    return "$repoPart//$packagePart$targetPart"
+  }
 }
 
 /**
@@ -136,10 +148,14 @@ data class SyntheticLabel(override val target: TargetType) : Label {
   override val packagePath: PackageType = Package(listOf())
 
   override fun toString(): String = "$target$SYNTHETIC_TAG"
+
+  override fun toShortString(): String = toString()
 }
 
 data class RelativeLabel(override val packagePath: PackageType, override val target: TargetType) : Label {
   override fun toString(): String = joinPackagePathAndTarget(packagePath, target)
+
+  override fun toShortString(): String = toString()
 
   fun resolve(base: ResolvedLabel): ResolvedLabel {
     val repo = base.repo
@@ -193,6 +209,8 @@ sealed interface Label {
 
   val isApparent: Boolean
     get() = (this as? ResolvedLabel)?.repo is Apparent
+
+  fun toShortString(): String
 
   companion object {
     fun synthetic(targetName: String): Label = SyntheticLabel(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))
