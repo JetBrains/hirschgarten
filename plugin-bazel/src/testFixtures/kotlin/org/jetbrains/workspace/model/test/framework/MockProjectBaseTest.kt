@@ -20,10 +20,6 @@ open class MockProjectBaseTest : Disposable {
   @RegisterExtension
   protected val projectModel: ProjectModelExtension = ProjectModelExtension()
 
-  init {
-    Disposer.register(projectModel.disposableRule.disposable, this)
-  }
-
   protected val project: Project
     get() = projectModel.project
 
