@@ -18,17 +18,8 @@ import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
-import javax.swing.Icon
 
-class NewBazelPackageAction : DumbAwareAction {
-  constructor() : super()
-
-  constructor(icon: Icon?) : super(icon)
-
-  constructor(text: String?) : super(text)
-
-  constructor(text: String?, description: String?, icon: Icon?) : super(text, description, icon)
-
+class NewBazelPackageAction : DumbAwareAction() {
   override fun update(e: AnActionEvent) {
     val project = e.project
     val presentation: Presentation = e.presentation
@@ -52,9 +43,7 @@ class NewBazelPackageAction : DumbAwareAction {
 
   override fun actionPerformed(event: AnActionEvent) {
     val project = event.project ?: return
-    val view: IdeView =
-      event.getData<IdeView>(LangDataKeys.IDE_VIEW)
-        ?: return
+    val view = event.getData<IdeView>(LangDataKeys.IDE_VIEW) ?: return
     val directory = DirectoryChooserUtil.getOrChooseDirectory(view) ?: return
     val validator: CreateDirectoryOrPackageHandler =
       object : CreateDirectoryOrPackageHandler(project, directory, false, ".") {
@@ -76,7 +65,7 @@ class NewBazelPackageAction : DumbAwareAction {
     )
     val newDir = validator.createdElement as PsiDirectory?
     if (newDir != null) {
-      val buildFile: PsiFile? = findBuildFile(project, newDir)
+      val buildFile = findBuildFile(project, newDir)
       if (buildFile != null) {
         view.selectElement(buildFile)
         OpenFileAction.openFile(buildFile.viewProvider.virtualFile, project)
@@ -85,14 +74,18 @@ class NewBazelPackageAction : DumbAwareAction {
   }
 
   private fun findBuildFile(project: Project, parent: PsiDirectory): PsiFile? {
-    val filename: String = BazelPluginConstants.BUILD_FILE_NAMES[0]
-    val vf = parent.virtualFile.findChild(filename)
-    return if (vf != null) PsiManager.getInstance(project).findFile(vf) else null
+    for (filename in BazelPluginConstants.BUILD_FILE_NAMES) {
+      val vf = parent.virtualFile.findChild(filename)
+      if (vf != null) {
+        return PsiManager.getInstance(project).findFile(vf)
+      }
+    }
+    return null
   }
 
   private fun createBuildFile(project: Project, parent: PsiDirectory) {
-    val filename: String = BazelPluginConstants.BUILD_FILE_NAMES[0]
-    val file: PsiFile =
+    val filename = BazelPluginConstants.BUILD_FILE_NAMES[0]
+    val file =
       PsiFileFactory
         .getInstance(project)
         .createFileFromText(filename, StarlarkLanguage, "")
