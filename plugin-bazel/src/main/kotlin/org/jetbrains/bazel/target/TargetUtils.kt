@@ -69,6 +69,14 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   private var listeners: List<(Boolean) -> Unit> = emptyList()
 
+  fun addFileToTargetIdEntry(uri: URI, targets: List<Label>) {
+    fileToTarget = fileToTarget + (uri to targets)
+  }
+
+  fun removeFileToTargetIdEntry(uri: URI) {
+    fileToTarget = fileToTarget - uri
+  }
+
   @ApiStatus.Internal
   suspend fun saveTargets(
     targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>,
@@ -157,6 +165,8 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   }
 
   fun allTargets(): List<Label> = labelToTargetInfo.keys.toList()
+
+  fun getTargetsForURI(uri: URI): List<Label> = fileToTarget[uri] ?: emptyList()
 
   fun getTargetsForFile(file: VirtualFile): List<Label> =
     fileToTarget[file.url.processUriString().safeCastToURI()]
