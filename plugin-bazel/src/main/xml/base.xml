@@ -91,14 +91,14 @@
                 implementation="org.jetbrains.bazel.server.connection.DefaultConnectionDetailsProviderExtension"/>
 
         <runHandlerProvider implementation="org.jetbrains.bazel.jvm.run.JvmBspRunHandler$JvmBspRunHandlerProvider"
-                               id="JvmRunHandlerProvider"/>
+                            id="JvmRunHandlerProvider"/>
         <runHandlerProvider
                 implementation="org.jetbrains.bazel.jvm.run.JvmBspTestHandler$JvmBspTestHandlerProvider"
                 id="JvmTestHandlerProvider"/>
         <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericBspRunHandlerProvider"
-                               order="last"/>
+                            order="last"/>
         <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericBspTestHandlerProvider"
-                               order="last"/>
+                            order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"/>
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
@@ -259,8 +259,6 @@
     </actions>
 
     <applicationListeners>
-        <listener class="org.jetbrains.bazel.flow.close.ProjectClosingListener"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
 
         <listener class="org.jetbrains.bazel.workspace.AssignFileToModuleListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
