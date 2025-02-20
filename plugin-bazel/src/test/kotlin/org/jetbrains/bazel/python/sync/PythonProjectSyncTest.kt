@@ -20,6 +20,9 @@ import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
+import org.jetbrains.bazel.magicmetamodel.findNameProvider
+import org.jetbrains.bazel.magicmetamodel.orDefault
 import org.jetbrains.bazel.sync.BaseTargetInfo
 import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.ProjectSyncHook
