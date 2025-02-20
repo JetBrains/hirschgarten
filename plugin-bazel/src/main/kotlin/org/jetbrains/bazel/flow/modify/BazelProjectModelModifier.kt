@@ -1,6 +1,10 @@
 package org.jetbrains.bazel.flow.modify
 
+import com.intellij.application.options.CodeStyle
+import com.intellij.formatting.FormattingContext
+import com.intellij.formatting.FormattingMode
 import com.intellij.ide.util.EditorHelper
+import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.Module
@@ -8,10 +12,13 @@ import com.intellij.openapi.roots.DependencyScope
 import com.intellij.openapi.roots.ExternalLibraryDescriptor
 import com.intellij.openapi.roots.JavaProjectModelModifier
 import com.intellij.openapi.roots.libraries.Library
+import com.intellij.openapi.util.TextRange
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
@@ -66,11 +73,21 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
     val syncScope = PartialProjectSync(targetsToSync = listOf(fromBuildTargetInfo.id))
     if (insertSuccessful) {
       BspCoroutineService.getInstance(from.project).start {
+        formatBuildFile(targetBuildFile)
         ProjectSyncTask(from.project).sync(syncScope = syncScope, buildProject = false)
       }
       return true
     }
     return false
+  }
+
+  private suspend fun formatBuildFile(buildFile: StarlarkFile) {
+    val formattingService = StarlarkFormattingService()
+    val textRange = TextRange.from(0, buildFile.textLength)
+    val formattingContext = FormattingContext.create(buildFile, textRange, CodeStyle.getSettings(buildFile), FormattingMode.REFORMAT)
+    writeAction {
+      formattingService.formatDocument(buildFile.containingFile.fileDocument, listOf(textRange), formattingContext, true, true)
+    }
   }
 
   private fun notifyAutomaticDependencyAdditionFailure() {

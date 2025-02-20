@@ -10,13 +10,9 @@ private const val BUILDIFIER_ID = "Buildifier"
 
 @Service(Service.Level.PROJECT)
 @State(name = BUILDIFIER_ID)
-data class BuildifierConfiguration(
-  var enabledOnReformat: Boolean,
-  var enabledOnSave: Boolean,
-  var pathToExecutable: String?,
-) : PersistentStateComponent<BuildifierConfiguration> {
+data class BuildifierConfiguration(var pathToExecutable: String?) : PersistentStateComponent<BuildifierConfiguration> {
   @Suppress("unused")
-  constructor() : this(false, false, null) // Empty constructor required for state components
+  constructor() : this(null) // Empty constructor required for state components
 
   override fun getState(): BuildifierConfiguration = this
 

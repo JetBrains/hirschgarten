@@ -26,14 +26,13 @@ import org.jetbrains.bazel.languages.starlark.formatting.configuration.Buildifie
 private val LOG = logger<StarlarkFormattingService>()
 private const val NOTIFICATION_GROUP_ID = "Buildifier"
 
-internal class StarlarkFormattingService : AsyncDocumentFormattingService() {
+class StarlarkFormattingService : AsyncDocumentFormattingService() {
   override fun getFeatures(): Set<Feature> = emptySet()
 
   override fun canFormat(file: PsiFile): Boolean {
-    val buildifierConfiguration = BuildifierConfiguration.getBuildifierConfiguration(file.project)
-    if (!buildifierConfiguration.enabledOnReformat) return false
-
     val virtualFile = file.virtualFile ?: return false
+    val buildifierConfiguration = BuildifierConfiguration.getBuildifierConfiguration(file.project)
+    if (buildifierConfiguration.pathToExecutable.isNullOrEmpty()) return false
     return FileTypeRegistry.getInstance().isFileOfType(virtualFile, StarlarkFileType)
   }
 
@@ -41,6 +40,7 @@ internal class StarlarkFormattingService : AsyncDocumentFormattingService() {
     val formattingContext = request.context
     val project = formattingContext.project
     val buildifierConfiguration = BuildifierConfiguration.getBuildifierConfiguration(project)
+    if (buildifierConfiguration.pathToExecutable.isNullOrEmpty()) return null
 
     if (!checkDocumentExists(request)) {
       LOG.warn("Document for file ${request.context.containingFile.name} is null")
