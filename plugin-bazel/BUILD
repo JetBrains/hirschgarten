@@ -17,8 +17,6 @@ intellij_plugin_library(
     name = "plugin_library",
     plugin_xmls = [
         "//plugin-bazel/src:main/jps-resources/META-INF/plugin.xml",
-        # bazel plugin depends on bsp plugin, which already adds performance plugin as optional plugin dep
-        "//plugin-bazel/src:test/resources/META-INF/bazel-ide-starter-test.xml",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -92,6 +90,6 @@ plugin_deploy_zip(
 intellij_plugin_debug_target(
     name = "plugin-bazel-debug",
     deps = [
-        ":intellij-bazel",
+        ":intellij-bazel_jar",
     ],
 )

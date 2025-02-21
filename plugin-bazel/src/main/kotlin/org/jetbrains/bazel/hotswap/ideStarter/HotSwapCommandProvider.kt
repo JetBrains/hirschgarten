@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.ideStarter.hotSwap
+package org.jetbrains.bazel.hotswap.ideStarter
 
 import com.jetbrains.performancePlugin.CommandProvider
 import com.jetbrains.performancePlugin.CreateCommand
