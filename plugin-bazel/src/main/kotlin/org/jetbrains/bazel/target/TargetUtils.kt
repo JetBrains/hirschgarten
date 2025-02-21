@@ -25,6 +25,7 @@ import org.jetbrains.bazel.config.BspFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.magicmetamodel.orDefault
@@ -42,6 +43,7 @@ private const val MAX_EXECUTABLE_TARGET_IDS = 10
 data class TargetUtilsState(
   var labelToTargetInfo: Map<String, BuildTargetInfoState> = emptyMap(),
   var moduleIdToTarget: Map<String, String> = emptyMap(),
+  var libraryIdToTarget: Map<String, String> = emptyMap(),
   var fileToTarget: Map<String, List<String>> = emptyMap(),
   var fileToExecutableTargets: Map<String, List<String>> = emptyMap(),
 )
@@ -58,6 +60,8 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     private set
   private var moduleIdToTarget: Map<String, Label> = emptyMap()
 
+  private var libraryIdToTarget: Map<String, Label> = emptyMap()
+
   // we must use URI as comparing URI path strings is susceptible to errors.
   // e.g., file:/test and file:///test should be similar in the URI world
   var fileToTarget: Map<URI, List<Label>> = hashMapOf()
@@ -65,6 +69,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   private var fileToExecutableTargets: Map<URI, List<Label>> = hashMapOf()
 
+  // Not persisted!
   private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
 
   private var listeners: List<(Boolean) -> Unit> = emptyList()
@@ -84,12 +89,19 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     targetIdToModuleDetails: Map<BuildTargetIdentifier, ModuleDetails>,
     libraryItems: List<LibraryItem>?,
     libraryModules: List<JavaModule>,
+    nameProvider: TargetNameReformatProvider,
   ) {
     this.labelToTargetInfo = targetIdToTargetInfo.mapKeys { it.key.label() }
     moduleIdToTarget =
       targetIdToModuleEntity.entries.associate { (targetId, module) ->
         module.getModuleName() to targetId.label()
       }
+    libraryIdToTarget =
+      libraryItems
+        ?.associate { library ->
+          nameProvider.invoke(BuildTargetInfo(id = library.id)) to library.id.label()
+        }.orEmpty()
+
     fileToTarget =
       targetIdToModuleDetails.values
         .flatMap { it.toPairsUrlToId() }
@@ -204,6 +216,9 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   @PublicApi
   fun getTargetForModuleId(moduleId: String): Label? = moduleIdToTarget[moduleId]
 
+  @PublicApi
+  fun getTargetForLibraryId(libraryId: String): Label? = libraryIdToTarget[libraryId]
+
   @ApiStatus.Internal
   fun getBuildTargetInfoForLabel(label: Label): BuildTargetInfo? = labelToTargetInfo[label]
 
@@ -211,6 +226,9 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   fun getBuildTargetInfoForModule(module: com.intellij.openapi.module.Module): BuildTargetInfo? =
     getTargetForModuleId(module.name)?.let { getBuildTargetInfoForLabel(it) }
 
+  /**
+   * [libraryModulesLookupTable] is not persisted between IDE restarts, use this method with caution.
+   */
   @ApiStatus.Internal
   fun isLibraryModule(name: String): Boolean = name.addLibraryModulePrefix() in libraryModulesLookupTable
 
@@ -219,6 +237,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     TargetUtilsState(
       labelToTargetInfo = labelToTargetInfo.mapKeys { it.key.toString() }.mapValues { it.value.toState() },
       moduleIdToTarget = moduleIdToTarget.mapValues { it.value.toString() },
+      libraryIdToTarget = libraryIdToTarget.mapValues { it.value.toString() },
       fileToTarget = fileToTarget.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.toString() } },
       fileToExecutableTargets = fileToExecutableTargets.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.toString() } },
     )
@@ -230,6 +249,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
         .mapKeys { Label.parse(it.key) }
         .mapValues { it.value.fromState() }
     moduleIdToTarget = state.moduleIdToTarget.mapValues { Label.parse(it.value) }
+    libraryIdToTarget = state.libraryIdToTarget.mapValues { Label.parse(it.value) }
     fileToTarget =
       state.fileToTarget.mapKeys { o -> o.key.safeCastToURI() }.mapValues { o -> o.value.map { Label.parse(it) } }
     fileToExecutableTargets =
