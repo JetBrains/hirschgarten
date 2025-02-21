@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.ideStarter.common
+package org.jetbrains.bazel.hotswap.ideStarter
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.project.Project

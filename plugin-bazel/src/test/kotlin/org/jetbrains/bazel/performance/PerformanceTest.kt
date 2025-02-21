@@ -32,6 +32,11 @@ import org.kodein.di.instance
 import java.nio.file.Files
 import java.nio.file.Path
 
+/**
+ * ```sh
+ * bazel test //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/performance --jvmopt="-Dbazel.ide.starter.test.cache.directory=$HOME/IdeaProjects/hirschgarten" --sandbox_writable_path=/ --action_env=PATH --java_debug --test_arg=--wrapper_script_flag=--debug=8000
+ * ```
+ */
 class PerformanceTest : IdeStarterBaseProjectTest() {
   override val projectInfo: ProjectInfoSpec
     get() = getProjectInfoFromSystemProperties()

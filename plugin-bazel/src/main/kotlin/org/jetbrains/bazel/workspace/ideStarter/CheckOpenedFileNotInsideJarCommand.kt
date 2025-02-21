@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.performanceImpl
+package org.jetbrains.bazel.workspace.ideStarter
 
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.fileEditor.FileEditorManager
