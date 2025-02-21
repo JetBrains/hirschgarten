@@ -16,6 +16,11 @@ import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.junit.jupiter.api.Test
 
+/**
+ * ```sh
+ * bazel test //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/references:ExternalRepoResolveTest --jvmopt="-Dbazel.ide.starter.test.cache.directory=$HOME/IdeaProjects/hirschgarten" --sandbox_writable_path=/ --action_env=PATH --java_debug --test_arg=--wrapper_script_flag=--debug=8000
+ * ```
+ */
 class ExternalRepoResolveTest : IdeStarterBaseProjectTest() {
   override val projectInfo: ProjectInfoSpec
     get() =

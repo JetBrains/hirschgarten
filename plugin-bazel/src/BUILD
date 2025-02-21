@@ -3,7 +3,6 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 exports_files([
     "main/resources/META-INF/base.xml",
-    "test/resources/META-INF/bazel-ide-starter-test.xml",
 ] + glob(["main/xml/*.xml"]))
 
 kt_jvm_library(
@@ -71,6 +70,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/widgets/fileTargets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspace/ideStarter",
     ],
 )
 
@@ -122,7 +122,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extension",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/hotswap",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ideStarter",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/hotswap/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings",
