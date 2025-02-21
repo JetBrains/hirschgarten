@@ -1,5 +1,7 @@
-load("@//server/rules/bazel_integration_test:defs.bzl", "bazel_integration_test_all_versions", "bazel_integration_test_current_version")
+load("@//plugin-bazel/rules/bazel_integration_test:defs.bzl", "bazel_integration_test_all_versions", "bazel_integration_test_current_version")
 load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "bazel_integration_test", "integration_test_utils")
+
+package(default_visibility = ["//visibility:public"])
 
 ####################
 # SUPER IMPORTANT! #

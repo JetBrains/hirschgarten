@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.workspacecontext
 
 import org.apache.logging.log4j.LogManager
-import org.jetbrains.bazel.commons.label.assumeResolved
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContext
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextConstructor

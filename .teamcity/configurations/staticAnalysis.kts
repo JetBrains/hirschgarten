@@ -52,7 +52,7 @@ open class Analyze(
                 mkdir %system.agent.persistent.cache%/plugins
                 
                 unzip %system.teamcity.build.checkoutDir%/tc-artifacts/intellij-bazel-$platform.zip -d %system.agent.persistent.cache%/plugins
-                unzip %system.teamcity.build.checkoutDir%/tc-artifacts/intellij-bsp-$platform.zip -d %system.agent.persistent.cache%/plugins
+                # unzip %system.teamcity.build.checkoutDir%/tc-artifacts/intellij-bsp-$platform.zip -d %system.agent.persistent.cache%/plugins
             """.trimIndent()
         }
         if (repo != null) {

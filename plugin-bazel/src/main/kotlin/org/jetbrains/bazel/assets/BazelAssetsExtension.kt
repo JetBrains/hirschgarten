@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.assets
 
+import org.jetbrains.bazel.assets.BuildToolAssetsExtension
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
-import org.jetbrains.plugins.bsp.config.BuildToolId
+import org.jetbrains.bazel.config.BuildToolId
 import javax.swing.Icon
 
 class BazelAssetsExtension : BuildToolAssetsExtension {

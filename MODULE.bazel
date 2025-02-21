@@ -59,11 +59,10 @@ maven.install(
         "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2",
         "com.google.code.gson:gson:2.12.1",
         "com.google.guava:guava:31.0.1-jre",
-        "com.google.protobuf:protobuf-java:4.29.3",
-        "com.jetbrains.intellij.tools:ide-metrics-collector-starter:251.17181.16-EAP-SNAPSHOT",
-        "com.jetbrains.intellij.tools:ide-metrics-collector:251.17181.16-EAP-SNAPSHOT",
-        "com.jetbrains.intellij.tools:ide-starter-junit5:251.17181.16-EAP-SNAPSHOT",
-        "com.jetbrains.intellij.tools:ide-starter-squashed:251.17181.16-EAP-SNAPSHOT",
+        "com.jetbrains.intellij.tools:ide-metrics-collector-starter:251.21418.62-EAP-SNAPSHOT",
+        "com.jetbrains.intellij.tools:ide-metrics-collector:251.21418.62-EAP-SNAPSHOT",
+        "com.jetbrains.intellij.tools:ide-starter-junit5:251.21418.62-EAP-SNAPSHOT",
+        "com.jetbrains.intellij.tools:ide-starter-squashed:251.21418.62-EAP-SNAPSHOT",
         "commons-cli:commons-cli:jar:1.9.0",
         "commons-io:commons-io:jar:2.18.0",
         "io.grpc:grpc-protobuf:1.70.0",
@@ -72,12 +71,12 @@ maven.install(
         "io.kotest:kotest-assertions-core-jvm:5.9.1",
         "io.kotest:kotest-assertions-shared-jvm:5.9.1",
         "io.kotest:kotest-common-jvm:5.9.1",
-        "io.opentelemetry.semconv:opentelemetry-semconv:1.25.0-alpha",
-        "io.opentelemetry:opentelemetry-api:1.46.0",
-        "io.opentelemetry:opentelemetry-exporter-otlp:1.46.0",
-        "io.opentelemetry:opentelemetry-extension-kotlin:1.46.0",
-        "io.opentelemetry:opentelemetry-sdk-trace:1.46.0",
-        "io.opentelemetry:opentelemetry-sdk:1.46.0",
+        "io.opentelemetry.semconv:opentelemetry-semconv:1.30.0-rc.1",
+        "io.opentelemetry:opentelemetry-api:1.47.0",
+        "io.opentelemetry:opentelemetry-exporter-otlp:1.47.0",
+        "io.opentelemetry:opentelemetry-extension-kotlin:1.47.0",
+        "io.opentelemetry:opentelemetry-sdk-trace:1.47.0",
+        "io.opentelemetry:opentelemetry-sdk:1.47.0",
         "net.java.dev.jna:jna:5.16.0",
         "org.apache.httpcomponents:httpclient:4.5.14",
         "org.apache.logging.log4j:log4j-api:2.24.3",
@@ -141,19 +140,26 @@ use_repo(
 )
 
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "googleapis", version = "0.0.0-20240819-fe8ba054a")
+bazel_dep(name = "aspect_bazel_lib", version = "2.13.0")
 
-# Required until Bazel repo upstreams it's rules_jvm_external fix and there's a new release
-BAZEL_BEP_VERSION = "5.4.1"
+switched_rules = use_extension("@googleapis//:extensions.bzl", "switched_rules")
+switched_rules.use_languages(
+    grpc = True,
+    java = True,
+)
 
-http_jar(
-    name = "bazel_bep",
-    integrity = "sha256-z7XAsDOW3Ha8zrcg1ZP/8+7Azg4MNzUFQAtUBvjl75U=",
-    url = "https://github.com/agluszak/bazel-bep-proto/releases/download/%s/bazel-bep-protobuf.jar" % BAZEL_BEP_VERSION,
+bazel_dep(name = "rules_apple", version = "3.17.1")
+
+# Needed because googleapis transitively pulls in a broken version
+single_version_override(
+    module_name = "rules_apple",
+    version = "3.17.1",
 )
 
 bazel_dep(name = "rules_proto", version = "7.1.0")
 bazel_dep(name = "protobuf", version = "29.3")
-bazel_dep(name = "rules_cc", version = "0.1.0")
+bazel_dep(name = "rules_cc", version = "0.1.1")
 bazel_dep(name = "rules_python", version = "1.1.0")
 bazel_dep(name = "platforms", version = "0.0.11")
 
@@ -163,15 +169,6 @@ python.toolchain(
     ignore_root_user_error = True,
     is_default = True,
     python_version = "3.12",
-)
-
-bazel_dep(
-    name = "bsp-testkit2",
-    dev_dependency = True,
-)
-local_path_override(
-    module_name = "bsp-testkit2",
-    path = "bsp-testkit2",
 )
 
 bazel_dep(

@@ -54,7 +54,6 @@ abstract class IdeStarterBaseProjectTest {
       .propagateSystemProperty("bazel.project.view.file.path")
       .patchPathVariable()
       .withKotlinPluginK2()
-      .withBspPluginInstalled()
       .withBazelPluginInstalled()
   // uncomment for debugging
   //  .applyVMOptionsPatch { debug(8000, suspend = true) }
@@ -79,11 +78,6 @@ abstract class IdeStarterBaseProjectTest {
 
   private fun IDETestContext.withBazelPluginInstalled(): IDETestContext {
     installPlugin(this, System.getProperty("bazel.ide.starter.test.bazel.plugin.zip"))
-    return this
-  }
-
-  private fun IDETestContext.withBspPluginInstalled(): IDETestContext {
-    installPlugin(this, System.getProperty("bazel.ide.starter.test.bsp.plugin.zip"))
     return this
   }
 

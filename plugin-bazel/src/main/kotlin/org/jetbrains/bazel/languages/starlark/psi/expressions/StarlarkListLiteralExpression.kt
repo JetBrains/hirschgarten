@@ -18,13 +18,13 @@ class StarlarkListLiteralExpression(node: ASTNode) : StarlarkBaseElement(node) {
 
   fun getElements(): List<StarlarkElement> = PsiTreeUtil.getChildrenOfTypeAsList(this, StarlarkElement::class.java)
 
-  fun appendString(string: String) = appendNode(StarlarkElementGenerator(this.project).createStringLiteral(string))
+  fun appendString(string: String) = appendNode(StarlarkElementGenerator(this.project).createStringLiteralExpression(string))
 
   /**
    * modified method from `com.jetbrains.python.psi.impl.PyElementGeneratorImpl.insertItemIntoList`
    */
   fun insertString(toInsert: String) {
-    val add = StarlarkElementGenerator(this.project).createStringLiteral(toInsert)
+    val add = StarlarkElementGenerator(this.project).createStringLiteralExpression(toInsert)
     val exprNode = this.node
     val closingTokens = exprNode.getChildren(TokenSet.create(StarlarkTokenTypes.LBRACKET, StarlarkTokenTypes.LPAR))
     if (closingTokens.isEmpty()) {
@@ -33,9 +33,13 @@ class StarlarkListLiteralExpression(node: ASTNode) : StarlarkBaseElement(node) {
     } else {
       val next = StarlarkUtils.getNextNonWhitespaceSibling(closingTokens.last())
       if (next != null) {
+        val whitespaceToAdd = (next.treePrev as? PsiWhiteSpace)?.text
+        exprNode.addChild(add, next)
         val comma = createComma()
         exprNode.addChild(comma, next)
-        exprNode.addChild(add, comma)
+        whitespaceToAdd?.let {
+          exprNode.addLeaf(StarlarkTokenTypes.SPACE, whitespaceToAdd, next)
+        }
       } else {
         exprNode.addChild(add)
       }

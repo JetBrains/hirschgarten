@@ -31,14 +31,15 @@ import com.intellij.util.ui.MessageCategory
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BazelHotSwapBundle
+import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.hotswap.BazelHotSwapManager.HotSwappableDebugSession
+import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.runnerAction.LocalJvmRunnerAction
+import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.sync.task.query
+import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.flow.sync.query
-import org.jetbrains.plugins.bsp.impl.server.connection.connection
-import org.jetbrains.plugins.bsp.runnerAction.LocalJvmRunnerAction
-import org.jetbrains.plugins.bsp.target.targetUtils
-import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.io.File
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.atomic.AtomicReference
@@ -126,7 +127,7 @@ object ClassFileManifestBuilder {
 
   private fun BuildTargetIdentifier.isTestTarget(project: Project): Boolean =
     project.targetUtils
-      .getBuildTargetInfoForId(this)
+      .getBuildTargetInfoForLabel(this.label())
       ?.capabilities
       ?.canTest == true
 

@@ -9,9 +9,9 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.flow.open.BazelBspOpenProjectProvider
 import org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessor
-import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 
 internal class LinkBazelProjectFromScriptAction :
   DumbAwareAction(

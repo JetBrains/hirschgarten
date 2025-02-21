@@ -4,8 +4,8 @@ import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.CompletableDeferred
+import org.jetbrains.bazel.run.BspProcessHandler
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
-import org.jetbrains.plugins.bsp.run.BspProcessHandler
 
 class StarlarkDebugConfigurationState(
   val project: Project,

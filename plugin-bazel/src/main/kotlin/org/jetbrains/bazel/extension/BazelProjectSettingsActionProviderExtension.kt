@@ -1,12 +1,12 @@
 package org.jetbrains.bazel.extension
 
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.bazel.settings.BAZEL_PROJECT_SETTINGS_DISPLAY_NAME
-import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.extensionPoints.BspToolWindowSettingsProviderExtension
+import org.jetbrains.bazel.config.BuildToolId
+import org.jetbrains.bazel.extensionPoints.ToolWindowSettingsProviderExtension
 
-class BazelProjectSettingsActionProviderExtension : BspToolWindowSettingsProviderExtension {
+class BazelProjectSettingsActionProviderExtension : ToolWindowSettingsProviderExtension {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
 
-  override fun getSettingsName(): String = BAZEL_PROJECT_SETTINGS_DISPLAY_NAME
+  override fun getSettingsName(): String = BazelPluginBundle.message("project.settings.display.name")
 }

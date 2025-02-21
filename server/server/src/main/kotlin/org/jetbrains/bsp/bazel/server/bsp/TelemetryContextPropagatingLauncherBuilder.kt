@@ -1,6 +1,8 @@
 package org.jetbrains.bsp.bazel.server.bsp
 
-import io.opentelemetry.api.incubator.propagation.ExtendedContextPropagators
+import io.opentelemetry.context.Context
+import io.opentelemetry.context.propagation.ContextPropagators
+import io.opentelemetry.context.propagation.TextMapGetter
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.eclipse.lsp4j.jsonrpc.MessageIssueHandler
 import org.eclipse.lsp4j.jsonrpc.json.MessageJsonHandler
@@ -23,6 +25,31 @@ class TelemetryContextPropagatingLauncherBuilder<T> : Launcher.Builder<T>() {
   }
 }
 
+val TEXT_MAP_GETTER: TextMapGetter<Map<String, String>> =
+  object : TextMapGetter<Map<String, String>> {
+    override fun keys(carrier: Map<String, String>): Set<String> = carrier.keys
+
+    override fun get(carrier: Map<String, String>?, key: String): String? = carrier?.get(key)
+  }
+
+internal class CaseInsensitiveMap : HashMap<String, String> {
+  constructor(carrier: Map<String, String>) {
+    this.putAll(carrier)
+  }
+
+  override fun put(key: String, value: String): String? = super.put(getKeyLowerCase(key), value)
+
+  override fun putAll(m: Map<out String, String>) {
+    m.forEach { (key: String, value: String) -> this.put(key, value) }
+  }
+
+  override fun get(key: String): String? = super.get(getKeyLowerCase(key))
+
+  companion object {
+    private fun getKeyLowerCase(key: String): String = key.lowercase()
+  }
+}
+
 private class TelemetryContextPropagatingStreamMessageProducer(
   input: InputStream,
   jsonHandler: MessageJsonHandler,
@@ -36,14 +63,20 @@ private class TelemetryContextPropagatingStreamMessageProducer(
     super.parseHeader(line, headers)
   }
 
-  override fun handleMessage(input: InputStream?, headers: Headers?): Boolean {
+  fun extractTextMapPropagationContext(carrier: Map<String, String>, propagators: ContextPropagators): Context {
+    val current = Context.current()
+    val caseInsensitiveMap = CaseInsensitiveMap(carrier)
+    return propagators.textMapPropagator
+      .extract(current, caseInsensitiveMap, TEXT_MAP_GETTER)
+  }
+
+  override fun handleMessage(input: InputStream, headers: Headers): Boolean {
     if (!openTelemetryInitialized) {
       // The first call via BSP is build/initialize, at which point the telemetry isn't initialized yet.
       return super.handleMessage(input, headers)
     }
     val context =
-      ExtendedContextPropagators
-        .extractTextMapPropagationContext(currentHeaders, openTelemetry.propagators)
+      extractTextMapPropagationContext(currentHeaders, openTelemetry.propagators)
         .also { currentHeaders.clear() }
     context.makeCurrent().use {
       return super.handleMessage(input, headers)

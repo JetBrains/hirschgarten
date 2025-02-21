@@ -1,7 +1,5 @@
 package org.jetbrains.bsp.bazel.install
 
-import ch.epfl.scala.bsp4j.BspConnectionDetails
-import com.google.gson.GsonBuilder
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bsp.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import java.nio.file.FileSystems
@@ -88,11 +86,6 @@ abstract class EnvironmentCreator(private val projectRootDir: Path) {
     }
   }
 
-  protected fun createDotBsp(discoveryDetails: BspConnectionDetails) {
-    val dir = createDir(projectRootDir, Constants.DOT_BSP_DIR_NAME)
-    createBspDiscoveryDetailsFile(dir, discoveryDetails)
-  }
-
   private fun createDir(rootDir: Path, name: String): Path {
     val dir = rootDir.resolve(name)
     try {
@@ -100,15 +93,5 @@ abstract class EnvironmentCreator(private val projectRootDir: Path) {
     } catch (_: FileAlreadyExistsException) {
     }
     return dir
-  }
-
-  private fun createBspDiscoveryDetailsFile(dotBspDir: Path, discoveryDetails: BspConnectionDetails) {
-    val destinationBspDiscoveryFilePath = dotBspDir.resolve(Constants.BAZELBSP_JSON_FILE_NAME)
-    writeJsonToFile(destinationBspDiscoveryFilePath, discoveryDetails)
-  }
-
-  private fun <T> writeJsonToFile(destinationPath: Path, data: T) {
-    val fileContent = GsonBuilder().setPrettyPrinting().create().toJson(data)
-    Files.writeString(destinationPath, fileContent)
   }
 }

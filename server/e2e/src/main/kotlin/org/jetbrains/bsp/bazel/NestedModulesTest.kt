@@ -7,7 +7,7 @@ import io.kotest.matchers.paths.shouldExist
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldEndWith
 import kotlinx.coroutines.future.await
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.bazel.install.Install

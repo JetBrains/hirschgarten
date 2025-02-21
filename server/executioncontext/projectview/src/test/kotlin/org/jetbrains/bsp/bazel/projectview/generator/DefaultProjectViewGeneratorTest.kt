@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.projectview.generator
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection

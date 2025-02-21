@@ -8,11 +8,13 @@ kt_jvm_library(
     ]),
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/label",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/label",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/base",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/highlighting:higlighting",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/highlighting",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/task",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

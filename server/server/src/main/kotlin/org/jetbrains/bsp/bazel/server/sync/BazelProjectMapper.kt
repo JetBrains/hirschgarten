@@ -2,13 +2,14 @@ package org.jetbrains.bsp.bazel.server.sync
 
 import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
+import com.intellij.util.EnvironmentUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.commons.label.Label
-import org.jetbrains.bazel.commons.label.ResolvedLabel
-import org.jetbrains.bazel.commons.label.assumeResolved
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.FileLocation
@@ -472,7 +473,9 @@ class BazelProjectMapper(
       target.value
         .map { path -> bazelPathsResolver.resolveUri(path) }
         .filter { uri -> uri !in interfacesAndBinariesFromTarget }
-        .map { uri ->
+        .mapNotNull { uri ->
+          val jarPath = uri.toPath()
+          if (shouldSkipJdepsJar(jarPath)) return@mapNotNull null
           val label = syntheticLabel(uri)
           libraryNameToLibraryValueMap.computeIfAbsent(label) { _ ->
             Library(
@@ -486,6 +489,10 @@ class BazelProjectMapper(
         }
     }
   }
+
+  // See https://github.com/bazel-contrib/rules_jvm_external/issues/786
+  private fun shouldSkipJdepsJar(jar: Path): Boolean =
+    jar.name.startsWith("header_") && jar.resolveSibling("processed_${jar.name.substring(7)}").exists()
 
   private suspend fun getAllJdepsDependencies(
     targetsToImport: Map<Label, TargetInfo>,
@@ -1027,7 +1034,7 @@ class BazelProjectMapper(
   }
 
   private fun collectInheritedEnvs(targetInfo: TargetInfo): Map<String, String> =
-    targetInfo.envInheritList.associateWith { System.getenv(it) }
+    targetInfo.envInheritList.associateWith { EnvironmentUtil.getValue(it).orEmpty() }
 
   private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
     targets.filter {

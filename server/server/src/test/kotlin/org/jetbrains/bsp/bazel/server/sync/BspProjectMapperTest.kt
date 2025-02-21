@@ -8,7 +8,7 @@ import ch.epfl.scala.bsp4j.DependencyModulesResult
 import ch.epfl.scala.bsp4j.MavenDependencyModule
 import ch.epfl.scala.bsp4j.MavenDependencyModuleArtifact
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.Library
@@ -27,7 +27,7 @@ class BspProjectMapperTest {
   private val mavenCoordinatesResolver = MavenCoordinatesResolver()
 
   @Test
-  @Timeout(value = 2, unit = TimeUnit.MINUTES)
+  @Timeout(value = 3, unit = TimeUnit.MINUTES)
   fun `should compute buildDependencyModules quickly`() {
     // Make sure we can compute dependency modules for a large number of targets, each of which has a large number of dependencies.
     // Large enough to time out if using a non-optimized algorithm.

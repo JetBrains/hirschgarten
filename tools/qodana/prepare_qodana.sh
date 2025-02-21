@@ -7,7 +7,7 @@ mkdir /tmp/cache
 
 # build plugins
 cd ../..
-bazel build //plugin-bsp:intellij-bsp_zip
+bazel build //plugin-bazel:intellij-bazel_zip
 bazel build //plugin-bazel:intellij-bazel_zip
 
 # prepare plugins for qodana
