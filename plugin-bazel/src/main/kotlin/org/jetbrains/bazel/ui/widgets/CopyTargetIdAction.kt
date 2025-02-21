@@ -34,7 +34,11 @@ import org.jetbrains.bazel.target.targetUtils
  */
 internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.message("editor.action.copy.target.id") }) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    performCopyTargetIdAction(e.getPsiFile() ?: return, readAction { e.getPsiElement() }, e.getEditor())
+    performCopyTargetIdAction(
+      psiFile = readAction { e.getPsiFile() } ?: return,
+      psiElement = readAction { e.getPsiElement() },
+      editor = e.getEditor(),
+    )
   }
 
   private suspend fun performCopyTargetIdAction(
@@ -78,7 +82,7 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
   }
 
   private fun shouldBeEnabledAndVisible(project: Project, e: AnActionEvent): Boolean {
-    if (e.place != ActionPlaces.EDITOR_POPUP && e.place != ActionPlaces.KEYBOARD_SHORTCUT) return false
+    if (!ALLOWED_ACTION_PLACES.contains(e.place)) return false
     val file = e.getPsiFile() ?: return false
     return if (file is StarlarkFile) {
       shouldAddActionToStarlarkFile(file, e)
@@ -124,3 +128,10 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
   private fun isTopLevelCall(element: PsiElement): Boolean =
     element.parent is StarlarkExpressionStatement && element.parent?.parent is StarlarkFile
 }
+
+private val ALLOWED_ACTION_PLACES =
+  listOf(
+    ActionPlaces.EDITOR_POPUP,
+    ActionPlaces.KEYBOARD_SHORTCUT,
+    ActionPlaces.ACTION_SEARCH,
+  )
