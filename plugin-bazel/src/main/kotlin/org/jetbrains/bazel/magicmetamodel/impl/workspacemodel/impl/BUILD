@@ -8,8 +8,8 @@ kt_jvm_library(
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel",
-        "//plugin-bazel/workspacemodel/src:workspacemodel",
         "//protocol",
+        "//workspacemodel",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

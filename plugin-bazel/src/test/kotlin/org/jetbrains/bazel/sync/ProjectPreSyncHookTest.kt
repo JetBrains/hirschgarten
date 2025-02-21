@@ -9,7 +9,7 @@ import org.jetbrains.bazel.config.buildToolId
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.additionalProjectPreSyncHooks
 import org.jetbrains.bazel.sync.defaultProjectPreSyncHooks
-import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested

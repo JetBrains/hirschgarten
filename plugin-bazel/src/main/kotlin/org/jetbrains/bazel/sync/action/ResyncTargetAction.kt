@@ -9,10 +9,10 @@ import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.BspPluginIcons
 import org.jetbrains.bazel.config.BuildToolId
 import org.jetbrains.bazel.config.buildToolIdOrNull
+import org.jetbrains.bazel.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
-import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 
 class ResyncTargetAction private constructor(private val targetId: BuildTargetIdentifier) :
   SuspendableAction({ BspPluginBundle.message("target.partial.sync.action.text") }, BspPluginIcons.reload) {
