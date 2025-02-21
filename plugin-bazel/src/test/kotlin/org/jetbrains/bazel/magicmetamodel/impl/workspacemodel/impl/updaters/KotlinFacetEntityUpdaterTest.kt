@@ -19,7 +19,7 @@ import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntity
-import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import kotlin.io.path.name

@@ -15,7 +15,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
-import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.io.path.createDirectories

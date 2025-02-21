@@ -34,11 +34,11 @@ import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
-import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
-import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
-import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
-import org.jetbrains.workspace.model.test.framework.BuildServerMock
-import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
+import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
+import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
+import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
+import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

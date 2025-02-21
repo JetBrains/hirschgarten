@@ -17,6 +17,9 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.bazel.extensionPoints.projectModelExternalSource
+import org.jetbrains.bazel.jpsCompilation.utils.JpsConstants
+import org.jetbrains.bazel.jpsCompilation.utils.JpsFeatureFlags
+import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.projectAware.BspWorkspace
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.target.targetUtils
@@ -25,9 +28,6 @@ import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
-import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsConstants
-import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
-import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
 
 internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,

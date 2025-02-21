@@ -18,7 +18,7 @@ import io.kotest.matchers.maps.shouldContainExactly
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bazel.ui.console.TaskConsole
-import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.Test
 import kotlin.reflect.KClass
 

@@ -6,8 +6,8 @@ kt_jvm_library(
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
         "//plugin-bazel/src:intellij-bazel-resources",
-        "//plugin-bazel/workspacemodel/src:workspacemodel",
         "//protocol",
+        "//workspacemodel",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

@@ -10,7 +10,7 @@ import org.jetbrains.bazel.sync.DefaultProjectSyncHooksDisabler
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.additionalProjectSyncHooks
 import org.jetbrains.bazel.sync.defaultProjectSyncHooks
-import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested

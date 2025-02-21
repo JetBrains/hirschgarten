@@ -32,11 +32,11 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
-import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
-import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
-import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
-import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
-import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
+import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
+import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
+import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
+import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
