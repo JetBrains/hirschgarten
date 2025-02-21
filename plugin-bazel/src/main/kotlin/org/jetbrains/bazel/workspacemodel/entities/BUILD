@@ -1,13 +1,10 @@
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 kt_jvm_library(
-    name = "workspacemodel",
-    srcs = glob([
-        "src/main/gen/**/*.kt",
-        "src/main/kotlin/**/*.kt",
-    ]),
-    resources = glob([
-        "src/main/resources/workspace-model-entities-folder-marker",
+    name = "entities",
+    srcs = ["//plugin-bazel/src/main/gen:generated_wsm_entities"] +
+    glob([
+        "**/*.kt",
     ]),
     visibility = ["//visibility:public"],
     deps = [

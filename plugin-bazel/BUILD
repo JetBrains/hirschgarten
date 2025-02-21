@@ -80,7 +80,7 @@ intellij_plugin_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jpsCompilation/utils",
         "//protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
-        "//workspacemodel",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
     ],
 )
 
