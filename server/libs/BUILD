@@ -73,7 +73,6 @@ output_files(
     target = "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
 )
 
-
 output_files(
     name = "deps_proto_jar",
     paths = ["third_party/bazel/src/main/protobuf/libdeps_proto-speed.jar"],
@@ -87,15 +86,7 @@ write_source_files(
         "googleapis_build_proto.jar": ":googleapis_build_proto_jar",
         "googleapis_build_grpc.jar": ":googleapis_build_grpc_jar",
         "build_event_stream_proto.jar": ":build_event_stream_proto_jar",
-        "package_load_metrics_proto.jar": ":package_load_metrics_proto_jar",
-        "action_cache_proto.jar": ":action_cache_proto_jar",
-        "option_filters_proto.jar": ":option_filters_proto_jar",
-        "command_line_proto.jar": ":command_line_proto_jar",
-        "failure_details_proto.jar": ":failure_details_proto_jar",
-        "strategy_policy_proto.jar": ":strategy_policy_proto_jar",
-        "invocation_policy_proto.jar": ":invocation_policy_proto_jar",
         "deps_proto.jar": ":deps_proto_jar",
         "bazel_build_proto.jar": ":bazel_build_proto_jar",
-        
     },
 )

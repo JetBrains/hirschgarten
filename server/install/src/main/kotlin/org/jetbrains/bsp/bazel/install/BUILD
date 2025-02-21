@@ -4,7 +4,7 @@ kt_jvm_library(
     name = "install",
     srcs = glob(["*.kt"]),
     resource_strip_prefix = "server/resources",
-    resources = ["//server/resources:aspects"],
+    resources = ["//server/resources/aspects"],
     visibility = ["//visibility:public"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/constants",

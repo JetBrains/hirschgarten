@@ -9,6 +9,7 @@
       <sourceFolder url="file://$MODULE_DIR$/commons/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/bazelrunner/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/executioncontext/api/src/main/kotlin" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/executioncontext/installationcontext/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/executioncontext/projectview/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/executioncontext/workspacecontext/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
@@ -132,6 +133,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    
     <orderEntry type="library" name="Guava" level="project" />
     <orderEntry type="library" name="Velocity" level="project" />
     <orderEntry type="library" name="commons-cli" level="project" />
@@ -152,7 +154,7 @@
     <orderEntry type="library" name="opentelemetry-extension-kotlin" level="project" />
     <orderEntry type="library" name="opentelemetry-semconv" level="project" />
     <orderEntry type="library" name="org.apache.logging.log4j" level="project" />
-    <orderEntry type="library" name="protobuf4" level="project" />
+    <orderEntry type="library" name="protobuf" level="project" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
     <orderEntry type="module" module-name="intellij.bsp.protocol" />
     <orderEntry type="module" module-name="intellij.platform.ide.util.io" />

@@ -13,65 +13,10 @@ load(
 )
 load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
 
-optional_plugin_dep(
-    name = "bsp_with_python",
-    module = ["com.intellij.modules.python"],
-    plugin_xml = "//plugin-bazel/src:main/xml/bsp-withPython.xml",
-)
-
-optional_plugin_dep(
-    name = "bsp_with_android",
-    module = ["org.jetbrains.android"],
-    plugin_xml = "//plugin-bazel/src:main/xml/bsp-withAndroid.xml",
-)
-
-optional_plugin_dep(
-    name = "bsp_with_go",
-    module = ["org.jetbrains.plugins.go"],
-    plugin_xml = "//plugin-bazel/src:main/xml/bsp-withGo.xml",
-)
-
-optional_plugin_dep(
-    name = "bsp_with_cpp",
-    module = ["com.intellij.clion"],
-    plugin_xml = "//plugin-bazel/src:main/xml/bsp-withCpp.xml",
-)
-
-optional_plugin_dep(
-    name = "bsp_performance_testing",
-    module = ["com.jetbrains.performancePlugin"],
-    plugin_xml = "//plugin-bazel/src:main/xml/bsp-performanceTesting.xml",
-)
-
-optional_plugin_dep(
-    name = "bsp_devkit",
-    module = ["DevKit"],
-    plugin_xml = "//plugin-bazel/src:main/xml/bsp-withDevKit.xml",
-)
-
-optional_plugin_dep(
-    name = "bsp_code_with_me",
-    module = ["com.jetbrains.codeWithMe"],
-    plugin_xml = "//plugin-bazel/src:main/xml/bsp-withCodeWithMe.xml",
-)
-
 intellij_plugin_library(
     name = "plugin_library",
-    optional_plugin_deps = [
-        ":bsp_with_python",
-        ":bsp_with_android",
-        ":bsp_with_go",
-        ":bsp_performance_testing",
-        ":bsp_devkit",
-        ":bsp_code_with_me",
-    ],
-    plugin_deps = [
-        "com.intellij.modules.platform",
-        "com.intellij.java",
-        "org.jetbrains.kotlin",
-    ],
     plugin_xmls = [
-        "//plugin-bazel/src:main/xml/base.xml",
+        "//plugin-bazel/src:main/jps-resources/META-INF/plugin.xml",
         # bazel plugin depends on bsp plugin, which already adds performance plugin as optional plugin dep
         "//plugin-bazel/src:test/resources/META-INF/bazel-ide-starter-test.xml",
     ],
@@ -131,7 +76,6 @@ repackaged_files(
     name = "intellij-bazel_jar",
     srcs = [
         ":intellij-bazel",
-        ":intellij-bazel_external_jars",
     ],
     prefix = "intellij-bazel/lib",
 )
@@ -149,6 +93,5 @@ intellij_plugin_debug_target(
     name = "plugin-bazel-debug",
     deps = [
         ":intellij-bazel",
-        ":intellij-bazel_external_jars",
     ],
 )
