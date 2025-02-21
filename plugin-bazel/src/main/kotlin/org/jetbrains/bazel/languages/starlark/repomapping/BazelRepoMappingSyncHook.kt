@@ -22,6 +22,9 @@ import kotlin.io.path.toPath
 val Project.apparentRepoNameToCanonicalName: Map<String, String>
   get() = BazelRepoMappingService.getInstance(this).apparentRepoNameToCanonicalName
 
+val Project.canonicalRepoNameToApparentName: Map<String, String>
+  get() = BazelRepoMappingService.getInstance(this).canonicalRepoNameToApparentName
+
 val Project.canonicalRepoNameToPath: Map<String, Path>
   get() = BazelRepoMappingService.getInstance(this).canonicalRepoNameToPath
 
@@ -56,12 +59,24 @@ internal data class BazelRepoMappingServiceState(
 )
 @Service(Service.Level.PROJECT)
 internal class BazelRepoMappingService : PersistentStateComponent<BazelRepoMappingServiceState> {
+  @Volatile
   internal var apparentRepoNameToCanonicalName: Map<String, String> = emptyMap()
+    set(value) {
+      field = value
+      canonicalRepoNameToApparentName = value.entries.associate { (apparent, canonical) -> canonical to apparent }
+    }
+
+  @Volatile
+  internal var canonicalRepoNameToApparentName: Map<String, String> = emptyMap()
+
+  @Volatile
   internal var canonicalRepoNameToPath: Map<String, Path> = emptyMap()
     set(value) {
       field = value
       repositoryPaths = canonicalRepoNameToPath.values.toSet()
     }
+
+  @Volatile
   internal var repositoryPaths: Set<Path> = emptySet()
 
   override fun getState(): BazelRepoMappingServiceState? =

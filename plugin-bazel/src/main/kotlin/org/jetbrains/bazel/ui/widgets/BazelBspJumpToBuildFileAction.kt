@@ -47,13 +47,7 @@ class BazelBspJumpToBuildFileAction(private val buildTargetInfo: BuildTargetInfo
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val virtualFile = readAction { e.getPsiFile()?.virtualFile } ?: return
     val buildTargetInfo = getBuildTargetInfo(project, virtualFile, e.getEditor()) ?: return
-    val buildFile =
-      readAction {
-        findBuildFileTarget(project, buildTargetInfo)
-      } ?: return
-    withContext(Dispatchers.EDT) {
-      EditorHelper.openInEditor(buildFile, true, true)
-    }
+    jumpToBuildFile(project, buildTargetInfo)
   }
 
   private suspend fun getBuildTargetInfo(
@@ -66,7 +60,17 @@ class BazelBspJumpToBuildFileAction(private val buildTargetInfo: BuildTargetInfo
   }
 }
 
-fun findBuildFileTarget(project: Project, buildTargetInfo: BuildTargetInfo): PsiElement? {
+suspend fun jumpToBuildFile(project: Project, buildTargetInfo: BuildTargetInfo) {
+  val buildFile =
+    readAction {
+      findBuildFileTarget(project, buildTargetInfo)
+    } ?: return
+  withContext(Dispatchers.EDT) {
+    EditorHelper.openInEditor(buildFile, true, true)
+  }
+}
+
+private fun findBuildFileTarget(project: Project, buildTargetInfo: BuildTargetInfo): PsiElement? {
   val buildFile = findBuildFile(project, buildTargetInfo) ?: return null
 
   // Try to jump to a specific target

@@ -8,6 +8,7 @@ import com.intellij.psi.impl.PsiFileFactoryImpl
 import com.intellij.testFramework.LightVirtualFile
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 
 private const val DUMMY_FILENAME = "dummy.bzl"
@@ -30,6 +31,15 @@ class StarlarkElementGenerator(val project: Project) {
     val stringNode = dummyFile.node.firstChildNode.firstChildNode.firstChildNode
     if (stringNode.elementType !== StarlarkTokenTypes.STRING) {
       error("Expected elementType to be STRING while creating dummy file")
+    }
+    return stringNode
+  }
+
+  fun createStringLiteralExpression(contents: String): ASTNode {
+    val dummyFile = createDummyFile("\"$contents\"")
+    val stringNode = dummyFile.node.firstChildNode.firstChildNode
+    if (stringNode.elementType !== StarlarkElementTypes.STRING_LITERAL_EXPRESSION) {
+      error("Expected elementType to be STRING_LITERAL_EXPRESSION")
     }
     return stringNode
   }

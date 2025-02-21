@@ -473,7 +473,9 @@ class BazelProjectMapper(
       target.value
         .map { path -> bazelPathsResolver.resolveUri(path) }
         .filter { uri -> uri !in interfacesAndBinariesFromTarget }
-        .map { uri ->
+        .mapNotNull { uri ->
+          val jarPath = uri.toPath()
+          if (shouldSkipJdepsJar(jarPath)) return@mapNotNull null
           val label = syntheticLabel(uri)
           libraryNameToLibraryValueMap.computeIfAbsent(label) { _ ->
             Library(
@@ -487,6 +489,10 @@ class BazelProjectMapper(
         }
     }
   }
+
+  // See https://github.com/bazel-contrib/rules_jvm_external/issues/786
+  private fun shouldSkipJdepsJar(jar: Path): Boolean =
+    jar.name.startsWith("header_") && jar.resolveSibling("processed_${jar.name.substring(7)}").exists()
 
   private suspend fun getAllJdepsDependencies(
     targetsToImport: Map<Label, TargetInfo>,
