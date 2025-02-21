@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.assets.assets
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.run.config.BspRunConfiguration
-import org.jetbrains.bazel.run.config.BspRunConfigurationTypeProvider
+import org.jetbrains.bazel.run.config.RunConfigurationTypeProvider
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import javax.swing.Icon
 
@@ -17,7 +17,7 @@ abstract class BspRunnerAction(
   icon: Icon? = null,
   isDebugAction: Boolean = false,
 ) : BaseRunnerAction(targetInfos, text, icon, isDebugAction) {
-  fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationTypeProvider.getConfigurationType(project)
+  fun getConfigurationType(project: Project): ConfigurationType = RunConfigurationTypeProvider.getConfigurationType(project)
 
   open fun RunnerAndConfigurationSettings.customizeRunConfiguration() {}
 

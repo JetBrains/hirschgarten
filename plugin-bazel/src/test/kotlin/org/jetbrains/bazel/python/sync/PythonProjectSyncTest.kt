@@ -20,8 +20,11 @@ import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.config.bspBuildToolId
+import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.config.buildToolId
+import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
+import org.jetbrains.bazel.magicmetamodel.findNameProvider
+import org.jetbrains.bazel.magicmetamodel.orDefault
 import org.jetbrains.bazel.sync.BaseTargetInfo
 import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.ProjectSyncHook
@@ -29,6 +32,7 @@ import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
@@ -59,7 +63,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   override fun beforeEach() {
     super.beforeEach()
     // given
-    project.buildToolId = bspBuildToolId
+    project.buildToolId = bazelBspBuildToolId
     hook = PythonProjectSync()
     virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
   }
@@ -138,7 +142,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   private fun generateTestSet(): PythonTestSet {
     val pythonLibrary1 =
       GeneratedTargetInfo(
-        targetId = BuildTargetIdentifier("@@server/lib:lib1"),
+        targetId = BuildTargetIdentifier("@@server.lib:lib1"),
         type = "library",
       )
     val pythonLibrary2 =
@@ -163,10 +167,11 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             BaseTargetInfo(it.target, it.sources, it.resources)
           },
       )
+    val nameProvider = project.findNameProvider().orDefault()
 
-    val expectedModuleEntity1 = generateExpectedModuleEntity(pythonBinary, listOf(pythonLibrary1, pythonLibrary2))
-    val expectedModuleEntity2 = generateExpectedModuleEntity(pythonLibrary1, emptyList())
-    val expectedModuleEntity3 = generateExpectedModuleEntity(pythonLibrary2, emptyList())
+    val expectedModuleEntity1 = generateExpectedModuleEntity(pythonBinary, listOf(pythonLibrary1, pythonLibrary2), nameProvider)
+    val expectedModuleEntity2 = generateExpectedModuleEntity(pythonLibrary1, emptyList(), nameProvider)
+    val expectedModuleEntity3 = generateExpectedModuleEntity(pythonLibrary2, emptyList(), nameProvider)
     return PythonTestSet(baseTargetInfos, listOf(expectedModuleEntity1, expectedModuleEntity2, expectedModuleEntity3), emptyList())
   }
 
@@ -197,7 +202,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         infos = listOf(BaseTargetInfo(target.target, sources, resources)),
       )
 
-    val expectedModuleEntity = generateExpectedModuleEntity(pythonBinary, emptyList())
+    val expectedModuleEntity = generateExpectedModuleEntity(pythonBinary, emptyList(), project.findNameProvider().orDefault())
 
     val expectedContentRootEntities =
       generateExpectedSourceRootEntities(sources, resources, expectedModuleEntity.moduleEntity)
@@ -228,16 +233,17 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   private fun generateExpectedModuleEntity(
     targetInfo: GeneratedTargetInfo,
     dependenciesTargetInfo: List<GeneratedTargetInfo>,
+    nameProvider: TargetNameReformatProvider,
   ): ExpectedModuleEntity =
     ExpectedModuleEntity(
       moduleEntity =
         ModuleEntity(
-          name = targetInfo.targetId.uri,
+          name = nameProvider(BuildTargetInfo(id = targetInfo.targetId)),
           entitySource = BspProjectEntitySource,
           dependencies =
             dependenciesTargetInfo.map {
               ModuleDependency(
-                module = ModuleId(it.targetId.uri),
+                module = ModuleId(nameProvider(BuildTargetInfo(id = it.targetId))),
                 exported = true,
                 scope = DependencyScope.COMPILE,
                 productionOnTest = true,

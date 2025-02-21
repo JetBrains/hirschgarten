@@ -309,6 +309,7 @@ class CollectProjectDetailsTask(
                 targetIdToModuleDetails,
                 projectDetails.libraries,
                 libraryModules,
+                nameProvider,
               )
             }
             targetIdToModuleEntityMap

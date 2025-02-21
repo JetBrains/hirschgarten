@@ -10,6 +10,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.isFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.remoteDev.util.addPathSuffix
@@ -46,13 +47,7 @@ class BazelBspJumpToBuildFileAction(private val buildTargetInfo: BuildTargetInfo
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val virtualFile = readAction { e.getPsiFile()?.virtualFile } ?: return
     val buildTargetInfo = getBuildTargetInfo(project, virtualFile, e.getEditor()) ?: return
-    val buildFile =
-      readAction {
-        findBuildFile(project, buildTargetInfo)
-      } ?: return
-    withContext(Dispatchers.EDT) {
-      EditorHelper.openInEditor(buildFile, true, true)
-    }
+    jumpToBuildFile(project, buildTargetInfo)
   }
 
   private suspend fun getBuildTargetInfo(
@@ -65,14 +60,18 @@ class BazelBspJumpToBuildFileAction(private val buildTargetInfo: BuildTargetInfo
   }
 }
 
-fun findBuildFile(project: Project, buildTargetInfo: BuildTargetInfo): PsiElement? {
-  val baseDirectoryPath = buildTargetInfo.baseDirectory?.let { URI.create(it) } ?: return null
-  val buildFilePath = baseDirectoryPath.addPathSuffix("BUILD").toPath()
-  val buildBazelFilePath = baseDirectoryPath.addPathSuffix("BUILD.bazel").toPath()
-  val virtualFileManager = VirtualFileManager.getInstance()
-  val virtualFile =
-    virtualFileManager.findFileByNioPath(buildFilePath) ?: virtualFileManager.findFileByNioPath(buildBazelFilePath) ?: return null
-  val buildFile = PsiManager.getInstance(project).findFile(virtualFile) ?: return null
+suspend fun jumpToBuildFile(project: Project, buildTargetInfo: BuildTargetInfo) {
+  val buildFile =
+    readAction {
+      findBuildFileTarget(project, buildTargetInfo)
+    } ?: return
+  withContext(Dispatchers.EDT) {
+    EditorHelper.openInEditor(buildFile, true, true)
+  }
+}
+
+private fun findBuildFileTarget(project: Project, buildTargetInfo: BuildTargetInfo): PsiElement? {
+  val buildFile = findBuildFile(project, buildTargetInfo) ?: return null
 
   // Try to jump to a specific target
   val target = buildTargetInfo.id.label().target as? SingleTarget
@@ -81,4 +80,18 @@ fun findBuildFile(project: Project, buildTargetInfo: BuildTargetInfo): PsiElemen
   }
   // Fallback to the BUILD file itself
   return buildFile
+}
+
+fun findBuildFile(project: Project, buildTargetInfo: BuildTargetInfo): StarlarkFile? {
+  val baseDirectoryPath = buildTargetInfo.baseDirectory?.let { URI.create(it) } ?: return null
+  // Sometimes a project can contain a directory named "build" (which on case-insensitive filesystems is the same as BUILD).
+  // Try with BUILD.bazel first to avoid this case.
+  val buildBazelFilePath = baseDirectoryPath.addPathSuffix("BUILD.bazel").toPath()
+  val buildFilePath = baseDirectoryPath.addPathSuffix("BUILD").toPath()
+  val virtualFileManager = VirtualFileManager.getInstance()
+  val virtualFile =
+    virtualFileManager.findFileByNioPath(buildBazelFilePath)?.takeIf { it.isFile }
+      ?: virtualFileManager.findFileByNioPath(buildFilePath)?.takeIf { it.isFile }
+      ?: return null
+  return PsiManager.getInstance(project).findFile(virtualFile) as? StarlarkFile
 }

@@ -105,7 +105,7 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
 
   private fun BuildTargetInfo.calculatePopupGroup(): ActionGroup =
     DefaultActionGroup(id.uri, true).also {
-      it.add(ResyncTargetAction(id))
+      ResyncTargetAction.createIfEnabled(id)?.let { resyncTargetAction -> it.add(resyncTargetAction) }
       it.add(CopyTargetIdAction.FromTargetInfo(this))
       it.addSeparator()
       if (capabilities.canCompile) {

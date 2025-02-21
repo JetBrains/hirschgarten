@@ -3,11 +3,11 @@ package org.jetbrains.bazel.config
 import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.bsp.protocol.FeatureFlags
 
-interface BspFeatureFlagsProvider {
+interface FeatureFlagsProvider {
   fun getFeatureFlags(): FeatureFlags
 
   companion object {
-    internal val ep = ExtensionPointName.create<BspFeatureFlagsProvider>("org.jetbrains.bazel.bspFeatureFlagsProvider")
+    internal val ep = ExtensionPointName.create<FeatureFlagsProvider>("org.jetbrains.bazel.featureFlagsProvider")
 
     /**
      * retrieve and merge all the [FeatureFlags] objects from the providers

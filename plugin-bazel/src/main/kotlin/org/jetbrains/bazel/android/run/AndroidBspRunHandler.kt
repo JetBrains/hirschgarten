@@ -13,7 +13,7 @@ import com.intellij.openapi.util.Key
 import org.jetbrains.bazel.config.BspFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.run.BspRunHandler
-import org.jetbrains.bazel.run.BspRunHandlerProvider
+import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.includesAndroid
@@ -54,7 +54,7 @@ class AndroidBspRunHandler(private val configuration: BspRunConfiguration) : Bsp
     return AndroidConfigurationExecutorRunProfileState(androidConfigurationExecutor)
   }
 
-  class AndroidBspRunHandlerProvider : BspRunHandlerProvider {
+  class AndroidBspRunHandlerProvider : RunHandlerProvider {
     override val id: String = "AndroidBspRunHandlerProvider"
 
     override fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler = AndroidBspRunHandler(configuration)
