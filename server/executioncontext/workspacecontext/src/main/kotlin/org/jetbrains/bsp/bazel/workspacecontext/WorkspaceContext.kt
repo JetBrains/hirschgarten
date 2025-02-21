@@ -78,6 +78,7 @@ data class WorkspaceContext(
    */
   val ideJavaHomeOverrideSpec: IdeJavaHomeOverrideSpec,
   val experimentalAddTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJars,
+  val experimentalTransitiveCompileTimeJarsTargetKinds: TransitiveCompileTimeJarsTargetKindsSpec,
   val enableNativeAndroidRules: EnableNativeAndroidRules,
   val androidMinSdkSpec: AndroidMinSdkSpec,
   val shardSync: ShardSyncSpec,
@@ -119,6 +120,10 @@ class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDi
       enabledRules = EnabledRulesSpecExtractor.fromProjectView(projectView),
       ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpecExtractor.fromProjectView(projectView),
       experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsExtractor.fromProjectView(projectView),
+      experimentalTransitiveCompileTimeJarsTargetKinds =
+        ExperimentalTransitiveCompileTimeJarsTargetKindsExtractor.fromProjectView(
+          projectView,
+        ),
       enableNativeAndroidRules = EnableNativeAndroidRulesExtractor.fromProjectView(projectView),
       androidMinSdkSpec = AndroidMinSdkSpecExtractor.fromProjectView(projectView),
       shardSync = ShardSyncSpecExtractor.fromProjectView(projectView),

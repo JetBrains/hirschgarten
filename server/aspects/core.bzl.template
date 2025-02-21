@@ -50,22 +50,27 @@ def _bsp_target_info_aspect_impl(target, ctx):
         return []
 
     rule_attrs = ctx.rule.attr
+    rule_kind = ctx.rule.kind
+    all_deps = []
+    direct_dep_targets = []
+    private_direct_dep_targets = []
+    runtime_dep_targets = []
+    if not ${addTransitiveCompileTimeJars} or rule_kind not in ${transitiveCompileTimeJarsTargetKinds}:
+        direct_dep_targets = collect_targets_from_attrs(rule_attrs, COMPILE_DEPS)
+        private_direct_dep_targets = collect_targets_from_attrs(rule_attrs, PRIVATE_COMPILE_DEPS)
+        direct_deps = make_deps(direct_dep_targets, COMPILE)
 
-    direct_dep_targets = collect_targets_from_attrs(rule_attrs, COMPILE_DEPS)
-    private_direct_dep_targets = collect_targets_from_attrs(rule_attrs, PRIVATE_COMPILE_DEPS)
-    direct_deps = make_deps(direct_dep_targets, COMPILE)
+        exported_deps_from_deps = []
+        if ${isPropagateExportsFromDepsEnabled}:
+            for dep in direct_dep_targets:
+                exported_deps_from_deps = exported_deps_from_deps + dep.bsp_info.export_deps
 
-    exported_deps_from_deps = []
-    if ${isPropagateExportsFromDepsEnabled}:
-        for dep in direct_dep_targets:
-            exported_deps_from_deps = exported_deps_from_deps + dep.bsp_info.export_deps
+        compile_deps = direct_deps + exported_deps_from_deps
 
-    compile_deps = direct_deps + exported_deps_from_deps
+        runtime_dep_targets = collect_targets_from_attrs(rule_attrs, RUNTIME_DEPS)
+        runtime_deps = make_deps(runtime_dep_targets, RUNTIME)
 
-    runtime_dep_targets = collect_targets_from_attrs(rule_attrs, RUNTIME_DEPS)
-    runtime_deps = make_deps(runtime_dep_targets, RUNTIME)
-
-    all_deps = depset(compile_deps + runtime_deps).to_list()
+        all_deps = depset(compile_deps + runtime_deps).to_list()
 
     # Propagate my own exports
     export_deps = []
@@ -133,7 +138,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
 
     info = dict(
         id = str(target.label),
-        kind = ctx.rule.kind,
+        kind = rule_kind,
         tags = rule_attrs.tags,
         dependencies = list(all_deps),
         sources = sources,
@@ -146,7 +151,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
 
     exported_properties = dict(
         id = target.label,
-        kind = ctx.rule.kind,
+        kind = rule_kind,
         export_deps = export_deps,
         output_groups = output_groups,
     )

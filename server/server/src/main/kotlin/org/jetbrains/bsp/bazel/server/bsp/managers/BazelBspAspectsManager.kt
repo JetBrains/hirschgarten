@@ -98,6 +98,8 @@ class BazelBspAspectsManager(
           "rulesetName" to ruleLanguage?.calculateCanonicalName(repoMapping),
           "addTransitiveCompileTimeJars" to
             workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
+          "transitiveCompileTimeJarsTargetKinds" to
+            workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toStarlarkString(),
           "kotlinEnabled" to kotlinEnabled.toString(),
           "javaEnabled" to javaEnabled.toString(),
           "pythonEnabled" to pythonEnabled.toString(),
@@ -110,7 +112,13 @@ class BazelBspAspectsManager(
     templateWriter.writeToFile(
       Constants.CORE_BZL + Constants.TEMPLATE_EXTENSION,
       aspectsPath.resolve(Constants.CORE_BZL),
-      mapOf("isPropagateExportsFromDepsEnabled" to featureFlags.isPropagateExportsFromDepsEnabled.toStarlarkString()),
+      mapOf(
+        "isPropagateExportsFromDepsEnabled" to featureFlags.isPropagateExportsFromDepsEnabled.toStarlarkString(),
+        "addTransitiveCompileTimeJars" to
+          workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
+        "transitiveCompileTimeJarsTargetKinds" to
+          workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toStarlarkString(),
+      ),
     )
 
     // https://bazel.build/rules/lib/builtins/Label#repo_name
@@ -148,6 +156,8 @@ class BazelBspAspectsManager(
     }
 
   private fun Boolean.toStarlarkString(): String = if (this) "True" else "False"
+
+  private fun List<String>.toStarlarkString(): String = joinToString(prefix = "[", postfix = "]", separator = ", ") { "\"$it\"" }
 
   suspend fun fetchFilesFromOutputGroups(
     cancelChecker: CancelChecker,

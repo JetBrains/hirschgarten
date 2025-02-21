@@ -16,7 +16,7 @@ class BazelLabelExpander(private val bazelRunner: BazelRunner) {
       }
     val result =
       bazelRunner
-        .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
+        .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null, shouldLogInvocation = false)
         .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
 
     // afaik bazel won't tell us if there was a FATAL error (i.e. the query had a wrong syntax and wasn't executed at all)
