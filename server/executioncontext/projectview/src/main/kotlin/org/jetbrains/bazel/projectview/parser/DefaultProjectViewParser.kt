@@ -6,7 +6,7 @@ import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.parser.sections.AndroidMinSdkSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.EnableNativeAndroidRulesParser
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalAddTransitiveCompileTimeJarsParser
-import org.jetbrains.bsp.bazel.projectview.parser.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSectionParser
+import org.jetbrains.bazel.projectview.parser.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewAllowManualTargetsSyncSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewBazelBinarySectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewBuildFlagsSectionParser

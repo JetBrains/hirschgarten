@@ -4,7 +4,7 @@ import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.projectview.model.sections.AndroidMinSdkSection
 import org.jetbrains.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSection
+import org.jetbrains.bazel.projectview.model.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
