@@ -39,7 +39,10 @@ enum class Language(
 
     fun all() = ALL
 
-    fun allOfKind(targetKind: String): Set<Language> = all().filter { it.targetKinds.contains(targetKind) }.toHashSet()
+    fun allOfKind(targetKind: String, transitiveCompileTimeJarsTargetKinds: Set<String> = emptySet()): Set<Language> =
+      all()
+        .filterTo(mutableSetOf()) { it.targetKinds.contains(targetKind) }
+        .apply { if (targetKind in transitiveCompileTimeJarsTargetKinds) add(JAVA) }
 
     fun allOfSource(path: String): Set<Language> = all().filter { lang -> lang.extensions.any { path.endsWith(it) } }.toHashSet()
   }
