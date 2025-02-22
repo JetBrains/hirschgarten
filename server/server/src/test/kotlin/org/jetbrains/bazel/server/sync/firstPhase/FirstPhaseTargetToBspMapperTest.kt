@@ -11,8 +11,8 @@ import ch.epfl.scala.bsp4j.SourcesParams
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec

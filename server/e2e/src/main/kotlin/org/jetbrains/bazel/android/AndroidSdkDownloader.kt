@@ -2,8 +2,8 @@ package org.jetbrains.bazel.android
 
 import org.apache.commons.io.FileUtils.copyURLToFile
 import org.apache.logging.log4j.LogManager
-import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bazel.commons.FileUtils
+import org.jetbrains.bazel.commons.utils.OsFamily
 import java.net.URI
 import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermission

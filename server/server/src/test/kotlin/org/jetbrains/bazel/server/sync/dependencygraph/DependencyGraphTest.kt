@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.server.sync.dependencygraph
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.info.BspTargetInfo.Dependency
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested

@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.workspacecontext
 
 import org.apache.logging.log4j.LogManager
-import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.executioncontext.api.ExecutionContext
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextConstructor
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.projectview.model.ProjectView
 import java.nio.file.Path
 

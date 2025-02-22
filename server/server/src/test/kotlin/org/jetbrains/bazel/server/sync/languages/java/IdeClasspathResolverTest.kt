@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.server.sync.languages.java
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.bazelrunner.utils.orLatestSupported
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

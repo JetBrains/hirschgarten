@@ -15,10 +15,10 @@ import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ResourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
-import org.jetbrains.bazel.commons.utils.OsArch
-import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.utils.OsArch
+import org.jetbrains.bazel.commons.utils.OsFamily
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 

@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.server.bsp.utils
 
-import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 
 class InternalAspectsResolver(

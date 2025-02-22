@@ -1,5 +1,10 @@
 package org.jetbrains.bazel.server.bzlmod
 
+import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.bazelrunner.ModuleOutputParser
+import org.jetbrains.bazel.bazelrunner.ModuleResolver
+import org.jetbrains.bazel.bazelrunner.ShowRepoResult
+import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
@@ -7,11 +12,6 @@ import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.RelativeLabel
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SyntheticLabel
-import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.bazelrunner.ModuleOutputParser
-import org.jetbrains.bazel.bazelrunner.ModuleResolver
-import org.jetbrains.bazel.bazelrunner.ShowRepoResult
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.externalRepositoriesTreatedAsInternal

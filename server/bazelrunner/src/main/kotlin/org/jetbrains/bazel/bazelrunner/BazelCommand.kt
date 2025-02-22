@@ -2,10 +2,10 @@ package org.jetbrains.bazel.bazelrunner
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import org.jetbrains.bazel.commons.utils.OsFamily
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.utils.OsFamily
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import java.io.IOException
 import java.nio.file.Files

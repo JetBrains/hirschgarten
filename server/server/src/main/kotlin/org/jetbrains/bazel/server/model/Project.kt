@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.server.model
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
 import java.net.URI

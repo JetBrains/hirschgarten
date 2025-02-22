@@ -5,8 +5,8 @@ import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.android.BazelBspAndroidProjectTestBase
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
 import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.bsp.protocol.KotlinBuildTarget

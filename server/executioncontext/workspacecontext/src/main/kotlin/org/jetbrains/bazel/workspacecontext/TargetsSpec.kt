@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.workspacecontext
 
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractorException
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextExcludableListEntity
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewTargetsSection

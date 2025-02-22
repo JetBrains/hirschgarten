@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.server.sync
 
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
-import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.benchmark.tracer
 import org.jetbrains.bazel.server.benchmark.useWithScope

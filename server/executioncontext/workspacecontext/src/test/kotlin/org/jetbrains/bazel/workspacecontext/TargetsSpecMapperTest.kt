@@ -2,8 +2,8 @@ package org.jetbrains.bazel.workspacecontext
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractorException
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection

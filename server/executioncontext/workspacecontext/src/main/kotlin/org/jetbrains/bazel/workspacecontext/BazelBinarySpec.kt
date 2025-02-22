@@ -2,9 +2,9 @@ package org.jetbrains.bazel.workspacecontext
 
 import com.intellij.util.EnvironmentUtil
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.bazel.commons.FileUtils
 import org.jetbrains.bazel.commons.utils.OsArch
 import org.jetbrains.bazel.commons.utils.OsFamily
-import org.jetbrains.bazel.commons.FileUtils
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractorException
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextSingletonEntity

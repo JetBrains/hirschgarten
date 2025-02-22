@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
-import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.aspect
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.buildManualTests
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.buildTagFilters
@@ -12,6 +10,8 @@ import org.jetbrains.bazel.bazelrunner.params.BazelFlag.keepGoing
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.outputGroups
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bep.BepOutput
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping

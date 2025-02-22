@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.install
 
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.projectview.generator.DefaultProjectViewGenerator
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection

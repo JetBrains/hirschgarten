@@ -7,8 +7,8 @@ import ch.epfl.scala.bsp4j.ScalaMainClass
 import ch.epfl.scala.bsp4j.ScalaMainClassesItem
 import ch.epfl.scala.bsp4j.ScalaPlatform
 import ch.epfl.scala.bsp4j.ScalaTestClassesItem
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.server.model.BspMappings

@@ -15,9 +15,9 @@
  */
 package org.jetbrains.bazel.server.sync.sharding
 
+import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.io.File

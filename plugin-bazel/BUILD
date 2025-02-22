@@ -23,9 +23,9 @@ intellij_plugin_library(
         "//plugin-bazel/src:intellij-bazel",
         "//plugin-bazel/src:intellij-bsp",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jpsCompilation/utils",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
         "//protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bazel:bsp_export",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
     ],
 )
 

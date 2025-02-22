@@ -7,10 +7,10 @@ import io.kotest.matchers.paths.shouldExist
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldEndWith
 import kotlinx.coroutines.future.await
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.install.Install
+import org.jetbrains.bazel.label.Label
 import java.net.URI
 import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
