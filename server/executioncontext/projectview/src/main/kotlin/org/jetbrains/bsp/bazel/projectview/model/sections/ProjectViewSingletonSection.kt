@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.projectview.model.sections
+package org.jetbrains.bazel.projectview.model.sections
 
 import java.nio.file.Path
 

@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.commons
+package org.jetbrains.bazel.commons
 
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.params.ParameterizedTest
@@ -22,7 +22,7 @@ private fun getData() =
 
 class FormatTest {
   @ParameterizedTest(name = "Format.duration({0}) should be {1}")
-  @MethodSource("org.jetbrains.bsp.bazel.commons.FormatTestKt#getData")
+  @MethodSource("org.jetbrains.bazel.commons.FormatTestKt#getData")
   fun `should format duration properly`(duration: Duration, expectedFormattedDuration: String) {
     // then
     Format.duration(duration) shouldBe expectedFormattedDuration

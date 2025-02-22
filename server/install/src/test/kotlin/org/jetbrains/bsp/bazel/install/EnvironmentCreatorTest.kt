@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.install
+package org.jetbrains.bazel.install
 
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldNotBe

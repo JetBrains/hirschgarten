@@ -5,6 +5,6 @@ kt_junit5_test(
     size = "small",
     src = "ProjectViewBuilderTest.kt",
     deps = [
-        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/model",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/model",
     ],
 )

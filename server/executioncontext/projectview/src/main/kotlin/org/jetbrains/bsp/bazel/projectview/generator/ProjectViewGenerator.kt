@@ -1,6 +1,6 @@
-package org.jetbrains.bsp.bazel.projectview.generator
+package org.jetbrains.bazel.projectview.generator
 
-import org.jetbrains.bsp.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.projectview.model.ProjectView
 import java.nio.file.Path
 
 interface ProjectViewGenerator {
@@ -11,8 +11,8 @@ interface ProjectViewGenerator {
    * @param projectView - project view which should be saved in the file
    * @param filePath - path to file where the project view should be saved
    *
-   * @see org.jetbrains.bsp.bazel.projectview.model.ProjectView
-   * @see org.jetbrains.bsp.bazel.projectview.parser.ProjectViewParser
+   * @see org.jetbrains.bazel.projectview.model.ProjectView
+   * @see org.jetbrains.bazel.projectview.parser.ProjectViewParser
    */
   fun generatePrettyStringAndSaveInFile(projectView: ProjectView, filePath: Path)
 
@@ -28,8 +28,8 @@ interface ProjectViewGenerator {
    *     <section 2 value 2>
    *     <section 2 value 3>
    *
-   * @see org.jetbrains.bsp.bazel.projectview.model.ProjectView
-   * @see org.jetbrains.bsp.bazel.projectview.parser.ProjectViewParser
+   * @see org.jetbrains.bazel.projectview.model.ProjectView
+   * @see org.jetbrains.bazel.projectview.parser.ProjectViewParser
    */
   fun generatePrettyString(projectView: ProjectView): String
 }

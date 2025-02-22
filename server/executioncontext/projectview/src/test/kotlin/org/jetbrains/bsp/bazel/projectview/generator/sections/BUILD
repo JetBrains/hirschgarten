@@ -5,7 +5,7 @@ kt_junit5_test(
     size = "small",
     src = "ProjectViewExcludableListSectionGeneratorTest.kt",
     deps = [
-        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/generator/sections",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/generator/sections",
     ],
 )
 
@@ -14,7 +14,7 @@ kt_junit5_test(
     size = "small",
     src = "ProjectViewListSectionGeneratorTest.kt",
     deps = [
-        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/generator/sections",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/generator/sections",
     ],
 )
 
@@ -23,6 +23,6 @@ kt_junit5_test(
     size = "small",
     src = "ProjectViewSingletonSectionGeneratorTest.kt",
     deps = [
-        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/generator/sections",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/generator/sections",
     ],
 )

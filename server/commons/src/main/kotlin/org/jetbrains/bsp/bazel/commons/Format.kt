@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.commons
+package org.jetbrains.bazel.commons
 
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols

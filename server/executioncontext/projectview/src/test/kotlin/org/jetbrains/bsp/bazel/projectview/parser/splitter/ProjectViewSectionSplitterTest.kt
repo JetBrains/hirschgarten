@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.projectview.parser.splitter
+package org.jetbrains.bazel.projectview.parser.splitter
 
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test

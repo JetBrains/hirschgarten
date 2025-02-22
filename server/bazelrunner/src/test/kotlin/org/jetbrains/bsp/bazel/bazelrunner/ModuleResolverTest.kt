@@ -1,10 +1,10 @@
-package org.jetbrains.bsp.bazel.bazelrunner
+package org.jetbrains.bazel.bazelrunner
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import org.jetbrains.bsp.bazel.bazelrunner.outputs.OutputCollector
-import org.jetbrains.bsp.bazel.commons.BazelStatus
+import org.jetbrains.bazel.bazelrunner.outputs.OutputCollector
+import org.jetbrains.bazel.commons.BazelStatus
 import org.junit.jupiter.api.Test
 
 class ModuleResolverTest {

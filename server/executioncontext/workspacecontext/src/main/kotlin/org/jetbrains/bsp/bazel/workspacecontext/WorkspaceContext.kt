@@ -1,17 +1,17 @@
-package org.jetbrains.bsp.bazel.workspacecontext
+package org.jetbrains.bazel.workspacecontext
 
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContext
-import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextConstructor
-import org.jetbrains.bsp.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.bazelrunner.params.BazelFlag
+import org.jetbrains.bazel.executioncontext.api.ExecutionContext
+import org.jetbrains.bazel.executioncontext.api.ExecutionContextConstructor
+import org.jetbrains.bazel.projectview.model.ProjectView
 import java.nio.file.Path
 
 /**
  * Representation of `ExecutionContext` used during server lifetime.
  *
- * @see org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContext
+ * @see org.jetbrains.bazel.executioncontext.api.ExecutionContext
  */
 data class WorkspaceContext(
   /**

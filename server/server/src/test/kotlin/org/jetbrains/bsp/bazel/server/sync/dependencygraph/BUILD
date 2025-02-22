@@ -5,6 +5,6 @@ kt_junit5_test(
     size = "small",
     src = "DependencyGraphTest.kt",
     deps = [
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/dependencygraph",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/dependencygraph",
     ],
 )

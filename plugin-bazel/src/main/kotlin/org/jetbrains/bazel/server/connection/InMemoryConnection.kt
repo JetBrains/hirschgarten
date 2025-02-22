@@ -7,11 +7,11 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.eclipse.lsp4j.jsonrpc.Launcher.Builder
 import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
-import org.jetbrains.bsp.bazel.server.BazelBspServer
-import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
-import org.jetbrains.bsp.bazel.server.bsp.BspIntegrationData
-import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
-import org.jetbrains.bsp.bazel.workspacecontext.DefaultWorkspaceContextProvider
+import org.jetbrains.bazel.server.BazelBspServer
+import org.jetbrains.bazel.server.benchmark.TelemetryConfig
+import org.jetbrains.bazel.server.bsp.BspIntegrationData
+import org.jetbrains.bazel.server.bsp.info.BspInfo
+import org.jetbrains.bazel.workspacecontext.DefaultWorkspaceContextProvider
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.utils.BazelBuildServerCapabilitiesTypeAdapter

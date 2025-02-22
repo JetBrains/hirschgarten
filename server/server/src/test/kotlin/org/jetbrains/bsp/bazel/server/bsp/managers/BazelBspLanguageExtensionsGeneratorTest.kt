@@ -1,12 +1,12 @@
-package org.jetbrains.bsp.bazel.server.bsp.managers
+package org.jetbrains.bazel.server.bsp.managers
 
 import io.kotest.matchers.equals.shouldBeEqual
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bsp.bazel.install.EnvironmentCreator
-import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
-import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
+import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.install.EnvironmentCreator
+import org.jetbrains.bazel.server.bsp.info.BspInfo
+import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance

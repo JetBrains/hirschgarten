@@ -1,14 +1,14 @@
-package org.jetbrains.bsp.bazel.server.sync
+package org.jetbrains.bazel.server.sync
 
 import ch.epfl.scala.bsp4j.MavenDependencyModule
 import ch.epfl.scala.bsp4j.MavenDependencyModuleArtifact
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
-import org.jetbrains.bsp.bazel.server.model.Library
-import org.jetbrains.bsp.bazel.server.model.Module
-import org.jetbrains.bsp.bazel.server.model.SourceSet
+import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.server.model.AspectSyncProject
+import org.jetbrains.bazel.server.model.Library
+import org.jetbrains.bazel.server.model.Module
+import org.jetbrains.bazel.server.model.SourceSet
 import org.junit.jupiter.api.Test
 import java.net.URI
 import java.nio.file.Paths

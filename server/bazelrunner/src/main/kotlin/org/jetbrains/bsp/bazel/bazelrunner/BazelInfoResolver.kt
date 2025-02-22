@@ -1,9 +1,9 @@
-package org.jetbrains.bsp.bazel.bazelrunner
+package org.jetbrains.bazel.bazelrunner
 
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
+import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.bazelrunner.utils.orLatestSupported
 import java.nio.file.Paths
 
 private const val RELEASE = "release"

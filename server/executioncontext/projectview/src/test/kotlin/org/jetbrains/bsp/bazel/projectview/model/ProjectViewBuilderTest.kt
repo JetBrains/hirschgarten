@@ -1,16 +1,16 @@
-package org.jetbrains.bsp.bazel.projectview.model
+package org.jetbrains.bazel.projectview.model
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewImportDepthSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

@@ -1,7 +1,7 @@
-package org.jetbrains.bsp.bazel.install
+package org.jetbrains.bazel.install
 
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bsp.bazel.server.bsp.utils.FileUtils.writeIfDifferent
+import org.jetbrains.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path

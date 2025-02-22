@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.commons
+package org.jetbrains.bazel.commons
 
 import ch.epfl.scala.bsp4j.StatusCode
 

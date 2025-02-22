@@ -1,11 +1,11 @@
-package org.jetbrains.bsp.bazel.projectview.parser.sections
+package org.jetbrains.bazel.projectview.parser.sections
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewListSection
-import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSection
-import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSections
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewListSection
+import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSection
+import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSections
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.params.ParameterizedTest
@@ -58,7 +58,7 @@ class ProjectViewListSectionParserTest {
   @Nested
   @DisplayName("ProjectViewListSection parse(rawSection) tests")
   internal inner class ParseRawSectionTest<V, T : ProjectViewListSection<V>> {
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewListSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewListSectionParserTest#data")
     @ParameterizedTest
     fun shouldReturnFailureForWrongSectionName(
       parser: ProjectViewListSectionParser<V, T>,
@@ -79,7 +79,7 @@ class ProjectViewListSectionParserTest {
       exception.message shouldBe "Project view parsing failed. Expected '$sectionName' section name, got 'wrongsection'."
     }
 
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewListSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewListSectionParserTest#data")
     @ParameterizedTest
     fun shouldParseEmptySectionBody(
       parser: ProjectViewListSectionParser<V, T>,
@@ -101,7 +101,7 @@ class ProjectViewListSectionParserTest {
       section shouldBe null
     }
 
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewListSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewListSectionParserTest#data")
     @ParameterizedTest
     fun shouldParseElements(
       parser: ProjectViewListSectionParser<V, T>,
@@ -130,7 +130,7 @@ class ProjectViewListSectionParserTest {
     }
 
     // ProjectViewListSection parse(rawSections)
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewListSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewListSectionParserTest#data")
     @ParameterizedTest
     fun shouldReturnEmptySectionIfThereIsNoSectionForParseWithoutDefault(
       parser: ProjectViewListSectionParser<V, T>,
@@ -155,7 +155,7 @@ class ProjectViewListSectionParserTest {
       section shouldBe null
     }
 
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewListSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewListSectionParserTest#data")
     @ParameterizedTest
     fun shouldParseAllSectionElementsFromListWithoutDefault(
       parser: ProjectViewListSectionParser<V, T>,

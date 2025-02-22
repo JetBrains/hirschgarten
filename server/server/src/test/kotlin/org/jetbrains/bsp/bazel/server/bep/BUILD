@@ -4,7 +4,7 @@ kt_junit5_test(
     name = "BepDiagnosticsTest",
     src = "BepDiagnosticsTest.kt",
     deps = [
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bep",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bep",
     ],
 )
 
@@ -13,7 +13,7 @@ kt_junit5_test(
     size = "small",
     src = "TestXmlParserTest.kt",
     deps = [
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bep",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bep",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )

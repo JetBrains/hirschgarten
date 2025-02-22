@@ -5,7 +5,7 @@ kt_junit5_test(
     size = "small",
     src = "ProjectViewRawSectionsTest.kt",
     deps = [
-        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/parser/splitter",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/parser/splitter",
     ],
 )
 
@@ -14,6 +14,6 @@ kt_junit5_test(
     size = "small",
     src = "ProjectViewSectionSplitterTest.kt",
     deps = [
-        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/parser/splitter",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/parser/splitter",
     ],
 )

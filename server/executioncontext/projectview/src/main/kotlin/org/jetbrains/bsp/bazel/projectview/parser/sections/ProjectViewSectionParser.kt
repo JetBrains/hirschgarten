@@ -1,8 +1,8 @@
-package org.jetbrains.bsp.bazel.projectview.parser.sections
+package org.jetbrains.bazel.projectview.parser.sections
 
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSection
-import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSection
-import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSections
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewSection
+import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSection
+import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSections
 
 abstract class ProjectViewSectionParser<T : ProjectViewSection> {
   abstract val sectionName: String

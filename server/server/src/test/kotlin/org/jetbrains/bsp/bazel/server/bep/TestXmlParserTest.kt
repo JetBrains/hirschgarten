@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.server.bep
+package org.jetbrains.bazel.server.bep
 
 import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.DidChangeBuildTarget
@@ -21,7 +21,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
-import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
+import org.jetbrains.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir

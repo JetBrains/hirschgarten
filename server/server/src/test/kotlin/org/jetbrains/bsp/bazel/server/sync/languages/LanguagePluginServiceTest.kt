@@ -1,24 +1,24 @@
-package org.jetbrains.bsp.bazel.server.sync.languages
+package org.jetbrains.bazel.server.sync.languages
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
-import org.jetbrains.bsp.bazel.server.model.Language
-import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
-import org.jetbrains.bsp.bazel.server.sync.languages.android.AndroidLanguagePlugin
-import org.jetbrains.bsp.bazel.server.sync.languages.cpp.CppLanguagePlugin
-import org.jetbrains.bsp.bazel.server.sync.languages.go.GoLanguagePlugin
-import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaLanguagePlugin
-import org.jetbrains.bsp.bazel.server.sync.languages.java.JdkResolver
-import org.jetbrains.bsp.bazel.server.sync.languages.java.JdkVersionResolver
-import org.jetbrains.bsp.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
-import org.jetbrains.bsp.bazel.server.sync.languages.python.PythonLanguagePlugin
-import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustLanguagePlugin
-import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaLanguagePlugin
-import org.jetbrains.bsp.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
-import org.jetbrains.bsp.bazel.workspacecontext.DefaultWorkspaceContextProvider
+import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.bazelrunner.utils.orLatestSupported
+import org.jetbrains.bazel.server.model.Language
+import org.jetbrains.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bazel.server.sync.languages.android.AndroidLanguagePlugin
+import org.jetbrains.bazel.server.sync.languages.cpp.CppLanguagePlugin
+import org.jetbrains.bazel.server.sync.languages.go.GoLanguagePlugin
+import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
+import org.jetbrains.bazel.server.sync.languages.java.JdkResolver
+import org.jetbrains.bazel.server.sync.languages.java.JdkVersionResolver
+import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
+import org.jetbrains.bazel.server.sync.languages.python.PythonLanguagePlugin
+import org.jetbrains.bazel.server.sync.languages.rust.RustLanguagePlugin
+import org.jetbrains.bazel.server.sync.languages.scala.ScalaLanguagePlugin
+import org.jetbrains.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
+import org.jetbrains.bazel.workspacecontext.DefaultWorkspaceContextProvider
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -208,11 +208,11 @@ class LanguagePluginServiceTest {
     @Test
     fun `should return sourceSet for Java Language`() {
       // given
-      val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/java/"
+      val dirString = "org/jetbrains/bazel/server/sync/languages/java/"
       val filename = "JavaPackageTest.java"
       val content =
         """
-                |package org.jetbrains.bsp.bazel.server.sync.languages.java;
+                |package org.jetbrains.bazel.server.sync.languages.java;
                 |
                 |            public class JavaPackageTest{
                 |              public public static void main(String[] args) {
@@ -233,7 +233,7 @@ class LanguagePluginServiceTest {
     @Test
     fun `should not return tmpRepo for empty file in Java Language`() {
       // given
-      val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/java/"
+      val dirString = "org/jetbrains/bazel/server/sync/languages/java/"
       val filename = "JavaPackageTest.java"
       val content = ""
       val filePath = createFileAndWrite(dirString, filename, content)
@@ -250,11 +250,11 @@ class LanguagePluginServiceTest {
     @Test
     fun `should not return tmpRepo for Java Language with wrong package declaration`() {
       // given
-      val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/java/"
+      val dirString = "org/jetbrains/bazel/server/sync/languages/java/"
       val filename = "JavaPackageTest.java"
       val content =
         """
-                |package org.jetbrains.bsp.bazel.server.sync.languages;
+                |package org.jetbrains.bazel.server.sync.languages;
                 |package java;
                 |public class JavaPackageTest{
                 |  public public static void main(String[] args) {
@@ -276,11 +276,11 @@ class LanguagePluginServiceTest {
     @Test
     fun `should return sourceSet for Scala Language from one line package declaration`() {
       // given
-      val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/"
+      val dirString = "org/jetbrains/bazel/server/sync/languages/"
       val filename = "ScalaPackageTest.java"
       val content =
         """
-                |package org.jetbrains.bsp.bazel.server.sync.languages;
+                |package org.jetbrains.bazel.server.sync.languages;
                 |
                 |   class ScalaPackageTest{
                 |        def main(){
@@ -301,11 +301,11 @@ class LanguagePluginServiceTest {
     @Test
     fun `should return sourceSet for Scala Language from two line package declaration`() {
       // given
-      val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/scala/"
+      val dirString = "org/jetbrains/bazel/server/sync/languages/scala/"
       val filename = "ScalaPackageTest.java"
       val content =
         """
-                |package org.jetbrains.bsp.bazel.server.sync.languages;
+                |package org.jetbrains.bazel.server.sync.languages;
                 |package scala;
                 |
                 |class ScalaPackageTest{
@@ -327,11 +327,11 @@ class LanguagePluginServiceTest {
     @Test
     fun `should return sourceSet for Scala Language from multi line package declaration`() {
       // given
-      val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/scala/"
+      val dirString = "org/jetbrains/bazel/server/sync/languages/scala/"
       val filename = "ScalaPackageTest.java"
       val content =
         """
-                |package org.jetbrains.bsp.bazel;
+                |package org.jetbrains.bazel;
                 |package server.sync.languages;
                 |
                 |
@@ -356,7 +356,7 @@ class LanguagePluginServiceTest {
     @Test
     fun `should not return tmpRepo for Scala Language from empty package declaration`() {
       // given
-      val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/"
+      val dirString = "org/jetbrains/bazel/server/sync/languages/"
       val filename = "ScalaPackageTest.java"
       val content = ""
       val filePath = createFileAndWrite(dirString, filename, content)
@@ -373,11 +373,11 @@ class LanguagePluginServiceTest {
     @Test
     fun `should return sourceSet for Kotlin Language`() {
       // given
-      val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/kotlin/"
+      val dirString = "org/jetbrains/bazel/server/sync/languages/kotlin/"
       val filename = "KotlinPackageTest.kt"
       val content =
         """
-                |package org.jetbrains.bsp.bazel.server.sync.languages.kotlin
+                |package org.jetbrains.bazel.server.sync.languages.kotlin
                 |
                 |fun main() {
                 |    println("Hello, World!")
@@ -396,7 +396,7 @@ class LanguagePluginServiceTest {
     @Test
     fun `should not return tmpRepo for Kotlin Language for empty file`() {
       // given
-      val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/kotlin/"
+      val dirString = "org/jetbrains/bazel/server/sync/languages/kotlin/"
       val filename = "KotlinPackageTest.kt"
       val content = ""
       val filePath = createFileAndWrite(dirString, filename, content)
@@ -413,11 +413,11 @@ class LanguagePluginServiceTest {
     @Test
     fun `should return null for no Language`() {
       // given
-      val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/"
+      val dirString = "org/jetbrains/bazel/server/sync/languages/"
       val filename = "EmptyPackageTest.java"
       val content =
         """
-                |package org.jetbrains.bsp.bazel.server.sync.languages
+                |package org.jetbrains.bazel.server.sync.languages
                 |
         """.trimMargin()
 
@@ -434,11 +434,11 @@ class LanguagePluginServiceTest {
     @Test
     fun `should not return tmpRepo for Thrift Language`() {
       // given
-      val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/"
+      val dirString = "org/jetbrains/bazel/server/sync/languages/"
       val filename = "ThriftPackageTest.java"
       val content =
         """
-                |package org.jetbrains.bsp.bazel.server.sync.languages
+                |package org.jetbrains.bazel.server.sync.languages
                 |
                 |public class HelloWorldNative
                 |{

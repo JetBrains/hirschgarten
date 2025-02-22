@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.server.bsp.managers
+package org.jetbrains.bazel.server.bsp.managers
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject

@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.server.bzlmod
+package org.jetbrains.bazel.server.bzlmod
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label

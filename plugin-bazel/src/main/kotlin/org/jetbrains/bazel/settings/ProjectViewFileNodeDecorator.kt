@@ -9,7 +9,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import org.jetbrains.bsp.sdkcompat.ProjectViewNodeDecoratorCompat
+import org.jetbrains.bazel.sdkcompat.ProjectViewNodeDecoratorCompat
 
 class ProjectViewFileNodeDecorator(private val project: Project) : ProjectViewNodeDecoratorCompat {
   override fun decorateCompat(node: ProjectViewNode<*>?, data: PresentationData?) {

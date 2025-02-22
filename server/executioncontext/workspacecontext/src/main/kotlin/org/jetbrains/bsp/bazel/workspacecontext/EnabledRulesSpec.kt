@@ -1,8 +1,8 @@
-package org.jetbrains.bsp.bazel.workspacecontext
+package org.jetbrains.bazel.workspacecontext
 
-import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtractor
-import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextListEntity
-import org.jetbrains.bsp.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
+import org.jetbrains.bazel.executioncontext.api.ExecutionContextListEntity
+import org.jetbrains.bazel.projectview.model.ProjectView
 
 data class EnabledRulesSpec(override val values: List<String>) : ExecutionContextListEntity<String>() {
   fun isNotEmpty(): Boolean = values.isNotEmpty()

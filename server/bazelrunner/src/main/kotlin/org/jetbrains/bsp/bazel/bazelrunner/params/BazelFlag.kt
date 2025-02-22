@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.bazelrunner.params
+package org.jetbrains.bazel.bazelrunner.params
 
 import org.jetbrains.bazel.commons.constants.Constants.NAME
 import org.jetbrains.bazel.commons.constants.Constants.VERSION

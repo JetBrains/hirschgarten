@@ -1,15 +1,15 @@
-package org.jetbrains.bsp.bazel.projectview.generator
+package org.jetbrains.bazel.projectview.generator
 
-import org.jetbrains.bsp.bazel.projectview.generator.sections.ProjectViewAllowManualTargetsSyncSectionGenerator
-import org.jetbrains.bsp.bazel.projectview.generator.sections.ProjectViewBazelBinarySectionGenerator
-import org.jetbrains.bsp.bazel.projectview.generator.sections.ProjectViewBuildFlagsSectionGenerator
-import org.jetbrains.bsp.bazel.projectview.generator.sections.ProjectViewDeriveTargetsFromDirectoriesSectionGenerator
-import org.jetbrains.bsp.bazel.projectview.generator.sections.ProjectViewDirectoriesSectionGenerator
-import org.jetbrains.bsp.bazel.projectview.generator.sections.ProjectViewEnabledRulesSectionGenerator
-import org.jetbrains.bsp.bazel.projectview.generator.sections.ProjectViewImportDepthSectionGenerator
-import org.jetbrains.bsp.bazel.projectview.generator.sections.ProjectViewSyncFlagsSectionGenerator
-import org.jetbrains.bsp.bazel.projectview.generator.sections.ProjectViewTargetsSectionGenerator
-import org.jetbrains.bsp.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.projectview.generator.sections.ProjectViewAllowManualTargetsSyncSectionGenerator
+import org.jetbrains.bazel.projectview.generator.sections.ProjectViewBazelBinarySectionGenerator
+import org.jetbrains.bazel.projectview.generator.sections.ProjectViewBuildFlagsSectionGenerator
+import org.jetbrains.bazel.projectview.generator.sections.ProjectViewDeriveTargetsFromDirectoriesSectionGenerator
+import org.jetbrains.bazel.projectview.generator.sections.ProjectViewDirectoriesSectionGenerator
+import org.jetbrains.bazel.projectview.generator.sections.ProjectViewEnabledRulesSectionGenerator
+import org.jetbrains.bazel.projectview.generator.sections.ProjectViewImportDepthSectionGenerator
+import org.jetbrains.bazel.projectview.generator.sections.ProjectViewSyncFlagsSectionGenerator
+import org.jetbrains.bazel.projectview.generator.sections.ProjectViewTargetsSectionGenerator
+import org.jetbrains.bazel.projectview.model.ProjectView
 import java.nio.file.Files
 import java.nio.file.Path
 

@@ -1,8 +1,8 @@
-package org.jetbrains.bsp.bazel.workspacecontext
+package org.jetbrains.bazel.workspacecontext
 
-import org.jetbrains.bsp.bazel.projectview.generator.DefaultProjectViewGenerator
-import org.jetbrains.bsp.bazel.projectview.model.ProjectView
-import org.jetbrains.bsp.bazel.projectview.parser.DefaultProjectViewParser
+import org.jetbrains.bazel.projectview.generator.DefaultProjectViewGenerator
+import org.jetbrains.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.projectview.parser.DefaultProjectViewParser
 import java.nio.file.Path
 import kotlin.io.path.notExists
 

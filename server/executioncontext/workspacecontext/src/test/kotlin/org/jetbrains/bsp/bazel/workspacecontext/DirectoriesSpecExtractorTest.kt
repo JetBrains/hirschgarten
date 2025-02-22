@@ -1,8 +1,8 @@
-package org.jetbrains.bsp.bazel.workspacecontext
+package org.jetbrains.bazel.workspacecontext
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bsp.bazel.projectview.model.ProjectView
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
+import org.jetbrains.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 

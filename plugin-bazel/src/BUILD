@@ -3,7 +3,6 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 exports_files(glob([
     "main/jps-resources/**/*",
-    "test/resources/**/*",
 ]))
 
 kt_jvm_library(
@@ -128,7 +127,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel:bsp_export",
     ],
 )
 

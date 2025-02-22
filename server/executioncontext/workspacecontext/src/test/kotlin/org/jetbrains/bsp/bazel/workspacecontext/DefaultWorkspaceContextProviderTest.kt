@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.workspacecontext
+package org.jetbrains.bazel.workspacecontext
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label

@@ -1,25 +1,25 @@
-package org.jetbrains.bsp.bazel.projectview.model
+package org.jetbrains.bazel.projectview.model
 
 import org.apache.logging.log4j.LogManager
-import org.jetbrains.bsp.bazel.projectview.model.sections.AndroidMinSdkSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewExcludableListSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewIdeJavaHomeOverrideSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewListSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSingletonSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ShardSyncSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ShardingApproachSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.TargetShardSizeSection
+import org.jetbrains.bazel.projectview.model.sections.AndroidMinSdkSection
+import org.jetbrains.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
+import org.jetbrains.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewExcludableListSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewIdeJavaHomeOverrideSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewImportDepthSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewListSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewSingletonSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewTargetsSection
+import org.jetbrains.bazel.projectview.model.sections.ShardSyncSection
+import org.jetbrains.bazel.projectview.model.sections.ShardingApproachSection
+import org.jetbrains.bazel.projectview.model.sections.TargetShardSizeSection
 
 /**
  * Representation of the project view file.

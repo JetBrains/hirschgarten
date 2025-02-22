@@ -3,8 +3,8 @@ load("@aspect_bazel_lib//lib:write_source_files.bzl", "write_source_files")
 
 output_files(
     name = "bsp_target_info_proto_jar",
-    paths = ["server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto/libbsp_target_info_proto-speed.jar"],
-    target = "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:bsp_target_info_java_proto",
+    paths = ["server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto/libbsp_target_info_proto-speed.jar"],
+    target = "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto",
 )
 
 output_files(

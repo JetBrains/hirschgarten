@@ -1,12 +1,12 @@
-package org.jetbrains.bsp.bazel.bazelrunner
+package org.jetbrains.bazel.bazelrunner
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bazel.bazelrunner.params.BazelFlag
+import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -26,7 +26,7 @@ interface HasAdditionalBazelOptions {
 interface HasEnvironment {
   // In case of `bazel test`, it will be set using `--test_env=<name=value>`
   // In case of `bazel build`, it will be set using `--action_env=<name=value>`
-  // `bazel run` needs to be set up inside the [org.jetbrains.bsp.bazel.bazelrunner.BazelRunner]
+  // `bazel run` needs to be set up inside the [org.jetbrains.bazel.bazelrunner.BazelRunner]
   val environment: MutableMap<String, String>
 
   // In case of `bazel test, it will be set using `--test_env=<name>`

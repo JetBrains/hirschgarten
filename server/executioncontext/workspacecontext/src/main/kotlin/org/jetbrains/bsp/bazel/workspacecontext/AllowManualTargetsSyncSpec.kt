@@ -1,9 +1,9 @@
-package org.jetbrains.bsp.bazel.workspacecontext
+package org.jetbrains.bazel.workspacecontext
 
-import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtractor
-import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextSingletonEntity
-import org.jetbrains.bsp.bazel.projectview.model.ProjectView
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
+import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
+import org.jetbrains.bazel.executioncontext.api.ExecutionContextSingletonEntity
+import org.jetbrains.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 
 data class AllowManualTargetsSyncSpec(override val value: Boolean) : ExecutionContextSingletonEntity<Boolean>()
 

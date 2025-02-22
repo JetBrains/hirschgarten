@@ -1,19 +1,19 @@
-package org.jetbrains.bsp.bazel.projectview.parser.sections
+package org.jetbrains.bazel.projectview.parser.sections
 
 import org.apache.logging.log4j.LogManager
-import org.jetbrains.bsp.bazel.projectview.model.sections.AndroidMinSdkSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewIdeJavaHomeOverrideSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSingletonSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ShardSyncSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ShardingApproachSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.TargetShardSizeSection
-import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSections
+import org.jetbrains.bazel.projectview.model.sections.AndroidMinSdkSection
+import org.jetbrains.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
+import org.jetbrains.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewIdeJavaHomeOverrideSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewImportDepthSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewSingletonSection
+import org.jetbrains.bazel.projectview.model.sections.ShardSyncSection
+import org.jetbrains.bazel.projectview.model.sections.ShardingApproachSection
+import org.jetbrains.bazel.projectview.model.sections.TargetShardSizeSection
+import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSections
 import java.nio.file.Path
 import kotlin.io.path.Path
 

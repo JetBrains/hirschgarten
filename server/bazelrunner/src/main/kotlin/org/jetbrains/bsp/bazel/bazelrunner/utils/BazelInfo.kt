@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.bazelrunner.utils
+package org.jetbrains.bazel.bazelrunner.utils
 
 import org.jetbrains.bazel.commons.constants.Constants.DOT_BAZELBSP_DIR_NAME
 import java.nio.file.Path

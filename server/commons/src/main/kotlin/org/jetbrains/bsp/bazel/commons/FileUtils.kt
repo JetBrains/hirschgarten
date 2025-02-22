@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.commons
+package org.jetbrains.bazel.commons
 
 import com.intellij.util.EnvironmentUtil
 import org.jetbrains.bazel.commons.utils.OsFamily

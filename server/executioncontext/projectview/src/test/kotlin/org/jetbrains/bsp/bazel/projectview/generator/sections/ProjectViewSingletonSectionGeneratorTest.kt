@@ -1,8 +1,8 @@
-package org.jetbrains.bsp.bazel.projectview.generator.sections
+package org.jetbrains.bazel.projectview.generator.sections
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewImportDepthSection
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

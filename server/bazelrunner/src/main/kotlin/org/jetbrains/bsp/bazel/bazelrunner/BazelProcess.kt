@@ -1,14 +1,14 @@
-package org.jetbrains.bsp.bazel.bazelrunner
+package org.jetbrains.bazel.bazelrunner
 
 import org.apache.logging.log4j.LogManager
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
-import org.jetbrains.bsp.bazel.bazelrunner.outputs.AsyncOutputProcessor
-import org.jetbrains.bsp.bazel.bazelrunner.outputs.OutputProcessor
-import org.jetbrains.bsp.bazel.bazelrunner.outputs.SyncOutputProcessor
-import org.jetbrains.bsp.bazel.commons.BazelStatus
-import org.jetbrains.bsp.bazel.commons.Format
-import org.jetbrains.bsp.bazel.commons.Stopwatch
-import org.jetbrains.bsp.bazel.logger.BspClientLogger
+import org.jetbrains.bazel.bazelrunner.outputs.AsyncOutputProcessor
+import org.jetbrains.bazel.bazelrunner.outputs.OutputProcessor
+import org.jetbrains.bazel.bazelrunner.outputs.SyncOutputProcessor
+import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.Format
+import org.jetbrains.bazel.commons.Stopwatch
+import org.jetbrains.bazel.logger.BspClientLogger
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
 

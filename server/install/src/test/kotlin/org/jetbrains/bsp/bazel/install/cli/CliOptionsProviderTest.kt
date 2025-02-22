@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.install.cli
+package org.jetbrains.bazel.install.cli
 
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.DisplayName

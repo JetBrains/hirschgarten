@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.bazelrunner
+package org.jetbrains.bazel.bazelrunner
 
 import com.google.gson.Gson
 import org.eclipse.lsp4j.jsonrpc.CancelChecker

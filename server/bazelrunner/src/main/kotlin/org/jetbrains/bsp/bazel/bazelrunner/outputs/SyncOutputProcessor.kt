@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.bazelrunner.outputs
+package org.jetbrains.bazel.bazelrunner.outputs
 
 import java.util.concurrent.TimeUnit
 

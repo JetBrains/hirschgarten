@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.projectview.model.sections
+package org.jetbrains.bazel.projectview.model.sections
 
 sealed class ProjectViewListSection<T>(sectionName: String) : ProjectViewSection(sectionName) {
   abstract val values: List<T>

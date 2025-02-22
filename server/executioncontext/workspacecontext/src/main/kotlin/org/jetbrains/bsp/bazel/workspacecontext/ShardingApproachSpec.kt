@@ -1,7 +1,7 @@
-package org.jetbrains.bsp.bazel.workspacecontext
+package org.jetbrains.bazel.workspacecontext
 
-import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtractor
-import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextSingletonEntity
+import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
+import org.jetbrains.bazel.executioncontext.api.ExecutionContextSingletonEntity
 
 data class ShardingApproachSpec(override val value: ShardingApproach?) : ExecutionContextSingletonEntity<ShardingApproach?>()
 
@@ -17,6 +17,6 @@ enum class ShardingApproach {
 }
 
 internal object ShardingApproachSpecExtractor : ExecutionContextEntityExtractor<ShardingApproachSpec> {
-  override fun fromProjectView(projectView: org.jetbrains.bsp.bazel.projectview.model.ProjectView): ShardingApproachSpec =
+  override fun fromProjectView(projectView: org.jetbrains.bazel.projectview.model.ProjectView): ShardingApproachSpec =
     ShardingApproachSpec(ShardingApproach.fromString(projectView.shardingApproach?.value))
 }

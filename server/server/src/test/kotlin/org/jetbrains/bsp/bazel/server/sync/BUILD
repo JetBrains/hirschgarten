@@ -5,7 +5,7 @@ kt_junit5_test(
     size = "small",
     src = "BspProjectMapperTest.kt",
     deps = [
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
     ],
 )
 
@@ -14,7 +14,7 @@ kt_junit5_test(
     size = "small",
     src = "DependencyMapperTest.kt",
     deps = [
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
     ],
 )
 
@@ -23,7 +23,7 @@ kt_junit5_test(
     size = "small",
     src = "TargetTagsResolverTest.kt",
     deps = [
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:bsp_target_info_java_proto",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto",
     ],
 )

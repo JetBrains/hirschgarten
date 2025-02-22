@@ -7,7 +7,7 @@ kt_junit5_test(
     deps = [
         "//server/commons",
         "//server/install:install-lib",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bsp/managers",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/managers",
         "@maven//:org_eclipse_lsp4j_org_eclipse_lsp4j_jsonrpc",
     ],
 )
@@ -17,6 +17,6 @@ kt_junit5_test(
     size = "small",
     src = "BzlModGraphTest.kt",
     deps = [
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bsp/managers",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/managers",
     ],
 )

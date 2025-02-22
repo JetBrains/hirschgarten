@@ -4,7 +4,7 @@ java_library(
     name = "params",
     visibility = ["//visibility:public"],
     exports = [
-        "//server/bazelrunner/src/main/kotlin/org/jetbrains/bsp/bazel/bazelrunner/params",
+        "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/params",
     ],
 )
 
@@ -13,6 +13,6 @@ java_library(
     visibility = ["//visibility:public"],
     exports = [
         "//server/bazelrunner:params",
-        "//server/bazelrunner/src/main/kotlin/org/jetbrains/bsp/bazel/bazelrunner",
+        "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner",
     ],
 )

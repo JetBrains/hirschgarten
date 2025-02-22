@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.projectview.model.sections
+package org.jetbrains.bazel.projectview.model.sections
 
 import org.jetbrains.bazel.label.Label
 import java.nio.file.Path

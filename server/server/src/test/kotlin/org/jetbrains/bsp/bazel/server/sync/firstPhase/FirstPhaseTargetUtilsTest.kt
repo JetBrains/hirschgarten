@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.server.sync.firstPhase
+package org.jetbrains.bazel.server.sync.firstPhase
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe

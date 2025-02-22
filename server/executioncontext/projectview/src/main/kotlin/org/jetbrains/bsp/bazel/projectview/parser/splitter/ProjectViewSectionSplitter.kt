@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.projectview.parser.splitter
+package org.jetbrains.bazel.projectview.parser.splitter
 
 import java.util.regex.Pattern
 import java.util.stream.Collectors

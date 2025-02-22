@@ -1,7 +1,7 @@
-package org.jetbrains.bsp.bazel.bazelrunner.outputs
+package org.jetbrains.bazel.bazelrunner.outputs
 
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
-import org.jetbrains.bsp.bazel.logger.BspClientLogger
+import org.jetbrains.bazel.logger.BspClientLogger
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream

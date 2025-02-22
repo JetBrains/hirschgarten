@@ -1,13 +1,13 @@
-package org.jetbrains.bsp.bazel.projectview.parser.sections
+package org.jetbrains.bazel.projectview.parser.sections
 
 import io.kotest.assertions.throwables.shouldNotThrowAnyUnit
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSingletonSection
-import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSection
-import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSections
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewSingletonSection
+import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSection
+import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSections
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.params.ParameterizedTest
@@ -66,7 +66,7 @@ class ProjectViewSingletonSectionParserTest<V, T : ProjectViewSingletonSection<V
   @Nested
   @DisplayName("T parse(rawSection) tests")
   internal inner class ParseRawSectionTest {
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewSingletonSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewSingletonSectionParserTest#data")
     @ParameterizedTest
     fun shouldReturnFailureForWrongSectionName(
       parser: ProjectViewSingletonSectionParser<V, T>,
@@ -85,7 +85,7 @@ class ProjectViewSingletonSectionParserTest<V, T : ProjectViewSingletonSection<V
         "Project view parsing failed. Expected '$sectionName' section name, got 'wrongsection'."
     }
 
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewSingletonSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewSingletonSectionParserTest#data")
     @ParameterizedTest
     fun shouldReturnEmptyForEmptySectionBody(
       parser: ProjectViewSingletonSectionParser<V, T>,
@@ -104,7 +104,7 @@ class ProjectViewSingletonSectionParserTest<V, T : ProjectViewSingletonSection<V
       shouldNotThrowAnyUnit { parser.parse(rawSection) }
     }
 
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewSingletonSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewSingletonSectionParserTest#data")
     @ParameterizedTest
     fun shouldReturnSectionWithTrimmedValue(
       parser: ProjectViewSingletonSectionParser<V, T>,
@@ -131,7 +131,7 @@ class ProjectViewSingletonSectionParserTest<V, T : ProjectViewSingletonSection<V
   @Nested
   @DisplayName("T parse(rawSections) tests")
   internal inner class ParseRawSectionsTest {
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewSingletonSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewSingletonSectionParserTest#data")
     @ParameterizedTest
     fun shouldReturnLastSectionWithoutExplicitDefault(
       parser: ProjectViewSingletonSectionParser<V, T>,
@@ -166,7 +166,7 @@ class ProjectViewSingletonSectionParserTest<V, T : ProjectViewSingletonSection<V
       section shouldBe expectedSection
     }
 
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewSingletonSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewSingletonSectionParserTest#data")
     @ParameterizedTest
     fun shouldReturnEmptyIfSectionDoesntExist(
       parser: ProjectViewSingletonSectionParser<V, T>,

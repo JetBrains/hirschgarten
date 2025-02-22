@@ -1,14 +1,14 @@
-package org.jetbrains.bsp.bazel.workspacecontext
+package org.jetbrains.bazel.workspacecontext
 
 import com.intellij.util.EnvironmentUtil
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.commons.utils.OsArch
 import org.jetbrains.bazel.commons.utils.OsFamily
-import org.jetbrains.bsp.bazel.commons.FileUtils
-import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtractor
-import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtractorException
-import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextSingletonEntity
-import org.jetbrains.bsp.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.commons.FileUtils
+import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
+import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractorException
+import org.jetbrains.bazel.executioncontext.api.ExecutionContextSingletonEntity
+import org.jetbrains.bazel.projectview.model.ProjectView
 import java.io.File
 import java.net.URI
 import java.nio.file.Path

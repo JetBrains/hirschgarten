@@ -1,6 +1,6 @@
-package org.jetbrains.bsp.bazel.projectview.parser
+package org.jetbrains.bazel.projectview.parser
 
-import org.jetbrains.bsp.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.projectview.model.ProjectView
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -8,7 +8,7 @@ import java.nio.file.Path
  * Project view file parser. Its purpose is to parse *.bazelproject file and create an instance of
  * ProjectView.
  *
- * @see org.jetbrains.bsp.bazel.projectview.model.ProjectView
+ * @see org.jetbrains.bazel.projectview.model.ProjectView
  */
 interface ProjectViewParser {
   /**

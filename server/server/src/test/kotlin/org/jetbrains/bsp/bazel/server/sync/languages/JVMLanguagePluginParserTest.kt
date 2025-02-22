@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.server.sync.languages
+package org.jetbrains.bazel.server.sync.languages
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.protocol.EnhancedSourceItemData

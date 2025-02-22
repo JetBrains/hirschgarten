@@ -6,6 +6,6 @@ kt_junit5_test(
     src = "SourceRootGuesserTest.kt",
     deps = [
         "//server/commons",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/languages",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/languages",
     ],
 )

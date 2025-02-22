@@ -1,7 +1,7 @@
-package org.jetbrains.bsp.bazel.install
+package org.jetbrains.bazel.install
 
-import org.jetbrains.bsp.bazel.install.cli.CliOptions
-import org.jetbrains.bsp.bazel.install.cli.CliOptionsProvider
+import org.jetbrains.bazel.install.cli.CliOptions
+import org.jetbrains.bazel.install.cli.CliOptionsProvider
 import java.nio.file.Path
 
 object Install {

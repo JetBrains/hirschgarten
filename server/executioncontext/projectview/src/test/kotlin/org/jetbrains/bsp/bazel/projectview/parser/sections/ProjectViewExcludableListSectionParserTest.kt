@@ -1,12 +1,12 @@
-package org.jetbrains.bsp.bazel.projectview.parser.sections
+package org.jetbrains.bazel.projectview.parser.sections
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewExcludableListSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
-import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSection
-import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSections
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewExcludableListSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewTargetsSection
+import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSection
+import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSections
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.params.ParameterizedTest
@@ -64,7 +64,7 @@ class ProjectViewExcludableListSectionParserTest<V, T : ProjectViewExcludableLis
   @Nested
   @DisplayName("ProjectViewExcludableListSection parse(rawSection) tests")
   internal inner class ParseRawSectionTest {
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewExcludableListSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewExcludableListSectionParserTest#data")
     @ParameterizedTest
     fun shouldReturnFailureForWrongSectionName(
       parser: ProjectViewExcludableListSectionParser<V, T>,
@@ -84,7 +84,7 @@ class ProjectViewExcludableListSectionParserTest<V, T : ProjectViewExcludableLis
         "Project view parsing failed. Expected '$sectionName' section name, got 'wrongsection'."
     }
 
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewExcludableListSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewExcludableListSectionParserTest#data")
     @ParameterizedTest
     fun shouldParseEmptySectionBody(
       parser: ProjectViewExcludableListSectionParser<V, T>,
@@ -104,7 +104,7 @@ class ProjectViewExcludableListSectionParserTest<V, T : ProjectViewExcludableLis
       parser.parse(rawSection) shouldBe null
     }
 
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewExcludableListSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewExcludableListSectionParserTest#data")
     @ParameterizedTest
     fun shouldParseIncludedElements(
       parser: ProjectViewExcludableListSectionParser<V, T>,
@@ -134,7 +134,7 @@ class ProjectViewExcludableListSectionParserTest<V, T : ProjectViewExcludableLis
       section shouldBe expectedSection
     }
 
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewExcludableListSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewExcludableListSectionParserTest#data")
     @ParameterizedTest
     fun shouldParseExcludedElements(
       parser: ProjectViewExcludableListSectionParser<V, T>,
@@ -164,7 +164,7 @@ class ProjectViewExcludableListSectionParserTest<V, T : ProjectViewExcludableLis
       section shouldBe expectedSection
     }
 
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewExcludableListSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewExcludableListSectionParserTest#data")
     @ParameterizedTest
     fun shouldParseIncludedAndExcludedElements(
       parser: ProjectViewExcludableListSectionParser<V, T>,
@@ -197,7 +197,7 @@ class ProjectViewExcludableListSectionParserTest<V, T : ProjectViewExcludableLis
   @Nested
   @DisplayName("ProjectViewExcludableListSection parse(rawSections) test")
   internal inner class ParseRawSectionsTest {
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewExcludableListSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewExcludableListSectionParserTest#data")
     @ParameterizedTest
     fun shouldReturnEmptySectionIfThereIsNoSectionForParseWithoutDefault(
       parser: ProjectViewExcludableListSectionParser<V, T>,
@@ -223,7 +223,7 @@ class ProjectViewExcludableListSectionParserTest<V, T : ProjectViewExcludableLis
       section shouldBe null
     }
 
-    @MethodSource("org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewExcludableListSectionParserTest#data")
+    @MethodSource("org.jetbrains.bazel.projectview.parser.sections.ProjectViewExcludableListSectionParserTest#data")
     @ParameterizedTest
     fun shouldParseAllSectionElementsFromListWithoutDefault(
       parser: ProjectViewExcludableListSectionParser<V, T>,

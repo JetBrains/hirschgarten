@@ -5,6 +5,6 @@ kt_junit5_test(
     size = "small",
     src = "EnvironmentCreatorTest.kt",
     deps = [
-        "//server/install/src/main/kotlin/org/jetbrains/bsp/bazel/install",
+        "//server/install/src/main/kotlin/org/jetbrains/bazel/install",
     ],
 )

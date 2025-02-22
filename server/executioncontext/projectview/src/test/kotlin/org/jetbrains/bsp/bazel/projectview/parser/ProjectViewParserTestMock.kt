@@ -1,7 +1,7 @@
-package org.jetbrains.bsp.bazel.projectview.parser
+package org.jetbrains.bazel.projectview.parser
 
 import com.google.common.io.CharStreams
-import org.jetbrains.bsp.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.projectview.model.ProjectView
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.nio.file.Files

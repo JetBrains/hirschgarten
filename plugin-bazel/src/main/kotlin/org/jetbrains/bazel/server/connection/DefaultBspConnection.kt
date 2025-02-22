@@ -24,7 +24,7 @@ import org.jetbrains.bazel.server.utils.reactToExceptionIn
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.console.ids.CONNECT_TASK_ID
-import org.jetbrains.bsp.bazel.install.EnvironmentCreator
+import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bsp.protocol.BSP_CLIENT_NAME
 import org.jetbrains.bsp.protocol.BSP_CLIENT_VERSION
 import org.jetbrains.bsp.protocol.BSP_VERSION

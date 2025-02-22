@@ -7,8 +7,8 @@ kt_junit5_test(
     src = "DefaultProjectViewParserTest.kt",
     resources = ["//server/executioncontext/projectview/src/test/resources:projectview"],
     deps = [
-        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/parser",
-        "//server/executioncontext/projectview/src/test/kotlin/org/jetbrains/bsp/bazel/projectview/parser:parser_test_mock",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/parser",
+        "//server/executioncontext/projectview/src/test/kotlin/org/jetbrains/bazel/projectview/parser:parser_test_mock",
     ],
 )
 
@@ -17,6 +17,6 @@ kt_jvm_library(
     testonly = 1,
     srcs = ["ProjectViewParserTestMock.kt"],
     deps = [
-        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/parser",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/parser",
     ],
 )

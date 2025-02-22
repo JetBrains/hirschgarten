@@ -5,7 +5,7 @@ kt_junit5_test(
     size = "small",
     src = "JVMLanguagePluginParserTest.kt",
     deps = [
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
     ],
 )
 
@@ -15,6 +15,6 @@ kt_junit5_test(
     src = "LanguagePluginServiceTest.kt",
     deps = [
         "//server/bazelrunner",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
     ],
 )

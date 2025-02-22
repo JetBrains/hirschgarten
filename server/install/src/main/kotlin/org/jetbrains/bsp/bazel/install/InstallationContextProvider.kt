@@ -1,7 +1,7 @@
-package org.jetbrains.bsp.bazel.install
+package org.jetbrains.bazel.install
 
 import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
-import org.jetbrains.bsp.bazel.install.cli.CliOptions
+import org.jetbrains.bazel.install.cli.CliOptions
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile

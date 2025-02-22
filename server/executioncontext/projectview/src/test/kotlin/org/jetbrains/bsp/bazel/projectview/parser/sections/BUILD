@@ -5,7 +5,7 @@ kt_junit5_test(
     size = "small",
     src = "ProjectViewListSectionParserTest.kt",
     deps = [
-        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/parser/sections",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/parser/sections",
     ],
 )
 
@@ -14,7 +14,7 @@ kt_junit5_test(
     size = "small",
     src = "ProjectViewExcludableListSectionParserTest.kt",
     deps = [
-        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/parser/sections",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/parser/sections",
     ],
 )
 
@@ -23,6 +23,6 @@ kt_junit5_test(
     size = "small",
     src = "ProjectViewSingletonSectionParserTest.kt",
     deps = [
-        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/parser/sections",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/parser/sections",
     ],
 )

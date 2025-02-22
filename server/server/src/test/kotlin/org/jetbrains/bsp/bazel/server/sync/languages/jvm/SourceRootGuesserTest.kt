@@ -1,7 +1,7 @@
-package org.jetbrains.bsp.bazel.server.sync.languages.jvm
+package org.jetbrains.bazel.server.sync.languages.jvm
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bsp.bazel.server.sync.languages.jvm.SourceRootGuesser.getSourcesRoot
+import org.jetbrains.bazel.server.sync.languages.jvm.SourceRootGuesser.getSourcesRoot
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -27,7 +27,7 @@ class SourceRootGuesserTest {
           "/WORKSPACE_ROOT/java_hello/src/main/java",
         ),
         Arguments.of( // given
-          "file:///WORKSPACE_ROOT/server/src/test/java/org/jetbrains/bsp/bazel/server/bsp/utils/SourceRootGuesserTest.java", // then
+          "file:///WORKSPACE_ROOT/server/src/test/java/org/jetbrains/bazel/server/bsp/utils/SourceRootGuesserTest.java", // then
           "/WORKSPACE_ROOT/server/src/test/java",
         ),
         Arguments.of( // given

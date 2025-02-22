@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.server.bsp.utils
+package org.jetbrains.bazel.server.bsp.utils
 
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.protobuf.InvalidProtocolBufferException

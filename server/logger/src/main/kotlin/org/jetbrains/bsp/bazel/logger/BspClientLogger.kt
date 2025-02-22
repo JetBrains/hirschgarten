@@ -1,9 +1,9 @@
-package org.jetbrains.bsp.bazel.logger
+package org.jetbrains.bazel.logger
 
 import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.LogMessageParams
 import ch.epfl.scala.bsp4j.MessageType
-import org.jetbrains.bsp.bazel.commons.Format
+import org.jetbrains.bazel.commons.Format
 import java.time.Duration
 
 private val LOG_OPERATION_THRESHOLD: Duration = Duration.ofMillis(100)

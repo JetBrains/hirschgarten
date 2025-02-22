@@ -1,9 +1,9 @@
-package org.jetbrains.bsp.bazel.projectview.generator.sections
+package org.jetbrains.bazel.projectview.generator.sections
 
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewExcludableListSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewExcludableListSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewTargetsSection
 import java.nio.file.Path
 import kotlin.io.path.pathString
 

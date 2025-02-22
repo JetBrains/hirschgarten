@@ -1,9 +1,9 @@
-package org.jetbrains.bsp.bazel.workspacecontext
+package org.jetbrains.bazel.workspacecontext
 
-import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtractor
-import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextExcludableListEntity
-import org.jetbrains.bsp.bazel.projectview.model.ProjectView
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
+import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
+import org.jetbrains.bazel.executioncontext.api.ExecutionContextExcludableListEntity
+import org.jetbrains.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import java.nio.file.Path
 
 data class DirectoriesSpec(override val values: List<Path>, override val excludedValues: List<Path>) :

@@ -1,6 +1,6 @@
-package org.jetbrains.bsp.bazel.executioncontext.api
+package org.jetbrains.bazel.executioncontext.api
 
-import org.jetbrains.bsp.bazel.projectview.model.ProjectView
+import org.jetbrains.bazel.projectview.model.ProjectView
 
 /**
  * `ExecutionContext` base class - you need to extend it if you want to create your
@@ -14,10 +14,10 @@ abstract class ExecutionContext
  * in your implementation.
  *
  * @param <T> type of yours `ExecutionContext`
- * @see org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContext
+ * @see org.jetbrains.bazel.executioncontext.api.ExecutionContext
  *
- * @see org.jetbrains.bsp.bazel.projectview.model.ProjectView
- * @see org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtractor
+ * @see org.jetbrains.bazel.projectview.model.ProjectView
+ * @see org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
  */
 interface ExecutionContextConstructor<T : ExecutionContext> {
   fun construct(projectView: ProjectView): T

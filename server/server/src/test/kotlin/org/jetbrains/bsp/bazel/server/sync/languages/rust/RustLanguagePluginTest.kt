@@ -1,11 +1,11 @@
-package org.jetbrains.bsp.bazel.server.sync.languages.rust
+package org.jetbrains.bazel.server.sync.languages.rust
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
-import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.bazelrunner.utils.orLatestSupported
+import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths

@@ -5,6 +5,6 @@ kt_junit5_test(
     size = "small",
     src = "IdeClasspathResolverTest.kt",
     deps = [
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
     ],
 )

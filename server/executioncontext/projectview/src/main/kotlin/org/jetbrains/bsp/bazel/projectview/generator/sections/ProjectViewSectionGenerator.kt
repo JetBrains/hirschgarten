@@ -1,6 +1,6 @@
-package org.jetbrains.bsp.bazel.projectview.generator.sections
+package org.jetbrains.bazel.projectview.generator.sections
 
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSection
+import org.jetbrains.bazel.projectview.model.sections.ProjectViewSection
 
 abstract class ProjectViewSectionGenerator<in T : ProjectViewSection> {
   /**

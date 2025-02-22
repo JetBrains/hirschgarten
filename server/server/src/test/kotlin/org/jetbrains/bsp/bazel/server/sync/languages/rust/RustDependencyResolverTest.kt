@@ -1,15 +1,15 @@
-package org.jetbrains.bsp.bazel.server.sync.languages.rust
+package org.jetbrains.bazel.server.sync.languages.rust
 
 import ch.epfl.scala.bsp4j.RustPackage
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
-import org.jetbrains.bsp.bazel.server.model.Module
-import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.bazelrunner.utils.orLatestSupported
+import org.jetbrains.bazel.server.model.Module
+import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test

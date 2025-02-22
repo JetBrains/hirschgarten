@@ -1,8 +1,8 @@
-package org.jetbrains.bsp.bazel.server.sync
+package org.jetbrains.bazel.server.sync
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
-import org.jetbrains.bsp.bazel.server.model.Tag
+import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.server.model.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource

@@ -9,7 +9,7 @@ kt_jvm_library(
     deps = [
         "//protocol",
         "//server/commons",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )

@@ -5,7 +5,7 @@ kt_junit5_test(
     size = "small",
     src = "DiagnosticsServiceTest.kt",
     deps = [
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/diagnostics",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/diagnostics",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )

@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.install
+package org.jetbrains.bazel.install
 
 import java.nio.file.Path
 

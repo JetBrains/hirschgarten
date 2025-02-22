@@ -22,7 +22,7 @@ kt_jvm_binary(
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/connection",
         "//protocol",
-        "//server/install/src/main/kotlin/org/jetbrains/bsp/bazel/install",
+        "//server/install/src/main/kotlin/org/jetbrains/bazel/install",
         "@maven//:ch_epfl_scala_bsp4j",
         "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
         "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",
