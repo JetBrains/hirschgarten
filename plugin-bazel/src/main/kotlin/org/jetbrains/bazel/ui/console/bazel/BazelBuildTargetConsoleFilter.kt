@@ -13,7 +13,7 @@ import com.intellij.openapi.vfs.findPsiFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
-import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
@@ -88,5 +88,5 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
 
 class BazelBuildTargetConsoleFilterProvider : ConsoleFilterProvider {
   override fun getDefaultFilters(project: Project): Array<out Filter> =
-    if (project.isBazelProject) arrayOf(BazelBuildTargetConsoleFilter(project)) else emptyArray()
+    if (project.isBspProject) arrayOf(BazelBuildTargetConsoleFilter(project)) else emptyArray()
 }

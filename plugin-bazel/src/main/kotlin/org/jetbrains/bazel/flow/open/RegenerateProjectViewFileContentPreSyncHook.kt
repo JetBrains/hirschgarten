@@ -1,14 +1,10 @@
 package org.jetbrains.bazel.flow.open
 
-import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.bazel.config.BuildToolId
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import kotlin.io.path.isRegularFile
 
 class RegenerateProjectViewFileContentPreSyncHook : ProjectPreSyncHook {
-  override val buildToolId: BuildToolId = bazelBspBuildToolId
-
   override suspend fun onPreSync(environment: ProjectPreSyncHook.ProjectPreSyncHookEnvironment) {
     val project = environment.project
     if (project.bazelProjectSettings.projectViewPath?.isRegularFile() != true) {

@@ -4,8 +4,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.config.BuildToolId
-import org.jetbrains.bazel.config.buildToolIdOrNull
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
@@ -18,7 +16,6 @@ class BuildAndResyncAction : SuspendableAction({ BspPluginBundle.message("build.
 
   override fun update(project: Project, e: AnActionEvent) {
     // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1237
-    e.presentation.isVisible = project.buildToolIdOrNull == BuildToolId("bazelbsp") // for now it's visible only for bazel-bsp projects
     e.presentation.isEnabled = !project.isSyncInProgress() && !project.isBuildInProgress()
   }
 }

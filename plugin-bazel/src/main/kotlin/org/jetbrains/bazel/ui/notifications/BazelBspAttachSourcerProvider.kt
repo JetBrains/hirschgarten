@@ -10,7 +10,7 @@ import com.intellij.openapi.util.ActionCallback
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
 
 /**
@@ -67,7 +67,7 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
     psiFile: PsiFile,
   ): List<AttachSourcesProvider.AttachSourcesAction> {
     val project = orderEntries.firstNotNullOf { it.ownerModule.project }
-    return if (project.isBazelProject && containsBazelSourcesForEntries(orderEntries)) {
+    return if (project.isBspProject && containsBazelSourcesForEntries(orderEntries)) {
       listOf(BazelAttachSourcesAction())
     } else {
       emptyList()

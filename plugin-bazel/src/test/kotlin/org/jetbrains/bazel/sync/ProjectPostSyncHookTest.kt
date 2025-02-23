@@ -2,20 +2,13 @@ package org.jetbrains.bazel.sync
 
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
-import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.config.BuildToolId
-import org.jetbrains.bazel.config.bspBuildToolId
-import org.jetbrains.bazel.config.buildToolId
-import org.jetbrains.bazel.sync.ProjectPostSyncHook
-import org.jetbrains.bazel.sync.additionalProjectPostSyncHooks
-import org.jetbrains.bazel.sync.defaultProjectPostSyncHooks
+import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook
+import org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook
 import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-
-private val testBuildToolId = BuildToolId("test-build-tool")
 
 @DisplayName("ProjectPostSyncHook tests")
 class ProjectPostSyncHookTest : MockProjectBaseTest() {
@@ -25,11 +18,8 @@ class ProjectPostSyncHookTest : MockProjectBaseTest() {
     @BeforeEach
     fun beforeEach() {
       // given
-      project.buildToolId = testBuildToolId
       ProjectPostSyncHook.ep.registerExtension(
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook(
-          bspBuildToolId,
-        ),
+        TestProjectPostSyncHook(),
       )
     }
 
@@ -37,50 +27,13 @@ class ProjectPostSyncHookTest : MockProjectBaseTest() {
     fun `should return all enabled default project post-sync hooks`() {
       // when & then
       ProjectPostSyncHook.ep.registerExtension(
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook(
-          bspBuildToolId,
-        ),
+        DisabledTestProjectPostSyncHook(),
       )
 
       project.defaultProjectPostSyncHooks.map { it::class.java } shouldContain
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook::class.java
+        TestProjectPostSyncHook::class.java
       project.defaultProjectPostSyncHooks.map { it::class.java } shouldNotContain
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook::class.java
-    }
-  }
-
-  @Nested
-  @DisplayName("Project.additionalProjectPostSyncHooks tests")
-  inner class AdditionalProjectPostSyncHooks {
-    @Test
-    fun `should return an empty list if imported as bsp (default) project`() {
-      // given
-      project.buildToolId = bspBuildToolId
-
-      // when & then
-      project.additionalProjectPostSyncHooks.map { it::class.java } shouldBe emptyList()
-    }
-
-    @Test
-    fun `should return a list of hooks if imported as non-bsp project`() {
-      // given
-      project.buildToolId = testBuildToolId
-      ProjectPostSyncHook.ep.registerExtension(
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook(
-          testBuildToolId,
-        ),
-      )
-      ProjectPostSyncHook.ep.registerExtension(
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook(
-          testBuildToolId,
-        ),
-      )
-
-      // when & then
-      project.additionalProjectPostSyncHooks.map { it::class.java } shouldContain
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook::class.java
-      project.additionalProjectPostSyncHooks.map { it::class.java } shouldNotContain
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook::class.java
+        DisabledTestProjectPostSyncHook::class.java
     }
   }
 }

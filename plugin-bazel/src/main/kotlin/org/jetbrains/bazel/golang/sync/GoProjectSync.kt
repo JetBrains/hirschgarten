@@ -28,8 +28,6 @@ import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BspFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.config.BuildToolId
-import org.jetbrains.bazel.config.bspBuildToolId
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.RawUriToDirectoryPathTransformer
@@ -56,8 +54,6 @@ private const val GO_RESOURCE_ROOT_TYPE = "go-resource"
 private val GO_MODULE_TYPE = ModuleTypeId("WEB_MODULE")
 
 class GoProjectSync : ProjectSyncHook {
-  override val buildToolId: BuildToolId = bspBuildToolId
-
   override fun isEnabled(project: Project): Boolean = BspFeatureFlags.isGoSupportEnabled
 
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {

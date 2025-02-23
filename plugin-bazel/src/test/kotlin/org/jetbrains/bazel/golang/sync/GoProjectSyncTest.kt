@@ -17,8 +17,6 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.config.bspBuildToolId
-import org.jetbrains.bazel.config.buildToolId
 import org.jetbrains.bazel.sync.BaseTargetInfo
 import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.ProjectSyncHook
@@ -71,7 +69,6 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   @BeforeEach
   override fun beforeEach() {
     // given
-    project.buildToolId = bspBuildToolId
     hook = GoProjectSync()
   }
 

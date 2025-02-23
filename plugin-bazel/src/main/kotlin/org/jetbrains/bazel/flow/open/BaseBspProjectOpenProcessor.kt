@@ -9,21 +9,19 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.projectImport.ProjectOpenProcessor
-import org.jetbrains.bazel.config.BuildToolId
-import org.jetbrains.bazel.config.buildToolId
 import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.config.rootDir
 import java.nio.file.Path
 
 private val log = logger<BaseBspProjectOpenProcessor>()
 
-abstract class BaseBspProjectOpenProcessor(private val buildToolId: BuildToolId) : ProjectOpenProcessor() {
+abstract class BaseBspProjectOpenProcessor : ProjectOpenProcessor() {
   override fun doOpenProject(
     virtualFile: VirtualFile,
     projectToClose: Project?,
     forceOpenInNewFrame: Boolean,
   ): Project? {
-    log.info("Opening project :$virtualFile with build tool id: $buildToolId")
+    log.info("Opening project :$virtualFile")
     val vFileToOpen = calculateProjectFolderToOpen(virtualFile)
     val projectPath = vFileToOpen.toNioPath()
     val openProjectTask =
@@ -54,7 +52,7 @@ abstract class BaseBspProjectOpenProcessor(private val buildToolId: BuildToolId)
       this.projectToClose = projectToClose
 
       beforeOpen = {
-        it.initProperties(vFileToOpen, buildToolId)
+        it.initProperties(vFileToOpen)
         calculateBeforeOpenCallback(originalVFile).invoke(it)
         true
       }
@@ -73,10 +71,9 @@ abstract class BaseBspProjectOpenProcessor(private val buildToolId: BuildToolId)
   open fun calculateBeforeOpenCallback(originalVFile: VirtualFile): (Project) -> Unit = {}
 }
 
-fun Project.initProperties(projectRootDir: VirtualFile, buildToolId: BuildToolId) {
-  thisLogger().debug("Initializing properties for project: $projectRootDir and build tool id: $buildToolId")
+fun Project.initProperties(projectRootDir: VirtualFile) {
+  thisLogger().debug("Initializing properties for project: $projectRootDir")
 
   this.isBspProject = true
   this.rootDir = projectRootDir
-  this.buildToolId = buildToolId
 }
