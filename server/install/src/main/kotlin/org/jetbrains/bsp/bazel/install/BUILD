@@ -8,6 +8,7 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/constants",
+        "//server/executioncontext/installationcontext",
         "//server/executioncontext/projectview:generator",
         "//server/executioncontext/projectview:parser",
         "//server/install/src/main/kotlin/org/jetbrains/bsp/bazel/install/cli",
