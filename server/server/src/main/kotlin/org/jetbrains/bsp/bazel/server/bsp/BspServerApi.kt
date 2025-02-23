@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.bazel.server.bsp
 
+import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.CleanCacheParams
 import ch.epfl.scala.bsp4j.CleanCacheResult
 import ch.epfl.scala.bsp4j.CompileParams
@@ -55,7 +56,6 @@ import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
-import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
@@ -73,8 +73,8 @@ import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import java.util.concurrent.CompletableFuture
 
-class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, InitializeBuildParams) -> BazelServices) : JoinedBuildServer {
-  private lateinit var client: JoinedBuildClient
+class BspServerApi(private val bazelServicesBuilder: (BuildClient, InitializeBuildParams) -> BazelServices) : JoinedBuildServer {
+  private lateinit var client: BuildClient
   private lateinit var serverLifetime: BazelBspServerLifetime
   private lateinit var runner: BspRequestsRunner
 
@@ -82,7 +82,7 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, Initial
   private lateinit var executeService: ExecuteService
 
   fun initialize(
-    client: JoinedBuildClient,
+    client: BuildClient,
     serverLifetime: BazelBspServerLifetime,
     runner: BspRequestsRunner,
   ) {

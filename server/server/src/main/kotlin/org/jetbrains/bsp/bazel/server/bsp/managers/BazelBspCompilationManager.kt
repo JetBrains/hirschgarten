@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.bazel.server.bsp.managers
 
+import ch.epfl.scala.bsp4j.BuildClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -9,7 +10,6 @@ import org.jetbrains.bsp.bazel.server.bep.BepServer
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
-import org.jetbrains.bsp.protocol.JoinedBuildClient
 import java.nio.file.Path
 
 // TODO: remove this file once we untangle the spaghetti and use the method from ExecuteService
@@ -17,7 +17,7 @@ import java.nio.file.Path
 class BazelBspCompilationManager(
   private val bazelRunner: BazelRunner,
   private val bazelPathsResolver: BazelPathsResolver,
-  val client: JoinedBuildClient,
+  val client: BuildClient,
   val workspaceRoot: Path,
 ) {
   suspend fun buildTargetsWithBep(

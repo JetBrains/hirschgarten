@@ -23,7 +23,6 @@ import com.google.gson.JsonObject
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.server.utils.TimeoutHandler
 import org.jetbrains.bazel.taskEvents.BspTaskEventsService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
@@ -33,7 +32,6 @@ const val IMPORT_SUBTASK_ID: String = "import-subtask-id"
 class BspClient(
   private val bspSyncConsole: TaskConsole,
   private val bspBuildConsole: TaskConsole,
-  private val timeoutHandler: TimeoutHandler,
   private val project: Project,
 ) : BuildClient {
   private val log = logger<BspClient>()
@@ -42,8 +40,6 @@ class BspClient(
   private val bspLogger = bspLogger<BspClient>()
 
   override fun onBuildShowMessage(params: ShowMessageParams) {
-    onBuildEvent()
-
     log.debug("Got show message: $params")
 
     val originId = params.originId ?: return // TODO
@@ -55,8 +51,6 @@ class BspClient(
   }
 
   override fun onBuildLogMessage(params: LogMessageParams) {
-    onBuildEvent()
-
     log.debug("Got log message: $params")
 
     // Legacy task handling
@@ -74,8 +68,6 @@ class BspClient(
   }
 
   override fun onBuildTaskStart(params: TaskStartParams) {
-    onBuildEvent()
-
     val taskId = params.taskId.id
 
     log.debug("Got task start: $params")
@@ -105,8 +97,6 @@ class BspClient(
   }
 
   override fun onBuildTaskProgress(params: TaskProgressParams) {
-    onBuildEvent()
-
     log.debug("Got task progress: $params")
 
     val taskId = params.taskId.id
@@ -118,7 +108,6 @@ class BspClient(
   }
 
   override fun onBuildTaskFinish(params: TaskFinishParams) {
-    onBuildEvent()
     val taskId = params.taskId.id
     log.debug("Got task finish: $params")
     val originId = params.originId ?: return // TODO
@@ -149,7 +138,6 @@ class BspClient(
   }
 
   override fun onRunPrintStdout(params: PrintParams) {
-    onBuildEvent()
     log.debug("Got print stdout: $params")
     val originId = params.originId ?: return // TODO
     val taskId = params.task.id
@@ -161,7 +149,6 @@ class BspClient(
   }
 
   override fun onRunPrintStderr(params: PrintParams) {
-    onBuildEvent()
     log.debug("Got print stderr: $params")
     val originId = params.originId ?: return // TODO
     val taskId = params.task.id
@@ -173,8 +160,6 @@ class BspClient(
   }
 
   override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {
-    onBuildEvent()
-
     // Legacy task handling
     if (params.originId == null || !BspTaskEventsService.getInstance(project).existsListener(params.originId)) {
       log.debug("Got diagnostics without listener: $params")
@@ -201,11 +186,6 @@ class BspClient(
   }
 
   override fun onBuildTargetDidChange(params: DidChangeBuildTarget?) {
-    onBuildEvent()
-  }
-
-  private fun onBuildEvent() {
-    timeoutHandler.resetTimer()
   }
 
   private fun addMessageToConsole(originId: String?, message: String) {
