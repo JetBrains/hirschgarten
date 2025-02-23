@@ -119,7 +119,6 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/debug",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extension",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/hotswap",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/hotswap/ideStarter",
@@ -151,6 +150,7 @@ intellij_integration_test_suite(
     ],
     deps = [
         "//plugin-bazel/src:test_fixtures",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/settings:bazel",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
         "@maven//:io_kotest_kotest_assertions_shared_jvm",

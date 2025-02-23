@@ -16,14 +16,15 @@ import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup
 import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager
-import org.jetbrains.bazel.assets.assets
+import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.isBspProject
-import org.jetbrains.bazel.extensionPoints.targetActionProvider
+import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.ui.widgets.BazelBspJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
@@ -47,9 +48,9 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
 
   override fun getWidgetState(file: VirtualFile?): WidgetState =
     if (file == null) {
-      inactiveWidgetState(project.assets.targetIcon)
+      inactiveWidgetState(BazelPluginIcons.bazel)
     } else {
-      activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file, project.assets.targetIcon)
+      activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file, BazelPluginIcons.bazel)
     }
 
   private fun activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file: VirtualFile, icon: Icon): WidgetState {
@@ -113,7 +114,8 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
       }
       it.fillWithEligibleActions(project, this, false)
       it.addSeparator()
-      it.addAll(project.targetActionProvider?.getTargetActions(component, project, this).orEmpty())
+      it.add(BazelBspJumpToBuildFileAction(this))
+      if (StarlarkDebugAction.isApplicableTo(this)) it.add(StarlarkDebugAction(this.id))
     }
 
   override fun createInstance(project: Project): StatusBarWidget = BspFileTargetsWidget(project)

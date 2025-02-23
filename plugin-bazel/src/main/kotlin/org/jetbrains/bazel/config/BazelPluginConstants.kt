@@ -1,11 +1,8 @@
 package org.jetbrains.bazel.config
 
 import com.intellij.openapi.externalSystem.model.ProjectSystemId
-import org.jetbrains.bazel.config.BuildToolId
 
 object BazelPluginConstants {
-  val bazelBspBuildToolId = BuildToolId("bazelbsp")
-
   const val ID = "bazelbsp"
   const val BAZEL_DISPLAY_NAME = "Bazel"
   val SYSTEM_ID = ProjectSystemId(ID, BAZEL_DISPLAY_NAME)

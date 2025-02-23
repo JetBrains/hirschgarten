@@ -18,7 +18,7 @@ package org.jetbrains.bazel.hotswap
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.runnerAction.BspJvmApplicationConfiguration
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
@@ -26,7 +26,7 @@ import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 object HotSwapUtils {
   fun canHotSwap(env: ExecutionEnvironment, project: Project): Boolean = project.isHotSwapEligible() && isDebugging(env)
 
-  private fun Project.isHotSwapEligible(): Boolean = isBazelProject && bazelProjectSettings.hotSwapEnabled
+  private fun Project.isHotSwapEligible(): Boolean = isBspProject && bazelProjectSettings.hotSwapEnabled
 
   private fun isDebugging(environment: ExecutionEnvironment): Boolean =
     environment.executor is DefaultDebugExecutor &&

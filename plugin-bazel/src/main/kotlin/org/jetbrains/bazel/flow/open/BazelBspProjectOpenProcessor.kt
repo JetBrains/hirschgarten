@@ -9,7 +9,6 @@ import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants.BAZELBSP_JSON_FILE_NAME
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import java.io.IOException
 import java.nio.file.Path
@@ -37,7 +36,7 @@ val BUILD_FILE_GLOB = "{${BazelPluginConstants.BUILD_FILE_NAMES.joinToString(","
 /**
  * Refrain from using [VirtualFile.getChildren] as it causes performance issues in large projects, such as [BAZEL-1717](https://youtrack.jetbrains.com/issue/BAZEL-1717)
  */
-internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelBspBuildToolId) {
+internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor() {
   override fun calculateProjectFolderToOpen(virtualFile: VirtualFile): VirtualFile =
     findProjectFolderFromEligibleFile(virtualFile)
       ?: error("Cannot find the suitable Bazel project folder to open for the given file $virtualFile.")

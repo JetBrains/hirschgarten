@@ -4,7 +4,7 @@ import com.intellij.build.BuildViewManager
 import com.intellij.build.SyncViewManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.assets.assets
+import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.rootDir
 
 @Service(Service.Level.PROJECT)
@@ -17,9 +17,19 @@ class BspConsoleService(project: Project) {
     val basePath = project.rootDir.path
 
     bspBuildConsole =
-      BuildTaskConsole(project.getService(BuildViewManager::class.java), basePath, project.assets.presentableName, project)
+      BuildTaskConsole(
+        project.getService(BuildViewManager::class.java),
+        basePath,
+        BazelPluginConstants.BAZEL_DISPLAY_NAME,
+        project,
+      )
     bspSyncConsole =
-      SyncTaskConsole(project.getService(SyncViewManager::class.java), basePath, project.assets.presentableName, project)
+      SyncTaskConsole(
+        project.getService(SyncViewManager::class.java),
+        basePath,
+        BazelPluginConstants.BAZEL_DISPLAY_NAME,
+        project,
+      )
   }
 
   companion object {

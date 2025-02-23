@@ -20,8 +20,6 @@ import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.bazel.config.buildToolId
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.orDefault
@@ -63,7 +61,6 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   override fun beforeEach() {
     super.beforeEach()
     // given
-    project.buildToolId = bazelBspBuildToolId
     hook = PythonProjectSync()
     virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
   }

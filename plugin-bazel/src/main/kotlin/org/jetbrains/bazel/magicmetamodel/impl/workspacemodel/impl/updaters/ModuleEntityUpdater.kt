@@ -16,7 +16,6 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
-import org.jetbrains.bazel.extensionPoints.projectModelExternalSource
 import org.jetbrains.bazel.jpsCompilation.utils.JpsConstants
 import org.jetbrains.bazel.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
@@ -95,7 +94,7 @@ internal class ModuleEntityUpdater(
           JpsPaths
             .getJpsImlModulesPath(workspaceModelEntityUpdaterConfig.projectBasePath)
             .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-          workspaceModelEntityUpdaterConfig.project.projectModelExternalSource,
+          BazelProjectModelExternalSource,
         )
     }
 
