@@ -19,6 +19,7 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.eclipse.lsp4j.jsonrpc.ResponseErrorException
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseError
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode
+import org.jetbrains.bazel.config.BspFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bsp.bazel.bazelrunner.BazelProcessResult
@@ -47,7 +48,6 @@ import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelTestParamsData
-import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.MobileInstallStartType
@@ -65,7 +65,6 @@ class ExecuteService(
   private val bspClientLogger: BspClientLogger,
   private val bazelPathsResolver: BazelPathsResolver,
   private val additionalBuildTargetsProvider: AdditionalAndroidBuildTargetsProvider,
-  private val featureFlags: FeatureFlags,
 ) {
   private val gson = Gson()
 
@@ -301,7 +300,7 @@ class ExecuteService(
   }
 
   private fun getAdditionalBuildTargets(cancelChecker: CancelChecker, bspIds: List<BuildTargetIdentifier>): List<BuildTargetIdentifier> =
-    if (featureFlags.isAndroidSupportEnabled) {
+    if (BspFeatureFlags.isAndroidSupportEnabled) {
       additionalBuildTargetsProvider.getAdditionalBuildTargets(cancelChecker, bspIds)
     } else {
       emptyList()

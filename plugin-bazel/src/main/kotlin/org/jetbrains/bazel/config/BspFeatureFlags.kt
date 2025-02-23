@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.config
 
 import com.intellij.openapi.util.registry.Registry
-import org.jetbrains.bsp.protocol.FeatureFlags
 
 private const val PYTHON_SUPPORT = "bsp.python.support"
 private const val ANDROID_SUPPORT = "bsp.android.support"
@@ -15,6 +14,8 @@ private const val EXECUTE_SECOND_PHASE_ON_SYNC = "bsp.execute.second.phase.on.sy
 private const val ADD_DUMMY_MODULES = "bsp.add.dummy.modules"
 private const val EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS = "bsp.exclude.compiled.source.code.inside.jars"
 private const val ENABLE_PARTIAL_SYNC = "bsp.enable.partial.sync"
+private const val SYMLINK_SCAN_MAX_DEPTH = "bazel.symlink.scan.max.depth"
+private const val SHUTDOWN_BEFORE_SHARD_BUILD = "bazel.shutdown.before.shard.build"
 
 object BspFeatureFlags {
   val isPythonSupportEnabled: Boolean
@@ -25,6 +26,12 @@ object BspFeatureFlags {
 
   val isGoSupportEnabled: Boolean
     get() = Registry.`is`(GO_SUPPORT)
+
+  val isCppSupportEnabled: Boolean
+    get() = false
+
+  val isRustSupportEnabled: Boolean
+    get() = false
 
   val isBuildProjectOnSyncEnabled: Boolean
     get() = Registry.`is`(BUILD_PROJECT_ON_SYNC)
@@ -55,17 +62,15 @@ object BspFeatureFlags {
 
   val enablePartialSync: Boolean
     get() = Registry.`is`(ENABLE_PARTIAL_SYNC)
-}
 
-class DefaultBspFeatureFlagsProvider : FeatureFlagsProvider {
-  override fun getFeatureFlags(): FeatureFlags =
-    with(BspFeatureFlags) {
-      FeatureFlags(
-        isPythonSupportEnabled = isPythonSupportEnabled,
-        isAndroidSupportEnabled = isAndroidSupportEnabled,
-        isGoSupportEnabled = isGoSupportEnabled,
-        isRustSupportEnabled = false, // No corresponding registry key for now
-        isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
-      )
-    }
+  val symlinkScanMaxDepth: Int
+    get() = Registry.intValue(SYMLINK_SCAN_MAX_DEPTH)
+
+  val shutDownBeforeShardBuild: Boolean
+    get() = Registry.`is`(SHUTDOWN_BEFORE_SHARD_BUILD)
+
+  val isPropagateExportsFromDepsEnabled: Boolean
+    get() = !isWrapLibrariesInsideModulesEnabled
+
+  // TODO: add starlark debug feature flags
 }

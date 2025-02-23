@@ -25,7 +25,6 @@ import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.FeatureFlags
 
 /** Expands wildcard target patterns into individual Bazel targets.  */
 object WildcardTargetExpander {
@@ -36,13 +35,11 @@ object WildcardTargetExpander {
   fun expandToNonRecursiveWildcardTargets(
     pathResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
-    featureFlags: FeatureFlags,
     wildcardIncludes: List<Label>,
   ): Map<Label, List<Label>> =
     PackageLister.expandPackageTargets(
       pathResolver,
       bazelInfo,
-      featureFlags,
       wildcardIncludes,
     )
 

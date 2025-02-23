@@ -7,6 +7,7 @@ kt_jvm_library(
     ]),
     visibility = ["//server/server:__subpackages__"],
     deps = [
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//server/bazelrunner",
         "//server/commons",
         "//server/executioncontext/workspacecontext",

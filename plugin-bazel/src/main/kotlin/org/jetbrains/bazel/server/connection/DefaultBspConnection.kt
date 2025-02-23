@@ -13,7 +13,6 @@ import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.server.chunking.ChunkingBuildServer
 import org.jetbrains.bazel.server.client.BspClient
@@ -180,7 +179,6 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
         InitializeBuildData(
           clientClassesRootDir = "${project.rootDir}/out",
           openTelemetryEndpoint = getOpenTelemetryEndPoint(),
-          featureFlags = FeatureFlagsProvider.accumulateFeatureFlags(),
         ),
     )
 

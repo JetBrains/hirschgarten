@@ -3,7 +3,7 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 kt_jvm_library(
     name = "config",
     srcs = glob(["*.kt"]),
-    visibility = ["//plugin-bazel:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//plugin-bazel/src:intellij-bazel-resources",
         "//plugin-bazel/workspacemodel/src:workspacemodel",

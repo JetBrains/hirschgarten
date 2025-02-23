@@ -6,7 +6,6 @@ import ch.epfl.scala.bsp4j.InitializeBuildParams
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bsp.bazel.install.Install
-import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.InitializeBuildData
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.testkit.client.MockClient
@@ -184,15 +183,7 @@ abstract class BazelBspTestBaseScenario {
         workspaceDir,
         capabilities,
       )
-    val featureFlags =
-      FeatureFlags(
-        isPythonSupportEnabled = true,
-        isAndroidSupportEnabled = true,
-        isGoSupportEnabled = true,
-        isRustSupportEnabled = false,
-        isPropagateExportsFromDepsEnabled = false,
-      )
-    initializeBuildParams.data = InitializeBuildData(featureFlags = featureFlags)
+    initializeBuildParams.data = InitializeBuildData()
 
     val bazelCache = Path(processBazelOutputWithDownloadRetry("info", "execution_root"))
     val bazelOutputBase = Path(processBazelOutput("info", "output_base"))

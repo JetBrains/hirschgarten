@@ -21,24 +21,6 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.projectAwareExtension"
                         interface="org.jetbrains.bazel.projectAware.ProjectAwareExtension"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.connectionDetailsProviderExtension"
-                        interface="org.jetbrains.bazel.server.connection.ConnectionDetailsProviderExtension"
-                        dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.connectionDetailsProviderExtensionJavaShim"
-                        interface="org.jetbrains.bazel.server.connection.ConnectionDetailsProviderExtensionJavaShim"
-                        dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.toolWindowConfigFileProviderExtension"
-                        interface="org.jetbrains.bazel.extensionPoints.ToolWindowConfigFileProviderExtension"
-                        dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.projectModelExternalSource"
-                        interface="org.jetbrains.bazel.extensionPoints.ProjectModelExternalSourceExtension"
-                        dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.runConfigurationExtension"
-                        interface="org.jetbrains.bazel.run.config.RunConfigurationExtensionManager"
-                        dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.invalidTargetsProviderExtension"
-                        interface="org.jetbrains.bazel.services.InvalidTargetsProviderExtension"
-                        dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.projectSyncHook"
                         interface="org.jetbrains.bazel.sync.ProjectSyncHook"
                         dynamic="true"/>
@@ -53,9 +35,6 @@
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.projectStructureProvider"
                         interface="org.jetbrains.bazel.sync.projectStructure.ProjectStructureProvider"
-                        dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.featureFlagsProvider"
-                        interface="org.jetbrains.bazel.config.FeatureFlagsProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.additionalProjectTaskRunnerProvider"
                         interface="org.jetbrains.bazel.buildTask.AdditionalProjectTaskRunnerProvider"
@@ -81,7 +60,6 @@
         <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"/>
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
-        <featureFlagsProvider implementation="org.jetbrains.bazel.config.DefaultBspFeatureFlagsProvider"/>
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.JavaSourceTypeIconProvider"/>
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.KotlinSourceTypeIconProvider"/>
     </extensions>
@@ -263,7 +241,6 @@
         <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"/>
-        <featureFlagsProvider implementation="org.jetbrains.bazel.config.BazelBspFeatureFlagsProvider"/>
         <additionalProjectTaskRunnerProvider
                 implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
 

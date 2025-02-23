@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.config.BspFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
@@ -37,7 +38,6 @@ import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
 import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.FeatureFlags
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
@@ -57,7 +57,6 @@ class BazelProjectMapper(
   private val mavenCoordinatesResolver: MavenCoordinatesResolver,
   private val kotlinAndroidModulesMerger: KotlinAndroidModulesMerger,
   private val bspClientLogger: BspClientLogger,
-  private val featureFlags: FeatureFlags,
 ) {
   private suspend fun <T> measure(description: String, body: suspend () -> T): T = tracer.spanBuilder(description).useWithScope { body() }
 
@@ -192,7 +191,7 @@ class BazelProjectMapper(
     val goLibrariesToImport =
       measureIf(
         description = "Merge all Go libraries",
-        predicate = { featureFlags.isGoSupportEnabled },
+        predicate = { BspFeatureFlags.isGoSupportEnabled },
         ifFalse = emptyMap(),
       ) {
         goLibrariesMapper.values
@@ -208,7 +207,7 @@ class BazelProjectMapper(
     val rustExternalTargetsToImport =
       measureIf(
         description = "Select external Rust targets",
-        predicate = { featureFlags.isRustSupportEnabled },
+        predicate = { BspFeatureFlags.isRustSupportEnabled },
         ifFalse = emptySequence(),
       ) {
         selectRustExternalTargetsToImport(rootTargets, dependencyGraph, repoMapping, transitiveCompileTimeJarsTargetKinds)
@@ -216,7 +215,7 @@ class BazelProjectMapper(
     val rustExternalModules =
       measureIf(
         description = "Create Rust external modules",
-        predicate = { featureFlags.isRustSupportEnabled },
+        predicate = { BspFeatureFlags.isRustSupportEnabled },
         ifFalse = emptySequence(),
       ) {
         createRustExternalModules(rustExternalTargetsToImport, dependencyGraph, librariesFromDeps)
@@ -885,13 +884,13 @@ class BazelProjectMapper(
         shouldImportTargetKind(target.kind, transitiveCompileTimeJarsTargetKinds) ||
           target.hasJvmTargetInfo() &&
           hasKnownJvmSources(target) ||
-          featureFlags.isPythonSupportEnabled &&
+          BspFeatureFlags.isPythonSupportEnabled &&
           target.hasPythonTargetInfo() &&
           hasKnownPythonSources(target) ||
-          featureFlags.isGoSupportEnabled &&
+          BspFeatureFlags.isGoSupportEnabled &&
           target.hasGoTargetInfo() &&
           hasKnownGoSources(target) ||
-          featureFlags.isRustSupportEnabled &&
+          BspFeatureFlags.isRustSupportEnabled &&
           target.hasRustCrateInfo() &&
           hasKnownRustSources(target)
       )

@@ -2,6 +2,7 @@ package org.jetbrains.bsp.bazel.server.bsp.managers
 
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.config.BspFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.aspect
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.buildManualTests
@@ -20,7 +21,6 @@ import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
-import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Paths
 
 data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: BazelStatus) {
@@ -41,7 +41,6 @@ class BazelBspAspectsManager(
   private val bazelBspCompilationManager: BazelBspCompilationManager,
   private val aspectsResolver: InternalAspectsResolver,
   private val workspaceContextProvider: WorkspaceContextProvider,
-  private val featureFlags: FeatureFlags,
   private val bazelRelease: BazelRelease,
 ) {
   private val aspectsPath = Paths.get(aspectsResolver.bazelBspRoot, Constants.ASPECTS_ROOT)
@@ -61,16 +60,16 @@ class BazelBspAspectsManager(
   private fun List<RulesetLanguage>.removeDisabledLanguages(): List<RulesetLanguage> {
     val disabledLanguages =
       buildSet {
-        if (!featureFlags.isAndroidSupportEnabled) add(Language.Android)
-        if (!featureFlags.isGoSupportEnabled) add(Language.Go)
-        if (!featureFlags.isRustSupportEnabled) add(Language.Rust)
-        if (!featureFlags.isCppSupportEnabled) add(Language.Cpp)
+        if (!BspFeatureFlags.isAndroidSupportEnabled) add(Language.Android)
+        if (!BspFeatureFlags.isGoSupportEnabled) add(Language.Go)
+        if (!BspFeatureFlags.isRustSupportEnabled) add(Language.Rust)
+        if (!BspFeatureFlags.isCppSupportEnabled) add(Language.Cpp)
       }
     return filterNot { it.language in disabledLanguages }
   }
 
   private fun List<RulesetLanguage>.addNativeAndroidLanguageIfNeeded(): List<RulesetLanguage> {
-    if (!featureFlags.isAndroidSupportEnabled) return this
+    if (!BspFeatureFlags.isAndroidSupportEnabled) return this
     if (!workspaceContextProvider.currentWorkspaceContext().enableNativeAndroidRules.value) return this
     return this.filterNot { it.language == Language.Android } + RulesetLanguage(null, Language.Android)
   }
@@ -119,7 +118,7 @@ class BazelBspAspectsManager(
       Constants.CORE_BZL + Constants.TEMPLATE_EXTENSION,
       aspectsPath.resolve(Constants.CORE_BZL),
       mapOf(
-        "isPropagateExportsFromDepsEnabled" to featureFlags.isPropagateExportsFromDepsEnabled.toStarlarkString(),
+        "isPropagateExportsFromDepsEnabled" to BspFeatureFlags.isPropagateExportsFromDepsEnabled.toStarlarkString(),
         "addTransitiveCompileTimeJars" to
           workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
         "transitiveCompileTimeJarsTargetKinds" to
