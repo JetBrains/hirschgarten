@@ -6,7 +6,6 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.config.BuildToolId
 import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
@@ -39,7 +38,6 @@ class BspPanelComponent private constructor(
   /**
    * @param targetIcon icon which will be shown next to valid build targets in this panel
    * @param invalidTargetIcon icon which will be shown next to invalid build targets in this panel
-   * @param buildToolId id of the build tool
    * @param toolName name of the tool providing the build targets
    * @param targets collection of build targets this panel will contain
    * @param invalidTargets collection of invalid targets this panel will contain
@@ -48,7 +46,6 @@ class BspPanelComponent private constructor(
   constructor(
     targetIcon: Icon,
     invalidTargetIcon: Icon,
-    buildToolId: BuildToolId,
     toolName: String,
     targets: Collection<BuildTargetInfo>,
     invalidTargets: List<BuildTargetIdentifier>,
@@ -56,8 +53,8 @@ class BspPanelComponent private constructor(
   ) : this(
     targetIcon = targetIcon,
     toolName = toolName,
-    targetTree = BuildTargetTree(targetIcon, invalidTargetIcon, buildToolId, targets, invalidTargets),
-    targetSearch = BuildTargetSearch(targetIcon, buildToolId, toolName, targets, searchBarPanel),
+    targetTree = BuildTargetTree(targetIcon, invalidTargetIcon, targets, invalidTargets),
+    targetSearch = BuildTargetSearch(targetIcon, toolName, targets, searchBarPanel),
   )
 
   init {

@@ -16,9 +16,6 @@ import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
 
-val Project.isBazelProject: Boolean
-  get() = buildToolIdOrNull == BazelPluginConstants.bazelBspBuildToolId
-
 data class BspProjectPropertiesState(
   var isBspProject: Boolean = false,
   var isInitialized: Boolean = false,
@@ -37,7 +34,6 @@ class BspProjectProperties(private val project: Project) : PersistentStateCompon
   var isInitialized: Boolean = false
   var isBspProject: Boolean = false
   var rootDir: VirtualFile? = null
-  var buildToolId: BuildToolId? = null
   var defaultJdkName: String? = null
   var isBrokenBspProject: Boolean = false
 
@@ -52,7 +48,6 @@ class BspProjectProperties(private val project: Project) : PersistentStateCompon
       isInitialized = isInitialized,
       isBspProject = isBspProject,
       rootDirUrl = rootDir?.url,
-      buildToolId = buildToolId?.id,
       defaultJdkName = defaultJdkName,
       openedTimesSinceLastStartupResync = openedTimesSinceLastStartupResync,
     )
@@ -61,7 +56,6 @@ class BspProjectProperties(private val project: Project) : PersistentStateCompon
     isInitialized = state.isInitialized
     isBspProject = state.isBspProject
     rootDir = state.rootDirUrl?.let { VirtualFileManager.getInstance().findFileByUrl(it) }
-    buildToolId = state.buildToolId?.let { BuildToolId(it) }
     defaultJdkName = state.defaultJdkName
     openedTimesSinceLastStartupResync = state.openedTimesSinceLastStartupResync
   }
@@ -124,20 +118,6 @@ var Project.rootDir: VirtualFile
 
 val Project.bspProjectName: String
   get() = rootDir.name
-
-var Project.buildToolId: BuildToolId
-  get() =
-    bspProjectProperties.buildToolId
-      ?: error("Project's build tool id is not set. Reimport the project to fix this.")
-  set(value) {
-    bspProjectProperties.buildToolId = value
-  }
-
-val Project.buildToolIdOrDefault: BuildToolId
-  get() = bspProjectProperties.buildToolId ?: bspBuildToolId
-
-val Project.buildToolIdOrNull: BuildToolId?
-  get() = bspProjectProperties.buildToolId
 
 var Project.defaultJdkName: String?
   get() = bspProjectProperties.defaultJdkName

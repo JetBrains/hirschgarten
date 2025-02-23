@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.runnerAction
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.assets.assets
+import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
@@ -20,13 +20,13 @@ class RunTargetAction(
         BspPluginBundle.message(
           "target.debug.run.action.text",
           if (verboseText) targetInfo.buildTargetName else "",
-          project.assets.presentableName,
+          BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       } else {
         BspPluginBundle.message(
           "target.run.action.text",
           if (verboseText) targetInfo.buildTargetName else "",
-          project.assets.presentableName,
+          BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       }
     },

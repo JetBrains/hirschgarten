@@ -10,7 +10,8 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.content.ContentFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.assets.assets
+import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BspToolWindowPanel
 
@@ -35,7 +36,7 @@ public suspend fun registerBspToolWindow(project: Project) {
     withContext(Dispatchers.EDT) {
       toolWindowManager
         .registerToolWindow(project.bspToolWindowId) {
-          this.icon = project.assets.toolWindowIcon
+          this.icon = BazelPluginIcons.bazelToolWindow
           this.anchor = ToolWindowAnchor.RIGHT
           this.canCloseContent = false
           this.contentFactory = BspAllTargetsWidgetFactory()
@@ -52,7 +53,7 @@ public suspend fun showBspToolWindow(project: Project) {
 }
 
 val Project.bspToolWindowId: String
-  get() = this.assets.presentableName
+  get() = BazelPluginConstants.BAZEL_DISPLAY_NAME
 
 val Project.bspToolWindowIdOrNull: String?
   get() {

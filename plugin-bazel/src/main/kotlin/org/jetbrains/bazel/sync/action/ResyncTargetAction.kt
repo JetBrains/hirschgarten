@@ -7,8 +7,7 @@ import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BspFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.BspPluginIcons
-import org.jetbrains.bazel.config.BuildToolId
-import org.jetbrains.bazel.config.buildToolIdOrNull
+import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
@@ -22,11 +21,9 @@ class ResyncTargetAction private constructor(private val targetId: BuildTargetId
     }
 
     override fun update(project: Project, e: AnActionEvent) {
-      // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1237
-      val isBazelBsp = project.buildToolIdOrNull == BuildToolId("bazelbsp") // for now it's visible only for bazel-bsp projects
       // for now we dont support jps modules (TODO: https://youtrack.jetbrains.com/issue/BAZEL-1238)
       val isJpsDisabled = !JpsFeatureFlags.isJpsCompilationEnabled
-      e.presentation.isVisible = BspFeatureFlags.enablePartialSync && isBazelBsp && isJpsDisabled
+      e.presentation.isVisible = BspFeatureFlags.enablePartialSync && project.isBspProject && isJpsDisabled
       e.presentation.isEnabled = !project.isSyncInProgress()
     }
 

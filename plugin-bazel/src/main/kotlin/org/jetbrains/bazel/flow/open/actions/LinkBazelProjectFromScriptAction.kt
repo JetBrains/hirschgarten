@@ -8,7 +8,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.flow.open.BazelBspOpenProjectProvider
 import org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessor
@@ -31,7 +31,7 @@ internal class LinkBazelProjectFromScriptAction :
   override fun update(e: AnActionEvent) {
     val virtualFile = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
     val project = e.project ?: return
-    e.presentation.isEnabledAndVisible = virtualFile.isFileSupported() && !project.isBazelProject
+    e.presentation.isEnabledAndVisible = virtualFile.isFileSupported() && !project.isBspProject
   }
 
   private fun VirtualFile.isFileSupported() =

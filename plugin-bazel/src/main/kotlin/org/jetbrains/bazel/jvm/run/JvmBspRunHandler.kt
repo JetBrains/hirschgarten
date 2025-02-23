@@ -7,7 +7,7 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import kotlinx.coroutines.future.await
-import org.jetbrains.bazel.assets.assets
+import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.run.BspProcessHandler
 import org.jetbrains.bazel.run.BspRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
@@ -28,7 +28,7 @@ import org.jetbrains.bsp.protocol.RunWithDebugParams
 import java.util.UUID
 
 class JvmBspRunHandler(val configuration: BspRunConfiguration) : BspRunHandler {
-  private val buildToolName: String = configuration.project.assets.presentableName
+  private val buildToolName: String = BazelPluginConstants.BAZEL_DISPLAY_NAME
   override val name: String = "Jvm $buildToolName Run Handler"
 
   override val state = GenericRunState()

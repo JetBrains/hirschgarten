@@ -10,8 +10,6 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import kotlinx.coroutines.coroutineScope
-import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.bazel.config.BuildToolId
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bazel.sync.ProjectSyncHook
@@ -24,8 +22,6 @@ import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import java.nio.file.Path
 
 class DirectoriesSyncHook : ProjectSyncHook {
-  override val buildToolId: BuildToolId = bazelBspBuildToolId
-
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     coroutineScope {
       val directories = query("workspace/directories") { environment.server.workspaceDirectories() }

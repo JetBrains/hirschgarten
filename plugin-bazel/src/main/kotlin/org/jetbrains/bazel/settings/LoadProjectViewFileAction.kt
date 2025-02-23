@@ -10,7 +10,7 @@ import org.jetbrains.bazel.action.getPsiFile
 import org.jetbrains.bazel.action.registered.ResyncAction
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
 internal class LoadProjectViewFileAction :
@@ -31,7 +31,7 @@ internal class LoadProjectViewFileAction :
   private fun shouldShowAction(project: Project, e: AnActionEvent): Boolean {
     val psiFile = CommonDataKeys.PSI_FILE.getData(e.dataContext) ?: return false
     return when {
-      !project.isBazelProject -> false
+      !project.isBspProject -> false
       psiFile.isProjectViewFile() &&
         psiFile.isDifferentProjectViewFileSelected() -> true
       else -> false

@@ -1,19 +1,13 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.components
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.config.BuildToolId
-import org.jetbrains.bazel.config.buildToolId
-import org.jetbrains.bazel.config.withBuildToolId
-import org.jetbrains.bazel.extensionPoints.BuildToolWindowTargetActionProviderExtension
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.search.LazySearchDisplay
 import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
@@ -27,7 +21,6 @@ import javax.swing.SwingConstants
 
 class BuildTargetSearch(
   private val targetIcon: Icon,
-  private val buildToolId: BuildToolId,
   private val toolName: String,
   targets: Collection<BuildTargetInfo>,
   val searchBarPanel: SearchBarPanel,
@@ -36,8 +29,8 @@ class BuildTargetSearch(
 
   override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction.FromContainer(this, targetSearchPanel)
 
-  private val searchListDisplay = LazySearchDisplay(targetIcon, buildToolId, showAsTree = false)
-  private val searchTreeDisplay = LazySearchDisplay(targetIcon, buildToolId, showAsTree = true)
+  private val searchListDisplay = LazySearchDisplay(targetIcon, showAsTree = false)
+  private val searchTreeDisplay = LazySearchDisplay(targetIcon, showAsTree = true)
 
   private var displayedSearchPanel: JPanel? = null
   private val noResultsInfoComponent =
@@ -146,15 +139,10 @@ class BuildTargetSearch(
     newTargets: Collection<BuildTargetInfo>,
     newInvalidTargets: List<BuildTargetIdentifier>,
   ): BuildTargetSearch {
-    val new = BuildTargetSearch(targetIcon, buildToolId, toolName, newTargets, searchBarPanel)
+    val new = BuildTargetSearch(targetIcon, toolName, newTargets, searchBarPanel)
     popupHandlerBuilder?.let { new.registerPopupHandler(it) }
     return new
   }
-
-  override fun getTargetActions(project: Project, buildTargetInfo: BuildTargetInfo): List<AnAction> =
-    BuildToolWindowTargetActionProviderExtension.ep
-      .withBuildToolId(project.buildToolId)
-      ?.getTargetActions(targetSearchPanel, project, buildTargetInfo) ?: emptyList()
 
   private class SearchCallable(private val query: Regex, private val targets: Collection<BuildTargetInfo>) : Callable<SearchResults> {
     override fun call(): SearchResults =

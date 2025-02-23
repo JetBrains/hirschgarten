@@ -8,8 +8,6 @@ import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.coroutineScope
-import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.bazel.config.BuildToolId
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.task.queryIf
@@ -32,8 +30,6 @@ val Project.repositoryPaths: Set<Path>
   get() = BazelRepoMappingService.getInstance(this).repositoryPaths
 
 class BazelRepoMappingSyncHook : ProjectSyncHook {
-  override val buildToolId: BuildToolId = bazelBspBuildToolId
-
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) =
     coroutineScope {
       val bazelRepoMappingService = BazelRepoMappingService.getInstance(environment.project)

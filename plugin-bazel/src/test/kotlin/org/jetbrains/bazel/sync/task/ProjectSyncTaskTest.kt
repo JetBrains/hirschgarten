@@ -5,9 +5,6 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.config.BuildToolId
-import org.jetbrains.bazel.config.bspBuildToolId
-import org.jetbrains.bazel.config.buildToolId
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPreSyncHook
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectSyncHook
@@ -49,33 +46,29 @@ private class BspConnectionMock : BspConnection {
   override fun isConnected(): Boolean = true
 }
 
-private val testBuildToolId = BuildToolId("test-build-tool")
-private val anotherTestBuildToolId = BuildToolId("another-test-build-tool")
-
 @DisplayName("ProjectSyncTask tests")
 class ProjectSyncTaskTest : MockProjectBaseTest() {
   @Test
   fun `should call all enabled pre-sync, sync and post-sync hooks for bsp project`() {
     // given
-    project.buildToolId = bspBuildToolId
     project.setMockTestConnection(BspConnectionMock())
 
     // pre-sync hooks
-    val preSyncHook = TestProjectPreSyncHook(bspBuildToolId)
+    val preSyncHook = TestProjectPreSyncHook()
     ProjectPreSyncHook.ep.registerExtension(preSyncHook)
-    val disabledPreSyncHook = DisabledTestProjectPreSyncHook(bspBuildToolId)
+    val disabledPreSyncHook = DisabledTestProjectPreSyncHook()
     ProjectPreSyncHook.ep.registerExtension(disabledPreSyncHook)
 
     // sync hooks
-    val syncHook = TestProjectSyncHook(bspBuildToolId)
+    val syncHook = TestProjectSyncHook()
     ProjectSyncHook.ep.registerExtension(syncHook)
-    val disabledSyncHook = DisabledTestProjectSyncHook(bspBuildToolId)
+    val disabledSyncHook = DisabledTestProjectSyncHook()
     ProjectSyncHook.ep.registerExtension(disabledSyncHook)
 
     // post-sync hooks
-    val postSyncHook = TestProjectPostSyncHook(bspBuildToolId)
+    val postSyncHook = TestProjectPostSyncHook()
     ProjectPostSyncHook.ep.registerExtension(postSyncHook)
-    val disabledPostSyncHook = DisabledTestProjectPostSyncHook(bspBuildToolId)
+    val disabledPostSyncHook = DisabledTestProjectPostSyncHook()
     ProjectPostSyncHook.ep.registerExtension(disabledPostSyncHook)
 
     // when
@@ -97,46 +90,45 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
   @Test
   fun `should call all enabled pre-sync, sync and post-sync hooks for non-bsp project`() {
     // given
-    project.buildToolId = testBuildToolId
     project.setMockTestConnection(BspConnectionMock())
 
     // pre-sync hooks
-    val defaultPreSyncHook = TestProjectPreSyncHook(bspBuildToolId)
+    val defaultPreSyncHook = TestProjectPreSyncHook()
     ProjectPreSyncHook.ep.registerExtension(defaultPreSyncHook)
-    val additionalPreSyncHook = TestProjectPreSyncHook(testBuildToolId)
+    val additionalPreSyncHook = TestProjectPreSyncHook()
     ProjectPreSyncHook.ep.registerExtension(additionalPreSyncHook)
-    val thisPreSyncHookShouldNotBeCalled = TestProjectPreSyncHook(anotherTestBuildToolId)
+    val thisPreSyncHookShouldNotBeCalled = TestProjectPreSyncHook()
     ProjectPreSyncHook.ep.registerExtension(thisPreSyncHookShouldNotBeCalled)
 
-    val defaultDisabledPreSyncHook = DisabledTestProjectPreSyncHook(bspBuildToolId)
+    val defaultDisabledPreSyncHook = DisabledTestProjectPreSyncHook()
     ProjectPreSyncHook.ep.registerExtension(defaultDisabledPreSyncHook)
-    val additionalDisabledPreSyncHook = DisabledTestProjectPreSyncHook(testBuildToolId)
+    val additionalDisabledPreSyncHook = DisabledTestProjectPreSyncHook()
     ProjectPreSyncHook.ep.registerExtension(additionalDisabledPreSyncHook)
 
     // sync hooks
-    val defaultSyncHook = TestProjectSyncHook(bspBuildToolId)
+    val defaultSyncHook = TestProjectSyncHook()
     ProjectSyncHook.ep.registerExtension(defaultSyncHook)
-    val additionalDefaultSyncHook = TestProjectSyncHook(testBuildToolId)
+    val additionalDefaultSyncHook = TestProjectSyncHook()
     ProjectSyncHook.ep.registerExtension(additionalDefaultSyncHook)
-    val thisSyncHookShouldNotBeCalled = TestProjectSyncHook(anotherTestBuildToolId)
+    val thisSyncHookShouldNotBeCalled = TestProjectSyncHook()
     ProjectSyncHook.ep.registerExtension(thisSyncHookShouldNotBeCalled)
 
-    val defaultDisabledSyncHook = DisabledTestProjectSyncHook(bspBuildToolId)
+    val defaultDisabledSyncHook = DisabledTestProjectSyncHook()
     ProjectSyncHook.ep.registerExtension(defaultDisabledSyncHook)
-    val additionalDisabledSyncHook = DisabledTestProjectSyncHook(testBuildToolId)
+    val additionalDisabledSyncHook = DisabledTestProjectSyncHook()
     ProjectSyncHook.ep.registerExtension(additionalDisabledSyncHook)
 
     // post-sync hooks
-    val defaultPostSyncHook = TestProjectPostSyncHook(bspBuildToolId)
+    val defaultPostSyncHook = TestProjectPostSyncHook()
     ProjectPostSyncHook.ep.registerExtension(defaultPostSyncHook)
-    val additionalPostSyncHook = TestProjectPostSyncHook(testBuildToolId)
+    val additionalPostSyncHook = TestProjectPostSyncHook()
     ProjectPostSyncHook.ep.registerExtension(additionalPostSyncHook)
-    val thisPostSyncHookShouldNotBeCalled = TestProjectPostSyncHook(anotherTestBuildToolId)
+    val thisPostSyncHookShouldNotBeCalled = TestProjectPostSyncHook()
     ProjectPostSyncHook.ep.registerExtension(thisPostSyncHookShouldNotBeCalled)
 
-    val defaultDisabledPostSyncHook = DisabledTestProjectPostSyncHook(bspBuildToolId)
+    val defaultDisabledPostSyncHook = DisabledTestProjectPostSyncHook()
     ProjectPostSyncHook.ep.registerExtension(defaultDisabledPostSyncHook)
-    val additionalDisabledPostSyncHook = DisabledTestProjectPostSyncHook(bspBuildToolId)
+    val additionalDisabledPostSyncHook = DisabledTestProjectPostSyncHook()
     ProjectPostSyncHook.ep.registerExtension(additionalDisabledPostSyncHook)
 
     // when

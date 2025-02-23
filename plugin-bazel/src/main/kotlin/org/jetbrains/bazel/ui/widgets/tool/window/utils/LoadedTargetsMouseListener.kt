@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.runnerAction.BspRunnerAction
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
@@ -17,6 +18,7 @@ import org.jetbrains.bazel.runnerAction.RunWithLocalJvmRunnerAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.TestWithLocalJvmRunnerAction
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
+import org.jetbrains.bazel.ui.widgets.BazelBspJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.isJvmTarget
@@ -68,10 +70,8 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
         addAction(BuildTargetAction(target.id))
       }
       fillWithEligibleActions(project, target, false)
-      container.getTargetActions(project, target).map {
-        addAction(it)
-        addSeparator()
-      }
+      add(BazelBspJumpToBuildFileAction(target))
+      if (StarlarkDebugAction.isApplicableTo(target)) add(StarlarkDebugAction(target.id))
     }
 
   private fun MouseEvent.isDoubleClick(): Boolean = this.mouseButton == MouseButton.Left && this.clickCount == 2

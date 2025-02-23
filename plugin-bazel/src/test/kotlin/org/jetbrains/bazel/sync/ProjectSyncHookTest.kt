@@ -2,21 +2,14 @@ package org.jetbrains.bazel.sync
 
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
-import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.config.BuildToolId
-import org.jetbrains.bazel.config.bspBuildToolId
-import org.jetbrains.bazel.config.buildToolId
-import org.jetbrains.bazel.sync.DefaultProjectSyncHooksDisabler
-import org.jetbrains.bazel.sync.ProjectSyncHook
-import org.jetbrains.bazel.sync.additionalProjectSyncHooks
-import org.jetbrains.bazel.sync.defaultProjectSyncHooks
+import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectSyncHook
+import org.jetbrains.bazel.impl.flow.sync.TestDefaultProjectSyncDisabler
+import org.jetbrains.bazel.impl.flow.sync.TestProjectSyncHook
 import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-
-private val testBuildToolId = BuildToolId("test-build-tool")
 
 @DisplayName("ProjectSyncHook tests")
 class ProjectSyncHookTest : MockProjectBaseTest() {
@@ -26,10 +19,8 @@ class ProjectSyncHookTest : MockProjectBaseTest() {
     @BeforeEach
     fun beforeEach() {
       // given
-      project.buildToolId = testBuildToolId
       ProjectSyncHook.ep.registerExtension(
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync
-          .TestProjectSyncHook(bspBuildToolId),
+        TestProjectSyncHook(),
       )
     }
 
@@ -37,79 +28,41 @@ class ProjectSyncHookTest : MockProjectBaseTest() {
     fun `should return all enabled default project sync hooks if no disabler is defined`() {
       // when & then
       ProjectSyncHook.ep.registerExtension(
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectSyncHook(
-          bspBuildToolId,
-        ),
+        DisabledTestProjectSyncHook(),
       )
 
       project.defaultProjectSyncHooks.map { it::class.java } shouldContain
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.TestProjectSyncHook::class.java
+        TestProjectSyncHook::class.java
       project.defaultProjectSyncHooks.map { it::class.java } shouldNotContain
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectSyncHook::class.java
+        DisabledTestProjectSyncHook::class.java
     }
 
     @Test
     fun `should return all the default project sync hooks if disabler doesnt disable it`() {
       // given
       DefaultProjectSyncHooksDisabler.ep.registerExtension(
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.TestDefaultProjectSyncDisabler(
-          testBuildToolId,
+        TestDefaultProjectSyncDisabler(
           emptyList(),
         ),
       )
 
       // when & then
       project.defaultProjectSyncHooks.map { it::class.java } shouldContain
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.TestProjectSyncHook::class.java
+        TestProjectSyncHook::class.java
     }
 
     @Test
     fun `should return filtered default project sync hooks`() {
       // given
       DefaultProjectSyncHooksDisabler.ep.registerExtension(
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.TestDefaultProjectSyncDisabler(
-          testBuildToolId,
-          listOf(_root_ide_package_.org.jetbrains.bazel.impl.flow.sync.TestProjectSyncHook::class.java),
+        TestDefaultProjectSyncDisabler(
+          listOf(TestProjectSyncHook::class.java),
         ),
       )
 
       // when & then
       project.defaultProjectSyncHooks.map { it::class.java } shouldNotContain
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.TestProjectSyncHook::class.java
-    }
-  }
-
-  @Nested
-  @DisplayName("Project.additionalProjectSyncHooks tests")
-  inner class AdditionalProjectSyncHooks {
-    @Test
-    fun `should return an empty list if imported as bsp (default) project`() {
-      // given
-      project.buildToolId = bspBuildToolId
-
-      // when & then
-      project.additionalProjectSyncHooks.map { it::class.java } shouldBe emptyList()
-    }
-
-    @Test
-    fun `should return a list of hooks if imported as non-bsp project`() {
-      // given
-      project.buildToolId = testBuildToolId
-      ProjectSyncHook.ep.registerExtension(
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync
-          .TestProjectSyncHook(testBuildToolId),
-      )
-      ProjectSyncHook.ep.registerExtension(
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectSyncHook(
-          testBuildToolId,
-        ),
-      )
-
-      // when & then
-      project.additionalProjectSyncHooks.map { it::class.java } shouldContain
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.TestProjectSyncHook::class.java
-      project.additionalProjectSyncHooks.map { it::class.java } shouldNotContain
-        _root_ide_package_.org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectSyncHook::class.java
+        TestProjectSyncHook::class.java
     }
   }
 }

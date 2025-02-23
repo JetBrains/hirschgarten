@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.components
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
@@ -58,12 +56,4 @@ interface BuildTargetContainer {
    * @return the newly created container
    */
   fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>, newInvalidTargets: List<BuildTargetIdentifier>): BuildTargetContainer
-
-  /**
-   * Returns actions available for a target.
-   *
-   * @param project this project
-   * @param buildTargetInfo information about the target
-   */
-  fun getTargetActions(project: Project, buildTargetInfo: BuildTargetInfo): List<AnAction>
 }
