@@ -1,21 +1,21 @@
 package org.jetbrains.bsp.bazel.server.bep
 
-import ch.epfl.scala.bsp4j.DidChangeBuildTarget
-import ch.epfl.scala.bsp4j.LogMessageParams
-import ch.epfl.scala.bsp4j.PrintParams
-import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
-import ch.epfl.scala.bsp4j.ShowMessageParams
-import ch.epfl.scala.bsp4j.TaskFinishParams
-import ch.epfl.scala.bsp4j.TaskProgressParams
-import ch.epfl.scala.bsp4j.TaskStartParams
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.protocol.DidChangeBuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildClient
+import org.jetbrains.bsp.protocol.LogMessageParams
+import org.jetbrains.bsp.protocol.PrintParams
+import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.PublishOutputParams
+import org.jetbrains.bsp.protocol.ShowMessageParams
+import org.jetbrains.bsp.protocol.TaskFinishParams
+import org.jetbrains.bsp.protocol.TaskProgressParams
+import org.jetbrains.bsp.protocol.TaskStartParams
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -27,25 +27,25 @@ class BepDiagnosticsTest {
   private class MockBuildClient : JoinedBuildClient {
     val buildPublishDiagnostics: MutableList<PublishDiagnosticsParams> = mutableListOf()
 
-    override fun onBuildShowMessage(p0: ShowMessageParams?) {}
+    override fun onBuildShowMessage(p0: ShowMessageParams) {}
 
-    override fun onBuildLogMessage(p0: LogMessageParams?) {}
+    override fun onBuildLogMessage(p0: LogMessageParams) {}
 
     override fun onBuildPublishDiagnostics(p0: PublishDiagnosticsParams) {
       buildPublishDiagnostics.add(p0)
     }
 
-    override fun onBuildTargetDidChange(p0: DidChangeBuildTarget?) {}
+    override fun onBuildTargetDidChange(p0: DidChangeBuildTarget) {}
 
-    override fun onBuildTaskStart(p0: TaskStartParams?) {}
+    override fun onBuildTaskStart(p0: TaskStartParams) {}
 
-    override fun onBuildTaskProgress(p0: TaskProgressParams?) {}
+    override fun onBuildTaskProgress(p0: TaskProgressParams) {}
 
-    override fun onBuildTaskFinish(p0: TaskFinishParams?) {}
+    override fun onBuildTaskFinish(p0: TaskFinishParams) {}
 
-    override fun onRunPrintStdout(p0: PrintParams?) {}
+    override fun onRunPrintStdout(p0: PrintParams) {}
 
-    override fun onRunPrintStderr(p0: PrintParams?) {}
+    override fun onRunPrintStderr(p0: PrintParams) {}
 
     override fun onBuildPublishOutput(params: PublishOutputParams) {}
   }

@@ -1,9 +1,9 @@
 package org.jetbrains.bsp.bazel.server.model
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.BuildTargetTag
-import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.BuildTargetTag
+import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import java.net.URI
 
 object BspMappings {
@@ -26,6 +26,5 @@ object BspMappings {
 
   fun toUri(textDocument: TextDocumentIdentifier): URI = URI.create(textDocument.uri)
 
-  fun toLabels(targets: List<BuildTargetIdentifier>): Set<Label> =
-    targets.map(BuildTargetIdentifier::getUri).map { Label.parse(it) }.toSet()
+  fun toLabels(targets: List<BuildTargetIdentifier>): Set<Label> = targets.map(BuildTargetIdentifier::uri).map { Label.parse(it) }.toSet()
 }

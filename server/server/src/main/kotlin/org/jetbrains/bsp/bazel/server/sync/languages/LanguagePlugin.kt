@@ -1,14 +1,13 @@
 package org.jetbrains.bsp.bazel.server.sync.languages
 
-import ch.epfl.scala.bsp4j.BuildTarget
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bsp.bazel.server.model.LanguageData
-import org.jetbrains.bsp.protocol.EnhancedSourceItemData
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.net.URI
 import java.nio.file.Path
 
-data class SourceRootAndData(val sourceRoot: Path, val data: EnhancedSourceItemData? = null)
+data class SourceRootAndData(val sourceRoot: Path, val jvmPackagePrefix: String? = null)
 
 abstract class LanguagePlugin<T : LanguageData> {
   open fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData? = null

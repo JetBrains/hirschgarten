@@ -1,8 +1,5 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.java
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.JvmBuildTarget
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
@@ -11,6 +8,8 @@ import org.jetbrains.bsp.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.JvmBuildTarget
 import java.net.URI
 import java.nio.file.Path
 
@@ -55,7 +54,6 @@ class JavaLanguagePlugin(
 
   override fun applyModuleData(moduleData: JavaModule, buildTarget: BuildTarget) {
     val jvmBuildTarget = toJvmBuildTarget(moduleData)
-    buildTarget.dataKind = BuildTargetDataKind.JVM
     buildTarget.data = jvmBuildTarget
   }
 
@@ -69,9 +67,9 @@ class JavaLanguagePlugin(
   fun toJvmBuildTarget(javaModule: JavaModule): JvmBuildTarget? {
     val jdk = javaModule.jdk ?: return null
     val javaHome = jdk.javaHome?.toString()
-    return JvmBuildTarget().also {
-      it.javaVersion = javaVersionFromJavacOpts(javaModule.javacOpts) ?: jdk.version
-      it.javaHome = javaHome
-    }
+    return JvmBuildTarget(
+      javaVersion = javaVersionFromJavacOpts(javaModule.javacOpts) ?: jdk.version,
+      javaHome = javaHome,
+    )
   }
 }

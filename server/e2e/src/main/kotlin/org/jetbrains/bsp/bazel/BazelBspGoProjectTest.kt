@@ -1,19 +1,19 @@
 package org.jetbrains.bsp.bazel
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.SourcesResult
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import kotlinx.coroutines.future.await
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.GoLibraryItem
+import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.SourceItemKind
+import org.jetbrains.bsp.protocol.SourcesItem
+import org.jetbrains.bsp.protocol.SourcesParams
+import org.jetbrains.bsp.protocol.SourcesResult
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import java.net.URI
 import kotlin.time.Duration.Companion.minutes
@@ -71,7 +71,6 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
         BuildTargetIdentifier("$targetPrefix//example:hello"),
         listOf(targetHello),
       )
-    targetHelloSources.roots = listOf()
 
     val targetGoDefaultLibrary =
       SourceItem(
@@ -84,7 +83,6 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
         BuildTargetIdentifier("$targetPrefix//lib:go_default_library"),
         listOf(targetGoDefaultLibrary),
       )
-    targetGoDefaultLibrarySources.roots = listOf()
 
     val targetGoDefaultTest =
       SourceItem(
@@ -99,7 +97,6 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
           targetGoDefaultTest,
         ),
       )
-    targetGoDefaultTestSources.roots = listOf()
 
     val sourcesParams = SourcesParams(expectedTargetIdentifiers())
     val expectedSourcesResult =
@@ -121,12 +118,12 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       targetName = "hello",
       tags = listOf("application"),
       capabilities =
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = true
-          it.canDebug = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = false,
+          canRun = true,
+          canDebug = false,
+        ),
       dependencies =
         listOf(
           BuildTargetIdentifier("$targetPrefix//lib:go_default_library"),
@@ -141,12 +138,12 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       targetName = "go_default_library",
       tags = listOf("library"),
       capabilities =
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = false
-          it.canDebug = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = false,
+          canRun = false,
+          canDebug = false,
+        ),
       importPath = "example.com/lib",
     )
 
@@ -156,12 +153,12 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       targetName = "go_default_test",
       tags = listOf("test"),
       capabilities =
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = true
-          it.canRun = false
-          it.canDebug = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = true,
+          canRun = false,
+          canDebug = false,
+        ),
       importPath = "testmain",
     )
 
@@ -184,17 +181,14 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     val buildTargetData =
       BuildTarget(
         BuildTargetIdentifier("$targetPrefix//$targetDirectory:$targetName"),
-        tags,
-        listOf("go"),
-        dependencies,
-        capabilities,
+        tags = tags,
+        languageIds = listOf("go"),
+        dependencies = dependencies,
+        capabilities = capabilities,
+        displayName = "$targetPrefix//$targetDirectory:$targetName",
+        baseDirectory = "file://\$WORKSPACE/$targetDirectory/",
+        data = goBuildTarget,
       )
-
-    buildTargetData.displayName = "$targetPrefix//$targetDirectory:$targetName"
-    buildTargetData.baseDirectory = "file://\$WORKSPACE/$targetDirectory/"
-    buildTargetData.data = goBuildTarget
-    buildTargetData.dataKind = "go"
-
     return buildTargetData
   }
 

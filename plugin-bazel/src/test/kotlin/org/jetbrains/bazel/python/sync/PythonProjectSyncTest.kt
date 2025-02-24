@@ -1,13 +1,5 @@
 package org.jetbrains.bazel.python.sync
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.PythonBuildTarget
-import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
@@ -31,7 +23,15 @@ import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDi
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.BuildServerCapabilities
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.PythonBuildTarget
+import org.jetbrains.bsp.protocol.ResourcesItem
+import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.SourceItemKind
+import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -69,7 +69,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   fun `should add module with dependencies to workspace model diff`() {
     // given
     val server = BuildServerMock()
-    val capabilities = BazelBuildServerCapabilities()
+    val capabilities = BuildServerCapabilities()
     val diff = AllProjectStructuresProvider(project).newDiff()
     val pythonTestTargets = generateTestSet()
 
@@ -105,7 +105,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   fun `should add module with sources to workspace model diff`() {
     // given
     val server = BuildServerMock()
-    val capabilities = BazelBuildServerCapabilities()
+    val capabilities = BuildServerCapabilities()
     val diff = AllProjectStructuresProvider(project).newDiff()
     val pythonTestTargets = generateTestSetWithSources()
 

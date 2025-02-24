@@ -1,10 +1,10 @@
 package org.jetbrains.bsp.bazel.server.bep
 
-import ch.epfl.scala.bsp4j.TaskId
-import ch.epfl.scala.bsp4j.TestStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
+import org.jetbrains.bsp.protocol.TaskId
+import org.jetbrains.bsp.protocol.TestStatus
 import java.util.UUID
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -121,7 +121,6 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
       taskId = test.taskId,
       status = test.status,
       message = test.message,
-      dataKind = JUnitStyleTestCaseData.DATA_KIND,
       data = createTestCaseData(test.message),
     )
   }

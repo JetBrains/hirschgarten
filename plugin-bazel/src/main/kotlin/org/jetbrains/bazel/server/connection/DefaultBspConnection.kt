@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.connection
 
-import ch.epfl.scala.bsp4j.InitializeBuildParams
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
@@ -20,12 +19,8 @@ import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.console.ids.CONNECT_TASK_ID
 import org.jetbrains.bsp.bazel.install.EnvironmentCreator
-import org.jetbrains.bsp.protocol.BSP_CLIENT_NAME
-import org.jetbrains.bsp.protocol.BSP_CLIENT_VERSION
-import org.jetbrains.bsp.protocol.BSP_VERSION
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
-import org.jetbrains.bsp.protocol.CLIENT_CAPABILITIES
-import org.jetbrains.bsp.protocol.InitializeBuildData
+import org.jetbrains.bsp.protocol.BuildServerCapabilities
+import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.nio.file.Path
 
@@ -33,7 +28,7 @@ import java.nio.file.Path
  * a temporary piece of data that signals built-in connection to reset to account for changes in configs
  * TODO: purge along with BSP complete removal
  */
-private data class ConnectionResetConfig(val projectViewFile: Path?, val initializeBuildData: InitializeBuildData)
+private data class ConnectionResetConfig(val projectViewFile: Path?, val initializeBuildData: InitializeBuildParams)
 
 private val log = logger<DefaultBspConnection>()
 
@@ -46,7 +41,6 @@ class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectP
 class DefaultBspConnection(private val project: Project) : BspConnection {
   @Volatile
   private var server: JoinedBuildServer? = null
-  private var capabilities: BazelBuildServerCapabilities? = null
 
   private var connectionResetConfig: ConnectionResetConfig? = null
 
@@ -84,7 +78,7 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
           override val server: JoinedBuildServer
             get() = conn.server
         }
-      connectBuiltIn(inMemoryConnection, newConnectionResetConfig.initializeBuildData)
+      connectBuiltIn(inMemoryConnection)
     }
   }
 
@@ -92,14 +86,14 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
     ConnectionResetConfig(
       projectViewFile = project.bazelProjectSettings.projectViewPath?.toAbsolutePath(),
       initializeBuildData =
-        InitializeBuildData(
+        InitializeBuildParams(
           clientClassesRootDir = "${project.rootDir}/out",
           openTelemetryEndpoint = getOpenTelemetryEndPoint(),
           featureFlags = FeatureFlagsProvider.accumulateFeatureFlags(),
         ),
     )
 
-  private suspend fun connectBuiltIn(connection: GenericConnection, initializeBuildData: InitializeBuildData) {
+  private suspend fun connectBuiltIn(connection: GenericConnection) {
     coroutineScope {
       val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
       bspSyncConsole.startTask(
@@ -113,7 +107,6 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
         BspPluginBundle.message("console.message.initialize.server.in.progress"),
       )
       server = connection.server
-      capabilities = server?.initializeAndObtainCapabilities(initializeBuildData)
       bspSyncConsole.addMessage(
         CONNECT_TASK_ID,
         BspPluginBundle.message("console.message.initialize.server.success"),
@@ -133,28 +126,12 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
   }
 
   private suspend fun JoinedBuildServer.initializeAndObtainCapabilities(
-    initializeBuildData: InitializeBuildData,
-  ): BazelBuildServerCapabilities {
-    val buildInitializeResults = buildInitialize(createInitializeBuildParams(initializeBuildData)).asDeferred().await()
+    initializeBuildData: InitializeBuildParams,
+  ): BuildServerCapabilities {
+    val buildInitializeResults = buildInitialize(initializeBuildData).asDeferred().await()
     onBuildInitialized()
     // cast is safe because we registered a custom type adapter
-    return buildInitializeResults.capabilities as BazelBuildServerCapabilities
-  }
-
-  private fun createInitializeBuildParams(initializeBuildData: InitializeBuildData): InitializeBuildParams {
-    val projectBaseDir = project.rootDir
-    val params =
-      InitializeBuildParams(
-        BSP_CLIENT_NAME,
-        BSP_CLIENT_VERSION,
-        BSP_VERSION,
-        projectBaseDir.toString(),
-        CLIENT_CAPABILITIES,
-      )
-
-    params.data = initializeBuildData
-
-    return params
+    return buildInitializeResults.capabilities
   }
 
   private fun getOpenTelemetryEndPoint(): String? =
@@ -164,12 +141,10 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
       null
     }
 
-  override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) -> T): T {
+  override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T {
     connect()
     val server = server ?: error("Cannot execute the task. Server not available.")
-    val capabilities = capabilities ?: error("Cannot execute the task. Capabilities not available.")
-
-    return task(server, capabilities)
+    return task(server)
   }
 
   override suspend fun disconnect() {}

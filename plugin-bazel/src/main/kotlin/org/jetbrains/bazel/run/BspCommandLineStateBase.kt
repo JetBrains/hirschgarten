@@ -20,7 +20,6 @@ import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.taskEvents.BspTaskEventsService
 import org.jetbrains.bazel.taskEvents.BspTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 
 abstract class BspCommandLineStateBase(environment: ExecutionEnvironment, protected val originId: OriginId) :
@@ -28,7 +27,7 @@ abstract class BspCommandLineStateBase(environment: ExecutionEnvironment, protec
   protected abstract fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener
 
   /** Run the actual BSP command or throw an exception if the server does not support running the configuration */
-  protected abstract suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities)
+  protected abstract suspend fun startBsp(server: JoinedBuildServer)
 
   final override fun startProcess(): BspProcessHandler {
     val configuration = environment.runProfile as BspRunConfiguration
@@ -41,11 +40,11 @@ abstract class BspCommandLineStateBase(environment: ExecutionEnvironment, protec
     // Otherwise, we might miss some events
     val runDeferred =
       bspCoroutineService.startAsync(lazy = true) {
-        project.connection.runWithServer { server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities ->
+        project.connection.runWithServer { server: JoinedBuildServer ->
           withContext(Dispatchers.EDT) {
             RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
           }
-          startBsp(server, capabilities)
+          startBsp(server)
         }
       }
 

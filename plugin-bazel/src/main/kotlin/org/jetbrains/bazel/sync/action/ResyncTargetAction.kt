@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.sync.action
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.action.SuspendableAction
@@ -11,6 +10,7 @@ import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 
 class ResyncTargetAction private constructor(private val targetId: BuildTargetIdentifier) :

@@ -16,7 +16,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/widgets",
         "//plugin-bazel/workspacemodel/src:workspacemodel",
-        "@maven//:ch_epfl_scala_bsp4j",
+        "//protocol",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

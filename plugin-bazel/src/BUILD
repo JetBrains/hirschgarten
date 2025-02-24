@@ -91,7 +91,7 @@ kt_jvm_library(
     deps = [
         ":intellij-bazel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
-        "@maven//:ch_epfl_scala_bsp4j",
+        "//protocol",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
         "@maven//:io_kotest_kotest_assertions_shared_jvm",

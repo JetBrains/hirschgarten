@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.go
 
-import ch.epfl.scala.bsp4j.BuildTarget
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
@@ -11,6 +10,7 @@ import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import java.net.URI
 import java.nio.file.Path
@@ -29,7 +29,6 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, priva
         )
       }
 
-    buildTarget.dataKind = "go"
     buildTarget.data = goBuildTarget
   }
 

@@ -1,13 +1,13 @@
 package org.jetbrains.bsp.bazel
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.CompileParams
-import ch.epfl.scala.bsp4j.DiagnosticSeverity
-import ch.epfl.scala.bsp4j.StatusCode
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import kotlinx.coroutines.future.await
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.CompileParams
+import org.jetbrains.bsp.protocol.DiagnosticSeverity
+import org.jetbrains.bsp.protocol.StatusCode
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import kotlin.time.Duration.Companion.seconds

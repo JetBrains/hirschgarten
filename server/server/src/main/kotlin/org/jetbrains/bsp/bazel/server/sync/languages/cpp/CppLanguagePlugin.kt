@@ -1,9 +1,5 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.cpp
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.CppBuildTarget
-import ch.epfl.scala.bsp4j.CppOptionsItem
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
@@ -12,6 +8,9 @@ import org.jetbrains.bsp.bazel.server.model.BspMappings
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.CppBuildTarget
+import org.jetbrains.bsp.protocol.CppOptionsItem
 import java.net.URI
 
 class CppLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<CppModule>() {
@@ -20,15 +19,13 @@ class CppLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : La
   override fun applyModuleData(moduleData: CppModule, buildTarget: BuildTarget) {
     // TODO https://youtrack.jetbrains.com/issue/BAZEL-612
     val cppBuildTarget =
-      CppBuildTarget().also {
-        it.version = null
-        it.compiler = "compiler"
-        it.cCompiler = "/bin/gcc"
-        it.cppCompiler =
-          "/bin/gcc"
-      }
+      CppBuildTarget(
+        version = null,
+        compiler = "compiler",
+        cCompiler = "/bin/gcc",
+        cppCompiler = "/bin/gcc",
+      )
     buildTarget.data = cppBuildTarget
-    buildTarget.dataKind = BuildTargetDataKind.CPP
   }
 
   private fun TargetInfo.getCppTargetInfoOrNull(): BspTargetInfo.CppTargetInfo? = this.takeIf(TargetInfo::hasCppTargetInfo)?.cppTargetInfo

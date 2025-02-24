@@ -1,12 +1,5 @@
 package org.jetbrains.bazel.golang.sync
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
 import com.goide.vgo.project.workspaceModel.entities.VgoDependencyEntity
 import com.goide.vgo.project.workspaceModel.entities.VgoStandaloneModuleEntity
 import com.intellij.platform.backend.workspace.WorkspaceModel
@@ -28,8 +21,15 @@ import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDi
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.BuildServerCapabilities
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.GoBuildTarget
+import org.jetbrains.bsp.protocol.ResourcesItem
+import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.SourceItemKind
+import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
@@ -80,7 +80,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   fun `should add VgoStandaloneModuleEntities to workspace model diff`() {
     // given
     val server = BuildServerMock()
-    val capabilities = BazelBuildServerCapabilities()
+    val capabilities = BuildServerCapabilities()
     val diff = AllProjectStructuresProvider(project).newDiff()
     val goTestTargets = generateTestSet(project.findNameProvider().orDefault())
 
@@ -117,7 +117,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   fun `should add dependencies to workspace model diff`() {
     // given
     val server = BuildServerMock()
-    val capabilities = BazelBuildServerCapabilities()
+    val capabilities = BuildServerCapabilities()
     val diff = AllProjectStructuresProvider(project).newDiff()
     val goTestTargets = generateTestSet(project.findNameProvider().orDefault())
 

@@ -1,12 +1,5 @@
 package org.jetbrains.bsp.bazel.server.sync
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencyModule
-import ch.epfl.scala.bsp4j.DependencyModulesItem
-import ch.epfl.scala.bsp4j.DependencyModulesParams
-import ch.epfl.scala.bsp4j.DependencyModulesResult
-import ch.epfl.scala.bsp4j.MavenDependencyModule
-import ch.epfl.scala.bsp4j.MavenDependencyModuleArtifact
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
@@ -14,6 +7,13 @@ import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.Library
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.SourceSet
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.DependencyModule
+import org.jetbrains.bsp.protocol.DependencyModulesItem
+import org.jetbrains.bsp.protocol.DependencyModulesParams
+import org.jetbrains.bsp.protocol.DependencyModulesResult
+import org.jetbrains.bsp.protocol.MavenDependencyModule
+import org.jetbrains.bsp.protocol.MavenDependencyModuleArtifact
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import java.net.URI
@@ -80,23 +80,25 @@ class BspProjectMapperTest {
       val mavenSourceArtifact =
         MavenDependencyModuleArtifact(
           jarSourcesUri.toString(),
+          classifier = "sources",
         )
-      mavenSourceArtifact.setClassifier("sources")
-      val expectedDepModule = DependencyModule(labelStr, "2.13." + i)
-      expectedDepModule.setDataKind("maven")
-      expectedDepModule.setData(
-        MavenDependencyModule(
-          "org.scala-lang",
-          "scala-library",
+      val expectedDepModule =
+        DependencyModule(
+          labelStr,
           "2.13." + i,
-          listOf<MavenDependencyModuleArtifact>(
-            MavenDependencyModuleArtifact(
-              jarUri.toString(),
+          dependencyModule =
+            MavenDependencyModule(
+              "org.scala-lang",
+              "scala-library",
+              "2.13." + i,
+              listOf<MavenDependencyModuleArtifact>(
+                MavenDependencyModuleArtifact(
+                  jarUri.toString(),
+                ),
+                mavenSourceArtifact,
+              ),
             ),
-            mavenSourceArtifact,
-          ),
-        ),
-      )
+        )
       expectedDepModules.add(expectedDepModule)
     }
 

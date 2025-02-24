@@ -1,9 +1,8 @@
 package org.jetbrains.bsp.bazel.server.model
 
-import org.jetbrains.bsp.protocol.EnhancedSourceItemData
 import java.net.URI
 
-data class SourceWithData(val source: URI, val data: EnhancedSourceItemData? = null)
+data class SourceWithData(val source: URI, val jvmPackagePrefix: String? = null)
 
 data class SourceSet(
   val sources: Set<SourceWithData>,

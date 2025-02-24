@@ -1,8 +1,5 @@
 package org.jetbrains.bazel.sync.task
 
-import ch.epfl.scala.bsp4j.ResourcesResult
-import ch.epfl.scala.bsp4j.SourcesResult
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook
@@ -17,8 +14,11 @@ import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.BuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.ResourcesResult
+import org.jetbrains.bsp.protocol.SourcesResult
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.DisplayName
@@ -40,8 +40,8 @@ private class BspConnectionMock : BspConnection {
     // it's a mock, nothing to do
   }
 
-  override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) -> T): T =
-    task(mockBuildServer, BazelBuildServerCapabilities())
+  override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T =
+    task(mockBuildServer, BuildServerCapabilities())
 
   override fun isConnected(): Boolean = true
 }

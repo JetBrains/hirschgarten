@@ -1016,7 +1016,7 @@ class BazelProjectMapper(
           .map {
             SourceWithData(
               source = it.first.toUri(),
-              data = it.second?.data,
+              jvmPackagePrefix = it.second?.jvmPackagePrefix,
             )
           }.toSet(),
       generatedSources =
@@ -1024,7 +1024,7 @@ class BazelProjectMapper(
           .map {
             SourceWithData(
               source = it.first.toUri(),
-              data = it.second?.data,
+              jvmPackagePrefix = it.second?.jvmPackagePrefix,
             )
           }.toSet(),
       sourceRoots = (sourceRootsAndData + generatedRootsAndData).mapNotNull { it.second?.sourceRoot?.toUri() }.toSet(),

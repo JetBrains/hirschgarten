@@ -10,6 +10,5 @@ kt_jvm_library(
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/paths",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:bsp_target_info_java_proto",
-        "@maven//:ch_epfl_scala_bsp4j",
     ],
 )

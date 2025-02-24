@@ -147,14 +147,13 @@ class ProjectSyncTask(private val project: Project) {
     buildProject: Boolean,
   ) {
     val diff = AllProjectStructuresProvider(project).newDiff()
-    project.connection.runWithServer { server, capabilities ->
+    project.connection.runWithServer { server ->
       bspTracer.spanBuilder("collect.project.details.ms").use {
-        val baseTargetInfos = BaseProjectSync(project).execute(syncScope, buildProject, server, capabilities, PROJECT_SYNC_TASK_ID)
+        val baseTargetInfos = BaseProjectSync(project).execute(syncScope, buildProject, server, PROJECT_SYNC_TASK_ID)
         val environment =
           ProjectSyncHookEnvironment(
             project = project,
             server = server,
-            capabilities = capabilities,
             diff = diff,
             taskId = PROJECT_SYNC_TASK_ID,
             progressReporter = progressReporter,

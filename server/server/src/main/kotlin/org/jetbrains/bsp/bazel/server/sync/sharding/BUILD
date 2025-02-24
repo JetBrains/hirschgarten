@@ -6,10 +6,10 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/symlinks",
+        "//protocol",
         "//server/executioncontext/workspacecontext",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/paths",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/firstPhase",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:bsp_target_info_java_proto",
-        "@maven//:ch_epfl_scala_bsp4j",
     ],
 )

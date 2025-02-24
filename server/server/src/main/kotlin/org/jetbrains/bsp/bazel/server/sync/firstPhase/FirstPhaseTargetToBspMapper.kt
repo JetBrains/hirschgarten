@@ -1,17 +1,5 @@
 package org.jetbrains.bsp.bazel.server.sync.firstPhase
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.BuildTargetTag
-import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.ResourcesParams
-import ch.epfl.scala.bsp4j.ResourcesResult
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.SourcesResult
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.server.model.BspMappings
@@ -19,7 +7,19 @@ import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
-import org.jetbrains.bsp.protocol.EnhancedSourceItem
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.BuildTargetTag
+import org.jetbrains.bsp.protocol.ResourcesItem
+import org.jetbrains.bsp.protocol.ResourcesParams
+import org.jetbrains.bsp.protocol.ResourcesResult
+import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.SourceItemKind
+import org.jetbrains.bsp.protocol.SourcesItem
+import org.jetbrains.bsp.protocol.SourcesParams
+import org.jetbrains.bsp.protocol.SourcesResult
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists
@@ -44,11 +44,11 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
 
   private fun Target.toBspBuildTarget(): BuildTarget =
     BuildTarget(
-      BuildTargetIdentifier(name),
-      inferTags(),
-      inferLanguages().map { it.id }.toList(),
-      interestingDeps.map { BuildTargetIdentifier(it) },
-      inferCapabilities(),
+      id = BuildTargetIdentifier(name),
+      tags = inferTags(),
+      languageIds = inferLanguages().map { it.id }.toList(),
+      dependencies = interestingDeps.map { BuildTargetIdentifier(it) },
+      capabilities = inferCapabilities(),
     )
 
   private fun Target.inferTags(): List<String> {
@@ -72,12 +72,12 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
   }
 
   private fun Target.inferCapabilities(): BuildTargetCapabilities =
-    BuildTargetCapabilities().apply {
-      canCompile = !isManual
-      canRun = isBinary
-      canTest = isTest
-      canDebug = false
-    }
+    BuildTargetCapabilities(
+      canCompile = !isManual,
+      canRun = isBinary,
+      canTest = isTest,
+      canDebug = false,
+    )
 
   private fun Target.isSupported(): Boolean {
     val isRuleSupported = Language.allOfKind(kind).isNotEmpty()
@@ -103,15 +103,21 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
     val sourceFilesAndData = sourceFiles.map { it to JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(it) }
 
     val itemsForSourcesReferencedViaTarget = srcs.calculateModuleDependencies(project).map { it.toBspSourcesItem(project) }
-    val directItems = sourceFilesAndData.map { EnhancedSourceItem(it.first.toUri().toString(), SourceItemKind.FILE, false, it.second.data) }
+    val directItems =
+      sourceFilesAndData.map {
+        SourceItem(
+          it.first.toUri().toString(),
+          SourceItemKind.FILE,
+          false,
+          it.second.jvmPackagePrefix,
+        )
+      }
     val items = (directItems + itemsForSourcesReferencedViaTarget.flatMap { it.sources }).distinct()
 
     val directRoots = sourceFilesAndData.map { it.second.sourceRoot }.map { it.toUri().toString() }
     val roots = (directRoots + itemsForSourcesReferencedViaTarget.flatMap { it.roots }).distinct()
 
-    return SourcesItem(BuildTargetIdentifier(name), items).apply {
-      this.roots = roots
-    }
+    return SourcesItem(BuildTargetIdentifier(name), sources = items, roots = roots)
   }
 
   fun toResourcesResult(project: FirstPhaseProject, resourcesParams: ResourcesParams): ResourcesResult {

@@ -1,17 +1,6 @@
 package org.jetbrains.bsp.bazel.server.sync
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.CleanCacheParams
-import ch.epfl.scala.bsp4j.CleanCacheResult
-import ch.epfl.scala.bsp4j.CompileParams
-import ch.epfl.scala.bsp4j.CompileResult
-import ch.epfl.scala.bsp4j.RunParams
-import ch.epfl.scala.bsp4j.RunResult
-import ch.epfl.scala.bsp4j.StatusCode
-import ch.epfl.scala.bsp4j.TestParams
-import ch.epfl.scala.bsp4j.TestResult
 import com.google.gson.Gson
-import com.google.gson.JsonObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -45,13 +34,21 @@ import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
-import org.jetbrains.bsp.protocol.BazelTestParamsData
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.CleanCacheParams
+import org.jetbrains.bsp.protocol.CleanCacheResult
+import org.jetbrains.bsp.protocol.CompileParams
+import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.MobileInstallStartType
+import org.jetbrains.bsp.protocol.RunParams
+import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
-import org.jetbrains.bsp.protocol.TestWithDebugParams
+import org.jetbrains.bsp.protocol.StatusCode
+import org.jetbrains.bsp.protocol.TestParams
+import org.jetbrains.bsp.protocol.TestResult
 import java.net.URI
 import kotlin.io.path.Path
 import kotlin.io.path.toPath
@@ -90,9 +87,9 @@ class ExecuteService(
   fun compile(cancelChecker: CancelChecker, params: CompileParams): CompileResult =
     if (params.targets.isNotEmpty()) {
       val result = build(cancelChecker, params.targets, params.originId, params.arguments ?: emptyList())
-      CompileResult(result.bspStatusCode).apply { originId = params.originId }
+      CompileResult(statusCode = result.bspStatusCode, originId = params.originId)
     } else {
-      CompileResult(StatusCode.ERROR).apply { originId = params.originId }
+      CompileResult(statusCode = StatusCode.ERROR, originId = params.originId)
     }
 
   fun analysisDebug(cancelChecker: CancelChecker, params: AnalysisDebugParams): AnalysisDebugResult {
@@ -136,7 +133,7 @@ class ExecuteService(
       val targets = listOf(params.target)
       val result = build(cancelChecker, targets, params.originId)
       if (result.isNotSuccess) {
-        return RunResult(result.bspStatusCode).apply { originId = originId }
+        return RunResult(statusCode = result.bspStatusCode, originId = params.originId)
       }
     }
     val command =
@@ -157,22 +154,20 @@ class ExecuteService(
           originId = params.originId,
           serverPidFuture = null,
         ).waitAndGetResult(cancelChecker)
-    return RunResult(bazelProcessResult.bspStatusCode).apply { originId = originId }
+    return RunResult(statusCode = bazelProcessResult.bspStatusCode, originId = params.originId)
   }
-
-  fun test(cancelChecker: CancelChecker, params: TestParams): TestResult = testImpl(cancelChecker, params)
 
   /**
    * If `debugArguments` is empty, test task will be executed normally without any debugging options
    */
-  fun testWithDebug(cancelChecker: CancelChecker, params: TestWithDebugParams): TestResult {
-    val modules = selectModules(cancelChecker, params.testParams.targets)
-    val singleModule = modules.singleOrResponseError(params.testParams.targets.first())
+  fun testWithDebug(cancelChecker: CancelChecker, params: TestParams): TestResult {
+    val modules = selectModules(cancelChecker, params.targets)
+    val singleModule = modules.singleOrResponseError(params.targets.first())
     val requestedDebugType = DebugType.fromDebugData(params.debug)
     val debugArguments = generateRunArguments(requestedDebugType)
     verifyDebugRequest(requestedDebugType, singleModule)
 
-    return testImpl(cancelChecker, params.testParams, debugArguments)
+    return testImpl(cancelChecker, params, debugArguments)
   }
 
   private fun testImpl(
@@ -182,26 +177,17 @@ class ExecuteService(
   ): TestResult {
     val targetsSpec = TargetsSpec(params.targets.map { it.label() }, emptyList())
 
-    var bazelTestParamsData: BazelTestParamsData? = null
-    try {
-      if (params.dataKind == BazelTestParamsData.DATA_KIND) {
-        bazelTestParamsData = gson.fromJson(params.data as JsonObject, BazelTestParamsData::class.java)
-      }
-    } catch (e: Exception) {
-      bspClientLogger.warn("Failed to parse BazelTestParamsData: $e")
-    }
-
     val command =
-      when (bazelTestParamsData?.coverage) {
+      when (params.coverage) {
         true -> bazelRunner.buildBazelCommand { coverage() }
         else -> bazelRunner.buildBazelCommand { test() }
       }
 
-    bazelTestParamsData?.additionalBazelParams?.let { additionalParams ->
+    params.additionalBazelParams?.let { additionalParams ->
       (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalParams.split(" "))
     }
 
-    bazelTestParamsData?.testFilter?.let { testFilter ->
+    params.testFilter?.let { testFilter ->
       command.options.add(BazelFlag.testFilter(testFilter))
     }
 
@@ -224,10 +210,7 @@ class ExecuteService(
           ).waitAndGetResult(cancelChecker, true)
       }
 
-    return TestResult(result.bspStatusCode).apply {
-      originId = originId
-      data = result // TODO: why do we return the entire result? and no `dataKind`?
-    }
+    return TestResult(statusCode = result.bspStatusCode, originId = params.originId)
   }
 
   fun mobileInstall(cancelChecker: CancelChecker, params: MobileInstallParams): MobileInstallResult {
@@ -268,7 +251,7 @@ class ExecuteService(
         }
       bazelRunner.runBazelCommand(command, serverPidFuture = bepReader.serverPid).waitAndGetResult(cancelChecker)
     }
-    return CleanCacheResult(true)
+    return CleanCacheResult(cleaned = true)
   }
 
   private fun build(

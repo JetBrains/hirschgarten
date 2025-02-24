@@ -1,10 +1,5 @@
 package org.jetbrains.bazel.python.sync
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.DependencySourcesResult
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
@@ -42,12 +37,17 @@ import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
-import org.jetbrains.bazel.sync.task.queryIf
+import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.DependencySourcesItem
+import org.jetbrains.bsp.protocol.DependencySourcesParams
+import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import kotlin.io.path.Path
 import kotlin.io.path.toPath
@@ -229,7 +229,7 @@ class PythonProjectSync : ProjectSyncHook {
     targets: List<BaseTargetInfo>,
   ): DependencySourcesResult? =
     coroutineScope {
-      queryIf(environment.capabilities.dependencySourcesProvider == true, "buildTarget/dependencySources") {
+      query("buildTarget/dependencySources") {
         environment.server.buildTargetDependencySources(DependencySourcesParams(targets.map { it.target.id }))
       }
     }
@@ -244,7 +244,7 @@ class PythonProjectSync : ProjectSyncHook {
       if (it.interpreter != null && it.version != null) {
         calculateAndAddSdk(
           sdkName = "${target.id.uri}-${it.version}",
-          sdkInterpreterUri = it.interpreter,
+          sdkInterpreterUri = it.interpreter!!,
           sdkDependencies = dependenciesSources,
           virtualFileUrlManager = virtualFileUrlManager,
         )

@@ -9,13 +9,11 @@ kt_jvm_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/label",
         "//plugin-bazel/jps-compilation/src:jps-compilation",
-        "//plugin-bazel/protocol/src/main/kotlin/org/jetbrains/bsp/protocol/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/annotations",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
         "//plugin-bazel/workspacemodel/src:workspacemodel",
         "//protocol",
-        "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:com_google_code_gson_gson",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
         "@rules_intellij//third_party/android",

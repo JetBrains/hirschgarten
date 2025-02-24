@@ -1,11 +1,11 @@
 package org.jetbrains.bsp.bazel.server.sync
 
-import ch.epfl.scala.bsp4j.MavenDependencyModule
-import ch.epfl.scala.bsp4j.MavenDependencyModuleArtifact
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.Library
 import org.jetbrains.bsp.bazel.server.model.Module
+import org.jetbrains.bsp.protocol.MavenDependencyModule
+import org.jetbrains.bsp.protocol.MavenDependencyModuleArtifact
 
 object DependencyMapper {
   fun extractMavenDependencyInfo(lib: Library): MavenDependencyModule? {
@@ -17,8 +17,7 @@ object DependencyMapper {
       }
     val sourceJars =
       lib.sources.map { uri -> uri.toString() }.map {
-        val artifact = MavenDependencyModuleArtifact(it)
-        artifact.classifier = "sources"
+        val artifact = MavenDependencyModuleArtifact(it, classifier = "sources")
         artifact
       }
     return MavenDependencyModule(mavenCoordinates.groupId, mavenCoordinates.artifactId, mavenCoordinates.version, jars + sourceJars)

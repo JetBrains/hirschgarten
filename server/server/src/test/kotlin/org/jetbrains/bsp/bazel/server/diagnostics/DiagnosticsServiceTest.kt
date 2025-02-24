@@ -1,16 +1,16 @@
 package org.jetbrains.bsp.bazel.server.diagnostics
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DiagnosticSeverity
-import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
-import ch.epfl.scala.bsp4j.Range
-import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.DiagnosticSeverity
+import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
+import org.jetbrains.bsp.protocol.Range
+import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
-import ch.epfl.scala.bsp4j.Diagnostic as BspDiagnostic
-import ch.epfl.scala.bsp4j.Position as BspPosition
+import org.jetbrains.bsp.protocol.Diagnostic as BspDiagnostic
+import org.jetbrains.bsp.protocol.Position as BspPosition
 
 class DiagnosticsServiceTest {
   private val workspacePath = Paths.get("/user/workspace")
@@ -757,9 +757,10 @@ class DiagnosticsServiceTest {
     PublishDiagnosticsParams(
       textDocument,
       buildTarget,
-      diagnostics.asList(),
-      true,
-    ).apply { originId = "originId" }
+      diagnostics = diagnostics.asList(),
+      reset = true,
+      originId = "originId",
+    )
 
   private fun errorDiagnostic(position: Position, message: String): BspDiagnostic =
     createDiagnostic(position, message, DiagnosticSeverity.ERROR)
@@ -773,7 +774,7 @@ class DiagnosticsServiceTest {
     severity: DiagnosticSeverity,
   ): BspDiagnostic {
     val adjustedPosition = BspPosition(position.line - 1, position.character - 1)
-    return BspDiagnostic(Range(adjustedPosition, adjustedPosition), message).apply { this.severity = severity }
+    return BspDiagnostic(Range(adjustedPosition, adjustedPosition), severity, message = message)
   }
 
   private fun extractDiagnostics(output: String, buildTarget: Label): List<PublishDiagnosticsParams> =

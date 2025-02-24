@@ -2,12 +2,6 @@ package org.jetbrains.bsp.protocol
 
 import kotlin.math.max
 
-data class InitializeBuildData(
-  val clientClassesRootDir: String? = null,
-  val openTelemetryEndpoint: String? = null,
-  val featureFlags: FeatureFlags? = null,
-)
-
 data class FeatureFlags(
   val isPythonSupportEnabled: Boolean = false,
   val isAndroidSupportEnabled: Boolean = false,

@@ -1,21 +1,20 @@
 package org.jetbrains.bsp.bazel
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.SourcesResult
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import kotlinx.coroutines.future.await
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.SourceItemKind
+import org.jetbrains.bsp.protocol.SourcesItem
+import org.jetbrains.bsp.protocol.SourcesParams
+import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.Assertions.assertFalse
 import java.net.URI
-import kotlin.also
 import kotlin.io.path.exists
 import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.minutes
@@ -65,57 +64,61 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
     val srcJavaLibTarget =
       BuildTarget(
         BuildTargetIdentifier("//src:java-lib"),
-        listOf("library"),
-        listOf("java"),
-        emptyList(),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = false
-          it.canDebug = false
-        },
+        tags = listOf("library"),
+        languageIds = listOf("java"),
+        dependencies = emptyList(),
+        capabilities =
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = false,
+            canDebug = false,
+          ),
       )
 
     val srcJavaBinaryTarget =
       BuildTarget(
         BuildTargetIdentifier("//src:java-binary"),
-        listOf("application"),
-        listOf("java"),
-        listOf(BuildTargetIdentifier("//src:java-lib")),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = true
-          it.canDebug = false
-        },
+        tags = listOf("application"),
+        languageIds = listOf("java"),
+        dependencies = listOf(BuildTargetIdentifier("//src:java-lib")),
+        capabilities =
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = true,
+            canDebug = false,
+          ),
       )
 
     val srcKotlinLibTarget =
       BuildTarget(
         BuildTargetIdentifier("//src:kt-lib"),
-        listOf("library"),
-        listOf("kotlin"),
-        emptyList(),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = false
-          it.canDebug = false
-        },
+        tags = listOf("library"),
+        languageIds = listOf("kotlin"),
+        dependencies = emptyList(),
+        capabilities =
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = false,
+            canDebug = false,
+          ),
       )
 
     val srcKotlinBinaryTarget =
       BuildTarget(
         BuildTargetIdentifier("//src:kt-binary"),
-        listOf("application"),
-        listOf("kotlin"),
-        listOf(BuildTargetIdentifier("//src:kt-lib")),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = true
-          it.canDebug = false
-        },
+        tags = listOf("application"),
+        languageIds = listOf("kotlin"),
+        dependencies = listOf(BuildTargetIdentifier("//src:kt-lib")),
+        capabilities =
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = true,
+            canDebug = false,
+          ),
       )
 
     return WorkspaceBuildTargetsResult(listOf(srcJavaLibTarget, srcJavaBinaryTarget, srcKotlinLibTarget, srcKotlinBinaryTarget))
@@ -126,33 +129,27 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
       SourcesItem(
         BuildTargetIdentifier("//src:java-lib"),
         listOf(SourceItem("file://\$WORKSPACE/src/Lib.java", SourceItemKind.FILE, false)),
-      ).apply {
-        roots = listOf("file://\$WORKSPACE/src/")
-      }
-
+        roots = listOf("file://\$WORKSPACE/src/"),
+      )
     val srcJavaBinarySource =
       SourcesItem(
         BuildTargetIdentifier("//src:java-binary"),
         listOf(SourceItem("file://\$WORKSPACE/src/Main.java", SourceItemKind.FILE, false)),
-      ).apply {
-        roots = listOf("file://\$WORKSPACE/src/")
-      }
-
+        roots = listOf("file://\$WORKSPACE/src/"),
+      )
     val srcKotlinLibSource =
       SourcesItem(
         BuildTargetIdentifier("//src:kt-lib"),
         listOf(SourceItem("file://\$WORKSPACE/src/Lib.kt", SourceItemKind.FILE, false)),
-      ).apply {
-        roots = listOf("file://\$WORKSPACE/src/")
-      }
+        roots = listOf("file://\$WORKSPACE/src/"),
+      )
 
     val srcKotlinBinarySource =
       SourcesItem(
         BuildTargetIdentifier("//src:kt-binary"),
         listOf(SourceItem("file://\$WORKSPACE/src/Main.kt", SourceItemKind.FILE, false)),
-      ).apply {
-        roots = listOf("file://\$WORKSPACE/src/")
-      }
+        roots = listOf("file://\$WORKSPACE/src/"),
+      )
 
     return SourcesResult(listOf(srcJavaLibSource, srcJavaBinarySource, srcKotlinLibSource, srcKotlinBinarySource))
   }

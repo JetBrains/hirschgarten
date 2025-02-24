@@ -1,11 +1,5 @@
 package org.jetbrains.bazel.jvm.sync
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.DependencySourcesResult
-import ch.epfl.scala.bsp4j.JavacOptionsParams
-import ch.epfl.scala.bsp4j.ScalacOptionsParams
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.application.writeAction
@@ -63,10 +57,15 @@ import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bazel.workspacemodel.entities.includesJava
 import org.jetbrains.bazel.workspacemodel.entities.includesScala
 import org.jetbrains.bazel.workspacemodel.entities.toBuildTargetInfo
-import org.jetbrains.bsp.protocol.BazelBuildServer
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.BuildServerCapabilities
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.DependencySourcesParams
+import org.jetbrains.bsp.protocol.DependencySourcesResult
+import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
+import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
@@ -96,7 +95,6 @@ class CollectProjectDetailsTask(
     project: Project,
     server: JoinedBuildServer,
     syncScope: ProjectSyncScope,
-    capabilities: BazelBuildServerCapabilities,
     progressReporter: SequentialProgressReporter,
     baseTargetInfos: BaseTargetInfos,
   ) {
@@ -137,7 +135,6 @@ class CollectProjectDetailsTask(
   private suspend fun collectModel(
     project: Project,
     server: JoinedBuildServer,
-    capabilities: BazelBuildServerCapabilities,
     baseTargetInfos: BaseTargetInfos,
   ): ProjectDetails =
     try {
@@ -482,7 +479,7 @@ class CollectProjectDetailsTask(
 suspend fun calculateProjectDetailsWithCapabilities(
   project: Project,
   server: JoinedBuildServer,
-  buildServerCapabilities: BazelBuildServerCapabilities,
+  buildServerCapabilities: BuildServerCapabilities,
   baseTargetInfos: BaseTargetInfos,
 ): ProjectDetails =
   coroutineScope {
@@ -491,7 +488,7 @@ suspend fun calculateProjectDetailsWithCapabilities(
       val scalaTargetIds = baseTargetInfos.infos.calculateScalaTargetIds()
       val libraries: WorkspaceLibrariesResult? =
         queryIf(buildServerCapabilities.workspaceLibrariesProvider, "workspace/libraries") {
-          (server as BazelBuildServer).workspaceLibraries()
+          server.workspaceLibraries()
         }
 
       val dependencySourcesResult =
@@ -511,7 +508,7 @@ suspend fun calculateProjectDetailsWithCapabilities(
 
       val nonModuleTargets =
         queryIf(buildServerCapabilities.workspaceNonModuleTargetsProvider, "workspace/nonModuleTargets") {
-          (server as BazelBuildServer).workspaceNonModuleTargets()
+          server.workspaceNonModuleTargets()
         }
 
       val jvmBinaryJarsResult =

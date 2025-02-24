@@ -1,8 +1,5 @@
 package org.jetbrains.bsp.bazel.server
 
-import ch.epfl.scala.bsp4j.InitializeBuildParams
-import com.google.gson.Gson
-import com.google.gson.JsonObject
 import org.jetbrains.bsp.bazel.bazelrunner.BazelInfoResolver
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
@@ -45,7 +42,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
-import org.jetbrains.bsp.protocol.InitializeBuildData
+import org.jetbrains.bsp.protocol.InitializeBuildParams
 import java.nio.file.Path
 
 class BazelBspServer(
@@ -54,8 +51,6 @@ class BazelBspServer(
   val workspaceRoot: Path,
   private val telemetryConfig: TelemetryConfig,
 ) {
-  private val gson = Gson()
-
   fun bspServerData(
     initializeBuildParams: InitializeBuildParams,
     bspClientLogger: BspClientLogger,
@@ -65,19 +60,15 @@ class BazelBspServer(
     workspaceContextProvider: WorkspaceContextProvider,
     bazelPathsResolver: BazelPathsResolver,
   ): BazelServices {
-    val initializeBuildData =
-      gson.fromJson(initializeBuildParams.data as? JsonObject, InitializeBuildData::class.java)
-        ?: InitializeBuildData()
-
     val telemetryConfig =
       telemetryConfig.copy(
         bspClientLogger = bspClientLogger,
-        openTelemetryEndpoint = initializeBuildData.openTelemetryEndpoint,
+        openTelemetryEndpoint = initializeBuildParams.openTelemetryEndpoint,
       )
     setupTelemetry(telemetryConfig)
 
     val languagePluginsService = createLanguagePluginsService(bazelPathsResolver, bspClientLogger)
-    val featureFlags = initializeBuildData.featureFlags ?: FeatureFlags()
+    val featureFlags = initializeBuildParams.featureFlags
     val projectProvider =
       createProjectProvider(
         bspInfo = bspInfo,
@@ -100,7 +91,7 @@ class BazelBspServer(
       )
     val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
     val projectSyncService =
-      ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, initializeBuildParams.capabilities)
+      ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider)
     val additionalBuildTargetsProvider = AdditionalAndroidBuildTargetsProvider(projectProvider)
     val executeService =
       ExecuteService(

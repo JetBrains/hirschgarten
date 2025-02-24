@@ -7,7 +7,7 @@ kt_jvm_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        "@maven//:ch_epfl_scala_bsp4j",
+        "//protocol",
         "@maven//:com_google_code_gson_gson",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],

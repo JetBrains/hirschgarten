@@ -1,9 +1,9 @@
 package org.jetbrains.bsp.protocol
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.StatusCode
 import com.google.gson.annotations.JsonAdapter
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapter
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.StatusCode
 
 /**
  * See [mobile-install docs](https://bazel.build/docs/user-manual#start)

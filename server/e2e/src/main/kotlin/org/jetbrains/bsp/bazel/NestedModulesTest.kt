@@ -1,7 +1,5 @@
 package org.jetbrains.bsp.bazel
 
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.paths.shouldExist
 import io.kotest.matchers.shouldBe
@@ -11,6 +9,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.bazel.install.Install
+import org.jetbrains.bsp.protocol.SourcesParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import java.net.URI
 import kotlin.io.path.Path
 import kotlin.io.path.relativeTo

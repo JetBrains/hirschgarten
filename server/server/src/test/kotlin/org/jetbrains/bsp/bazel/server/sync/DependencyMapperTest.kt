@@ -1,7 +1,5 @@
 package org.jetbrains.bsp.bazel.server.sync
 
-import ch.epfl.scala.bsp4j.MavenDependencyModule
-import ch.epfl.scala.bsp4j.MavenDependencyModuleArtifact
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
@@ -9,6 +7,8 @@ import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.Library
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.SourceSet
+import org.jetbrains.bsp.protocol.MavenDependencyModule
+import org.jetbrains.bsp.protocol.MavenDependencyModuleArtifact
 import org.junit.jupiter.api.Test
 import java.net.URI
 import java.nio.file.Paths
@@ -36,8 +36,7 @@ class DependencyMapperTest {
         emptyList(),
       )
     val expectedMavenArtifact = MavenDependencyModuleArtifact(jarUri.toString())
-    val expectedMavenSourcesArtifact = MavenDependencyModuleArtifact(jarSourcesUri.toString())
-    expectedMavenSourcesArtifact.classifier = "sources"
+    val expectedMavenSourcesArtifact = MavenDependencyModuleArtifact(jarSourcesUri.toString(), classifier = "sources")
     val expectedDependency =
       MavenDependencyModule(
         "org.scala-lang",
@@ -71,8 +70,7 @@ class DependencyMapperTest {
         emptyList(),
       )
     val expectedMavenArtifact = MavenDependencyModuleArtifact(jarUri.toString())
-    val expectedMavenSourcesArtifact = MavenDependencyModuleArtifact(jarSourcesUri.toString())
-    expectedMavenSourcesArtifact.classifier = "sources"
+    val expectedMavenSourcesArtifact = MavenDependencyModuleArtifact(jarSourcesUri.toString(), classifier = "sources")
     val expectedDependency =
       MavenDependencyModule(
         "com.google.auto.service",

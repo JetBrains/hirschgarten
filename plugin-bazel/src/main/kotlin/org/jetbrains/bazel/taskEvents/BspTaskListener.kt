@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.taskEvents
 
-import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.build.events.MessageEvent
+import org.jetbrains.bsp.protocol.StatusCode
 
 typealias TaskId = String
 

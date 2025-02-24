@@ -1,29 +1,29 @@
 package org.jetbrains.bsp.bazel
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.CompileParams
-import ch.epfl.scala.bsp4j.CompileResult
-import ch.epfl.scala.bsp4j.Diagnostic
-import ch.epfl.scala.bsp4j.DiagnosticSeverity
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.Position
-import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
-import ch.epfl.scala.bsp4j.Range
-import ch.epfl.scala.bsp4j.ScalaBuildTarget
-import ch.epfl.scala.bsp4j.ScalaPlatform
-import ch.epfl.scala.bsp4j.ScalacOptionsItem
-import ch.epfl.scala.bsp4j.ScalacOptionsParams
-import ch.epfl.scala.bsp4j.ScalacOptionsResult
-import ch.epfl.scala.bsp4j.StatusCode
-import ch.epfl.scala.bsp4j.TextDocumentIdentifier
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import kotlinx.coroutines.future.await
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.CompileParams
+import org.jetbrains.bsp.protocol.CompileResult
+import org.jetbrains.bsp.protocol.Diagnostic
+import org.jetbrains.bsp.protocol.DiagnosticSeverity
+import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.Position
+import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
+import org.jetbrains.bsp.protocol.Range
+import org.jetbrains.bsp.protocol.ScalaBuildTarget
+import org.jetbrains.bsp.protocol.ScalaPlatform
+import org.jetbrains.bsp.protocol.ScalacOptionsItem
+import org.jetbrains.bsp.protocol.ScalacOptionsParams
+import org.jetbrains.bsp.protocol.ScalacOptionsResult
+import org.jetbrains.bsp.protocol.StatusCode
+import org.jetbrains.bsp.protocol.TextDocumentIdentifier
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import java.util.UUID
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -63,10 +63,10 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
     val jvmBuildTarget =
-      JvmBuildTarget().also {
-        it.javaHome = javaHome
-        it.javaVersion = "11"
-      }
+      JvmBuildTarget(
+        javaHome = javaHome,
+        javaVersion = "11",
+      )
     val scalaBuildTarget =
       ScalaBuildTarget(
         "org.scala-lang",

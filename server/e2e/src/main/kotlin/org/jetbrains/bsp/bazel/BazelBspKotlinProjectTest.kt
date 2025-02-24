@@ -1,15 +1,15 @@
 package org.jetbrains.bsp.bazel
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.bazel.install.Install
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.time.Duration.Companion.seconds
 
 open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
@@ -44,10 +44,10 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         "${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_$javaHomeArchitecture/"
     val javaHome = if (isBzlmod) bzlmodJavaHome else workspaceJavaHome
     val jvmBuildTargetData =
-      JvmBuildTarget().also {
-        it.javaHome = javaHome
-        it.javaVersion = "11"
-      }
+      JvmBuildTarget(
+        javaHome = javaHome,
+        javaVersion = "11",
+      )
 
     val kotlinBuildTargetData =
       KotlinBuildTarget(
@@ -84,38 +84,38 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     val kotlincTestBuildTarget =
       BuildTarget(
         BuildTargetIdentifier("$targetPrefix//kotlinc_test:Foo"),
-        listOf("application"),
-        listOf("java", "kotlin"),
-        listOf(BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString())),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = true
-          it.canDebug = false
-        },
+        tags = listOf("application"),
+        languageIds = listOf("java", "kotlin"),
+        dependencies = listOf(BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString())),
+        capabilities =
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = true,
+            canDebug = false,
+          ),
+        displayName = "@//kotlinc_test:Foo",
+        baseDirectory = "file://\$WORKSPACE/kotlinc_test/",
+        data = kotlincTestBuildTargetData,
       )
-    kotlincTestBuildTarget.displayName = "@//kotlinc_test:Foo"
-    kotlincTestBuildTarget.baseDirectory = "file://\$WORKSPACE/kotlinc_test/"
-    kotlincTestBuildTarget.data = kotlincTestBuildTargetData
-    kotlincTestBuildTarget.dataKind = "kotlin"
 
     val openForTestingBuildTarget =
       BuildTarget(
         BuildTargetIdentifier("$targetPrefix//plugin_allopen_test:open_for_testing"),
-        listOf("library"),
-        listOf("java", "kotlin"),
-        listOf(BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString())),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = false
-          it.canDebug = false
-        },
+        tags = listOf("library"),
+        languageIds = listOf("java", "kotlin"),
+        dependencies = listOf(BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString())),
+        capabilities =
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = false,
+            canDebug = false,
+          ),
+        displayName = "@//plugin_allopen_test:open_for_testing",
+        baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
+        data = kotlinBuildTargetData,
       )
-    openForTestingBuildTarget.displayName = "@//plugin_allopen_test:open_for_testing"
-    openForTestingBuildTarget.baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/"
-    openForTestingBuildTarget.data = kotlinBuildTargetData
-    openForTestingBuildTarget.dataKind = "kotlin"
 
     val bzlmodPluginRepo =
       "rules_kotlin${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
@@ -162,67 +162,70 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     val userBuildTarget =
       BuildTarget(
         BuildTargetIdentifier("$targetPrefix//plugin_allopen_test:user"),
-        listOf("library"),
-        listOf("java", "kotlin"),
-        listOf(
-          BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
-          BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing"),
-          BuildTargetIdentifier(Label.synthetic("allopen-compiler-plugin.jar").toString()),
-        ),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = false
-          it.canDebug = false
-        },
+        tags = listOf("library"),
+        languageIds = listOf("java", "kotlin"),
+        dependencies =
+          listOf(
+            BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
+            BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing"),
+            BuildTargetIdentifier(Label.synthetic("allopen-compiler-plugin.jar").toString()),
+          ),
+        capabilities =
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = false,
+            canDebug = false,
+          ),
+        displayName = "@//plugin_allopen_test:user",
+        baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
+        data = userBuildTargetData,
       )
-    userBuildTarget.displayName = "@//plugin_allopen_test:user"
-    userBuildTarget.baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/"
-    userBuildTarget.data = userBuildTargetData
-    userBuildTarget.dataKind = "kotlin"
 
     val userOfExportBuildTarget =
       BuildTarget(
         BuildTargetIdentifier("$targetPrefix//plugin_allopen_test:user_of_export"),
-        listOf("library"),
-        listOf("java", "kotlin"),
-        listOf(
-          BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
-          BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing_export"),
-          BuildTargetIdentifier(Label.synthetic("allopen-compiler-plugin.jar").toString()),
-        ),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = false
-          it.canDebug = false
-        },
+        tags = listOf("library"),
+        languageIds = listOf("java", "kotlin"),
+        dependencies =
+          listOf(
+            BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
+            BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing_export"),
+            BuildTargetIdentifier(Label.synthetic("allopen-compiler-plugin.jar").toString()),
+          ),
+        capabilities =
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = false,
+            canDebug = false,
+          ),
+        displayName = "@//plugin_allopen_test:user_of_export",
+        baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
+        data = userOfExportBuildTargetData,
       )
-    userOfExportBuildTarget.displayName = "@//plugin_allopen_test:user_of_export"
-    userOfExportBuildTarget.baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/"
-    userOfExportBuildTarget.data = userOfExportBuildTargetData
-    userOfExportBuildTarget.dataKind = "kotlin"
 
     val openForTestingExport =
       BuildTarget(
         BuildTargetIdentifier("$targetPrefix//plugin_allopen_test:open_for_testing_export"),
-        listOf("library"),
-        listOf("java", "kotlin"),
-        listOf(
-          BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
-          BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing"),
-        ),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = false
-          it.canDebug = false
-        },
+        tags = listOf("library"),
+        languageIds = listOf("java", "kotlin"),
+        dependencies =
+          listOf(
+            BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
+            BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing"),
+          ),
+        capabilities =
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = false,
+            canDebug = false,
+          ),
+        displayName = "@//plugin_allopen_test:open_for_testing_export",
+        baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
+        data = kotlinBuildTargetData,
       )
-    openForTestingExport.displayName = "@//plugin_allopen_test:open_for_testing_export"
-    openForTestingExport.baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/"
-    openForTestingExport.data = kotlinBuildTargetData
-    openForTestingExport.dataKind = "kotlin"
 
     return WorkspaceBuildTargetsResult(
       listOf(

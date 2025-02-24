@@ -1,7 +1,5 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.kotlin
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.KotlinTargetInfo
@@ -10,6 +8,8 @@ import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaLanguagePlugin
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import java.net.URI
 import java.nio.file.Path
@@ -19,7 +19,6 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
   LanguagePlugin<KotlinModule>() {
   override fun applyModuleData(moduleData: KotlinModule, buildTarget: BuildTarget) {
     val kotlinBuildTarget = toKotlinBuildTarget(moduleData)
-    buildTarget.dataKind = "kotlin"
     buildTarget.data = kotlinBuildTarget
   }
 

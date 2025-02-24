@@ -1,20 +1,20 @@
 package org.jetbrains.bsp.bazel
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.RustCrateType
-import ch.epfl.scala.bsp4j.RustDepKindInfo
-import ch.epfl.scala.bsp4j.RustDependency
-import ch.epfl.scala.bsp4j.RustPackage
-import ch.epfl.scala.bsp4j.RustRawDependency
-import ch.epfl.scala.bsp4j.RustTarget
-import ch.epfl.scala.bsp4j.RustTargetKind
-import ch.epfl.scala.bsp4j.RustWorkspaceParams
-import ch.epfl.scala.bsp4j.RustWorkspaceResult
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.RustCrateType
+import org.jetbrains.bsp.protocol.RustDepKindInfo
+import org.jetbrains.bsp.protocol.RustDependency
+import org.jetbrains.bsp.protocol.RustPackage
+import org.jetbrains.bsp.protocol.RustRawDependency
+import org.jetbrains.bsp.protocol.RustTarget
+import org.jetbrains.bsp.protocol.RustTargetKind
+import org.jetbrains.bsp.protocol.RustWorkspaceParams
+import org.jetbrains.bsp.protocol.RustWorkspaceResult
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 

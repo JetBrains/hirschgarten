@@ -1,16 +1,5 @@
 package org.jetbrains.bsp.bazel.server.bep
 
-import ch.epfl.scala.bsp4j.BuildClient
-import ch.epfl.scala.bsp4j.DidChangeBuildTarget
-import ch.epfl.scala.bsp4j.LogMessageParams
-import ch.epfl.scala.bsp4j.PrintParams
-import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
-import ch.epfl.scala.bsp4j.ShowMessageParams
-import ch.epfl.scala.bsp4j.TaskFinishParams
-import ch.epfl.scala.bsp4j.TaskProgressParams
-import ch.epfl.scala.bsp4j.TaskStartParams
-import ch.epfl.scala.bsp4j.TestFinish
-import ch.epfl.scala.bsp4j.TestStatus
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotBeEmpty
@@ -22,37 +11,52 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
+import org.jetbrains.bsp.protocol.DidChangeBuildTarget
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
+import org.jetbrains.bsp.protocol.JoinedBuildClient
+import org.jetbrains.bsp.protocol.LogMessageParams
+import org.jetbrains.bsp.protocol.PrintParams
+import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
+import org.jetbrains.bsp.protocol.PublishOutputParams
+import org.jetbrains.bsp.protocol.ShowMessageParams
+import org.jetbrains.bsp.protocol.TaskFinishParams
+import org.jetbrains.bsp.protocol.TaskProgressParams
+import org.jetbrains.bsp.protocol.TaskStartParams
+import org.jetbrains.bsp.protocol.TestFinish
+import org.jetbrains.bsp.protocol.TestStatus
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 
 class TestXmlParserTest {
-  private class MockBuildClient : BuildClient {
+  private class MockBuildClient : JoinedBuildClient {
     val taskStartCalls = mutableListOf<TaskStartParams>()
     val taskFinishCalls = mutableListOf<TaskFinishParams>()
 
-    override fun onBuildShowMessage(p0: ShowMessageParams?) {}
+    override fun onBuildShowMessage(p0: ShowMessageParams) {}
 
-    override fun onBuildLogMessage(p0: LogMessageParams?) {}
+    override fun onBuildLogMessage(p0: LogMessageParams) {}
 
-    override fun onBuildPublishDiagnostics(p0: PublishDiagnosticsParams?) {}
+    override fun onBuildPublishDiagnostics(p0: PublishDiagnosticsParams) {}
 
-    override fun onBuildTargetDidChange(p0: DidChangeBuildTarget?) {}
+    override fun onBuildTargetDidChange(p0: DidChangeBuildTarget) {}
 
-    override fun onBuildTaskStart(p0: TaskStartParams?) {
-      p0?.let { taskStartCalls.add(it) }
+    override fun onBuildTaskStart(p0: TaskStartParams) {
+      p0.let { taskStartCalls.add(it) }
     }
 
-    override fun onBuildTaskProgress(p0: TaskProgressParams?) {}
+    override fun onBuildTaskProgress(p0: TaskProgressParams) {}
 
-    override fun onBuildTaskFinish(p0: TaskFinishParams?) {
-      p0?.let { taskFinishCalls.add(it) }
+    override fun onBuildTaskFinish(p0: TaskFinishParams) {
+      p0.let { taskFinishCalls.add(it) }
     }
 
-    override fun onRunPrintStdout(p0: PrintParams?) {}
+    override fun onRunPrintStdout(p0: PrintParams) {}
 
-    override fun onRunPrintStderr(p0: PrintParams?) {}
+    override fun onRunPrintStderr(p0: PrintParams) {}
+
+    override fun onBuildPublishOutput(params: PublishOutputParams) {
+    }
   }
 
   @Test

@@ -8,10 +8,10 @@ kt_jvm_library(
         "//server/executioncontext/projectview/src/test/kotlin/org/jetbrains/bsp/bazel/projectview/model/sections:__pkg__",
     ],
     exports = [
-        "@maven//:ch_epfl_scala_bsp4j",
+        "//protocol",
     ],
     deps = [
+        "//protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
-        "@maven//:ch_epfl_scala_bsp4j",
     ],
 )

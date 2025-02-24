@@ -1,14 +1,14 @@
 package org.jetbrains.bsp.bazel.logger
 
-import ch.epfl.scala.bsp4j.BuildClient
-import ch.epfl.scala.bsp4j.LogMessageParams
-import ch.epfl.scala.bsp4j.MessageType
 import org.jetbrains.bsp.bazel.commons.Format
+import org.jetbrains.bsp.protocol.JoinedBuildClient
+import org.jetbrains.bsp.protocol.LogMessageParams
+import org.jetbrains.bsp.protocol.MessageType
 import java.time.Duration
 
 private val LOG_OPERATION_THRESHOLD: Duration = Duration.ofMillis(100)
 
-data class BspClientLogger(private val bspClient: BuildClient, private val originId: String? = null) {
+data class BspClientLogger(private val bspClient: JoinedBuildClient, private val originId: String? = null) {
   fun error(errorMessage: String) {
     log(MessageType.ERROR, errorMessage)
   }
@@ -31,8 +31,7 @@ data class BspClientLogger(private val bspClient: BuildClient, private val origi
 
   private fun log(messageType: MessageType, message: String) {
     if (message.trim { it <= ' ' }.isNotEmpty()) {
-      val params = LogMessageParams(messageType, message)
-      params.originId = originId
+      val params = LogMessageParams(messageType, message = message, originId = originId)
       bspClient.onBuildLogMessage(params)
     }
   }

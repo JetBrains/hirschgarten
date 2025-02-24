@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.services
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -14,6 +13,7 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.task.queryIf
 import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 internal class InvalidTargetsProjectSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {

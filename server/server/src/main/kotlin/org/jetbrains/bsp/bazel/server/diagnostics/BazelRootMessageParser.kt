@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.server.diagnostics
 
-import ch.epfl.scala.bsp4j.DiagnosticSeverity
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.DiagnosticSeverity
 
 object BazelRootMessageParser : Parser {
   private const val TARGET_LABEL = """(//[\w/.-]*:[\w/.-]+)"""

@@ -1,0 +1,28 @@
+package org.jetbrains.bsp.protocol
+
+data class BuildServerCapabilities(
+  val compileProvider: CompileProvider? = null,
+  val testProvider: TestProvider? = null,
+  val runProvider: RunProvider? = null,
+  val debugProvider: DebugProvider? = null,
+  val inverseSourcesProvider: Boolean? = null,
+  val dependencySourcesProvider: Boolean? = null,
+  val dependencyModulesProvider: Boolean? = null,
+  val resourcesProvider: Boolean? = null,
+  val outputPathsProvider: Boolean? = null,
+  val buildTargetChangedProvider: Boolean? = null,
+  val jvmRunEnvironmentProvider: Boolean? = null,
+  val jvmTestEnvironmentProvider: Boolean? = null,
+  val cargoFeaturesProvider: Boolean? = null,
+  val canReload: Boolean? = null,
+  val jvmCompileClasspathProvider: Boolean? = null,
+  public val workspaceLibrariesProvider: Boolean = false,
+  public val goDebuggerDataProvider: Boolean = false,
+  public val workspaceNonModuleTargetsProvider: Boolean = false,
+  public val workspaceDirectoriesProvider: Boolean = false,
+  public val workspaceInvalidTargetsProvider: Boolean = false,
+  public val runWithDebugProvider: Boolean = false,
+  public val testWithDebugProvider: Boolean = false,
+  public val jvmBinaryJarsProvider: Boolean = false,
+  public val bazelRepoMappingProvider: Boolean = false,
+)

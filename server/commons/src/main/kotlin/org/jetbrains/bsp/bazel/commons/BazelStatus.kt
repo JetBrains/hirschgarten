@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.bazel.commons
 
-import ch.epfl.scala.bsp4j.StatusCode
+import org.jetbrains.bsp.protocol.StatusCode
 
 // https://bazel.build/run/scripts#exit-codes
 private const val SUCCESS_EXIT_CODE = 0

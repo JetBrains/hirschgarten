@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.golang.debug
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.RunParams
 import com.goide.execution.application.GoApplicationConfiguration
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
@@ -27,9 +25,10 @@ import org.jetbrains.bazel.taskEvents.BspTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.includesGo
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
+import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import java.util.UUID
 
@@ -78,7 +77,7 @@ class GoRunWithDebugCommandLineState(
 ) : GoDebuggableCommandLineState(environment, module, configuration, originId) {
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspRunTaskListener(handler)
 
-  override suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) {
+  override suspend fun startBsp(server: JoinedBuildServer) {
     if (!capabilities.runWithDebugProvider) {
       throw ExecutionException("BSP server does not support running")
     }
