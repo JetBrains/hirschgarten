@@ -234,6 +234,6 @@ class BspClient(
   }
 
   override fun onBuildPublishOutput(params: PublishOutputParams) {
-    // Lev - there you go
+    // TODO: BAZEL-1364 Support starting coverage in IDE
   }
 }
