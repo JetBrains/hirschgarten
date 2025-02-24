@@ -381,6 +381,33 @@
         <runLineMarkerContributor implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor"
                                   language="Starlark"/>
 
+
+
+
+        <fileType
+                name="Bazelquery"
+                implementationClass="org.jetbrains.bazel.languages.bazelquery.BazelqueryFileType"
+                fieldName="INSTANCE"
+                language="Bazelquery"
+
+                extensions="bazelquery"
+        />
+
+        <lang.parserDefinition
+                language="Bazelquery"
+                implementationClass="org.jetbrains.bazel.languages.bazelquery.parser.BazelqueryParserDefinition"/>
+
+        <lang.syntaxHighlighterFactory
+                language="Bazelquery"
+                implementationClass="org.jetbrains.bazel.languages.bazelquery.highlighting.BazelquerySyntaxHighlighterFactory"/>
+
+        <completion.contributor
+                language="Bazelquery"
+                implementationClass="org.jetbrains.bazel.languages.bazelquery.completion.BazelqueryCompletionContributor"/>
+
+
+
+
         <fileType
                 name="Bazelrc"
                 implementationClass="org.jetbrains.bazel.languages.bazelrc.BazelrcFileType"

@@ -17,7 +17,7 @@ import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryQueryVal
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.bazel.target.targetUtils
 
 
 class BazelqueryCompletionContributor : CompletionContributor() {
@@ -52,11 +52,13 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
     }.toList()
 
   val project: Project? = ProjectManager.getInstance().openProjects.firstOrNull()
-  val temporaryTargetUtils = project?.temporaryTargetUtils
-  val targetsIds = temporaryTargetUtils?.allTargetIds()
-  val targets = targetsIds?.mapNotNull { targetId ->
-    temporaryTargetUtils?.getBuildTargetInfoForId(targetId)?.displayName
-  }
+  val targetUtils = project?.targetUtils
+  val targets = targetUtils?.allTargets()?.mapNotNull {it.targetName}
+//  val temporaryTargetUtils = project?.targetUtils
+//  val targetsIds = temporaryTargetUtils?.allTargetIds()
+//  val targets = targetsIds?.mapNotNull { targetId ->
+//    temporaryTargetUtils?.getBuildTargetInfoForId(targetId)?.displayName
+//  }
 
   override fun addCompletions(
     parameters: CompletionParameters,
