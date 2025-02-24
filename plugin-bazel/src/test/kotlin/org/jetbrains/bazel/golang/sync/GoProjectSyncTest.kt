@@ -17,6 +17,9 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
+import org.jetbrains.bazel.magicmetamodel.findNameProvider
+import org.jetbrains.bazel.magicmetamodel.orDefault
 import org.jetbrains.bazel.sync.BaseTargetInfo
 import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.ProjectSyncHook
@@ -24,6 +27,7 @@ import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.workspace.model.test.framework.BuildServerMock
@@ -78,7 +82,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     val server = BuildServerMock()
     val capabilities = BazelBuildServerCapabilities()
     val diff = AllProjectStructuresProvider(project).newDiff()
-    val goTestTargets = generateTestSet()
+    val goTestTargets = generateTestSet(project.findNameProvider().orDefault())
 
     // when
     runBlocking {
@@ -115,7 +119,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     val server = BuildServerMock()
     val capabilities = BazelBuildServerCapabilities()
     val diff = AllProjectStructuresProvider(project).newDiff()
-    val goTestTargets = generateTestSet()
+    val goTestTargets = generateTestSet(project.findNameProvider().orDefault())
 
     // when
     runBlocking {
@@ -145,7 +149,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     }
   }
 
-  private fun generateTestSet(): GoTestSet {
+  private fun generateTestSet(nameProvider: TargetNameReformatProvider): GoTestSet {
     val goLibrary1 =
       GeneratedTargetInfo(
         targetId = BuildTargetIdentifier("@@server/lib:hello_lib"),
@@ -180,12 +184,12 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     val virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
 
     val expectedRoot = URI.create("file:///targets_base_dir").toPath().toVirtualFileUrl(virtualFileUrlManager)
-    val expectedVgoStandaloneEntities = targetInfos.map { generateVgoStandaloneResult(it, expectedRoot) }
+    val expectedVgoStandaloneEntities = targetInfos.map { generateVgoStandaloneResult(it, expectedRoot, nameProvider) }
     val expectedVgoDependencyEntities =
       listOf(
-        generateVgoDependencyResult(goLibrary1, goLibrary2, expectedRoot),
-        generateVgoDependencyResult(goLibrary1, goApplication, expectedRoot),
-        generateVgoDependencyResult(goLibrary2, goApplication, expectedRoot),
+        generateVgoDependencyResult(goLibrary1, goLibrary2, expectedRoot, nameProvider),
+        generateVgoDependencyResult(goLibrary1, goApplication, expectedRoot, nameProvider),
+        generateVgoDependencyResult(goLibrary2, goApplication, expectedRoot, nameProvider),
       )
     return GoTestSet(baseTargetInfos, expectedVgoStandaloneEntities, expectedVgoDependencyEntities)
   }
@@ -214,9 +218,13 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     return BaseTargetInfo(target, sources, resources)
   }
 
-  private fun generateVgoStandaloneResult(info: GeneratedTargetInfo, expectedRoot: VirtualFileUrl): ExpectedVgoStandaloneModuleEntity =
+  private fun generateVgoStandaloneResult(
+    info: GeneratedTargetInfo,
+    expectedRoot: VirtualFileUrl,
+    nameProvider: TargetNameReformatProvider,
+  ): ExpectedVgoStandaloneModuleEntity =
     ExpectedVgoStandaloneModuleEntity(
-      moduleId = ModuleId(info.targetId.uri),
+      moduleId = ModuleId(nameProvider(BuildTargetInfo(id = info.targetId))),
       entitySource = BspProjectEntitySource,
       importPath = info.importPath,
       root = expectedRoot,
@@ -226,13 +234,14 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     dependencyInfo: GeneratedTargetInfo,
     parentInfo: GeneratedTargetInfo,
     expectedRoot: VirtualFileUrl,
+    nameProvider: TargetNameReformatProvider,
   ): ExpectedVgoDependencyEntity =
     ExpectedVgoDependencyEntity(
       importPath = dependencyInfo.importPath,
       entitySource = BspProjectEntitySource,
       isMainModule = false,
       internal = true,
-      module = generateVgoStandaloneResult(parentInfo, expectedRoot),
+      module = generateVgoStandaloneResult(parentInfo, expectedRoot, nameProvider),
       root = expectedRoot,
     )
 
