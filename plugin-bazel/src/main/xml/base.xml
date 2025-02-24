@@ -48,9 +48,6 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.projectPostSyncHook"
                         interface="org.jetbrains.bazel.sync.ProjectPostSyncHook"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.defaultProjectSyncHooksDisabler"
-                        interface="org.jetbrains.bazel.sync.DefaultProjectSyncHooksDisabler"
-                        dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.projectStructureProvider"
                         interface="org.jetbrains.bazel.sync.projectStructure.ProjectStructureProvider"
                         dynamic="true"/>

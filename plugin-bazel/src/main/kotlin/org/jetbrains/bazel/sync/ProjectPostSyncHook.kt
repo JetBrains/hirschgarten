@@ -38,6 +38,6 @@ interface ProjectPostSyncHook {
   )
 }
 
-val Project.defaultProjectPostSyncHooks: List<ProjectPostSyncHook>
+val Project.projectPostSyncHooks: List<ProjectPostSyncHook>
   get() =
-    ProjectPostSyncHook.ep.extensions.filter { it.isEnabled(this) }
+    ProjectPostSyncHook.ep.extensionList.filter { it.isEnabled(this) }
