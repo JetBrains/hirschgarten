@@ -16,7 +16,6 @@ import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
 import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 
 class NewBazelPackageAction : DumbAwareAction() {
@@ -24,17 +23,11 @@ class NewBazelPackageAction : DumbAwareAction() {
     val project = e.project
     val presentation: Presentation = e.presentation
     val view = e.getData(LangDataKeys.IDE_VIEW)
-    if (project == null || view == null) {
+    if (project == null || view == null || view.directories.isEmpty()) {
       presentation.isEnabledAndVisible = false
       return
     }
-
-    if (project.isBazelProject && view.directories.isNotEmpty()) {
-      presentation.isEnabledAndVisible = true
-    } else {
-      presentation.isEnabledAndVisible = false
-      return
-    }
+    presentation.isEnabledAndVisible = true
     val buildSystem: String = BazelPluginConstants.BAZEL_DISPLAY_NAME
     presentation.text = String.format("%s Package", buildSystem)
     presentation.description = String.format("Create a new %s package", buildSystem)
