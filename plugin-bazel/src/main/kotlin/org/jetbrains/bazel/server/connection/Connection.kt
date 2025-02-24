@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.connection
 
-import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.InitializeBuildParams
 import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
@@ -14,6 +13,7 @@ import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.workspacecontext.DefaultWorkspaceContextProvider
+import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.nio.file.Path
 
@@ -22,7 +22,7 @@ class Connection(
   metricsFile: Path?,
   projectViewFile: Path?,
   workspace: Path,
-  client: BuildClient,
+  client: JoinedBuildClient,
 ) {
   val telemetryConfig = TelemetryConfig(metricsFile = metricsFile)
   val server =
@@ -36,7 +36,7 @@ class Connection(
 }
 
 private fun startServer(
-  client: BuildClient,
+  client: JoinedBuildClient,
   workspace: Path,
   directory: Path,
   telemetryConfig: TelemetryConfig,
@@ -51,7 +51,7 @@ private fun startServer(
     )
   val bspServer = BazelBspServer(bspInfo, workspaceContextProvider, workspace, telemetryConfig)
   val bspServerApi =
-    BspServerApi { client: BuildClient, initializeBuildParams: InitializeBuildParams ->
+    BspServerApi { client: JoinedBuildClient, initializeBuildParams: InitializeBuildParams ->
       val bspClientLogger = BspClientLogger(client)
       val bazelRunner = BazelRunner(bspServer.workspaceContextProvider, bspClientLogger, bspServer.workspaceRoot)
       bspServer.verifyBazelVersion(bazelRunner)

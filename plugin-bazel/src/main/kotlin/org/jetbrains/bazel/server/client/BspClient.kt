@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.client
 
-import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.CompileReport
 import ch.epfl.scala.bsp4j.CompileTask
 import ch.epfl.scala.bsp4j.DiagnosticSeverity
@@ -26,6 +25,8 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.taskEvents.BspTaskEventsService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
+import org.jetbrains.bsp.protocol.JoinedBuildClient
+import org.jetbrains.bsp.protocol.PublishOutputParams
 
 const val IMPORT_SUBTASK_ID: String = "import-subtask-id"
 
@@ -33,7 +34,7 @@ class BspClient(
   private val bspSyncConsole: TaskConsole,
   private val bspBuildConsole: TaskConsole,
   private val project: Project,
-) : BuildClient {
+) : JoinedBuildClient {
   private val log = logger<BspClient>()
   private val gson = Gson()
 
@@ -230,5 +231,9 @@ class BspClient(
       DiagnosticSeverity.INFORMATION -> bspLogger.info(message)
       else -> bspLogger.trace(message)
     }
+  }
+
+  override fun onBuildPublishOutput(params: PublishOutputParams) {
+    // Lev - there you go
   }
 }

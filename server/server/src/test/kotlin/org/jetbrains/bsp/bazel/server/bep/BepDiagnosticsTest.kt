@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.server.bep
 
-import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.DidChangeBuildTarget
 import ch.epfl.scala.bsp4j.LogMessageParams
 import ch.epfl.scala.bsp4j.PrintParams
@@ -11,11 +10,12 @@ import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.protocol.JoinedBuildClient
+import org.jetbrains.bsp.protocol.PublishOutputParams
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -24,7 +24,7 @@ import java.nio.file.Files
 import kotlin.io.path.Path
 
 class BepDiagnosticsTest {
-  private class MockBuildClient : BuildClient {
+  private class MockBuildClient : JoinedBuildClient {
     val buildPublishDiagnostics: MutableList<PublishDiagnosticsParams> = mutableListOf()
 
     override fun onBuildShowMessage(p0: ShowMessageParams?) {}
@@ -46,9 +46,11 @@ class BepDiagnosticsTest {
     override fun onRunPrintStdout(p0: PrintParams?) {}
 
     override fun onRunPrintStderr(p0: PrintParams?) {}
+
+    override fun onBuildPublishOutput(params: PublishOutputParams) {}
   }
 
-  fun newBepServer(client: BuildClient): BepServer {
+  fun newBepServer(client: JoinedBuildClient): BepServer {
     val workspaceRoot = Path("workspaceRoot")
     val bazelInfo =
       BazelInfo(
@@ -63,7 +65,6 @@ class BepDiagnosticsTest {
       bspClient = client,
       diagnosticsService = DiagnosticsService(workspaceRoot),
       originId = "originId",
-      target = Label.parse("//target"),
       bazelPathsResolver = BazelPathsResolver(bazelInfo),
     )
   }

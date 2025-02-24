@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.server.bep
 
-import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.CompileReport
 import ch.epfl.scala.bsp4j.CompileTask
 import ch.epfl.scala.bsp4j.TaskFinishDataKind
@@ -28,6 +27,9 @@ import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.protocol.JoinedBuildClient
+import org.jetbrains.bsp.protocol.PublishOutputParams
+import org.jetbrains.bsp.protocol.TestCoverageReport
 import java.io.IOException
 import java.net.URI
 import java.nio.file.FileSystemNotFoundException
@@ -36,10 +38,9 @@ import java.nio.file.Paths
 import java.util.UUID
 
 class BepServer(
-  private val bspClient: BuildClient,
+  private val bspClient: JoinedBuildClient,
   private val diagnosticsService: DiagnosticsService,
   private val originId: String?,
-  private val target: Label?,
   bazelPathsResolver: BazelPathsResolver,
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
   private val bspClientLogger = BspClientLogger(bspClient)
@@ -116,16 +117,15 @@ class BepServer(
 
       val coverageReportUri = testResult.testActionOutputList.find { it.name == "test.lcov" }?.uri
       if (coverageReportUri != null) {
-        // TODO: the client never supported that anyway, lol
-//        bspClient.onBuildPublishOutput(
-//          PublishOutputParams(
-//            originId,
-//            taskId,
-//            Label.parse(event.id.testResult.label).toBspIdentifier(),
-//            TestCoverageReport.DATA_KIND,
-//            TestCoverageReport(coverageReportUri),
-//          ),
-//        )
+        bspClient.onBuildPublishOutput(
+          PublishOutputParams(
+            originId,
+            taskId,
+            Label.parse(event.id.testResult.label).toBspIdentifier(),
+            TestCoverageReport.DATA_KIND,
+            TestCoverageReport(coverageReportUri),
+          ),
+        )
       }
 
       val testXmlUri = testResult.testActionOutputList.find { it.name == "test.xml" }?.uri
