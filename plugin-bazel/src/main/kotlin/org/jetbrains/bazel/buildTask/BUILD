@@ -14,7 +14,6 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/performance",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/chunking",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/connection",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/tasks",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
