@@ -16,7 +16,6 @@ import org.junit.runners.JUnit4
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
-import kotlin.io.path.readLines
 import kotlin.io.path.writeText
 
 private const val TEST_LINE_PREFIX = "There are 39 characters in this string "
@@ -36,7 +35,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   @Test
   fun `should match an absolute bazel target without @`() {
     // given
-    createBazelFileInProject("plugin-bsp/src")
+    createBazelFileInProject("plugin-bazel/src")
     val bazelTarget = "//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -45,7 +44,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
 
     // then
     result!!.resultItems.size shouldBe 1
-    (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile?.toNioPath().toString() shouldContain "plugin-bsp"
+    (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile?.toNioPath().toString() shouldContain "plugin-bazel"
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
   }
@@ -53,7 +52,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   @Test
   fun `should match an absolute bazel target with a @`() {
     // given
-    createBazelFileInProject("plugin-bsp/src")
+    createBazelFileInProject("plugin-bazel/src")
     val bazelTarget = "@//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -62,7 +61,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
 
     // then
     result!!.resultItems.size shouldBe 1
-    (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile?.toNioPath().toString() shouldContain "plugin-bsp"
+    (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile?.toNioPath().toString() shouldContain "plugin-bazel"
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
   }
@@ -70,7 +69,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   @Test
   fun `should match an absolute bazel target with @@`() {
     // given
-    createBazelFileInProject("plugin-bsp/src")
+    createBazelFileInProject("plugin-bazel/src")
     val bazelTarget = "@@//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -79,7 +78,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
 
     // then
     result!!.resultItems.size shouldBe 1
-    (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile?.toNioPath().toString() shouldContain "plugin-bsp"
+    (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile?.toNioPath().toString() shouldContain "plugin-bazel"
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
   }
@@ -87,7 +86,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   @Test
   fun `should not match an external target with @`() {
     // given
-    createBazelFileInProject("plugin-bsp/src")
+    createBazelFileInProject("plugin-bazel/src")
     val bazelTarget = "@external//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -101,7 +100,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   @Test
   fun `should not match an external target with @@`() {
     // given
-    createBazelFileInProject("plugin-bsp/src")
+    createBazelFileInProject("plugin-bazel/src")
     val bazelTarget = "@@external//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -115,7 +114,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   @Test
   fun `should not match non-existing folder`() {
     // given
-    createBazelFileInProject("plugin-bsp/src")
+    createBazelFileInProject("plugin-bazel/src")
     val bazelTarget = "@@external//plugin-bazel/test:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -145,7 +144,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   @Test
   fun `should match an absolute bazel target without @ to BUILD_bazel`() {
     // given
-    createBazelFileInProject("plugin-bsp/src", "BUILD.bazel")
+    createBazelFileInProject("plugin-bazel/src", "BUILD.bazel")
     val bazelTarget = "//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -154,7 +153,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
 
     // then
     result!!.resultItems.size shouldBe 1
-    (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile?.toNioPath().toString() shouldContain "plugin-bsp"
+    (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile?.toNioPath().toString() shouldContain "plugin-bazel"
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
     (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile.toString().endsWith("BUILD.bazel") shouldBe true
@@ -188,9 +187,7 @@ proto_library(
   @Test
   fun `can jump to correct line`() {
     // given
-    val path = createBazelFileInProject("plugin-bsp/src")
-    val tmp = path.readLines().joinToString("\n")
-    println(tmp)
+    createBazelFileInProject("plugin-bazel/src")
     val bazelTarget = "//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -200,7 +197,7 @@ proto_library(
     // then
     result!!.resultItems.size shouldBe 1
     val hyperLink = (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo)
-    hyperLink.virtualFile?.toNioPath().toString() shouldContain "plugin-bsp"
+    hyperLink.virtualFile?.toNioPath().toString() shouldContain "plugin-bazel"
     hyperLink.descriptor?.offset shouldBe 16
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length

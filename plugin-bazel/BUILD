@@ -38,9 +38,9 @@ optional_plugin_dep(
 )
 
 optional_plugin_dep(
-    name = "bsp_performance_testing",
+    name = "bsp_ide_starter",
     module = ["com.jetbrains.performancePlugin"],
-    plugin_xml = "//plugin-bazel/src:main/xml/bsp-performanceTesting.xml",
+    plugin_xml = "//plugin-bazel/src:main/xml/bsp-withIdeStarter.xml",
 )
 
 optional_plugin_dep(
@@ -61,7 +61,7 @@ intellij_plugin_library(
         ":bsp_with_python",
         ":bsp_with_android",
         ":bsp_with_go",
-        ":bsp_performance_testing",
+        ":bsp_ide_starter",
         ":bsp_devkit",
         ":bsp_code_with_me",
     ],
@@ -72,8 +72,6 @@ intellij_plugin_library(
     ],
     plugin_xmls = [
         "//plugin-bazel/src:main/xml/base.xml",
-        # bazel plugin depends on bsp plugin, which already adds performance plugin as optional plugin dep
-        "//plugin-bazel/src:test/resources/META-INF/bazel-ide-starter-test.xml",
     ],
     visibility = ["//visibility:public"],
     deps = [

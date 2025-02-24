@@ -1,20 +1,13 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.components
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.config.BuildToolId
-import org.jetbrains.bazel.config.buildToolId
-import org.jetbrains.bazel.config.default
-import org.jetbrains.bazel.config.withBuildToolId
-import org.jetbrains.bazel.config.withBuildToolIdOrDefault
-import org.jetbrains.bazel.extensionPoints.BuildTargetClassifierExtension
-import org.jetbrains.bazel.extensionPoints.BuildToolWindowTargetActionProviderExtension
+import org.jetbrains.bazel.extensionPoints.BazelBuildTargetClassifier
+import org.jetbrains.bazel.extensionPoints.DefaultBuildTargetClassifierExtension
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
@@ -35,7 +28,6 @@ import javax.swing.tree.TreeSelectionModel
 class BuildTargetTree(
   private val targetIcon: Icon,
   private val invalidTargetIcon: Icon,
-  private val buildToolId: BuildToolId,
   private val targets: Collection<BuildTargetInfo>,
   private val invalidTargets: List<BuildTargetIdentifier>,
   private val labelHighlighter: (String) -> String = { it },
@@ -49,9 +41,9 @@ class BuildTargetTree(
 
   private val bspBuildTargetClassifier =
     if (showAsList) {
-      BuildTargetClassifierExtension.ep.default()
+      DefaultBuildTargetClassifierExtension
     } else {
-      BuildTargetClassifierExtension.ep.withBuildToolIdOrDefault(buildToolId)
+      BazelBuildTargetClassifier
     }
 
   override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction.FromContainer(this, treeComponent)
@@ -249,7 +241,6 @@ class BuildTargetTree(
       BuildTargetTree(
         targetIcon = targetIcon,
         invalidTargetIcon = invalidTargetIcon,
-        buildToolId = buildToolId,
         targets = newTargets,
         invalidTargets = newInvalidTargets,
         labelHighlighter = labelHighlighter,
@@ -258,11 +249,6 @@ class BuildTargetTree(
     popupHandlerBuilder?.let { new.registerPopupHandler(it) }
     return new
   }
-
-  override fun getTargetActions(project: Project, buildTargetInfo: BuildTargetInfo): List<AnAction> =
-    BuildToolWindowTargetActionProviderExtension.ep
-      .withBuildToolId(project.buildToolId)
-      ?.getTargetActions(treeComponent, project, buildTargetInfo) ?: emptyList()
 }
 
 private interface NodeData

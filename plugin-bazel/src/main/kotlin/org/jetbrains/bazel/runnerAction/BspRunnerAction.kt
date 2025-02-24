@@ -4,10 +4,10 @@ import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.assets.assets
+import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.run.BazelRunConfigurationType
 import org.jetbrains.bazel.run.config.BspRunConfiguration
-import org.jetbrains.bazel.run.config.RunConfigurationTypeProvider
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import javax.swing.Icon
 
@@ -17,7 +17,7 @@ abstract class BspRunnerAction(
   icon: Icon? = null,
   isDebugAction: Boolean = false,
 ) : BaseRunnerAction(targetInfos, text, icon, isDebugAction) {
-  fun getConfigurationType(project: Project): ConfigurationType = RunConfigurationTypeProvider.getConfigurationType(project)
+  fun getConfigurationType(project: Project): ConfigurationType = BazelRunConfigurationType
 
   open fun RunnerAndConfigurationSettings.customizeRunConfiguration() {}
 
@@ -40,6 +40,6 @@ abstract class BspRunnerAction(
         this is TestTargetAction -> "target.test.config.name"
         else -> "target.run.config.name"
       }
-    return BspPluginBundle.message(actionNameKey, targetDisplayName, project.assets.presentableName)
+    return BspPluginBundle.message(actionNameKey, targetDisplayName, BazelPluginConstants.BAZEL_DISPLAY_NAME)
   }
 }

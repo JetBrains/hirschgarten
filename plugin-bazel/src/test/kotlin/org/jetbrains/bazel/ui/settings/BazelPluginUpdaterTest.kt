@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.ui.settings
 
 import io.kotest.matchers.shouldBe
-import org.junit.Test
 import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
 class BazelPluginUpdaterTest {
   /**

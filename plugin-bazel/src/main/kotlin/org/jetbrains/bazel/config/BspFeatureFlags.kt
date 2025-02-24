@@ -14,6 +14,7 @@ private const val USE_PHASED_SYNC = "bsp.use.phased.sync"
 private const val EXECUTE_SECOND_PHASE_ON_SYNC = "bsp.execute.second.phase.on.sync"
 private const val ADD_DUMMY_MODULES = "bsp.add.dummy.modules"
 private const val EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS = "bsp.exclude.compiled.source.code.inside.jars"
+private const val ENABLE_PARTIAL_SYNC = "bsp.enable.partial.sync"
 
 object BspFeatureFlags {
   val isPythonSupportEnabled: Boolean
@@ -51,6 +52,9 @@ object BspFeatureFlags {
 
   val excludeCompiledSourceCodeInsideJars: Boolean
     get() = Registry.`is`(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS)
+
+  val enablePartialSync: Boolean
+    get() = Registry.`is`(ENABLE_PARTIAL_SYNC)
 }
 
 class DefaultBspFeatureFlagsProvider : FeatureFlagsProvider {

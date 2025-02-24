@@ -7,6 +7,7 @@ kt_jvm_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/label",
         "//plugin-bazel/jps-compilation/src:jps-compilation",
         "//plugin-bazel/protocol/src/main/kotlin/org/jetbrains/bsp/protocol/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/annotations",

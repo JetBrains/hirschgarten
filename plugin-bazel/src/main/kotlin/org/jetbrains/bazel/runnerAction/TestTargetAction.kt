@@ -2,7 +2,7 @@ package org.jetbrains.bazel.runnerAction
 
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.assets.assets
+import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.run.state.HasTestFilter
@@ -24,13 +24,13 @@ class TestTargetAction(
         BspPluginBundle.message(
           "target.debug.test.action.text",
           if (verboseText) targetInfos.joinToString(";") { it.buildTargetName } else "",
-          project.assets.presentableName,
+          BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       } else {
         BspPluginBundle.message(
           "target.test.action.text",
           if (verboseText) targetInfos.joinToString(";") { it.buildTargetName } else "",
-          project.assets.presentableName,
+          BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       }
     },

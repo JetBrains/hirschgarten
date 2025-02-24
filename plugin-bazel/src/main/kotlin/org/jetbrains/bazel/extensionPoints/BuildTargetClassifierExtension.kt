@@ -1,12 +1,10 @@
 package org.jetbrains.bazel.extensionPoints
 
-import com.intellij.openapi.extensions.ExtensionPointName
-import org.jetbrains.bazel.config.BuildToolId
-import org.jetbrains.bazel.config.WithBuildToolId
-import org.jetbrains.bazel.config.bspBuildToolId
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
-public interface BuildTargetClassifierExtension : WithBuildToolId {
+public interface BuildTargetClassifierExtension {
   /**
    * Sets a separator for chaining target directories. Example:
    * ```
@@ -46,23 +44,28 @@ public interface BuildTargetClassifierExtension : WithBuildToolId {
    * @return the name under which the given build target will be rendered in the tree
    */
   public fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String
-
-  public companion object {
-    val ep =
-      ExtensionPointName.create<BuildTargetClassifierExtension>("org.jetbrains.bazel.buildTargetClassifierExtension")
-  }
 }
 
 /**
  * Default implementation of the [BuildTargetClassifierExtension] interface.
  * It will be used in BSP project and when no other implementation exists.
  */
-internal class DefaultBuildTargetClassifierExtension : BuildTargetClassifierExtension {
-  override val buildToolId: BuildToolId = bspBuildToolId
-
+object DefaultBuildTargetClassifierExtension : BuildTargetClassifierExtension {
   override val separator: String? = null
 
   override fun calculateBuildTargetPath(buildTargetInfo: BuildTargetInfo): List<String> = emptyList()
 
   override fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String = buildTargetInfo.id.uri
+}
+
+object BazelBuildTargetClassifier : BuildTargetClassifierExtension {
+  override val separator: String = "/"
+
+  override fun calculateBuildTargetPath(buildTargetInfo: BuildTargetInfo): List<String> =
+    Label
+      .parse(buildTargetInfo.id.uri)
+      .let { listOf((it as? ResolvedLabel)?.repoName.orEmpty()) + it.packagePath.pathSegments }
+      .filter { pathSegment -> pathSegment.isNotEmpty() }
+
+  override fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String = Label.parse(buildTargetInfo.id.uri).targetName
 }

@@ -7,13 +7,13 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.SimpleTextAttributes
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bsp.sdkcompat.ProjectViewNodeDecoratorCompat
 
 class ProjectViewFileNodeDecorator(private val project: Project) : ProjectViewNodeDecoratorCompat {
   override fun decorateCompat(node: ProjectViewNode<*>?, data: PresentationData?) {
-    if (data == null || node == null || !project.isBazelProject) return
+    if (data == null || node == null || !project.isBspProject) return
     val vFile = node.virtualFile ?: return
     if (!vFile.isProjectViewFile()) return
     if (project.bazelProjectSettings.projectViewPath != vFile.toNioPath().toAbsolutePath()) return

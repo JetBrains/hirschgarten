@@ -8,8 +8,6 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.bazel.config.buildToolId
 import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassBody
@@ -29,7 +27,6 @@ class BspJVMRunLineMarkerContributorTest : BasePlatformTestCase() {
 
   private fun CodeInsightTestFixture.setBuildTool() {
     project.isBspProject = true
-    project.buildToolId = bazelBspBuildToolId
   }
 
   private fun CodeInsightTestFixture.getKotlinTestFile(): PsiFile =

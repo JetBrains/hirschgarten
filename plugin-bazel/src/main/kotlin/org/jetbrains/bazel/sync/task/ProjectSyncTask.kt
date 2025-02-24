@@ -24,16 +24,13 @@ import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.saveAllFiles
-import org.jetbrains.bazel.assets.assets
+import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.bazel.sync.additionalProjectPostSyncHooks
-import org.jetbrains.bazel.sync.additionalProjectPreSyncHooks
-import org.jetbrains.bazel.sync.additionalProjectSyncHooks
 import org.jetbrains.bazel.sync.defaultProjectPostSyncHooks
 import org.jetbrains.bazel.sync.defaultProjectPreSyncHooks
 import org.jetbrains.bazel.sync.defaultProjectSyncHooks
@@ -103,7 +100,11 @@ class ProjectSyncTask(private val project: Project) {
   }
 
   private suspend fun doSync(syncScope: ProjectSyncScope, buildProject: Boolean) {
-    val syncActivityName = BspPluginBundle.message("console.task.sync.activity.name", project.assets.presentableName)
+    val syncActivityName =
+      BspPluginBundle.message(
+        "console.task.sync.activity.name",
+        BazelPluginConstants.BAZEL_DISPLAY_NAME,
+      )
     withSuspendScanningAndIndexing(syncActivityName) {
       withBackgroundProgress(project, "Syncing project...", true) {
         reportSequentialProgress {
@@ -138,9 +139,6 @@ class ProjectSyncTask(private val project: Project) {
     project.defaultProjectPreSyncHooks.forEach {
       it.onPreSync(environment)
     }
-    project.additionalProjectPreSyncHooks.forEach {
-      it.onPreSync(environment)
-    }
   }
 
   private suspend fun executeSyncHooks(
@@ -167,9 +165,6 @@ class ProjectSyncTask(private val project: Project) {
         project.defaultProjectSyncHooks.forEach {
           it.onSync(environment)
         }
-        project.additionalProjectSyncHooks.forEach {
-          it.onSync(environment)
-        }
       }
     }
 
@@ -185,9 +180,6 @@ class ProjectSyncTask(private val project: Project) {
       )
 
     project.defaultProjectPostSyncHooks.forEach {
-      it.onPostSync(environment)
-    }
-    project.additionalProjectPostSyncHooks.forEach {
       it.onPostSync(environment)
     }
   }

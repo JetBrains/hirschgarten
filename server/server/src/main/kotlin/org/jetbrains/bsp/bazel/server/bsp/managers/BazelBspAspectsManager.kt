@@ -56,6 +56,7 @@ class BazelBspAspectsManager(
         rulesetName?.let { RulesetLanguage(it, language) }
       }.removeDisabledLanguages()
       .addNativeAndroidLanguageIfNeeded()
+      .addExternalPythonLanguageIfNeeded(externalRulesetNames)
 
   private fun List<RulesetLanguage>.removeDisabledLanguages(): List<RulesetLanguage> {
     val disabledLanguages =
@@ -72,6 +73,11 @@ class BazelBspAspectsManager(
     if (!featureFlags.isAndroidSupportEnabled) return this
     if (!workspaceContextProvider.currentWorkspaceContext().enableNativeAndroidRules.value) return this
     return this.filterNot { it.language == Language.Android } + RulesetLanguage(null, Language.Android)
+  }
+
+  private fun List<RulesetLanguage>.addExternalPythonLanguageIfNeeded(externalRulesetNames: List<String>): List<RulesetLanguage> {
+    val rulesetName = Language.Python.rulesetNames.firstOrNull { externalRulesetNames.contains(it) }
+    return this.filterNot { it.language == Language.Python } + RulesetLanguage(rulesetName, Language.Python)
   }
 
   fun generateAspectsFromTemplates(
@@ -98,6 +104,8 @@ class BazelBspAspectsManager(
           "rulesetName" to ruleLanguage?.calculateCanonicalName(repoMapping),
           "addTransitiveCompileTimeJars" to
             workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
+          "transitiveCompileTimeJarsTargetKinds" to
+            workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toStarlarkString(),
           "kotlinEnabled" to kotlinEnabled.toString(),
           "javaEnabled" to javaEnabled.toString(),
           "pythonEnabled" to pythonEnabled.toString(),
@@ -110,7 +118,13 @@ class BazelBspAspectsManager(
     templateWriter.writeToFile(
       Constants.CORE_BZL + Constants.TEMPLATE_EXTENSION,
       aspectsPath.resolve(Constants.CORE_BZL),
-      mapOf("isPropagateExportsFromDepsEnabled" to featureFlags.isPropagateExportsFromDepsEnabled.toStarlarkString()),
+      mapOf(
+        "isPropagateExportsFromDepsEnabled" to featureFlags.isPropagateExportsFromDepsEnabled.toStarlarkString(),
+        "addTransitiveCompileTimeJars" to
+          workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
+        "transitiveCompileTimeJarsTargetKinds" to
+          workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toStarlarkString(),
+      ),
     )
 
     // https://bazel.build/rules/lib/builtins/Label#repo_name
@@ -148,6 +162,8 @@ class BazelBspAspectsManager(
     }
 
   private fun Boolean.toStarlarkString(): String = if (this) "True" else "False"
+
+  private fun List<String>.toStarlarkString(): String = joinToString(prefix = "[", postfix = "]", separator = ", ") { "\"$it\"" }
 
   suspend fun fetchFilesFromOutputGroups(
     cancelChecker: CancelChecker,

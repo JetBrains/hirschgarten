@@ -34,8 +34,6 @@ import com.jetbrains.python.sdk.guessedLanguageLevel
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BspFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.config.BuildToolId
-import org.jetbrains.bazel.config.bspBuildToolId
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.orDefault
@@ -60,8 +58,6 @@ private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
 private val PYTHON_MODULE_TYPE = ModuleTypeId("PYTHON_MODULE")
 
 class PythonProjectSync : ProjectSyncHook {
-  override val buildToolId: BuildToolId = bspBuildToolId
-
   override fun isEnabled(project: Project): Boolean = BspFeatureFlags.isPythonSupportEnabled
 
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {

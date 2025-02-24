@@ -3,10 +3,6 @@ package org.jetbrains.bazel.sync
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
-import org.jetbrains.bazel.config.WithBuildToolId
-import org.jetbrains.bazel.config.allWithBuildToolId
-import org.jetbrains.bazel.config.bspBuildToolId
-import org.jetbrains.bazel.config.buildToolId
 
 /**
  * Represents a post-sync hook which will be executed after each sync (if `isEnabled` returns true).
@@ -14,7 +10,7 @@ import org.jetbrains.bazel.config.buildToolId
  * It should be used to perform post-sync actions, e.g., code cleanup after sync.
  * It's guaranteed that hook will be called *after* all [ProjectSyncHook] calls.
  */
-interface ProjectPostSyncHook : WithBuildToolId {
+interface ProjectPostSyncHook {
   /**
    * Tells the sync mechanism whatever this hook should be executed after a sync.
    * It will always be called before each `onPostSync` call.
@@ -44,14 +40,4 @@ interface ProjectPostSyncHook : WithBuildToolId {
 
 val Project.defaultProjectPostSyncHooks: List<ProjectPostSyncHook>
   get() =
-    ProjectPostSyncHook.ep
-      .allWithBuildToolId(bspBuildToolId)
-      .filter { it.isEnabled(this) }
-
-val Project.additionalProjectPostSyncHooks: List<ProjectPostSyncHook>
-  get() =
-    if (buildToolId != bspBuildToolId) {
-      ProjectPostSyncHook.ep.allWithBuildToolId(buildToolId).filter { it.isEnabled(this) }
-    } else {
-      emptyList()
-    }
+    ProjectPostSyncHook.ep.extensions.filter { it.isEnabled(this) }

@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.starlark.bazel
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.config.rootDir
 import java.io.File
 
@@ -19,7 +19,7 @@ object BazelFileUtils {
   }
 
   private fun getBazelFilePathFromRoot(project: Project, file: VirtualFile): String? =
-    if (project.isBazelProject) VfsUtilCore.getRelativePath(file, project.rootDir) else null
+    if (project.isBspProject) VfsUtilCore.getRelativePath(file, project.rootDir) else null
 
   private fun truncatePathHead(relativeDir: String): String {
     val segments = relativeDir.split(File.separator)

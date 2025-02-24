@@ -1,22 +1,17 @@
 package org.jetbrains.bazel.server.connection
 
-import ch.epfl.scala.bsp4j.BuildClient
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.InitializeBuildParams
-import ch.epfl.scala.bsp4j.SourceItem
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.diagnostic.telemetry.OtlpConfiguration
-import com.intellij.util.concurrency.AppExecutorUtil
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
@@ -37,17 +32,19 @@ import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.CLIENT_CAPABILITIES
 import org.jetbrains.bsp.protocol.InitializeBuildData
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.utils.BazelBuildServerCapabilitiesTypeAdapter
-import org.jetbrains.bsp.protocol.utils.EnhancedSourceItemTypeAdapter
-import java.io.InputStream
-import java.io.OutputStream
 import java.lang.System.currentTimeMillis
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
-import java.lang.reflect.Proxy
+import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeoutException
 import kotlin.time.Duration.Companion.seconds
+
+/**
+ * a temporary piece of data that signals built-in connection to reset to account for changes in configs
+ * TODO: purge along with BSP complete removal
+ */
+private data class ConnectionResetConfig(val projectViewFile: Path?, val initializeBuildData: InitializeBuildData)
 
 private class CancelableInvocationHandlerWithTimeout(
   private val remoteProxy: JoinedBuildServer,
@@ -130,62 +127,64 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
   private var server: JoinedBuildServer? = null
   private var capabilities: BazelBuildServerCapabilities? = null
 
-  @Volatile
-  private var bspProcess: Process? = null
-  private val disconnectActions: MutableList<() -> Unit> = mutableListOf()
+  private var connectionResetConfig: ConnectionResetConfig? = null
+
   private val timeoutHandler = TimeoutHandler { Registry.intValue("bsp.request.timeout.seconds").seconds }
   private val mutex = Mutex()
 
   override suspend fun connect() {
     mutex.withLock {
-      try {
-        ensureConnected()
-      } catch (connectException: Exception) {
-        try {
-          disconnectWithAcquiredLock()
-        } catch (disconnectException: Exception) {
-          // connectException is probably more informative to the user, throw it instead of disconnectException
-          connectException.addSuppressed(disconnectException)
-        }
-        throw connectException
-      }
+      ensureConnected()
     }
   }
 
   private suspend fun ensureConnected() {
     log.debug("ensuring the connection is established")
     val bspClient = createBspClient()
-    val inMemoryConnection =
-      object : GenericConnection {
-        val installationDirectory = project.rootDir.toNioPath()
-        val conn =
-          Connection(
-            installationDirectory,
-            null,
-            project.bazelProjectSettings.projectViewPath?.toAbsolutePath(),
-            installationDirectory,
-            bspClient,
-            propagateTelemetryContext = true,
-          )
-        val projectPath = VfsUtil.findFile(installationDirectory, true) ?: error("Project doesn't exist")
+    val newConnectionResetConfig = generateNewConnectionResetConfig()
+    if (!isConnected() || newConnectionResetConfig != connectionResetConfig) {
+      connectionResetConfig = newConnectionResetConfig
+      val inMemoryConnection =
+        object : GenericConnection {
+          val installationDirectory = project.rootDir.toNioPath()
+          val conn =
+            Connection(
+              installationDirectory,
+              null,
+              newConnectionResetConfig.projectViewFile,
+              installationDirectory,
+              bspClient,
+              propagateTelemetryContext = true,
+            )
+          val projectPath = VfsUtil.findFile(installationDirectory, true) ?: error("Project doesn't exist")
 
-        init {
-          DotBazelBspCreator(projectPath).create()
+          init {
+            DotBazelBspCreator(projectPath).create()
+          }
+
+          override val server: JoinedBuildServer
+            get() = conn.clientLauncher.remoteProxy
+
+          override fun shutdown() {
+            conn.stop()
+          }
         }
-
-        override val server: JoinedBuildServer
-          get() = conn.clientLauncher.remoteProxy
-
-        override fun shutdown() {
-          conn.stop()
-        }
-      }
-    if (!isConnected()) {
-      connectBuiltIn(inMemoryConnection)
+      connectBuiltIn(inMemoryConnection, newConnectionResetConfig.initializeBuildData)
     }
   }
 
-  private suspend fun connectBuiltIn(connection: GenericConnection) {
+  private fun generateNewConnectionResetConfig(): ConnectionResetConfig =
+    ConnectionResetConfig(
+      projectViewFile = project.bazelProjectSettings.projectViewPath?.toAbsolutePath(),
+      initializeBuildData =
+        InitializeBuildData(
+          clientClassesRootDir = "${project.rootDir}/out",
+          openTelemetryEndpoint = getOpenTelemetryEndPoint(),
+          featureFlags = FeatureFlagsProvider.accumulateFeatureFlags(),
+        ),
+    )
+
+  private suspend fun connectBuiltIn(connection: GenericConnection, initializeBuildData: InitializeBuildData) {
     coroutineScope {
       val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
       bspSyncConsole.startTask(
@@ -194,15 +193,12 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
         message = BspPluginBundle.message("console.task.auto.connect.in.progress"),
         cancelAction = { coroutineContext.cancel() },
       )
-      bspSyncConsole.addMessage(taskId = CONNECT_TASK_ID, message = BspPluginBundle.message("console.task.connect.message.in.progress"))
-      disconnectActions.add { connection.shutdown() }
-      bspSyncConsole.addMessage(CONNECT_TASK_ID, BspPluginBundle.message("console.task.connect.message.success"))
       bspSyncConsole.addMessage(
         CONNECT_TASK_ID,
         BspPluginBundle.message("console.message.initialize.server.in.progress"),
       )
       server = connection.server.wrapInChunkingServerIfRequired()
-      capabilities = server?.initializeAndObtainCapabilities()
+      capabilities = server?.initializeAndObtainCapabilities(initializeBuildData)
       bspSyncConsole.addMessage(
         CONNECT_TASK_ID,
         BspPluginBundle.message("console.message.initialize.server.success"),
@@ -222,51 +218,6 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
     )
   }
 
-  private fun startServerAndAddDisconnectActions(process: Process, client: BuildClient): JoinedBuildServer {
-    val bspIn = process.inputStream
-    disconnectActions.add { bspIn.close() }
-
-    val bspOut = process.outputStream
-    disconnectActions.add { bspOut.close() }
-
-    val launcher = createLauncher(bspIn, bspOut, client)
-    val listening = launcher.startListening()
-    disconnectActions.add { listening.cancel(true) }
-
-    val cancelOnFuture = CompletableFuture<Void>()
-    disconnectActions.add { cancelOnFuture.cancel(true) }
-
-    val remoteProxy = launcher.remoteProxy
-    return Proxy.newProxyInstance(
-      javaClass.classLoader,
-      arrayOf(JoinedBuildServer::class.java),
-      CancelableInvocationHandlerWithTimeout(remoteProxy, cancelOnFuture, timeoutHandler),
-    ) as JoinedBuildServer
-  }
-
-  private fun createLauncher(
-    bspIn: InputStream,
-    bspOut: OutputStream,
-    client: BuildClient,
-  ): Launcher<JoinedBuildServer> =
-    TelemetryContextPropagatingLauncherBuilder<JoinedBuildServer>()
-      .setRemoteInterface(JoinedBuildServer::class.java)
-      .setExecutorService(AppExecutorUtil.getAppExecutorService())
-      .setInput(bspIn)
-      .setOutput(bspOut)
-      .setLocalService(client)
-      // Allows us to deserialize our custom capabilities
-      .configureGson { builder ->
-        builder.registerTypeAdapter(
-          BuildServerCapabilities::class.java,
-          BazelBuildServerCapabilitiesTypeAdapter(),
-        )
-        builder.registerTypeAdapter(
-          SourceItem::class.java,
-          EnhancedSourceItemTypeAdapter(),
-        )
-      }.create()
-
   private fun JoinedBuildServer.wrapInChunkingServerIfRequired(): JoinedBuildServer =
     if (Registry.`is`("bsp.request.chunking.enable")) {
       val minChunkSize = Registry.intValue("bsp.request.chunking.size.min")
@@ -275,14 +226,16 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
       this
     }
 
-  private suspend fun JoinedBuildServer.initializeAndObtainCapabilities(): BazelBuildServerCapabilities {
-    val buildInitializeResults = buildInitialize(createInitializeBuildParams()).asDeferred().await()
+  private suspend fun JoinedBuildServer.initializeAndObtainCapabilities(
+    initializeBuildData: InitializeBuildData,
+  ): BazelBuildServerCapabilities {
+    val buildInitializeResults = buildInitialize(createInitializeBuildParams(initializeBuildData)).asDeferred().await()
     onBuildInitialized()
     // cast is safe because we registered a custom type adapter
     return buildInitializeResults.capabilities as BazelBuildServerCapabilities
   }
 
-  private fun createInitializeBuildParams(): InitializeBuildParams {
+  private fun createInitializeBuildParams(initializeBuildData: InitializeBuildData): InitializeBuildParams {
     val projectBaseDir = project.rootDir
     val params =
       InitializeBuildParams(
@@ -292,12 +245,7 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
         projectBaseDir.toString(),
         CLIENT_CAPABILITIES,
       )
-    val initializeBuildData =
-      InitializeBuildData(
-        clientClassesRootDir = "$projectBaseDir/out",
-        openTelemetryEndpoint = getOpenTelemetryEndPoint(),
-        featureFlags = FeatureFlagsProvider.accumulateFeatureFlags(),
-      )
+
     params.data = initializeBuildData
 
     return params
@@ -318,50 +266,7 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
     return task(server, capabilities)
   }
 
-  override suspend fun disconnect() {
-    if (!isConnected()) return // Fast path to avoid waiting for mutex
-    mutex.withLock {
-      disconnectWithAcquiredLock()
-    }
-  }
+  override suspend fun disconnect() {}
 
-  private fun disconnectWithAcquiredLock() {
-    if (!isConnected()) return
-    val exceptions = executeDisconnectActionsAndCollectExceptions(disconnectActions)
-    bspProcess?.destroy().also { bspProcess = null }
-    disconnectActions.clear()
-    server = null
-    capabilities = null
-    throwExceptionWithSuppressedIfOccurred(exceptions)
-  }
-
-  private fun executeDisconnectActionsAndCollectExceptions(disconnectActions: List<() -> Unit>): List<Throwable> =
-    disconnectActions.mapNotNull { executeDisconnectActionAndReturnThrowableIfFailed(it) }
-
-  private fun executeDisconnectActionAndReturnThrowableIfFailed(disconnectAction: () -> Unit): Throwable? =
-    try {
-      disconnectAction()
-      null
-    } catch (e: Exception) {
-      e
-    }
-
-  private fun throwExceptionWithSuppressedIfOccurred(exceptions: List<Throwable>) {
-    val firstException = exceptions.firstOrNull()
-
-    if (firstException != null) {
-      exceptions
-        .drop(1)
-        .forEach { firstException.addSuppressed(it) }
-
-      throw firstException
-    }
-  }
-
-  override fun isConnected(): Boolean {
-    bspProcess?.let { bspProcess ->
-      return bspProcess.isAlive
-    }
-    return server != null
-  }
+  override fun isConnected(): Boolean = server != null
 }

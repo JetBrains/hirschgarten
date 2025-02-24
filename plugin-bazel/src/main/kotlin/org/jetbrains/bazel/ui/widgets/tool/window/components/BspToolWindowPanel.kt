@@ -17,13 +17,12 @@ import com.intellij.psi.PsiManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
-import org.jetbrains.bazel.assets.assets
+import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.config.buildToolId
-import org.jetbrains.bazel.extensionPoints.ToolWindowConfigFileProviderExtension
-import org.jetbrains.bazel.extensionPoints.toolWindowConfigFileProvider
-import org.jetbrains.bazel.extensionPoints.toolWindowSettingsProvider
 import org.jetbrains.bazel.services.invalidTargets
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.filter.FilterActionGroup
@@ -50,8 +49,10 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
         addAll(defaultActions)
         addSeparator()
         add(FilterActionGroup(targetFilter))
-        addSettingsActionIfAvailable(project)
-        addConfigFileOpeningActionIfAvailable(project)
+        addSeparator()
+        add(BspToolWindowSettingsAction(BazelPluginBundle.message("project.settings.display.name")))
+        addSeparator()
+        add(BspToolWindowConfigFileOpenAction())
       }
 
     val actionToolbar =
@@ -74,10 +75,9 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
 
   private fun createLoadedTargetsPanel(project: Project, targetUtils: TargetUtils): BspPanelComponent =
     BspPanelComponent(
-      targetIcon = project.assets.targetIcon,
-      invalidTargetIcon = project.assets.errorTargetIcon,
-      buildToolId = project.buildToolId,
-      toolName = project.assets.presentableName,
+      targetIcon = BazelPluginIcons.bazel,
+      invalidTargetIcon = BazelPluginIcons.bazelError,
+      toolName = BazelPluginConstants.BAZEL_DISPLAY_NAME,
       targets = targetUtils.allTargets().mapNotNull { targetUtils.getBuildTargetInfoForLabel(it) },
       invalidTargets = project.invalidTargets,
       searchBarPanel = searchBarPanel,
@@ -91,18 +91,6 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
     loadedTargetsPanel =
       loadedTargetsPanel.createNewWithTargets(targetFilter.getMatchingLoadedTargets(targetUtils), project.invalidTargets)
     setContent(loadedTargetsPanel.withScrollAndSearch())
-  }
-
-  private fun DefaultActionGroup.addSettingsActionIfAvailable(project: Project) {
-    val settingsActionProvider = project.toolWindowSettingsProvider ?: return
-    addSeparator()
-    add(BspToolWindowSettingsAction(settingsActionProvider.getSettingsName()))
-  }
-
-  private fun DefaultActionGroup.addConfigFileOpeningActionIfAvailable(project: Project) {
-    val configFileProvider = project.toolWindowConfigFileProvider ?: return
-    addSeparator()
-    add(BspToolWindowConfigFileOpenAction(configFileProvider))
   }
 }
 
@@ -121,13 +109,13 @@ private class BspToolWindowSettingsAction(private val settingsDisplayName: Strin
   }
 }
 
-private class BspToolWindowConfigFileOpenAction(private val configFileProvider: ToolWindowConfigFileProviderExtension) :
+private class BspToolWindowConfigFileOpenAction :
   SuspendableAction(
-    { BspPluginBundle.message("widget.config.file.popup.message", configFileProvider.getConfigFileGenericName()) },
-    configFileProvider.getConfigFileIcon(),
+    { BspPluginBundle.message("widget.config.file.popup.message", BazelPluginBundle.message("tool.window.generic.config.file")) },
+    AllIcons.FileTypes.Config,
   ) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    val configFile = configFileProvider.getConfigFile(project)
+    val configFile = project.bazelProjectSettings.projectViewPath
     e.presentation.isEnabled = configFile != null
     withContext(Dispatchers.EDT) {
       ProjectView.getInstance(project).refresh()

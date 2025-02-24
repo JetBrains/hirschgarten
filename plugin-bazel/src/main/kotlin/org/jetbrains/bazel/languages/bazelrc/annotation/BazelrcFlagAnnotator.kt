@@ -16,6 +16,8 @@ import org.jetbrains.bazel.languages.bazelrc.flags.OptionMetadataTag
 import org.jetbrains.bazel.languages.bazelrc.highlighting.BazelrcHighlightingColors
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
+import org.jetbrains.bazel.languages.bazelrc.quickfix.DeleteFlagUseFix
+import org.jetbrains.bazel.languages.bazelrc.quickfix.RenameFlagNameFix
 import kotlin.text.Regex
 
 val flagTokenPattern =
@@ -69,6 +71,7 @@ class BazelrcFlagAnnotator : Annotator {
           .range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.NOOP_FLAG)
           .needsUpdateOnTyping()
+          .withFix(DeleteFlagUseFix(element, flag))
           .create()
 
       isDeprecated(flag, element) ->
@@ -85,7 +88,7 @@ class BazelrcFlagAnnotator : Annotator {
           .range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.DEPRECATED_FLAG)
           .needsUpdateOnTyping()
-          // TODO(BAZEL-1704): Add an intention to fix
+          .withFix(RenameFlagNameFix(element, flag))
           .create()
 
       else -> {}

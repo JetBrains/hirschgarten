@@ -2,11 +2,12 @@ package org.jetbrains.bazel.extension
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.extensionPoints.BazelBuildTargetClassifier
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.junit.jupiter.api.Test
 
 class BazelBuildTargetClassifierTest {
-  private val classifier = BazelBuildTargetClassifier()
+  private val classifier = BazelBuildTargetClassifier
 
   @Test
   fun mainRepoTest() {

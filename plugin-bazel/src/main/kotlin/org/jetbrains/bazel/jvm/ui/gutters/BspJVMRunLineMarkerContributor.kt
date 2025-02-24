@@ -5,8 +5,6 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner
-import org.jetbrains.bazel.config.BuildToolId
-import org.jetbrains.bazel.config.buildToolId
 import org.jetbrains.bazel.ui.gutters.BspRunLineMarkerContributor
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtNamedFunction
@@ -24,12 +22,7 @@ class BspJVMRunLineMarkerContributor : BspRunLineMarkerContributor() {
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1316
   override fun getSingleTestFilter(element: PsiElement): String? =
-    if (element.project.buildToolId == BuildToolId("bazelbsp")
-    ) {
-      element.getStrictParentOfType<PsiNameIdentifierOwner>()?.getFunctionName()
-    } else {
-      null
-    }
+    element.getStrictParentOfType<PsiNameIdentifierOwner>()?.getFunctionName()
 
   private fun PsiNameIdentifierOwner.getFunctionName(): String? = if (this.isClassOrMethod()) this.name else null
 

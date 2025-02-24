@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.bazel.projectview.parser.sections
 
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewListSection
@@ -79,4 +80,14 @@ object ProjectViewEnabledRulesSectionParser :
   override fun mapRawValues(rawValue: String): String = rawValue
 
   override fun createInstance(values: List<String>): ProjectViewEnabledRulesSection = ProjectViewEnabledRulesSection(values)
+}
+
+object ExperimentalTransitiveCompileTimeJarsTargetKindsSectionParser :
+  ProjectViewListSectionParser<String, ExperimentalTransitiveCompileTimeJarsTargetKindsSection>(
+    ExperimentalTransitiveCompileTimeJarsTargetKindsSection.SECTION_NAME,
+  ) {
+  override fun mapRawValues(rawValue: String): String = rawValue
+
+  override fun createInstance(values: List<String>): ExperimentalTransitiveCompileTimeJarsTargetKindsSection =
+    ExperimentalTransitiveCompileTimeJarsTargetKindsSection(values)
 }

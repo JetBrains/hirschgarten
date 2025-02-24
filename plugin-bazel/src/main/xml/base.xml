@@ -6,9 +6,6 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.sourceTypeIconProvider"
                         interface="org.jetbrains.bazel.utils.SourceTypeIconProvider"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.buildTargetClassifierExtension"
-                        interface="org.jetbrains.bazel.extensionPoints.BuildTargetClassifierExtension"
-                        dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.scalaSdkExtension"
                         interface="org.jetbrains.bazel.scala.sdk.ScalaSdkExtension"
                         dynamic="true"/>
@@ -21,9 +18,6 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.runHandlerProvider"
                         interface="org.jetbrains.bazel.run.RunHandlerProvider"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.buildToolAssetsExtension"
-                        interface="org.jetbrains.bazel.assets.BuildToolAssetsExtension"
-                        dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.projectAwareExtension"
                         interface="org.jetbrains.bazel.projectAware.ProjectAwareExtension"
                         dynamic="true"/>
@@ -32,12 +26,6 @@
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.connectionDetailsProviderExtensionJavaShim"
                         interface="org.jetbrains.bazel.server.connection.ConnectionDetailsProviderExtensionJavaShim"
-                        dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.buildToolWindowTargetActionProviderExtension"
-                        interface="org.jetbrains.bazel.extensionPoints.BuildToolWindowTargetActionProviderExtension"
-                        dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.toolWindowSettingsProviderExtension"
-                        interface="org.jetbrains.bazel.extensionPoints.ToolWindowSettingsProviderExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.toolWindowConfigFileProviderExtension"
                         interface="org.jetbrains.bazel.extensionPoints.ToolWindowConfigFileProviderExtension"
@@ -66,9 +54,6 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.projectStructureProvider"
                         interface="org.jetbrains.bazel.sync.projectStructure.ProjectStructureProvider"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.runConfigurationTypeProvider"
-                        interface="org.jetbrains.bazel.run.config.RunConfigurationTypeProvider"
-                        dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.featureFlagsProvider"
                         interface="org.jetbrains.bazel.config.FeatureFlagsProvider"
                         dynamic="true"/>
@@ -84,21 +69,15 @@
     </extensionPoints>
 
     <extensions defaultExtensionNs="org.jetbrains.bazel">
-        <buildTargetClassifierExtension
-                implementation="org.jetbrains.bazel.extensionPoints.DefaultBuildTargetClassifierExtension"/>
-
-        <connectionDetailsProviderExtension
-                implementation="org.jetbrains.bazel.server.connection.DefaultConnectionDetailsProviderExtension"/>
-
         <runHandlerProvider implementation="org.jetbrains.bazel.jvm.run.JvmBspRunHandler$JvmBspRunHandlerProvider"
-                               id="JvmRunHandlerProvider"/>
+                            id="JvmRunHandlerProvider"/>
         <runHandlerProvider
                 implementation="org.jetbrains.bazel.jvm.run.JvmBspTestHandler$JvmBspTestHandlerProvider"
                 id="JvmTestHandlerProvider"/>
         <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericBspRunHandlerProvider"
-                               order="last"/>
+                            order="last"/>
         <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericBspTestHandlerProvider"
-                               order="last"/>
+                            order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"/>
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
@@ -201,6 +180,10 @@
         <registryKey defaultValue="true"
                      description="Exclude class files inside jars (and source files inside source jars) if they match up with a source file in the current project."
                      key="bsp.exclude.compiled.source.code.inside.jars"/>
+        <!-- https://youtrack.jetbrains.com/issue/BAZEL-1734 -->
+        <registryKey defaultValue="false"
+                     description="Enable partial sync action for a target."
+                     key="bsp.enable.partial.sync"/>
 
         <statusBarWidgetFactory id="BspFileTargetsWidget"
                                 implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BspFileTargetsWidgetFactory"/>
@@ -265,26 +248,12 @@
     </actions>
 
     <applicationListeners>
-        <listener class="org.jetbrains.bazel.flow.close.ProjectClosingListener"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
 
         <listener class="org.jetbrains.bazel.workspace.AssignFileToModuleListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
     </applicationListeners>
 
     <extensions defaultExtensionNs="org.jetbrains.bazel">
-        <buildToolAssetsExtension
-                implementation="org.jetbrains.bazel.assets.BazelAssetsExtension"/>
-
-        <buildTargetClassifierExtension
-                implementation="org.jetbrains.bazel.extension.BazelBuildTargetClassifier"/>
-
-        <buildToolWindowTargetActionProviderExtension
-                implementation="org.jetbrains.bazel.extension.BazelTargetActionProviderExtension"/>
-
-        <toolWindowSettingsProviderExtension
-                implementation="org.jetbrains.bazel.extension.BazelProjectSettingsActionProviderExtension"/>
-
         <toolWindowConfigFileProviderExtension
                 implementation="org.jetbrains.bazel.extension.BazelToolWindowConfigFileProviderExtension"/>
 
@@ -296,15 +265,10 @@
 
         <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook"/>
 
-        <projectSyncHook implementation="org.jetbrains.bazel.flow.open.InvalidTargetsProjectSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.services.InvalidTargetsProjectSyncHook"/>
         <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"/>
-
-        <invalidTargetsProviderExtension
-                implementation="org.jetbrains.bazel.flow.open.BazelInvalidTargetsProviderExtension"/>
-
-        <runConfigurationTypeProvider implementation="org.jetbrains.bazel.run.BazelRunConfigurationTypeProvider"/>
         <featureFlagsProvider implementation="org.jetbrains.bazel.config.BazelBspFeatureFlagsProvider"/>
         <additionalProjectTaskRunnerProvider
                 implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
