@@ -6,19 +6,25 @@ import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.server.label.label
 
 class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private val idToTargetInfo: Map<Label, TargetInfo> = emptyMap()) {
-  private val idToDirectDependenciesIds: Map<Label, Set<Label>>
+  private val idToDirectDependenciesIds = mutableMapOf<Label, Set<Label>>()
+  private val idToReverseDependenciesIds = mutableMapOf<Label, HashSet<Label>>()
   private val idToLazyTransitiveDependencies: Map<Label, Lazy<Set<TargetInfo>>>
 
   init {
-    idToDirectDependenciesIds =
-      idToTargetInfo.entries.associate { (id, target) ->
-        Pair(
-          id,
-          getDependencies(target),
-        )
+
+    idToTargetInfo.entries.forEach { (id, target) ->
+      val dependencies = getDependencies(target)
+
+      idToDirectDependenciesIds[id] = dependencies
+
+      dependencies.forEach { dep ->
+        idToReverseDependenciesIds.computeIfAbsent(dep) { hashSetOf() }.add(id)
       }
+    }
     idToLazyTransitiveDependencies = createIdToLazyTransitiveDependenciesMap(idToTargetInfo)
   }
+
+  fun getReverseDependencies(id: Label): Set<Label> = idToReverseDependenciesIds[id].orEmpty()
 
   private fun createIdToLazyTransitiveDependenciesMap(idToTargetInfo: Map<Label, TargetInfo>): Map<Label, Lazy<Set<TargetInfo>>> =
     idToTargetInfo.mapValues { (_, targetInfo) ->
