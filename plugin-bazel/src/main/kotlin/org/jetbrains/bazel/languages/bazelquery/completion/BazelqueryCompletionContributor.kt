@@ -15,6 +15,9 @@ import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenType
 import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryQueryVal
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 
 
 class BazelqueryCompletionContributor : CompletionContributor() {
@@ -48,17 +51,28 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
       tokenType.completionText() + "()"
     }.toList()
 
+  val project: Project? = ProjectManager.getInstance().openProjects.firstOrNull()
+  val temporaryTargetUtils = project?.temporaryTargetUtils
+  val targetsIds = temporaryTargetUtils?.allTargetIds()
+  val targets = targetsIds?.mapNotNull { targetId ->
+    temporaryTargetUtils?.getBuildTargetInfoForId(targetId)?.displayName
+  }
+
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
 
+
     result.run {
       addAllElements(
         knownCommands.map(::functionLookupElement),
       )
-      // TODO: available targets
+      addAllElements(
+        targets?.map(::functionLookupElement) ?: emptyList(),
+      )
+      // TODO: prioritize targets
     }
   }
 
