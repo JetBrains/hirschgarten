@@ -22,7 +22,6 @@ object Constants {
   const val DOT_BAZELBSP_DIR_NAME: String = ".bazelbsp"
   const val DOT_BSP_DIR_NAME: String = ".bsp"
   const val BAZELBSP_JSON_FILE_NAME: String = "bazelbsp.json"
-  const val SERVER_CLASS_NAME: String = "org.jetbrains.bsp.bazel.server.ServerInitializer"
   const val CLASSPATH_FLAG: String = "-classpath"
   const val BAZELBSP_TRACE_JSON_FILE_NAME: String = "bazelbsp.trace.json"
   const val DEFAULT_PROJECT_VIEW_FILE_NAME = ".bazelproject"

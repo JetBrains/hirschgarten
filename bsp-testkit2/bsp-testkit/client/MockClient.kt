@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.testkit.client
 
-import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.DidChangeBuildTarget
 import ch.epfl.scala.bsp4j.LogMessageParams
 import ch.epfl.scala.bsp4j.PrintParams
@@ -9,8 +8,10 @@ import ch.epfl.scala.bsp4j.ShowMessageParams
 import ch.epfl.scala.bsp4j.TaskFinishParams
 import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
+import org.jetbrains.bsp.protocol.JoinedBuildClient
+import org.jetbrains.bsp.protocol.PublishOutputParams
 
-open class MockClient : BuildClient {
+open class MockClient : JoinedBuildClient {
   private val showMessage = ArrayList<ShowMessageParams>()
   private val logMessage = ArrayList<LogMessageParams>()
   private val taskStart = ArrayList<TaskStartParams>()
@@ -81,4 +82,6 @@ open class MockClient : BuildClient {
   override fun onBuildTargetDidChange(params: DidChangeBuildTarget) {
     didChangeBuildTarget.add(params)
   }
+
+  override fun onBuildPublishOutput(params: PublishOutputParams) {}
 }

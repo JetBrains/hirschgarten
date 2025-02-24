@@ -8,7 +8,7 @@ import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bsp.bazel.install.Install
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.InitializeBuildData
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.testkit.client.BasicTestClient
 import org.jetbrains.bsp.testkit.client.MockClient
 import org.jetbrains.bsp.testkit.client.TestClient
 import org.jetbrains.bsp.testkit.client.bazel.BazelJsonTransformer
@@ -63,6 +63,7 @@ abstract class BazelBspTestBaseScenario {
     return bazelPart.split("_")[3].toIntOrNull() ?: 100
   }
 
+  // TODO: remove Install.main and run setup methods directly
   protected open fun installServer() {
     Install.main(
       arrayOf(
@@ -153,15 +154,14 @@ abstract class BazelBspTestBaseScenario {
     ).also { println("Created TestClient done.") }
   }
 
-  protected fun createBazelClient(): BazelTestClient {
+  protected fun createBazelClient(): BasicTestClient {
     val (initializeBuildParams, bazelJsonTransformer) = createTestClientParams()
 
-    return BazelTestClient(
+    return BasicTestClient(
       Path.of(workspaceDir),
       initializeBuildParams,
       { s: String -> bazelJsonTransformer.transformJson(s) },
       MockClient(),
-      JoinedBuildServer::class.java,
     ).also { println("Created TestClient done.") }
   }
 

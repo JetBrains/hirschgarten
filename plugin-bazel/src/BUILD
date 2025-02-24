@@ -42,7 +42,6 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/runnerAction",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/scala",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/chunking",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/client",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/connection",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/tasks",

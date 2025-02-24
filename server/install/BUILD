@@ -17,6 +17,7 @@ kt_jvm_binary(
         "//server/commons",
         "//server/install:install-lib",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server",
+        "@rules_intellij//intellij_platform_sdk:plugin_api_for_tests",
         # Needed because the installer injects its own classpath as the one to be used by the installed server
         "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
         "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",

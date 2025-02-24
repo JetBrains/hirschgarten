@@ -41,7 +41,6 @@ class BepServer(
   private val bspClient: JoinedBuildClient,
   private val diagnosticsService: DiagnosticsService,
   private val originId: String?,
-  private val target: Label?,
   bazelPathsResolver: BazelPathsResolver,
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
   private val bspClientLogger = BspClientLogger(bspClient)

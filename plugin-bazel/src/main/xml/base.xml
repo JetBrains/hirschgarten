@@ -140,17 +140,7 @@
         <runLineMarkerContributor
                 implementationClass="org.jetbrains.bazel.jvm.ui.gutters.BspJVMRunLineMarkerContributor"
                 language="JVM"/>
-        <registryKey defaultValue="600" description="Timeout for BSP requests in seconds"
-                     key="bsp.request.timeout.seconds"/>
         <registryKey defaultValue="true" description="Choose default connection"
-                     key="bsp.wizard.choose.default.connection"/>
-        <registryKey defaultValue="true" description="Enable chunking for BSP requests"
-                     key="bsp.request.chunking.enable"/>
-        <registryKey defaultValue="100" description="Minimum chunk size for chunked BSP requests"
-                     key="bsp.request.chunking.size.min"/>
-        <registryKey defaultValue="true" description="Log error outputs from processes to build/sync console"
-                     key="bsp.log.error.outputs"/>
-        <registryKey defaultValue="false" description="Build project on initial project sync"
                      key="bsp.build.project.on.sync"/>
         <registryKey defaultValue="false" description="Python modules support" key="bsp.python.support"/>
         <registryKey defaultValue="false" description="Enable JPS compilation" key="bsp.jps.compilation.enable"/>
