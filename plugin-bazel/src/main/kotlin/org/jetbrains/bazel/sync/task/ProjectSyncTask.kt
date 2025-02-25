@@ -191,12 +191,6 @@ class ProjectSyncTask(private val project: Project) {
   }
 }
 
-fun <Result> CoroutineScope.asyncQueryIf(
-  check: Boolean,
-  queryName: String,
-  doQuery: () -> CompletableFuture<Result>,
-): Deferred<Result?> = async { queryIf(check, queryName, doQuery) }
-
 suspend fun <Result> queryIf(
   check: Boolean,
   queryName: String,
