@@ -10,8 +10,6 @@ import ch.epfl.scala.bsp4j.RunResult
 import ch.epfl.scala.bsp4j.StatusCode
 import ch.epfl.scala.bsp4j.TestParams
 import ch.epfl.scala.bsp4j.TestResult
-import com.google.gson.Gson
-import com.google.gson.JsonObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -66,8 +64,6 @@ class ExecuteService(
   private val additionalBuildTargetsProvider: AdditionalAndroidBuildTargetsProvider,
   private val featureFlags: FeatureFlags,
 ) {
-  private val gson = Gson()
-
   private fun <T> withBepServer(originId: String?, body: (BepReader) -> T): T {
     val diagnosticsService = DiagnosticsService(compilationManager.workspaceRoot)
     val server = BepServer(compilationManager.client, diagnosticsService, originId, bazelPathsResolver)
@@ -182,14 +178,7 @@ class ExecuteService(
   ): TestResult {
     val targetsSpec = TargetsSpec(params.targets.map { it.label() }, emptyList())
 
-    var bazelTestParamsData: BazelTestParamsData? = null
-    try {
-      if (params.dataKind == BazelTestParamsData.DATA_KIND) {
-        bazelTestParamsData = gson.fromJson(params.data as JsonObject, BazelTestParamsData::class.java)
-      }
-    } catch (e: Exception) {
-      bspClientLogger.warn("Failed to parse BazelTestParamsData: $e")
-    }
+    val bazelTestParamsData: BazelTestParamsData? = params.data as? BazelTestParamsData
 
     val command =
       when (bazelTestParamsData?.coverage) {

@@ -6,8 +6,6 @@ import ch.epfl.scala.bsp4j.TestReport
 import ch.epfl.scala.bsp4j.TestStart
 import ch.epfl.scala.bsp4j.TestStatus
 import ch.epfl.scala.bsp4j.TestTask
-import com.google.gson.Gson
-import com.google.gson.JsonObject
 import com.intellij.execution.process.AnsiEscapeDecoder
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
@@ -24,7 +22,6 @@ import kotlin.time.toDuration
 
 class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
-  private val gson = Gson()
 
   init {
     handler.addProcessListener(
@@ -151,7 +148,7 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
   }
 
   private fun processTestCaseFinish(taskId: TaskId, data: TestFinish): ServiceMessageBuilder {
-    val details = extractTestFinishData<JUnitStyleTestCaseData>(data, JUnitStyleTestCaseData.DATA_KIND)
+    val details = data.data as? JUnitStyleTestCaseData
 
     checkTestStatus(taskId, data, details)
 
@@ -163,7 +160,7 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
   }
 
   private fun processTestSuiteFinish(taskId: TaskId, data: TestFinish): ServiceMessageBuilder {
-    val details = extractTestFinishData<JUnitStyleTestSuiteData>(data, JUnitStyleTestSuiteData.DATA_KIND)
+    val details = data.data as? JUnitStyleTestSuiteData
 
     details?.systemOut?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDOUT) }
     details?.systemErr?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDERR) }
@@ -185,13 +182,4 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
       ?.inWholeMilliseconds
       ?.let { this.addAttribute("duration", it.toString()) }
       ?: this
-
-  private inline fun <reified Data> extractTestFinishData(testFinishData: TestFinish, kind: String): Data? =
-    if (testFinishData.data is Data) {
-      testFinishData.data as Data
-    } else if (testFinishData.dataKind == kind) {
-      gson.fromJson(testFinishData.data as JsonObject, Data::class.java)
-    } else {
-      null
-    }
 }

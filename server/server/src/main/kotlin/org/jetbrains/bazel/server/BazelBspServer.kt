@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.server
 
 import ch.epfl.scala.bsp4j.InitializeBuildParams
-import com.google.gson.Gson
-import com.google.gson.JsonObject
 import org.jetbrains.bazel.bazelrunner.BazelInfoResolver
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
@@ -54,8 +52,6 @@ class BazelBspServer(
   val workspaceRoot: Path,
   private val telemetryConfig: TelemetryConfig,
 ) {
-  private val gson = Gson()
-
   fun bspServerData(
     initializeBuildParams: InitializeBuildParams,
     bspClientLogger: BspClientLogger,
@@ -65,9 +61,7 @@ class BazelBspServer(
     workspaceContextProvider: WorkspaceContextProvider,
     bazelPathsResolver: BazelPathsResolver,
   ): BazelServices {
-    val initializeBuildData =
-      gson.fromJson(initializeBuildParams.data as? JsonObject, InitializeBuildData::class.java)
-        ?: InitializeBuildData()
+    val initializeBuildData = initializeBuildParams.data as InitializeBuildData
 
     val telemetryConfig =
       telemetryConfig.copy(
