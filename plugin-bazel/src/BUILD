@@ -125,6 +125,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/settings",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
     ],
 )
@@ -149,7 +150,7 @@ intellij_integration_test_suite(
     ],
     deps = [
         "//plugin-bazel/src:test_fixtures",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/settings:bazel",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/settings",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
         "@maven//:io_kotest_kotest_assertions_shared_jvm",
