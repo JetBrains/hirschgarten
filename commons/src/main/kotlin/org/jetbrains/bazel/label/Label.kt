@@ -1,7 +1,6 @@
 // Do not change this package, see https://youtrack.jetbrains.com/issue/BAZEL-1632
 package org.jetbrains.bazel.label
 
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -262,10 +261,6 @@ sealed interface Label {
       }
   }
 }
-
-fun Label.toBspIdentifier(): BuildTargetIdentifier = BuildTargetIdentifier(toString())
-
-fun BuildTargetIdentifier.label(): Label = Label.parse(uri)
 
 fun Label.asRelative(): RelativeLabel? = this as? RelativeLabel
 

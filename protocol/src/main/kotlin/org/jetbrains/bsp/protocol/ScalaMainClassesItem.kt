@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class ScalaMainClassesItem(val target: BuildTargetIdentifier, val classes: List<ScalaMainClass>)
+import org.jetbrains.bazel.label.Label
+
+data class ScalaMainClassesItem(val target: Label, val classes: List<ScalaMainClass>)

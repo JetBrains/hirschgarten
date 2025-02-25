@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.bsp
 
-import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
@@ -143,7 +142,7 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, Initial
     runner.handleRequest("workspace/buildTargetsPartial") {
       projectSyncService.workspaceBuildTargetsPartial(
         cancelChecker = it,
-        targetsToSync = params.targets.map { it.label() },
+        targetsToSync = params.targets,
       )
     }
 

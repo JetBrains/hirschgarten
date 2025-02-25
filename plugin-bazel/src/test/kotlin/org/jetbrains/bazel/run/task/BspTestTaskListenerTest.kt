@@ -5,8 +5,8 @@ import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.openapi.util.Key
 import io.kotest.matchers.equals.shouldBeEqual
 import kotlinx.coroutines.CompletableDeferred
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BspProcessHandler
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.TestFinish
@@ -45,7 +45,7 @@ class BspTestTaskListenerTest {
   fun `test-task`() {
     // given
     val expectedText = ServiceMessageBuilder("testingStarted").toString()
-    val data = TestTask(BuildTargetIdentifier("id"))
+    val data = TestTask(Label.parse("id"))
 
     // when
     listener.onTaskStart(taskId = "task-id", parentId = null, message = "", data = data)

@@ -2,9 +2,9 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.SourceItemKind
@@ -50,7 +50,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       )
     val manualTargetTestJavaFileSources =
       SourcesItem(
-        BuildTargetIdentifier("$targetPrefix//manual_target:java_library"),
+        Label.parse("$targetPrefix//manual_target:java_library"),
         listOf(manualTargetTestJavaFile),
         roots = listOf("file://\$WORKSPACE/"),
       )
@@ -59,7 +59,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       SourceItem("file://\$WORKSPACE/manual_target/JavaTest.java", SourceItemKind.FILE, false)
     val manualTargetTestJavaTestSources =
       SourcesItem(
-        BuildTargetIdentifier("$targetPrefix//manual_target:java_test"),
+        Label.parse("$targetPrefix//manual_target:java_test"),
         listOf(manualTargetTestJavaTest),
         roots = listOf("file://\$WORKSPACE/"),
       )
@@ -72,7 +72,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       )
     val manualTargetTestJavaBinarySources =
       SourcesItem(
-        BuildTargetIdentifier("$targetPrefix//manual_target:java_binary"),
+        Label.parse("$targetPrefix//manual_target:java_binary"),
         listOf(manualTargetTestJavaBinary),
         roots = listOf("file://\$WORKSPACE/"),
       )
@@ -106,7 +106,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
 
     val manualTargetJavaLibrary =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//manual_target:java_library"),
+        Label.parse("$targetPrefix//manual_target:java_library"),
         tags = listOf("library"),
         languageIds = listOf("java"),
         dependencies = emptyList(),
@@ -124,7 +124,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
 
     val manualTargetJavaBinary =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//manual_target:java_binary"),
+        Label.parse("$targetPrefix//manual_target:java_binary"),
         tags = listOf("application"),
         languageIds = listOf("java"),
         dependencies = emptyList(),
@@ -142,7 +142,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
 
     val manualTargetJavaTest =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//manual_target:java_test"),
+        Label.parse("$targetPrefix//manual_target:java_test"),
         tags = listOf("test"),
         languageIds = listOf("java"),
         dependencies = emptyList(),

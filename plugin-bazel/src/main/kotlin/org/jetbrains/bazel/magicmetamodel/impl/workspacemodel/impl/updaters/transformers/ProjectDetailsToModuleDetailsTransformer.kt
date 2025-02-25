@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 private const val WORKSPACE_MODEL_ENTITIES_FOLDER_MARKER = "workspace-model-entities-folder-marker"
 
@@ -15,7 +15,7 @@ class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: Proje
   private val scalacOptionsIndex = projectDetails.scalacOptions.associateBy { it.target }
   private val jvmBinaryJarsIndex = projectDetails.jvmBinaryJars.groupBy { it.target }
 
-  fun moduleDetailsForTargetId(targetId: BuildTargetIdentifier): ModuleDetails {
+  fun moduleDetailsForTargetId(targetId: Label): ModuleDetails {
     val target = targetsIndex[targetId] ?: error("Cannot find target for target id: $targetId.")
     val allDependencies = libraryGraph.calculateAllDependencies(target)
     return ModuleDetails(

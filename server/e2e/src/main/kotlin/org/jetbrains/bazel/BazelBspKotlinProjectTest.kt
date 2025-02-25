@@ -6,7 +6,6 @@ import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -83,10 +82,10 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
 
     val kotlincTestBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//kotlinc_test:Foo"),
+        Label.parse("$targetPrefix//kotlinc_test:Foo"),
         tags = listOf("application"),
         languageIds = listOf("java", "kotlin"),
-        dependencies = listOf(BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString())),
+        dependencies = listOf(Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString())),
         capabilities =
           BuildTargetCapabilities(
             canCompile = true,
@@ -101,10 +100,10 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
 
     val openForTestingBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//plugin_allopen_test:open_for_testing"),
+        Label.parse("$targetPrefix//plugin_allopen_test:open_for_testing"),
         tags = listOf("library"),
         languageIds = listOf("java", "kotlin"),
-        dependencies = listOf(BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString())),
+        dependencies = listOf(Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString())),
         capabilities =
           BuildTargetCapabilities(
             canCompile = true,
@@ -161,14 +160,14 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
 
     val userBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//plugin_allopen_test:user"),
+        Label.parse("$targetPrefix//plugin_allopen_test:user"),
         tags = listOf("library"),
         languageIds = listOf("java", "kotlin"),
         dependencies =
           listOf(
-            BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
-            BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing"),
-            BuildTargetIdentifier(Label.synthetic("allopen-compiler-plugin.jar").toString()),
+            Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
+            Label.parse("@//plugin_allopen_test:open_for_testing"),
+            Label.parse(Label.synthetic("allopen-compiler-plugin.jar").toString()),
           ),
         capabilities =
           BuildTargetCapabilities(
@@ -184,14 +183,14 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
 
     val userOfExportBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//plugin_allopen_test:user_of_export"),
+        Label.parse("$targetPrefix//plugin_allopen_test:user_of_export"),
         tags = listOf("library"),
         languageIds = listOf("java", "kotlin"),
         dependencies =
           listOf(
-            BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
-            BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing_export"),
-            BuildTargetIdentifier(Label.synthetic("allopen-compiler-plugin.jar").toString()),
+            Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
+            Label.parse("@//plugin_allopen_test:open_for_testing_export"),
+            Label.parse(Label.synthetic("allopen-compiler-plugin.jar").toString()),
           ),
         capabilities =
           BuildTargetCapabilities(
@@ -207,13 +206,13 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
 
     val openForTestingExport =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//plugin_allopen_test:open_for_testing_export"),
+        Label.parse("$targetPrefix//plugin_allopen_test:open_for_testing_export"),
         tags = listOf("library"),
         languageIds = listOf("java", "kotlin"),
         dependencies =
           listOf(
-            BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
-            BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing"),
+            Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
+            Label.parse("@//plugin_allopen_test:open_for_testing"),
           ),
         capabilities =
           BuildTargetCapabilities(

@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.sync.scope
 
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bazel.label.Label
 
 /**
  * Scope of the sync. Multiple versions of sync are supported, including
@@ -28,4 +28,4 @@ data object SecondPhaseSync : FullProjectSync
  * Represents a partial project sync, which operates only on a limited subset of targets,
  * and only things related to these targets should be refreshed
  */
-data class PartialProjectSync(val targetsToSync: List<BuildTargetIdentifier>) : ProjectSyncScope
+data class PartialProjectSync(val targetsToSync: List<Label>) : ProjectSyncScope

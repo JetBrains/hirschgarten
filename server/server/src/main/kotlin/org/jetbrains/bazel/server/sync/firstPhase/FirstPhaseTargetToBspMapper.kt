@@ -2,14 +2,12 @@ package org.jetbrains.bazel.server.sync.firstPhase
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.model.BspMappings
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.model.Language
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.ResourcesParams
@@ -44,10 +42,10 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
 
   private fun Target.toBspBuildTarget(): BuildTarget =
     BuildTarget(
-      id = BuildTargetIdentifier(name),
+      id = Label.parse(name),
       tags = inferTags(),
       languageIds = inferLanguages().map { it.id }.toList(),
-      dependencies = interestingDeps.map { BuildTargetIdentifier(it) },
+      dependencies = interestingDeps.map { Label.parse(it) },
       capabilities = inferCapabilities(),
     )
 
@@ -117,7 +115,7 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
     val directRoots = sourceFilesAndData.map { it.second.sourceRoot }.map { it.toUri().toString() }
     val roots = (directRoots + itemsForSourcesReferencedViaTarget.flatMap { it.roots }).distinct()
 
-    return SourcesItem(BuildTargetIdentifier(name), sources = items, roots = roots)
+    return SourcesItem(Label.parse(name), sources = items, roots = roots)
   }
 
   fun toResourcesResult(project: FirstPhaseProject, resourcesParams: ResourcesParams): ResourcesResult {
@@ -138,7 +136,7 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
         .flatMap { it.resources }
 
     val items = (directResources + resourcesReferencedViaTarget).distinct()
-    return ResourcesItem(BuildTargetIdentifier(name), items)
+    return ResourcesItem(Label.parse(name), items)
   }
 
   private fun List<String>.calculateModuleDependencies(project: FirstPhaseProject): List<Target> =
@@ -155,8 +153,5 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
     return workspaceRoot.resolve(relativePath)
   }
 
-  private fun FirstPhaseProject.lightweightModulesForTargets(targets: List<BuildTargetIdentifier>): List<Target> =
-    BspMappings
-      .toLabels(targets)
-      .mapNotNull { modules[it] }
+  private fun FirstPhaseProject.lightweightModulesForTargets(targets: List<Label>): List<Target> = targets.mapNotNull { modules[it] }
 }

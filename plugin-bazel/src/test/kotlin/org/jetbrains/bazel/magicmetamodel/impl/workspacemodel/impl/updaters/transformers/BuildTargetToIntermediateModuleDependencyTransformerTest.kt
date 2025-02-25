@@ -1,12 +1,12 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.DefaultNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
@@ -16,7 +16,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
   fun `should return no module dependencies for no dependencies`() {
     // given
     val emptyBuildTargets = listOf<BuildTarget>()
-    val allTargets = setOf<BuildTargetIdentifier>()
+    val allTargets = setOf<Label>()
 
     // when
     val buildTargetToModuleDependencyTransformer =
@@ -32,17 +32,17 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
     // given
     val buildTarget =
       BuildTarget(
-        BuildTargetIdentifier("//target1"),
+        Label.parse("//target1"),
         emptyList(),
         emptyList(),
         listOf(
-          BuildTargetIdentifier("//target2"),
-          BuildTargetIdentifier("//target3"),
-          BuildTargetIdentifier("@maven//:lib1"),
+          Label.parse("//target2"),
+          Label.parse("//target3"),
+          Label.parse("@maven//:lib1"),
         ),
         BuildTargetCapabilities(),
       )
-    val allTargets = setOf<BuildTargetIdentifier>()
+    val allTargets = setOf<Label>()
 
     // when
     val buildTargetToModuleDependencyTransformer =
@@ -58,12 +58,12 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
     // given
     val buildTarget =
       BuildTarget(
-        BuildTargetIdentifier("//target1"),
+        Label.parse("//target1"),
         emptyList(),
         emptyList(),
         listOf(
-          BuildTargetIdentifier("//target2"),
-          BuildTargetIdentifier("@maven//:lib1"),
+          Label.parse("//target2"),
+          Label.parse("@maven//:lib1"),
         ),
         BuildTargetCapabilities(),
       )
@@ -94,15 +94,15 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
     // given
     val buildTarget =
       BuildTarget(
-        BuildTargetIdentifier("//target1"),
+        Label.parse("//target1"),
         emptyList(),
         emptyList(),
         listOf(
-          BuildTargetIdentifier("//target2"),
-          BuildTargetIdentifier("//target3"),
-          BuildTargetIdentifier("//target4"),
-          BuildTargetIdentifier("@maven//:lib1"),
-          BuildTargetIdentifier("@maven//:lib2"),
+          Label.parse("//target2"),
+          Label.parse("//target3"),
+          Label.parse("//target4"),
+          Label.parse("@maven//:lib1"),
+          Label.parse("@maven//:lib2"),
         ),
         BuildTargetCapabilities(),
       )
@@ -145,26 +145,26 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
     // given
     val buildTarget1 =
       BuildTarget(
-        BuildTargetIdentifier("//target1"),
+        Label.parse("//target1"),
         emptyList(),
         emptyList(),
         listOf(
-          BuildTargetIdentifier("//target2"),
-          BuildTargetIdentifier("//target3"),
-          BuildTargetIdentifier("@maven//:lib1"),
-          BuildTargetIdentifier("@maven//:lib2"),
+          Label.parse("//target2"),
+          Label.parse("//target3"),
+          Label.parse("@maven//:lib1"),
+          Label.parse("@maven//:lib2"),
         ),
         BuildTargetCapabilities(),
       )
     val buildTarget2 =
       BuildTarget(
-        BuildTargetIdentifier("//target1"),
+        Label.parse("//target1"),
         emptyList(),
         emptyList(),
         listOf(
-          BuildTargetIdentifier("//target3"),
-          BuildTargetIdentifier("//target4"),
-          BuildTargetIdentifier("@maven//:lib2"),
+          Label.parse("//target3"),
+          Label.parse("//target4"),
+          Label.parse("@maven//:lib2"),
         ),
         BuildTargetCapabilities(),
       )
@@ -205,5 +205,5 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
       listOf(expectedIntermediateModuleDependency1, expectedIntermediateModuleDependency2, expectedIntermediateModuleDependency3)
   }
 
-  private fun Set<String>.toTargetIds(): Set<BuildTargetIdentifier> = mapTo(mutableSetOf()) { BuildTargetIdentifier(it) }
+  private fun Set<String>.toTargetIds(): Set<Label> = mapTo(mutableSetOf()) { Label.parse(it) }
 }

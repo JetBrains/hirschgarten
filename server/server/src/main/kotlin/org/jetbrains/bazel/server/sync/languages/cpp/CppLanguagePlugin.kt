@@ -4,7 +4,6 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.label.label
-import org.jetbrains.bazel.server.model.BspMappings
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
@@ -43,7 +42,7 @@ class CppLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : La
 
   fun toCppOptionsItem(module: Module, cppModule: CppModule): CppOptionsItem =
     CppOptionsItem(
-      BspMappings.toBspId(module),
+      module.label,
       cppModule.copts,
       cppModule.defines,
       cppModule.linkOpts,

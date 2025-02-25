@@ -4,7 +4,7 @@ import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.install.Install
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.ResourcesResult
@@ -53,13 +53,13 @@ abstract class BazelBspAndroidProjectTestBase : BazelBspTestBaseScenario() {
   private fun expectedBuildTargetResourcesResult(): ResourcesResult {
     val appResources =
       ResourcesItem(
-        BuildTargetIdentifier("@@//src/main:app"),
+        Label.parse("@@//src/main:app"),
         listOf("file://\$WORKSPACE/src/main/AndroidManifest.xml"),
       )
 
     val libResources =
       ResourcesItem(
-        BuildTargetIdentifier("@@//src/main/java/com/example/myapplication:lib"),
+        Label.parse("@@//src/main/java/com/example/myapplication:lib"),
         listOf(
           "file://\$WORKSPACE/src/main/java/com/example/myapplication/AndroidManifest.xml",
           "file://\$WORKSPACE/src/main/java/com/example/myapplication/res/",
@@ -68,7 +68,7 @@ abstract class BazelBspAndroidProjectTestBase : BazelBspTestBaseScenario() {
 
     val libTestResources =
       ResourcesItem(
-        BuildTargetIdentifier("@@//src/test/java/com/example/myapplication:lib_test"),
+        Label.parse("@@//src/test/java/com/example/myapplication:lib_test"),
         listOf("file://\$WORKSPACE/src/test/java/com/example/myapplication/AndroidManifest.xml"),
       )
 
@@ -104,7 +104,7 @@ abstract class BazelBspAndroidProjectTestBase : BazelBspTestBaseScenario() {
         // Make sure Bazel unpacks all the dependent AARs
         session.server.workspaceBuildAndGetBuildTargets().await()
         val result = session.server.workspaceLibraries().await()
-        val appCompatLibrary = result.libraries.first { "androidx_appcompat_appcompat" in it.id.uri }
+        val appCompatLibrary = result.libraries.first { "androidx_appcompat_appcompat" in it.id.toShortString() }
 
         val jars = appCompatLibrary.jars.toList().map { URI.create(it).toPath() }
         for (jar in jars) {

@@ -4,8 +4,6 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.label
-import org.jetbrains.bazel.label.toBspIdentifier
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
@@ -30,7 +28,6 @@ import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.BuildServerCapabilities
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.CompileProvider
 import org.jetbrains.bsp.protocol.CppOptionsItem
 import org.jetbrains.bsp.protocol.CppOptionsParams
@@ -150,14 +147,14 @@ class BspProjectMapper(
   }
 
   fun workspaceInvalidTargets(project: AspectSyncProject): WorkspaceInvalidTargetsResult =
-    WorkspaceInvalidTargetsResult(project.invalidTargets.map { BuildTargetIdentifier(it.toString()) })
+    WorkspaceInvalidTargetsResult(project.invalidTargets.map { Label.parse(it.toString()) })
 
   fun workspaceLibraries(project: AspectSyncProject): WorkspaceLibrariesResult {
     val libraries =
       project.libraries.values.map {
         LibraryItem(
-          id = BuildTargetIdentifier(it.label.toString()),
-          dependencies = it.dependencies.map { dep -> BuildTargetIdentifier(dep.toString()) },
+          id = Label.parse(it.label.toString()),
+          dependencies = it.dependencies.map { dep -> Label.parse(dep.toString()) },
           ijars = it.interfaceJars.map { uri -> uri.toString() },
           jars = it.outputs.map { uri -> uri.toString() },
           sourceJars = it.sources.map { uri -> uri.toString() },
@@ -171,7 +168,7 @@ class BspProjectMapper(
     val libraries =
       project.goLibraries.values.map {
         GoLibraryItem(
-          id = BuildTargetIdentifier(it.label.toString()),
+          id = Label.parse(it.label.toString()),
           goImportPath = it.goImportPath,
           goRoot = it.goRoot,
         )
@@ -247,7 +244,7 @@ class BspProjectMapper(
     val baseDirectory = BspMappings.toBspUri(baseDirectory)
     val buildTarget =
       BuildTarget(
-        id = label.toBspIdentifier(),
+        id = label,
         tags = tags,
         languageIds = languages,
         capabilities = capabilities,
@@ -259,9 +256,9 @@ class BspProjectMapper(
   }
 
   private fun Module.toBuildTarget(): BuildTarget {
-    val label = BspMappings.toBspId(this)
+    val label = label
     val dependencies =
-      directDependencies.map { it.toBspIdentifier() }
+      directDependencies
     val languages = languages.flatMap(Language::allNames).distinct()
     val capabilities = inferCapabilities(tags)
     val tags = tags.mapNotNull(BspMappings::toBspTag)
@@ -273,7 +270,7 @@ class BspProjectMapper(
         languageIds = languages,
         dependencies = dependencies,
         capabilities = capabilities,
-        displayName = label.uri,
+        displayName = label.toShortString(),
         baseDirectory = baseDirectory,
       )
 
@@ -324,13 +321,13 @@ class BspProjectMapper(
           )
         }
       val sourceRoots = sourceSet.sourceRoots.map(BspMappings::toBspUri)
-      val sourcesItem = SourcesItem(BspMappings.toBspId(module), sourceItems + generatedSourceItems, roots = sourceRoots)
+      val sourcesItem = SourcesItem((module).label, sourceItems + generatedSourceItems, roots = sourceRoots)
       return sourcesItem
     }
 
-    fun emptySourcesItem(label: Label): SourcesItem = SourcesItem(label.toBspIdentifier(), emptyList())
+    fun emptySourcesItem(label: Label): SourcesItem = SourcesItem(label, emptyList())
 
-    val labels = BspMappings.toLabels(sourcesParams.targets)
+    val labels = sourcesParams.targets
     val sourcesItems =
       labels.map {
         project.findModule(it)?.let(::toSourcesItem) ?: emptySourcesItem(it)
@@ -341,12 +338,12 @@ class BspProjectMapper(
   fun resources(project: AspectSyncProject, resourcesParams: ResourcesParams): ResourcesResult {
     fun toResourcesItem(module: Module): ResourcesItem {
       val resources = module.resources.map(BspMappings::toBspUri)
-      return ResourcesItem(BspMappings.toBspId(module), resources)
+      return ResourcesItem(module.label, resources)
     }
 
-    fun emptyResourcesItem(label: Label): ResourcesItem = ResourcesItem(label.toBspIdentifier(), emptyList())
+    fun emptyResourcesItem(label: Label): ResourcesItem = ResourcesItem(label, emptyList())
 
-    val labels = BspMappings.toLabels(resourcesParams.targets)
+    val labels = resourcesParams.targets
     val resourcesItems =
       labels.map {
         project.findModule(it)?.let(::toResourcesItem) ?: emptyResourcesItem(it)
@@ -375,10 +372,10 @@ class BspProjectMapper(
           ?.sourceDependencies
           ?.map(BspMappings::toBspUri)
           .orEmpty()
-      return DependencySourcesItem(label.toBspIdentifier(), sources)
+      return DependencySourcesItem(label, sources)
     }
 
-    val labels = BspMappings.toLabels(dependencySourcesParams.targets)
+    val labels = dependencySourcesParams.targets
     val items = labels.map(::getDependencySourcesItem)
     return DependencySourcesResult(items)
   }
@@ -391,10 +388,10 @@ class BspProjectMapper(
           ?.let { module ->
             module.outputs.map { OutputPathItem(BspMappings.toBspUri(it), OutputPathItemKind.DIRECTORY) }
           }.orEmpty()
-      return OutputPathsItem(label.toBspIdentifier(), items)
+      return OutputPathsItem(label, items)
     }
 
-    val labels = BspMappings.toLabels(params.targets)
+    val labels = params.targets
     val items = labels.map(::getItem)
     return OutputPathsResult(items)
   }
@@ -426,20 +423,20 @@ class BspProjectMapper(
   ): JvmCompileClasspathResult {
     val items =
       params.targets.collectClasspathForTargetsAndApply(project, true, cancelChecker) { module, ideClasspath ->
-        JvmCompileClasspathItem(BspMappings.toBspId(module), ideClasspath.map { it.toString() })
+        JvmCompileClasspathItem(module.label, ideClasspath.map { it.toString() })
       }
     return JvmCompileClasspathResult(items)
   }
 
   private fun getJvmEnvironmentItems(
     project: AspectSyncProject,
-    targets: List<BuildTargetIdentifier>,
+    targets: List<Label>,
     cancelChecker: CancelChecker,
   ): List<JvmEnvironmentItem> {
     fun extractJvmEnvironmentItem(module: Module, runtimeClasspath: List<URI>): JvmEnvironmentItem? =
       module.javaModule?.let { javaModule ->
         JvmEnvironmentItem(
-          BspMappings.toBspId(module),
+          module.label,
           runtimeClasspath.map { it.toString() },
           javaModule.jvmOps.toList(),
           bazelPathsResolver.unresolvedWorkspaceRoot().toString(),
@@ -449,9 +446,8 @@ class BspProjectMapper(
       }
 
     return targets.mapNotNull {
-      val label = it.label()
-      val module = project.findModule(label)
-      val cqueryResult = ClasspathQuery.classPathQuery(label, cancelChecker, bspInfo, bazelRunner).runtime_classpath
+      val module = project.findModule(it)
+      val cqueryResult = ClasspathQuery.classPathQuery(it, cancelChecker, bspInfo, bazelRunner).runtime_classpath
       val resolvedClasspath = resolveClasspath(cqueryResult)
       module?.let { extractJvmEnvironmentItem(module, resolvedClasspath) }
     }
@@ -461,13 +457,12 @@ class BspProjectMapper(
     fun toJvmBinaryJarsItem(module: Module): JvmBinaryJarsItem? =
       module.javaModule?.let { javaModule ->
         val jars = javaModule.binaryOutputs.map { it.toString() }
-        JvmBinaryJarsItem(BspMappings.toBspId(module), jars)
+        JvmBinaryJarsItem(module.label, jars)
       }
 
     val jvmBinaryJarsItems =
       params.targets.mapNotNull { target ->
-        val label = Label.parse(target.uri)
-        val module = project.findModule(label)
+        val module = project.findModule(target)
         module?.let { toJvmBinaryJarsItem(it) }
       }
     return JvmBinaryJarsResult(jvmBinaryJarsItems)
@@ -521,14 +516,14 @@ class BspProjectMapper(
     return ScalacOptionsResult(items)
   }
 
-  private fun <T> List<BuildTargetIdentifier>.collectClasspathForTargetsAndApply(
+  private fun <T> List<Label>.collectClasspathForTargetsAndApply(
     project: AspectSyncProject,
     includeClasspath: Boolean,
     cancelChecker: CancelChecker,
     mapper: (Module, List<URI>) -> T?,
   ): List<T> =
     this
-      .mapNotNull { project.findModule(Label.parse(it.uri)) }
+      .mapNotNull { project.findModule(it) }
       .mapNotNull {
         val classpath = if (includeClasspath) readIdeClasspath(it.label, cancelChecker) else emptyList()
         mapper(it, classpath)
@@ -570,7 +565,7 @@ class BspProjectMapper(
     ideClasspath: List<URI>,
   ): JavacOptionsItem =
     JavacOptionsItem(
-      BspMappings.toBspId(module),
+      module.label,
       javaModule.javacOpts.toList(),
       ideClasspath.map { it.toString() },
       javaModule.mainOutput.toString(),
@@ -620,8 +615,8 @@ class BspProjectMapper(
       val targetSet = params.targets.toSet()
       val cache = mutableMapOf<String, List<DependencyModule>>()
       val dependencyModulesItems =
-        project.modules.filter { targetSet.contains(BuildTargetIdentifier(it.label.toString())) }.map { module ->
-          val buildTargetId = BuildTargetIdentifier(module.label.toString())
+        project.modules.filter { targetSet.contains(Label.parse(it.label.toString())) }.map { module ->
+          val buildTargetId = Label.parse(module.label.toString())
           val moduleDependencies = DependencyMapper.allModuleDependencies(project, module)
           // moduleDependencies are sorted here to have a deterministic output (used in tests) and not strictly necessary.
           val moduleItems =

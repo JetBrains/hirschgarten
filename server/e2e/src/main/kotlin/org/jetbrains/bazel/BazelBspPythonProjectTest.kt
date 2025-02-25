@@ -4,9 +4,9 @@ import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.commons.utils.OsArch
 import org.jetbrains.bazel.commons.utils.OsFamily
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
@@ -55,11 +55,11 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
 
     val exampleExampleBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//example:example"),
+        Label.parse("$targetPrefix//example:example"),
         listOf("application"),
         listOf("python"),
         listOf(
-          BuildTargetIdentifier("$targetPrefix//lib:example_library"),
+          Label.parse("$targetPrefix//lib:example_library"),
         ),
         BuildTargetCapabilities(
           canCompile = true,
@@ -79,10 +79,10 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
 
     val exampleExampleLibBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//lib:example_library"),
+        Label.parse("$targetPrefix//lib:example_library"),
         listOf("library"),
         listOf("python"),
-        listOf(BuildTargetIdentifier(pipDepId)),
+        listOf(Label.parse(pipDepId)),
         BuildTargetCapabilities(
           canCompile = true,
           canTest = false,
@@ -96,7 +96,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
 
     val exampleExampleTestBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//test:test"),
+        Label.parse("$targetPrefix//test:test"),
         listOf("test"),
         listOf("python"),
         listOf(),
@@ -140,7 +140,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
 
     val expectedPythonDependencySourcesItems =
       expectedWorkspaceBuildTargetsResult().targets.map {
-        if (it.id == BuildTargetIdentifier("$targetPrefix//lib:example_library")) {
+        if (it.id == Label.parse("$targetPrefix//lib:example_library")) {
           DependencySourcesItem(
             it.id,
             listOf(pipPath),
@@ -166,7 +166,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
   }
 
   private fun pythonOptionsResults(): BazelBspTestScenarioStep {
-    val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it.uri != "bsp-workspace-root" }
+    val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it != Label.synthetic("bsp-workspace-root") }
     val expectedPythonOptionsItems = expectedTargetIdentifiers.map { PythonOptionsItem(it, emptyList()) }
     val expectedPythonOptionsResult = PythonOptionsResult(expectedPythonOptionsItems)
     val pythonOptionsParams = PythonOptionsParams(expectedTargetIdentifiers)
@@ -179,7 +179,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
   }
 
   private fun resourcesResults(): BazelBspTestScenarioStep {
-    val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it.uri != "bsp-workspace-root" }
+    val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it != Label.synthetic("bsp-workspace-root") }
     val expectedResourcesItems = expectedTargetIdentifiers.map { ResourcesItem(it, emptyList()) }
     val expectedResourcesResult = ResourcesResult(expectedResourcesItems)
     val resourcesParams = ResourcesParams(expectedTargetIdentifiers)

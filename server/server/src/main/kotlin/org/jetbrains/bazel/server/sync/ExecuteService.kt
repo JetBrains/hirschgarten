@@ -14,7 +14,7 @@ import org.jetbrains.bazel.bazelrunner.HasEnvironment
 import org.jetbrains.bazel.bazelrunner.HasMultipleTargets
 import org.jetbrains.bazel.bazelrunner.HasProgramArguments
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bazel.server.bsp.managers.BepReader
@@ -32,7 +32,6 @@ import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.CleanCacheParams
 import org.jetbrains.bsp.protocol.CleanCacheResult
 import org.jetbrains.bsp.protocol.CompileParams
@@ -133,7 +132,7 @@ class ExecuteService(
     }
     val command =
       bazelRunner.buildBazelCommand {
-        run(params.target.label()) {
+        run(params.target) {
           options.add(BazelFlag.color(true))
           additionalOptions?.let { options.addAll(it) }
           additionalProgramArguments?.let { programArguments.addAll(it) }
@@ -170,7 +169,7 @@ class ExecuteService(
     params: TestParams,
     additionalProgramArguments: List<String>? = emptyList(),
   ): TestResult {
-    val targetsSpec = TargetsSpec(params.targets.map { it.label() }, emptyList())
+    val targetsSpec = TargetsSpec(params.targets, emptyList())
 
     val command =
       when (params.coverage) {
@@ -219,7 +218,7 @@ class ExecuteService(
 
     val command =
       bazelRunner.buildBazelCommand {
-        mobileInstall(params.target.label()) {
+        mobileInstall(params.target) {
           options.add(BazelFlag.device(params.targetDeviceSerialNumber))
           options.add(BazelFlag.start(startType))
           params.adbPath?.let { adbPath ->
@@ -251,7 +250,7 @@ class ExecuteService(
 
   private fun build(
     cancelChecker: CancelChecker,
-    bspIds: List<BuildTargetIdentifier>,
+    bspIds: List<Label>,
     originId: String?,
     additionalArguments: List<String> = emptyList(),
   ): BazelProcessResult {
@@ -261,7 +260,7 @@ class ExecuteService(
         bazelRunner.buildBazelCommand {
           build {
             options.addAll(additionalArguments)
-            targets.addAll(allTargets.map { it.label() })
+            targets.addAll(allTargets)
             useBes(bepReader.eventFile.toPath().toAbsolutePath())
           }
         }
@@ -271,14 +270,14 @@ class ExecuteService(
     }
   }
 
-  private fun getAdditionalBuildTargets(cancelChecker: CancelChecker, bspIds: List<BuildTargetIdentifier>): List<BuildTargetIdentifier> =
+  private fun getAdditionalBuildTargets(cancelChecker: CancelChecker, bspIds: List<Label>): List<Label> =
     if (featureFlags.isAndroidSupportEnabled) {
       additionalBuildTargetsProvider.getAdditionalBuildTargets(cancelChecker, bspIds)
     } else {
       emptyList()
     }
 
-  private fun selectModules(cancelChecker: CancelChecker, targets: List<BuildTargetIdentifier>): List<Module> {
+  private fun selectModules(cancelChecker: CancelChecker, targets: List<Label>): List<Module> {
     val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return emptyList()
     val modules = BspMappings.getModules(project, targets)
     val ignoreManualTag = targets.size == 1
@@ -295,11 +294,11 @@ class ExecuteService(
     )
 }
 
-private fun <T> List<T>.singleOrResponseError(requestedTarget: BuildTargetIdentifier): T =
+private fun <T> List<T>.singleOrResponseError(requestedTarget: Label): T =
   when {
-    this.isEmpty() -> throwResponseError("No supported target found for ${requestedTarget.uri}")
+    this.isEmpty() -> throwResponseError("No supported target found for ${requestedTarget.toShortString()}")
     this.size == 1 -> this.single()
-    else -> throwResponseError("More than one supported target found for ${requestedTarget.uri}")
+    else -> throwResponseError("More than one supported target found for ${requestedTarget.toShortString()}")
   }
 
 private fun throwResponseError(message: String, data: Any? = null): Nothing =

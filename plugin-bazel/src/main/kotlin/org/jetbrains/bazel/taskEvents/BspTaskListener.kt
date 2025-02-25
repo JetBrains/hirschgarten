@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.taskEvents
 
 import com.intellij.build.events.MessageEvent
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.StatusCode
 
 typealias TaskId = String
@@ -8,7 +9,7 @@ typealias TaskId = String
 public interface BspTaskListener {
   public fun onDiagnostic(
     textDocument: String,
-    buildTarget: String,
+    buildTarget: Label,
     line: Int,
     character: Int,
     severity: MessageEvent.Kind,

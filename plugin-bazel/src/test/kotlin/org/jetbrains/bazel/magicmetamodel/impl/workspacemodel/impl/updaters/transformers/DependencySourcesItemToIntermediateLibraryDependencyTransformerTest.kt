@@ -2,8 +2,8 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -32,7 +32,7 @@ class DependencySourcesItemToIntermediateLibraryDependencyTransformerTest {
       DependencySourcesAndJvmClassPaths(
         dependencySources =
           DependencySourcesItem(
-            BuildTargetIdentifier("//target"),
+            Label.parse("//target"),
             listOf(dependencySource),
           ),
         listOf("file:///dependency/test/test-1.0.0.jar"),
@@ -61,7 +61,7 @@ class DependencySourcesItemToIntermediateLibraryDependencyTransformerTest {
       DependencySourcesAndJvmClassPaths(
         dependencySources =
           DependencySourcesItem(
-            BuildTargetIdentifier("//target"),
+            Label.parse("//target"),
             listOf(dependencySource1, dependencySource2, dependencySource3),
           ),
         listOf(
@@ -107,7 +107,7 @@ class DependencySourcesItemToIntermediateLibraryDependencyTransformerTest {
       DependencySourcesAndJvmClassPaths(
         dependencySources =
           DependencySourcesItem(
-            BuildTargetIdentifier("//target"),
+            Label.parse("//target"),
             listOf(dependencySource1, dependencySource2),
           ),
         listOf(
@@ -119,7 +119,7 @@ class DependencySourcesItemToIntermediateLibraryDependencyTransformerTest {
       DependencySourcesAndJvmClassPaths(
         dependencySources =
           DependencySourcesItem(
-            BuildTargetIdentifier("//target"),
+            Label.parse("//target"),
             listOf(dependencySource2, dependencySource3),
           ),
         listOf(

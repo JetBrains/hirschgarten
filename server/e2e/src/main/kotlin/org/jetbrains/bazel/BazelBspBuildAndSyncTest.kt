@@ -3,9 +3,9 @@ package org.jetbrains.bazel
 import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -67,7 +67,7 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
 
     val srcMainBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//src:main"),
+        Label.parse("$targetPrefix//src:main"),
         listOf("library"),
         listOf("java"),
         emptyList(),
