@@ -1,9 +1,9 @@
 load("@rules_intellij//testing:test_defs_kt.bzl", "intellij_integration_test_suite")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
-exports_files([
-    "main/resources/META-INF/base.xml",
-] + glob(["main/xml/*.xml"]))
+exports_files(glob([
+    "main/jps-resources/**/*",
+]))
 
 kt_jvm_library(
     name = "intellij-bsp",
@@ -126,7 +126,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/settings",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel:bsp_export",
     ],
 )
 

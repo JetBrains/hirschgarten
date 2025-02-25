@@ -4,7 +4,7 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectSyncHook
-import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

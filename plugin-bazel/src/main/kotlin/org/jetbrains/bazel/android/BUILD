@@ -17,7 +17,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/task",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
-        "//plugin-bazel/workspacemodel/src:workspacemodel",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
         "//protocol",
         "//sdkcompat",
         "@maven//:ch_epfl_scala_bsp4j",

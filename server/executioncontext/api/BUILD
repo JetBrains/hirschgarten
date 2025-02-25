@@ -4,6 +4,6 @@ kt_jvm_library(
     name = "api",
     visibility = ["//server/executioncontext:__subpackages__"],
     exports = [
-        "//server/executioncontext/api/src/main/kotlin/org/jetbrains/bsp/bazel/executioncontext/api",
+        "//server/executioncontext/api/src/main/kotlin/org/jetbrains/bazel/executioncontext/api",
     ],
 )

@@ -12,12 +12,12 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.android.sdk.AndroidSdkType
+import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.includesAndroid
 import org.jetbrains.bazel.workspacemodel.entities.includesJava
 import org.jetbrains.bazel.workspacemodel.entities.includesKotlin
-import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
 import java.nio.file.Path
 
 internal class JavaModuleWithSourcesUpdater(
