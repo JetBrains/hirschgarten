@@ -68,13 +68,9 @@ class ExecuteService(
 ) {
   private val gson = Gson()
 
-  private fun <T> withBepServer(
-    originId: String?,
-    target: Label?,
-    body: (BepReader) -> T,
-  ): T {
+  private fun <T> withBepServer(originId: String?, body: (BepReader) -> T): T {
     val diagnosticsService = DiagnosticsService(compilationManager.workspaceRoot)
-    val server = BepServer(compilationManager.client, diagnosticsService, originId, target, bazelPathsResolver)
+    val server = BepServer(compilationManager.client, diagnosticsService, originId, bazelPathsResolver)
     val bepReader = BepReader(server)
 
     return runBlocking {
@@ -218,7 +214,7 @@ class ExecuteService(
 
     // TODO: handle multiple targets
     val result =
-      withBepServer(params.originId, params.targets.first().label()) { bepReader ->
+      withBepServer(params.originId) { bepReader ->
         command.useBes(bepReader.eventFile.toPath().toAbsolutePath())
         bazelRunner
           .runBazelCommand(
@@ -263,7 +259,7 @@ class ExecuteService(
 
   @Suppress("UNUSED_PARAMETER") // params is used by BspRequestsRunner.handleRequest
   fun clean(cancelChecker: CancelChecker, params: CleanCacheParams?): CleanCacheResult {
-    withBepServer(null, null) { bepReader ->
+    withBepServer(null) { bepReader ->
       val command =
         bazelRunner.buildBazelCommand {
           clean {
@@ -282,9 +278,7 @@ class ExecuteService(
     additionalArguments: List<String> = emptyList(),
   ): BazelProcessResult {
     val allTargets = bspIds + getAdditionalBuildTargets(cancelChecker, bspIds)
-    // TODO: what if there's more than one target?
-    //  (it was like this in now-deleted BazelBspCompilationManager.buildTargetsWithBep)
-    return withBepServer(originId, bspIds.firstOrNull()?.label()) { bepReader ->
+    return withBepServer(originId) { bepReader ->
       val command =
         bazelRunner.buildBazelCommand {
           build {

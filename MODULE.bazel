@@ -12,33 +12,6 @@ local_path_override(
     path = "rules_intellij",
 )
 
-bazel_dep(
-    name = "rules_sonatype",
-)
-local_path_override(
-    module_name = "rules_sonatype",
-    path = "rules_sonatype",
-)
-
-bazel_dep(name = "rules_scala", repo_name = "io_bazel_rules_scala")
-git_override(
-    module_name = "rules_scala",
-    commit = "68d7cbff7505854c7a3cb69e150c60dda19a6966",
-    remote = "https://github.com/mbland/rules_scala.git",
-)
-
-scala_config = use_extension(
-    "@io_bazel_rules_scala//scala/extensions:config.bzl",
-    "scala_config",
-)
-scala_config.settings(
-    scala_version = "2.13.15",
-    scala_versions = [
-        "2.13.15",
-    ],
-)
-use_repo(scala_config, "io_bazel_rules_scala_config")
-
 bazel_dep(name = "rules_kotlin", version = "2.1.0")
 
 register_toolchains(

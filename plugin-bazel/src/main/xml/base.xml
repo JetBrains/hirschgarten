@@ -30,9 +30,6 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.projectPostSyncHook"
                         interface="org.jetbrains.bazel.sync.ProjectPostSyncHook"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.defaultProjectSyncHooksDisabler"
-                        interface="org.jetbrains.bazel.sync.DefaultProjectSyncHooksDisabler"
-                        dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.projectStructureProvider"
                         interface="org.jetbrains.bazel.sync.projectStructure.ProjectStructureProvider"
                         dynamic="true"/>
@@ -121,17 +118,7 @@
         <runLineMarkerContributor
                 implementationClass="org.jetbrains.bazel.jvm.ui.gutters.BspJVMRunLineMarkerContributor"
                 language="JVM"/>
-        <registryKey defaultValue="600" description="Timeout for BSP requests in seconds"
-                     key="bsp.request.timeout.seconds"/>
         <registryKey defaultValue="true" description="Choose default connection"
-                     key="bsp.wizard.choose.default.connection"/>
-        <registryKey defaultValue="true" description="Enable chunking for BSP requests"
-                     key="bsp.request.chunking.enable"/>
-        <registryKey defaultValue="100" description="Minimum chunk size for chunked BSP requests"
-                     key="bsp.request.chunking.size.min"/>
-        <registryKey defaultValue="true" description="Log error outputs from processes to build/sync console"
-                     key="bsp.log.error.outputs"/>
-        <registryKey defaultValue="false" description="Build project on initial project sync"
                      key="bsp.build.project.on.sync"/>
         <registryKey defaultValue="false" description="Python modules support" key="bsp.python.support"/>
         <registryKey defaultValue="false" description="Enable JPS compilation" key="bsp.jps.compilation.enable"/>
@@ -237,7 +224,7 @@
 
         <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook"/>
 
-        <projectSyncHook implementation="org.jetbrains.bazel.flow.open.InvalidTargetsProjectSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.services.InvalidTargetsProjectSyncHook"/>
         <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"/>

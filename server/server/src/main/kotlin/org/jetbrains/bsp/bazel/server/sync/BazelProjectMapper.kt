@@ -50,6 +50,8 @@ import kotlin.io.path.name
 import kotlin.io.path.notExists
 import kotlin.io.path.toPath
 
+private val THIRD_PARTY_LIBRARIES_PATTERN = "external/[^/]+/(.+)/([^/]+)/[^/]+$".toRegex()
+
 class BazelProjectMapper(
   private val languagePluginsService: LanguagePluginsService,
   private val bazelPathsResolver: BazelPathsResolver,
@@ -160,8 +162,12 @@ class BazelProjectMapper(
       measure("Libraries from transitive compile-time jars") {
         createLibrariesFromTransitiveCompileTimeJars(
           targetsToImport,
+          targets,
+          extraLibrariesFromJdeps,
+          dependencyGraph,
           workspaceContext.experimentalAddTransitiveCompileTimeJars.value,
           transitiveCompileTimeJarsTargetKinds,
+          workspaceContext.experimentalNoPruneTransitiveCompileTimeJarsPatterns.values,
         )
       }
     val workspaceRoot = bazelPathsResolver.workspaceRoot()
@@ -719,17 +725,29 @@ class BazelProjectMapper(
 
   private fun createLibrariesFromTransitiveCompileTimeJars(
     targetsToImport: Sequence<TargetInfo>,
+    targetsMap: Map<Label, TargetInfo>,
+    extraLibrariesFromJdeps: Map<Label, List<Library>>,
+    dependencyGraph: DependencyGraph,
     transitiveCompileTimeJarsEnabled: Boolean,
     transitiveCompileTimeJarsTargetKinds: Set<String>,
+    noPrunePatterns: List<String>,
   ): Map<Label, List<Library>> =
     if (transitiveCompileTimeJarsEnabled) {
       val res = HashMap<Label, Library>()
       targetsToImport.filter { it.kind in transitiveCompileTimeJarsTargetKinds }.associate { targetInfo ->
         val targetLabel = targetInfo.label()
+        val explicitCompileTimeInterfaces = calculateExplicitCompileTimeInterfaces(targetInfo, targetsMap)
+        val jdepsJars = collectReverseDepsJdepsJars(targetLabel, dependencyGraph, extraLibrariesFromJdeps)
+        val explicitlyDefinedThirdPartyLibraries = extractExplicitThirdPartyLibraries(explicitCompileTimeInterfaces)
         targetLabel to
           targetInfo.jvmTargetInfo.transitiveCompileTimeJarsList
             .map { bazelPathsResolver.resolve(it).toUri() }
-            .map { uri ->
+            .filter { uri ->
+              explicitCompileTimeInterfaces.contains(uri) ||
+                jdepsJars.contains(uri) ||
+                matchesExplicitThirdPartyLibrary(uri, explicitlyDefinedThirdPartyLibraries) ||
+                doNotPrune(uri, noPrunePatterns)
+            }.map { uri ->
               val label = syntheticLabel(uri)
               res.computeIfAbsent(label) {
                 Library(
@@ -745,16 +763,61 @@ class BazelProjectMapper(
       emptyMap()
     }
 
-  private fun calculateExplicitCompileTimeInterfaces(targets: Sequence<TargetInfo>, targetsMap: Map<Label, TargetInfo>) =
-    targets.associate { target ->
-      target.label() to
-        target.dependenciesList
-          .asSequence()
-          .mapNotNull { targetsMap[it.label()] }
-          .flatMap { getTargetInterfaceJarsList(it) }
-          .map { it.toUri() }
-          .toSet()
+  private fun calculateExplicitCompileTimeInterfaces(target: TargetInfo, targetsMap: Map<Label, TargetInfo>) =
+    target.dependenciesList
+      .asSequence()
+      .mapNotNull { targetsMap[it.label()] }
+      .filter { !it.isCompilableByJps() }
+      .flatMap { getTargetInterfaceJarsList(it) }
+      .map { it.toUri() }
+      .toSet()
+
+  private fun TargetInfo.isCompilableByJps(): Boolean {
+    val languages = inferLanguages(this, emptySet())
+    if (languages.isEmpty()) return false
+    return setOf(Language.JAVA, Language.KOTLIN).containsAll(languages)
+  }
+
+  private fun collectReverseDepsJdepsJars(
+    targetLabel: Label,
+    dependencyGraph: DependencyGraph,
+    extraLibrariesFromJdeps: Map<Label, List<Library>>,
+  ): Set<URI> =
+    dependencyGraph
+      .getReverseDependencies(targetLabel)
+      .mapNotNull { extraLibrariesFromJdeps[it] }
+      .flatMap { it.flatMap { library -> library.outputs } }
+      .toSet()
+
+  private fun extractExplicitThirdPartyLibraries(explicitCompileTimeInterfaces: Set<URI>): Set<String> =
+    explicitCompileTimeInterfaces
+      .filter { it.toString().contains("/external/") }
+      .mapNotNull { jarPath ->
+        THIRD_PARTY_LIBRARIES_PATTERN.find(jarPath.toString())?.groupValues?.getOrNull(1)
+      }.toSet()
+
+  /**
+   * When pruning transitive compile time jars list, ignore jars that are in the pruning exception list
+   */
+  private fun doNotPrune(jar: URI, noPrunePatterns: List<String>): Boolean {
+    val uriString = jar.toString()
+    return noPrunePatterns.any { uriString.contains(it) }
+  }
+
+  private fun matchesExplicitThirdPartyLibrary(jar: URI, explicitThirdPartyLibraries: Set<String>): Boolean {
+    val uriString = jar.toString()
+    // TODO: generalize the logic to support more general cases
+    // related ticket: https://youtrack.jetbrains.com/issue/BAZEL-1739/Generalize-logic-to-retrieve-transitive-compile-time-jars-prune-them-better
+    if (uriString.contains("/external/maven") || uriString.contains("/external/multiversion_maven")) {
+      val matcher = THIRD_PARTY_LIBRARIES_PATTERN.find(uriString)
+      if (matcher != null) {
+        // e.g. "com/google/guava/guava"
+        val id = matcher.groupValues.getOrNull(1) ?: return false
+        return explicitThirdPartyLibraries.contains(id)
+      }
     }
+    return false
+  }
 
   private fun List<FileLocation>.resolveUris() = map { bazelPathsResolver.resolve(it).toUri() }.toSet()
 
@@ -954,8 +1017,9 @@ class BazelProjectMapper(
     transitiveCompileTimeJarsTargetKinds: Set<String>,
   ): Module {
     val label = target.label().assumeResolved()
+    val resolvedDependencies = if (target.kind in transitiveCompileTimeJarsTargetKinds) emptyList() else resolveDirectDependencies(target)
     // extra libraries can override some library versions, so they should be put before
-    val directDependencies = extraLibraries.map { it.label } + resolveDirectDependencies(target)
+    val directDependencies = extraLibraries.map { it.label } + resolvedDependencies
     val languages = inferLanguages(target, transitiveCompileTimeJarsTargetKinds)
     val tags = targetTagsResolver.resolveTags(target)
     val baseDirectory = label.toDirectoryUri()

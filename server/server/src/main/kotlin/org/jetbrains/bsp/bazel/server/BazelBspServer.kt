@@ -3,19 +3,13 @@ package org.jetbrains.bsp.bazel.server
 import ch.epfl.scala.bsp4j.InitializeBuildParams
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.bsp.bazel.bazelrunner.BazelInfoResolver
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
 import org.jetbrains.bsp.bazel.server.benchmark.setupTelemetry
-import org.jetbrains.bsp.bazel.server.bsp.BazelBspServerLifetime
 import org.jetbrains.bsp.bazel.server.bsp.BazelServices
-import org.jetbrains.bsp.bazel.server.bsp.BspIntegrationData
-import org.jetbrains.bsp.bazel.server.bsp.BspRequestsRunner
-import org.jetbrains.bsp.bazel.server.bsp.BspServerApi
-import org.jetbrains.bsp.bazel.server.bsp.TelemetryContextPropagatingLauncherBuilder
 import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspCompilationManager
@@ -51,18 +45,17 @@ import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.InitializeBuildData
-import org.jetbrains.bsp.protocol.JoinedBuildClient
 import java.nio.file.Path
 
 class BazelBspServer(
   private val bspInfo: BspInfo,
-  private val workspaceContextProvider: WorkspaceContextProvider,
-  private val workspaceRoot: Path,
+  val workspaceContextProvider: WorkspaceContextProvider,
+  val workspaceRoot: Path,
   private val telemetryConfig: TelemetryConfig,
 ) {
   private val gson = Gson()
 
-  private fun bspServerData(
+  fun bspServerData(
     initializeBuildParams: InitializeBuildParams,
     bspClientLogger: BspClientLogger,
     bazelRunner: BazelRunner,
@@ -123,7 +116,7 @@ class BazelBspServer(
     )
   }
 
-  private fun createBazelInfo(bazelRunner: BazelRunner): BazelInfo {
+  fun createBazelInfo(bazelRunner: BazelRunner): BazelInfo {
     val bazelDataResolver = BazelInfoResolver(bazelRunner)
     return bazelDataResolver.resolveBazelInfo { }
   }
@@ -221,53 +214,6 @@ class BazelBspServer(
         bspClientLogger = bspClientLogger,
       )
     return ProjectProvider(projectResolver, firstPhaseProjectResolver)
-  }
-
-  fun buildServer(bspIntegrationData: BspIntegrationData): Launcher<JoinedBuildClient> {
-    val bspServerApi =
-      BspServerApi { client: JoinedBuildClient, initializeBuildParams: InitializeBuildParams ->
-        val bspClientLogger = BspClientLogger(client)
-        val bazelRunner = BazelRunner(workspaceContextProvider, bspClientLogger, workspaceRoot)
-        verifyBazelVersion(bazelRunner)
-        val bazelInfo = createBazelInfo(bazelRunner)
-        bazelRunner.bazelInfo = bazelInfo
-        val bazelPathsResolver = BazelPathsResolver(bazelInfo)
-        val compilationManager =
-          BazelBspCompilationManager(bazelRunner, bazelPathsResolver, client, workspaceRoot)
-        bspServerData(
-          initializeBuildParams,
-          bspClientLogger,
-          bazelRunner,
-          compilationManager,
-          bazelInfo,
-          workspaceContextProvider,
-          bazelPathsResolver,
-        )
-      }
-
-    val builder =
-      TelemetryContextPropagatingLauncherBuilder<JoinedBuildClient>()
-        .setOutput(bspIntegrationData.stdout)
-        .setInput(bspIntegrationData.stdin)
-        .setLocalService(bspServerApi)
-        .setRemoteInterface(JoinedBuildClient::class.java)
-        .setExecutorService(bspIntegrationData.executor)
-        .let { builder ->
-          if (bspIntegrationData.traceWriter != null) {
-            builder.traceMessages(bspIntegrationData.traceWriter)
-          } else {
-            builder
-          }
-        }
-
-    val launcher = builder.create()
-
-    val client = launcher.remoteProxy
-    val serverLifetime = BazelBspServerLifetime(workspaceContextProvider)
-    val bspRequestsRunner = BspRequestsRunner(serverLifetime)
-    bspServerApi.initialize(client, serverLifetime, bspRequestsRunner)
-
-    return launcher
   }
 
   fun verifyBazelVersion(bazelRunner: BazelRunner) {

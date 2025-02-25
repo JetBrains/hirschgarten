@@ -10,7 +10,6 @@ import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
@@ -66,7 +65,6 @@ class BepDiagnosticsTest {
       bspClient = client,
       diagnosticsService = DiagnosticsService(workspaceRoot),
       originId = "originId",
-      target = Label.parse("//target"),
       bazelPathsResolver = BazelPathsResolver(bazelInfo),
     )
   }

@@ -28,9 +28,8 @@ class BazelBspCompilationManager(
     environment: List<Pair<String, String>> = emptyList(),
     shouldLogInvocation: Boolean,
   ): BepBuildResult {
-    val target = targetsSpec.values.firstOrNull()
     val diagnosticsService = DiagnosticsService(workspaceRoot)
-    val bepServer = BepServer(client, diagnosticsService, originId, target, bazelPathsResolver)
+    val bepServer = BepServer(client, diagnosticsService, originId, bazelPathsResolver)
     val bepReader = BepReader(bepServer)
     return try {
       coroutineScope {
