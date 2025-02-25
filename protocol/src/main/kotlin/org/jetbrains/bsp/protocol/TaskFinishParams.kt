@@ -21,8 +21,8 @@ data class CompileReport(
 
 data class TestFinish(
   val displayName: String,
-  val message: String? = null,
   val status: TestStatus,
+  val message: String? = null,
   val location: Location? = null,
   val data: TestFinishData? = null,
 ) : TaskFinishData

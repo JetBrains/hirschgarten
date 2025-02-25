@@ -42,7 +42,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
 
   private fun runInitialSyncAndPartialSync(): BazelBspTestScenarioStep =
     BazelBspTestScenarioStep("should do an initial sync on 1 target and then partial sync on another target") {
-      testClient.test(3.minutes) { session, _ ->
+      testClient.test(3.minutes) { session ->
         // initial sync
         val workspaceBuildTargetsResult = session.server.workspaceBuildTargets().await()
         testClient.assertJsonEquals(expectedWorkspaceBuildTargetsResult(), workspaceBuildTargetsResult)
@@ -57,8 +57,8 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
           SourcesItem(
             BuildTargetIdentifier("$targetPrefix//java_targets:java_library"),
             listOf(javaTargetsJavaLibraryJava),
+            roots = listOf("file://\$WORKSPACE/"),
           )
-        javaTargetsJavaLibrarySources.roots = listOf("file://\$WORKSPACE/")
 
         val sourcesParams = SourcesParams(expectedTargetIdentifiers())
         val expectedSourcesResult = SourcesResult(listOf(javaTargetsJavaLibrarySources))
@@ -75,27 +75,25 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
         val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
         val jvmBuildTarget =
           JvmBuildTarget(
-            it.javaHome = javaHome
-            it.javaVersion = "11"
-          }
+            javaHome = javaHome,
+            javaVersion = "11",
+          )
         val javaTargetsJavaBinary =
           BuildTarget(
             partialSyncTargetId,
             listOf("application"),
             listOf("java"),
             emptyList(),
-            BuildTargetCapabilities().apply {
-              canCompile = true
-              canTest = false
-              canRun = true
-              canDebug = false
-            },
-          ).apply {
-            displayName = "$targetPrefix//java_targets:java_binary"
-            baseDirectory = "file://\$WORKSPACE/java_targets/"
-            dataKind = "jvm"
-            data = jvmBuildTarget
-          }
+            BuildTargetCapabilities(
+              canCompile = true,
+              canTest = false,
+              canRun = true,
+              canDebug = false,
+            ),
+            displayName = "$targetPrefix//java_targets:java_binary",
+            baseDirectory = "file://\$WORKSPACE/java_targets/",
+            data = jvmBuildTarget,
+          )
 
         val workspaceBuildTargetsPartialParams =
           WorkspaceBuildTargetsPartialParams(listOf(BuildTargetIdentifier("$targetPrefix//java_targets:java_binary")))
@@ -115,7 +113,6 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
             partialSyncTargetId,
             listOf(javaTargetsJavaBinaryJava),
           )
-        javaTargetsJavaBinarySources.roots = listOf("file://\$WORKSPACE/")
 
         val partialSyncSourcesParams = SourcesParams(listOf(partialSyncTargetId))
         val expectedPartialSyncSourcesResult = SourcesResult(listOf(javaTargetsJavaBinarySources))
@@ -133,7 +130,9 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
     val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
     val jvmBuildTarget =
       JvmBuildTarget(
-        javaHome = javaHome, javaVersion = "11")
+        javaHome = javaHome,
+        javaVersion = "11",
+      )
 
     val javaTargetsJavaLibrary =
       BuildTarget(
@@ -141,18 +140,16 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
         listOf("library"),
         listOf("java"),
         listOf(),
-        BuildTargetCapabilities().apply {
-          canCompile = true
-          canTest = false
-          canRun = false
-          canDebug = false
-        },
-      ).apply {
-        displayName = "$targetPrefix//java_targets:java_library"
-        baseDirectory = "file://\$WORKSPACE/java_targets/"
-        dataKind = "jvm"
-        data = jvmBuildTarget
-      }
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = false,
+          canRun = false,
+          canDebug = false,
+        ),
+        displayName = "$targetPrefix//java_targets:java_library",
+        baseDirectory = "file://\$WORKSPACE/java_targets/",
+        data = jvmBuildTarget,
+      )
 
     return WorkspaceBuildTargetsResult(listOf(javaTargetsJavaLibrary))
   }

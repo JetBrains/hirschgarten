@@ -100,9 +100,7 @@ class BspTestTaskListenerTest {
     // given
     val durationSeconds = 1.23456
     val taskId = "task-id"
-    val testFinishData = TestFinish("testSuite", TestStatus.PASSED)
-    testFinishData.data = JUnitStyleTestSuiteData(durationSeconds, null, null)
-    testFinishData.dataKind = JUnitStyleTestSuiteData.DATA_KIND
+    val testFinishData = TestFinish("testSuite", TestStatus.PASSED, data = JUnitStyleTestSuiteData(durationSeconds, null, null))
 
     val expectedDurationMillis = (1234).toLong()
     val expectedText =

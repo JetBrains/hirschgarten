@@ -41,20 +41,19 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
       val currentTime = System.currentTimeMillis()
       val targetUri = "@//:deprecated_warning"
       val params =
-        CompileParams(listOf(BuildTargetIdentifier(targetUri))).apply {
-          originId = "some-id"
-          arguments = listOf("--action_env=FORCE_REBUILD=$currentTime")
-        }
+        CompileParams(
+          listOf(BuildTargetIdentifier(targetUri)),
+          originId = "some-id",
+          arguments = listOf("--action_env=FORCE_REBUILD=$currentTime"),
+        )
       val transformedParams = testClient.applyJsonTransform(params)
 
       val expectedDeprecatedWarningFileUri = "file://$workspaceDir/DeprecatedWarning.java"
-      testClient.test(60.seconds) { session, _ ->
+      testClient.test(60.seconds) { session ->
         session.client.clearDiagnostics()
         val result = session.server.buildTargetCompile(transformedParams).await()
         assertEquals(StatusCode.OK, result.statusCode)
         assertEquals(params.originId, result.originId)
-        assertNull(result.data)
-        assertNull(result.dataKind)
         println(session.client.publishDiagnosticsNotifications)
         assertEquals(1, session.client.publishDiagnosticsNotifications.size)
         val deprecatedWarning =
@@ -93,8 +92,6 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         assertNull(deprecatedWarning.diagnostics[0].source)
         assertNull(deprecatedWarning.diagnostics[0].tags)
         assertNull(deprecatedWarning.diagnostics[0].relatedInformation)
-        assertNull(deprecatedWarning.diagnostics[0].dataKind)
-        assertNull(deprecatedWarning.diagnostics[0].data)
       }
     }
 
@@ -111,23 +108,20 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
             BuildTargetIdentifier(noSuchMethodTargetUri),
             BuildTargetIdentifier(warningAndErrorTargetUri),
           ),
-        ).apply {
-          originId = "some-id"
-          arguments = listOf("--action_env=FORCE_REBUILD=$currentTime", "--keep_going")
-        }
+          originId = "some-id",
+          arguments = listOf("--action_env=FORCE_REBUILD=$currentTime", "--keep_going"),
+        )
       val transformedParams = testClient.applyJsonTransform(params)
 
       val expectedNoSuchMethodErrorFileUri = "file://$workspaceDir/NoSuchMethodError.java"
       val expectedWarningAndErrorFileUri = "file://$workspaceDir/WarningAndError.java"
 
-      testClient.test(60.seconds) { session, _ ->
+      testClient.test(60.seconds) { session ->
         session.client.clearDiagnostics()
         val result = session.server.buildTargetCompile(transformedParams).await()
         println(session.client.logMessageNotifications)
         assertEquals(StatusCode.ERROR, result.statusCode)
         assertEquals(params.originId, result.originId)
-        assertNull(result.data)
-        assertNull(result.dataKind)
         assertEquals(2, session.client.publishDiagnosticsNotifications.size)
         val noSuchMethodError =
           session.client.publishDiagnosticsNotifications.find {
@@ -175,8 +169,6 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         assertNull(noSuchMethodError.diagnostics[0].source)
         assertNull(noSuchMethodError.diagnostics[0].tags)
         assertNull(noSuchMethodError.diagnostics[0].relatedInformation)
-        assertNull(noSuchMethodError.diagnostics[0].dataKind)
-        assertNull(noSuchMethodError.diagnostics[0].data)
 
         assertEquals(true, warningAndError.reset)
         assertEquals(params.originId, warningAndError.originId)
@@ -197,8 +189,6 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         assertNull(errorDiagnostic.source)
         assertNull(errorDiagnostic.tags)
         assertNull(errorDiagnostic.relatedInformation)
-        assertNull(errorDiagnostic.dataKind)
-        assertNull(errorDiagnostic.data)
         val warningDiagnostic = warningAndError.diagnostics.find { it.severity == DiagnosticSeverity.WARNING }!!
         assertEquals(expectedDeprecatedWarningMessage, warningDiagnostic.message)
         assertEquals(2, warningDiagnostic.range.start.line)
@@ -211,8 +201,6 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         assertNull(warningDiagnostic.source)
         assertNull(warningDiagnostic.tags)
         assertNull(warningDiagnostic.relatedInformation)
-        assertNull(warningDiagnostic.dataKind)
-        assertNull(warningDiagnostic.data)
       }
     }
 }

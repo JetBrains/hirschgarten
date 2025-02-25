@@ -79,7 +79,7 @@ abstract class BazelBspAndroidProjectTestBase : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "Compare workspace/buildTargets",
     ) {
-      testClient.test(timeout = 5.minutes) { session, _ ->
+      testClient.test(timeout = 5.minutes) { session ->
         val result = session.server.workspaceBuildTargets().await()
         testClient.assertJsonEquals<WorkspaceBuildTargetsResult>(expectedWorkspaceBuildTargetsResult(), result)
       }
@@ -89,7 +89,7 @@ abstract class BazelBspAndroidProjectTestBase : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "Compare buildTarget/resources",
     ) {
-      testClient.test(timeout = 1.minutes) { session, _ ->
+      testClient.test(timeout = 1.minutes) { session ->
         val resourcesParams = ResourcesParams(expectedTargetIdentifiers())
         val result = session.server.buildTargetResources(resourcesParams).await()
         testClient.assertJsonEquals<ResourcesResult>(expectedBuildTargetResourcesResult(), result)
@@ -100,7 +100,7 @@ abstract class BazelBspAndroidProjectTestBase : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "Compare workspace/libraries",
     ) {
-      testClient.test(timeout = 5.minutes) { session, _ ->
+      testClient.test(timeout = 5.minutes) { session ->
         // Make sure Bazel unpacks all the dependent AARs
         session.server.workspaceBuildAndGetBuildTargets().await()
         val result = session.server.workspaceLibraries().await()

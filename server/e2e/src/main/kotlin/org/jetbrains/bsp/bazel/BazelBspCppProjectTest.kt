@@ -7,7 +7,6 @@ import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetDataKind
 import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.CppBuildTarget
 import org.jetbrains.bsp.protocol.CppOptionsItem
@@ -34,47 +33,47 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val exampleExampleCppBuildTarget =
-      CppBuildTarget().also {
-        it.version = null
-        it.compiler = "compiler"
-        it.cCompiler = "/bin/gcc"
-        it.cppCompiler = "/bin/gcc"
-      }
+      CppBuildTarget(
+        version = null,
+        compiler = "compiler",
+        cCompiler = "/bin/gcc",
+        cppCompiler = "/bin/gcc",
+      )
 
     val exampleExampleBuildTarget =
       BuildTarget(
         BuildTargetIdentifier("$targetPrefix//example:example"),
-        ImmutableList.of("application"),
-        ImmutableList.of(Constants.CPP),
-        ImmutableList.of(BuildTargetIdentifier("@com_google_googletest//:gtest_main")),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = true
-          it.canDebug = false
-        },
+        tags = ImmutableList.of("application"),
+        languageIds = ImmutableList.of(Constants.CPP),
+        dependencies = ImmutableList.of(BuildTargetIdentifier("@com_google_googletest//:gtest_main")),
+        capabilities =
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = true,
+            canDebug = false,
+          ),
+        displayName = "$targetPrefix//example:example",
+        baseDirectory = "file://\$WORKSPACE/example/",
+        data = exampleExampleCppBuildTarget,
       )
-    exampleExampleBuildTarget.displayName = "$targetPrefix//example:example"
-    exampleExampleBuildTarget.baseDirectory = "file://\$WORKSPACE/example/"
-    exampleExampleBuildTarget.data = exampleExampleCppBuildTarget
-    exampleExampleBuildTarget.dataKind = BuildTargetDataKind.CPP
 
     val bspWorkspaceRootExampleBuildTarget =
       BuildTarget(
         BuildTargetIdentifier(Label.synthetic("bsp-workspace-root").toString()),
-        ImmutableList.of(),
-        ImmutableList.of(),
-        ImmutableList.of(),
-        BuildTargetCapabilities().also {
-          it.canCompile = false
-          it.canTest = false
-          it.canRun = false
-          it.canDebug = false
-        },
+        tags = ImmutableList.of(),
+        languageIds = ImmutableList.of(),
+        dependencies = ImmutableList.of(),
+        capabilities =
+          BuildTargetCapabilities(
+            canCompile = false,
+            canTest = false,
+            canRun = false,
+            canDebug = false,
+          ),
+        baseDirectory = "file://\$WORKSPACE/",
+        displayName = "bsp-workspace-root",
       )
-    bspWorkspaceRootExampleBuildTarget.baseDirectory = "file://\$WORKSPACE/"
-    bspWorkspaceRootExampleBuildTarget.displayName = "bsp-workspace-root"
-
     return WorkspaceBuildTargetsResult(ImmutableList.of(exampleExampleBuildTarget, bspWorkspaceRootExampleBuildTarget))
   }
 

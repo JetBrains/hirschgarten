@@ -34,7 +34,7 @@ import org.jetbrains.bazel.sync.BaseTargetInfo
 import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
-import org.jetbrains.bazel.sync.task.queryIf
+import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
@@ -196,7 +196,7 @@ class GoProjectSync : ProjectSyncHook {
               isMainModule = false,
               internal = true,
             ) {
-              this.root = virtualFileUrlManager.getOrCreateFromUrl(dependencyTargetInfo.target.baseDirectory)
+              this.root = virtualFileUrlManager.getOrCreateFromUrl(dependencyTargetInfo.target.baseDirectory!!)
             }
           }
         }
@@ -218,15 +218,15 @@ class GoProjectSync : ProjectSyncHook {
       moduleId = moduleId,
       entitySource = entitySource,
       importPath = goBuildInfo?.importPath ?: "",
-      root = virtualFileUrlManager.getOrCreateFromUrl(inputEntity.target.baseDirectory),
+      root = virtualFileUrlManager.getOrCreateFromUrl(inputEntity.target.baseDirectory!!),
     ) {
       this.dependencies = vgoModuleDependencies + (vgoModuleLibraries ?: listOf())
     }
   }
 
-  private suspend fun queryGoLibraries(environment: ProjectSyncHook.ProjectSyncHookEnvironment): WorkspaceGoLibrariesResult? =
+  private suspend fun queryGoLibraries(environment: ProjectSyncHook.ProjectSyncHookEnvironment): WorkspaceGoLibrariesResult =
     coroutineScope {
-      queryIf(environment.capabilities.workspaceLibrariesProvider, "workspace/goLibraries") {
+      query("workspace/goLibraries") {
         environment.server.workspaceGoLibraries()
       }
     }

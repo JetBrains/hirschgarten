@@ -61,9 +61,8 @@ class SourcesItemToJavaSourceRootTransformerTest {
           SourcesItem(
             BuildTargetIdentifier("target"),
             listOf(sourceItem),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
 
     // when
@@ -107,9 +106,8 @@ class SourcesItemToJavaSourceRootTransformerTest {
           SourcesItem(
             BuildTargetIdentifier("target"),
             listOf(sourceItem),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
 
     // when
@@ -153,9 +151,8 @@ class SourcesItemToJavaSourceRootTransformerTest {
           SourcesItem(
             BuildTargetIdentifier("target"),
             listOf(sourceItem),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
 
     // when
@@ -217,9 +214,8 @@ class SourcesItemToJavaSourceRootTransformerTest {
           SourcesItem(
             BuildTargetIdentifier("target"),
             listOf(sourceItem1, sourceItem2, sourceItem3),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
 
     // when
@@ -294,9 +290,8 @@ class SourcesItemToJavaSourceRootTransformerTest {
           SourcesItem(
             BuildTargetIdentifier("target"),
             listOf(sourceItem1),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
     val buildTargetAndSourceItem2 =
       BuildTargetAndSourceItem(
@@ -312,9 +307,8 @@ class SourcesItemToJavaSourceRootTransformerTest {
           SourcesItem(
             BuildTargetIdentifier("target"),
             listOf(sourceItem2, sourceItem3),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
 
     val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)
@@ -391,9 +385,8 @@ class SourcesItemToJavaSourceRootTransformerTest {
           SourcesItem(
             BuildTargetIdentifier("target"),
             listOf(sourceItem1),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
     val buildTargetAndSourceItem2 =
       BuildTargetAndSourceItem(
@@ -409,9 +402,8 @@ class SourcesItemToJavaSourceRootTransformerTest {
           SourcesItem(
             BuildTargetIdentifier("target"),
             listOf(sourceItem2, sourceItem3),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
 
     val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)

@@ -6,7 +6,6 @@ import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetDataKind
 import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
@@ -49,10 +48,10 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
     val interpreterPath = if (isBzlmod) bzlmodInterpreterPath else workspaceInterpreterPath
 
     val examplePythonBuildTarget =
-      PythonBuildTarget().also {
-        it.version = "PY3"
-        it.interpreter = interpreterPath
-      }
+      PythonBuildTarget(
+        version = "PY3",
+        interpreter = interpreterPath,
+      )
 
     val exampleExampleBuildTarget =
       BuildTarget(
@@ -62,17 +61,16 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
         listOf(
           BuildTargetIdentifier("$targetPrefix//lib:example_library"),
         ),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = true
-          it.canDebug = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = false,
+          canRun = true,
+          canDebug = false,
+        ),
+        displayName = "$targetPrefix//example:example",
+        baseDirectory = "file://\$WORKSPACE/example/",
+        data = examplePythonBuildTarget,
       )
-    exampleExampleBuildTarget.displayName = "$targetPrefix//example:example"
-    exampleExampleBuildTarget.baseDirectory = "file://\$WORKSPACE/example/"
-    exampleExampleBuildTarget.data = examplePythonBuildTarget
-    exampleExampleBuildTarget.dataKind = BuildTargetDataKind.PYTHON
 
     val workspacePipDepId = "${externalRepoPrefix}pip_deps_numpy//:pkg"
     val bzlmodPipDepId =
@@ -85,17 +83,16 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
         listOf("library"),
         listOf("python"),
         listOf(BuildTargetIdentifier(pipDepId)),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = false
-          it.canDebug = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = false,
+          canRun = false,
+          canDebug = false,
+        ),
+        displayName = "$targetPrefix//lib:example_library",
+        baseDirectory = "file://\$WORKSPACE/lib/",
+        data = examplePythonBuildTarget,
       )
-    exampleExampleLibBuildTarget.displayName = "$targetPrefix//lib:example_library"
-    exampleExampleLibBuildTarget.baseDirectory = "file://\$WORKSPACE/lib/"
-    exampleExampleLibBuildTarget.data = examplePythonBuildTarget
-    exampleExampleLibBuildTarget.dataKind = BuildTargetDataKind.PYTHON
 
     val exampleExampleTestBuildTarget =
       BuildTarget(
@@ -103,17 +100,16 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
         listOf("test"),
         listOf("python"),
         listOf(),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = true
-          it.canRun = false
-          it.canDebug = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = true,
+          canRun = false,
+          canDebug = false,
+        ),
+        displayName = "$targetPrefix//test:test",
+        baseDirectory = "file://\$WORKSPACE/test/",
+        data = examplePythonBuildTarget,
       )
-    exampleExampleTestBuildTarget.displayName = "$targetPrefix//test:test"
-    exampleExampleTestBuildTarget.baseDirectory = "file://\$WORKSPACE/test/"
-    exampleExampleTestBuildTarget.data = examplePythonBuildTarget
-    exampleExampleTestBuildTarget.dataKind = BuildTargetDataKind.PYTHON
 
     return WorkspaceBuildTargetsResult(
       listOf(

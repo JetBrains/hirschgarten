@@ -14,7 +14,6 @@ import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
-import org.jetbrains.bsp.protocol.BuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.SourcesResult
@@ -40,8 +39,7 @@ private class BspConnectionMock : BspConnection {
     // it's a mock, nothing to do
   }
 
-  override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T =
-    task(mockBuildServer, BuildServerCapabilities())
+  override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T = task(mockBuildServer)
 
   override fun isConnected(): Boolean = true
 }

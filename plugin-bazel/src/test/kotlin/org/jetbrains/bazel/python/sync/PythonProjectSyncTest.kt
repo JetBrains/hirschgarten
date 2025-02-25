@@ -81,7 +81,6 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             project = project,
             syncScope = SecondPhaseSync,
             server = server,
-            capabilities = capabilities,
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
@@ -117,7 +116,6 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             project = project,
             syncScope = SecondPhaseSync,
             server = server,
-            capabilities = capabilities,
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
@@ -214,15 +212,14 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         listOf("python"),
         info.dependencies,
         BuildTargetCapabilities(),
+        displayName = info.targetId.toString(),
+        baseDirectory = "file:///targets_base_dir",
+        data =
+          PythonBuildTarget(
+            version = "3",
+            interpreter = "/path/to/interpreter",
+          ),
       )
-    target.displayName = target.id.toString()
-    target.baseDirectory = "file:///targets_base_dir"
-    target.dataKind = "python"
-    target.data =
-      PythonBuildTarget().also {
-        it.version = "3"
-        it.interpreter = "/path/to/interpreter"
-      }
 
     return BaseTargetInfo(target, emptyList(), emptyList())
   }

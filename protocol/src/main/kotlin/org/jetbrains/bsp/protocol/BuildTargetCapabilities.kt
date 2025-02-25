@@ -1,8 +1,8 @@
 package org.jetbrains.bsp.protocol
 
 data class BuildTargetCapabilities(
-  val canCompile: Boolean? = null,
-  val canTest: Boolean? = null,
-  val canRun: Boolean? = null,
-  val canDebug: Boolean? = null,
+  val canCompile: Boolean = false,
+  val canTest: Boolean = false,
+  val canRun: Boolean = false,
+  val canDebug: Boolean = false,
 )

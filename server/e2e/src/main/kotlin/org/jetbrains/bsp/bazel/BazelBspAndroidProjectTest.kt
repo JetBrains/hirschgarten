@@ -21,9 +21,9 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
       "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java~~toolchains~remotejdk17_$javaHomeArchitecture/"
     val jvmBuildTargetData =
       JvmBuildTarget(
-        it.javaHome = javaHome
-        it.javaVersion = "17"
-      }
+        javaHome = javaHome,
+        javaVersion = "17",
+      )
 
     val androidJar = "file://\$BAZEL_OUTPUT_BASE_PATH/external/androidsdk/platforms/android-34/android.jar"
 
@@ -69,17 +69,16 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
         listOf("application"),
         listOf("android", "java"),
         listOf(BuildTargetIdentifier("@@//src/main/java/com/example/myapplication:lib")),
-        BuildTargetCapabilities().apply {
-          canCompile = true
-          canDebug = true
-          canRun = true
-          canTest = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = true,
+          canRun = true,
+          canDebug = false,
+        ),
+        displayName = "@@//src/main:app",
+        baseDirectory = "file://\$WORKSPACE/src/main/",
+        data = appAndroidBuildTargetData,
       )
-    appBuildTarget.displayName = "@@//src/main:app"
-    appBuildTarget.baseDirectory = "file://\$WORKSPACE/src/main/"
-    appBuildTarget.data = appAndroidBuildTargetData
-    appBuildTarget.dataKind = "android"
 
     val libBuildTarget =
       BuildTarget(
@@ -87,17 +86,16 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
         listOf("library"),
         listOf("android", "java"),
         listOf(BuildTargetIdentifier("@@rules_jvm_external~~maven~maven//:androidx_appcompat_appcompat")),
-        BuildTargetCapabilities().apply {
-          canCompile = true
-          canDebug = false
-          canRun = false
-          canTest = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = false,
+          canRun = false,
+          canDebug = false,
+        ),
+        displayName = "@@//src/main/java/com/example/myapplication:lib",
+        baseDirectory = "file://\$WORKSPACE/src/main/java/com/example/myapplication/",
+        data = libAndroidBuildTargetData,
       )
-    libBuildTarget.displayName = "@@//src/main/java/com/example/myapplication:lib"
-    libBuildTarget.baseDirectory = "file://\$WORKSPACE/src/main/java/com/example/myapplication/"
-    libBuildTarget.data = libAndroidBuildTargetData
-    libBuildTarget.dataKind = "android"
 
     val libTestBuildTarget =
       BuildTarget(
@@ -111,17 +109,15 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
           BuildTargetIdentifier("@@rules_jvm_external~~maven~maven//:org_robolectric_shadows_framework"),
           BuildTargetIdentifier("@@rules_robolectric~//bazel:android-all"),
         ),
-        BuildTargetCapabilities().apply {
-          canCompile = true
-          canDebug = true
-          canRun = false
-          canTest = true
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canRun = false,
+          canTest = true,
+        ),
+        displayName = "@@//src/test/java/com/example/myapplication:lib_test",
+        baseDirectory = "file://\$WORKSPACE/src/test/java/com/example/myapplication/",
+        data = libTestAndroidBuildTargetData,
       )
-    libTestBuildTarget.displayName = "@@//src/test/java/com/example/myapplication:lib_test"
-    libTestBuildTarget.baseDirectory = "file://\$WORKSPACE/src/test/java/com/example/myapplication/"
-    libTestBuildTarget.data = libTestAndroidBuildTargetData
-    libTestBuildTarget.dataKind = "android"
 
     return WorkspaceBuildTargetsResult(listOf(appBuildTarget, libBuildTarget, libTestBuildTarget))
   }

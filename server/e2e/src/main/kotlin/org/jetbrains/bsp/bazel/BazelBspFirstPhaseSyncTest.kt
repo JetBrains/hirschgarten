@@ -42,7 +42,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "Compare workspace/buildTargetsFirstPhase",
     ) {
-      testClient.test(timeout = 5.minutes) { session, _ ->
+      testClient.test(timeout = 5.minutes) { session ->
         val firstPhaseResult =
           session.server
             .workspaceBuildTargetsFirstPhase(

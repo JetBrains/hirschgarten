@@ -10,9 +10,8 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.bazel.sync.task.queryIf
+import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.utils.safeCastToURI
-import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.toPath
@@ -34,9 +33,9 @@ class BazelRepoMappingSyncHook : ProjectSyncHook {
     coroutineScope {
       val bazelRepoMappingService = BazelRepoMappingService.getInstance(environment.project)
       val bazelRepoMappingResult =
-        queryIf(environment.capabilities.bazelRepoMappingProvider, "workspace/bazelRepoMapping") {
+        query("workspace/bazelRepoMapping") {
           environment.server.workspaceBazelRepoMapping()
-        } ?: WorkspaceBazelRepoMappingResult(emptyMap(), emptyMap())
+        }
       bazelRepoMappingService.apparentRepoNameToCanonicalName = bazelRepoMappingResult.apparentRepoNameToCanonicalName
       bazelRepoMappingService.canonicalRepoNameToPath =
         bazelRepoMappingResult.canonicalRepoNameToPath.mapValues { (_, uri) -> uri.safeCastToURI().toPath() }

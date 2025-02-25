@@ -11,7 +11,7 @@ import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.bazel.sync.task.queryIf
+import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
 import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
@@ -20,9 +20,9 @@ internal class InvalidTargetsProjectSyncHook : ProjectSyncHook {
     coroutineScope {
       val bazelInvalidTargetsService = BazelInvalidTargetsService.getInstance(environment.project)
       val invalidTargetsResult =
-        queryIf(environment.capabilities.workspaceInvalidTargetsProvider, "workspace/invalidTargets") {
+        query("workspace/invalidTargets") {
           environment.server.workspaceInvalidTargets()
-        }?.targets.orEmpty()
+        }.targets
       bazelInvalidTargetsService.invalidTargets = invalidTargetsResult
 
       if (bazelInvalidTargetsService.invalidTargets.isNotEmpty()) {

@@ -4,7 +4,6 @@ import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetDataKind
 import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -39,9 +38,9 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
 
     val exampleExampleJvmBuildTarget =
       JvmBuildTarget(
-        it.javaVersion = "11"
-        it.javaHome = javaHome
-      }
+        javaVersion = "11",
+        javaHome = javaHome,
+      )
 
     val exampleExampleBuildTarget =
       BuildTarget(
@@ -49,17 +48,16 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
         listOf("application"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = true
-          it.canDebug = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = false,
+          canRun = true,
+          canDebug = false,
+        ),
+        displayName = "$targetPrefix//example:example",
+        baseDirectory = "file://\$WORKSPACE/example/",
+        data = exampleExampleJvmBuildTarget,
       )
-    exampleExampleBuildTarget.displayName = "$targetPrefix//example:example"
-    exampleExampleBuildTarget.baseDirectory = "file://\$WORKSPACE/example/"
-    exampleExampleBuildTarget.data = exampleExampleJvmBuildTarget
-    exampleExampleBuildTarget.dataKind = BuildTargetDataKind.JVM
 
     return WorkspaceBuildTargetsResult(
       listOf(exampleExampleBuildTarget),

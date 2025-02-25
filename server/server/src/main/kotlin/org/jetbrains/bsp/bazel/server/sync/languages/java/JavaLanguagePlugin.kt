@@ -66,7 +66,7 @@ class JavaLanguagePlugin(
 
   fun toJvmBuildTarget(javaModule: JavaModule): JvmBuildTarget? {
     val jdk = javaModule.jdk ?: return null
-    val javaHome = jdk.javaHome?.toString()
+    val javaHome = jdk.javaHome?.toString() ?: return null
     return JvmBuildTarget(
       javaVersion = javaVersionFromJavacOpts(javaModule.javacOpts) ?: jdk.version,
       javaHome = javaHome,

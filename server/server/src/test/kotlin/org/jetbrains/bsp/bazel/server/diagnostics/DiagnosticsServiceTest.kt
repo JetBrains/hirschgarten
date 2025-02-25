@@ -774,7 +774,7 @@ class DiagnosticsServiceTest {
     severity: DiagnosticSeverity,
   ): BspDiagnostic {
     val adjustedPosition = BspPosition(position.line - 1, position.character - 1)
-    return BspDiagnostic(Range(adjustedPosition, adjustedPosition), severity, message = message)
+    return BspDiagnostic(Range(adjustedPosition, adjustedPosition), severity = severity, message = message)
   }
 
   private fun extractDiagnostics(output: String, buildTarget: Label): List<PublishDiagnosticsParams> =

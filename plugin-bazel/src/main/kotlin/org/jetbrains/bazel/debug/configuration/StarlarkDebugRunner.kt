@@ -105,7 +105,7 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
     target: BuildTargetIdentifier,
     futureProxy: CompletableDeferred<AnalysisDebugResult>,
   ): Job =
-    project.connection.runWithServer { server, _ ->
+    project.connection.runWithServer { server ->
       BspCoroutineService.getInstance(project).start {
         analysisDebug(project, port, taskListener, target, server, futureProxy)
       }

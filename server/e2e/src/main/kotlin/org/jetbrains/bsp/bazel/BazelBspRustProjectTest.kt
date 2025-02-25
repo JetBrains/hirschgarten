@@ -90,15 +90,16 @@ object BazelBspRustProjectTest : BazelBspTestBaseScenario() {
         listOf(type),
         listOf("rust"),
         dependencies,
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = canRun
-          it.canDebug = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = false,
+          canRun = canRun,
+          canDebug = false,
+        ),
+        displayName = "$targetPrefix//$packageName:$name",
+        baseDirectory = "file://\$WORKSPACE/$packageName/",
       )
-    buildtarget.displayName = "$targetPrefix//$packageName:$name"
-    buildtarget.baseDirectory = "file://\$WORKSPACE/$packageName/"
+
     return buildtarget
   }
 
@@ -140,10 +141,9 @@ object BazelBspRustProjectTest : BazelBspTestBaseScenario() {
           RustTargetKind.LIB,
           "2018",
           false,
-        ).also {
-          it.crateTypes = listOf(RustCrateType.RLIB)
-          it.requiredFeatures = setOf()
-        },
+          crateTypes = listOf(RustCrateType.RLIB),
+          requiredFeatures = setOf(),
+        ),
       )
 
     val exampleTargets =
@@ -170,10 +170,9 @@ object BazelBspRustProjectTest : BazelBspTestBaseScenario() {
       RustTargetKind.BIN,
       "2018",
       false,
-    ).also {
-      it.crateTypes = listOf()
-      it.requiredFeatures = features
-    }
+      crateTypes = listOf(),
+      requiredFeatures = features,
+    )
 
   private fun expectedPackageFromDependency(
     name: String,
@@ -197,10 +196,9 @@ object BazelBspRustProjectTest : BazelBspTestBaseScenario() {
       targets,
       features.associateWith { setOf() },
       features,
-    ).also {
-      it.env = expectedEnv(packageName, "$packageRootUrl$packageId//", version)
-      it.source = "bazel+https://github.com/rust-lang/crates.io-index"
-    }
+      env = expectedEnv(packageName, "$packageRootUrl$packageId//", version),
+      source = "bazel+https://github.com/rust-lang/crates.io-index",
+    )
   }
 
   private fun expectedTargetFromDependency(
@@ -215,10 +213,9 @@ object BazelBspRustProjectTest : BazelBspTestBaseScenario() {
         RustTargetKind.LIB,
         "2018",
         false,
-      ).also {
-        it.crateTypes = listOf(RustCrateType.RLIB)
-        it.requiredFeatures = features
-      },
+        crateTypes = listOf(RustCrateType.RLIB),
+        requiredFeatures = features,
+      ),
     )
 
   private fun expectedEnv(
@@ -265,7 +262,8 @@ object BazelBspRustProjectTest : BazelBspTestBaseScenario() {
       allTargets,
       features.associateWith { setOf() },
       features,
-    ).also { it.env = expectedEnv(packageName, "file://\$WORKSPACE/$name///$name", "0.0.0") }
+      env = expectedEnv(packageName, "file://\$WORKSPACE/$name///$name", "0.0.0"),
+    )
   }
 
   private fun expectedDependencies(): Map<String, List<RustDependency>> {
@@ -291,10 +289,11 @@ object BazelBspRustProjectTest : BazelBspTestBaseScenario() {
 
   private fun createDependency(dependenciesNames: List<Pair<String, String>>): List<RustDependency> =
     dependenciesNames.map { dep ->
-      RustDependency(dep.first).also {
-        it.name = dep.second
-        it.depKinds = listOf(RustDepKindInfo("normal"))
-      }
+      RustDependency(
+        dep.first,
+        name = dep.second,
+        depKinds = listOf(RustDepKindInfo("normal")),
+      )
     }
 
   private fun expectedRawDependencies(): Map<String, List<RustRawDependency>> {

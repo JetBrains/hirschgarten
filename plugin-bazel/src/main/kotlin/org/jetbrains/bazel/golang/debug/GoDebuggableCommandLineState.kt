@@ -58,7 +58,7 @@ abstract class GoDebuggableCommandLineState(
           withContext(Dispatchers.EDT) {
             RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
           }
-          startBsp(server, capabilities)
+          startBsp(server)
         }
       }
 

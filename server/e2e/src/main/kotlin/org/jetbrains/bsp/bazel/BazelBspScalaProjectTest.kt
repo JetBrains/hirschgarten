@@ -31,7 +31,6 @@ import kotlin.time.Duration.Companion.seconds
 object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
   private val log = LogManager.getLogger(BazelBspScalaProjectTest::class.java)
   private val testClient = createTestkitClient()
-  private val testClientClasspathReceiver = createTestkitClient(jvmClasspathReceiver = true)
 
   @JvmStatic
   fun main(args: Array<String>) =
@@ -52,7 +51,6 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
       compareWorkspaceTargetsResults(),
       compileWithWarnings(),
       scalaOptionsResults(),
-      scalaOptionsResultsClasspathReceiver(),
     )
 
   private fun resolveProject(): BazelBspTestScenarioStep =
@@ -78,9 +76,8 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
           "file://\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_library/scala-library-2.12.14.jar",
           "file://\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_reflect/scala-reflect-2.12.14.jar",
         ),
+        jvmBuildTarget = jvmBuildTarget,
       )
-
-    scalaBuildTarget.jvmBuildTarget = jvmBuildTarget
 
     val target =
       BuildTarget(
@@ -92,17 +89,16 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
           BuildTargetIdentifier(Label.synthetic("scala-library-2.12.14.jar").toString()),
           BuildTargetIdentifier(Label.synthetic("scala-reflect-2.12.14.jar").toString()),
         ),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = false
-          it.canDebug = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = false,
+          canRun = false,
+          canDebug = false,
+        ),
+        displayName = "$targetPrefix//scala_targets:library",
+        baseDirectory = "file://\$WORKSPACE/scala_targets/",
+        data = scalaBuildTarget,
       )
-    target.displayName = "$targetPrefix//scala_targets:library"
-    target.baseDirectory = "file://\$WORKSPACE/scala_targets/"
-    target.dataKind = "scala"
-    target.data = scalaBuildTarget
     return WorkspaceBuildTargetsResult(
       listOf(target),
     )
@@ -134,24 +130,6 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
     }
   }
 
-  private fun scalaOptionsResultsClasspathReceiver(): BazelBspTestScenarioStep {
-    val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it.uri != "bsp-workspace-root" }
-    val expectedScalaOptionsItems =
-      expectedTargetIdentifiers.map {
-        ScalacOptionsItem(
-          it,
-          emptyList(),
-          emptyList(),
-          "$bazelBinDirectory/scala_targets/library.jar",
-        )
-      }
-    val expectedScalaOptionsResult = ScalacOptionsResult(expectedScalaOptionsItems)
-    val scalaOptionsParams = ScalacOptionsParams(expectedTargetIdentifiers)
-    return BazelBspTestScenarioStep("scalaOptions results") {
-      testClientClasspathReceiver.testScalacOptions(60.seconds, scalaOptionsParams, expectedScalaOptionsResult)
-    }
-  }
-
   // All expected diagnostics must be present, but there can be more
   private fun checkDiagnostics(
     params: CompileParams,
@@ -159,7 +137,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
     expectedDiagnostics: List<PublishDiagnosticsParams>,
   ) {
     val transformedParams = testClient.applyJsonTransform(params)
-    testClient.test(60.seconds) { session, _ ->
+    testClient.test(60.seconds) { session ->
       session.client.clearDiagnostics()
       val result = session.server.buildTargetCompile(transformedParams).await()
       expectedDiagnostics.forEach { expected ->
@@ -178,16 +156,15 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
 
   private fun compileWithWarnings(): BazelBspTestScenarioStep {
     val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it.uri != "bsp-workspace-root" }
-    val compileParams = CompileParams(expectedTargetIdentifiers)
-    compileParams.originId = UUID.randomUUID().toString()
+    val compileParams = CompileParams(expectedTargetIdentifiers, originId = UUID.randomUUID().toString())
 
     val expectedCompilerResult = CompileResult(StatusCode.OK)
     val expectedDiagnostic =
       Diagnostic(
         Range(Position(4, 2), Position(4, 2)),
         "match may not be exhaustive.\nIt would fail on the following input: C(_)\n  aa match {\n  ^",
+        severity = DiagnosticSeverity.WARNING,
       )
-    expectedDiagnostic.severity = DiagnosticSeverity.WARNING
 
     val tmpDir = System.getenv()["BIT_WORKSPACE_DIR"]
     val expectedDocumentId = TextDocumentIdentifier("file://$tmpDir/scala_targets/Example.scala")
@@ -195,11 +172,10 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
       PublishDiagnosticsParams(
         expectedDocumentId,
         expectedTargetIdentifiers[0],
-        arrayListOf(expectedDiagnostic),
-        true,
+        diagnostics = arrayListOf(expectedDiagnostic),
+        reset = true,
+        originId = compileParams.originId,
       )
-    expectedDiagnosticsParam.originId = compileParams.originId
-    expectedCompilerResult.originId = compileParams.originId
 
     return BazelBspTestScenarioStep("compile results") {
       checkDiagnostics(compileParams, expectedCompilerResult, listOf(expectedDiagnosticsParam))

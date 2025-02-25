@@ -52,7 +52,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "compare workspace targets results",
     ) {
-      testClient.test(60.seconds) { session, _ ->
+      testClient.test(60.seconds) { session ->
         val targetsResult = session.server.workspaceBuildTargets().await()
 
         targetsResult.targets.size shouldBe 4
@@ -89,7 +89,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "compare workspace repo mapping results",
     ) {
-      testClient.test(60.seconds) { session, _ ->
+      testClient.test(60.seconds) { session ->
         val repoMapping = session.server.workspaceBazelRepoMapping().await()
 
         repoMapping.apparentRepoNameToCanonicalName shouldBe

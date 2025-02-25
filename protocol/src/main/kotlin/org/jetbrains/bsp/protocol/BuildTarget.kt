@@ -3,12 +3,12 @@ import java.net.URI
 
 data class BuildTarget(
   val id: BuildTargetIdentifier,
-  val displayName: String? = null,
-  val baseDirectory: String? = null,
   val tags: List<String>,
   val languageIds: List<String>,
   val dependencies: List<BuildTargetIdentifier>,
   val capabilities: BuildTargetCapabilities,
+  val displayName: String? = null,
+  val baseDirectory: String? = null,
   var data: BuildTargetData? = null,
 )
 
@@ -34,7 +34,7 @@ data class ScalaBuildTarget(
 ) : BuildTargetData
 
 // TODO: change to interface
-data class JvmBuildTarget(val javaHome: String? = null, val javaVersion: String? = null) : BuildTargetData
+data class JvmBuildTarget(val javaHome: String, val javaVersion: String) : BuildTargetData
 
 data class GoBuildTarget(
   val sdkHomePath: URI?,

@@ -141,7 +141,6 @@ class BspProjectMapper(
       Constants.NAME,
       Constants.VERSION,
       Constants.BSP_VERSION,
-      capabilities,
     )
   }
 

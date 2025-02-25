@@ -92,7 +92,6 @@ class GoProjectSyncTest : MockProjectBaseTest() {
             project = project,
             syncScope = SecondPhaseSync,
             server = server,
-            capabilities = capabilities,
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
@@ -129,7 +128,6 @@ class GoProjectSyncTest : MockProjectBaseTest() {
             project = project,
             syncScope = SecondPhaseSync,
             server = server,
-            capabilities = capabilities,
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
@@ -202,18 +200,18 @@ class GoProjectSyncTest : MockProjectBaseTest() {
         listOf("go"),
         info.dependencies,
         BuildTargetCapabilities(),
+        displayName = info.targetId.toString(),
+        baseDirectory = "file:///targets_base_dir",
+        data =
+          GoBuildTarget(
+            sdkHomePath = URI("file:///go_sdk/"),
+            importPath = info.importPath,
+            generatedLibraries = emptyList(),
+          ),
       )
-    target.displayName = target.id.toString()
-    target.baseDirectory = "file:///targets_base_dir"
-    target.dataKind = "go"
-    target.data =
-      GoBuildTarget(
-        sdkHomePath = URI("file:///go_sdk/"),
-        importPath = info.importPath,
-        generatedLibraries = emptyList(),
-      )
+
     val sources =
-      listOf(SourcesItem(info.targetId, listOf(SourceItem("file:///root/${info.importPath}", SourceItemKind.forValue(1), false))))
+      listOf(SourcesItem(info.targetId, listOf(SourceItem("file:///root/${info.importPath}", SourceItemKind.FILE, false))))
     val resources = info.resourcesItems.map { ResourcesItem(info.targetId, listOf(it)) }
     return BaseTargetInfo(target, sources, resources)
   }

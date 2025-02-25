@@ -43,9 +43,9 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
           associates = associates.map { BuildTargetIdentifier(it) },
           jvmBuildTarget =
             JvmBuildTarget(
-              it.javaHome = javaHome
-              it.javaVersion = javaVersion
-            },
+              javaHome = javaHome,
+              javaVersion = javaVersion,
+            ),
         )
 
       val module =

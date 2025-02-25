@@ -7,7 +7,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.diagnostic.telemetry.OtlpConfiguration
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.jetbrains.bazel.config.BspPluginBundle
@@ -19,7 +18,6 @@ import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.console.ids.CONNECT_TASK_ID
 import org.jetbrains.bsp.bazel.install.EnvironmentCreator
-import org.jetbrains.bsp.protocol.BuildServerCapabilities
 import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.nio.file.Path
@@ -123,15 +121,6 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
       bspConsoleService.bspBuildConsole,
       project,
     )
-  }
-
-  private suspend fun JoinedBuildServer.initializeAndObtainCapabilities(
-    initializeBuildData: InitializeBuildParams,
-  ): BuildServerCapabilities {
-    val buildInitializeResults = buildInitialize(initializeBuildData).asDeferred().await()
-    onBuildInitialized()
-    // cast is safe because we registered a custom type adapter
-    return buildInitializeResults.capabilities
   }
 
   private fun getOpenTelemetryEndPoint(): String? =
