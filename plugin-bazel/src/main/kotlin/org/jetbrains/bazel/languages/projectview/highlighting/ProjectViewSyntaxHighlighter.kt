@@ -14,11 +14,10 @@ import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 object ProjectViewSyntaxHighlighter : SyntaxHighlighterBase() {
   private val keys =
     mapOf(
+      ProjectViewTokenType.KEYWORD to ProjectViewHighlightingColors.IDENTIFIER,
+      ProjectViewTokenType.IDENTIFIER to ProjectViewHighlightingColors.IDENTIFIER,
       ProjectViewTokenType.COLON to ProjectViewHighlightingColors.COLON,
       ProjectViewTokenType.COMMENT to ProjectViewHighlightingColors.LINE_COMMENT,
-      ProjectViewTokenType.IDENTIFIER to ProjectViewHighlightingColors.IDENTIFIER,
-      ProjectViewTokenType.LIST_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
-      ProjectViewTokenType.SCALAR_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
     )
 
   override fun getHighlightingLexer(): Lexer = ProjectViewLexer()
