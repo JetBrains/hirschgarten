@@ -6,19 +6,20 @@ import com.intellij.openapi.util.io.findOrCreateFile
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.util.io.delete
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingService
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
+import kotlin.io.path.createTempDirectory
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.writeText
-import kotlin.reflect.full.companionObject
-import kotlin.reflect.full.companionObjectInstance
 
 private const val TEST_LINE_PREFIX = "There are 39 characters in this string "
 private const val TEST_LINE_SUFFIX = " bliep bliep bliep\n"
@@ -91,21 +92,11 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   @Test
   fun `should match an external target with @@`() {
     // given
-    val path = createBazelFileInProject("plugin-bazel/src")
+    val externalRootDir = createTempDirectory("externalRepo")
+    createBazelFileOutsideProject(externalRootDir, "plugin-bazel/src")
     val bazelTarget = "@@externalRepo//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
-
-    val clz = Class.forName("org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingService")
-    val companion = clz.kotlin.companionObjectInstance
-    val method =
-      clz.kotlin.companionObject!!
-        .members
-        .first { it.name == "getInstance" }
-    val instance = method.call(companion, project)
-
-    val canonicalRepoNameToPathField = clz.getDeclaredField("canonicalRepoNameToPath")
-    canonicalRepoNameToPathField.isAccessible = true
-    canonicalRepoNameToPathField.set(instance, mapOf("externalRepo" to project.rootDir.toNioPath()))
+    BazelRepoMappingService.getInstance(project).canonicalRepoNameToPath = mapOf("externalRepo" to externalRootDir)
 
     // when
     val result = filter.applyFilter(line, line.length + 100)
@@ -116,31 +107,20 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
 
-    path.deleteIfExists()
+    externalRootDir.delete(true)
   }
 
   @Test
   fun `should match an external target with @`() {
     // given
-    val path = createBazelFileInProject("plugin-bazel/src")
+    val externalRootDir = createTempDirectory("externalRepo2")
+    createBazelFileOutsideProject(externalRootDir, "plugin-bazel/src")
     val bazelTarget = "@externalRepo2//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
-    val clz = Class.forName("org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingService")
-    val companion = clz.kotlin.companionObjectInstance
-    val method =
-      clz.kotlin.companionObject!!
-        .members
-        .first { it.name == "getInstance" }
-    val instance = method.call(companion, project)
+    BazelRepoMappingService.getInstance(project).canonicalRepoNameToPath = mapOf("externalRepo2+" to externalRootDir)
+    BazelRepoMappingService.getInstance(project).apparentRepoNameToCanonicalName = mapOf("externalRepo2" to "externalRepo2+")
 
-    val canonicalRepoNameToPathField = clz.getDeclaredField("canonicalRepoNameToPath")
-    canonicalRepoNameToPathField.isAccessible = true
-    canonicalRepoNameToPathField.set(instance, mapOf("externalRepo2+" to project.rootDir.toNioPath()))
-
-    val apparentRepoNameToCanonicalNameField = clz.getDeclaredField("apparentRepoNameToCanonicalName")
-    apparentRepoNameToCanonicalNameField.isAccessible = true
-    apparentRepoNameToCanonicalNameField.set(instance, mapOf("externalRepo2" to "externalRepo2+"))
     // when
     val result = filter.applyFilter(line, line.length + 100)
 
@@ -150,7 +130,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
 
-    path.deleteIfExists()
+    externalRootDir.delete(true)
   }
 
   @Test
@@ -277,6 +257,20 @@ proto_library(
     // then
     result!!.resultItems.size shouldBe 0
   }
+
+  private fun createBazelFileOutsideProject(
+    rootDir: Path,
+    relativePath: String,
+    buildFileName: String = "BUILD",
+  ): Path =
+    rootDir
+      .resolve(relativePath)
+      .createDirectories()
+      .resolve(buildFileName)
+      .findOrCreateFile()
+      .also {
+        it.writeText(testBazelFileContent)
+      }.also { LocalFileSystem.getInstance().refreshAndFindFileByNioFile(it) }
 
   private fun createBazelFileInProject(relativePath: String, buildFileName: String = "BUILD"): Path =
     runWriteAction {
