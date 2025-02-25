@@ -1,0 +1,32 @@
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+
+kt_jvm_library(
+    name = "bep",
+    srcs = glob([
+        "*.java",
+        "*.kt",
+    ]),
+    resources = ["//server/log4j_config"],
+    visibility = ["//server/server:__subpackages__"],
+    deps = [
+        "//protocol",
+        "//server/bazelrunner",
+        "//server/commons",
+        "//server/logger",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/diagnostics",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/paths",
+        "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
+        "@googleapis//google/devtools/build/v1:build_java_grpc",
+        "@googleapis//google/devtools/build/v1:build_java_proto",
+        "@maven//:ch_epfl_scala_bsp4j",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_fasterxml_jackson_dataformat_jackson_dataformat_xml",
+        "@maven//:com_fasterxml_jackson_module_jackson_module_kotlin",
+        "@maven//:com_google_guava_guava",
+        "@maven//:io_grpc_grpc_stub",
+        "@maven//:org_apache_logging_log4j_log4j_api",
+        "@maven//:org_apache_logging_log4j_log4j_core",
+    ],
+)

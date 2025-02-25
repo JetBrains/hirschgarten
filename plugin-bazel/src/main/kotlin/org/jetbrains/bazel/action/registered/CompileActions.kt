@@ -13,8 +13,8 @@ import org.jetbrains.bazel.buildTask.CustomModuleBuildTask
 import org.jetbrains.bazel.buildTask.JpsOnlyModuleBuildTask
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.isBspProject
+import org.jetbrains.bazel.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.bazel.ui.console.isBuildInProgress
-import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 
 internal abstract class CustomCompileProjectAction(text: String) : SuspendableAction(text) {
   override fun update(project: Project, e: AnActionEvent) {

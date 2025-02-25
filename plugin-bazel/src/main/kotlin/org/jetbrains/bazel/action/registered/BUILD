@@ -8,11 +8,11 @@ kt_jvm_library(
     ]),
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
-        "//plugin-bazel/jps-compilation/src:jps-compilation",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/buildTask",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jpsCompilation/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/projectAware",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/scope",
