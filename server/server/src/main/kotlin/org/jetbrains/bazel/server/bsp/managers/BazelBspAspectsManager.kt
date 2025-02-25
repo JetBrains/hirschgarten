@@ -120,10 +120,6 @@ class BazelBspAspectsManager(
       aspectsPath.resolve(Constants.CORE_BZL),
       mapOf(
         "isPropagateExportsFromDepsEnabled" to featureFlags.isPropagateExportsFromDepsEnabled.toStarlarkString(),
-        "addTransitiveCompileTimeJars" to
-          workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
-        "transitiveCompileTimeJarsTargetKinds" to
-          workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toStarlarkString(),
       ),
     )
 

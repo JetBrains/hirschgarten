@@ -3,67 +3,60 @@ package org.jetbrains.bazel.server
 import ch.epfl.scala.bsp4j.InitializeBuildParams
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import org.eclipse.lsp4j.jsonrpc.Launcher
-import org.jetbrains.bazel.bazelrunner.BazelInfoResolver
-import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bazel.logger.BspClientLogger
-import org.jetbrains.bazel.server.benchmark.TelemetryConfig
-import org.jetbrains.bazel.server.benchmark.setupTelemetry
-import org.jetbrains.bazel.server.bsp.BazelBspServerLifetime
-import org.jetbrains.bazel.server.bsp.BazelServices
-import org.jetbrains.bazel.server.bsp.BspIntegrationData
-import org.jetbrains.bazel.server.bsp.BspRequestsRunner
-import org.jetbrains.bazel.server.bsp.BspServerApi
-import org.jetbrains.bazel.server.bsp.TelemetryContextPropagatingLauncherBuilder
-import org.jetbrains.bazel.server.bsp.info.BspInfo
-import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
-import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
-import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
-import org.jetbrains.bazel.server.bsp.managers.BazelLabelExpander
-import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
-import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
-import org.jetbrains.bazel.server.paths.BazelPathsResolver
-import org.jetbrains.bazel.server.sync.AdditionalAndroidBuildTargetsProvider
-import org.jetbrains.bazel.server.sync.BazelProjectMapper
-import org.jetbrains.bazel.server.sync.BspProjectMapper
-import org.jetbrains.bazel.server.sync.ExecuteService
-import org.jetbrains.bazel.server.sync.MavenCoordinatesResolver
-import org.jetbrains.bazel.server.sync.ProjectProvider
-import org.jetbrains.bazel.server.sync.ProjectResolver
-import org.jetbrains.bazel.server.sync.ProjectSyncService
-import org.jetbrains.bazel.server.sync.TargetInfoReader
-import org.jetbrains.bazel.server.sync.TargetTagsResolver
-import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
-import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
-import org.jetbrains.bazel.server.sync.languages.LanguagePluginsService
-import org.jetbrains.bazel.server.sync.languages.android.AndroidLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
-import org.jetbrains.bazel.server.sync.languages.cpp.CppLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.go.GoLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.java.JdkResolver
-import org.jetbrains.bazel.server.sync.languages.java.JdkVersionResolver
-import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.python.PythonLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.rust.RustLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.scala.ScalaLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bsp.bazel.bazelrunner.BazelInfoResolver
+import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bsp.bazel.logger.BspClientLogger
+import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
+import org.jetbrains.bsp.bazel.server.benchmark.setupTelemetry
+import org.jetbrains.bsp.bazel.server.bsp.BazelServices
+import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManager
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspCompilationManager
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelLabelExpander
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
+import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
+import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.bazel.server.sync.AdditionalAndroidBuildTargetsProvider
+import org.jetbrains.bsp.bazel.server.sync.BazelProjectMapper
+import org.jetbrains.bsp.bazel.server.sync.BspProjectMapper
+import org.jetbrains.bsp.bazel.server.sync.ExecuteService
+import org.jetbrains.bsp.bazel.server.sync.MavenCoordinatesResolver
+import org.jetbrains.bsp.bazel.server.sync.ProjectProvider
+import org.jetbrains.bsp.bazel.server.sync.ProjectResolver
+import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
+import org.jetbrains.bsp.bazel.server.sync.TargetInfoReader
+import org.jetbrains.bsp.bazel.server.sync.TargetTagsResolver
+import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
+import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
+import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
+import org.jetbrains.bsp.bazel.server.sync.languages.android.AndroidLanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
+import org.jetbrains.bsp.bazel.server.sync.languages.cpp.CppLanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.go.GoLanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaLanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.java.JdkResolver
+import org.jetbrains.bsp.bazel.server.sync.languages.java.JdkVersionResolver
+import org.jetbrains.bsp.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.python.PythonLanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustLanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaLanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
+import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.InitializeBuildData
-import org.jetbrains.bsp.protocol.JoinedBuildClient
 import java.nio.file.Path
 
 class BazelBspServer(
   private val bspInfo: BspInfo,
-  private val workspaceContextProvider: WorkspaceContextProvider,
-  private val workspaceRoot: Path,
+  val workspaceContextProvider: WorkspaceContextProvider,
+  val workspaceRoot: Path,
   private val telemetryConfig: TelemetryConfig,
 ) {
   private val gson = Gson()
 
-  private fun bspServerData(
+  fun bspServerData(
     initializeBuildParams: InitializeBuildParams,
     bspClientLogger: BspClientLogger,
     bazelRunner: BazelRunner,
@@ -127,7 +120,7 @@ class BazelBspServer(
     )
   }
 
-  private fun createBazelInfo(bazelRunner: BazelRunner): BazelInfo {
+  fun createBazelInfo(bazelRunner: BazelRunner): BazelInfo {
     val bazelDataResolver = BazelInfoResolver(bazelRunner)
     return bazelDataResolver.resolveBazelInfo { }
   }
@@ -229,53 +222,6 @@ class BazelBspServer(
         bspClientLogger = bspClientLogger,
       )
     return ProjectProvider(projectResolver, firstPhaseProjectResolver)
-  }
-
-  fun buildServer(bspIntegrationData: BspIntegrationData): Launcher<JoinedBuildClient> {
-    val bspServerApi =
-      BspServerApi { client: JoinedBuildClient, initializeBuildParams: InitializeBuildParams ->
-        val bspClientLogger = BspClientLogger(client)
-        val bazelRunner = BazelRunner(workspaceContextProvider, bspClientLogger, workspaceRoot)
-        verifyBazelVersion(bazelRunner)
-        val bazelInfo = createBazelInfo(bazelRunner)
-        bazelRunner.bazelInfo = bazelInfo
-        val bazelPathsResolver = BazelPathsResolver(bazelInfo)
-        val compilationManager =
-          BazelBspCompilationManager(bazelRunner, bazelPathsResolver, client, workspaceRoot)
-        bspServerData(
-          initializeBuildParams,
-          bspClientLogger,
-          bazelRunner,
-          compilationManager,
-          bazelInfo,
-          workspaceContextProvider,
-          bazelPathsResolver,
-        )
-      }
-
-    val builder =
-      TelemetryContextPropagatingLauncherBuilder<JoinedBuildClient>()
-        .setOutput(bspIntegrationData.stdout)
-        .setInput(bspIntegrationData.stdin)
-        .setLocalService(bspServerApi)
-        .setRemoteInterface(JoinedBuildClient::class.java)
-        .setExecutorService(bspIntegrationData.executor)
-        .let { builder ->
-          if (bspIntegrationData.traceWriter != null) {
-            builder.traceMessages(bspIntegrationData.traceWriter)
-          } else {
-            builder
-          }
-        }
-
-    val launcher = builder.create()
-
-    val client = launcher.remoteProxy
-    val serverLifetime = BazelBspServerLifetime(workspaceContextProvider)
-    val bspRequestsRunner = BspRequestsRunner(serverLifetime)
-    bspServerApi.initialize(client, serverLifetime, bspRequestsRunner)
-
-    return launcher
   }
 
   fun verifyBazelVersion(bazelRunner: BazelRunner) {

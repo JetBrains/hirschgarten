@@ -18,6 +18,7 @@ import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bazel.workspacecontext.ExperimentalAddTransitiveCompileTimeJars
 import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
+import org.jetbrains.bsp.bazel.workspacecontext.NoPruneTransitiveCompileTimeJarsPatternsSpec
 import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
 import org.jetbrains.bazel.workspacecontext.ShardingApproachSpec
 import org.jetbrains.bazel.workspacecontext.SyncFlagsSpec
@@ -48,6 +49,7 @@ val mockContext =
     ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpec(Path("java_home")),
     experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJars(true),
     experimentalTransitiveCompileTimeJarsTargetKinds = TransitiveCompileTimeJarsTargetKindsSpec(emptyList()),
+    experimentalNoPruneTransitiveCompileTimeJarsPatterns = NoPruneTransitiveCompileTimeJarsPatternsSpec(emptyList()),
     enableNativeAndroidRules = EnableNativeAndroidRules(false),
     androidMinSdkSpec = AndroidMinSdkSpec(null),
     shardSync = ShardSyncSpec(false),

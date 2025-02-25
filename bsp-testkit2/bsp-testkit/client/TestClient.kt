@@ -1,7 +1,5 @@
 package org.jetbrains.bsp.testkit.client
 
-import ch.epfl.scala.bsp4j.BuildClient
-import ch.epfl.scala.bsp4j.BuildServer
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.CompileParams
 import ch.epfl.scala.bsp4j.CompileResult
@@ -39,44 +37,24 @@ import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.gson.Gson
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.bsp.testkit.JsonComparator
 import java.nio.file.Path
 import kotlin.time.Duration
 
-suspend fun <Server : BuildServer, Client : BuildClient> withSession(
+suspend fun withSession(
   workspace: Path,
-  ignoreEarlyExit: Boolean = false,
-  withShutdown: Boolean = true,
-  client: Client,
-  serverClass: Class<Server>,
-  test: suspend (Session<Server, Client>) -> Unit,
-) = coroutineScope {
-  val session = Session(workspace, client, serverClass)
-  session.use {
-    val testResult = this.async { test(session) }
-
-    if (ignoreEarlyExit) {
-      testResult.await()
-    } else {
-      awaitAll(testResult, session.serverClosed)
-      println("selected")
-    }
-  }
-
-  if (withShutdown) {
-    val result = session.serverClosed.await()
-    println("Server exited with code ${result.exitCode} and stderr:\n${result.stderr}")
-  }
+  client: MockClient,
+  test: suspend (Session) -> Unit,
+) {
+  val session = Session(workspace, client)
+  test(session)
 }
 
-suspend fun <Server : BuildServer, Client : BuildClient> withLifetime(
+suspend fun withLifetime(
   initializeParams: InitializeBuildParams,
-  session: Session<Server, Client>,
+  session: Session,
   f: suspend (BuildServerCapabilities) -> Unit,
 ) {
   val initializeResult = session.server.buildInitialize(initializeParams).await()
@@ -86,12 +64,11 @@ suspend fun <Server : BuildServer, Client : BuildClient> withLifetime(
   session.server.onBuildExit()
 }
 
-open class BasicTestClient<Server : BuildServer, Client : BuildClient>(
+open class BasicTestClient(
   val workspacePath: Path,
   val initializeParams: InitializeBuildParams,
   val transformJson: (String) -> String,
-  val client: Client,
-  val serverClass: Class<Server>,
+  val client: MockClient,
 ) {
   val gson = Gson()
 
@@ -107,13 +84,9 @@ open class BasicTestClient<Server : BuildServer, Client : BuildClient>(
     JsonComparator.assertJsonEquals(transformedExpected, transformedActual, T::class.java)
   }
 
-  fun test(
-    timeout: Duration,
-    ignoreEarlyExit: Boolean = false,
-    doTest: suspend (Session<Server, Client>, BuildServerCapabilities) -> Unit,
-  ) {
+  fun test(timeout: Duration, doTest: suspend (Session, BuildServerCapabilities) -> Unit) {
     runTest(timeout = timeout) {
-      withSession(workspacePath, ignoreEarlyExit, true, client, serverClass) { session ->
+      withSession(workspacePath, client) { session ->
         withLifetime(initializeParams, session) { capabilities ->
           doTest(session, capabilities)
         }
@@ -126,12 +99,11 @@ class TestClient(
   workspacePath: Path,
   initializeParams: InitializeBuildParams,
   transformJson: (String) -> String,
-) : BasicTestClient<MockServer, MockClient>(
+) : BasicTestClient(
     workspacePath,
     initializeParams,
     transformJson,
     MockClient(),
-    MockServer::class.java,
   ) {
   fun testJavacOptions(
     timeout: Duration,

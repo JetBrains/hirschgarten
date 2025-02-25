@@ -50,34 +50,8 @@ interface ProjectSyncHook {
   )
 }
 
-/**
- * Allows disabling default project sync hooks.
- *
- * Sometimes default project sync hooks need to be overridden in some way. For example, build-tool-specific hook can
- * perform the same action but in different way, and to prevent conflicts, it might be necessary to disable the
- * default hooks.
- */
-interface DefaultProjectSyncHooksDisabler {
-  fun disabledProjectSyncHooks(project: Project): List<Class<out ProjectSyncHook>>
-
-  companion object {
-    internal val ep =
-      ExtensionPointName.create<DefaultProjectSyncHooksDisabler>("org.jetbrains.bazel.defaultProjectSyncHooksDisabler")
-  }
-}
-
-val Project.disabledDefaultProjectSyncHooks: List<Class<out ProjectSyncHook>>
+val Project.projectSyncHooks: List<ProjectSyncHook>
   get() =
-    DefaultProjectSyncHooksDisabler.ep
-      .extensions
-      .flatMap { it.disabledProjectSyncHooks(this) }
-
-val Project.defaultProjectSyncHooks: List<ProjectSyncHook>
-  get() {
-    val disabled = disabledDefaultProjectSyncHooks
-
-    return ProjectSyncHook.ep
-      .extensions
+    ProjectSyncHook.ep
+      .extensionList
       .filter { it.isEnabled(this) }
-      .filterNot { it::class.java in disabled }
-  }

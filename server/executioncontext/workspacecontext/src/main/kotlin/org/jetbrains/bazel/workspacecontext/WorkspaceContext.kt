@@ -79,6 +79,7 @@ data class WorkspaceContext(
   val ideJavaHomeOverrideSpec: IdeJavaHomeOverrideSpec,
   val experimentalAddTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJars,
   val experimentalTransitiveCompileTimeJarsTargetKinds: TransitiveCompileTimeJarsTargetKindsSpec,
+  val experimentalNoPruneTransitiveCompileTimeJarsPatterns: NoPruneTransitiveCompileTimeJarsPatternsSpec,
   val enableNativeAndroidRules: EnableNativeAndroidRules,
   val androidMinSdkSpec: AndroidMinSdkSpec,
   val shardSync: ShardSyncSpec,
@@ -122,6 +123,10 @@ class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDi
       experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsExtractor.fromProjectView(projectView),
       experimentalTransitiveCompileTimeJarsTargetKinds =
         ExperimentalTransitiveCompileTimeJarsTargetKindsExtractor.fromProjectView(
+          projectView,
+        ),
+      experimentalNoPruneTransitiveCompileTimeJarsPatterns =
+        ExperimentalNoPruneTransitiveCompileTimeJarsPatternsExtractor.fromProjectView(
           projectView,
         ),
       enableNativeAndroidRules = EnableNativeAndroidRulesExtractor.fromProjectView(projectView),

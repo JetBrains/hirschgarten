@@ -12,7 +12,6 @@ import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.protocol.JoinedBuildClient
@@ -66,7 +65,6 @@ class BepDiagnosticsTest {
       bspClient = client,
       diagnosticsService = DiagnosticsService(workspaceRoot),
       originId = "originId",
-      target = Label.parse("//target"),
       bazelPathsResolver = BazelPathsResolver(bazelInfo),
     )
   }
