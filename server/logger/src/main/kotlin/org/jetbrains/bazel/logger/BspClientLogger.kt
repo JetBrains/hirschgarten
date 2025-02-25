@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.logger
 
-import org.jetbrains.bsp.bazel.commons.Format
+import org.jetbrains.bazel.commons.Format
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.LogMessageParams
 import org.jetbrains.bsp.protocol.MessageType

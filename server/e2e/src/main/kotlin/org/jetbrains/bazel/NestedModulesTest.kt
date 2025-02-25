@@ -9,9 +9,6 @@ import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
-import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
-import org.jetbrains.bsp.bazel.install.Install
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import java.net.URI

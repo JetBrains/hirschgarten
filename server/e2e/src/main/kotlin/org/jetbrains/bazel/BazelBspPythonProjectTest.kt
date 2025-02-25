@@ -1,9 +1,9 @@
 package org.jetbrains.bazel
 
+import org.jetbrains.bazel.base.BazelBspTestBaseScenario
+import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.commons.utils.OsArch
 import org.jetbrains.bazel.commons.utils.OsFamily
-import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
-import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.BuildTargetIdentifier

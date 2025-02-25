@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.sync.languages.scala
 
+import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.label.label

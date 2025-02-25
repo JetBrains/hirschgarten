@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.connection
 
+import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.BazelBspServer

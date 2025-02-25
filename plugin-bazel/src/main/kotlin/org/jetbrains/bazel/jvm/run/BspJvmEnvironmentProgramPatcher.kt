@@ -8,7 +8,6 @@ import com.intellij.openapi.util.UserDataHolderBase
 import org.jetbrains.bazel.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
 import org.jetbrains.bazel.runnerAction.LocalJvmRunnerAction
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
-import org.jetbrains.bsp.protocol.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
 
 class BspJvmEnvironmentProgramPatcher : JavaProgramPatcher() {
   override fun patchJavaParameters(

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.sync.languages.kotlin
 
+import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
@@ -50,16 +51,17 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
     )
   }
 
-  private fun KotlinTargetInfo.toKotlincOptArguments(): List<String> = kotlincOptsList + additionalKotlinOpts()
+  private fun BspTargetInfo.KotlinTargetInfo.toKotlincOptArguments(): List<String> = kotlincOptsList + additionalKotlinOpts()
 
-  private fun KotlinTargetInfo.additionalKotlinOpts(): List<String> = toKotlincPluginClasspathArguments() + toKotlincPluginOptionArguments()
+  private fun BspTargetInfo.KotlinTargetInfo.additionalKotlinOpts(): List<String> =
+    toKotlincPluginClasspathArguments() + toKotlincPluginOptionArguments()
 
-  private fun KotlinTargetInfo.toKotlincPluginOptionArguments(): List<String> =
+  private fun BspTargetInfo.KotlinTargetInfo.toKotlincPluginOptionArguments(): List<String> =
     kotlincPluginInfosList
       .flatMap { it.kotlincPluginOptionsList }
       .flatMap { listOf("-P", "plugin:${it.pluginId}:${it.optionValue}") }
 
-  private fun KotlinTargetInfo.toKotlincPluginClasspathArguments(): List<String> =
+  private fun BspTargetInfo.KotlinTargetInfo.toKotlincPluginClasspathArguments(): List<String> =
     kotlincPluginInfosList
       .flatMap { it.pluginJarsList }
       .map { "-Xplugin=${bazelPathsResolver.resolveUri(it).toPath()}" }

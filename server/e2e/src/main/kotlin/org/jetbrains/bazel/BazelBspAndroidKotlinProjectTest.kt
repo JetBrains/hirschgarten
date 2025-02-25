@@ -1,5 +1,6 @@
 package org.jetbrains.bazel
 
+import org.jetbrains.bazel.android.BazelBspAndroidProjectTestBase
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
 import org.jetbrains.bsp.protocol.AndroidTargetType
