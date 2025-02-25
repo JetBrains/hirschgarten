@@ -8,18 +8,18 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.tree.IElementType
+import org.jetbrains.bazel.languages.projectview.elements.ProjectViewTokenTypes
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewLexer
-import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 
 object ProjectViewSyntaxHighlighter : SyntaxHighlighterBase() {
   private val keys =
     mapOf(
-      ProjectViewTokenType.COLON to ProjectViewHighlightingColors.COLON,
-      ProjectViewTokenType.COMMENT to ProjectViewHighlightingColors.LINE_COMMENT,
-      ProjectViewTokenType.COLON to ProjectViewHighlightingColors.COLON,
-      ProjectViewTokenType.IDENTIFIER to ProjectViewHighlightingColors.IDENTIFIER,
-      ProjectViewTokenType.LIST_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
-      ProjectViewTokenType.SCALAR_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
+      ProjectViewTokenTypes.COLON to ProjectViewHighlightingColors.COLON,
+      ProjectViewTokenTypes.COMMENT to ProjectViewHighlightingColors.LINE_COMMENT,
+      ProjectViewTokenTypes.COLON to ProjectViewHighlightingColors.COLON,
+      ProjectViewTokenTypes.IDENTIFIER to ProjectViewHighlightingColors.IDENTIFIER,
+      ProjectViewTokenTypes.LIST_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
+      ProjectViewTokenTypes.SCALAR_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
     )
 
   override fun getHighlightingLexer(): Lexer = ProjectViewLexer()

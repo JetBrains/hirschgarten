@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.languages.projectview.lexer
 
+import org.jetbrains.bazel.languages.projectview.elements.ProjectViewTokenType
+import org.jetbrains.bazel.languages.projectview.elements.ProjectViewTokenTypes
+
 /**
  * A base class responsible for tokenizing a given [input] project view into a list of tokens.
  *
@@ -29,7 +32,7 @@ class ProjectViewLexerBase(input: CharSequence) {
       when {
         c == '\n' -> {
           addPrecedingIdentifier(pos - 1)
-          tokens.add(Token(ProjectViewTokenType.NEWLINE, pos - 1, pos))
+          tokens.add(Token(ProjectViewTokenTypes.NEWLINE, pos - 1, pos))
           isPosAfterNonWhitespaceCharInLine = false
         }
         isHorizontalWhitespace(c) -> {
@@ -38,7 +41,7 @@ class ProjectViewLexerBase(input: CharSequence) {
         }
         c == ':' -> {
           addPrecedingIdentifier(pos - 1)
-          tokens.add(Token(ProjectViewTokenType.COLON, pos - 1, pos))
+          tokens.add(Token(ProjectViewTokenTypes.COLON, pos - 1, pos))
         }
         c == '#' && !isPosAfterNonWhitespaceCharInLine -> {
           addPrecedingIdentifier(pos - 1)
@@ -67,7 +70,7 @@ class ProjectViewLexerBase(input: CharSequence) {
     while (pos < buffer.length && buffer[pos] != '\n') {
       pos++
     }
-    tokens.add(Token(ProjectViewTokenType.COMMENT, start, pos))
+    tokens.add(Token(ProjectViewTokenTypes.COMMENT, start, pos))
   }
 
   private fun handleWhiteSpace() {
@@ -80,23 +83,23 @@ class ProjectViewLexerBase(input: CharSequence) {
       }
 
       if (isPosAfterNonWhitespaceCharInLine || buffer[pos] == '#' || buffer[pos] == '\n') {
-        tokens.add(Token(ProjectViewTokenType.WHITESPACE, oldPos, pos))
+        tokens.add(Token(ProjectViewTokenTypes.WHITESPACE, oldPos, pos))
       } else {
-        tokens.add(Token(ProjectViewTokenType.INDENT, oldPos, pos))
+        tokens.add(Token(ProjectViewTokenTypes.INDENT, oldPos, pos))
       }
 
       return
     }
 
-    tokens.add(Token(ProjectViewTokenType.WHITESPACE, oldPos, pos))
+    tokens.add(Token(ProjectViewTokenTypes.WHITESPACE, oldPos, pos))
   }
 
   private fun getIdentifierToken(start: Int, end: Int): ProjectViewTokenType {
     val identifier = buffer.substring(start, end)
     return when (identifier) {
-      in ProjectViewTokenType.SCALAR_KEYWORDS_SET -> ProjectViewTokenType.SCALAR_KEYWORD
-      in ProjectViewTokenType.LIST_KEYWORDS_SET -> ProjectViewTokenType.LIST_KEYWORD
-      else -> ProjectViewTokenType.IDENTIFIER
+      in ProjectViewTokenTypes.SCALAR_KEYWORDS_SET -> ProjectViewTokenTypes.SCALAR_KEYWORD
+      in ProjectViewTokenTypes.LIST_KEYWORDS_SET -> ProjectViewTokenTypes.LIST_KEYWORD
+      else -> ProjectViewTokenTypes.IDENTIFIER
     }
   }
 
