@@ -7,6 +7,7 @@ import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findFile
 import com.intellij.openapi.vfs.findFileOrDirectory
 import com.intellij.openapi.vfs.findPsiFile
@@ -18,18 +19,21 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.references.BUILD_FILE_NAMES
+import org.jetbrains.bazel.languages.starlark.repomapping.apparentRepoNameToCanonicalName
+import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 
 class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
   private val highlightGroupName = "highlightGroup"
   private val externalRepoGroupName = "externalRepoGroup"
   private val pathGroupName = "pathGroup"
   private val targetName = "targetName"
+  private val repoHead = "repoHead"
 
   // The set of characters allowed in labels is taken from https://bazel.build/concepts/labels#target-names
   private val bazelTargetRegex =
     """(^|\W)
         (?<$highlightGroupName>
-        ((@|@@)(?<$externalRepoGroupName>[a-zA-Z0-9!%\-^_"&'()*+,;<=>?\[\]{|}~/.\#]*))? #@ or @@ with potential external repo names
+        ((?<$repoHead>@|@@)(?<$externalRepoGroupName>[a-zA-Z0-9!%\-^_"&'()*+,;<=>?\[\]{|}~/.\#]*))? #@ or @@ with potential external repo names
         //(?<$pathGroupName>[a-zA-Z0-9!%\-@^_"&'()*+,;<=>?\[\]{|}~/.\#]*):      #path
         (?<$targetName>[a-zA-Z0-9!%\-@^_"&'()*+,;<=>?\[\]{|}~/.\#]+)         #target
         )
@@ -46,11 +50,26 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
     val pathGroup = groups[pathGroupName] ?: return null
     val externalRepoGroup = groups[externalRepoGroupName]
     val target = groups[targetName] ?: return null
-    if (externalRepoGroup != null && externalRepoGroup.value.isNotEmpty()) {
-      // skip targets in external repo
-      return null
-    }
-    val hyperLinkInfo = getHyperLinkInfo(project, pathGroup.value, target.value) ?: return null
+    val projectRoot =
+      if (externalRepoGroup != null && externalRepoGroup.value.isNotEmpty()) {
+        // this is an external repo
+        // now we check if it is an apparent name or canonical repository name
+        val headGroup = groups[repoHead]
+        val canonicalName =
+          if (headGroup != null && headGroup.value == "@") {
+            project.apparentRepoNameToCanonicalName[externalRepoGroup.value] ?: return null
+          } else {
+            externalRepoGroup.value
+          }
+        val path = project.canonicalRepoNameToPath[canonicalName] ?: return null
+        val virtualFileManager = VirtualFileManager.getInstance()
+        virtualFileManager.findFileByNioPath(path) ?: return null
+      } else {
+        // when the repo name is "", it is the root repo itself
+        project.rootDir
+      }
+
+    val hyperLinkInfo = getHyperLinkInfo(project, projectRoot, pathGroup.value, target.value) ?: return null
     val highlightStartOffset = entireLength - line.length + highlightGroup.range.first
     val highlightEndOffset = entireLength - line.length + highlightGroup.range.last + 1
 
@@ -59,10 +78,11 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
 
   private fun getHyperLinkInfo(
     project: Project,
+    virtualFileRoot: VirtualFile,
     buildFileName: String,
     target: String,
   ): HyperlinkInfo? {
-    val virtualFile = buildFileName.toBazelFileInProject() ?: return null
+    val virtualFile = buildFileName.toBazelFileInProject(virtualFileRoot) ?: return null
 
     return runReadAction {
       val psiElement =
@@ -77,8 +97,8 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
     }
   }
 
-  private fun String.toBazelFileInProject(): VirtualFile? {
-    val vf = project.rootDir.findFileOrDirectory(this)
+  private fun String.toBazelFileInProject(root: VirtualFile): VirtualFile? {
+    val vf = root.findFileOrDirectory(this)
     if (vf == null || !vf.isDirectory) return null
     return BUILD_FILE_NAMES.mapNotNull { vf.findFile(it) }.firstOrNull()
   }
