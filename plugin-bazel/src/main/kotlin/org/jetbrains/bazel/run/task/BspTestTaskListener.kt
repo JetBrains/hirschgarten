@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.run.task
 
-import com.google.gson.Gson
 import com.intellij.execution.process.AnsiEscapeDecoder
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
@@ -23,7 +22,6 @@ import kotlin.time.toDuration
 
 class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
-  private val gson = Gson()
 
   init {
     handler.addProcessListener(

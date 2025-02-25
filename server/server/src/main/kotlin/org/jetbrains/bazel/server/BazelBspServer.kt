@@ -99,7 +99,6 @@ class BazelBspServer(
         projectProvider = projectProvider,
         bazelRunner = bazelRunner,
         workspaceContextProvider = workspaceContextProvider,
-        bspClientLogger = bspClientLogger,
         bazelPathsResolver = bazelPathsResolver,
         additionalBuildTargetsProvider = additionalBuildTargetsProvider,
         featureFlags = featureFlags,
