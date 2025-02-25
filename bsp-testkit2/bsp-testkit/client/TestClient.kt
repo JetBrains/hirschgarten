@@ -9,8 +9,6 @@ import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
 import org.jetbrains.bsp.protocol.DependencyModulesParams
 import org.jetbrains.bsp.protocol.DependencyModulesResult
-import org.jetbrains.bsp.protocol.DependencySourcesParams
-import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
@@ -246,18 +244,6 @@ class TestClient(
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetScalaTestClasses(transformedParams).await()
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
-  fun testDependencySources(
-    timeout: Duration,
-    params: DependencySourcesParams,
-    expectedResult: DependencySourcesResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.buildTargetDependencySources(transformedParams).await()
       assertJsonEquals(expectedResult, result)
     }
   }

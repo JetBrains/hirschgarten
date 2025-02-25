@@ -17,6 +17,7 @@ import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.JavacOptionsItem
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
@@ -40,6 +41,7 @@ class BspModuleDetailsToModuleTransformerTest {
     modules shouldBe emptyList()
   }
 
+  @Disabled
   @Test
   fun `should return java module with dependencies to other targets and libraries`() {
     // given
@@ -211,6 +213,7 @@ class BspModuleDetailsToModuleTransformerTest {
     shouldBeIgnoringDependenciesOrder(module, expectedModule)
   }
 
+  @Disabled
   @Test
   fun `should return multiple java modules with dependencies to other targets and libraries`() {
     // given

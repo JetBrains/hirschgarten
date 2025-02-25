@@ -343,16 +343,16 @@ class FirstPhaseTargetToBspMapperTest {
           SourcesItem(
             BuildTargetIdentifier("//target1"),
             listOf(
-              SourceItem(target1Src1.toUri().toString(), SourceItemKind.FILE, false),
-              SourceItem(target1Src2.toUri().toString(), SourceItemKind.FILE, false),
+              SourceItem(target1Src1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
+              SourceItem(target1Src2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example.a"),
             ),
             roots = listOf(target1Root1.toUri().toString(), target1Root2.toUri().toString()),
           ),
           SourcesItem(
             BuildTargetIdentifier("//target2"),
             listOf(
-              SourceItem(target2Src1.toUri().toString(), SourceItemKind.FILE, false),
-              SourceItem(target2Src2.toUri().toString(), SourceItemKind.FILE, false),
+              SourceItem(target2Src1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
+              SourceItem(target2Src2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
             ),
             roots = listOf(target2Root.toUri().toString()),
           ),
@@ -413,10 +413,10 @@ class FirstPhaseTargetToBspMapperTest {
           SourcesItem(
             BuildTargetIdentifier("//target1"),
             listOf(
-              SourceItem(target1Src1.toUri().toString(), SourceItemKind.FILE, false),
-              SourceItem(target1Src2.toUri().toString(), SourceItemKind.FILE, false),
-              SourceItem(filegroupSrc1.toUri().toString(), SourceItemKind.FILE, false),
-              SourceItem(filegroupSrc2.toUri().toString(), SourceItemKind.FILE, false),
+              SourceItem(target1Src1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
+              SourceItem(target1Src2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
+              SourceItem(filegroupSrc1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
+              SourceItem(filegroupSrc2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example.a"),
             ),
             roots = listOf(target1Root.toUri().toString(), filegroupRoot1.toUri().toString(), filegroupRoot2.toUri().toString()),
           ),

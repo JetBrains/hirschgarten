@@ -31,6 +31,7 @@ import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
+import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.net.URI
@@ -78,7 +79,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add VgoStandaloneModuleEntities to workspace model diff`() {
     // given
-    val server = BuildServerMock()
+    val server = BuildServerMock(workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()))
     val diff = AllProjectStructuresProvider(project).newDiff()
     val goTestTargets = generateTestSet(project.findNameProvider().orDefault())
 
@@ -113,7 +114,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add dependencies to workspace model diff`() {
     // given
-    val server = BuildServerMock()
+    val server = BuildServerMock(workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()))
     val diff = AllProjectStructuresProvider(project).newDiff()
     val goTestTargets = generateTestSet(project.findNameProvider().orDefault())
 

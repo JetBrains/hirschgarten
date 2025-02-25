@@ -22,12 +22,15 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
 
   override fun prepareSync(targets: Sequence<TargetInfo>) {
     val defaultTargetInfo = calculateDefaultTargetInfo(targets)
-    defaultInterpreter =
-      defaultTargetInfo
-        ?.interpreter
-        ?.takeUnless { it.relativePath.isNullOrEmpty() }
-        ?.let { bazelPathsResolver.resolveUri(it) }!! // TODO: handle null
-    defaultVersion = defaultTargetInfo.version!!
+    defaultTargetInfo
+      ?.interpreter
+      ?.takeUnless { it.relativePath.isNullOrEmpty() }
+      ?.let { bazelPathsResolver.resolveUri(it) }
+      ?.let { defaultInterpreter = it }
+
+    defaultTargetInfo?.version?.let {
+      defaultVersion = it
+    }
   }
 
   private fun calculateDefaultTargetInfo(targets: Sequence<TargetInfo>): PythonTargetInfo? =

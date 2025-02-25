@@ -1,12 +1,8 @@
 package org.jetbrains.bazel.python.sync
 
-import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
-import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
 import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.ModuleDependency
@@ -19,16 +15,8 @@ import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import com.jetbrains.python.sdk.PyDetectedSdk
-import com.jetbrains.python.sdk.PythonSdkAdditionalData
-import com.jetbrains.python.sdk.PythonSdkType
-import com.jetbrains.python.sdk.detectSystemWideSdks
-import com.jetbrains.python.sdk.guessedLanguageLevel
-import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BspFeatureFlags
-import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.orDefault
@@ -37,20 +25,8 @@ import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
-import org.jetbrains.bazel.sync.task.query
-import org.jetbrains.bazel.ui.console.syncConsole
-import org.jetbrains.bazel.ui.console.withSubtask
-import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
-import org.jetbrains.bsp.protocol.DependencySourcesItem
-import org.jetbrains.bsp.protocol.DependencySourcesParams
-import org.jetbrains.bsp.protocol.DependencySourcesResult
-import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
-import kotlin.io.path.Path
-import kotlin.io.path.toPath
 
 private const val PYTHON_SDK_ID = "PythonSDK"
 private const val PYTHON_SOURCE_ROOT_TYPE = "python-source"
@@ -64,7 +40,6 @@ class PythonProjectSync : ProjectSyncHook {
     val pythonTargets = environment.baseTargetInfos.calculatePythonTargets()
     val moduleNameProvider = environment.project.findNameProvider().orDefault()
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
-    val sdks = calculateAndAddSdks(pythonTargets, environment, virtualFileUrlManager)
 
     pythonTargets.forEach {
       val moduleName = moduleNameProvider(BuildTargetInfo(id = it.target.id))
@@ -77,7 +52,7 @@ class PythonProjectSync : ProjectSyncHook {
         entitySource = moduleSourceEntity,
         virtualFileUrlManager = virtualFileUrlManager,
         moduleNameProvider = moduleNameProvider,
-        sdks[it.target.id],
+        null,
       )
     }
   }
@@ -181,135 +156,4 @@ class PythonProjectSync : ProjectSyncHook {
         }
       }
     }
-
-  private suspend fun calculateAndAddSdks(
-    targets: List<BaseTargetInfo>,
-    environment: ProjectSyncHookEnvironment,
-    virtualFileUrlManager: VirtualFileUrlManager,
-  ): Map<BuildTargetIdentifier, Sdk> =
-    environment.progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
-      environment.project.syncConsole.withSubtask(
-        taskId = environment.taskId,
-        subtaskId = "calculate-and-add-all-python-sdk-infos",
-        message = BspPluginBundle.message("console.task.model.calculate.python.sdks"),
-      ) {
-        calculateDependenciesSources(targets, environment)?.let {
-          doCalculateAndAddSdks(it, targets, virtualFileUrlManager)
-        } ?: emptyMap()
-      }
-    }
-
-  private suspend fun doCalculateAndAddSdks(
-    targetIdToDependenciesSourcesMap: Map<String, List<DependencySourcesItem>>,
-    targets: List<BaseTargetInfo>,
-    virtualFileUrlManager: VirtualFileUrlManager,
-  ): Map<BuildTargetIdentifier, Sdk> {
-    var detectedSdk: PyDetectedSdk? = null
-    return targets
-      .mapNotNull { targetInfo ->
-        val sdk =
-          calculateAndAddSdkIfPossible(
-            target = targetInfo.target,
-            dependenciesSources = targetIdToDependenciesSourcesMap[targetInfo.target.id.uri] ?: emptyList(),
-            defaultSdk = { detectedSdk ?: getSystemSdk()?.also { detectedSdk = it } },
-            virtualFileUrlManager = virtualFileUrlManager,
-          ) ?: return@mapNotNull null
-
-        targetInfo.target.id to sdk
-      }.toMap()
-  }
-
-  private suspend fun calculateDependenciesSources(
-    targets: List<BaseTargetInfo>,
-    environment: ProjectSyncHookEnvironment,
-  ): Map<String, List<DependencySourcesItem>>? = queryDependenciesSources(environment, targets)?.items?.groupBy { it.target.uri }
-
-  private suspend fun queryDependenciesSources(
-    environment: ProjectSyncHookEnvironment,
-    targets: List<BaseTargetInfo>,
-  ): DependencySourcesResult? =
-    coroutineScope {
-      query("buildTarget/dependencySources") {
-        environment.server.buildTargetDependencySources(DependencySourcesParams(targets.map { it.target.id }))
-      }
-    }
-
-  private suspend fun calculateAndAddSdkIfPossible(
-    target: BuildTarget,
-    dependenciesSources: List<DependencySourcesItem>,
-    defaultSdk: () -> PyDetectedSdk?,
-    virtualFileUrlManager: VirtualFileUrlManager,
-  ): Sdk? =
-    extractPythonBuildTarget(target)?.let {
-      if (it.interpreter != null && it.version != null) {
-        calculateAndAddSdk(
-          sdkName = "${target.id.uri}-${it.version}",
-          sdkInterpreterUri = it.interpreter,
-          sdkDependencies = dependenciesSources,
-          virtualFileUrlManager = virtualFileUrlManager,
-        )
-      } else {
-        defaultSdk()
-          ?.homePath
-          ?.let { homePath ->
-            calculateAndAddSdk(
-              sdkName = "${target.id.uri}-detected-PY3",
-              sdkInterpreterUri = Path(homePath).toUri().toString(),
-              sdkDependencies = dependenciesSources,
-              virtualFileUrlManager = virtualFileUrlManager,
-            )
-          }
-      }
-    }
-
-  private suspend fun calculateAndAddSdk(
-    sdkName: String,
-    sdkInterpreterUri: String,
-    sdkDependencies: List<DependencySourcesItem>,
-    virtualFileUrlManager: VirtualFileUrlManager,
-  ): Sdk {
-    val sdkTable = ProjectJdkTable.getInstance()
-    val existingSdk = sdkTable.findJdk(sdkName, PythonSdkType.getInstance().toString())
-
-    val sdk =
-      existingSdk ?: ProjectJdkImpl(
-        sdkName,
-        PythonSdkType.getInstance(),
-      )
-
-    val modificator = sdk.sdkModificator
-    modificator.homePath =
-      sdkInterpreterUri
-        .safeCastToURI()
-        .toPath()
-        .toString()
-
-    modificator.versionString // needs to be invoked in order to fetch the version and cache it
-
-    val additionalData = PythonSdkAdditionalData()
-    val virtualFiles =
-      sdkDependencies
-        .flatMap { it.sources }
-        .mapNotNull {
-          it
-            .safeCastToURI()
-            .toPath()
-            .toVirtualFileUrl(virtualFileUrlManager)
-            .virtualFile
-        }.toSet()
-    additionalData.setAddedPathsFromVirtualFiles(virtualFiles)
-    modificator.sdkAdditionalData = additionalData
-
-    writeAction {
-      modificator.commitChanges()
-      if (existingSdk == null) {
-        sdkTable.addJdk(sdk)
-      }
-    }
-    return sdk
-  }
-
-  private fun getSystemSdk(): PyDetectedSdk? =
-    detectSystemWideSdks(null, emptyList())
-      .firstOrNull { it.homePath != null && it.guessedLanguageLevel?.isPy3K == true }
 }
