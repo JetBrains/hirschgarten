@@ -36,7 +36,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BazelHotSwapBundle
-import org.jetbrains.plugins.bsp.runnerAction.BspJvmApplicationConfiguration
+import org.jetbrains.bazel.runnerAction.BspJvmApplicationConfiguration
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files

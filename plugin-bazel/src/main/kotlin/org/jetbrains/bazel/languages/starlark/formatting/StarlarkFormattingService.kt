@@ -13,7 +13,6 @@ import com.intellij.formatting.service.FormattingService.Feature
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
@@ -26,14 +25,13 @@ import org.jetbrains.bazel.languages.starlark.formatting.configuration.Buildifie
 private val LOG = logger<StarlarkFormattingService>()
 private const val NOTIFICATION_GROUP_ID = "Buildifier"
 
-internal class StarlarkFormattingService : AsyncDocumentFormattingService() {
+class StarlarkFormattingService : AsyncDocumentFormattingService() {
   override fun getFeatures(): Set<Feature> = emptySet()
 
   override fun canFormat(file: PsiFile): Boolean {
-    val buildifierConfiguration = BuildifierConfiguration.getBuildifierConfiguration(file.project)
-    if (!buildifierConfiguration.enabledOnReformat) return false
-
     val virtualFile = file.virtualFile ?: return false
+    val buildifierConfiguration = BuildifierConfiguration.getBuildifierConfiguration(file.project)
+    if (buildifierConfiguration.pathToExecutable.isNullOrEmpty()) return false
     return FileTypeRegistry.getInstance().isFileOfType(virtualFile, StarlarkFileType)
   }
 
@@ -41,6 +39,7 @@ internal class StarlarkFormattingService : AsyncDocumentFormattingService() {
     val formattingContext = request.context
     val project = formattingContext.project
     val buildifierConfiguration = BuildifierConfiguration.getBuildifierConfiguration(project)
+    if (buildifierConfiguration.pathToExecutable.isNullOrEmpty()) return null
 
     if (!checkDocumentExists(request)) {
       LOG.warn("Document for file ${request.context.containingFile.name} is null")
@@ -117,27 +116,25 @@ private open class BuildifierProcessListener(private val request: AsyncFormattin
     }
   }
 
-  private fun showFormattedLinesInfo(text: String) {
-    PsiEditorUtil.findEditor(request.context.containingFile)?.let { editor: Editor ->
-      ApplicationManager
-        .getApplication()
-        .invokeLater(
-          {
-            val component = HintUtil.createInformationLabel(text)
-            val hint = LightweightHint(component)
-            HintManagerImpl
-              .getInstanceImpl()
-              .showEditorHint(
-                hint,
-                editor,
-                HintManager.ABOVE,
-                HintManager.HIDE_BY_ANY_KEY or HintManager.HIDE_BY_SCROLLING,
-                0,
-                false,
-              )
-          },
-          ModalityState.defaultModalityState(),
-        ) { editor.isDisposed || !editor.component.isShowing }
-    }
-  }
+  private fun showFormattedLinesInfo(text: String) =
+    ApplicationManager
+      .getApplication()
+      .invokeLater(
+        {
+          val editor = PsiEditorUtil.findEditor(request.context.containingFile) ?: return@invokeLater
+          val component = HintUtil.createInformationLabel(text)
+          val hint = LightweightHint(component)
+          HintManagerImpl
+            .getInstanceImpl()
+            .showEditorHint(
+              hint,
+              editor,
+              HintManager.ABOVE,
+              HintManager.HIDE_BY_ANY_KEY or HintManager.HIDE_BY_SCROLLING,
+              0,
+              false,
+            )
+        },
+        ModalityState.defaultModalityState(),
+      )
 }

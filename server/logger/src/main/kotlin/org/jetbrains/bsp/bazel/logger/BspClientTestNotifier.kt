@@ -12,8 +12,8 @@ import ch.epfl.scala.bsp4j.TestReport
 import ch.epfl.scala.bsp4j.TestStart
 import ch.epfl.scala.bsp4j.TestStatus
 import ch.epfl.scala.bsp4j.TestTask
-import org.jetbrains.bazel.commons.label.Label
-import org.jetbrains.bazel.commons.label.toBspIdentifier
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.toBspIdentifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 
 class BspClientTestNotifier(private val bspClient: BuildClient, private val originId: String) {

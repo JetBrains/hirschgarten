@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.workspacecontext
 
 import org.apache.logging.log4j.LogManager
-import org.jetbrains.bazel.commons.label.assumeResolved
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContext
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextConstructor
@@ -78,6 +78,8 @@ data class WorkspaceContext(
    */
   val ideJavaHomeOverrideSpec: IdeJavaHomeOverrideSpec,
   val experimentalAddTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJars,
+  val experimentalTransitiveCompileTimeJarsTargetKinds: TransitiveCompileTimeJarsTargetKindsSpec,
+  val experimentalNoPruneTransitiveCompileTimeJarsPatterns: NoPruneTransitiveCompileTimeJarsPatternsSpec,
   val enableNativeAndroidRules: EnableNativeAndroidRules,
   val androidMinSdkSpec: AndroidMinSdkSpec,
   val shardSync: ShardSyncSpec,
@@ -119,6 +121,14 @@ class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDi
       enabledRules = EnabledRulesSpecExtractor.fromProjectView(projectView),
       ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpecExtractor.fromProjectView(projectView),
       experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsExtractor.fromProjectView(projectView),
+      experimentalTransitiveCompileTimeJarsTargetKinds =
+        ExperimentalTransitiveCompileTimeJarsTargetKindsExtractor.fromProjectView(
+          projectView,
+        ),
+      experimentalNoPruneTransitiveCompileTimeJarsPatterns =
+        ExperimentalNoPruneTransitiveCompileTimeJarsPatternsExtractor.fromProjectView(
+          projectView,
+        ),
       enableNativeAndroidRules = EnableNativeAndroidRulesExtractor.fromProjectView(projectView),
       androidMinSdkSpec = AndroidMinSdkSpecExtractor.fromProjectView(projectView),
       shardSync = ShardSyncSpecExtractor.fromProjectView(projectView),

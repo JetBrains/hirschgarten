@@ -11,7 +11,7 @@ import ch.epfl.scala.bsp4j.CppOptionsResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.common.collect.ImmutableList
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import kotlin.time.Duration.Companion.seconds

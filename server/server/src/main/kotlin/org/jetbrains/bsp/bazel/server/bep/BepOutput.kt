@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.server.bep
 
 import com.google.common.collect.Queues
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
 class BepOutput(

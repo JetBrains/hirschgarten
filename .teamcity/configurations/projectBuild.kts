@@ -38,7 +38,7 @@ open class Build(vcsRoot: GitVcsRoot) :
                   BAZEL_BIN_PATH="%system.agent.persistent.cache%/bazel/_bazel_hirschuser/*/execroot/_main/bazel-out/k8-fastbuild/bin"
                   PROJECT_PATH="%system.teamcity.build.checkoutDir%"
                   
-                  cp ${"$"}{BAZEL_BIN_PATH}/plugin-bsp/intellij-bsp.zip ${"$"}{PROJECT_PATH}/intellij-bsp-$platform.zip
+                  # cp ${"$"}{BAZEL_BIN_PATH}/plugin-bsp/intellij-bsp.zip ${"$"}{PROJECT_PATH}/intellij-bsp-$platform.zip
                   cp ${"$"}{BAZEL_BIN_PATH}/plugin-bazel/intellij-bazel.zip ${"$"}{PROJECT_PATH}/intellij-bazel-$platform.zip
               """.trimIndent()
             }

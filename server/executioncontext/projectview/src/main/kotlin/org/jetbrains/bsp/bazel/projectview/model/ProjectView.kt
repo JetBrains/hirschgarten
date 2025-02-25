@@ -4,6 +4,8 @@ import org.apache.logging.log4j.LogManager
 import org.jetbrains.bsp.bazel.projectview.model.sections.AndroidMinSdkSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
@@ -49,6 +51,10 @@ data class ProjectView(
   val ideJavaHomeOverride: ProjectViewIdeJavaHomeOverrideSection?,
   /** add transitive compile time jars to compensate for possible missing classpaths */
   val addTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJarsSection? = null,
+  /** used alongside with [addTransitiveCompileTimeJars] with the list of custom JVM target kinds */
+  val transitiveCompileTimeJarsTargetKinds: ExperimentalTransitiveCompileTimeJarsTargetKindsSection? = null,
+  /** used alongside with [addTransitiveCompileTimeJars] with the list of transitive compile time jars patterns to not prune */
+  val noPruneTransitiveCompileTimeJarsPatternsSection: ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection? = null,
   /** enable native (non-starlarkified) Android rules */
   val enableNativeAndroidRules: EnableNativeAndroidRulesSection? = null,
   /** Override the minimum Android SDK version globally for the whole project */
@@ -73,6 +79,8 @@ data class ProjectView(
     private val enabledRules: ProjectViewEnabledRulesSection? = null,
     private val ideJavaHomeOverride: ProjectViewIdeJavaHomeOverrideSection? = null,
     private val addTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJarsSection? = null,
+    private val transitiveCompileTimeJarsTargetKinds: ExperimentalTransitiveCompileTimeJarsTargetKindsSection? = null,
+    private val noPruneTransitiveCompileTimeJarsPatterns: ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection? = null,
     private val enableNativeAndroidRules: EnableNativeAndroidRulesSection? = null,
     private val androidMinSdkSection: AndroidMinSdkSection? = null,
     private val shardSync: ShardSyncSection? = null,
@@ -97,6 +105,8 @@ data class ProjectView(
       val enabledRules = combineEnabledRulesSection(importedProjectViews)
       val ideJavaHomeOverride = combineIdeJavaHomeOverrideSection(importedProjectViews)
       val addTransitiveCompileTimeJars = combineAddTransitiveCompileTimeJarsSection(importedProjectViews)
+      val transitiveCompileTimeJarsTargetKinds = combineTransitiveCompileTimeJarsTargetKindsSection(importedProjectViews)
+      val noPruneTransitiveCompileTimeJarsPatterns = combineNoPruneTransitiveCompileTimeJarsPatternsSection(importedProjectViews)
       val enableNativeAndroidRules = combineEnableNativeAndroidRulesSection(importedProjectViews)
       val androidMinSdkSection = combineAndroidMinSdkSection(importedProjectViews)
       val shardSyncSection = combineShardSyncSection(importedProjectViews)
@@ -117,6 +127,8 @@ data class ProjectView(
           " ideJavaHomeOverride: {}," +
           " useLibOverModSection: {}," +
           " addTransitiveCompileTimeJars: {}," +
+          " transitiveCompileTimeJarsTargetKinds: {}," +
+          " noPruneTransitiveCompileTimeJarsPatterns: {}," +
           " enableNativeAndroidRules: {}," +
           " androidMinSdkSection: {}," +
           " shardSync: {}," +
@@ -134,6 +146,8 @@ data class ProjectView(
         enabledRules,
         ideJavaHomeOverride,
         addTransitiveCompileTimeJars,
+        transitiveCompileTimeJarsTargetKinds,
+        noPruneTransitiveCompileTimeJarsPatterns,
         enableNativeAndroidRules,
         androidMinSdkSection,
         shardSyncSection,
@@ -152,6 +166,8 @@ data class ProjectView(
         enabledRules,
         ideJavaHomeOverride,
         addTransitiveCompileTimeJars,
+        transitiveCompileTimeJarsTargetKinds,
+        noPruneTransitiveCompileTimeJarsPatterns,
         enableNativeAndroidRules,
         androidMinSdkSection,
         shardSyncSection,
@@ -167,6 +183,32 @@ data class ProjectView(
         importedProjectViews,
         ProjectView::addTransitiveCompileTimeJars,
       )
+
+    private fun combineTransitiveCompileTimeJarsTargetKindsSection(
+      importedProjectViews: List<ProjectView>,
+    ): ExperimentalTransitiveCompileTimeJarsTargetKindsSection? {
+      val targetKinds =
+        combineListValuesWithImported(
+          importedProjectViews,
+          transitiveCompileTimeJarsTargetKinds,
+          ProjectView::transitiveCompileTimeJarsTargetKinds,
+          ExperimentalTransitiveCompileTimeJarsTargetKindsSection::values,
+        )
+      return createInstanceOfListSectionOrNull(targetKinds, ::ExperimentalTransitiveCompileTimeJarsTargetKindsSection)
+    }
+
+    private fun combineNoPruneTransitiveCompileTimeJarsPatternsSection(
+      importedProjectViews: List<ProjectView>,
+    ): ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection? {
+      val patterns =
+        combineListValuesWithImported(
+          importedProjectViews,
+          noPruneTransitiveCompileTimeJarsPatterns,
+          ProjectView::noPruneTransitiveCompileTimeJarsPatternsSection,
+          ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection::values,
+        )
+      return createInstanceOfListSectionOrNull(patterns, ::ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection)
+    }
 
     private fun combineEnableNativeAndroidRulesSection(importedProjectViews: List<ProjectView>): EnableNativeAndroidRulesSection? =
       enableNativeAndroidRules ?: getLastImportedSingletonValue(

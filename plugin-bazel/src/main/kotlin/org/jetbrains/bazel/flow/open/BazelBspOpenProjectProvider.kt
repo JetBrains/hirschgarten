@@ -7,11 +7,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.coroutines.CoroutineService
-import org.jetbrains.plugins.bsp.impl.flow.open.CounterPlatformProjectConfigurator
-import org.jetbrains.plugins.bsp.impl.flow.open.initProperties
-import org.jetbrains.plugins.bsp.startup.BspStartupActivity
+import org.jetbrains.bazel.flow.open.CounterPlatformProjectConfigurator
+import org.jetbrains.bazel.flow.open.initProperties
+import org.jetbrains.bazel.startup.BspStartupActivity
 
 internal class BazelBspOpenProjectProvider : AbstractOpenProjectProvider() {
   private val log = logger<BazelBspOpenProjectProvider>()
@@ -31,7 +30,7 @@ internal class BazelBspOpenProjectProvider : AbstractOpenProjectProvider() {
 
 internal fun performOpenBazelProjectViaBspPlugin(project: Project?, projectRootDir: VirtualFile?) {
   if (projectRootDir != null && project != null) {
-    project.initProperties(projectRootDir, bazelBspBuildToolId)
+    project.initProperties(projectRootDir)
     CounterPlatformProjectConfigurator().configureProject(project)
     CoroutineService.getInstance(project).start {
       BspStartupActivity().execute(project)

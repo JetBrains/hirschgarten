@@ -76,7 +76,6 @@ object GitHub : Project({
         buildType(ServerE2eTests.FirstPhaseSyncGitHub)
         buildType(ServerE2eTests.PartialSyncGitHub)
         buildType(ServerE2eTests.NestedModulesGitHub)
-        buildType(ServerBenchmark.GitHub)
         buildType(StaticAnalysis.HirschgartenGitHub)
         buildType(StaticAnalysis.AndroidBazelRulesGitHub)
         buildType(StaticAnalysis.AndroidTestdpcGitHub)
@@ -135,7 +134,6 @@ object GitHub : Project({
       ServerE2eTests.FirstPhaseSyncGitHub,
       ServerE2eTests.PartialSyncGitHub,
       ServerE2eTests.NestedModulesGitHub,
-      ServerBenchmark.GitHub,
       StaticAnalysis.HirschgartenGitHub,
       StaticAnalysis.AndroidBazelRulesGitHub,
       StaticAnalysis.AndroidTestdpcGitHub,
@@ -183,7 +181,6 @@ object Space : Project({
         buildType(ServerE2eTests.FirstPhaseSyncSpace)
         buildType(ServerE2eTests.PartialSyncSpace)
         buildType(ServerE2eTests.NestedModulesSpace)
-        buildType(ServerBenchmark.Space)
         buildType(StaticAnalysis.HirschgartenSpace)
         buildType(StaticAnalysis.AndroidBazelRulesSpace)
         buildType(StaticAnalysis.AndroidTestdpcSpace)
@@ -242,7 +239,6 @@ object Space : Project({
       ServerE2eTests.FirstPhaseSyncSpace,
       ServerE2eTests.PartialSyncSpace,
       ServerE2eTests.NestedModulesSpace,
-      ServerBenchmark.Space,
       StaticAnalysis.HirschgartenSpace,
       StaticAnalysis.AndroidBazelRulesSpace,
       StaticAnalysis.AndroidTestdpcSpace,

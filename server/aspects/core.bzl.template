@@ -50,6 +50,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
         return []
 
     rule_attrs = ctx.rule.attr
+    rule_kind = ctx.rule.kind
 
     direct_dep_targets = collect_targets_from_attrs(rule_attrs, COMPILE_DEPS)
     private_direct_dep_targets = collect_targets_from_attrs(rule_attrs, PRIVATE_COMPILE_DEPS)
@@ -133,7 +134,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
 
     info = dict(
         id = str(target.label),
-        kind = ctx.rule.kind,
+        kind = rule_kind,
         tags = rule_attrs.tags,
         dependencies = list(all_deps),
         sources = sources,
@@ -146,7 +147,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
 
     exported_properties = dict(
         id = target.label,
-        kind = ctx.rule.kind,
+        kind = rule_kind,
         export_deps = export_deps,
         output_groups = output_groups,
     )

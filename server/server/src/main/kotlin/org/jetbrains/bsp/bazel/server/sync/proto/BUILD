@@ -12,22 +12,3 @@ proto_library(
     srcs = ["bsp_target_info.proto"],
     visibility = ["//visibility:private"],
 )
-
-java_proto_library(
-    name = "build_java_proto",
-    visibility = ["//visibility:public"],
-    deps = [":build_proto"],
-)
-
-proto_library(
-    name = "build_proto",
-    srcs = ["build.proto"],
-    visibility = ["//visibility:private"],
-    deps = [":stardoc_output_proto"],
-)
-
-proto_library(
-    name = "stardoc_output_proto",
-    srcs = ["stardoc_output.proto"],
-    visibility = ["//visibility:private"],
-)

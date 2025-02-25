@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.server.diagnostics
 
 import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
-import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
 class DiagnosticsService(

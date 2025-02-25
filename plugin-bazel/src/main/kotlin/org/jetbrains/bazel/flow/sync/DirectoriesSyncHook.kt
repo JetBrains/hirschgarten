@@ -10,22 +10,18 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import kotlinx.coroutines.coroutineScope
-import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeService
+import org.jetbrains.bazel.sync.ProjectSyncHook
+import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
+import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
+import org.jetbrains.bazel.sync.task.query
+import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
-import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook
-import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.plugins.bsp.impl.flow.sync.query
-import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelDiff
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 import java.nio.file.Path
 
 class DirectoriesSyncHook : ProjectSyncHook {
-  override val buildToolId: BuildToolId = bazelBspBuildToolId
-
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     coroutineScope {
       val directories = query("workspace/directories") { environment.server.workspaceDirectories() }
