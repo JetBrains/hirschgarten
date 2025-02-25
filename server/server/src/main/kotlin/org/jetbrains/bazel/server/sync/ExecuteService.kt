@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.sync
 
-import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -16,7 +15,6 @@ import org.jetbrains.bazel.bazelrunner.HasMultipleTargets
 import org.jetbrains.bazel.bazelrunner.HasProgramArguments
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.label.label
-import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bazel.server.bsp.managers.BepReader
@@ -58,13 +56,10 @@ class ExecuteService(
   private val projectProvider: ProjectProvider,
   private val bazelRunner: BazelRunner,
   private val workspaceContextProvider: WorkspaceContextProvider,
-  private val bspClientLogger: BspClientLogger,
   private val bazelPathsResolver: BazelPathsResolver,
   private val additionalBuildTargetsProvider: AdditionalAndroidBuildTargetsProvider,
   private val featureFlags: FeatureFlags,
 ) {
-  private val gson = Gson()
-
   private fun <T> withBepServer(originId: String?, body: (BepReader) -> T): T {
     val diagnosticsService = DiagnosticsService(compilationManager.workspaceRoot)
     val server = BepServer(compilationManager.client, diagnosticsService, originId, bazelPathsResolver)

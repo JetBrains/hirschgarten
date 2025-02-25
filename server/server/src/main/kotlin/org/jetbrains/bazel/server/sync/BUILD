@@ -29,7 +29,6 @@ kt_jvm_library(
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/sharding",
         "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
         "//third_party/bazel/src/main/protobuf:deps_java_proto",
-        "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:io_grpc_grpc_stub",
         "@maven//:org_eclipse_lsp4j_org_eclipse_lsp4j_jsonrpc",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",

@@ -12,69 +12,37 @@ import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
  */
 class ProjectViewTokenType private constructor(debugName: String) : IElementType(debugName, ProjectViewLanguage) {
   companion object {
+    /**
+     * A Project View section keyword.
+     *
+     * Defined as a sequence of characters that starts at the beginning of the line that is not a comment.
+     * Its characters neither whitespace nor colons.
+     */
+    val KEYWORD = ProjectViewTokenType("keyword")
+
+    /**
+     * An identifier belonging to a Project View section.
+     *
+     * Cannot start at the beginning of the line.
+     */
+    val IDENTIFIER = ProjectViewTokenType("identifier")
+
     /** The character ':' */
     val COLON = ProjectViewTokenType("colon")
 
     /**
-     * An inline comment.
-     *
-     * Starts with '#'. No non-white characters are present before the comment.
+     * A comment starting with '#'. No non-white characters are present before the comment.
      */
     val COMMENT = ProjectViewTokenType("comment")
-
-    /** A sequence of characters that are neither whitespace nor colon nor comment. */
-    val IDENTIFIER = ProjectViewTokenType("identifier")
 
     /** A series of whitespaces at the beginning of a line NOT followed by a comment or '\n'. */
     val INDENT = ProjectViewTokenType("indent")
 
-    /** An identifier that is a section keyword followed by a list of identifier. */
-    val LIST_KEYWORD = ProjectViewTokenType("list_keyword")
-
     /** The character '\n'. */
     val NEWLINE = ProjectViewTokenType("newline")
 
-    /** An identifier that is a section keyword followed by a single identifier. */
-    val SCALAR_KEYWORD = ProjectViewTokenType("scalar_keyword")
-
     /** A consecutive sequence of characters from the set { ' ', '\r', '\t' }. */
     val WHITESPACE = ProjectViewTokenType("whitespace")
-
-    /** Possible values of list keywords. */
-    val LIST_KEYWORDS_SET =
-      setOf(
-        "additional_languages",
-        "build_flags",
-        "directories",
-        "exclude_library",
-        "exclude_target",
-        "excluded_libraries",
-        "excluded_sources",
-        "import_run_configurations",
-        "import_target_output",
-        "sync_flags",
-        "targets",
-        "test_flags",
-        "test_sources",
-      )
-
-    /** Possible values of scalar keywords. */
-    val SCALAR_KEYWORDS_SET =
-      setOf(
-        "allow_manual_targets_sync",
-        "bazel_binary",
-        "derive_targets_from_directories",
-        "import",
-        "java_language_level",
-        "shard_sync",
-        "target_shard_size",
-        "try_import",
-        "use_exclusion_patterns",
-        "use_query_sync",
-        "view_project_root",
-        "workspace_buildrc_file",
-        "workspace_type",
-      )
   }
 
   override fun toString(): String = "ProjectView:" + super.toString()
