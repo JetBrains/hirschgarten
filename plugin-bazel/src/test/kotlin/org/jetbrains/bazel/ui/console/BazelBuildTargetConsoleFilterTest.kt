@@ -37,7 +37,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   @Test
   fun `should match an absolute bazel target without @`() {
     // given
-    createBazelFileInProject("plugin-bazel/src")
+    val path = createBazelFileInProject("plugin-bazel/src")
     val bazelTarget = "//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -49,12 +49,13 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile?.toNioPath().toString() shouldContain "plugin-bazel"
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
+    path.deleteIfExists()
   }
 
   @Test
   fun `should match an absolute bazel target with a @`() {
     // given
-    createBazelFileInProject("plugin-bazel/src")
+    val path = createBazelFileInProject("plugin-bazel/src")
     val bazelTarget = "@//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -66,12 +67,13 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile?.toNioPath().toString() shouldContain "plugin-bazel"
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
+    path.deleteIfExists()
   }
 
   @Test
   fun `should match an absolute bazel target with @@`() {
     // given
-    createBazelFileInProject("plugin-bazel/src")
+    val path = createBazelFileInProject("plugin-bazel/src")
     val bazelTarget = "@@//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -83,6 +85,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile?.toNioPath().toString() shouldContain "plugin-bazel"
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
+    path.deleteIfExists()
   }
 
   @Test
@@ -153,7 +156,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   @Test
   fun `should not match an external target which does not exist `() {
     // given
-    createBazelFileInProject("plugin-bazel/src")
+    val path = createBazelFileInProject("plugin-bazel/src")
     val bazelTarget = "@@externalRepo3//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -162,12 +165,13 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
 
     // then
     result!!.resultItems.size shouldBe 0
+    path.deleteIfExists()
   }
 
   @Test
   fun `should not match non-existing folder`() {
     // given
-    createBazelFileInProject("plugin-bazel/src")
+    val path = createBazelFileInProject("plugin-bazel/src")
     val bazelTarget = "@@external//plugin-bazel/test:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -176,12 +180,13 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
 
     // then
     result!!.resultItems.size shouldBe 0
+    path.deleteIfExists()
   }
 
   @Test
   fun `should match top level build files`() {
     // given
-    createBazelFileInProject(".")
+    val path = createBazelFileInProject(".")
     val bazelTarget = "//:format"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -192,12 +197,13 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     result!!.resultItems.size shouldBe 1
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
+    path.deleteIfExists()
   }
 
   @Test
   fun `should match an absolute bazel target without @ to BUILD_bazel`() {
     // given
-    createBazelFileInProject("plugin-bazel/src", "BUILD.bazel")
+    val path = createBazelFileInProject("plugin-bazel/src", "BUILD.bazel")
     val bazelTarget = "//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
@@ -210,12 +216,13 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
     (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile.toString().endsWith("BUILD.bazel") shouldBe true
+    path.deleteIfExists()
   }
 
   @Test
   fun `BUILD_bazel has higher priority than BUILD`() {
     // given
-    createBazelFileInProject(".", "BUILD.bazel")
+    val path = createBazelFileInProject(".", "BUILD.bazel")
     createBazelFileInProject(".", "BUILD")
     val bazelTarget = "//:format"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
@@ -228,6 +235,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
     (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile.toString().endsWith("BUILD.bazel") shouldBe true
+    path.deleteIfExists()
   }
 
   val testBazelFileContent = """
