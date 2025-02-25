@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.projectview.parser.sections
 
 import org.apache.logging.log4j.LogManager
-import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection
+import org.jetbrains.bazel.projectview.model.sections.ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewEnabledRulesSection

@@ -14,6 +14,7 @@ import kotlinx.coroutines.sync.withLock
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.server.client.BspClient
 import org.jetbrains.bazel.server.client.GenericConnection
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
