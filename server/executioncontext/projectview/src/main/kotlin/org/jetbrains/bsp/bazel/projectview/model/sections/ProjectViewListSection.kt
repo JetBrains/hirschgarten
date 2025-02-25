@@ -28,3 +28,10 @@ data class ExperimentalTransitiveCompileTimeJarsTargetKindsSection(override val 
     const val SECTION_NAME = "experimental_transitive_compile_time_jars_target_kinds"
   }
 }
+
+data class ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection(override val values: List<String>) :
+  ProjectViewListSection<String>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "experimental_no_prune_transitive_compile_time_jars_patterns"
+  }
+}

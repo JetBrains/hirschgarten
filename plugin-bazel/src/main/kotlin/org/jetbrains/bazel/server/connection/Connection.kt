@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.connection
 
+import ch.epfl.scala.bsp4j.InitializeBuildParams
 import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
