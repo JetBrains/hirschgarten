@@ -126,7 +126,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/settings",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel:bsp_export",
     ],
 )
 
