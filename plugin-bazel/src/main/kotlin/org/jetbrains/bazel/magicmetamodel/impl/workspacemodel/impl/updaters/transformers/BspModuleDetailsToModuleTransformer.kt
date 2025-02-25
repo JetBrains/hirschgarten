@@ -18,13 +18,10 @@ import org.jetbrains.bsp.protocol.ScalacOptionsItem
 
 internal data class BspModuleDetails(
   val target: BuildTarget,
-  val dependencySources: List<DependencySourcesItem>,
-  val javacOptions: JavacOptionsItem?,
-  val scalacOptions: ScalacOptionsItem?,
   val type: ModuleTypeId,
   val associates: List<BuildTargetIdentifier> = listOf(),
   val moduleDependencies: List<BuildTargetIdentifier>,
-  val libraryDependencies: List<BuildTargetIdentifier>?,
+  val libraryDependencies: List<BuildTargetIdentifier>,
 )
 
 internal class BspModuleDetailsToModuleTransformer(
@@ -49,20 +46,7 @@ internal class BspModuleDetailsToModuleTransformer(
     )
 
   private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<IntermediateLibraryDependency> =
-    inputEntity.libraryDependencies?.map { it.toLibraryDependency(nameProvider, true) }
-      ?: if (inputEntity.target.languageIds.includesJavaOrScala()) {
-        DependencySourcesItemToLibraryDependencyTransformer
-          .transform(
-            inputEntity.dependencySources.map {
-              DependencySourcesAndJvmClassPaths(it, inputEntity.toJvmClassPaths())
-            },
-          )
-      } else {
-        emptyList()
-      }
-
-  private fun BspModuleDetails.toJvmClassPaths() =
-    (this.javacOptions?.classpath.orEmpty() + this.scalacOptions?.classpath.orEmpty()).distinct()
+    inputEntity.libraryDependencies.map { it.toLibraryDependency(nameProvider, true) }
 }
 
 internal object DependencySourcesItemToLibraryDependencyTransformer :

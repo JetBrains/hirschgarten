@@ -44,17 +44,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
       baseDirContentRoot = toBaseDirContentRoot(inputEntity),
       sourceRoots = toJavaSourceRoots(inputEntity),
       resourceRoots = toResourceRoots(inputEntity),
-      moduleLevelLibraries =
-        if (inputEntity.libraryDependencies == null) {
-          DependencySourcesItemToLibraryTransformer
-            .transform(
-              inputEntity.dependenciesSources.map {
-                DependencySourcesAndJvmClassPaths(it, inputEntity.toJvmClassPaths())
-              },
-            )
-        } else {
-          null
-        },
+      moduleLevelLibraries = null,
       // Any java module must be assigned a jdk if there is any available.
       jvmJdkName = inputEntity.toJdkNameOrDefault(),
       jvmBinaryJars = inputEntity.jvmBinaryJars.flatMap { it.jars }.map { it.safeCastToURI().toPath() },
@@ -85,20 +75,14 @@ internal class ModuleDetailsToJavaModuleTransformer(
       },
     )
 
-  private fun ModuleDetails.toJvmClassPaths() =
-    (this.javacOptions?.classpath.orEmpty() + this.scalacOptions?.classpath.orEmpty()).distinct()
-
   override fun toGenericModuleInfo(inputEntity: ModuleDetails): GenericModuleInfo {
     val bspModuleDetails =
       BspModuleDetails(
         target = inputEntity.target,
-        dependencySources = inputEntity.dependenciesSources,
         type = type,
-        javacOptions = inputEntity.javacOptions,
         associates = toAssociates(inputEntity),
         libraryDependencies = inputEntity.libraryDependencies,
         moduleDependencies = inputEntity.moduleDependencies,
-        scalacOptions = inputEntity.scalacOptions,
       )
 
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails).applyHACK(inputEntity, projectBasePath)
@@ -146,7 +130,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
     extractJvmBuildTarget(inputEntity.target)?.javaVersion?.let {
       JavaAddendum(
         languageVersion = it,
-        javacOptions = inputEntity.javacOptions?.options.orEmpty(),
       )
     }
 

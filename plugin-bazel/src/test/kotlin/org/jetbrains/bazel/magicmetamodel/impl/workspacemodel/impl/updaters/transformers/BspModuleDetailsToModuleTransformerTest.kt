@@ -81,16 +81,13 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails =
       BspModuleDetails(
         target = target,
-        dependencySources = listOf(dependencySourceItem1),
-        javacOptions = javacOptions,
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
             BuildTargetIdentifier("//target2"),
             BuildTargetIdentifier("//target3"),
           ),
-        libraryDependencies = null,
-        scalacOptions = null,
+        libraryDependencies = emptyList(),
       )
 
     val targetsMap = listOf("//target1", "//target2", "//target3").toDefaultTargetsMap()
@@ -154,9 +151,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails =
       BspModuleDetails(
         target = target,
-        dependencySources = listOf(),
         type = ModuleTypeId("JAVA_MODULE"),
-        javacOptions = null,
         associates =
           listOf(
             BuildTargetIdentifier("//target4"),
@@ -171,7 +166,6 @@ class BspModuleDetailsToModuleTransformerTest {
           listOf(
             BuildTargetIdentifier("@maven//:test"),
           ),
-        scalacOptions = null,
       )
 
     val targetsMap = listOf("//target1", "//target2", "//target3", "//target4", "//target5").toDefaultTargetsMap()
@@ -258,16 +252,13 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails1 =
       BspModuleDetails(
         target = target1,
-        dependencySources = listOf(dependencySourceItem1),
-        javacOptions = javacOptionsItem1,
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
             BuildTargetIdentifier("//target2"),
             BuildTargetIdentifier("//target3"),
           ),
-        libraryDependencies = null,
-        scalacOptions = null,
+        libraryDependencies = emptyList(),
       )
 
     val target2Name = "//target2"
@@ -302,15 +293,12 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails2 =
       BspModuleDetails(
         target = target2,
-        dependencySources = listOf(dependencySourceItem2),
-        javacOptions = javacOptionsItem2,
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
             BuildTargetIdentifier("//target3"),
           ),
-        libraryDependencies = null,
-        scalacOptions = null,
+        libraryDependencies = emptyList(),
       )
 
     val targetsMap = listOf("//target1", "//target2", "//target3").toDefaultTargetsMap()
@@ -405,12 +393,9 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails =
       BspModuleDetails(
         target = target,
-        dependencySources = emptyList(),
-        javacOptions = javacOptions,
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies = emptyList(),
         libraryDependencies = emptyList(),
-        scalacOptions = null,
       )
 
     val targetsMap = listOf("//target1").toDefaultTargetsMap()

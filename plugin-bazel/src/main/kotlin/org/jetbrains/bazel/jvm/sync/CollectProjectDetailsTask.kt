@@ -85,8 +85,6 @@ class CollectProjectDetailsTask(
 ) : BspServerTask<ProjectDetails>("collect project details", project) {
   private var uniqueJavaHomes: Set<String>? = null
 
-  private lateinit var javacOptions: Map<String, String>
-
   private var scalaSdks: Set<ScalaSdk>? = null
 
   private var androidSdks: Set<AndroidSdk>? = null
@@ -338,23 +336,11 @@ class CollectProjectDetailsTask(
           workspaceModelUpdater.loadModules(modulesToLoad + libraryModules)
           workspaceModelUpdater.loadLibraries(libraries)
           compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
-          calculateAllJavacOptions(modulesToLoad)
         }
       }
     }
   }
 
-  private fun calculateAllJavacOptions(modulesToLoad: List<Module>) {
-    javacOptions =
-      modulesToLoad
-        .asSequence()
-        .filterIsInstance<JavaModule>()
-        .mapNotNull { module ->
-          module.javaAddendum?.javacOptions?.takeIf { it.isNotEmpty() }?.let { javacOptions ->
-            module.getModuleName() to javacOptions.joinToString(" ")
-          }
-        }.toMap()
-  }
 
   suspend fun postprocessingSubtask(targetListChanged: Boolean) {
     // This order is strict as now SDKs also use the workspace model,
@@ -364,7 +350,6 @@ class CollectProjectDetailsTask(
     project.targetUtils.fireSyncListeners(targetListChanged)
     SdkUtils.cleanUpInvalidJdks(project.bspProjectName)
     addBspFetchedJdks()
-    addBspFetchedJavacOptions()
     addBspFetchedScalaSdks()
 
     if (BspFeatureFlags.isAndroidSupportEnabled) {
@@ -428,12 +413,6 @@ class CollectProjectDetailsTask(
     SdkUtils.addSdkIfNeeded(sdk)
   }
 
-  private suspend fun addBspFetchedJavacOptions() =
-    writeAction {
-      val javacOptions = JavacConfiguration.getOptions(project, JavacConfiguration::class.java)
-      javacOptions.ADDITIONAL_OPTIONS_OVERRIDE = this.javacOptions
-    }
-
   /**
    * Workaround for https://youtrack.jetbrains.com/issue/KT-70632
    */
@@ -483,25 +462,9 @@ suspend fun calculateProjectDetailsWithCapabilities(
   coroutineScope {
     try {
       val javaTargetIds = baseTargetInfos.infos.calculateJavaTargetIds()
-      val scalaTargetIds = baseTargetInfos.infos.calculateScalaTargetIds()
       val libraries: WorkspaceLibrariesResult =
         query("workspace/libraries") {
           server.workspaceLibraries()
-        }
-
-      val dependencySourcesResult =
-        query("buildTarget/dependencySources") {
-          val dependencySourcesTargetIds =
-            if (libraries == null) {
-              baseTargetInfos.allTargetIds
-            } else {
-              emptyList()
-            }
-          if (dependencySourcesTargetIds.isNotEmpty()) {
-            server.buildTargetDependencySources(DependencySourcesParams(dependencySourcesTargetIds))
-          } else {
-            CompletableFuture.completedFuture(DependencySourcesResult(emptyList()))
-          }
         }
 
       val nonModuleTargets =
@@ -518,41 +481,13 @@ suspend fun calculateProjectDetailsWithCapabilities(
           server.buildTargetJvmBinaryJars(JvmBinaryJarsParams(javaTargetIds))
         }
 
-      // We use javacOptions only to build the dependency tree based on the classpath.
-      // If the workspace/libraries endpoint is NOT available (like SBT), we need to retrieve it.
-      // If a server supports buildTarget/jvmCompileClasspath, then the classpath won't be passed via this endpoint
-      // (see https://build-server-protocol.github.io/docs/extensions/java#javacoptionsitem).
-      // In this case we can use this request to retrieve the javac options without the overhead of passing the whole classpath.
-      // There's no capability for javacOptions.
-      val javacOptionsResult =
-        if (libraries == null) {
-          asyncQueryIf(javaTargetIds.isNotEmpty(), "buildTarget/javacOptions") {
-            server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
-          }
-        } else {
-          null
-        }
-
-      // Same for Scala
-      val scalacOptionsResult =
-        if (libraries == null) {
-          asyncQueryIf(scalaTargetIds.isNotEmpty(), "buildTarget/scalacOptions") {
-            server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
-          }
-        } else {
-          null
-        }
-
       ProjectDetails(
         targetIds = baseTargetInfos.allTargetIds,
         targets = baseTargetInfos.infos.map { it.target }.toSet(),
         sources = baseTargetInfos.infos.flatMap { it.sources },
         resources = baseTargetInfos.infos.flatMap { it.resources },
-        dependenciesSources = dependencySourcesResult.items,
-        javacOptions = javacOptionsResult?.await()?.items ?: emptyList(),
-        scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
         libraries = libraries.libraries,
-        nonModuleTargets = nonModuleTargets.nonModuleTargets ?: emptyList(),
+        nonModuleTargets = nonModuleTargets.nonModuleTargets,
         jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
       )
     } catch (e: Exception) {
@@ -569,6 +504,3 @@ suspend fun calculateProjectDetailsWithCapabilities(
 
 private fun List<BaseTargetInfo>.calculateJavaTargetIds(): List<BuildTargetIdentifier> =
   filter { it.target.languageIds.includesJava() }.map { it.target.id }
-
-private fun List<BaseTargetInfo>.calculateScalaTargetIds(): List<BuildTargetIdentifier> =
-  filter { it.target.languageIds.includesScala() }.map { it.target.id }

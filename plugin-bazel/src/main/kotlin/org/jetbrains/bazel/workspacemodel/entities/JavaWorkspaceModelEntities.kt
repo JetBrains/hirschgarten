@@ -40,7 +40,7 @@ public data class KotlinAddendum(
 
 public data class ScalaAddendum(val scalaSdkName: String)
 
-public data class JavaAddendum(val languageVersion: String, val javacOptions: List<String>)
+public data class JavaAddendum(val languageVersion: String)
 
 public data class AndroidAddendum(
   val androidSdkName: String,
