@@ -244,7 +244,7 @@ class PythonProjectSync : ProjectSyncHook {
       if (it.interpreter != null && it.version != null) {
         calculateAndAddSdk(
           sdkName = "${target.id.uri}-${it.version}",
-          sdkInterpreterUri = it.interpreter!!,
+          sdkInterpreterUri = it.interpreter,
           sdkDependencies = dependenciesSources,
           virtualFileUrlManager = virtualFileUrlManager,
         )

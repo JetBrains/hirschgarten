@@ -17,8 +17,8 @@ import java.nio.file.Path
 import kotlin.io.path.toPath
 
 class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<PythonModule>() {
-  private var defaultInterpreter: URI? = null
-  private var defaultVersion: String? = null
+  private lateinit var defaultInterpreter: URI
+  private lateinit var defaultVersion: String
 
   override fun prepareSync(targets: Sequence<TargetInfo>) {
     val defaultTargetInfo = calculateDefaultTargetInfo(targets)
@@ -26,8 +26,8 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
       defaultTargetInfo
         ?.interpreter
         ?.takeUnless { it.relativePath.isNullOrEmpty() }
-        ?.let { bazelPathsResolver.resolveUri(it) }
-    defaultVersion = defaultTargetInfo?.version
+        ?.let { bazelPathsResolver.resolveUri(it) }!! // TODO: handle null
+    defaultVersion = defaultTargetInfo.version!!
   }
 
   private fun calculateDefaultTargetInfo(targets: Sequence<TargetInfo>): PythonTargetInfo? =
@@ -53,7 +53,7 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
       ?.let { bazelPathsResolver.resolveUri(it) }
 
   override fun applyModuleData(moduleData: PythonModule, buildTarget: BuildTarget) {
-    val interpreter = moduleData.interpreter?.toString()
+    val interpreter = moduleData.interpreter.toString()
     buildTarget.data =
       PythonBuildTarget(
         version = moduleData.version,

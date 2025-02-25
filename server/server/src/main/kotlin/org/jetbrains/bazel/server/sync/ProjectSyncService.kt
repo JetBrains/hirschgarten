@@ -4,7 +4,6 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.FirstPhaseProject
-import org.jetbrains.bazel.server.model.Language
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
@@ -16,7 +15,6 @@ import org.jetbrains.bsp.protocol.DependencyModulesParams
 import org.jetbrains.bsp.protocol.DependencyModulesResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
-import org.jetbrains.bsp.protocol.InitializeBuildResult
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
@@ -60,8 +58,6 @@ class ProjectSyncService(
   private val firstPhaseTargetToBspMapper: FirstPhaseTargetToBspMapper,
   private val projectProvider: ProjectProvider,
 ) {
-  fun initialize(): InitializeBuildResult = bspMapper.initializeServer(Language.all())
-
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-639
   // We might consider doing the actual project reload in this endpoint
   // i.e. just run projectProvider.refreshAndGet() and in workspaceBuildTargets

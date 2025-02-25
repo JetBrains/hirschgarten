@@ -17,7 +17,6 @@ import org.jetbrains.bsp.protocol.DependencyModulesResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.InitializeBuildParams
-import org.jetbrains.bsp.protocol.InitializeBuildResult
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
@@ -67,7 +66,7 @@ import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import java.util.concurrent.CompletableFuture
 
 class BuildServerMock(
-  private val initializeBuildResult: InitializeBuildResult? = null,
+  private val initializeBuildResult: Any? = null,
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
   private val sourcesResult: SourcesResult? = null,
   private val inverseSourcesResult: InverseSourcesResult? = null,
@@ -105,8 +104,7 @@ class BuildServerMock(
   private val bazelResolveRemoteToLocal: BazelResolveRemoteToLocalResult? = null,
   private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = null,
 ) : JoinedBuildServer {
-  override fun buildInitialize(initializeBuildParams: InitializeBuildParams): CompletableFuture<InitializeBuildResult> =
-    wrapInFuture(initializeBuildResult)
+  override fun buildInitialize(initializeBuildParams: InitializeBuildParams): CompletableFuture<Any> = wrapInFuture(initializeBuildResult)
 
   override fun onBuildInitialized() { // it's a mock, nothing to do
   }

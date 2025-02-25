@@ -22,7 +22,7 @@ public data class KotlinBuildTarget(
   var jvmBuildTarget: JvmBuildTarget? = null,
 ) : BuildTargetData
 
-data class PythonBuildTarget(val version: String? = null, val interpreter: String? = null) : BuildTargetData
+data class PythonBuildTarget(val version: String, val interpreter: String) : BuildTargetData
 
 data class ScalaBuildTarget(
   val scalaOrganization: String,

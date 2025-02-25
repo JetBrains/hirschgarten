@@ -20,7 +20,6 @@ import org.jetbrains.bsp.protocol.DependencyModulesResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.InitializeBuildParams
-import org.jetbrains.bsp.protocol.InitializeBuildResult
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
@@ -88,15 +87,13 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, Initial
     this.runner = runner
   }
 
-  private fun initializeServices(initializeBuildParams: InitializeBuildParams): InitializeBuildResult {
+  private fun initializeServices(initializeBuildParams: InitializeBuildParams) {
     val serverContainer = bazelServicesBuilder(client, initializeBuildParams)
     this.projectSyncService = serverContainer.projectSyncService
     this.executeService = serverContainer.executeService
-
-    return projectSyncService.initialize()
   }
 
-  override fun buildInitialize(initializeBuildParams: InitializeBuildParams): CompletableFuture<InitializeBuildResult> =
+  override fun buildInitialize(initializeBuildParams: InitializeBuildParams): CompletableFuture<Any> =
     runner.handleRequest(
       methodName = "build/initialize",
       supplier = {

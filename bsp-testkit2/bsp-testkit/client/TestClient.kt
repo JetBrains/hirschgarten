@@ -56,7 +56,7 @@ suspend fun withLifetime(
   session: Session,
   f: suspend () -> Unit,
 ) {
-  val initializeResult = session.server.buildInitialize(initializeParams).await()
+  session.server.buildInitialize(initializeParams).await()
   session.server.onBuildInitialized()
   f()
   session.server.buildShutdown().await()

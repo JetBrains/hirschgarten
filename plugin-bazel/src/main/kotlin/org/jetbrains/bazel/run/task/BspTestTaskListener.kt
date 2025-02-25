@@ -116,7 +116,7 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
     details: JUnitStyleTestCaseData?,
   ) {
     val failureMessageBuilder =
-      when (data.status!!) {
+      when (data.status) {
         TestStatus.FAILED -> {
           ServiceMessageBuilder.testFailed(data.displayName)
         }
@@ -148,7 +148,7 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
   }
 
   private fun processTestCaseFinish(taskId: TaskId, data: TestFinish): ServiceMessageBuilder {
-    val details = extractTestFinishData<JUnitStyleTestCaseData>(data)
+    val details = data.data as? JUnitStyleTestCaseData
 
     checkTestStatus(taskId, data, details)
 
@@ -160,7 +160,7 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
   }
 
   private fun processTestSuiteFinish(taskId: TaskId, data: TestFinish): ServiceMessageBuilder {
-    val details = extractTestFinishData<JUnitStyleTestSuiteData>(data)
+    val details = data.data as? JUnitStyleTestSuiteData
 
     details?.systemOut?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDOUT) }
     details?.systemErr?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDERR) }
@@ -182,6 +182,4 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
       ?.inWholeMilliseconds
       ?.let { this.addAttribute("duration", it.toString()) }
       ?: this
-
-  private inline fun <reified Data> extractTestFinishData(testFinishData: TestFinish): Data? = testFinishData.data as? Data
 }

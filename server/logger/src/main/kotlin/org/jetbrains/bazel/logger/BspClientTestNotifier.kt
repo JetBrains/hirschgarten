@@ -66,7 +66,6 @@ class BspClientTestNotifier(private val bspClient: JoinedBuildClient, private va
         TestStatus.IGNORED -> ignoredTests++
         TestStatus.CANCELLED -> cancelledTests++
         TestStatus.SKIPPED -> skippedTests++
-        null -> {}
       }
     }
 

@@ -133,7 +133,7 @@
 
     <commandLineInspectionProjectConfigurator
             implementation="org.jetbrains.bazel.startup.BspCommandLineInspectionConfigurator"/>
-    <configurationType implementation="org.jetbrains.bazel.run.config.BspRunConfigurationType"/>
+    <configurationType implementation="org.jetbrains.bazel.run.config.BazelRunConfigurationType"/>
 
     <notificationGroup id="Bazel" displayType="STICKY_BALLOON"/>
 
