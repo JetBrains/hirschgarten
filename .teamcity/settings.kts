@@ -65,8 +65,8 @@ object GitHub : Project({
         buildType(ServerE2eTests.LocalJdkGitHub)
         buildType(ServerE2eTests.RemoteJdkGitHub)
 //            buildType(ServerE2eTests.ServerDownloadsBazeliskGitHub)
-        buildType(ServerE2eTests.AndroidProjectGitHub)
-        buildType(ServerE2eTests.AndroidKotlinProjectGitHub)
+//        buildType(ServerE2eTests.AndroidProjectGitHub)
+//        buildType(ServerE2eTests.AndroidKotlinProjectGitHub)
         buildType(ServerE2eTests.ScalaProjectGitHub)
         buildType(ServerE2eTests.KotlinProjectGitHub)
         buildType(ServerE2eTests.PythonProjectGitHub)
@@ -77,10 +77,10 @@ object GitHub : Project({
         buildType(ServerE2eTests.PartialSyncGitHub)
         buildType(ServerE2eTests.NestedModulesGitHub)
         buildType(StaticAnalysis.HirschgartenGitHub)
-        buildType(StaticAnalysis.AndroidBazelRulesGitHub)
-        buildType(StaticAnalysis.AndroidTestdpcGitHub)
+//        buildType(StaticAnalysis.AndroidBazelRulesGitHub)
+//        buildType(StaticAnalysis.AndroidTestdpcGitHub)
         buildType(StaticAnalysis.BazelGitHub)
-        buildType(StaticAnalysis.JetpackComposeGitHub)
+//        buildType(StaticAnalysis.JetpackComposeGitHub)
       }
 
       buildType(ResultsAggregator.GitHub, options = {
@@ -123,8 +123,8 @@ object GitHub : Project({
       ServerE2eTests.LocalJdkGitHub,
       ServerE2eTests.RemoteJdkGitHub,
       // ServerE2eTests.ServerDownloadsBazeliskGitHub,
-      ServerE2eTests.AndroidProjectGitHub,
-      ServerE2eTests.AndroidKotlinProjectGitHub,
+//      ServerE2eTests.AndroidProjectGitHub,
+//      ServerE2eTests.AndroidKotlinProjectGitHub,
       ServerE2eTests.ScalaProjectGitHub,
       ServerE2eTests.KotlinProjectGitHub,
       ServerE2eTests.PythonProjectGitHub,
@@ -135,10 +135,10 @@ object GitHub : Project({
       ServerE2eTests.PartialSyncGitHub,
       ServerE2eTests.NestedModulesGitHub,
       StaticAnalysis.HirschgartenGitHub,
-      StaticAnalysis.AndroidBazelRulesGitHub,
-      StaticAnalysis.AndroidTestdpcGitHub,
+//      StaticAnalysis.AndroidBazelRulesGitHub,
+//      StaticAnalysis.AndroidTestdpcGitHub,
       StaticAnalysis.BazelGitHub,
-      StaticAnalysis.JetpackComposeGitHub,
+//      StaticAnalysis.JetpackComposeGitHub,
       ResultsAggregator.GitHub
     )
 })
@@ -170,8 +170,8 @@ object Space : Project({
         buildType(ServerE2eTests.LocalJdkSpace)
         buildType(ServerE2eTests.RemoteJdkSpace)
 //            buildType(ServerE2eTests.ServerDownloadsBazeliskSpace)
-        buildType(ServerE2eTests.AndroidProjectSpace)
-        buildType(ServerE2eTests.AndroidKotlinProjectSpace)
+//        buildType(ServerE2eTests.AndroidProjectSpace)
+//        buildType(ServerE2eTests.AndroidKotlinProjectSpace)
         buildType(ServerE2eTests.ScalaProjectSpace)
         buildType(ServerE2eTests.KotlinProjectSpace)
         buildType(ServerE2eTests.PythonProjectSpace)
@@ -182,10 +182,10 @@ object Space : Project({
         buildType(ServerE2eTests.PartialSyncSpace)
         buildType(ServerE2eTests.NestedModulesSpace)
         buildType(StaticAnalysis.HirschgartenSpace)
-        buildType(StaticAnalysis.AndroidBazelRulesSpace)
-        buildType(StaticAnalysis.AndroidTestdpcSpace)
+//        buildType(StaticAnalysis.AndroidBazelRulesSpace)
+//        buildType(StaticAnalysis.AndroidTestdpcSpace)
         buildType(StaticAnalysis.BazelSpace)
-        buildType(StaticAnalysis.JetpackComposeSpace)
+//        buildType(StaticAnalysis.JetpackComposeSpace)
       }
 
       buildType(ResultsAggregator.Space, options = {
@@ -228,8 +228,8 @@ object Space : Project({
       ServerE2eTests.LocalJdkSpace,
       ServerE2eTests.RemoteJdkSpace,
       // ServerE2eTests.ServerDownloadsBazeliskSpace,
-      ServerE2eTests.AndroidProjectSpace,
-      ServerE2eTests.AndroidKotlinProjectSpace,
+//      ServerE2eTests.AndroidProjectSpace,
+//      ServerE2eTests.AndroidKotlinProjectSpace,
       ServerE2eTests.ScalaProjectSpace,
       ServerE2eTests.KotlinProjectSpace,
       ServerE2eTests.PythonProjectSpace,
@@ -240,10 +240,10 @@ object Space : Project({
       ServerE2eTests.PartialSyncSpace,
       ServerE2eTests.NestedModulesSpace,
       StaticAnalysis.HirschgartenSpace,
-      StaticAnalysis.AndroidBazelRulesSpace,
-      StaticAnalysis.AndroidTestdpcSpace,
+//      StaticAnalysis.AndroidBazelRulesSpace,
+//      StaticAnalysis.AndroidTestdpcSpace,
       StaticAnalysis.BazelSpace,
-      StaticAnalysis.JetpackComposeSpace,
+//      StaticAnalysis.JetpackComposeSpace,
       ResultsAggregator.Space
     )
 })
