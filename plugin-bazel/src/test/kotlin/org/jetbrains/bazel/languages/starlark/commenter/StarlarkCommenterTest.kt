@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.commenter
 
 import com.google.idea.testing.runfiles.Runfiles
 import com.intellij.openapi.actionSystem.IdeActions
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import kotlin.io.path.pathString
 
@@ -13,6 +14,8 @@ class StarlarkCommenterTest : BasePlatformTestCase() {
   fun testUncomment() = doTest()
 
   private fun doTest() {
+    VfsRootAccess.allowRootAccess(testRootDisposable, testDataPath)
+
     val name = getTestName(false)
     val source = "$name.bzl"
     myFixture.configureByFile(source)

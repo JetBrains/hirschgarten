@@ -65,6 +65,7 @@ class BazelBspAspectsManager(
         if (!featureFlags.isGoSupportEnabled) add(Language.Go)
         if (!featureFlags.isRustSupportEnabled) add(Language.Rust)
         if (!featureFlags.isCppSupportEnabled) add(Language.Cpp)
+        if (!featureFlags.isPythonSupportEnabled) add(Language.Python)
       }
     return filterNot { it.language in disabledLanguages }
   }
@@ -76,8 +77,9 @@ class BazelBspAspectsManager(
   }
 
   private fun List<RulesetLanguage>.addExternalPythonLanguageIfNeeded(externalRulesetNames: List<String>): List<RulesetLanguage> {
-    val rulesetName = Language.Python.rulesetNames.firstOrNull { externalRulesetNames.contains(it) }
-    return this.filterNot { it.language == Language.Python } + RulesetLanguage(rulesetName, Language.Python)
+    if (!featureFlags.isPythonSupportEnabled) return this
+    val pythonRulesetName = Language.Python.rulesetNames.firstOrNull { externalRulesetNames.contains(it) } ?: return this
+    return this.filterNot { it.language == Language.Python } + RulesetLanguage(pythonRulesetName, Language.Python)
   }
 
   fun generateAspectsFromTemplates(

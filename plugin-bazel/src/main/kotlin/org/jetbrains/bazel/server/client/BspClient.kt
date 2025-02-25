@@ -1,24 +1,14 @@
 package org.jetbrains.bazel.server.client
 
-import ch.epfl.scala.bsp4j.CompileReport
-import ch.epfl.scala.bsp4j.CompileTask
 import ch.epfl.scala.bsp4j.DiagnosticSeverity
 import ch.epfl.scala.bsp4j.DidChangeBuildTarget
 import ch.epfl.scala.bsp4j.LogMessageParams
 import ch.epfl.scala.bsp4j.PrintParams
 import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
 import ch.epfl.scala.bsp4j.ShowMessageParams
-import ch.epfl.scala.bsp4j.TaskFinishDataKind
 import ch.epfl.scala.bsp4j.TaskFinishParams
 import ch.epfl.scala.bsp4j.TaskProgressParams
-import ch.epfl.scala.bsp4j.TaskStartDataKind
 import ch.epfl.scala.bsp4j.TaskStartParams
-import ch.epfl.scala.bsp4j.TestFinish
-import ch.epfl.scala.bsp4j.TestReport
-import ch.epfl.scala.bsp4j.TestStart
-import ch.epfl.scala.bsp4j.TestTask
-import com.google.gson.Gson
-import com.google.gson.JsonObject
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -36,7 +26,6 @@ class BspClient(
   private val project: Project,
 ) : JoinedBuildClient {
   private val log = logger<BspClient>()
-  private val gson = Gson()
 
   private val bspLogger = bspLogger<BspClient>()
 
@@ -75,25 +64,8 @@ class BspClient(
     val originId = params.originId ?: return // TODO
     val maybeParent = params.taskId.parents?.firstOrNull()
 
-    val data: Any? =
-      when (params.dataKind) {
-        TaskStartDataKind.TEST_START -> {
-          gson.fromJson(params.data as JsonObject, TestStart::class.java)
-        }
-
-        TaskStartDataKind.TEST_TASK -> {
-          gson.fromJson(params.data as JsonObject, TestTask::class.java)
-        }
-
-        TaskStartDataKind.COMPILE_TASK -> {
-          gson.fromJson(params.data as JsonObject, CompileTask::class.java)
-        }
-
-        else -> null
-      }
-
     BspTaskEventsService.getInstance(project).withListener(originId) {
-      onTaskStart(taskId, maybeParent, params.message ?: taskId, data)
+      onTaskStart(taskId, maybeParent, params.message ?: taskId, params.data)
     }
   }
 
@@ -114,27 +86,10 @@ class BspClient(
     val originId = params.originId ?: return // TODO
     val maybeParent = params.taskId.parents?.firstOrNull()
 
-    val data: Any? =
-      when (params.dataKind) {
-        TaskFinishDataKind.TEST_FINISH -> {
-          gson.fromJson(params.data as JsonObject, TestFinish::class.java)
-        }
-
-        TaskFinishDataKind.TEST_REPORT -> {
-          gson.fromJson(params.data as JsonObject, TestReport::class.java)
-        }
-
-        TaskFinishDataKind.COMPILE_REPORT -> {
-          gson.fromJson(params.data as JsonObject, CompileReport::class.java)
-        }
-
-        else -> null
-      }
-
     val status = params.status
 
     BspTaskEventsService.getInstance(project).withListener(originId) {
-      onTaskFinish(taskId, maybeParent, params.message.orEmpty(), status, data)
+      onTaskFinish(taskId, maybeParent, params.message.orEmpty(), status, params.data)
     }
   }
 
