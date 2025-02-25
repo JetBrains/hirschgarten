@@ -12,7 +12,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/status",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
-        "//plugin-bazel/workspacemodel/src:workspacemodel",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
         "//protocol",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],

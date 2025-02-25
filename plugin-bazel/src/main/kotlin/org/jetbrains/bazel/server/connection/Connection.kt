@@ -1,17 +1,16 @@
 package org.jetbrains.bazel.server.connection
 
 import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
-import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bsp.bazel.logger.BspClientLogger
-import org.jetbrains.bsp.bazel.server.BazelBspServer
-import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
-import org.jetbrains.bsp.bazel.server.bsp.BazelBspServerLifetime
-import org.jetbrains.bsp.bazel.server.bsp.BspRequestsRunner
-import org.jetbrains.bsp.bazel.server.bsp.BspServerApi
-import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
-import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspCompilationManager
-import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
-import org.jetbrains.bsp.bazel.workspacecontext.DefaultWorkspaceContextProvider
+import org.jetbrains.bazel.logger.BspClientLogger
+import org.jetbrains.bazel.server.BazelBspServer
+import org.jetbrains.bazel.server.benchmark.TelemetryConfig
+import org.jetbrains.bazel.server.bsp.BazelBspServerLifetime
+import org.jetbrains.bazel.server.bsp.BspRequestsRunner
+import org.jetbrains.bazel.server.bsp.BspServerApi
+import org.jetbrains.bazel.server.bsp.info.BspInfo
+import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
+import org.jetbrains.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bazel.workspacecontext.DefaultWorkspaceContextProvider
 import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer

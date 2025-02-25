@@ -13,6 +13,7 @@ import com.intellij.task.TaskRunnerResults
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo

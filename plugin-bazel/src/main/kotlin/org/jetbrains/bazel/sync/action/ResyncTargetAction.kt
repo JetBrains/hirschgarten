@@ -7,6 +7,7 @@ import org.jetbrains.bazel.config.BspFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.BspPluginIcons
 import org.jetbrains.bazel.config.isBspProject
+import org.jetbrains.bazel.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask

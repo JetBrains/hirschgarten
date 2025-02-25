@@ -9,7 +9,7 @@ kt_jvm_library(
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/projectAware",
-        "//plugin-bazel/workspacemodel/src:workspacemodel",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
         "//protocol",
         "//sdkcompat",
         "@maven//:com_google_code_gson_gson",

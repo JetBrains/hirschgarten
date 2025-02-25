@@ -9,7 +9,7 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path

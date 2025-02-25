@@ -12,12 +12,12 @@ import kotlinx.coroutines.sync.withLock
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.server.client.BspClient
 import org.jetbrains.bazel.server.client.GenericConnection
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.console.ids.CONNECT_TASK_ID
-import org.jetbrains.bsp.bazel.install.EnvironmentCreator
 import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.nio.file.Path

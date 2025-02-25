@@ -7,10 +7,11 @@ kt_jvm_library(
     deps = [
         "//plugin-bazel/jps-compilation/src:jps-compilation",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jpsCompilation/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/runnerAction",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/taskEvents",
-        "//plugin-bazel/workspacemodel/src:workspacemodel",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
         "//protocol",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
