@@ -7,8 +7,12 @@ exports_files(glob([
 
 kt_jvm_library(
     name = "intellij-bsp",
+    resources = glob([
+        "main/resources/**",
+    ]),
     visibility = ["//visibility:public"],
     exports = [
+        ":optional-xmls",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action/registered",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/android",
@@ -74,10 +78,16 @@ kt_jvm_library(
 )
 
 kt_jvm_library(
-    name = "intellij-bsp-resources",
-    resources = glob([
-        "main/resources/**",
-    ]),
+    name = "optional-xmls",
+    resource_strip_prefix = "plugin-bazel/src/main/jps-resources",
+    resources = glob(
+        [
+            "main/jps-resources/**",
+        ],
+        exclude = [
+            "main/jps-resources/META-INF/plugin.xml",
+        ],
+    ),
     visibility = ["//visibility:public"],
 )
 

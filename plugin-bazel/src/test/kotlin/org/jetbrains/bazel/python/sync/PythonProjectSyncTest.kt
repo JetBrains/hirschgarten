@@ -31,6 +31,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.SourceItem
@@ -67,7 +68,10 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add module with dependencies to workspace model diff`() {
     // given
-    val server = BuildServerMock()
+    val server =
+      BuildServerMock(
+        dependencySourcesResult = DependencySourcesResult(emptyList()),
+      )
     val diff = AllProjectStructuresProvider(project).newDiff()
     val pythonTestTargets = generateTestSet()
 
@@ -101,7 +105,10 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add module with sources to workspace model diff`() {
     // given
-    val server = BuildServerMock()
+    val server =
+      BuildServerMock(
+        dependencySourcesResult = DependencySourcesResult(emptyList()),
+      )
     val diff = AllProjectStructuresProvider(project).newDiff()
     val pythonTestTargets = generateTestSetWithSources()
 

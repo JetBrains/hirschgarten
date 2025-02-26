@@ -16,6 +16,7 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
@@ -40,6 +41,7 @@ private val mockBuildServer =
     jvmBinaryJarsResult = JvmBinaryJarsResult(emptyList()),
     workspaceInvalidTargetsResult = WorkspaceInvalidTargetsResult(emptyList()),
     workspaceBazelRepoMappingResult = WorkspaceBazelRepoMappingResult(emptyMap(), emptyMap()),
+    dependencySourcesResult = DependencySourcesResult(emptyList()),
   )
 
 private class BspConnectionMock : BspConnection {

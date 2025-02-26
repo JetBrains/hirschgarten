@@ -7,7 +7,6 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.task.query
@@ -29,17 +28,16 @@ val Project.repositoryPaths: Set<Path>
   get() = BazelRepoMappingService.getInstance(this).repositoryPaths
 
 class BazelRepoMappingSyncHook : ProjectSyncHook {
-  override suspend fun onSync(environment: ProjectSyncHookEnvironment) =
-    coroutineScope {
-      val bazelRepoMappingService = BazelRepoMappingService.getInstance(environment.project)
-      val bazelRepoMappingResult =
-        query("workspace/bazelRepoMapping") {
-          environment.server.workspaceBazelRepoMapping()
-        }
-      bazelRepoMappingService.apparentRepoNameToCanonicalName = bazelRepoMappingResult.apparentRepoNameToCanonicalName
-      bazelRepoMappingService.canonicalRepoNameToPath =
-        bazelRepoMappingResult.canonicalRepoNameToPath.mapValues { (_, uri) -> uri.safeCastToURI().toPath() }
-    }
+  override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
+    val bazelRepoMappingService = BazelRepoMappingService.getInstance(environment.project)
+    val bazelRepoMappingResult =
+      query("workspace/bazelRepoMapping") {
+        environment.server.workspaceBazelRepoMapping()
+      }
+    bazelRepoMappingService.apparentRepoNameToCanonicalName = bazelRepoMappingResult.apparentRepoNameToCanonicalName
+    bazelRepoMappingService.canonicalRepoNameToPath =
+      bazelRepoMappingResult.canonicalRepoNameToPath.mapValues { (_, uri) -> uri.safeCastToURI().toPath() }
+  }
 }
 
 internal data class BazelRepoMappingServiceState(

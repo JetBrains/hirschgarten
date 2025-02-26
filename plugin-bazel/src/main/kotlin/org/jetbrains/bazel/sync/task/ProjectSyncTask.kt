@@ -48,45 +48,44 @@ private val log = logger<ProjectSyncTask>()
 class ProjectSyncTask(private val project: Project) {
   suspend fun sync(syncScope: ProjectSyncScope, buildProject: Boolean) {
     if (project.isTrusted()) {
-      coroutineScope {
-        bspTracer.spanBuilder("bsp.sync.project.ms").useWithScope {
-          var syncAlreadyInProgress = false
-          try {
-            log.debug("Starting sync project task")
-            project.syncConsole.startTask(
-              taskId = PROJECT_SYNC_TASK_ID,
-              title = BspPluginBundle.message("console.task.sync.title"),
-              message = BspPluginBundle.message("console.task.sync.in.progress"),
-              cancelAction = {
-                BspSyncStatusService.getInstance(project).cancel()
-                coroutineContext.cancel()
-              },
-              redoAction = { sync(syncScope, buildProject) },
-            )
+      bspTracer.spanBuilder("bsp.sync.project.ms").useWithScope {
+        var syncAlreadyInProgress = false
+        try {
+          log.debug("Starting sync project task")
+          project.syncConsole.startTask(
+            taskId = PROJECT_SYNC_TASK_ID,
+            title = BspPluginBundle.message("console.task.sync.title"),
+            message = BspPluginBundle.message("console.task.sync.in.progress"),
+            cancelAction = {
+              BspSyncStatusService.getInstance(project).cancel()
+              coroutineContext.cancel()
+            },
+            redoAction = { sync(syncScope, buildProject) },
+          )
 
-            preSync()
-            doSync(syncScope, buildProject)
+          preSync()
+          doSync(syncScope, buildProject)
 
-            project.syncConsole.finishTask(PROJECT_SYNC_TASK_ID, BspPluginBundle.message("console.task.sync.success"))
-          } catch (_: CancellationException) {
-            project.syncConsole.finishTask(
-              PROJECT_SYNC_TASK_ID,
-              BspPluginBundle.message("console.task.sync.cancelled"),
-              SkippedResultImpl(),
-            )
-          } catch (_: SyncAlreadyInProgressException) {
-            syncAlreadyInProgress = true
-          } catch (e: Exception) {
-            log.debug("BSP sync failed")
-            project.syncConsole.finishTask(
-              PROJECT_SYNC_TASK_ID,
-              BspPluginBundle.message("console.task.sync.failed"),
-              FailureResultImpl(e),
-            )
-          } finally {
-            if (!syncAlreadyInProgress) {
-              postSync()
-            }
+          project.syncConsole.finishTask(PROJECT_SYNC_TASK_ID, BspPluginBundle.message("console.task.sync.success"))
+        } catch (e: CancellationException) {
+          project.syncConsole.finishTask(
+            PROJECT_SYNC_TASK_ID,
+            BspPluginBundle.message("console.task.sync.cancelled"),
+            SkippedResultImpl(),
+          )
+          throw e
+        } catch (_: SyncAlreadyInProgressException) {
+          syncAlreadyInProgress = true
+        } catch (e: Exception) {
+          project.syncConsole.finishTask(
+            PROJECT_SYNC_TASK_ID,
+            BspPluginBundle.message("console.task.sync.failed"),
+            FailureResultImpl(e),
+          )
+          throw e
+        } finally {
+          if (!syncAlreadyInProgress) {
+            postSync()
           }
         }
       }
