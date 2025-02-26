@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.testkit.client
 
-import com.google.gson.Gson
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.bsp.protocol.CompileParams
