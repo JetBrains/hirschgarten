@@ -10,6 +10,9 @@ import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
+import org.jetbrains.bsp.protocol.DependencySourcesItem
+import org.jetbrains.bsp.protocol.DependencySourcesParams
+import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsItem
@@ -100,6 +103,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       sourcesResults(),
       resourcesResults(),
       inverseSourcesResults(),
+      dependencySourcesResults(),
       scalaMainClasses(),
       scalaTestClasses(),
       jvmRunEnvironment(),
@@ -490,6 +494,115 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         30.seconds,
         scalaTestClassesParams,
         expectedScalaTestClassesResult,
+      )
+    }
+  }
+
+  private fun dependencySourcesResults(): BazelBspTestScenarioStep {
+    val javaTargetsJavaBinary =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//java_targets:java_binary"),
+        emptyList(),
+      )
+    val javaTargetsJavaBinaryWithFlag =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//java_targets:java_binary_with_flag"),
+        emptyList(),
+      )
+    val javaTargetsJavaLibrary =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//java_targets:java_library"),
+        emptyList(),
+      )
+    val targetWithDependencyJavaBinary =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//target_with_dependency:java_binary"),
+        emptyList(),
+      )
+    val javaTargetsSubpackageJavaLibrary =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//java_targets/subpackage:java_library"),
+        emptyList(),
+      )
+    val scalaTargetsScalaBinary =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//scala_targets:scala_binary"),
+        emptyList(),
+      )
+    val scalaTargetsScalaTest =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//scala_targets:scala_test"),
+        emptyList(),
+      )
+    val targetWithResourcesJavaBinary =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//target_with_resources:java_binary"),
+        emptyList(),
+      )
+    val targetWithoutArgsBinary =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//target_without_args:binary"),
+        emptyList(),
+      )
+    val targetWithoutJvmFlagsBinary =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//target_without_jvm_flags:binary"),
+        emptyList(),
+      )
+    val targetWithoutMainClassLibrary =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//target_without_main_class:library"),
+        emptyList(),
+      )
+    val javaTargetsJavaLibraryExported =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//java_targets:java_library_exported"),
+        emptyList(),
+      )
+    val environmentVariablesJavaBinary =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//environment_variables:java_binary"),
+        emptyList(),
+      )
+    val environmentVariablesJavaTest =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//environment_variables:java_test"),
+        emptyList(),
+      )
+    val targetWithJavacExportsJavaLibrary =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//target_with_javac_exports:java_library"),
+        emptyList(),
+      )
+
+    val expectedDependencies =
+      DependencySourcesResult(
+        listOfNotNull(
+          javaTargetsJavaBinary,
+          javaTargetsJavaBinaryWithFlag,
+          javaTargetsJavaLibrary,
+          targetWithDependencyJavaBinary,
+          javaTargetsSubpackageJavaLibrary,
+          scalaTargetsScalaBinary,
+          scalaTargetsScalaTest,
+          targetWithResourcesJavaBinary,
+          targetWithoutArgsBinary,
+          targetWithoutJvmFlagsBinary,
+          targetWithoutMainClassLibrary,
+          javaTargetsJavaLibraryExported,
+          environmentVariablesJavaBinary,
+          environmentVariablesJavaTest,
+          targetWithJavacExportsJavaLibrary.takeIf { majorBazelVersion > 5 },
+        ),
+      )
+    val dependencySourcesParams = DependencySourcesParams(expectedTargetIdentifiers())
+    return BazelBspTestScenarioStep(
+      "dependency sources results",
+    ) {
+      testClient.testDependencySources(
+        30.seconds,
+        dependencySourcesParams,
+        expectedDependencies,
       )
     }
   }
