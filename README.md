@@ -5,21 +5,20 @@
 
 The Hirschgarten project aims to bring a new approach for Bazel support to IntelliJ IDEA users.
 
-This repository consolidates multiple standalone components into a monorepo structure.
-
-## Key components
-
-1. **[Bazel BSP (Build Server Protocol)](server)**: An implementation of the Build Server Protocol for Bazel, supporting languages such as Java, Kotlin, Scala, Python, Thrift, and Rust.
-
-2. **[BSP plugin](plugin-bsp)**: A plugin for IntelliJ IDEA that allows importing projects using the Build Server Protocol.
-
-3. **[Bazel plugin](plugin-bazel)**: New Bazel plugin for IntelliJ IDEA developed by JetBrains.
+The primary product is the **[Bazel plugin](https://plugins.jetbrains.com/plugin/22977)**, 
+a new Bazel plugin for IntelliJ IDEA developed by JetBrains. and published to the JetBrains marketplace.
 
 ## Features
 
-- Support of Bazel features in IntelliJ IDEA
-- Project importing using the Build Server Protocol
-- [Overview of the new Bazel plugin features](https://jb.gg/new-bazel-feature)
+Work with Bazel in IntelliJ IDEA:
+
+- import Bazel projects with multiple languages
+- run and debug targets and tests through Bazel or directly from the IDE
+- Starlark highlighting, navigation, and debugging
+- configure project subsets for import
+
+See also:
+[Overview of the new Bazel plugin features](https://jb.gg/new-bazel-feature)
 
 ## Contributing
 

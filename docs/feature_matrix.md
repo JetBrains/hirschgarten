@@ -25,4 +25,4 @@
 | JUnit5                           |            |            |           |                 | ✅       | ✅        | ✅              | ❌              | ✅           | 🛠️         |
 
 (🚩) To enable support, follow the linked guides. Features behind flags are under development and may not be fully functional. 
-(*) Scala support is currently only available with nightly versions from `intellij-scala`.
+(*) Scala support is currently only available with nightly versions of the Scala plugin for IntelliJ IDEA.
