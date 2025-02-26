@@ -4,9 +4,9 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.platform.diagnostic.telemetry.OtlpConfiguration
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.jetbrains.bazel.config.BspPluginBundle
@@ -85,7 +85,6 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
       initializeBuildData =
         InitializeBuildParams(
           clientClassesRootDir = "${project.rootDir}/out",
-          openTelemetryEndpoint = getOpenTelemetryEndPoint(),
           featureFlags = FeatureFlagsProvider.accumulateFeatureFlags(),
         ),
     )
@@ -103,7 +102,11 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
         CONNECT_TASK_ID,
         BspPluginBundle.message("console.message.initialize.server.in.progress"),
       )
-      server = connection.server
+      server =
+        connection.server.also {
+          it.buildInitialize(params = InitializeBuildParams()).asDeferred().await()
+          it.onBuildInitialized()
+        }
       bspSyncConsole.addMessage(
         CONNECT_TASK_ID,
         BspPluginBundle.message("console.message.initialize.server.success"),
@@ -121,13 +124,6 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
       project,
     )
   }
-
-  private fun getOpenTelemetryEndPoint(): String? =
-    try {
-      OtlpConfiguration.getTraceEndpoint()
-    } catch (_: NoSuchMethodError) {
-      null
-    }
 
   override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T {
     connect()
