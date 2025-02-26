@@ -7,10 +7,9 @@ kt_jvm_library(
     visibility = ["//plugin-bazel:__subpackages__"],
     exports = ["//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel/impl/updaters/transformers"],
     deps = [
-        "//plugin-bazel/protocol/src/main/kotlin/org/jetbrains/bsp/protocol/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/projectAware",
-        "//plugin-bazel/workspacemodel/src:workspacemodel",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
         "//protocol",
         "//sdkcompat",
         "@maven//:ch_epfl_scala_bsp4j",

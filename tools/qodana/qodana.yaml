@@ -21,6 +21,11 @@ exclude:
       - .teamcity
       # test projects, not needed for qodana, may produce false positives
       - server/e2e/test-projects
+      # template files
+      - server/resources/aspects/rules/android/android_info.bzl.template
+      - server/resources/aspects/rules/jvm/jvm_info.bzl.template
+      - server/resources/aspects/utils/utils.bzl.template
+      - server/resources/aspects/core.bzl.template
   - name: CheckDependencyLicenses
   - name: UnnecessaryUnicodeEscape
   - name: UnstableApiUsage

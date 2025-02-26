@@ -11,7 +11,6 @@ import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
-import com.google.gson.JsonObject
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.inspectors.forAll
@@ -22,6 +21,7 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.magicmetamodel.DefaultNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
@@ -34,7 +34,6 @@ import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
-import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI
@@ -75,9 +74,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val javaHome = "/fake/path/to/local_jdk"
     val javaVersion = "11"
 
-    val jdkInfoJsonObject = JsonObject()
-    jdkInfoJsonObject.addProperty("javaVersion", javaVersion)
-    jdkInfoJsonObject.addProperty("javaHome", javaHome)
+    val jdkInfo =
+      JvmBuildTarget().also {
+        it.javaVersion = javaVersion
+        it.javaHome = javaHome
+      }
 
     val buildTargetId = BuildTargetIdentifier("module1")
     val buildTarget =
@@ -94,7 +95,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       )
     buildTarget.baseDirectory = projectRoot.toUri().toString()
     buildTarget.dataKind = BuildTargetDataKind.JVM
-    buildTarget.data = jdkInfoJsonObject
+    buildTarget.data = jdkInfo
 
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")
     packageA1Path.toFile().deleteOnExit()
@@ -744,13 +745,15 @@ class ExtractJvmBuildTargetTest {
     // given
     val javaVersion = "17"
     val javaHome = "/fake/path/to/test/local_jdk"
-    val jdkInfoJsonObject = JsonObject()
-    jdkInfoJsonObject.addProperty("javaVersion", javaVersion)
-    jdkInfoJsonObject.addProperty("javaHome", javaHome)
+    val jdkInfo =
+      JvmBuildTarget().also {
+        it.javaVersion = javaVersion
+        it.javaHome = javaHome
+      }
 
     val buildTarget = buildDummyTarget()
     buildTarget.dataKind = BuildTargetDataKind.JVM
-    buildTarget.data = jdkInfoJsonObject
+    buildTarget.data = jdkInfo
 
     // when
     val extractedJvmBuildTarget = extractJvmBuildTarget(buildTarget)
