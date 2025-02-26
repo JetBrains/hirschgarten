@@ -40,7 +40,11 @@ class SealedClassTypeAdapter<T : Any>(val kclass: KClass<Any>, val gson: Gson) :
     return innerClass.objectInstance as T? ?: x
   }
 
-  override fun write(out: JsonWriter, value: T) {
+  override fun write(out: JsonWriter, value: T?) {
+    if (value == null) {
+      out.nullValue()
+      return
+    }
     val json = gson.toJsonTree(value)
     out.beginObject()
     out.name(

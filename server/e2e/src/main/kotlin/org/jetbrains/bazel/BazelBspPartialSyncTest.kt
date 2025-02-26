@@ -52,6 +52,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
             "file://\$WORKSPACE/java_targets/JavaLibrary.java",
             SourceItemKind.FILE,
             false,
+            jvmPackagePrefix = "java_targets",
           )
         val javaTargetsJavaLibrarySources =
           SourcesItem(
@@ -107,11 +108,13 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
             "file://\$WORKSPACE/java_targets/JavaBinary.java",
             SourceItemKind.FILE,
             false,
+            jvmPackagePrefix = "java_targets",
           )
         val javaTargetsJavaBinarySources =
           SourcesItem(
             partialSyncTargetId,
             listOf(javaTargetsJavaBinaryJava),
+            listOf("file://\$WORKSPACE/"),
           )
 
         val partialSyncSourcesParams = SourcesParams(listOf(partialSyncTargetId))
