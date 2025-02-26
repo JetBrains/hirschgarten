@@ -10,7 +10,7 @@ import com.google.gson.stream.JsonWriter
 import kotlin.jvm.internal.Reflection
 import kotlin.reflect.KClass
 
-val GsonSealedSupport: Gson =
+val gsonSealedSupport: Gson =
   GsonBuilder()
     .registerTypeAdapterFactory(
       object : TypeAdapterFactory {

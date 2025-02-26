@@ -172,8 +172,7 @@ class ProjectSyncService(
 
   fun buildTargetJavacOptions(cancelChecker: CancelChecker, params: JavacOptionsParams): JavacOptionsResult {
     val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return JavacOptionsResult(emptyList())
-    val includeClasspath = false
-    return bspMapper.buildTargetJavacOptions(project, params, includeClasspath, cancelChecker)
+    return bspMapper.buildTargetJavacOptions(project, params, cancelChecker)
   }
 
   fun buildTargetCppOptions(cancelChecker: CancelChecker, params: CppOptionsParams): CppOptionsResult {
@@ -188,8 +187,7 @@ class ProjectSyncService(
 
   fun buildTargetScalacOptions(cancelChecker: CancelChecker, params: ScalacOptionsParams): ScalacOptionsResult {
     val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return ScalacOptionsResult(emptyList())
-    val includeClasspath = false
-    return bspMapper.buildTargetScalacOptions(project, params, includeClasspath, cancelChecker)
+    return bspMapper.buildTargetScalacOptions(project, params, cancelChecker)
   }
 
   fun buildTargetScalaTestClasses(cancelChecker: CancelChecker, params: ScalaTestClassesParams): ScalaTestClassesResult {

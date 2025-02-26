@@ -35,8 +35,8 @@ import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
-import org.jetbrains.bsp.testkit.GsonSealedSupport
 import org.jetbrains.bsp.testkit.JsonComparator
+import org.jetbrains.bsp.testkit.gsonSealedSupport
 import java.nio.file.Path
 import kotlin.time.Duration
 
@@ -67,7 +67,7 @@ open class BasicTestClient(
   val transformJson: (String) -> String,
   val client: MockClient,
 ) {
-  val gson = GsonSealedSupport
+  val gson = gsonSealedSupport
 
   inline fun <reified T> applyJsonTransform(element: T): T {
     val json = gson.toJson(element)

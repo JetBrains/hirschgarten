@@ -54,6 +54,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
             false,
             jvmPackagePrefix = "java_targets",
           )
+
         val javaTargetsJavaLibrarySources =
           SourcesItem(
             BuildTargetIdentifier("$targetPrefix//java_targets:java_library"),

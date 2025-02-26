@@ -8,7 +8,7 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.logger.BspClientLogger
-import org.jetbrains.bazel.server.benchmark.tracer
+import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
@@ -42,7 +42,7 @@ class ProjectResolver(
   private val bspClientLogger: BspClientLogger,
   private val featureFlags: FeatureFlags,
 ) {
-  private suspend fun <T> measured(description: String, f: suspend () -> T): T = tracer.spanBuilder(description).useWithScope { f() }
+  private suspend fun <T> measured(description: String, f: suspend () -> T): T = bspTracer.spanBuilder(description).useWithScope { f() }
 
   suspend fun resolve(
     cancelChecker: CancelChecker,
@@ -50,7 +50,7 @@ class ProjectResolver(
     requestedTargetsToSync: List<Label>?,
     firstPhaseProject: FirstPhaseProject?,
   ): AspectSyncProject =
-    tracer.spanBuilder("Resolve project").useWithScope {
+    bspTracer.spanBuilder("Resolve project").useWithScope {
       val workspaceContext =
         measured(
           "Reading project view and creating workspace context",

@@ -62,7 +62,6 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
           val conn =
             Connection(
               installationDirectory,
-              null,
               newConnectionResetConfig.projectViewFile,
               installationDirectory,
               bspClient,

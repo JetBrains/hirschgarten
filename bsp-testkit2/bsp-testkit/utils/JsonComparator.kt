@@ -10,7 +10,7 @@ import java.lang.reflect.Type
 import java.util.TreeSet
 
 object JsonComparator {
-  private val gson = GsonSealedSupport
+  private val gson = gsonSealedSupport
 
   private val mapType: Type = object : TypeToken<Map<String?, Any?>?>() {}.type
 

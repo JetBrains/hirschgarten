@@ -4,8 +4,6 @@ import org.jetbrains.bazel.bazelrunner.BazelInfoResolver
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.logger.BspClientLogger
-import org.jetbrains.bazel.server.benchmark.TelemetryConfig
-import org.jetbrains.bazel.server.benchmark.setupTelemetry
 import org.jetbrains.bazel.server.bsp.BazelServices
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
@@ -49,7 +47,6 @@ class BazelBspServer(
   private val bspInfo: BspInfo,
   val workspaceContextProvider: WorkspaceContextProvider,
   val workspaceRoot: Path,
-  private val telemetryConfig: TelemetryConfig,
 ) {
   fun bspServerData(
     initializeBuildParams: InitializeBuildParams,
@@ -60,13 +57,6 @@ class BazelBspServer(
     workspaceContextProvider: WorkspaceContextProvider,
     bazelPathsResolver: BazelPathsResolver,
   ): BazelServices {
-    val telemetryConfig =
-      telemetryConfig.copy(
-        bspClientLogger = bspClientLogger,
-        openTelemetryEndpoint = initializeBuildParams.openTelemetryEndpoint,
-      )
-    setupTelemetry(telemetryConfig)
-
     val languagePluginsService = createLanguagePluginsService(bazelPathsResolver, bspClientLogger)
     val featureFlags = initializeBuildParams.featureFlags
     val projectProvider =

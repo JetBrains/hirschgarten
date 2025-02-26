@@ -16,7 +16,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.logger.BspClientLogger
-import org.jetbrains.bazel.server.benchmark.tracer
+import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
@@ -61,7 +61,8 @@ class BazelProjectMapper(
   private val bspClientLogger: BspClientLogger,
   private val featureFlags: FeatureFlags,
 ) {
-  private suspend fun <T> measure(description: String, body: suspend () -> T): T = tracer.spanBuilder(description).useWithScope { body() }
+  private suspend fun <T> measure(description: String, body: suspend () -> T): T =
+    bspTracer.spanBuilder(description).useWithScope { body() }
 
   private suspend fun <T> measureIf(
     description: String,

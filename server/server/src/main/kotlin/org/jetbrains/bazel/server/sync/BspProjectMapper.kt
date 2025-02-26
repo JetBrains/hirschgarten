@@ -438,11 +438,10 @@ class BspProjectMapper(
   fun buildTargetJavacOptions(
     project: AspectSyncProject,
     params: JavacOptionsParams,
-    includeClasspath: Boolean,
     cancelChecker: CancelChecker,
   ): JavacOptionsResult {
     val items =
-      params.targets.collectClasspathForTargetsAndApply(project, includeClasspath, cancelChecker) { module, ideClasspath ->
+      params.targets.collectClasspathForTargetsAndApply(project, false, cancelChecker) { module, ideClasspath ->
         module.javaModule?.let { toJavacOptionsItem(module, it, ideClasspath) }
       }
     return JavacOptionsResult(items)
@@ -473,11 +472,10 @@ class BspProjectMapper(
   fun buildTargetScalacOptions(
     project: AspectSyncProject,
     params: ScalacOptionsParams,
-    includeClasspath: Boolean,
     cancelChecker: CancelChecker,
   ): ScalacOptionsResult {
     val items =
-      params.targets.collectClasspathForTargetsAndApply(project, includeClasspath, cancelChecker) { module, ideClasspath ->
+      params.targets.collectClasspathForTargetsAndApply(project, false, cancelChecker) { module, ideClasspath ->
         toScalacOptionsItem(module, ideClasspath)
       }
     return ScalacOptionsResult(items)
