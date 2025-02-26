@@ -32,9 +32,6 @@ intellij_plugin_library(
 stamped_plugin_xml(
     name = "stamped_plugin_xml",
     changelog_file = "CHANGELOG.md",
-    description_file = "description.html",
-    plugin_id = "org.jetbrains.bazel",
-    plugin_name = "Bazel (EAP)",
     since_build_numbers = {PLATFORM_VERSION: SINCE_VERSION},
     stamp_since_build = True,
     version = INTELLIJ_BAZEL_VERSION,
