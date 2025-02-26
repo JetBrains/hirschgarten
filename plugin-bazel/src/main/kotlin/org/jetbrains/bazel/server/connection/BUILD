@@ -5,7 +5,6 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//plugin-bazel/protocol/src/main/kotlin/org/jetbrains/bsp/protocol/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/client",
@@ -16,8 +15,8 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console/ids",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
         "//protocol",
-        "//server/install/src/main/kotlin/org/jetbrains/bsp/bazel/install",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server",
+        "//server/install/src/main/kotlin/org/jetbrains/bazel/install",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server",
         "@maven//:ch_epfl_scala_bsp4j",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],

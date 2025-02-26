@@ -5,7 +5,7 @@ kt_jvm_library(
     name = "v243",
     srcs = select_for_plugin_api({
         "intellij-2024.3": glob([
-            "org/jetbrains/bsp/sdkcompat/**",
+            "org/jetbrains/bazel/sdkcompat/**",
         ]),
         "intellij-2025.1": ["Dummy.kt"],
     }),
