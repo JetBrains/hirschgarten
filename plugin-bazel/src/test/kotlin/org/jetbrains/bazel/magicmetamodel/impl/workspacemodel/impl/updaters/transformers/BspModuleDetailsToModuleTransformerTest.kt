@@ -17,7 +17,6 @@ import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.JavacOptionsItem
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
@@ -41,7 +40,6 @@ class BspModuleDetailsToModuleTransformerTest {
     modules shouldBe emptyList()
   }
 
-  @Disabled
   @Test
   fun `should return java module with dependencies to other targets and libraries`() {
     // given
@@ -83,13 +81,16 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails =
       BspModuleDetails(
         target = target,
+        dependencySources = listOf(dependencySourceItem1),
+        javacOptions = javacOptions,
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
             BuildTargetIdentifier("//target2"),
             BuildTargetIdentifier("//target3"),
           ),
-        libraryDependencies = emptyList(),
+        libraryDependencies = null,
+        scalacOptions = null,
       )
 
     val targetsMap = listOf("//target1", "//target2", "//target3").toDefaultTargetsMap()
@@ -153,7 +154,9 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails =
       BspModuleDetails(
         target = target,
+        dependencySources = listOf(),
         type = ModuleTypeId("JAVA_MODULE"),
+        javacOptions = null,
         associates =
           listOf(
             BuildTargetIdentifier("//target4"),
@@ -168,6 +171,7 @@ class BspModuleDetailsToModuleTransformerTest {
           listOf(
             BuildTargetIdentifier("@maven//:test"),
           ),
+        scalacOptions = null,
       )
 
     val targetsMap = listOf("//target1", "//target2", "//target3", "//target4", "//target5").toDefaultTargetsMap()
@@ -213,7 +217,6 @@ class BspModuleDetailsToModuleTransformerTest {
     shouldBeIgnoringDependenciesOrder(module, expectedModule)
   }
 
-  @Disabled
   @Test
   fun `should return multiple java modules with dependencies to other targets and libraries`() {
     // given
@@ -255,13 +258,16 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails1 =
       BspModuleDetails(
         target = target1,
+        dependencySources = listOf(dependencySourceItem1),
+        javacOptions = javacOptionsItem1,
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
             BuildTargetIdentifier("//target2"),
             BuildTargetIdentifier("//target3"),
           ),
-        libraryDependencies = emptyList(),
+        libraryDependencies = null,
+        scalacOptions = null,
       )
 
     val target2Name = "//target2"
@@ -296,12 +302,15 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails2 =
       BspModuleDetails(
         target = target2,
+        dependencySources = listOf(dependencySourceItem2),
+        javacOptions = javacOptionsItem2,
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
             BuildTargetIdentifier("//target3"),
           ),
-        libraryDependencies = emptyList(),
+        libraryDependencies = null,
+        scalacOptions = null,
       )
 
     val targetsMap = listOf("//target1", "//target2", "//target3").toDefaultTargetsMap()
@@ -396,9 +405,12 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails =
       BspModuleDetails(
         target = target,
+        dependencySources = emptyList(),
+        javacOptions = javacOptions,
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies = emptyList(),
         libraryDependencies = emptyList(),
+        scalacOptions = null,
       )
 
     val targetsMap = listOf("//target1").toDefaultTargetsMap()

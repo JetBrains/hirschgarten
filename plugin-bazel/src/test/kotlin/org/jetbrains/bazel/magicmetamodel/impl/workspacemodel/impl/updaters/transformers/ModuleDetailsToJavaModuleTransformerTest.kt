@@ -156,8 +156,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         target = buildTarget,
         sources = listOf(sourcesItem),
         resources = listOf(resourcesItem),
+        dependenciesSources = listOf(dependencySourcesItem),
+        javacOptions = javacOptionsItem,
+        scalacOptions = null,
         outputPathUris = outputPathUris,
-        libraryDependencies = emptyList(),
+        libraryDependencies = null,
         moduleDependencies =
           listOf(
             BuildTargetIdentifier("module2"),
@@ -244,7 +247,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         classJars = listOf("jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/"),
       )
 
-    val expectedJavaAddendum = JavaAddendum(languageVersion = javaVersion)
+    val expectedJavaAddendum = JavaAddendum(languageVersion = javaVersion, javacOptions = emptyList())
 
     val expectedJavaModule =
       JavaModule(
@@ -314,6 +317,9 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         target = buildTarget,
         sources = listOf(),
         resources = listOf(),
+        dependenciesSources = listOf(),
+        javacOptions = null,
+        scalacOptions = null,
         outputPathUris = listOf(),
         libraryDependencies =
           listOf(
@@ -385,7 +391,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     validateJavaModule(javaModule, expectedJavaModule)
   }
 
-  @Disabled
   @Test
   fun `should return multiple java modules for multiple module details`() {
     // given
@@ -473,8 +478,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         target = buildTarget1,
         sources = listOf(sourcesItem1),
         resources = listOf(resourcesItem1),
+        dependenciesSources = listOf(dependencySourcesItem1),
+        javacOptions = target1JavacOptionsItem,
+        scalacOptions = null,
         outputPathUris = target1OutputPathUris,
-        libraryDependencies = emptyList(),
+        libraryDependencies = null,
         moduleDependencies =
           listOf(
             BuildTargetIdentifier("module2"),
@@ -543,8 +551,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         target = buildTarget2,
         sources = listOf(sourcesItem2),
         resources = listOf(resourcesItem2),
+        dependenciesSources = listOf(dependencySourcesItem2),
+        javacOptions = target2JavacOptionsItem,
+        scalacOptions = null,
         outputPathUris = target2OutputPathUris,
-        libraryDependencies = emptyList(),
+        libraryDependencies = null,
         moduleDependencies =
           listOf(
             BuildTargetIdentifier("module3"),

@@ -7,17 +7,24 @@ import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.workspacemodel.entities.Library
+import org.jetbrains.bazel.workspacemodel.entities.includesJavaOrScala
 import org.jetbrains.bazel.workspacemodel.entities.toBuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.toModuleCapabilities
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.DependencySourcesItem
+import org.jetbrains.bsp.protocol.JavacOptionsItem
+import org.jetbrains.bsp.protocol.ScalacOptionsItem
 
 internal data class BspModuleDetails(
   val target: BuildTarget,
+  val dependencySources: List<DependencySourcesItem>,
+  val javacOptions: JavacOptionsItem?,
+  val scalacOptions: ScalacOptionsItem?,
   val type: ModuleTypeId,
   val associates: List<BuildTargetIdentifier> = listOf(),
   val moduleDependencies: List<BuildTargetIdentifier>,
-  val libraryDependencies: List<BuildTargetIdentifier>,
+  val libraryDependencies: List<BuildTargetIdentifier>?,
 )
 
 internal class BspModuleDetailsToModuleTransformer(
@@ -42,7 +49,20 @@ internal class BspModuleDetailsToModuleTransformer(
     )
 
   private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<IntermediateLibraryDependency> =
-    inputEntity.libraryDependencies.map { it.toLibraryDependency(nameProvider, true) }
+    inputEntity.libraryDependencies?.map { it.toLibraryDependency(nameProvider, true) }
+      ?: if (inputEntity.target.languageIds.includesJavaOrScala()) {
+        DependencySourcesItemToLibraryDependencyTransformer
+          .transform(
+            inputEntity.dependencySources.map {
+              DependencySourcesAndJvmClassPaths(it, inputEntity.toJvmClassPaths())
+            },
+          )
+      } else {
+        emptyList()
+      }
+
+  private fun BspModuleDetails.toJvmClassPaths() =
+    (this.javacOptions?.classpath.orEmpty() + this.scalacOptions?.classpath.orEmpty()).distinct()
 }
 
 internal object DependencySourcesItemToLibraryDependencyTransformer :
