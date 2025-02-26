@@ -1,10 +1,9 @@
 package org.jetbrains.bsp.bazel.server.sync
 
 import com.google.protobuf.TextFormat
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.coroutineScope
 import okio.IOException
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
@@ -14,7 +13,7 @@ import kotlin.io.path.reader
 
 class TargetInfoReader(private val bspClientLogger: BspClientLogger) {
   suspend fun readTargetMapFromAspectOutputs(files: Set<Path>): Map<Label, TargetInfo> =
-    withContext(Dispatchers.Default) {
+    coroutineScope {
       files.map { file -> async { readFromFile(file) } }.awaitAll()
     }.asSequence()
       .filterNotNull()
