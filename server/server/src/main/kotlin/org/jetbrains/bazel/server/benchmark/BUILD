@@ -9,12 +9,7 @@ kt_jvm_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/constants",
         "//server/logger",
-        "@maven//:io_opentelemetry_opentelemetry_api",
         "@maven//:io_opentelemetry_opentelemetry_exporter_otlp",
-        "@maven//:io_opentelemetry_opentelemetry_extension_kotlin",
-        "@maven//:io_opentelemetry_opentelemetry_sdk",
-        "@maven//:io_opentelemetry_opentelemetry_sdk_trace",
-        "@maven//:io_opentelemetry_semconv_opentelemetry_semconv",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
     ],
 )

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.server.sync
 
 import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
+import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.util.EnvironmentUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -16,7 +17,6 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.benchmark.tracer
-import org.jetbrains.bazel.server.benchmark.useWithScope
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled

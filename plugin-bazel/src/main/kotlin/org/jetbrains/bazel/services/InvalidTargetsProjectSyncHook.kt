@@ -7,7 +7,6 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
@@ -17,20 +16,18 @@ import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 internal class InvalidTargetsProjectSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
-    coroutineScope {
-      val bazelInvalidTargetsService = BazelInvalidTargetsService.getInstance(environment.project)
-      val invalidTargetsResult =
-        query("workspace/invalidTargets") {
-          environment.server.workspaceInvalidTargets()
-        }.targets
-      bazelInvalidTargetsService.invalidTargets = invalidTargetsResult
+    val bazelInvalidTargetsService = BazelInvalidTargetsService.getInstance(environment.project)
+    val invalidTargetsResult =
+      query("workspace/invalidTargets") {
+        environment.server.workspaceInvalidTargets()
+      }.targets
+    bazelInvalidTargetsService.invalidTargets = invalidTargetsResult
 
-      if (bazelInvalidTargetsService.invalidTargets.isNotEmpty()) {
-        BspBalloonNotifier.warn(
-          BazelPluginBundle.message("widget.collect.targets.not.imported.properly.title"),
-          BazelPluginBundle.message("widget.collect.targets.not.imported.properly.message"),
-        )
-      }
+    if (bazelInvalidTargetsService.invalidTargets.isNotEmpty()) {
+      BspBalloonNotifier.warn(
+        BazelPluginBundle.message("widget.collect.targets.not.imported.properly.title"),
+        BazelPluginBundle.message("widget.collect.targets.not.imported.properly.message"),
+      )
     }
   }
 }

@@ -17,10 +17,15 @@ import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
+import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.SourcesResult
+import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
+import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
+import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
@@ -30,6 +35,11 @@ private val mockBuildServer =
     sourcesResult = SourcesResult(emptyList()),
     resourcesResult = ResourcesResult(emptyList()),
     workspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
+    workspaceLibrariesResult = WorkspaceLibrariesResult(emptyList()),
+    workspaceNonModuleTargetsResult = NonModuleTargetsResult(emptyList()),
+    jvmBinaryJarsResult = JvmBinaryJarsResult(emptyList()),
+    workspaceInvalidTargetsResult = WorkspaceInvalidTargetsResult(emptyList()),
+    workspaceBazelRepoMappingResult = WorkspaceBazelRepoMappingResult(emptyMap(), emptyMap()),
   )
 
 private class BspConnectionMock : BspConnection {

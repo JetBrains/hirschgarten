@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.sync
 
+import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
@@ -8,7 +9,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.benchmark.tracer
-import org.jetbrains.bazel.server.benchmark.useWithScope
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
