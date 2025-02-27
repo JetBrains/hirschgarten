@@ -1,18 +1,18 @@
 package org.jetbrains.bazel.run.task
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.StatusCode
-import ch.epfl.scala.bsp4j.TestFinish
-import ch.epfl.scala.bsp4j.TestStart
-import ch.epfl.scala.bsp4j.TestStatus
-import ch.epfl.scala.bsp4j.TestTask
 import com.google.idea.testing.BazelTestApplication
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.openapi.util.Key
 import io.kotest.matchers.equals.shouldBeEqual
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.run.BspProcessHandler
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
+import org.jetbrains.bsp.protocol.StatusCode
+import org.jetbrains.bsp.protocol.TestFinish
+import org.jetbrains.bsp.protocol.TestStart
+import org.jetbrains.bsp.protocol.TestStatus
+import org.jetbrains.bsp.protocol.TestTask
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -100,9 +100,7 @@ class BspTestTaskListenerTest {
     // given
     val durationSeconds = 1.23456
     val taskId = "task-id"
-    val testFinishData = TestFinish("testSuite", TestStatus.PASSED)
-    testFinishData.data = JUnitStyleTestSuiteData(durationSeconds, null, null)
-    testFinishData.dataKind = JUnitStyleTestSuiteData.DATA_KIND
+    val testFinishData = TestFinish("testSuite", TestStatus.PASSED, data = JUnitStyleTestSuiteData(durationSeconds, null, null))
 
     val expectedDurationMillis = (1234).toLong()
     val expectedText =

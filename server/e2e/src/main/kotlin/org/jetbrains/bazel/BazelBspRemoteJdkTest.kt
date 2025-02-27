@@ -1,13 +1,12 @@
 package org.jetbrains.bazel
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.time.Duration.Companion.minutes
 
 object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
@@ -38,10 +37,10 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
     val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
 
     val exampleExampleJvmBuildTarget =
-      JvmBuildTarget().also {
-        it.javaVersion = "11"
-        it.javaHome = javaHome
-      }
+      JvmBuildTarget(
+        javaVersion = "11",
+        javaHome = javaHome,
+      )
 
     val exampleExampleBuildTarget =
       BuildTarget(
@@ -49,17 +48,16 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
         listOf("application"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = true
-          it.canDebug = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = false,
+          canRun = true,
+          canDebug = false,
+        ),
+        displayName = "$targetPrefix//example:example",
+        baseDirectory = "file://\$WORKSPACE/example/",
+        data = exampleExampleJvmBuildTarget,
       )
-    exampleExampleBuildTarget.displayName = "$targetPrefix//example:example"
-    exampleExampleBuildTarget.baseDirectory = "file://\$WORKSPACE/example/"
-    exampleExampleBuildTarget.data = exampleExampleJvmBuildTarget
-    exampleExampleBuildTarget.dataKind = BuildTargetDataKind.JVM
 
     return WorkspaceBuildTargetsResult(
       listOf(exampleExampleBuildTarget),

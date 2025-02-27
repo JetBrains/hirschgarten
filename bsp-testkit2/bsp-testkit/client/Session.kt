@@ -12,7 +12,6 @@ class Session(val workspacePath: Path, val client: MockClient) {
   val connection =
     Connection(
       installationDirectory = workspacePath,
-      metricsFile = null,
       projectViewFile = null,
       workspace = workspacePath,
       client = client,

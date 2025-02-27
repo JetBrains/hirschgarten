@@ -1,9 +1,5 @@
 package org.jetbrains.bazel.server.sync.languages.python
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.PythonBuildTarget
-import ch.epfl.scala.bsp4j.PythonOptionsItem
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
@@ -13,6 +9,9 @@ import org.jetbrains.bazel.server.model.BspMappings
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.PythonBuildTarget
+import org.jetbrains.bsp.protocol.PythonOptionsItem
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.toPath
@@ -54,13 +53,12 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
       ?.let { bazelPathsResolver.resolveUri(it) }
 
   override fun applyModuleData(moduleData: PythonModule, buildTarget: BuildTarget) {
-    buildTarget.dataKind = BuildTargetDataKind.PYTHON
     val interpreter = moduleData.interpreter?.toString()
     buildTarget.data =
-      PythonBuildTarget().also {
-        it.version = moduleData.version
-        it.interpreter = interpreter
-      }
+      PythonBuildTarget(
+        version = moduleData.version,
+        interpreter = interpreter,
+      )
   }
 
   fun toPythonOptionsItem(module: Module, pythonModule: PythonModule): PythonOptionsItem =

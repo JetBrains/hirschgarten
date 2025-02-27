@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.server.diagnostics
 
-import ch.epfl.scala.bsp4j.DiagnosticSeverity
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.DiagnosticSeverity
 
 data class Diagnostic(
   val position: Position,

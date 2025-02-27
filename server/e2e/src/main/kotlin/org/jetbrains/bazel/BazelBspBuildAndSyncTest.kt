@@ -1,14 +1,13 @@
 package org.jetbrains.bazel
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import java.net.URI
@@ -36,7 +35,7 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "Compare workspace/buildTargets",
     ) {
-      testClient.test(timeout = 5.minutes) { session, _ ->
+      testClient.test(timeout = 5.minutes) { session ->
         val result = session.server.workspaceBuildTargets().await()
         testClient.assertJsonEquals<WorkspaceBuildTargetsResult>(expectedWorkspaceBuildTargetsResult(), result)
         assertFalse(mainJar.exists())
@@ -48,7 +47,7 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "Compare workspace/buildAndGetBuildTargets",
     ) {
-      testClient.test(timeout = 5.minutes) { session, _ ->
+      testClient.test(timeout = 5.minutes) { session ->
         val result = session.server.workspaceBuildAndGetBuildTargets().await()
         testClient.assertJsonEquals<WorkspaceBuildTargetsResult>(expectedWorkspaceBuildTargetsResult(), result)
         assertTrue(mainJar.exists())
@@ -61,10 +60,10 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
       "file://\$BAZEL_OUTPUT_BASE_PATH/external/" +
         "rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk17_$javaHomeArchitecture/"
     val exampleExampleJvmBuildTarget =
-      JvmBuildTarget().also {
-        it.javaHome = javaHome
-        it.javaVersion = "17"
-      }
+      JvmBuildTarget(
+        javaHome = javaHome,
+        javaVersion = "17",
+      )
 
     val srcMainBuildTarget =
       BuildTarget(
@@ -72,17 +71,16 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
         listOf("library"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = false
-          it.canDebug = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = false,
+          canRun = false,
+          canDebug = false,
+        ),
+        displayName = "$targetPrefix//src:main",
+        baseDirectory = "file://\$WORKSPACE/src/",
+        data = exampleExampleJvmBuildTarget,
       )
-    srcMainBuildTarget.displayName = "$targetPrefix//src:main"
-    srcMainBuildTarget.baseDirectory = "file://\$WORKSPACE/src/"
-    srcMainBuildTarget.data = exampleExampleJvmBuildTarget
-    srcMainBuildTarget.dataKind = BuildTargetDataKind.JVM
 
     return WorkspaceBuildTargetsResult(listOf(srcMainBuildTarget))
   }

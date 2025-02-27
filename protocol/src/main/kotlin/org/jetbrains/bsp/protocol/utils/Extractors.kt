@@ -1,25 +1,29 @@
 package org.jetbrains.bsp.protocol.utils
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.PythonBuildTarget
-import ch.epfl.scala.bsp4j.ScalaBuildTarget
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
+import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.protocol.PythonBuildTarget
+import org.jetbrains.bsp.protocol.ScalaBuildTarget
 
-public fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? = target.data as? PythonBuildTarget
+private inline fun <reified Data> extractData(target: BuildTarget): Data? = target.data as? Data
 
-public fun extractScalaBuildTarget(target: BuildTarget): ScalaBuildTarget? = target.data as? ScalaBuildTarget
+fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? = extractData(target)
 
-public fun extractAndroidBuildTarget(target: BuildTarget): AndroidBuildTarget? = target.data as? AndroidBuildTarget
+fun extractScalaBuildTarget(target: BuildTarget): ScalaBuildTarget? = extractData(target)
 
-public fun extractGoBuildTarget(target: BuildTarget): GoBuildTarget? = target.data as? GoBuildTarget
+fun extractAndroidBuildTarget(target: BuildTarget): AndroidBuildTarget? = extractData(target)
 
-public fun extractKotlinBuildTarget(target: BuildTarget): KotlinBuildTarget? = target.data as? KotlinBuildTarget
+fun extractGoBuildTarget(target: BuildTarget): GoBuildTarget? = extractData(target)
 
-public fun extractJvmBuildTarget(target: BuildTarget): JvmBuildTarget? =
-  target.data as? JvmBuildTarget
+fun extractKotlinBuildTarget(target: BuildTarget): KotlinBuildTarget? =
+  extractData(target)
+    ?: extractAndroidBuildTarget(target)?.kotlinBuildTarget
+
+fun extractJvmBuildTarget(target: BuildTarget): JvmBuildTarget? =
+  extractData(target)
     ?: extractAndroidBuildTarget(target)?.jvmBuildTarget
     ?: extractKotlinBuildTarget(target)?.jvmBuildTarget
     ?: extractScalaBuildTarget(target)?.jvmBuildTarget

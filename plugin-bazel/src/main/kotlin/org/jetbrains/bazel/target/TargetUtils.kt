@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.target
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.BuildTargetTag
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -33,6 +31,8 @@ import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.LibraryItem
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap

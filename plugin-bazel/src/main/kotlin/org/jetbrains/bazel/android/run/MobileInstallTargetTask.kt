@@ -1,8 +1,5 @@
 package org.jetbrains.bazel.android.run
 
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.StatusCode
 import com.android.ddmlib.IDevice
 import com.google.common.util.concurrent.ListenableFuture
 import com.intellij.openapi.diagnostic.Logger
@@ -19,10 +16,12 @@ import org.jetbrains.bazel.server.tasks.BspServerSingleTargetTask
 import org.jetbrains.bazel.server.tasks.BspTaskStatusLogger
 import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.MobileInstallStartType
+import org.jetbrains.bsp.protocol.StatusCode
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.cancellation.CancellationException
@@ -34,11 +33,7 @@ class MobileInstallTargetTask(
 ) : BspServerSingleTargetTask<MobileInstallResult>("mobile install target", project) {
   private val log = logger<MobileInstallTargetTask>()
 
-  override suspend fun executeWithServer(
-    server: JoinedBuildServer,
-    capabilities: BuildServerCapabilities,
-    targetId: BuildTargetIdentifier,
-  ): MobileInstallResult {
+  override suspend fun executeWithServer(server: JoinedBuildServer, targetId: BuildTargetIdentifier): MobileInstallResult {
     val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
     val originId = "mobile-install-" + UUID.randomUUID().toString()
     val cancelOn = CompletableFuture<Void>()

@@ -7,8 +7,12 @@ exports_files(glob([
 
 kt_jvm_library(
     name = "intellij-bsp",
+    resources = glob([
+        "main/resources/**",
+    ]),
     visibility = ["//visibility:public"],
     exports = [
+        ":optional-xmls",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action/registered",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/android",
@@ -74,10 +78,16 @@ kt_jvm_library(
 )
 
 kt_jvm_library(
-    name = "intellij-bsp-resources",
-    resources = glob([
-        "main/resources/**",
-    ]),
+    name = "optional-xmls",
+    resource_strip_prefix = "plugin-bazel/src/main/jps-resources",
+    resources = glob(
+        [
+            "main/jps-resources/**",
+        ],
+        exclude = [
+            "main/jps-resources/META-INF/plugin.xml",
+        ],
+    ),
     visibility = ["//visibility:public"],
 )
 
@@ -91,7 +101,7 @@ kt_jvm_library(
     deps = [
         ":intellij-bazel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
-        "@maven//:ch_epfl_scala_bsp4j",
+        "//protocol",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
         "@maven//:io_kotest_kotest_assertions_shared_jvm",

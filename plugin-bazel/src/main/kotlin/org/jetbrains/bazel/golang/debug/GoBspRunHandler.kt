@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.golang.debug
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.RunParams
 import com.goide.execution.application.GoApplicationConfiguration
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
@@ -18,8 +16,8 @@ import org.jetbrains.bazel.run.BspRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.commandLine.BspRunCommandLineState
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
+import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.config.BspRunConfiguration
-import org.jetbrains.bazel.run.config.BspRunConfigurationType
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.task.BspRunTaskListener
 import org.jetbrains.bazel.target.getModule
@@ -27,9 +25,10 @@ import org.jetbrains.bazel.taskEvents.BspTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.includesGo
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
+import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import java.util.UUID
 
@@ -42,7 +41,7 @@ class GoBspRunHandler(private val configuration: BspRunConfiguration) : BspRunHa
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     when {
       executor is DefaultDebugExecutor -> {
-        val config = GoApplicationConfiguration(environment.project, "default", BspRunConfigurationType())
+        val config = GoApplicationConfiguration(environment.project, "default", BazelRunConfigurationType())
         val target = getTargetId(environment)
         val module = target.label().getModule(environment.project) ?: error("Could not find module for target $target")
         GoRunWithDebugCommandLineState(environment, UUID.randomUUID().toString(), module, config, state)
@@ -78,19 +77,18 @@ class GoRunWithDebugCommandLineState(
 ) : GoDebuggableCommandLineState(environment, module, configuration, originId) {
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspRunTaskListener(handler)
 
-  override suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) {
-    if (!capabilities.runWithDebugProvider) {
-      throw ExecutionException("BSP server does not support running")
-    }
-
+  override suspend fun startBsp(server: JoinedBuildServer) {
     val configuration = environment.runProfile as BspRunConfiguration
     val targetId = configuration.targets.single()
-    val runParams = RunParams(targetId)
-    runParams.originId = originId
-    runParams.workingDirectory = settings.workingDirectory
-    runParams.arguments = transformProgramArguments(settings.programArguments)
-    runParams.environmentVariables = settings.env.envs
-    val remoteDebugData = RemoteDebugData("go_dlv", getDebugServerAddress().port)
+    val runParams =
+      RunParams(
+        targetId,
+        originId = originId,
+        workingDirectory = settings.workingDirectory,
+        arguments = transformProgramArguments(settings.programArguments),
+        environmentVariables = settings.env.envs,
+      )
+    val remoteDebugData = RemoteDebugData("go_dlv", debugServerAddress.port)
     val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
 
     server.buildTargetRunWithDebug(runWithDebugParams).await()

@@ -1,11 +1,5 @@
 package org.jetbrains.bazel.run.task
 
-import ch.epfl.scala.bsp4j.StatusCode
-import ch.epfl.scala.bsp4j.TestFinish
-import ch.epfl.scala.bsp4j.TestReport
-import ch.epfl.scala.bsp4j.TestStart
-import ch.epfl.scala.bsp4j.TestStatus
-import ch.epfl.scala.bsp4j.TestTask
 import com.intellij.execution.process.AnsiEscapeDecoder
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
@@ -17,6 +11,12 @@ import org.jetbrains.bazel.taskEvents.BspTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
+import org.jetbrains.bsp.protocol.StatusCode
+import org.jetbrains.bsp.protocol.TestFinish
+import org.jetbrains.bsp.protocol.TestReport
+import org.jetbrains.bsp.protocol.TestStart
+import org.jetbrains.bsp.protocol.TestStatus
+import org.jetbrains.bsp.protocol.TestTask
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -116,7 +116,7 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
     details: JUnitStyleTestCaseData?,
   ) {
     val failureMessageBuilder =
-      when (data.status!!) {
+      when (data.status) {
         TestStatus.FAILED -> {
           ServiceMessageBuilder.testFailed(data.displayName)
         }

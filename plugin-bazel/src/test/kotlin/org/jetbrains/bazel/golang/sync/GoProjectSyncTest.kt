@@ -1,12 +1,5 @@
 package org.jetbrains.bazel.golang.sync
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
 import com.goide.vgo.project.workspaceModel.entities.VgoDependencyEntity
 import com.goide.vgo.project.workspaceModel.entities.VgoStandaloneModuleEntity
 import com.intellij.platform.backend.workspace.WorkspaceModel
@@ -30,8 +23,15 @@ import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.GoBuildTarget
+import org.jetbrains.bsp.protocol.ResourcesItem
+import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.SourceItemKind
+import org.jetbrains.bsp.protocol.SourcesItem
+import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.net.URI
@@ -79,8 +79,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add VgoStandaloneModuleEntities to workspace model diff`() {
     // given
-    val server = BuildServerMock()
-    val capabilities = BazelBuildServerCapabilities()
+    val server = BuildServerMock(workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()))
     val diff = AllProjectStructuresProvider(project).newDiff()
     val goTestTargets = generateTestSet(project.findNameProvider().orDefault())
 
@@ -92,7 +91,6 @@ class GoProjectSyncTest : MockProjectBaseTest() {
             project = project,
             syncScope = SecondPhaseSync,
             server = server,
-            capabilities = capabilities,
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
@@ -116,8 +114,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add dependencies to workspace model diff`() {
     // given
-    val server = BuildServerMock()
-    val capabilities = BazelBuildServerCapabilities()
+    val server = BuildServerMock(workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()))
     val diff = AllProjectStructuresProvider(project).newDiff()
     val goTestTargets = generateTestSet(project.findNameProvider().orDefault())
 
@@ -129,7 +126,6 @@ class GoProjectSyncTest : MockProjectBaseTest() {
             project = project,
             syncScope = SecondPhaseSync,
             server = server,
-            capabilities = capabilities,
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
@@ -202,18 +198,18 @@ class GoProjectSyncTest : MockProjectBaseTest() {
         listOf("go"),
         info.dependencies,
         BuildTargetCapabilities(),
+        displayName = info.targetId.toString(),
+        baseDirectory = "file:///targets_base_dir",
+        data =
+          GoBuildTarget(
+            sdkHomePath = URI("file:///go_sdk/"),
+            importPath = info.importPath,
+            generatedLibraries = emptyList(),
+          ),
       )
-    target.displayName = target.id.toString()
-    target.baseDirectory = "file:///targets_base_dir"
-    target.dataKind = "go"
-    target.data =
-      GoBuildTarget(
-        sdkHomePath = URI("file:///go_sdk/"),
-        importPath = info.importPath,
-        generatedLibraries = emptyList(),
-      )
+
     val sources =
-      listOf(SourcesItem(info.targetId, listOf(SourceItem("file:///root/${info.importPath}", SourceItemKind.forValue(1), false))))
+      listOf(SourcesItem(info.targetId, listOf(SourceItem("file:///root/${info.importPath}", SourceItemKind.FILE, false))))
     val resources = info.resourcesItems.map { ResourcesItem(info.targetId, listOf(it)) }
     return BaseTargetInfo(target, sources, resources)
   }

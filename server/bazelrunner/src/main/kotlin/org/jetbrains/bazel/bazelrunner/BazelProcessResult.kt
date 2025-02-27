@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.bazelrunner
 
-import ch.epfl.scala.bsp4j.StatusCode
 import org.jetbrains.bazel.bazelrunner.outputs.OutputCollector
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bsp.protocol.StatusCode
 
 class BazelProcessResult(
   private val stdoutCollector: OutputCollector,

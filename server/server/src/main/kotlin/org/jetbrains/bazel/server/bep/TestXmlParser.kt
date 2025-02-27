@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.server.bep
 
-import ch.epfl.scala.bsp4j.TaskId
-import ch.epfl.scala.bsp4j.TestStatus
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
@@ -12,6 +10,8 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.jetbrains.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
+import org.jetbrains.bsp.protocol.TaskId
+import org.jetbrains.bsp.protocol.TestStatus
 import java.io.File
 import java.net.URI
 import java.util.UUID
@@ -137,8 +137,7 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
    * @param suite TestSuite to be processed.
    */
   private fun processSuite(suite: TestSuite) {
-    val suiteTaskId = TaskId(UUID.randomUUID().toString())
-    suiteTaskId.parents = emptyList()
+    val suiteTaskId = TaskId(UUID.randomUUID().toString(), parents = emptyList())
 
     val suiteData = JUnitStyleTestSuiteData(suite.time, null, suite.systemErr?.toString())
     val suiteStatus =
@@ -157,7 +156,6 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
       suiteTaskId,
       suiteStatus,
       suite.systemOut.toString(),
-      JUnitStyleTestSuiteData.DATA_KIND,
       suiteData,
     )
   }
@@ -169,8 +167,7 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
    * @param testCase TestCase to be processed and sent to the client.
    */
   private fun processTestCase(parentId: String, testCase: TestCase) {
-    val testCaseTaskId = TaskId(UUID.randomUUID().toString())
-    testCaseTaskId.parents = listOf(parentId)
+    val testCaseTaskId = TaskId(UUID.randomUUID().toString(), listOf(parentId))
 
     // Extract the error summary message.
     val outcomeMessage =
@@ -220,7 +217,6 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
       testCaseTaskId,
       testStatusOutcome,
       "",
-      JUnitStyleTestCaseData.DATA_KIND,
       testCaseData,
     )
   }
@@ -276,8 +272,7 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
 
   // A Bazel target is represented by a test suite containing one test case
   private fun defaultIncompleteInfoSuiteProcessing(suite: IncompleteTestSuite) {
-    val suiteTaskId = TaskId(UUID.randomUUID().toString())
-    suiteTaskId.parents = emptyList()
+    val suiteTaskId = TaskId(UUID.randomUUID().toString(), emptyList())
     val suiteStatus =
       when {
         suite.failures > 0 -> TestStatus.FAILED
@@ -295,7 +290,6 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
       suiteTaskId,
       suiteStatus,
       null,
-      JUnitStyleTestSuiteData.DATA_KIND,
       testSuiteData,
     )
   }
@@ -309,8 +303,7 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
     parentId: String,
     testSuiteStatus: TestStatus,
   ) {
-    val testCaseTaskId = TaskId(UUID.randomUUID().toString())
-    testCaseTaskId.parents = listOf(parentId)
+    val testCaseTaskId = TaskId(UUID.randomUUID().toString(), listOf(parentId))
 
     // Extract the error summary message.
     val outcomeMessage =
@@ -332,7 +325,6 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
       testCaseTaskId,
       testSuiteStatus,
       null,
-      JUnitStyleTestCaseData.DATA_KIND,
       testCaseData,
     )
   }
