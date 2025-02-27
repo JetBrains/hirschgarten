@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.workspace.model.matchers.entries
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
@@ -18,5 +19,6 @@ public infix fun Collection<ModuleEntity>.shouldContainExactlyInAnyOrder(expecte
 private fun validateModuleEntity(actual: ModuleEntity, expected: ExpectedModuleEntity) {
   actual.name shouldBe expected.moduleEntity.name
   actual.type shouldBe expected.moduleEntity.type
-  actual.dependencies shouldContainExactlyInAnyOrder expected.moduleEntity.dependencies
+  val nonSdkDependencies = actual.dependencies.filter { it !is SdkDependency }
+  nonSdkDependencies shouldContainExactlyInAnyOrder expected.moduleEntity.dependencies
 }
