@@ -483,7 +483,7 @@ suspend fun calculateProjectDetailsWithCapabilities(
     try {
       val javaTargetIds = baseTargetInfos.infos.calculateJavaTargetIds()
       val scalaTargetIds = baseTargetInfos.infos.calculateScalaTargetIds()
-      val libraries: WorkspaceLibrariesResult? =
+      val libraries: WorkspaceLibrariesResult =
         query("workspace/libraries") {
           server.workspaceLibraries()
         }
@@ -520,8 +520,13 @@ suspend fun calculateProjectDetailsWithCapabilities(
 
       // Same for Scala
       val scalacOptionsResult =
-        asyncQueryIf(scalaTargetIds.isNotEmpty(), "buildTarget/scalacOptions") {
-          server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
+        // TODO: Son
+        if (libraries == null) {
+          asyncQueryIf(scalaTargetIds.isNotEmpty(), "buildTarget/scalacOptions") {
+            server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
+          }
+        } else {
+          null
         }
 
       ProjectDetails(
@@ -531,8 +536,9 @@ suspend fun calculateProjectDetailsWithCapabilities(
         resources = baseTargetInfos.infos.flatMap { it.resources },
         dependenciesSources = dependencySourcesResult.await().items,
         javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
-        scalacOptions = scalacOptionsResult.await()?.items ?: emptyList(),
-        libraries = libraries?.libraries,
+        // TODO: Son
+        scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
+        libraries = libraries.libraries,
         nonModuleTargets = nonModuleTargets.nonModuleTargets,
         jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
       )
