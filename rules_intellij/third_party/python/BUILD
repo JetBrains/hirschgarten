@@ -30,7 +30,12 @@ java_library(
     name = "python_for_tests",
     testonly = 1,
     data = [":python_helpers"],
-    exports = [":python_internal"],
+    exports = [
+        ":python_internal",
+        # Python plugin has several non-optional plugin dependencies
+        "//third_party/json:json_for_tests",
+        "//third_party/toml:toml_for_tests",
+    ],
 )
 
 java_library(
