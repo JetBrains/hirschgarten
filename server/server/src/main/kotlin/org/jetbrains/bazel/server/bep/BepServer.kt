@@ -1,13 +1,5 @@
 package org.jetbrains.bazel.server.bep
 
-import ch.epfl.scala.bsp4j.CompileReport
-import ch.epfl.scala.bsp4j.CompileTask
-import ch.epfl.scala.bsp4j.TaskFinishDataKind
-import ch.epfl.scala.bsp4j.TaskFinishParams
-import ch.epfl.scala.bsp4j.TaskId
-import ch.epfl.scala.bsp4j.TaskStartDataKind
-import ch.epfl.scala.bsp4j.TaskStartParams
-import ch.epfl.scala.bsp4j.TestStatus
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.NamedSetOfFiles
 import com.google.devtools.build.v1.BuildEvent
@@ -27,9 +19,15 @@ import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.protocol.CompileReport
+import org.jetbrains.bsp.protocol.CompileTask
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.PublishOutputParams
+import org.jetbrains.bsp.protocol.TaskFinishParams
+import org.jetbrains.bsp.protocol.TaskId
+import org.jetbrains.bsp.protocol.TaskStartParams
 import org.jetbrains.bsp.protocol.TestCoverageReport
+import org.jetbrains.bsp.protocol.TestStatus
 import java.io.IOException
 import java.net.URI
 import java.nio.file.FileSystemNotFoundException
@@ -134,8 +132,7 @@ class BepServer(
         TestXmlParser(bspClientTestNotifier).parseAndReport(testXmlUri)
       } else {
         // Send a generic notification if individual tests cannot be processed.
-        val childId = TaskId(UUID.randomUUID().toString())
-        childId.parents = listOf(taskId.id)
+        val childId = TaskId(UUID.randomUUID().toString(), parents = listOf(taskId.id))
         bspClientTestNotifier.startTest("Test", childId)
         bspClientTestNotifier.finishTest("Test", childId, testStatus, "Test finished")
       }
@@ -203,22 +200,26 @@ class BepServer(
 
   private fun consumeBuildStartedEvent(event: BuildEventStreamProtos.BuildEvent) {
     bepOutputBuilder.clear()
+
+    if (originId == null) {
+      LOGGER.warn("No origin id was found. Event: {}", event)
+      return
+    }
+
     val taskId = TaskId(event.started.uuid)
-    val startParams = TaskStartParams(taskId)
+    val startParams = TaskStartParams(taskId, eventTime = event.started.startTimeMillis, originId = originId)
     val target =
       event.id.testResult.label
         ?.let { Label.parse(it) }
-    startParams.eventTime = event.started.startTimeMillis
 
     if (event.started.command == Constants.BAZEL_BUILD_COMMAND) { // todo: why only build?
       if (target != null) {
-        startParams.dataKind = TaskStartDataKind.COMPILE_TASK
         val task = CompileTask(target.toBspIdentifier())
         startParams.data = task
       }
       bspClient.onBuildTaskStart(startParams)
     } else if (event.started.command == Constants.BAZEL_TEST_COMMAND || event.started.command == Constants.BAZEL_COVERAGE_COMMAND) {
-      if (originId == null) {
+      if (target == null) {
         return
       }
 
@@ -241,8 +242,18 @@ class BepServer(
       event.id.testResult.label
         ?.let { Label.parse(it) }
 
+    if (target == null) {
+      LOGGER.warn("No target label was found. Task id: {}", taskId)
+      return
+    }
+
     if (taskId == null) {
       LOGGER.warn("No start event id was found. Origin id: {}", originId)
+      return
+    }
+
+    if (originId == null) {
+      LOGGER.warn("No origin id was found. Task id: {}", taskId)
       return
     }
 
@@ -254,16 +265,11 @@ class BepServer(
     }
 
     val statusCode = BazelStatus.fromExitCode(event.finished.exitCode.code).toBspStatusCode()
-    val finishParams = TaskFinishParams(taskId, statusCode)
-    finishParams.eventTime = event.finished.finishTimeMillis
-
-    if (target != null) {
-      finishParams.dataKind = TaskFinishDataKind.COMPILE_REPORT
-      val isSuccess = statusCode.value == 1
-      val errors = if (isSuccess) 0 else 1
-      val report = CompileReport(target.toBspIdentifier(), errors, 0)
-      finishParams.data = report
-    }
+    val isSuccess = statusCode.value == 1
+    val errors = if (isSuccess) 0 else 1
+    val report = CompileReport(target.toBspIdentifier(), errors, 0)
+    val finishParams =
+      TaskFinishParams(taskId, status = statusCode, eventTime = event.finished.finishTimeMillis, originId = originId, data = report)
     bspClient.onBuildTaskFinish(finishParams)
   }
 
@@ -308,7 +314,7 @@ class BepServer(
         diagnosticsService.extractDiagnostics(
           stdErrText,
           targetLabel,
-          originId,
+          originId ?: "no-origin",
         )
       events.forEach {
         bspClient.onBuildPublishDiagnostics(

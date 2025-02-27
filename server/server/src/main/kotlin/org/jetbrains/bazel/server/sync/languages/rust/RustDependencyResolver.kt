@@ -1,12 +1,12 @@
 package org.jetbrains.bazel.server.sync.languages.rust
 
-import ch.epfl.scala.bsp4j.RustDepKind
-import ch.epfl.scala.bsp4j.RustDepKindInfo
-import ch.epfl.scala.bsp4j.RustDependency
-import ch.epfl.scala.bsp4j.RustPackage
-import ch.epfl.scala.bsp4j.RustRawDependency
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.Module
+import org.jetbrains.bsp.protocol.RustDepKind
+import org.jetbrains.bsp.protocol.RustDepKindInfo
+import org.jetbrains.bsp.protocol.RustDependency
+import org.jetbrains.bsp.protocol.RustPackage
+import org.jetbrains.bsp.protocol.RustRawDependency
 
 data class RustDependencies(val dependencies: Map<String, List<RustDependency>>, val rawDependencies: Map<String, List<RustRawDependency>>)
 
@@ -49,9 +49,12 @@ class RustDependencyResolver {
   }
 
   private fun createDependency(bazelPackageTargetInfo: Label): RustDependency {
-    val dep = RustDependency(bazelPackageTargetInfo.packagePath.toString())
-    dep.name = bazelPackageTargetInfo.targetName
-    dep.depKinds = listOf(RustDepKindInfo(RustDepKind.NORMAL))
+    val dep =
+      RustDependency(
+        bazelPackageTargetInfo.packagePath.toString(),
+        name = bazelPackageTargetInfo.targetName,
+        depKinds = listOf(RustDepKindInfo(RustDepKind.NORMAL)),
+      )
     return dep
   }
 
@@ -64,9 +67,9 @@ class RustDependencyResolver {
       directDependencies.map {
         RustRawDependency(
           it.toString(),
-          false,
-          true,
-          setOf<String>(),
+          optional = false,
+          usesDefaultFeatures = true,
+          features = setOf<String>(),
         )
       },
     )

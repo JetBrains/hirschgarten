@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.run.commandLine
 
-import ch.epfl.scala.bsp4j.TestParams
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
@@ -15,9 +14,8 @@ import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bazel.run.task.BspTestTaskListener
 import org.jetbrains.bazel.taskEvents.BspTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
-import org.jetbrains.bsp.protocol.BazelTestParamsData
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.TestParams
 
 class BspTestCommandLineState(
   environment: ExecutionEnvironment,
@@ -30,20 +28,19 @@ class BspTestCommandLineState(
 
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspTestTaskListener(handler)
 
-  override suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) {
-    if (configuration.targets.isEmpty() || capabilities.testProvider == null) {
+  override suspend fun startBsp(server: JoinedBuildServer) {
+    if (configuration.targets.isEmpty()) {
       throw ExecutionException(BspPluginBundle.message("bsp.run.error.cannotRun"))
     }
 
     val targets = configuration.targets
-    val params = TestParams(targets)
-    params.originId = originId
-    params.workingDirectory = state.workingDirectory
-    params.arguments = transformProgramArguments(state.programArguments)
-    params.environmentVariables = state.env.envs
-    params.dataKind = BazelTestParamsData.DATA_KIND
-    params.data =
-      BazelTestParamsData(
+    val params =
+      TestParams(
+        targets,
+        originId = originId,
+        workingDirectory = state.workingDirectory,
+        arguments = transformProgramArguments(state.programArguments),
+        environmentVariables = state.env.envs,
         coverage = false,
         testFilter = state.testFilter,
         additionalBazelParams = state.additionalBazelParams,

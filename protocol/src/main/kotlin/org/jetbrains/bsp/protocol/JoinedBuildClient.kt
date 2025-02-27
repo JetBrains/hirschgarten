@@ -1,9 +1,23 @@
 package org.jetbrains.bsp.protocol
 
-import ch.epfl.scala.bsp4j.BuildClient
-import org.eclipse.lsp4j.jsonrpc.services.JsonNotification
+interface JoinedBuildClient {
+  fun onBuildShowMessage(params: ShowMessageParams): Unit
 
-interface JoinedBuildClient : BuildClient {
-  @JsonNotification("build/publishOutput")
+  fun onBuildLogMessage(params: LogMessageParams): Unit
+
+  fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams): Unit
+
+  fun onBuildTargetDidChange(params: DidChangeBuildTarget): Unit
+
+  fun onBuildTaskStart(params: TaskStartParams): Unit
+
+  fun onBuildTaskProgress(params: TaskProgressParams): Unit
+
+  fun onBuildTaskFinish(params: TaskFinishParams): Unit
+
+  fun onRunPrintStdout(params: PrintParams): Unit
+
+  fun onRunPrintStderr(params: PrintParams): Unit
+
   fun onBuildPublishOutput(params: PublishOutputParams)
 }

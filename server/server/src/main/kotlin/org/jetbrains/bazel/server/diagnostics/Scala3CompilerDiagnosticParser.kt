@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.server.diagnostics
 
-import ch.epfl.scala.bsp4j.DiagnosticSeverity
+import org.jetbrains.bsp.protocol.DiagnosticSeverity
 
 object Scala3CompilerDiagnosticParser : Parser {
   override fun tryParse(output: Output): List<Diagnostic> = listOfNotNull(tryParseOne(output))

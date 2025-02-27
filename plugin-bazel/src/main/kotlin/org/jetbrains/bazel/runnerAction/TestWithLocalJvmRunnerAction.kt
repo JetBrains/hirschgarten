@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.runnerAction
 
-import ch.epfl.scala.bsp4j.JvmEnvironmentItem
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.server.tasks.JvmTestEnvironmentTask
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 
 public class TestWithLocalJvmRunnerAction(
   targetInfo: BuildTargetInfo,

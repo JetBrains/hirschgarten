@@ -42,12 +42,6 @@ java_binary(
     main_class = "DummySourceForExclude",
     tags = ["no-ide"],
     runtime_deps = [
-        "@maven//:io_opentelemetry_opentelemetry_api",
-        "@maven//:io_opentelemetry_opentelemetry_exporter_otlp",
-        "@maven//:io_opentelemetry_opentelemetry_extension_kotlin",
-        "@maven//:io_opentelemetry_opentelemetry_sdk",
-        "@maven//:io_opentelemetry_opentelemetry_sdk_trace",
-        "@maven//:io_opentelemetry_semconv_opentelemetry_semconv",
         "@maven//:org_apache_velocity_velocity_engine_core",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",

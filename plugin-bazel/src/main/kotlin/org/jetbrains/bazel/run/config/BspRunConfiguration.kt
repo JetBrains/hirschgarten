@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.run.config
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.configurations.RunConfigurationWithSuppressedDefaultDebugAction
@@ -15,12 +14,13 @@ import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element
 import org.jetbrains.bazel.run.BspRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
-// Use BspRunConfigurationType.createTemplateConfiguration(project) to create a new BspRunConfiguration.
+// Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BspRunConfiguration.
 class BspRunConfiguration internal constructor(
   private val project: Project,
   name: String,
-  configurationType: BspRunConfigurationType,
+  configurationType: BazelRunConfigurationType,
 ) : LocatableConfigurationBase<RunProfileState>(project, configurationType, name),
   RunConfigurationWithSuppressedDefaultDebugAction,
   SMRunnerConsolePropertiesProvider {

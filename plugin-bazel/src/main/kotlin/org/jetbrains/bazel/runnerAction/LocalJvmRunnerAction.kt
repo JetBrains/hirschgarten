@@ -1,8 +1,5 @@
 package org.jetbrains.bazel.runnerAction
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.JvmEnvironmentItem
-import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.ShortenCommandLine
@@ -23,6 +20,9 @@ import org.jetbrains.bazel.target.getModule
 import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.JvmEnvironmentItem
+import org.jetbrains.bsp.protocol.StatusCode
 import javax.swing.Icon
 import kotlin.coroutines.cancellation.CancellationException
 

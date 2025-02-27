@@ -2,6 +2,7 @@ package org.jetbrains.bazel.server.sync
 
 import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
+import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.util.EnvironmentUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -15,8 +16,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.logger.BspClientLogger
-import org.jetbrains.bazel.server.benchmark.tracer
-import org.jetbrains.bazel.server.benchmark.useWithScope
+import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
@@ -61,7 +61,8 @@ class BazelProjectMapper(
   private val bspClientLogger: BspClientLogger,
   private val featureFlags: FeatureFlags,
 ) {
-  private suspend fun <T> measure(description: String, body: suspend () -> T): T = tracer.spanBuilder(description).useWithScope { body() }
+  private suspend fun <T> measure(description: String, body: suspend () -> T): T =
+    bspTracer.spanBuilder(description).useWithScope { body() }
 
   private suspend fun <T> measureIf(
     description: String,
@@ -1080,7 +1081,7 @@ class BazelProjectMapper(
           .map {
             SourceWithData(
               source = it.first.toUri(),
-              data = it.second?.data,
+              jvmPackagePrefix = it.second?.jvmPackagePrefix,
             )
           }.toSet(),
       generatedSources =
@@ -1088,7 +1089,7 @@ class BazelProjectMapper(
           .map {
             SourceWithData(
               source = it.first.toUri(),
-              data = it.second?.data,
+              jvmPackagePrefix = it.second?.jvmPackagePrefix,
             )
           }.toSet(),
       sourceRoots = (sourceRootsAndData + generatedRootsAndData).mapNotNull { it.second?.sourceRoot?.toUri() }.toSet(),

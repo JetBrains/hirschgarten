@@ -1,7 +1,5 @@
 package org.jetbrains.bazel
 
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.paths.shouldExist
 import io.kotest.matchers.shouldBe
@@ -11,6 +9,8 @@ import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.SourcesParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import java.net.URI
 import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
@@ -52,7 +52,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "compare workspace targets results",
     ) {
-      testClient.test(60.seconds) { session, _ ->
+      testClient.test(60.seconds) { session ->
         val targetsResult = session.server.workspaceBuildTargets().await()
 
         targetsResult.targets.size shouldBe 4
@@ -89,7 +89,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "compare workspace repo mapping results",
     ) {
-      testClient.test(60.seconds) { session, _ ->
+      testClient.test(60.seconds) { session ->
         val repoMapping = session.server.workspaceBazelRepoMapping().await()
 
         repoMapping.apparentRepoNameToCanonicalName shouldBe

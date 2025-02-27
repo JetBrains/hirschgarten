@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.run
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.extensions.ExtensionPointName
@@ -9,6 +8,7 @@ import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 interface RunHandlerProvider {
   /**

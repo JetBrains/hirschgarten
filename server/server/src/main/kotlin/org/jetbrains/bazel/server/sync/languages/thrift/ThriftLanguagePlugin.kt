@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.sync.languages.thrift
 
-import ch.epfl.scala.bsp4j.BuildTarget
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.label.label
@@ -8,6 +7,7 @@ import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bazel.server.sync.languages.jvm.SourceRootGuesser
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.net.URI
 import java.nio.file.Path
 

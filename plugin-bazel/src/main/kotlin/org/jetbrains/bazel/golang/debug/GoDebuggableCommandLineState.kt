@@ -20,7 +20,6 @@ import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.taskEvents.BspTaskEventsService
 import org.jetbrains.bazel.taskEvents.BspTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 
 abstract class GoDebuggableCommandLineState(
@@ -34,7 +33,7 @@ abstract class GoDebuggableCommandLineState(
     configuration,
   ) {
   /** Run the actual BSP command or throw an exception if the server does not support running the configuration */
-  protected abstract suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities)
+  protected abstract suspend fun startBsp(server: JoinedBuildServer)
 
   override fun isDebug(): Boolean = true
 
@@ -55,11 +54,11 @@ abstract class GoDebuggableCommandLineState(
     // Otherwise, we might miss some events
     val runDeferred =
       bspCoroutineService.startAsync(lazy = true) {
-        project.connection.runWithServer { server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities ->
+        project.connection.runWithServer { server: JoinedBuildServer ->
           withContext(Dispatchers.EDT) {
             RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
           }
-          startBsp(server, capabilities)
+          startBsp(server)
         }
       }
 

@@ -1,22 +1,22 @@
 package org.jetbrains.bazel.server.sync.languages.rust
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.RustWorkspaceResult
 import org.jetbrains.bazel.info.BspTargetInfo
-import org.jetbrains.bazel.info.BspTargetInfo.RustCrateInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.Language
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.RustWorkspaceResult
 
 class RustLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<RustModule>() {
   private val rustPackageResolver = RustPackageResolver(bazelPathsResolver)
   private val rustDependencyResolver = RustDependencyResolver()
 
-  private fun TargetInfo.getRustCrateInfoOrNull(): RustCrateInfo? = this.takeIf(TargetInfo::hasRustCrateInfo)?.rustCrateInfo
+  private fun BspTargetInfo.TargetInfo.getRustCrateInfoOrNull(): BspTargetInfo.RustCrateInfo? =
+    this.takeIf(TargetInfo::hasRustCrateInfo)?.rustCrateInfo
 
   override fun applyModuleData(moduleData: RustModule, buildTarget: BuildTarget) {}
 
@@ -46,13 +46,13 @@ class RustLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : L
       )
     }
 
-  private fun resolveTargetLocation(rustCrateInfo: RustCrateInfo): RustCrateLocation =
+  private fun resolveTargetLocation(rustCrateInfo: BspTargetInfo.RustCrateInfo): RustCrateLocation =
     when (rustCrateInfo.location) {
       BspTargetInfo.RustCrateLocation.WORKSPACE_DIR -> RustCrateLocation.WORKSPACE_DIR
       else -> RustCrateLocation.EXEC_ROOT
     }
 
-  private fun resolveTargetCrateRoot(rustCrateInfo: RustCrateInfo, location: RustCrateLocation): String {
+  private fun resolveTargetCrateRoot(rustCrateInfo: BspTargetInfo.RustCrateInfo, location: RustCrateLocation): String {
     val path =
       if (location == RustCrateLocation.WORKSPACE_DIR) {
         bazelPathsResolver.relativePathToWorkspaceAbsolute(rustCrateInfo.crateRoot)
