@@ -219,8 +219,7 @@ class PythonProjectSync : ProjectSyncHook {
   private suspend fun calculateDependenciesSources(
     targets: List<BaseTargetInfo>,
     environment: ProjectSyncHookEnvironment,
-  ): Map<String, List<DependencySourcesItem>> =
-    queryDependenciesSources(environment, targets).items.groupBy { it.target.toShortString() }
+  ): Map<String, List<DependencySourcesItem>> = queryDependenciesSources(environment, targets).items.groupBy { it.target.toShortString() }
 
   private suspend fun queryDependenciesSources(
     environment: ProjectSyncHookEnvironment,
