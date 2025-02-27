@@ -221,7 +221,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         data =
           PythonBuildTarget(
             version = "3",
-            interpreter = "/path/to/interpreter",
+            interpreter = "file:///path/to/interpreter",
           ),
       )
 
