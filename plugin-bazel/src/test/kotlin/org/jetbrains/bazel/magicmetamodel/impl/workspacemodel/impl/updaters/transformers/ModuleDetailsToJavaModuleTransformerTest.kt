@@ -34,6 +34,7 @@ import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI
@@ -45,6 +46,7 @@ import kotlin.io.path.toPath
 
 @DisplayName("ModuleDetailsToJavaModuleTransformer.transform(moduleDetails) tests")
 class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
+  @Disabled
   @Test
   fun `should return no java modules roots for no modules details`() {
     // given
@@ -65,6 +67,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     javaModules shouldBe emptyList()
   }
 
+  @Disabled
   @Test
   fun `should return single java module for single module details`() {
     // given

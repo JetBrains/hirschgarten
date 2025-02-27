@@ -116,7 +116,7 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
     details: JUnitStyleTestCaseData?,
   ) {
     val failureMessageBuilder =
-      when (data.status!!) {
+      when (data.status) {
         TestStatus.FAILED -> {
           ServiceMessageBuilder.testFailed(data.displayName)
         }

@@ -5,7 +5,6 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.equals.shouldNotBeEqual
-import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -526,7 +525,7 @@ class TestXmlParserTest {
       val data = (it.data as TestFinish)
       when (data.displayName) {
         "TripleTest" -> {
-          it.taskId.parents.shouldBeNull()
+          it.taskId.parents.shouldBeEmpty()
         }
         "testFailure()" -> {
           it.taskId.parents.shouldNotBeNull()
@@ -631,7 +630,7 @@ class TestXmlParserTest {
       val data = (it.data as TestFinish)
       when (data.displayName) {
         "TripleTest" -> {
-          it.taskId.parents.shouldBeNull()
+          it.taskId.parents.shouldBeEmpty()
         }
         "testFailure()" -> {
           it.taskId.parents.shouldNotBeNull()

@@ -45,6 +45,7 @@ import org.jetbrains.bazel.sync.BaseTargetInfo
 import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
+import org.jetbrains.bazel.sync.task.asyncQuery
 import org.jetbrains.bazel.sync.task.asyncQueryIf
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.task.queryIf
@@ -60,7 +61,6 @@ import org.jetbrains.bazel.workspacemodel.entities.includesScala
 import org.jetbrains.bazel.workspacemodel.entities.toBuildTargetInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.DependencySourcesParams
-import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
@@ -73,7 +73,6 @@ import org.jetbrains.kotlin.analysis.api.platform.analysisMessageBus
 import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinModificationTopics
 import java.net.URI
 import java.util.concurrent.CancellationException
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import kotlin.io.path.toPath
 
@@ -489,18 +488,8 @@ suspend fun calculateProjectDetailsWithCapabilities(
         }
 
       val dependencySourcesResult =
-        query("buildTarget/dependencySources") {
-          val dependencySourcesTargetIds =
-            if (libraries == null) {
-              baseTargetInfos.allTargetIds
-            } else {
-              emptyList()
-            }
-          if (dependencySourcesTargetIds.isNotEmpty()) {
-            server.buildTargetDependencySources(DependencySourcesParams(dependencySourcesTargetIds))
-          } else {
-            CompletableFuture.completedFuture(DependencySourcesResult(emptyList()))
-          }
+        asyncQuery("buildTarget/dependencySources") {
+          server.buildTargetDependencySources(DependencySourcesParams(baseTargetInfos.allTargetIds))
         }
 
       val nonModuleTargets =
@@ -524,16 +513,13 @@ suspend fun calculateProjectDetailsWithCapabilities(
       // In this case we can use this request to retrieve the javac options without the overhead of passing the whole classpath.
       // There's no capability for javacOptions.
       val javacOptionsResult =
-        if (libraries == null) {
-          asyncQueryIf(javaTargetIds.isNotEmpty(), "buildTarget/javacOptions") {
-            server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
-          }
-        } else {
-          null
+        asyncQueryIf(javaTargetIds.isNotEmpty(), "buildTarget/javacOptions") {
+          server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
         }
 
       // Same for Scala
       val scalacOptionsResult =
+        // TODO: Son
         if (libraries == null) {
           asyncQueryIf(scalaTargetIds.isNotEmpty(), "buildTarget/scalacOptions") {
             server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
@@ -547,11 +533,12 @@ suspend fun calculateProjectDetailsWithCapabilities(
         targets = baseTargetInfos.infos.map { it.target }.toSet(),
         sources = baseTargetInfos.infos.flatMap { it.sources },
         resources = baseTargetInfos.infos.flatMap { it.resources },
-        dependenciesSources = dependencySourcesResult.items,
-        javacOptions = javacOptionsResult?.await()?.items ?: emptyList(),
+        dependenciesSources = dependencySourcesResult.await().items,
+        javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
+        // TODO: Son
         scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
         libraries = libraries.libraries,
-        nonModuleTargets = nonModuleTargets.nonModuleTargets ?: emptyList(),
+        nonModuleTargets = nonModuleTargets.nonModuleTargets,
         jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
       )
     } catch (e: Exception) {

@@ -24,7 +24,6 @@ import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.bsp.protocol.BuildServerCapabilities
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.GoBuildTarget
@@ -32,6 +31,7 @@ import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
+import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.net.URI
@@ -79,8 +79,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add VgoStandaloneModuleEntities to workspace model diff`() {
     // given
-    val server = BuildServerMock()
-    val capabilities = BuildServerCapabilities()
+    val server = BuildServerMock(workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()))
     val diff = AllProjectStructuresProvider(project).newDiff()
     val goTestTargets = generateTestSet(project.findNameProvider().orDefault())
 
@@ -115,8 +114,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add dependencies to workspace model diff`() {
     // given
-    val server = BuildServerMock()
-    val capabilities = BuildServerCapabilities()
+    val server = BuildServerMock(workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()))
     val diff = AllProjectStructuresProvider(project).newDiff()
     val goTestTargets = generateTestSet(project.findNameProvider().orDefault())
 

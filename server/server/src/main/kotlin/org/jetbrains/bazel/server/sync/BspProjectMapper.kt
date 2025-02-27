@@ -2,7 +2,6 @@ package org.jetbrains.bazel.server.sync
 
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
@@ -25,7 +24,6 @@ import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
-import org.jetbrains.bsp.protocol.BuildServerCapabilities
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.CompileProvider
@@ -41,7 +39,6 @@ import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.GoLibraryItem
-import org.jetbrains.bsp.protocol.InitializeBuildResult
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsItem
@@ -72,7 +69,6 @@ import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.ResourcesResult
-import org.jetbrains.bsp.protocol.RunProvider
 import org.jetbrains.bsp.protocol.RustWorkspaceParams
 import org.jetbrains.bsp.protocol.RustWorkspaceResult
 import org.jetbrains.bsp.protocol.ScalaMainClassesParams
@@ -87,7 +83,6 @@ import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.SourcesResult
-import org.jetbrains.bsp.protocol.TestProvider
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -109,38 +104,6 @@ class BspProjectMapper(
   private val bazelRunner: BazelRunner,
   private val bspInfo: BspInfo,
 ) {
-  fun initializeServer(supportedLanguages: Set<Language>): InitializeBuildResult {
-    val languageNames = supportedLanguages.map { it.id }
-    val capabilities =
-      BuildServerCapabilities(
-        compileProvider = CompileProvider(languageNames),
-        runProvider = RunProvider(languageNames),
-        testProvider = TestProvider(languageNames),
-        outputPathsProvider = true,
-        dependencySourcesProvider = true,
-        dependencyModulesProvider = true,
-        inverseSourcesProvider = true,
-        resourcesProvider = true,
-        jvmRunEnvironmentProvider = true,
-        jvmTestEnvironmentProvider = true,
-        workspaceLibrariesProvider = true,
-        goDebuggerDataProvider = true,
-        workspaceDirectoriesProvider = true,
-        workspaceNonModuleTargetsProvider = true,
-        workspaceInvalidTargetsProvider = true,
-        runWithDebugProvider = true,
-        testWithDebugProvider = true,
-        jvmBinaryJarsProvider = true,
-        jvmCompileClasspathProvider = true,
-        bazelRepoMappingProvider = true,
-      )
-    return InitializeBuildResult(
-      Constants.NAME,
-      Constants.VERSION,
-      Constants.BSP_VERSION,
-    )
-  }
-
   fun workspaceTargets(project: AspectSyncProject): WorkspaceBuildTargetsResult {
     val buildTargets = project.modules.map { it.toBuildTarget() }
     return WorkspaceBuildTargetsResult(buildTargets)
@@ -471,11 +434,10 @@ class BspProjectMapper(
   fun buildTargetJavacOptions(
     project: AspectSyncProject,
     params: JavacOptionsParams,
-    includeClasspath: Boolean,
     cancelChecker: CancelChecker,
   ): JavacOptionsResult {
     val items =
-      params.targets.collectClasspathForTargetsAndApply(project, includeClasspath, cancelChecker) { module, ideClasspath ->
+      params.targets.collectClasspathForTargetsAndApply(project, false, cancelChecker) { module, ideClasspath ->
         module.javaModule?.let { toJavacOptionsItem(module, it, ideClasspath) }
       }
     return JavacOptionsResult(items)
@@ -506,11 +468,10 @@ class BspProjectMapper(
   fun buildTargetScalacOptions(
     project: AspectSyncProject,
     params: ScalacOptionsParams,
-    includeClasspath: Boolean,
     cancelChecker: CancelChecker,
   ): ScalacOptionsResult {
     val items =
-      params.targets.collectClasspathForTargetsAndApply(project, includeClasspath, cancelChecker) { module, ideClasspath ->
+      params.targets.collectClasspathForTargetsAndApply(project, false, cancelChecker) { module, ideClasspath ->
         toScalacOptionsItem(module, ideClasspath)
       }
     return ScalacOptionsResult(items)

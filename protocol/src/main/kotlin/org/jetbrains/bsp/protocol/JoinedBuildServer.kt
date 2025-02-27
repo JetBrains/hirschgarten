@@ -3,7 +3,7 @@ package org.jetbrains.bsp.protocol
 import java.util.concurrent.CompletableFuture
 
 interface JoinedBuildServer {
-  fun buildInitialize(params: InitializeBuildParams): CompletableFuture<InitializeBuildResult>
+  fun buildInitialize(params: InitializeBuildParams): CompletableFuture<Any>
 
   fun onBuildInitialized()
 

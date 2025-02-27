@@ -16,8 +16,8 @@ import org.jetbrains.bazel.run.BspRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.commandLine.BspRunCommandLineState
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
+import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.config.BspRunConfiguration
-import org.jetbrains.bazel.run.config.BspRunConfigurationType
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.task.BspRunTaskListener
 import org.jetbrains.bazel.target.getModule
@@ -40,7 +40,7 @@ class GoBspRunHandler(private val configuration: BspRunConfiguration) : BspRunHa
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     when {
       executor is DefaultDebugExecutor -> {
-        val config = GoApplicationConfiguration(environment.project, "default", BspRunConfigurationType())
+        val config = GoApplicationConfiguration(environment.project, "default", BazelRunConfigurationType())
         val target = getTargetId(environment)
         val module = target.getModule(environment.project) ?: error("Could not find module for target $target")
         GoRunWithDebugCommandLineState(environment, UUID.randomUUID().toString(), module, config, state)

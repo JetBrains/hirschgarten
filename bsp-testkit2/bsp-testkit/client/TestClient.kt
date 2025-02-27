@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.testkit.client
 
-import com.google.gson.Gson
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.bsp.protocol.CompileParams
@@ -39,6 +38,7 @@ import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.testkit.JsonComparator
+import org.jetbrains.bsp.testkit.gsonSealedSupport
 import java.nio.file.Path
 import kotlin.time.Duration
 
@@ -56,7 +56,7 @@ suspend fun withLifetime(
   session: Session,
   f: suspend () -> Unit,
 ) {
-  val initializeResult = session.server.buildInitialize(initializeParams).await()
+  session.server.buildInitialize(initializeParams).await()
   session.server.onBuildInitialized()
   f()
   session.server.buildShutdown().await()
@@ -69,7 +69,7 @@ open class BasicTestClient(
   val transformJson: (String) -> String,
   val client: MockClient,
 ) {
-  val gson = Gson()
+  val gson = gsonSealedSupport
 
   inline fun <reified T> applyJsonTransform(element: T): T {
     val json = gson.toJson(element)
