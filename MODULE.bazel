@@ -20,8 +20,8 @@ register_toolchains(
 
 # Required by rules_jvm_external since version 6.3
 bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "rules_java", version = "8.8.0")
-bazel_dep(name = "rules_jvm_external", version = "6.6")
+bazel_dep(name = "rules_java", version = "8.9.0")
+bazel_dep(name = "rules_jvm_external", version = "6.7")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
@@ -147,19 +147,19 @@ single_version_override(
     patches = [
         "tools/format/use-ktlint.patch",
     ],
-    version = "1.0.9",
+    version = "1.2.0",
 )
 
 http_jar(
     name = "ktlint",
-    integrity = "sha256-LruKLIsQYRmvgU6GOKZCRcrx3klAB7SLYRfMDoieqD4=",
-    url = "https://github.com/pinterest/ktlint/releases/download/1.4.1/ktlint",
+    integrity = "sha256-oWvgHcxICqsvVfREtiAUIVL2bjFWSzuTdlBtYkwooq0=",
+    url = "https://github.com/pinterest/ktlint/releases/download/1.5.0/ktlint",
 )
 
 http_jar(
     name = "google_java_format",
-    integrity = "sha256-gS+AX1gRJGDt8BvyAqjmHQ/R81wNT6vVQiBkB3bsV6E=",
-    url = "https://github.com/google/google-java-format/releases/download/v1.24.0/google-java-format-1.24.0-all-deps.jar",
+    integrity = "sha256-JRV3l6CpcsIpC1vHFTDE961kZFgCXjSEQSpuWpuMmqY=",
+    url = "https://github.com/google/google-java-format/releases/download/v1.25.2/google-java-format-1.25.2-all-deps.jar",
 )
 
 bazel_dep(
@@ -178,7 +178,7 @@ use_repo(buf, "rules_buf_toolchains")
 
 bazel_dep(
     name = "rules_bazel_integration_test",
-    version = "0.31.0",
+    version = "0.32.0",
     dev_dependency = True,
 )
 
