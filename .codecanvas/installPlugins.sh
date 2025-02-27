@@ -12,9 +12,7 @@ install_nightly_plugin() {
 	rm $plugin_zip
 }
 
-install_nightly_plugin "org.jetbrains.bsp"
 install_nightly_plugin "org.jetbrains.bazel"
-install_nightly_plugin "org.intellij.scala"
 
 # release channel plugins
 # installed in CC config
