@@ -14,6 +14,7 @@ import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.runnerAction.BspRunnerAction
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
 import org.jetbrains.bazel.runnerAction.RunTargetAction
+import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.RunWithLocalJvmRunnerAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.TestWithLocalJvmRunnerAction
@@ -79,8 +80,8 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
   private fun onDoubleClick() {
     container.getSelectedBuildTarget()?.also {
       when {
-        it.capabilities.canTest -> TestTargetAction(project = project, targetInfos = listOf(it)).prepareAndPerform(project)
-        it.capabilities.canRun -> RunTargetAction(project = project, targetInfo = it).prepareAndPerform(project)
+        it.capabilities.canTest -> TestTargetAction(targetInfos = listOf(it)).prepareAndPerform(project)
+        it.capabilities.canRun -> RunTargetAction(targetInfo = it).prepareAndPerform(project)
         it.capabilities.canCompile -> BuildTargetAction.buildTarget(project, it.id)
       }
     }
@@ -97,40 +98,40 @@ private fun BspRunnerAction.prepareAndPerform(project: Project) {
 fun DefaultActionGroup.fillWithEligibleActions(
   project: Project,
   target: BuildTargetInfo,
-  verboseText: Boolean,
+  includeTargetNameInText: Boolean,
   singleTestFilter: String? = null,
 ): DefaultActionGroup {
   val canBeDebugged = RunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
   if (target.capabilities.canRun) {
-    addAction(RunTargetAction(target, verboseText = verboseText, project = project))
+    addAction(RunTargetAction(target, includeTargetNameInText = includeTargetNameInText))
     if (canBeDebugged) {
-      addAction(RunTargetAction(target, isDebugAction = true, verboseText = verboseText, project = project))
+      addAction(RunTargetAction(target, isDebugAction = true, includeTargetNameInText = includeTargetNameInText))
     }
   }
 
   if (target.capabilities.canTest) {
-    addAction(TestTargetAction(listOf(target), verboseText = verboseText, project = project, singleTestFilter = singleTestFilter))
+    addAction(TestTargetAction(listOf(target), includeTargetNameInText = includeTargetNameInText, singleTestFilter = singleTestFilter))
     if (canBeDebugged) {
       addAction(
         TestTargetAction(
           listOf(target),
           isDebugAction = true,
-          verboseText = verboseText,
-          project = project,
+          includeTargetNameInText = includeTargetNameInText,
           singleTestFilter = singleTestFilter,
         ),
       )
     }
+    addAction(RunWithCoverageAction(listOf(target), includeTargetNameInText = includeTargetNameInText, singleTestFilter = singleTestFilter))
   }
 
   if (target.languageIds.isJvmTarget()) {
     if (target.capabilities.canRun) {
-      addAction(RunWithLocalJvmRunnerAction(target, verboseText = verboseText))
-      addAction(RunWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
+      addAction(RunWithLocalJvmRunnerAction(target, includeTargetNameInText = includeTargetNameInText))
+      addAction(RunWithLocalJvmRunnerAction(target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
     }
     if (target.capabilities.canTest) {
-      addAction(TestWithLocalJvmRunnerAction(target, verboseText = verboseText))
-      addAction(TestWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
+      addAction(TestWithLocalJvmRunnerAction(target, includeTargetNameInText = includeTargetNameInText))
+      addAction(TestWithLocalJvmRunnerAction(target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
     }
   }
   return this

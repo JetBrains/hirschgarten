@@ -10,13 +10,13 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.logger.BspClientTestNotifier
+import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.DidChangeBuildTarget
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.LogMessageParams
 import org.jetbrains.bsp.protocol.PrintParams
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
-import org.jetbrains.bsp.protocol.PublishOutputParams
 import org.jetbrains.bsp.protocol.ShowMessageParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskProgressParams
@@ -54,8 +54,7 @@ class TestXmlParserTest {
 
     override fun onRunPrintStderr(p0: PrintParams) {}
 
-    override fun onBuildPublishOutput(params: PublishOutputParams) {
-    }
+    override fun onPublishCoverageReport(report: CoverageReport) {}
   }
 
   @Test

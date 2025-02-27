@@ -16,7 +16,7 @@ class StarlarkDebugConfigurationState(
   val futureProxy = CompletableDeferred<AnalysisDebugResult>()
 
   override fun startProcess(): BspProcessHandler =
-    BspProcessHandler(futureProxy).apply {
+    BspProcessHandler(project, futureProxy).apply {
       startNotify()
     }
 }

@@ -1,11 +1,11 @@
 package org.jetbrains.bsp.testkit.client
 
+import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.DidChangeBuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.LogMessageParams
 import org.jetbrains.bsp.protocol.PrintParams
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
-import org.jetbrains.bsp.protocol.PublishOutputParams
 import org.jetbrains.bsp.protocol.ShowMessageParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskProgressParams
@@ -83,5 +83,5 @@ open class MockClient : JoinedBuildClient {
     didChangeBuildTarget.add(params)
   }
 
-  override fun onBuildPublishOutput(params: PublishOutputParams) {}
+  override fun onPublishCoverageReport(report: CoverageReport) {}
 }

@@ -19,5 +19,5 @@ interface JoinedBuildClient {
 
   fun onRunPrintStderr(params: PrintParams): Unit
 
-  fun onBuildPublishOutput(params: PublishOutputParams)
+  fun onPublishCoverageReport(report: CoverageReport)
 }

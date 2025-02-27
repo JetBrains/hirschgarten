@@ -62,7 +62,7 @@ abstract class GoDebuggableCommandLineState(
         }
       }
 
-    handler = BspProcessHandler(runDeferred)
+    handler = BspProcessHandler(project, runDeferred)
 
     handler.addProcessListener(runtimeErrorsListener)
 

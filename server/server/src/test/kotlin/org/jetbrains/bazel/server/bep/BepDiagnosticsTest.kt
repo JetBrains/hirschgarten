@@ -6,12 +6,12 @@ import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.DidChangeBuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.LogMessageParams
 import org.jetbrains.bsp.protocol.PrintParams
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
-import org.jetbrains.bsp.protocol.PublishOutputParams
 import org.jetbrains.bsp.protocol.ShowMessageParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskProgressParams
@@ -47,7 +47,7 @@ class BepDiagnosticsTest {
 
     override fun onRunPrintStderr(p0: PrintParams) {}
 
-    override fun onBuildPublishOutput(params: PublishOutputParams) {}
+    override fun onPublishCoverageReport(report: CoverageReport) {}
   }
 
   fun newBepServer(client: JoinedBuildClient): BepServer {
