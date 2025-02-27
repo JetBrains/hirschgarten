@@ -3,16 +3,12 @@ package org.jetbrains.bazel.languages.starlark.references
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
-import com.intellij.tools.ide.performanceTesting.commands.assertCaretPosition
-import com.intellij.tools.ide.performanceTesting.commands.assertCurrentFile
-import com.intellij.tools.ide.performanceTesting.commands.delay
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
-import com.intellij.tools.ide.performanceTesting.commands.goToDeclaration
-import com.intellij.tools.ide.performanceTesting.commands.goto
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.junit.jupiter.api.Test
 
@@ -53,20 +49,4 @@ class ExternalRepoResolveTest : IdeStarterBaseProjectTest() {
         .exitApp()
     createContext().runIDE(commands = commands, runTimeout = timeout)
   }
-
-  private fun CommandChain.navigateToFile(
-    caretLine: Int,
-    caretColumn: Int,
-    expectedFilename: String,
-    expectedCaretLine: Int,
-    expectedCaretColumn: Int,
-  ): CommandChain =
-    this
-      .goto(caretLine, caretColumn)
-      .delay(500)
-      .takeScreenshot("Before navigating to $expectedFilename")
-      .goToDeclaration()
-      .delay(500)
-      .assertCurrentFile(expectedFilename)
-      .assertCaretPosition(expectedCaretLine, expectedCaretColumn)
 }
