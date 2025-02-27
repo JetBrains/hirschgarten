@@ -40,6 +40,7 @@ class BspRunConfiguration internal constructor(
   private var handlerProvider: RunHandlerProvider? = null
 
   var handler: BspRunHandler? = null
+    private set
 
   private fun updateHandlerIfDifferentProvider(newProvider: RunHandlerProvider) {
     if (newProvider == handlerProvider) return

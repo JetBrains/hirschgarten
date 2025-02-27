@@ -10,7 +10,7 @@ public class TestWithLocalJvmRunnerAction(
   targetInfo: BuildTargetInfo,
   text: (() -> String)? = null,
   isDebugMode: Boolean = false,
-  verboseText: Boolean = false,
+  includeTargetNameInText: Boolean = false,
 ) : LocalJvmRunnerAction(
     targetInfo = targetInfo,
     text = {
@@ -19,12 +19,12 @@ public class TestWithLocalJvmRunnerAction(
       } else if (isDebugMode) {
         BspPluginBundle.message(
           "target.debug.with.jvm.runner.action.text",
-          if (verboseText) targetInfo.buildTargetName else "",
+          if (includeTargetNameInText) targetInfo.buildTargetName else "",
         )
       } else {
         BspPluginBundle.message(
           "target.test.with.jvm.runner.action.text",
-          if (verboseText) targetInfo.buildTargetName else "",
+          if (includeTargetNameInText) targetInfo.buildTargetName else "",
         )
       }
     },

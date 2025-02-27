@@ -2,10 +2,12 @@ package org.jetbrains.bazel.run.task
 
 import com.google.idea.testing.BazelTestApplication
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import io.kotest.matchers.equals.shouldBeEqual
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.run.BspProcessHandler
+import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.jetbrains.bsp.protocol.StatusCode
@@ -16,7 +18,7 @@ import org.jetbrains.bsp.protocol.TestTask
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-internal class MockBspProcessHandler : BspProcessHandler(CompletableDeferred(0)) {
+internal class MockBspProcessHandler(project: Project) : BspProcessHandler(project, CompletableDeferred(0)) {
   var latestText: String = ""
 
   override fun notifyTextAvailable(text: String, outputType: Key<*>) {
@@ -31,13 +33,13 @@ internal class MockBspProcessHandler : BspProcessHandler(CompletableDeferred(0))
 }
 
 @BazelTestApplication
-class BspTestTaskListenerTest {
+class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
   private lateinit var handler: MockBspProcessHandler
   private lateinit var listener: BspTestTaskListener
 
   @BeforeEach
   fun init() {
-    handler = MockBspProcessHandler()
+    handler = MockBspProcessHandler(project)
     listener = BspTestTaskListener(handler)
   }
 

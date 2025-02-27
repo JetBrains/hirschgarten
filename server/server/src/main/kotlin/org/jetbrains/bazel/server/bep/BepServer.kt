@@ -21,12 +21,11 @@ import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.protocol.CompileReport
 import org.jetbrains.bsp.protocol.CompileTask
+import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.JoinedBuildClient
-import org.jetbrains.bsp.protocol.PublishOutputParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TaskStartParams
-import org.jetbrains.bsp.protocol.TestCoverageReport
 import org.jetbrains.bsp.protocol.TestStatus
 import java.io.IOException
 import java.net.URI
@@ -34,6 +33,7 @@ import java.nio.file.FileSystemNotFoundException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.UUID
+import kotlin.io.path.toPath
 
 class BepServer(
   private val bspClient: JoinedBuildClient,
@@ -113,15 +113,16 @@ class BepServer(
           else -> TestStatus.FAILED
         }
 
-      val coverageReportUri = testResult.testActionOutputList.find { it.name == "test.lcov" }?.uri
-      if (coverageReportUri != null) {
-        bspClient.onBuildPublishOutput(
-          PublishOutputParams(
+      val coverageReport =
+        testResult.testActionOutputList
+          .find { it.name == "test.lcov" }
+          ?.uri
+          ?.let { URI(it).toPath() }
+      if (coverageReport != null) {
+        bspClient.onPublishCoverageReport(
+          CoverageReport(
             originId,
-            taskId,
-            Label.parse(event.id.testResult.label).toBspIdentifier(),
-            TestCoverageReport.DATA_KIND,
-            TestCoverageReport(coverageReportUri),
+            coverageReport,
           ),
         )
       }

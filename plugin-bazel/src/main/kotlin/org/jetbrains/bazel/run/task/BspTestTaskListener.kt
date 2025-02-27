@@ -17,10 +17,12 @@ import org.jetbrains.bsp.protocol.TestReport
 import org.jetbrains.bsp.protocol.TestStart
 import org.jetbrains.bsp.protocol.TestStatus
 import org.jetbrains.bsp.protocol.TestTask
+import java.nio.file.Path
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListener {
+class BspTestTaskListener(private val handler: BspProcessHandler, private val coverageReportListener: ((Path) -> Unit)? = null) :
+  BspTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
 
   init {
@@ -108,6 +110,10 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
     ansiEscapeDecoder.escapeText(messageWithNewline, ProcessOutputType.STDOUT) { s: String, key: Key<Any> ->
       handler.notifyTextAvailable(s, key)
     }
+  }
+
+  override fun onPublishCoverageReport(coverageReport: Path) {
+    coverageReportListener?.invoke(coverageReport)
   }
 
   private fun checkTestStatus(

@@ -156,11 +156,16 @@ class ExecuteService(
    * If `debugArguments` is empty, test task will be executed normally without any debugging options
    */
   fun testWithDebug(cancelChecker: CancelChecker, params: TestParams): TestResult {
-    val modules = selectModules(cancelChecker, params.targets)
-    val singleModule = modules.singleOrResponseError(params.targets.first())
-    val requestedDebugType = DebugType.fromDebugData(params.debug)
-    val debugArguments = generateRunArguments(requestedDebugType)
-    verifyDebugRequest(requestedDebugType, singleModule)
+    val debugArguments =
+      if (params.debug != null) {
+        val modules = selectModules(cancelChecker, params.targets)
+        val singleModule = modules.singleOrResponseError(params.targets.first())
+        val requestedDebugType = DebugType.fromDebugData(params.debug)
+        verifyDebugRequest(requestedDebugType, singleModule)
+        generateRunArguments(requestedDebugType)
+      } else {
+        null
+      }
 
     return testImpl(cancelChecker, params, debugArguments)
   }
@@ -168,13 +173,17 @@ class ExecuteService(
   private fun testImpl(
     cancelChecker: CancelChecker,
     params: TestParams,
-    additionalProgramArguments: List<String>? = emptyList(),
+    additionalProgramArguments: List<String>?,
   ): TestResult {
     val targetsSpec = TargetsSpec(params.targets.map { it.label() }, emptyList())
 
     val command =
       when (params.coverage) {
-        true -> bazelRunner.buildBazelCommand { coverage() }
+        true ->
+          bazelRunner.buildBazelCommand { coverage() }.also {
+            it.options.add(BazelFlag.combinedReportLcov())
+            it.options.add(BazelFlag.instrumentationFilterAll())
+          }
         else -> bazelRunner.buildBazelCommand { test() }
       }
 
