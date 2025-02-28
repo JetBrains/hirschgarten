@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.DependencySourcesItem
 import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.Library
+import org.jetbrains.bsp.protocol.DependencySourcesItem
 import kotlin.io.path.toPath
 
 internal data class DependencySourcesAndJvmClassPaths(val dependencySources: DependencySourcesItem, val jvmClassPaths: List<String>)

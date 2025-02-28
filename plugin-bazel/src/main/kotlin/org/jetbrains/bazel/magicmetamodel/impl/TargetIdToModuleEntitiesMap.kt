@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.magicmetamodel.impl
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -14,6 +13,7 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tran
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bazel.workspacemodel.entities.isJvmOrAndroidTarget
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import java.nio.file.Path
 
 object TargetIdToModuleEntitiesMap {

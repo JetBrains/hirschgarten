@@ -1,7 +1,7 @@
 // Do not change this package, see https://youtrack.jetbrains.com/issue/BAZEL-1632
 package org.jetbrains.bazel.label
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import java.nio.file.Path
 import kotlin.io.path.Path
 

@@ -1,5 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 data class WorkspaceBuildTargetsPartialParams(val targets: List<BuildTargetIdentifier>)

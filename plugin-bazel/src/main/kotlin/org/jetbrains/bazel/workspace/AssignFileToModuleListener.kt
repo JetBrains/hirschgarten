@@ -2,10 +2,6 @@
 
 package org.jetbrains.bazel.workspace
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.InverseSourcesParams
-import ch.epfl.scala.bsp4j.InverseSourcesResult
-import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -50,6 +46,10 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.isSourceFile
 import org.jetbrains.bazel.utils.safeCastToURI
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.InverseSourcesParams
+import org.jetbrains.bsp.protocol.InverseSourcesResult
+import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.jetbrains.kotlin.config.KOTLIN_SOURCE_ROOT_TYPE_ID
 
 class AssignFileToModuleListener : BulkFileListener {
@@ -221,15 +221,11 @@ private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUr
     null
   }
 
-private suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileUrl): InverseSourcesResult? =
-  project.connection.runWithServer { bspServer, bazelBuildServerCapabilities ->
-    if (bazelBuildServerCapabilities.inverseSourcesProvider) {
-      bspServer
-        .buildTargetInverseSources(InverseSourcesParams(TextDocumentIdentifier(fileUrl.url)))
-        .await()
-    } else {
-      null
-    }
+private suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileUrl): InverseSourcesResult =
+  project.connection.runWithServer { bspServer ->
+    bspServer
+      .buildTargetInverseSources(InverseSourcesParams(TextDocumentIdentifier(fileUrl.url)))
+      .await()
   }
 
 private fun Label.toModuleEntity(

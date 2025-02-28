@@ -1,16 +1,17 @@
 package org.jetbrains.bsp.testkit.client
 
-import ch.epfl.scala.bsp4j.BuildClient
-import ch.epfl.scala.bsp4j.DidChangeBuildTarget
-import ch.epfl.scala.bsp4j.LogMessageParams
-import ch.epfl.scala.bsp4j.PrintParams
-import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
-import ch.epfl.scala.bsp4j.ShowMessageParams
-import ch.epfl.scala.bsp4j.TaskFinishParams
-import ch.epfl.scala.bsp4j.TaskProgressParams
-import ch.epfl.scala.bsp4j.TaskStartParams
+import org.jetbrains.bsp.protocol.CoverageReport
+import org.jetbrains.bsp.protocol.DidChangeBuildTarget
+import org.jetbrains.bsp.protocol.JoinedBuildClient
+import org.jetbrains.bsp.protocol.LogMessageParams
+import org.jetbrains.bsp.protocol.PrintParams
+import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
+import org.jetbrains.bsp.protocol.ShowMessageParams
+import org.jetbrains.bsp.protocol.TaskFinishParams
+import org.jetbrains.bsp.protocol.TaskProgressParams
+import org.jetbrains.bsp.protocol.TaskStartParams
 
-open class MockClient : BuildClient {
+open class MockClient : JoinedBuildClient {
   private val showMessage = ArrayList<ShowMessageParams>()
   private val logMessage = ArrayList<LogMessageParams>()
   private val taskStart = ArrayList<TaskStartParams>()
@@ -81,4 +82,6 @@ open class MockClient : BuildClient {
   override fun onBuildTargetDidChange(params: DidChangeBuildTarget) {
     didChangeBuildTarget.add(params)
   }
+
+  override fun onPublishCoverageReport(report: CoverageReport) {}
 }

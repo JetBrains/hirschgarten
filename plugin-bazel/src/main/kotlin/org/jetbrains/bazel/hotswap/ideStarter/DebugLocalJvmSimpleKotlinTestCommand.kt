@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.hotswap.ideStarter
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 class DebugLocalJvmSimpleKotlinTestCommand(text: String, line: Int) : DebugLocalJvmRunnerActionCommand(text, line) {
   override suspend fun getTargetId(project: Project): BuildTargetIdentifier? =

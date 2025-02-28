@@ -16,7 +16,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/runnerAction",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/services",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/action",
-        "//plugin-bazel/workspacemodel/src:workspacemodel",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

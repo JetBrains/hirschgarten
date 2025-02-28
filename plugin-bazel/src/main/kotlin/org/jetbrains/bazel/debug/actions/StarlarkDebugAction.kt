@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.debug.actions
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.execution.ExecutorRegistry
 import com.intellij.execution.ProgramRunnerUtil
 import com.intellij.execution.RunManager
@@ -15,6 +14,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.debug.configuration.StarlarkDebugConfiguration
 import org.jetbrains.bazel.debug.configuration.StarlarkDebugConfigurationType
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 class StarlarkDebugAction(private val targetId: BuildTargetIdentifier) :
   SuspendableAction(

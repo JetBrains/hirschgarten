@@ -10,4 +10,4 @@ internal val bspScope = Scope("bsp")
 val bspTracer = TelemetryManager.getTracer(bspScope)
 
 @JvmField
-internal val bspMeter = TelemetryManager.getMeter(bspScope)
+val bspMeter = TelemetryManager.getMeter(bspScope)

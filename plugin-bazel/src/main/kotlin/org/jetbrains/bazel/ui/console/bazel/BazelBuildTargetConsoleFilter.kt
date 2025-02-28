@@ -7,8 +7,8 @@ import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.findDirectory
 import com.intellij.openapi.vfs.findFile
+import com.intellij.openapi.vfs.findFileOrDirectory
 import com.intellij.openapi.vfs.findPsiFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
@@ -50,7 +50,7 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
       // skip targets in external repo
       return null
     }
-    val hyperLinkInfo = getHyperLinkInfo(project, pathGroup.value, target.value)
+    val hyperLinkInfo = getHyperLinkInfo(project, pathGroup.value, target.value) ?: return null
     val highlightStartOffset = entireLength - line.length + highlightGroup.range.first
     val highlightEndOffset = entireLength - line.length + highlightGroup.range.last + 1
 
@@ -77,10 +77,11 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
     }
   }
 
-  private fun String.toBazelFileInProject(): VirtualFile? =
-    BUILD_FILE_NAMES.firstNotNullOfOrNull {
-      project.rootDir.findDirectory(this)?.findFile(it)
-    }
+  private fun String.toBazelFileInProject(): VirtualFile? {
+    val vf = project.rootDir.findFileOrDirectory(this)
+    if (vf == null || !vf.isDirectory) return null
+    return BUILD_FILE_NAMES.mapNotNull { vf.findFile(it) }.firstOrNull()
+  }
 
   private fun PsiElement.calculateLineNumber(): Int? =
     PsiDocumentManager.getInstance(project).getDocument(containingFile)?.getLineNumber(textOffset)

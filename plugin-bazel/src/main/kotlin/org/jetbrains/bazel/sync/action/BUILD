@@ -5,13 +5,13 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//plugin-bazel/jps-compilation/src:jps-compilation",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jpsCompilation/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/scope",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/status",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/task",
-        "@maven//:ch_epfl_scala_bsp4j",
+        "//protocol",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

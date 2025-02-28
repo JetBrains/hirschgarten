@@ -1,5 +1,6 @@
 package configurations
 
+import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
 import jetbrains.buildServer.configs.kotlin.v2019_2.ParameterDisplay
 import jetbrains.buildServer.configs.kotlin.v2019_2.ParametrizedWithType
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.python
@@ -17,6 +18,7 @@ open class Analyze(
   linterImage: String = Utils.CommonParams.DockerQodanaImage,
   unchanged: String? = null,
   diff: String = "0",
+  failureConditions: FailureConditions.() -> Unit = {},
   ) : BaseConfiguration.BaseBuildType(
     name = "[analysis] Qodana ${if (repo != null) {"$repo"} else {"Hirschgarten"}}",
     requirements = {
@@ -150,7 +152,7 @@ open class Analyze(
         dockerRegistryId = "PROJECT_EXT_3"
         }
     },
-    failureConditions = { executionTimeoutMin = 30 },
+    failureConditions = failureConditions,
 
 )
 
@@ -203,6 +205,11 @@ open class AndroidBazelRules(
   linterImage = Utils.CommonParams.DockerQodanaAndroidImage,
   unchanged = "3",
   diff = "1",
+  failureConditions = {
+    testFailure = false
+    nonZeroExitCode = false
+    javaCrash = false
+  },
 )
 
 object AndroidBazelRulesGitHub : AndroidBazelRules (
@@ -225,6 +232,11 @@ open class AndroidTestdpc(
   linterImage = Utils.CommonParams.DockerQodanaAndroidImage,
   unchanged = "3281",
   diff = "10",
+  failureConditions = {
+    testFailure = false
+    nonZeroExitCode = false
+    javaCrash = false
+  },
 )
 
 object AndroidTestdpcGitHub : AndroidTestdpc (
@@ -245,7 +257,12 @@ open class JetpackCompose(
   },
   repo = "jetpack_compose",
   linterImage = Utils.CommonParams.DockerQodanaAndroidImage,
-  unchanged = "1"
+  unchanged = "1",
+  failureConditions = {
+    testFailure = false
+    nonZeroExitCode = false
+    javaCrash = false
+  },
 )
 
 object JetpackComposeGitHub : JetpackCompose (

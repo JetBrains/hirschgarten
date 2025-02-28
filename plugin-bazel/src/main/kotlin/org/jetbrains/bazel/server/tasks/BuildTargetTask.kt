@@ -1,11 +1,5 @@
 package org.jetbrains.bazel.server.tasks
 
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.CompileParams
-import ch.epfl.scala.bsp4j.CompileReport
-import ch.epfl.scala.bsp4j.CompileResult
-import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
@@ -29,7 +23,12 @@ import org.jetbrains.bazel.taskEvents.BspTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
 import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.CompileParams
+import org.jetbrains.bsp.protocol.CompileReport
+import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.StatusCode
 import java.util.UUID
 import java.util.concurrent.CancellationException
 
@@ -37,11 +36,7 @@ import java.util.concurrent.CancellationException
 public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<CompileResult>("build targets", project) {
   private val log = logger<BuildTargetTask>()
 
-  protected override suspend fun executeWithServer(
-    server: JoinedBuildServer,
-    capabilities: BuildServerCapabilities,
-    targetsIds: List<BuildTargetIdentifier>,
-  ): CompileResult =
+  protected override suspend fun executeWithServer(server: JoinedBuildServer, targetsIds: List<BuildTargetIdentifier>): CompileResult =
     coroutineScope {
       val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
       val originId = "build-" + UUID.randomUUID().toString()
@@ -152,10 +147,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
     }
 
   private fun createCompileParams(targetIds: List<BuildTargetIdentifier>, originId: String) =
-    CompileParams(targetIds).apply {
-      this.originId = originId
-      this.arguments = listOf("--keep_going")
-    }
+    CompileParams(targetIds, originId = originId, arguments = listOf("--keep_going"))
 }
 
 public suspend fun runBuildTargetTask(
@@ -172,7 +164,7 @@ public suspend fun runBuildTargetTask(
     }
   } catch (e: Exception) {
     when {
-      e is CancellationException -> CompileResult(StatusCode.CANCELLED)
+      e is CancellationException -> CompileResult(statusCode = StatusCode.CANCELLED)
 
       else -> {
         log.error(e)

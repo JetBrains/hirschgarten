@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.android.run
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.android.ddmlib.IDevice
 import com.android.tools.deployer.Deployer
 import com.android.tools.idea.execution.common.AndroidConfigurationExecutor
@@ -36,6 +35,7 @@ import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.target.getModuleEntity
 import org.jetbrains.bazel.workspacemodel.entities.androidAddendumEntity
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import java.nio.file.Path
 import kotlin.io.path.exists
 

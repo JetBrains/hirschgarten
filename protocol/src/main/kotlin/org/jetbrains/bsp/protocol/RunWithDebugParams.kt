@@ -1,8 +1,8 @@
 package org.jetbrains.bsp.protocol
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.RunParams
-import ch.epfl.scala.bsp4j.StatusCode
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.RunParams
+import org.jetbrains.bsp.protocol.StatusCode
 
 data class AnalysisDebugParams(
   val originId: String,

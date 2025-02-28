@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.android.run
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.android.tools.idea.run.ApkProvisionException
 import com.android.tools.idea.run.ApplicationIdProvider
 import com.intellij.openapi.project.Project
@@ -8,6 +7,7 @@ import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.target.getModule
 import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.workspacemodel.entities.androidAddendumEntity
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import com.android.tools.idea.project.getPackageName as getApplicationIdFromManifest
 
 private const val MANIFEST_APPLICATION_ID = "applicationId"

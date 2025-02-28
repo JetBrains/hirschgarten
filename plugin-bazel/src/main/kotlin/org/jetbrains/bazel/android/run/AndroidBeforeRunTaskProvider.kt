@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.android.run
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.StatusCode
 import com.android.ddmlib.IDevice
 import com.google.common.util.concurrent.ListenableFuture
 import com.intellij.execution.BeforeRunTask
@@ -18,7 +16,9 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.MobileInstallStartType
+import org.jetbrains.bsp.protocol.StatusCode
 
 private val PROVIDER_ID = Key.create<AndroidBeforeRunTaskProvider.Task>("AndroidBeforeRunTaskProvider")
 

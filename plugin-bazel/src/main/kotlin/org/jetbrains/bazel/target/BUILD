@@ -9,8 +9,8 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/annotations",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel",
-        "//plugin-bazel/workspacemodel/src:workspacemodel",
-        "@maven//:ch_epfl_scala_bsp4j",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
+        "//protocol",
         "@maven//:com_google_code_gson_gson",
     ],
 )

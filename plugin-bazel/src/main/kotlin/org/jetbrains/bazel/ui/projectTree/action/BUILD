@@ -11,8 +11,8 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/runnerAction",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
-        "//plugin-bazel/workspacemodel/src:workspacemodel",
-        "@maven//:ch_epfl_scala_bsp4j",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
+        "//protocol",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

@@ -4,8 +4,7 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook
-import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
-import org.junit.jupiter.api.BeforeEach
+import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -13,27 +12,17 @@ import org.junit.jupiter.api.Test
 @DisplayName("ProjectPostSyncHook tests")
 class ProjectPostSyncHookTest : MockProjectBaseTest() {
   @Nested
-  @DisplayName("Project.defaultProjectPostSyncHooks tests")
-  inner class DefaultProjectPostSyncHooks {
-    @BeforeEach
-    fun beforeEach() {
-      // given
-      ProjectPostSyncHook.ep.registerExtension(
-        TestProjectPostSyncHook(),
-      )
-    }
-
+  @DisplayName("Project.projectPostSyncHooks tests")
+  inner class ProjectPostSyncHooks {
     @Test
-    fun `should return all enabled default project post-sync hooks`() {
-      // when & then
-      ProjectPostSyncHook.ep.registerExtension(
-        DisabledTestProjectPostSyncHook(),
-      )
+    fun `should return all enabled project post-sync hooks`() {
+      // given
+      ProjectPostSyncHook.ep.registerExtension(TestProjectPostSyncHook())
+      ProjectPostSyncHook.ep.registerExtension(DisabledTestProjectPostSyncHook())
 
-      project.defaultProjectPostSyncHooks.map { it::class.java } shouldContain
-        TestProjectPostSyncHook::class.java
-      project.defaultProjectPostSyncHooks.map { it::class.java } shouldNotContain
-        DisabledTestProjectPostSyncHook::class.java
+      // when & then
+      project.projectPostSyncHooks.map { it::class.java } shouldContain TestProjectPostSyncHook::class.java
+      project.projectPostSyncHooks.map { it::class.java } shouldNotContain DisabledTestProjectPostSyncHook::class.java
     }
   }
 }
