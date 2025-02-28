@@ -33,7 +33,13 @@ class BazelCoverageAnnotator(project: Project) : SimpleCoverageAnnotator(project
     if (SourceType.fromExtension(file.extension) == null) return null
 
     val virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file) ?: return null
-    if (runReadAction { ProjectFileIndex.getInstance(project).isInTestSourceContent(virtualFile) }) return null
+    if (runReadAction {
+        ProjectFileIndex.getInstance(project).isInTestSourceContent(virtualFile) ||
+          !ProjectFileIndex.getInstance(project).isInSource(virtualFile)
+      }
+    ) {
+      return null
+    }
 
     return FileCoverageInfo().apply {
       coveredLineCount = 0
