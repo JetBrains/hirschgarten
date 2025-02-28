@@ -59,6 +59,7 @@ import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
+import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
@@ -241,6 +242,9 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, Initial
 
   override fun workspaceBazelRepoMapping(): CompletableFuture<WorkspaceBazelRepoMappingResult> =
     runner.handleRequest("workspace/bazelRepoMapping", projectSyncService::workspaceBazelRepoMapping)
+
+  override fun workspaceBazelBinPath(): CompletableFuture<WorkspaceBazelBinPathResult> =
+    runner.handleRequest("workspace/bazelBinPath", projectSyncService::workspaceBazelBinPath)
 
   override fun rustWorkspace(params: RustWorkspaceParams): CompletableFuture<RustWorkspaceResult> =
     runner.handleRequest("buildTarget/rustWorkspace", projectSyncService::rustWorkspace, params)

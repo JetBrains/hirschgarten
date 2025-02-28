@@ -55,6 +55,7 @@ import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
+import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
@@ -217,6 +218,9 @@ class BuildServerMock(
 
   override fun workspaceBazelRepoMapping(): CompletableFuture<WorkspaceBazelRepoMappingResult> =
     wrapInFuture(workspaceBazelRepoMappingResult)
+
+  override fun workspaceBazelBinPath(): CompletableFuture<WorkspaceBazelBinPathResult> =
+    wrapInFuture(WorkspaceBazelBinPathResult("/path/to/bazel-bin"))
 
   private fun <T> wrapInFuture(value: T?): CompletableFuture<T> =
     value?.let { CompletableFuture.completedFuture(it) } ?: CompletableFuture.failedFuture(Exception("mock value is null"))

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
+import kotlin.io.path.Path
 
 @Disabled
 class RustDependencyResolverTest {
@@ -30,6 +31,7 @@ class RustDependencyResolverTest {
         execRoot = execRoot,
         outputBase = Paths.get(outputBase),
         workspaceRoot = Paths.get("/Users/user/workspace/bazel-bsp"),
+        bazelBin = Path("bazel-bin"),
         release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
         false,
         true,

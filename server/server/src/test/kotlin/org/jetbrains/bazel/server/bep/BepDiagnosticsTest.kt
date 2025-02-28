@@ -57,6 +57,7 @@ class BepDiagnosticsTest {
         execRoot = "execRoot",
         outputBase = Path("outputBase"),
         workspaceRoot = workspaceRoot,
+        bazelBin = Path("bazel-bin"),
         release = BazelRelease(7),
         isBzlModEnabled = true,
         isWorkspaceEnabled = false,
