@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.magicmetamodel
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.extensionPoints.BazelBuildTargetClassifier
 import org.jetbrains.bazel.utils.StringUtils
 
@@ -17,7 +17,7 @@ fun Project.findNameProvider(): TargetNameReformatProvider =
   }
 
 private fun List<String>.shortenTargetPath(targetNameLength: Int = 0): List<String> =
-  if (BspFeatureFlags.isShortenModuleLibraryNamesEnabled) {
+  if (BazelFeatureFlags.isShortenModuleLibraryNamesEnabled) {
     val maxLength = 200 - targetNameLength
     var runningLength = 0
     val (subPath, remaining) =
@@ -44,7 +44,7 @@ private fun String.replaceDots(): String = this.replace('.', '-')
 private fun String.filterColon(): String = this.replace(":", "")
 
 fun String.shortenTargetPath(): String =
-  if (BspFeatureFlags.isShortenModuleLibraryNamesEnabled) {
+  if (BazelFeatureFlags.isShortenModuleLibraryNamesEnabled) {
     split(".").shortenTargetPath().joinToString(".")
   } else {
     this

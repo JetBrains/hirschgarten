@@ -85,7 +85,7 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
       initializeBuildData =
         InitializeBuildParams(
           clientClassesRootDir = "${project.rootDir}/out",
-          featureFlags = FeatureFlagsProvider.accumulateFeatureFlags(),
+          featureFlags = FeatureFlagsProvider.getFeatureFlags(),
         ),
     )
 
