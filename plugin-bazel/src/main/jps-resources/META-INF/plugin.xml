@@ -222,6 +222,10 @@
         <notificationGroup displayType="BALLOON" id="BSP Plugin"/>
         <editorNotificationProvider
                 implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"/>
+
+        <statistics.projectUsagesCollector implementation="org.jetbrains.plugins.bazel.fus.BazelProjectStatisticsCollector"/>
+        <statistics.counterUsagesCollector implementationClass="org.jetbrains.plugins.bazel.fus.BazelToolwindowUsagesCollector"/>
+
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
