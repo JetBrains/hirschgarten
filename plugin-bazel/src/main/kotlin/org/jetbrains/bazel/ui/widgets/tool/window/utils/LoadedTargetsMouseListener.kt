@@ -22,6 +22,7 @@ import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.RunWithLocalJvmRunnerAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.TestWithLocalJvmRunnerAction
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.ui.widgets.BazelBspJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BuildTargetContainer
@@ -143,7 +144,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
     addAction(RunWithCoverageAction(listOf(target), includeTargetNameInText = includeTargetNameInText, singleTestFilter = singleTestFilter))
   }
 
-  if (target.languageIds.isJvmTarget()) {
+  if (project.bazelProjectSettings.enableLocalJvmActions && target.languageIds.isJvmTarget()) {
     if (target.capabilities.canRun) {
       addAction(RunWithLocalJvmRunnerAction(target, includeTargetNameInText = includeTargetNameInText))
       addAction(RunWithLocalJvmRunnerAction(target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))

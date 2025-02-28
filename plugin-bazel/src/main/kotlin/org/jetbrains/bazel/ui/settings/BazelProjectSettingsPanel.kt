@@ -25,13 +25,27 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
   private val hotswapEnabledCheckBox: JBCheckBox
   private val showExcludedDirectoriesAsSeparateNodeCheckBox: JBCheckBox
 
+  // experimental features
+  private val enableLocalJvmActionsCheckBox: JBCheckBox
+
   private var currentProjectSettings = project.bazelProjectSettings
 
   init {
     projectViewPathField = initProjectViewFileField()
     hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
     showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
+
+    // experimental features
+    enableLocalJvmActionsCheckBox = initEnableLocalJvmActionsCheckbox()
   }
+
+  private fun initEnableLocalJvmActionsCheckbox(): JBCheckBox =
+    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.enable.local.jvm.actions.checkbox.text")).apply {
+      isSelected = currentProjectSettings.enableLocalJvmActions
+      addItemListener {
+        currentProjectSettings = currentProjectSettings.copy(enableLocalJvmActions = isSelected)
+      }
+    }
 
   private fun initProjectViewFileField(): TextFieldWithBrowseButton =
     TextFieldWithBrowseButton().also { textField ->
@@ -69,9 +83,14 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
 
   override fun createComponent(): JComponent =
     panel {
-      row(BazelPluginBundle.message("project.settings.project.view.label")) { cell(projectViewPathField).align(Align.FILL) }
-      row { cell(hotswapEnabledCheckBox).align(Align.FILL) }
-      row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
+      group(BazelPluginBundle.message("project.settings.general.settings")) {
+        row(BazelPluginBundle.message("project.settings.project.view.label")) { cell(projectViewPathField).align(Align.FILL) }
+        row { cell(hotswapEnabledCheckBox).align(Align.FILL) }
+        row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
+      }
+      group(BazelPluginBundle.message("project.settings.experimental.settings")) {
+        row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
+      }
     }
 
   override fun isModified(): Boolean = currentProjectSettings != project.bazelProjectSettings
@@ -124,10 +143,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
   object SearchIndex { // the companion object of a Configurable is not allowed to have non-const members
     val keys =
       listOf(
-        "project.settings.server.title",
-        "project.settings.project.view.label",
-        "project.settings.server.jdk.label",
-        "project.settings.server.jvm.options.label",
+        "project.settings.plugin.enable.local.jvm.actions.checkbox.text",
         "project.settings.plugin.title",
         "project.settings.plugin.hotswap.enabled.checkbox.text",
         "project.settings.plugin.show.excluded.directories.as.separate.node.checkbox.text",
