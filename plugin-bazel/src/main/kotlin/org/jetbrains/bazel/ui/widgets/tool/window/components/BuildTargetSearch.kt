@@ -129,6 +129,11 @@ class BuildTargetSearch(
 
   override fun getSelectedBuildTarget(): BuildTargetInfo? = chooseTargetSearchPanel().getSelectedBuildTarget()
 
+  override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTargetInfo> =
+    listOfNotNull(chooseTargetSearchPanel().getSelectedBuildTarget())
+
+  override fun getSelectedComponentName(): String = chooseTargetSearchPanel().getSelectedBuildTarget()?.displayName ?: ""
+
   override fun isPointSelectable(point: Point): Boolean = chooseTargetSearchPanel().isPointSelectable(point)
 
   override fun selectTopTargetAndFocus() {

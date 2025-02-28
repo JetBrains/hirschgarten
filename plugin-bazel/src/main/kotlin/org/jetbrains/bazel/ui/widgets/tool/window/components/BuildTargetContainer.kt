@@ -40,6 +40,10 @@ interface BuildTargetContainer {
    */
   fun getSelectedBuildTarget(): BuildTargetInfo?
 
+  fun getSelectedBuildTargetsUnderDirectory(): List<BuildTargetInfo>
+
+  fun getSelectedComponentName(): String
+
   /**
    * Selects the topmost displayed target (or directory, in case of a tree) and gives focus to this container's component
    */
