@@ -17,7 +17,7 @@ import org.jetbrains.bazel.android.AndroidSdk
 import org.jetbrains.bazel.android.AndroidSdkGetterExtension
 import org.jetbrains.bazel.android.androidSdkGetterExtension
 import org.jetbrains.bazel.android.androidSdkGetterExtensionExists
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.bspProjectName
 import org.jetbrains.bazel.config.defaultJdkName
@@ -120,7 +120,7 @@ class CollectProjectDetailsTask(
       }
     }
 
-    if (BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
+    if (BazelFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
       progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
         calculateAllAndroidSdkInfosSubtask(projectDetails)
       }
@@ -294,7 +294,7 @@ class CollectProjectDetailsTask(
                 projectBasePath = projectBasePath,
                 project = project,
                 nameProvider = nameProvider,
-                isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
+                isAndroidSupportEnabled = BazelFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
               )
 
             if (syncScope is FullProjectSync) {
@@ -314,7 +314,7 @@ class CollectProjectDetailsTask(
 
         val compiledSourceCodeInsideJarToExclude =
           bspTracer.spanBuilder("calculate.non.generated.class.files.to.exclude").use {
-            if (BspFeatureFlags.excludeCompiledSourceCodeInsideJars) {
+            if (BazelFeatureFlags.excludeCompiledSourceCodeInsideJars) {
               ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(modulesToLoad)
             } else {
               null
@@ -331,7 +331,7 @@ class CollectProjectDetailsTask(
               virtualFileUrlManager = virtualFileUrlManager,
               projectBasePath = projectBasePath,
               project = project,
-              isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
+              isAndroidSupportEnabled = BazelFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
             )
 
           workspaceModelUpdater.loadModules(modulesToLoad + libraryModules)
@@ -366,7 +366,7 @@ class CollectProjectDetailsTask(
     addBspFetchedJavacOptions()
     addBspFetchedScalaSdks()
 
-    if (BspFeatureFlags.isAndroidSupportEnabled) {
+    if (BazelFeatureFlags.isAndroidSupportEnabled) {
       addBspFetchedAndroidSdks()
     }
 

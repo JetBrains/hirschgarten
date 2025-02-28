@@ -3,7 +3,7 @@ package org.jetbrains.bazel.sync.action
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.action.SuspendableAction
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.BspPluginIcons
 import org.jetbrains.bazel.config.isBspProject
@@ -23,13 +23,13 @@ class ResyncTargetAction private constructor(private val targetId: BuildTargetId
     override fun update(project: Project, e: AnActionEvent) {
       // for now we dont support jps modules (TODO: https://youtrack.jetbrains.com/issue/BAZEL-1238)
       val isJpsDisabled = !JpsFeatureFlags.isJpsCompilationEnabled
-      e.presentation.isVisible = BspFeatureFlags.enablePartialSync && project.isBspProject && isJpsDisabled
+      e.presentation.isVisible = BazelFeatureFlags.enablePartialSync && project.isBspProject && isJpsDisabled
       e.presentation.isEnabled = !project.isSyncInProgress()
     }
 
     companion object {
       fun createIfEnabled(targetId: BuildTargetIdentifier): ResyncTargetAction? =
-        if (BspFeatureFlags.enablePartialSync) {
+        if (BazelFeatureFlags.enablePartialSync) {
           ResyncTargetAction(targetId)
         } else {
           null

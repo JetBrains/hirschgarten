@@ -27,7 +27,7 @@ import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.PythonSdkUpdater
 import com.jetbrains.python.sdk.detectSystemWideSdks
 import com.jetbrains.python.sdk.guessedLanguageLevel
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
@@ -58,7 +58,7 @@ private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
 private val PYTHON_MODULE_TYPE = ModuleTypeId("PYTHON_MODULE")
 
 class PythonProjectSync : ProjectSyncHook {
-  override fun isEnabled(project: Project): Boolean = BspFeatureFlags.isPythonSupportEnabled
+  override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isPythonSupportEnabled
 
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     val pythonTargets = environment.baseTargetInfos.calculatePythonTargets()
