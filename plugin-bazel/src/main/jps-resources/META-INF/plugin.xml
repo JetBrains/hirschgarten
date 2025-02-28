@@ -260,6 +260,12 @@
                 class="org.jetbrains.bazel.action.registered.CompileProjectWithJpsAction"
                 icon="AllIcons.Actions.Compile"/>
 
+        <action id="Bazel.NewBazelPackageAction"
+                class="org.jetbrains.bazel.action.registered.NewBazelPackageAction"
+                text="New Bazel Package">
+            <add-to-group group-id="NewGroup" relative-to-action="NewDir" anchor="after"/>
+        </action>
+
         <group id="Bsp.ActionsToolbar">
             <reference id="Bsp.ResyncAction"/>
             <reference id="Bsp.BuildAndResyncAction"/>
