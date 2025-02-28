@@ -14,8 +14,10 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BspToolWindowPanel
+import org.jetbrains.plugins.bsp.fus.BazelToolwindowUsagesCollector
 
-public class BspAllTargetsWidgetFactory :
+
+class BspAllTargetsWidgetFactory :
   ToolWindowFactory,
   DumbAware {
   override suspend fun isApplicableAsync(project: Project): Boolean = project.isBspProject
@@ -29,7 +31,7 @@ public class BspAllTargetsWidgetFactory :
   }
 }
 
-public suspend fun registerBspToolWindow(project: Project) {
+suspend fun registerBspToolWindow(project: Project) {
   val toolWindowManager = ToolWindowManager.getInstance(project)
   val currentToolWindow = toolWindowManager.getToolWindow(project.bspToolWindowId)
   if (currentToolWindow == null) {
@@ -45,11 +47,12 @@ public suspend fun registerBspToolWindow(project: Project) {
   }
 }
 
-public suspend fun showBspToolWindow(project: Project) {
+suspend fun showBspToolWindow(project: Project) {
   val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(project.bspToolWindowId) ?: return
   withContext(Dispatchers.EDT) {
     toolWindow.show()
   }
+  BazelToolwindowUsagesCollector.logActivated(project)
 }
 
 val Project.bspToolWindowId: String
