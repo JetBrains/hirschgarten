@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.server.sync.sharding
 
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.commons.BazelStatus
@@ -44,14 +43,13 @@ const val PACKAGE_SHARD_SIZE = 500
 /** Utility methods for sharding Bazel build invocations.  */
 object BazelBuildTargetSharder {
   /** Expand wildcard target patterns and partition the resulting target list.  */
-  fun expandAndShardTargets(
+  suspend fun expandAndShardTargets(
     pathResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
     featureFlags: FeatureFlags,
     targets: TargetsSpec,
     context: WorkspaceContext,
     bazelRunner: BazelRunner,
-    cancelChecker: CancelChecker,
     bspClientLogger: BspClientLogger,
     firstPhaseProject: FirstPhaseProject?,
   ): ShardedTargetsResult {
@@ -73,7 +71,7 @@ object BazelBuildTargetSharder {
 
       ShardingApproach.QUERY_AND_SHARD -> {
         val singleTargets =
-          WildcardTargetExpander.queryIndividualTargets(includes, excludes, bazelRunner, cancelChecker, context)
+          WildcardTargetExpander.queryIndividualTargets(includes, excludes, bazelRunner, context)
         ShardedTargetsResult(
           shardTargetsToBatches(singleTargets.singleTargets, emptyList(), getTargetShardSize(context)),
           singleTargets.buildResult,
@@ -89,7 +87,6 @@ object BazelBuildTargetSharder {
             includes,
             excludes,
             bazelRunner,
-            cancelChecker,
             bspClientLogger,
             context,
           )
@@ -115,14 +112,13 @@ object BazelBuildTargetSharder {
   /**
    *  Expand wildcard target patterns into individual bazel targets.
    */
-  private fun expandWildcardTargets(
+  private suspend fun expandWildcardTargets(
     pathsResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
     featureFlags: FeatureFlags,
     includes: List<Label>,
     excludes: List<Label>,
     bazelRunner: BazelRunner,
-    cancelChecker: CancelChecker,
     bspClientLogger: BspClientLogger,
     context: WorkspaceContext,
   ): ExpandedTargetsResult {
@@ -155,7 +151,6 @@ object BazelBuildTargetSharder {
           fullList,
           excludes,
           bazelRunner,
-          cancelChecker,
           bspClientLogger,
           context,
         ).orEmpty()

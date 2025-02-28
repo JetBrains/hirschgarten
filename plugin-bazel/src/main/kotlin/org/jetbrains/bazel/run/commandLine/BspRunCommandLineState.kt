@@ -1,9 +1,7 @@
 package org.jetbrains.bazel.run.commandLine
 
-import ch.epfl.scala.bsp4j.RunParams
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.runners.ExecutionEnvironment
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.run.BspCommandLineStateBase
 import org.jetbrains.bazel.run.BspProcessHandler
@@ -12,8 +10,8 @@ import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.task.BspRunTaskListener
 import org.jetbrains.bazel.taskEvents.BspTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.RunParams
 
 class BspRunCommandLineState(
   environment: ExecutionEnvironment,
@@ -24,17 +22,20 @@ class BspRunCommandLineState(
 
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspRunTaskListener(handler)
 
-  override suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) {
-    if (configuration.targets.singleOrNull() == null || capabilities.runProvider == null) {
+  override suspend fun startBsp(server: JoinedBuildServer) {
+    if (configuration.targets.singleOrNull() == null) {
       throw ExecutionException(BspPluginBundle.message("bsp.run.error.cannotRun"))
     }
 
     val targetId = configuration.targets.single()
-    val runParams = RunParams(targetId)
-    runParams.originId = originId
-    runParams.arguments = transformProgramArguments(runState.programArguments)
-    runParams.environmentVariables = runState.env.envs
-    runParams.workingDirectory = runState.workingDirectory
-    server.buildTargetRun(runParams).await()
+    val runParams =
+      RunParams(
+        targetId,
+        originId = originId,
+        arguments = transformProgramArguments(runState.programArguments),
+        environmentVariables = runState.env.envs,
+        workingDirectory = runState.workingDirectory,
+      )
+    server.buildTargetRun(runParams)
   }
 }

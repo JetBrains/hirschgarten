@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.sync.scope
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 /**
  * Scope of the sync. Multiple versions of sync are supported, including

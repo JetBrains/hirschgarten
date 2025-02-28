@@ -1,20 +1,91 @@
 package org.jetbrains.bsp.protocol
 
-import ch.epfl.scala.bsp4j.BuildServer
-import ch.epfl.scala.bsp4j.CppBuildServer
-import ch.epfl.scala.bsp4j.JavaBuildServer
-import ch.epfl.scala.bsp4j.JvmBuildServer
-import ch.epfl.scala.bsp4j.PythonBuildServer
-import ch.epfl.scala.bsp4j.RustBuildServer
-import ch.epfl.scala.bsp4j.ScalaBuildServer
+interface JoinedBuildServer {
+  suspend fun buildInitialize(params: InitializeBuildParams)
 
-interface JoinedBuildServer :
-  BuildServer,
-  GoBuildServer,
-  JvmBuildServer,
-  ScalaBuildServer,
-  JavaBuildServer,
-  CppBuildServer,
-  BazelBuildServer,
-  PythonBuildServer,
-  RustBuildServer
+  suspend fun onBuildInitialized()
+
+  suspend fun buildShutdown()
+
+  suspend fun onBuildExit()
+
+  suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult
+
+  suspend fun buildTargetSources(params: SourcesParams): SourcesResult
+
+  suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult
+
+  suspend fun buildTargetDependencySources(params: DependencySourcesParams): DependencySourcesResult
+
+  suspend fun buildTargetDependencyModules(params: DependencyModulesParams): DependencyModulesResult
+
+  suspend fun buildTargetResources(params: ResourcesParams): ResourcesResult
+
+  suspend fun buildTargetOutputPaths(params: OutputPathsParams): OutputPathsResult
+
+  suspend fun buildTargetCompile(params: CompileParams): CompileResult
+
+  suspend fun buildTargetRun(params: RunParams): RunResult
+
+  suspend fun buildTargetTest(params: TestParams): TestResult
+
+  suspend fun buildTargetCleanCache(params: CleanCacheParams): CleanCacheResult
+
+  suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult
+
+  suspend fun bazelResolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult
+
+  suspend fun buildTargetJvmTestEnvironment(params: JvmTestEnvironmentParams): JvmTestEnvironmentResult
+
+  suspend fun buildTargetJvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult
+
+  suspend fun buildTargetJvmCompileClasspath(params: JvmCompileClasspathParams): JvmCompileClasspathResult
+
+  suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult
+
+  @Deprecated("")
+  suspend fun buildTargetScalaTestClasses(params: ScalaTestClassesParams): ScalaTestClassesResult
+
+  @Deprecated("")
+  suspend fun buildTargetScalaMainClasses(params: ScalaMainClassesParams): ScalaMainClassesResult
+
+  suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult
+
+  suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult
+
+  suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult
+
+  suspend fun rustWorkspace(params: RustWorkspaceParams): RustWorkspaceResult
+
+  suspend fun workspaceLibraries(): WorkspaceLibrariesResult
+
+  suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult
+
+  /**
+   * Returns the list of all targets in the workspace that are neither modules nor libraries, but should be displayed in the UI.
+   */
+
+  suspend fun workspaceNonModuleTargets(): NonModuleTargetsResult
+
+  suspend fun workspaceDirectories(): WorkspaceDirectoriesResult
+
+  suspend fun workspaceInvalidTargets(): WorkspaceInvalidTargetsResult
+
+  suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult
+
+  suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult
+
+  suspend fun buildTargetMobileInstall(params: MobileInstallParams): MobileInstallResult
+
+  suspend fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult
+
+  suspend fun workspaceBuildAndGetBuildTargets(): WorkspaceBuildTargetsResult
+
+  suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult
+
+  suspend fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult
+
+  suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult
+
+  suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult
+}

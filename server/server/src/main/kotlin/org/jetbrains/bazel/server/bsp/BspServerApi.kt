@@ -1,51 +1,5 @@
 package org.jetbrains.bazel.server.bsp
 
-import ch.epfl.scala.bsp4j.CleanCacheParams
-import ch.epfl.scala.bsp4j.CleanCacheResult
-import ch.epfl.scala.bsp4j.CompileParams
-import ch.epfl.scala.bsp4j.CompileResult
-import ch.epfl.scala.bsp4j.CppOptionsParams
-import ch.epfl.scala.bsp4j.CppOptionsResult
-import ch.epfl.scala.bsp4j.DebugSessionAddress
-import ch.epfl.scala.bsp4j.DebugSessionParams
-import ch.epfl.scala.bsp4j.DependencyModulesParams
-import ch.epfl.scala.bsp4j.DependencyModulesResult
-import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.DependencySourcesResult
-import ch.epfl.scala.bsp4j.InitializeBuildParams
-import ch.epfl.scala.bsp4j.InitializeBuildResult
-import ch.epfl.scala.bsp4j.InverseSourcesParams
-import ch.epfl.scala.bsp4j.InverseSourcesResult
-import ch.epfl.scala.bsp4j.JavacOptionsParams
-import ch.epfl.scala.bsp4j.JavacOptionsResult
-import ch.epfl.scala.bsp4j.JvmCompileClasspathParams
-import ch.epfl.scala.bsp4j.JvmCompileClasspathResult
-import ch.epfl.scala.bsp4j.JvmRunEnvironmentParams
-import ch.epfl.scala.bsp4j.JvmRunEnvironmentResult
-import ch.epfl.scala.bsp4j.JvmTestEnvironmentParams
-import ch.epfl.scala.bsp4j.JvmTestEnvironmentResult
-import ch.epfl.scala.bsp4j.OutputPathsParams
-import ch.epfl.scala.bsp4j.OutputPathsResult
-import ch.epfl.scala.bsp4j.PythonOptionsParams
-import ch.epfl.scala.bsp4j.PythonOptionsResult
-import ch.epfl.scala.bsp4j.ReadParams
-import ch.epfl.scala.bsp4j.ResourcesParams
-import ch.epfl.scala.bsp4j.ResourcesResult
-import ch.epfl.scala.bsp4j.RunParams
-import ch.epfl.scala.bsp4j.RunResult
-import ch.epfl.scala.bsp4j.RustWorkspaceParams
-import ch.epfl.scala.bsp4j.RustWorkspaceResult
-import ch.epfl.scala.bsp4j.ScalaMainClassesParams
-import ch.epfl.scala.bsp4j.ScalaMainClassesResult
-import ch.epfl.scala.bsp4j.ScalaTestClassesParams
-import ch.epfl.scala.bsp4j.ScalaTestClassesResult
-import ch.epfl.scala.bsp4j.ScalacOptionsParams
-import ch.epfl.scala.bsp4j.ScalacOptionsResult
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.SourcesResult
-import ch.epfl.scala.bsp4j.TestParams
-import ch.epfl.scala.bsp4j.TestResult
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectSyncService
@@ -55,213 +9,197 @@ import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
+import org.jetbrains.bsp.protocol.CleanCacheParams
+import org.jetbrains.bsp.protocol.CleanCacheResult
+import org.jetbrains.bsp.protocol.CompileParams
+import org.jetbrains.bsp.protocol.CompileResult
+import org.jetbrains.bsp.protocol.CppOptionsParams
+import org.jetbrains.bsp.protocol.CppOptionsResult
+import org.jetbrains.bsp.protocol.DependencyModulesParams
+import org.jetbrains.bsp.protocol.DependencyModulesResult
+import org.jetbrains.bsp.protocol.DependencySourcesParams
+import org.jetbrains.bsp.protocol.DependencySourcesResult
+import org.jetbrains.bsp.protocol.InitializeBuildParams
+import org.jetbrains.bsp.protocol.InverseSourcesParams
+import org.jetbrains.bsp.protocol.InverseSourcesResult
+import org.jetbrains.bsp.protocol.JavacOptionsParams
+import org.jetbrains.bsp.protocol.JavacOptionsResult
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
+import org.jetbrains.bsp.protocol.JvmCompileClasspathParams
+import org.jetbrains.bsp.protocol.JvmCompileClasspathResult
+import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
+import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
+import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
+import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
+import org.jetbrains.bsp.protocol.OutputPathsParams
+import org.jetbrains.bsp.protocol.OutputPathsResult
+import org.jetbrains.bsp.protocol.PythonOptionsParams
+import org.jetbrains.bsp.protocol.PythonOptionsResult
+import org.jetbrains.bsp.protocol.ResourcesParams
+import org.jetbrains.bsp.protocol.ResourcesResult
+import org.jetbrains.bsp.protocol.RunParams
+import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
-import org.jetbrains.bsp.protocol.TestWithDebugParams
+import org.jetbrains.bsp.protocol.RustWorkspaceParams
+import org.jetbrains.bsp.protocol.RustWorkspaceResult
+import org.jetbrains.bsp.protocol.ScalaMainClassesParams
+import org.jetbrains.bsp.protocol.ScalaMainClassesResult
+import org.jetbrains.bsp.protocol.ScalaTestClassesParams
+import org.jetbrains.bsp.protocol.ScalaTestClassesResult
+import org.jetbrains.bsp.protocol.ScalacOptionsParams
+import org.jetbrains.bsp.protocol.ScalacOptionsResult
+import org.jetbrains.bsp.protocol.SourcesParams
+import org.jetbrains.bsp.protocol.SourcesResult
+import org.jetbrains.bsp.protocol.TestParams
+import org.jetbrains.bsp.protocol.TestResult
+import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
-import java.util.concurrent.CompletableFuture
 
-class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, InitializeBuildParams) -> BazelServices) : JoinedBuildServer {
+class BspServerApi(private val bazelServicesBuilder: suspend (JoinedBuildClient, InitializeBuildParams) -> BazelServices) :
+  JoinedBuildServer {
   private lateinit var client: JoinedBuildClient
   private lateinit var serverLifetime: BazelBspServerLifetime
-  private lateinit var runner: BspRequestsRunner
 
   private lateinit var projectSyncService: ProjectSyncService
   private lateinit var executeService: ExecuteService
 
-  fun initialize(
-    client: JoinedBuildClient,
-    serverLifetime: BazelBspServerLifetime,
-    runner: BspRequestsRunner,
-  ) {
+  fun initialize(client: JoinedBuildClient, serverLifetime: BazelBspServerLifetime) {
     this.client = client
     this.serverLifetime = serverLifetime
-    this.runner = runner
   }
 
-  private fun initializeServices(initializeBuildParams: InitializeBuildParams): InitializeBuildResult {
+  private suspend fun initializeServices(initializeBuildParams: InitializeBuildParams) {
     val serverContainer = bazelServicesBuilder(client, initializeBuildParams)
     this.projectSyncService = serverContainer.projectSyncService
     this.executeService = serverContainer.executeService
-
-    return projectSyncService.initialize()
   }
 
-  override fun buildInitialize(initializeBuildParams: InitializeBuildParams): CompletableFuture<InitializeBuildResult> =
-    runner.handleRequest(
-      methodName = "build/initialize",
-      supplier = {
-        initializeServices(initializeBuildParams)
-      },
-      precondition = { runner.serverIsNotFinished(it) },
+  override suspend fun buildInitialize(initializeBuildParams: InitializeBuildParams) {
+    initializeServices(initializeBuildParams)
+  }
+
+  override suspend fun onBuildInitialized() {
+    serverLifetime.initialize()
+  }
+
+  override suspend fun buildShutdown() {
+    serverLifetime.finish()
+  }
+
+  override suspend fun onBuildExit() {
+    serverLifetime.forceFinish()
+  }
+
+  override suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult =
+    projectSyncService.workspaceBuildTargets(
+      build = false,
     )
 
-  override fun onBuildInitialized() {
-    runner.handleNotification("build/initialized") { serverLifetime.initialize() }
-  }
-
-  override fun buildShutdown(): CompletableFuture<Any> =
-    runner.handleRequest(
-      methodName = "build/shutdown",
-      supplier = {
-        serverLifetime.finish()
-        Any()
-      },
-      precondition = { runner.serverIsInitialized(it) },
+  override suspend fun workspaceBuildAndGetBuildTargets(): WorkspaceBuildTargetsResult =
+    projectSyncService.workspaceBuildTargets(
+      build = true,
     )
 
-  override fun onBuildExit() {
-    runner.handleNotification("build/exit") { serverLifetime.forceFinish() }
-  }
+  override suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult =
+    projectSyncService.workspaceBuildTargetsPartial(
+      targetsToSync = params.targets.map { it.label() },
+    )
 
-  override fun workspaceBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult> =
-    runner.handleRequest("workspace/buildTargets") {
-      projectSyncService.workspaceBuildTargets(
-        cancelChecker = it,
-        build = false,
-      )
-    }
+  override suspend fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult =
+    projectSyncService.workspaceBuildFirstPhase(params)
 
-  override fun workspaceBuildAndGetBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult> =
-    runner.handleRequest("workspace/buildAndGetBuildTargets") {
-      projectSyncService.workspaceBuildTargets(
-        cancelChecker = it,
-        build = true,
-      )
-    }
+  override suspend fun buildTargetSources(params: SourcesParams): SourcesResult = projectSyncService.buildTargetSources(params)
 
-  override fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): CompletableFuture<WorkspaceBuildTargetsResult> =
-    runner.handleRequest("workspace/buildTargetsPartial") {
-      projectSyncService.workspaceBuildTargetsPartial(
-        cancelChecker = it,
-        targetsToSync = params.targets.map { it.label() },
-      )
-    }
+  override suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult =
+    projectSyncService.buildTargetInverseSources(params)
 
-  override fun workspaceBuildTargetsFirstPhase(
-    params: WorkspaceBuildTargetsFirstPhaseParams,
-  ): CompletableFuture<WorkspaceBuildTargetsResult> =
-    runner.handleRequest("workspace/buildTargetsFirstPhase", projectSyncService::workspaceBuildFirstPhase, params)
+  override suspend fun buildTargetDependencySources(params: DependencySourcesParams): DependencySourcesResult =
+    projectSyncService.buildTargetDependencySources(params)
 
-  override fun workspaceReload(): CompletableFuture<Any> = runner.handleRequest("workspace/reload", projectSyncService::workspaceReload)
+  override suspend fun buildTargetResources(params: ResourcesParams): ResourcesResult = projectSyncService.buildTargetResources(params)
 
-  override fun buildTargetSources(params: SourcesParams): CompletableFuture<SourcesResult> =
-    runner.handleRequest("buildTarget/sources", projectSyncService::buildTargetSources, params)
+  override suspend fun buildTargetCompile(params: CompileParams): CompileResult = executeService.compile(params)
 
-  override fun buildTargetInverseSources(params: InverseSourcesParams): CompletableFuture<InverseSourcesResult> =
-    runner.handleRequest("buildTarget/inverseSources", projectSyncService::buildTargetInverseSources, params)
+  override suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult = executeService.analysisDebug(params)
 
-  override fun buildTargetDependencySources(params: DependencySourcesParams): CompletableFuture<DependencySourcesResult> =
-    runner.handleRequest("buildTarget/dependencySources", projectSyncService::buildTargetDependencySources, params)
+  override suspend fun buildTargetTest(params: TestParams): TestResult = executeService.testWithDebug(params)
 
-  override fun buildTargetResources(params: ResourcesParams): CompletableFuture<ResourcesResult> =
-    runner.handleRequest("buildTarget/resources", projectSyncService::buildTargetResources, params)
+  override suspend fun buildTargetRun(params: RunParams): RunResult = executeService.run(params)
 
-  override fun buildTargetCompile(params: CompileParams): CompletableFuture<CompileResult> =
-    runner.handleRequest("buildTarget/compile", executeService::compile, params)
+  override suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult = executeService.runWithDebug(params)
 
-  override fun buildTargetAnalysisDebug(params: AnalysisDebugParams): CompletableFuture<AnalysisDebugResult> =
-    runner.handleRequest("buildTargetAnalysisDebug", executeService::analysisDebug, params)
+  override suspend fun buildTargetMobileInstall(params: MobileInstallParams): MobileInstallResult = executeService.mobileInstall(params)
 
-  override fun buildTargetTest(params: TestParams): CompletableFuture<TestResult> =
-    runner.handleRequest("buildTarget/test", executeService::test, params)
+  override suspend fun buildTargetCleanCache(params: CleanCacheParams): CleanCacheResult = executeService.clean(params)
 
-  override fun buildTargetTestWithDebug(params: TestWithDebugParams): CompletableFuture<TestResult> =
-    runner.handleRequest("buildTarget/testWithDebug", executeService::testWithDebug, params)
+  override suspend fun buildTargetDependencyModules(params: DependencyModulesParams): DependencyModulesResult =
+    projectSyncService.buildTargetDependencyModules(params)
 
-  override fun buildTargetRun(params: RunParams): CompletableFuture<RunResult> =
-    runner.handleRequest("buildTarget/run", executeService::run, params)
+  override suspend fun buildTargetOutputPaths(params: OutputPathsParams): OutputPathsResult =
+    projectSyncService.buildTargetOutputPaths(params)
 
-  override fun buildTargetRunWithDebug(params: RunWithDebugParams): CompletableFuture<RunResult> =
-    runner.handleRequest("buildTarget/runWithDebug", executeService::runWithDebug, params)
-
-  override fun buildTargetMobileInstall(params: MobileInstallParams): CompletableFuture<MobileInstallResult> =
-    runner.handleRequest("buildTarget/mobileInstall", executeService::mobileInstall, params)
-
-  override fun buildTargetCleanCache(params: CleanCacheParams): CompletableFuture<CleanCacheResult> =
-    runner.handleRequest("buildTarget/cleanCache", executeService::clean, params)
-
-  override fun onRunReadStdin(readParams: ReadParams) {}
-
-  override fun buildTargetDependencyModules(params: DependencyModulesParams): CompletableFuture<DependencyModulesResult> =
-    runner.handleRequest("buildTarget/dependencyModules", projectSyncService::buildTargetDependencyModules, params)
-
-  override fun debugSessionStart(params: DebugSessionParams): CompletableFuture<DebugSessionAddress> {
-    // TODO: https://youtrack.jetbrains.com/issue/BAZEL-239
-    return CompletableFuture.failedFuture(Exception("This endpoint is not implemented yet"))
-  }
-
-  override fun buildTargetOutputPaths(params: OutputPathsParams): CompletableFuture<OutputPathsResult> =
-    runner.handleRequest("buildTarget/outputPaths", projectSyncService::buildTargetOutputPaths, params)
-
-  override fun buildTargetScalacOptions(params: ScalacOptionsParams): CompletableFuture<ScalacOptionsResult> =
-    runner.handleRequest("buildTarget/scalacOptions", projectSyncService::buildTargetScalacOptions, params)
+  override suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult =
+    projectSyncService.buildTargetScalacOptions(params)
 
   @Deprecated("Deprecated in BSP. Use buildTarget/jvmTestEnvironment instead")
-  override fun buildTargetScalaTestClasses(params: ScalaTestClassesParams): CompletableFuture<ScalaTestClassesResult> =
-    runner.handleRequest("buildTarget/scalaTestClasses", projectSyncService::buildTargetScalaTestClasses, params)
+  override suspend fun buildTargetScalaTestClasses(params: ScalaTestClassesParams): ScalaTestClassesResult =
+    projectSyncService.buildTargetScalaTestClasses(params)
 
   @Deprecated("Deprecated in BSP. Use buildTarget/jvmRunEnvironment instead")
-  override fun buildTargetScalaMainClasses(params: ScalaMainClassesParams): CompletableFuture<ScalaMainClassesResult> =
-    runner.handleRequest("buildTarget/scalaMainClasses", projectSyncService::buildTargetScalaMainClasses, params)
+  override suspend fun buildTargetScalaMainClasses(params: ScalaMainClassesParams): ScalaMainClassesResult =
+    projectSyncService.buildTargetScalaMainClasses(params)
 
-  override fun buildTargetJavacOptions(javacOptionsParams: JavacOptionsParams): CompletableFuture<JavacOptionsResult> =
-    runner.handleRequest("buildTarget/javacOptions", projectSyncService::buildTargetJavacOptions, javacOptionsParams)
+  override suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult =
+    projectSyncService.buildTargetJavacOptions(params)
 
-  override fun buildTargetCppOptions(params: CppOptionsParams): CompletableFuture<CppOptionsResult> =
-    runner.handleRequest("buildTarget/cppOptions", projectSyncService::buildTargetCppOptions, params)
+  override suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult = projectSyncService.buildTargetCppOptions(params)
 
-  override fun buildTargetPythonOptions(params: PythonOptionsParams): CompletableFuture<PythonOptionsResult> =
-    runner.handleRequest("buildTarget/pythonOptions", projectSyncService::buildTargetPythonOptions, params)
+  override suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult =
+    projectSyncService.buildTargetPythonOptions(params)
 
-  override fun buildTargetJvmRunEnvironment(params: JvmRunEnvironmentParams): CompletableFuture<JvmRunEnvironmentResult> =
-    runner.handleRequest("buildTarget/jvmRunEnvironment", projectSyncService::jvmRunEnvironment, params)
+  override suspend fun buildTargetJvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult =
+    projectSyncService.jvmRunEnvironment(params)
 
-  override fun buildTargetJvmCompileClasspath(params: JvmCompileClasspathParams): CompletableFuture<JvmCompileClasspathResult> =
-    runner.handleRequest("buildTarget/jvmCompileClasspath", projectSyncService::jvmCompileClasspath, params)
+  override suspend fun buildTargetJvmCompileClasspath(params: JvmCompileClasspathParams): JvmCompileClasspathResult =
+    projectSyncService.jvmCompileClasspath(params)
 
-  override fun buildTargetJvmTestEnvironment(params: JvmTestEnvironmentParams): CompletableFuture<JvmTestEnvironmentResult> =
-    runner.handleRequest("buildTarget/jvmTestEnvironment", projectSyncService::jvmTestEnvironment, params)
+  override suspend fun buildTargetJvmTestEnvironment(params: JvmTestEnvironmentParams): JvmTestEnvironmentResult =
+    projectSyncService.jvmTestEnvironment(params)
 
-  override fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): CompletableFuture<JvmBinaryJarsResult> =
-    runner.handleRequest("buildTarget/jvmBinaryJars", projectSyncService::jvmBinaryJars, params)
+  override suspend fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult = projectSyncService.jvmBinaryJars(params)
 
-  override fun workspaceLibraries(): CompletableFuture<WorkspaceLibrariesResult> =
-    runner.handleRequest("workspace/libraries", projectSyncService::workspaceBuildLibraries)
+  override suspend fun workspaceLibraries(): WorkspaceLibrariesResult = projectSyncService.workspaceBuildLibraries()
 
-  override fun workspaceGoLibraries(): CompletableFuture<WorkspaceGoLibrariesResult> =
-    runner.handleRequest("workspace/goLibraries", projectSyncService::workspaceBuildGoLibraries)
+  override suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult = projectSyncService.workspaceBuildGoLibraries()
 
-  override fun workspaceNonModuleTargets(): CompletableFuture<NonModuleTargetsResult> =
-    runner.handleRequest("workspace/nonModuleTargets", projectSyncService::workspaceNonModuleTargets)
+  override suspend fun workspaceNonModuleTargets(): NonModuleTargetsResult = projectSyncService.workspaceNonModuleTargets()
 
-  override fun workspaceInvalidTargets(): CompletableFuture<WorkspaceInvalidTargetsResult> =
-    runner.handleRequest("workspace/invalidTargets", projectSyncService::workspaceInvalidTargets)
+  override suspend fun workspaceInvalidTargets(): WorkspaceInvalidTargetsResult = projectSyncService.workspaceInvalidTargets()
 
-  override fun workspaceDirectories(): CompletableFuture<WorkspaceDirectoriesResult> =
-    runner.handleRequest("workspace/directories", projectSyncService::workspaceDirectories)
+  override suspend fun workspaceDirectories(): WorkspaceDirectoriesResult = projectSyncService.workspaceDirectories()
 
-  override fun workspaceBazelRepoMapping(): CompletableFuture<WorkspaceBazelRepoMappingResult> =
-    runner.handleRequest("workspace/bazelRepoMapping", projectSyncService::workspaceBazelRepoMapping)
+  override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = projectSyncService.workspaceBazelRepoMapping()
 
-  override fun rustWorkspace(params: RustWorkspaceParams): CompletableFuture<RustWorkspaceResult> =
-    runner.handleRequest("buildTarget/rustWorkspace", projectSyncService::rustWorkspace, params)
+  override suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = projectSyncService.workspaceBazelBinPath()
 
-  override fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): CompletableFuture<BazelResolveLocalToRemoteResult> =
-    runner.handleRequest("debug/resolveLocalToRemote", projectSyncService::resolveLocalToRemote, params)
+  override suspend fun rustWorkspace(params: RustWorkspaceParams): RustWorkspaceResult = projectSyncService.rustWorkspace(params)
 
-  override fun bazelResolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): CompletableFuture<BazelResolveRemoteToLocalResult> =
-    runner.handleRequest("debug/resolveRemoteToLocal", projectSyncService::resolveRemoteToLocal, params)
+  override suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
+    projectSyncService.resolveLocalToRemote(params)
+
+  override suspend fun bazelResolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult =
+    projectSyncService.resolveRemoteToLocal(params)
 }

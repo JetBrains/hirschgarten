@@ -20,8 +20,8 @@ import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
 import com.intellij.openapi.util.TextRange
 import com.intellij.pom.java.LanguageLevel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.BspFeatureFlags
 import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Canonical
@@ -72,7 +72,7 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
     asyncPromise {
       val labelToInsert = library.name?.let { libraryId -> project.targetUtils.getTargetForLibraryId(libraryId) }
       if (tryAddingModuleDependencyToBuildFile(from, labelToInsert)) {
-        if (BspFeatureFlags.isWrapLibrariesInsideModulesEnabled) {
+        if (BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled) {
           // In this case we should actually depend on the library module, not the library itself
           val libraryModuleName = checkNotNull(library.name).addLibraryModulePrefix()
           val libraryModule = ModuleManager.getInstance(project).findModuleByName(libraryModuleName)

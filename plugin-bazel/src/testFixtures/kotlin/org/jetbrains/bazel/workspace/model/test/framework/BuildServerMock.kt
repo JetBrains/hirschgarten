@@ -1,76 +1,71 @@
 package org.jetbrains.bazel.workspace.model.test.framework
 
-import ch.epfl.scala.bsp4j.CleanCacheParams
-import ch.epfl.scala.bsp4j.CleanCacheResult
-import ch.epfl.scala.bsp4j.CompileParams
-import ch.epfl.scala.bsp4j.CompileResult
-import ch.epfl.scala.bsp4j.CppOptionsParams
-import ch.epfl.scala.bsp4j.CppOptionsResult
-import ch.epfl.scala.bsp4j.DebugSessionAddress
-import ch.epfl.scala.bsp4j.DebugSessionParams
-import ch.epfl.scala.bsp4j.DependencyModulesParams
-import ch.epfl.scala.bsp4j.DependencyModulesResult
-import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.DependencySourcesResult
-import ch.epfl.scala.bsp4j.InitializeBuildParams
-import ch.epfl.scala.bsp4j.InitializeBuildResult
-import ch.epfl.scala.bsp4j.InverseSourcesParams
-import ch.epfl.scala.bsp4j.InverseSourcesResult
-import ch.epfl.scala.bsp4j.JavacOptionsParams
-import ch.epfl.scala.bsp4j.JavacOptionsResult
-import ch.epfl.scala.bsp4j.JvmCompileClasspathParams
-import ch.epfl.scala.bsp4j.JvmCompileClasspathResult
-import ch.epfl.scala.bsp4j.JvmRunEnvironmentParams
-import ch.epfl.scala.bsp4j.JvmRunEnvironmentResult
-import ch.epfl.scala.bsp4j.JvmTestEnvironmentParams
-import ch.epfl.scala.bsp4j.JvmTestEnvironmentResult
-import ch.epfl.scala.bsp4j.OutputPathsParams
-import ch.epfl.scala.bsp4j.OutputPathsResult
-import ch.epfl.scala.bsp4j.PythonOptionsParams
-import ch.epfl.scala.bsp4j.PythonOptionsResult
-import ch.epfl.scala.bsp4j.ReadParams
-import ch.epfl.scala.bsp4j.ResourcesParams
-import ch.epfl.scala.bsp4j.ResourcesResult
-import ch.epfl.scala.bsp4j.RunParams
-import ch.epfl.scala.bsp4j.RunResult
-import ch.epfl.scala.bsp4j.RustWorkspaceParams
-import ch.epfl.scala.bsp4j.RustWorkspaceResult
-import ch.epfl.scala.bsp4j.ScalaMainClassesParams
-import ch.epfl.scala.bsp4j.ScalaMainClassesResult
-import ch.epfl.scala.bsp4j.ScalaTestClassesParams
-import ch.epfl.scala.bsp4j.ScalaTestClassesResult
-import ch.epfl.scala.bsp4j.ScalacOptionsParams
-import ch.epfl.scala.bsp4j.ScalacOptionsResult
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.SourcesResult
-import ch.epfl.scala.bsp4j.TestParams
-import ch.epfl.scala.bsp4j.TestResult
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
+import org.jetbrains.bsp.protocol.CleanCacheParams
+import org.jetbrains.bsp.protocol.CleanCacheResult
+import org.jetbrains.bsp.protocol.CompileParams
+import org.jetbrains.bsp.protocol.CompileResult
+import org.jetbrains.bsp.protocol.CppOptionsParams
+import org.jetbrains.bsp.protocol.CppOptionsResult
+import org.jetbrains.bsp.protocol.DependencyModulesParams
+import org.jetbrains.bsp.protocol.DependencyModulesResult
+import org.jetbrains.bsp.protocol.DependencySourcesParams
+import org.jetbrains.bsp.protocol.DependencySourcesResult
+import org.jetbrains.bsp.protocol.InitializeBuildParams
+import org.jetbrains.bsp.protocol.InverseSourcesParams
+import org.jetbrains.bsp.protocol.InverseSourcesResult
+import org.jetbrains.bsp.protocol.JavacOptionsParams
+import org.jetbrains.bsp.protocol.JavacOptionsResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
+import org.jetbrains.bsp.protocol.JvmCompileClasspathParams
+import org.jetbrains.bsp.protocol.JvmCompileClasspathResult
+import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
+import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
+import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
+import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
+import org.jetbrains.bsp.protocol.OutputPathsParams
+import org.jetbrains.bsp.protocol.OutputPathsResult
+import org.jetbrains.bsp.protocol.PythonOptionsParams
+import org.jetbrains.bsp.protocol.PythonOptionsResult
+import org.jetbrains.bsp.protocol.ResourcesParams
+import org.jetbrains.bsp.protocol.ResourcesResult
+import org.jetbrains.bsp.protocol.RunParams
+import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
-import org.jetbrains.bsp.protocol.TestWithDebugParams
+import org.jetbrains.bsp.protocol.RustWorkspaceParams
+import org.jetbrains.bsp.protocol.RustWorkspaceResult
+import org.jetbrains.bsp.protocol.ScalaMainClassesParams
+import org.jetbrains.bsp.protocol.ScalaMainClassesResult
+import org.jetbrains.bsp.protocol.ScalaTestClassesParams
+import org.jetbrains.bsp.protocol.ScalaTestClassesResult
+import org.jetbrains.bsp.protocol.ScalacOptionsParams
+import org.jetbrains.bsp.protocol.ScalacOptionsResult
+import org.jetbrains.bsp.protocol.SourcesParams
+import org.jetbrains.bsp.protocol.SourcesResult
+import org.jetbrains.bsp.protocol.TestParams
+import org.jetbrains.bsp.protocol.TestResult
+import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
-import java.util.concurrent.CompletableFuture
 
 class BuildServerMock(
-  private val initializeBuildResult: InitializeBuildResult? = null,
+  private val initializeBuildResult: Any? = null,
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
   private val sourcesResult: SourcesResult? = null,
   private val inverseSourcesResult: InverseSourcesResult? = null,
@@ -81,7 +76,6 @@ class BuildServerMock(
   private val compileResult: CompileResult? = null,
   private val runResult: RunResult? = null,
   private val testResult: TestResult? = null,
-  private val debugSessionAddress: DebugSessionAddress? = null,
   private val cleanCacheResult: CleanCacheResult? = null,
   private val jvmTestEnvironmentResult: JvmTestEnvironmentResult? = null,
   private val jvmRunEnvironmentResult: JvmRunEnvironmentResult? = null,
@@ -98,7 +92,6 @@ class BuildServerMock(
   private val workspaceInvalidTargetsResult: WorkspaceInvalidTargetsResult? = null,
   private val analysisDebugResult: AnalysisDebugResult? = null,
   private val runResultWithDebug: RunResult? = null,
-  private val testResultWithDebug: TestResult? = null,
   private val mobileInstallResult: MobileInstallResult? = null,
   private val jvmBinaryJarsResult: JvmBinaryJarsResult? = null,
   private val workspaceBuildTargetsResultAndBuild: WorkspaceBuildTargetsResult? = null,
@@ -110,126 +103,105 @@ class BuildServerMock(
   private val bazelResolveRemoteToLocal: BazelResolveRemoteToLocalResult? = null,
   private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = null,
 ) : JoinedBuildServer {
-  override fun buildInitialize(initializeBuildParams: InitializeBuildParams): CompletableFuture<InitializeBuildResult> =
-    wrapInFuture(initializeBuildResult)
+  override suspend fun buildInitialize(initializeBuildParams: InitializeBuildParams) {}
 
-  override fun onBuildInitialized() { // it's a mock, nothing to do
+  override suspend fun onBuildInitialized() { // it's a mock, nothing to do
   }
 
-  override fun buildShutdown(): CompletableFuture<Any> = wrapInFuture(null)
+  override suspend fun buildShutdown() = wrapInFuture(null)
 
-  override fun onBuildExit() { // it's a mock, nothing to do
+  override suspend fun onBuildExit() { // it's a mock, nothing to do
   }
 
-  override fun workspaceBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult> = wrapInFuture(workspaceBuildTargetsResult)
+  override suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult = wrapInFuture(workspaceBuildTargetsResult)
 
-  override fun workspaceReload(): CompletableFuture<Any> = wrapInFuture(null)
+  override suspend fun buildTargetSources(sourcesParams: SourcesParams): SourcesResult = wrapInFuture(sourcesResult)
 
-  override fun buildTargetSources(sourcesParams: SourcesParams): CompletableFuture<SourcesResult> = wrapInFuture(sourcesResult)
-
-  override fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): CompletableFuture<InverseSourcesResult> =
+  override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult =
     wrapInFuture(inverseSourcesResult)
 
-  override fun buildTargetDependencySources(dependencySourcesParams: DependencySourcesParams): CompletableFuture<DependencySourcesResult> =
+  override suspend fun buildTargetDependencySources(dependencySourcesParams: DependencySourcesParams): DependencySourcesResult =
     wrapInFuture(dependencySourcesResult)
 
-  override fun buildTargetDependencyModules(dependencyModulesParams: DependencyModulesParams): CompletableFuture<DependencyModulesResult> =
+  override suspend fun buildTargetDependencyModules(dependencyModulesParams: DependencyModulesParams): DependencyModulesResult =
     wrapInFuture(dependencyModulesResult)
 
-  override fun buildTargetResources(resourcesParams: ResourcesParams): CompletableFuture<ResourcesResult> = wrapInFuture(resourcesResult)
+  override suspend fun buildTargetResources(resourcesParams: ResourcesParams): ResourcesResult = wrapInFuture(resourcesResult)
 
-  override fun buildTargetOutputPaths(outputPathsParams: OutputPathsParams): CompletableFuture<OutputPathsResult> =
-    wrapInFuture(outputPathsResult)
+  override suspend fun buildTargetOutputPaths(outputPathsParams: OutputPathsParams): OutputPathsResult = wrapInFuture(outputPathsResult)
 
-  override fun buildTargetCompile(compileParams: CompileParams): CompletableFuture<CompileResult> = wrapInFuture(compileResult)
+  override suspend fun buildTargetCompile(compileParams: CompileParams): CompileResult = wrapInFuture(compileResult)
 
-  override fun buildTargetRun(runParams: RunParams): CompletableFuture<RunResult> = wrapInFuture(runResult)
+  override suspend fun buildTargetRun(runParams: RunParams): RunResult = wrapInFuture(runResult)
 
-  override fun buildTargetTest(testParams: TestParams): CompletableFuture<TestResult> = wrapInFuture(testResult)
+  override suspend fun buildTargetTest(testParams: TestParams): TestResult = wrapInFuture(testResult)
 
-  override fun debugSessionStart(debugSessionParams: DebugSessionParams): CompletableFuture<DebugSessionAddress> =
-    wrapInFuture(debugSessionAddress)
+  override suspend fun buildTargetCleanCache(cleanCacheParams: CleanCacheParams): CleanCacheResult = wrapInFuture(cleanCacheResult)
 
-  override fun buildTargetCleanCache(cleanCacheParams: CleanCacheParams): CompletableFuture<CleanCacheResult> =
-    wrapInFuture(cleanCacheResult)
+  override suspend fun buildTargetJvmTestEnvironment(jvmTestEnvironmentParams: JvmTestEnvironmentParams): JvmTestEnvironmentResult =
+    wrapInFuture(jvmTestEnvironmentResult)
 
-  override fun onRunReadStdin(p0: ReadParams?) { // it's a mock, nothing to do
-  }
-
-  override fun buildTargetJvmTestEnvironment(
-    jvmTestEnvironmentParams: JvmTestEnvironmentParams,
-  ): CompletableFuture<JvmTestEnvironmentResult> = wrapInFuture(jvmTestEnvironmentResult)
-
-  override fun buildTargetJvmRunEnvironment(jvmRunEnvironmentParams: JvmRunEnvironmentParams): CompletableFuture<JvmRunEnvironmentResult> =
+  override suspend fun buildTargetJvmRunEnvironment(jvmRunEnvironmentParams: JvmRunEnvironmentParams): JvmRunEnvironmentResult =
     wrapInFuture(jvmRunEnvironmentResult)
 
-  override fun buildTargetJvmCompileClasspath(
-    jvmCompileClasspathParams: JvmCompileClasspathParams,
-  ): CompletableFuture<JvmCompileClasspathResult> = wrapInFuture(jvmCompileClasspathResult)
+  override suspend fun buildTargetJvmCompileClasspath(jvmCompileClasspathParams: JvmCompileClasspathParams): JvmCompileClasspathResult =
+    wrapInFuture(jvmCompileClasspathResult)
 
-  override fun buildTargetScalacOptions(scalacOptionsParams: ScalacOptionsParams): CompletableFuture<ScalacOptionsResult> =
+  override suspend fun buildTargetScalacOptions(scalacOptionsParams: ScalacOptionsParams): ScalacOptionsResult =
     wrapInFuture(scalacOptionsResult)
 
   @Deprecated("Deprecated in BSP. Use buildTarget/jvmTestEnvironment instead")
-  override fun buildTargetScalaTestClasses(scalaTestClassesParams: ScalaTestClassesParams): CompletableFuture<ScalaTestClassesResult> =
+  override suspend fun buildTargetScalaTestClasses(scalaTestClassesParams: ScalaTestClassesParams): ScalaTestClassesResult =
     wrapInFuture(scalaTestClassesResult)
 
   @Deprecated("Deprecated in BSP. Use buildTarget/jvmRunEnvironment instead")
-  override fun buildTargetScalaMainClasses(scalaMainClassesParams: ScalaMainClassesParams): CompletableFuture<ScalaMainClassesResult> =
+  override suspend fun buildTargetScalaMainClasses(scalaMainClassesParams: ScalaMainClassesParams): ScalaMainClassesResult =
     wrapInFuture(scalaMainClassesResult)
 
-  override fun buildTargetJavacOptions(javacOptionsParams: JavacOptionsParams): CompletableFuture<JavacOptionsResult> =
+  override suspend fun buildTargetJavacOptions(javacOptionsParams: JavacOptionsParams): JavacOptionsResult =
     wrapInFuture(javacOptionsResult)
 
-  override fun buildTargetCppOptions(p0: CppOptionsParams?): CompletableFuture<CppOptionsResult> = wrapInFuture(cppOptionsResult)
+  override suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult = wrapInFuture(cppOptionsResult)
 
-  override fun workspaceLibraries(): CompletableFuture<WorkspaceLibrariesResult> = wrapInFuture(workspaceLibrariesResult)
+  override suspend fun workspaceLibraries(): WorkspaceLibrariesResult = wrapInFuture(workspaceLibrariesResult)
 
-  override fun workspaceGoLibraries(): CompletableFuture<WorkspaceGoLibrariesResult> = wrapInFuture(workspaceGoLibrariesResult)
+  override suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult = wrapInFuture(workspaceGoLibrariesResult)
 
-  override fun workspaceNonModuleTargets(): CompletableFuture<NonModuleTargetsResult> = wrapInFuture(workspaceNonModuleTargetsResult)
+  override suspend fun workspaceNonModuleTargets(): NonModuleTargetsResult = wrapInFuture(workspaceNonModuleTargetsResult)
 
-  override fun workspaceDirectories(): CompletableFuture<WorkspaceDirectoriesResult> = wrapInFuture(workspaceDirectoriesResult)
+  override suspend fun workspaceDirectories(): WorkspaceDirectoriesResult = wrapInFuture(workspaceDirectoriesResult)
 
-  override fun workspaceInvalidTargets(): CompletableFuture<WorkspaceInvalidTargetsResult> = wrapInFuture(workspaceInvalidTargetsResult)
+  override suspend fun workspaceInvalidTargets(): WorkspaceInvalidTargetsResult = wrapInFuture(workspaceInvalidTargetsResult)
 
-  override fun buildTargetAnalysisDebug(params: AnalysisDebugParams): CompletableFuture<AnalysisDebugResult> =
-    wrapInFuture(analysisDebugResult)
+  override suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult = wrapInFuture(analysisDebugResult)
 
-  override fun buildTargetRunWithDebug(params: RunWithDebugParams): CompletableFuture<RunResult> = wrapInFuture(runResultWithDebug)
+  override suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult = wrapInFuture(runResultWithDebug)
 
-  override fun buildTargetTestWithDebug(params: TestWithDebugParams): CompletableFuture<TestResult> = wrapInFuture(testResultWithDebug)
+  override suspend fun buildTargetMobileInstall(params: MobileInstallParams): MobileInstallResult = wrapInFuture(mobileInstallResult)
 
-  override fun buildTargetMobileInstall(params: MobileInstallParams): CompletableFuture<MobileInstallResult> =
-    wrapInFuture(mobileInstallResult)
+  override suspend fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult = wrapInFuture(jvmBinaryJarsResult)
 
-  override fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): CompletableFuture<JvmBinaryJarsResult> =
-    wrapInFuture(jvmBinaryJarsResult)
+  override suspend fun workspaceBuildAndGetBuildTargets(): WorkspaceBuildTargetsResult = wrapInFuture(workspaceBuildTargetsResultAndBuild)
 
-  override fun workspaceBuildAndGetBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult> =
-    wrapInFuture(workspaceBuildTargetsResultAndBuild)
-
-  override fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): CompletableFuture<WorkspaceBuildTargetsResult> =
+  override suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult =
     wrapInFuture(workspaceBuildTargetsPartial)
 
-  override fun workspaceBuildTargetsFirstPhase(
-    params: WorkspaceBuildTargetsFirstPhaseParams,
-  ): CompletableFuture<WorkspaceBuildTargetsResult> = wrapInFuture(workspaceBuildTargetsFirstPhase)
+  override suspend fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult =
+    wrapInFuture(workspaceBuildTargetsFirstPhase)
 
-  override fun buildTargetPythonOptions(pythonOptionsParams: PythonOptionsParams?): CompletableFuture<PythonOptionsResult> =
-    wrapInFuture(pythonOptionsResult)
+  override suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult = wrapInFuture(pythonOptionsResult)
 
-  override fun rustWorkspace(p0: RustWorkspaceParams?): CompletableFuture<RustWorkspaceResult> = wrapInFuture(rustWorkspaceResult)
+  override suspend fun rustWorkspace(params: RustWorkspaceParams): RustWorkspaceResult = wrapInFuture(rustWorkspaceResult)
 
-  override fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): CompletableFuture<BazelResolveLocalToRemoteResult> =
+  override suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
     wrapInFuture(bazelResolveLocalToRemote)
 
-  override fun bazelResolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): CompletableFuture<BazelResolveRemoteToLocalResult> =
+  override suspend fun bazelResolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult =
     wrapInFuture(bazelResolveRemoteToLocal)
 
-  override fun workspaceBazelRepoMapping(): CompletableFuture<WorkspaceBazelRepoMappingResult> =
-    wrapInFuture(workspaceBazelRepoMappingResult)
+  override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = wrapInFuture(workspaceBazelRepoMappingResult)
 
-  private fun <T> wrapInFuture(value: T?): CompletableFuture<T> =
-    value?.let { CompletableFuture.completedFuture(it) } ?: CompletableFuture.failedFuture(Exception("mock value is null"))
+  override suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = WorkspaceBazelBinPathResult("/path/to/bazel-bin")
+
+  private fun <T> wrapInFuture(value: T?): T = value ?: error("mock value is null")
 }

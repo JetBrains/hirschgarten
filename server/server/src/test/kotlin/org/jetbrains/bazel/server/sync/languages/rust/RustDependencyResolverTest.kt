@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.sync.languages.rust
 
-import ch.epfl.scala.bsp4j.RustPackage
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -10,10 +9,12 @@ import org.jetbrains.bazel.bazelrunner.utils.orLatestSupported
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.protocol.RustPackage
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
+import kotlin.io.path.Path
 
 @Disabled
 class RustDependencyResolverTest {
@@ -30,6 +31,7 @@ class RustDependencyResolverTest {
         execRoot = execRoot,
         outputBase = Paths.get(outputBase),
         workspaceRoot = Paths.get("/Users/user/workspace/bazel-bsp"),
+        bazelBin = Path("bazel-bin"),
         release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
         false,
         true,

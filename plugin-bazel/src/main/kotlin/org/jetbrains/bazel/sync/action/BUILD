@@ -11,7 +11,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/scope",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/status",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/task",
-        "@maven//:ch_epfl_scala_bsp4j",
+        "//protocol",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

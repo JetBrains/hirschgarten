@@ -1,10 +1,5 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.JavacOptionsItem
-import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
@@ -15,6 +10,11 @@ import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.includesJavaOrScala
 import org.jetbrains.bazel.workspacemodel.entities.toBuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.toModuleCapabilities
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.DependencySourcesItem
+import org.jetbrains.bsp.protocol.JavacOptionsItem
+import org.jetbrains.bsp.protocol.ScalacOptionsItem
 
 internal data class BspModuleDetails(
   val target: BuildTarget,

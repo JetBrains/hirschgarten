@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.debug.configuration
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.configurations.RunnerSettings
@@ -20,8 +19,8 @@ import com.intellij.xdebugger.XDebuggerManager
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.withContext
 import org.jdom.Element
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -33,6 +32,7 @@ import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.taskEvents.BspTaskEventsService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
@@ -105,7 +105,7 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
     target: BuildTargetIdentifier,
     futureProxy: CompletableDeferred<AnalysisDebugResult>,
   ): Job =
-    project.connection.runWithServer { server, _ ->
+    project.connection.runWithServer { server ->
       BspCoroutineService.getInstance(project).start {
         analysisDebug(project, port, taskListener, target, server, futureProxy)
       }
@@ -124,12 +124,12 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
       BspTaskEventsService.getInstance(project).saveListener(originId, taskListener)
       val params = AnalysisDebugParams(originId, port, listOf(target))
 
-      val buildFuture = server.buildTargetAnalysisDebug(params).asDeferred()
+      val buildDeferred = async { server.buildTargetAnalysisDebug(params) }
       try {
-        val result = buildFuture.await()
+        val result = buildDeferred.await()
         futureProxy.complete(result)
       } catch (e: Exception) {
-        buildFuture.cancel()
+        buildDeferred.cancel()
         futureProxy.completeExceptionally(e)
       } finally {
         BspTaskEventsService.getInstance(project).removeListener(originId)

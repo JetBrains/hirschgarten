@@ -13,6 +13,12 @@ import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
+import com.intellij.tools.ide.performanceTesting.commands.assertCaretPosition
+import com.intellij.tools.ide.performanceTesting.commands.assertCurrentFile
+import com.intellij.tools.ide.performanceTesting.commands.delay
+import com.intellij.tools.ide.performanceTesting.commands.goToDeclaration
+import com.intellij.tools.ide.performanceTesting.commands.goto
+import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import org.junit.jupiter.api.BeforeEach
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
@@ -219,3 +225,24 @@ fun <T : CommandChain> T.buildAndSync(): T {
   addCommand(CMD_PREFIX + "buildAndSync")
   return this
 }
+
+fun <T : CommandChain> T.assertFileContentsEqual(expectedRelativePath: String, actualRelativePath: String): T {
+  addCommand(CMD_PREFIX + "assertFileContentsEqual $expectedRelativePath $actualRelativePath")
+  return this
+}
+
+fun <T : CommandChain> T.navigateToFile(
+  caretLine: Int,
+  caretColumn: Int,
+  expectedFilename: String,
+  expectedCaretLine: Int,
+  expectedCaretColumn: Int,
+): T =
+  this
+    .goto(caretLine, caretColumn)
+    .delay(500)
+    .takeScreenshot("Before navigating to $expectedFilename")
+    .goToDeclaration()
+    .delay(500)
+    .assertCurrentFile(expectedFilename)
+    .assertCaretPosition(expectedCaretLine, expectedCaretColumn)

@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.bazelrunner
 
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.bazelrunner.utils.orLatestSupported
@@ -10,22 +9,23 @@ private const val RELEASE = "release"
 private const val EXECUTION_ROOT = "execution_root"
 private const val OUTPUT_BASE = "output_base"
 private const val WORKSPACE = "workspace"
+private const val BAZEL_BIN = "bazel-bin"
 private const val STARLARK_SEMANTICS = "starlark-semantics"
 
 class BazelInfoResolver(private val bazelRunner: BazelRunner) {
-  fun resolveBazelInfo(cancelChecker: CancelChecker): BazelInfo = bazelInfoFromBazel(cancelChecker)
+  suspend fun resolveBazelInfo(): BazelInfo = bazelInfoFromBazel()
 
-  private fun bazelInfoFromBazel(cancelChecker: CancelChecker): BazelInfo {
+  private suspend fun bazelInfoFromBazel(): BazelInfo {
     val command =
       bazelRunner.buildBazelCommand {
         info {
-          options.addAll(listOf(RELEASE, EXECUTION_ROOT, OUTPUT_BASE, WORKSPACE, STARLARK_SEMANTICS))
+          options.addAll(listOf(RELEASE, EXECUTION_ROOT, OUTPUT_BASE, WORKSPACE, BAZEL_BIN, STARLARK_SEMANTICS))
         }
       }
     val processResult =
       bazelRunner
         .runBazelCommand(command, serverPidFuture = null)
-        .waitAndGetResult(cancelChecker, true)
+        .waitAndGetResult(true)
     return parseBazelInfo(processResult)
   }
 
@@ -67,6 +67,7 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
       execRoot = extract(EXECUTION_ROOT),
       outputBase = Paths.get(extract(OUTPUT_BASE)),
       workspaceRoot = Paths.get(extract(WORKSPACE)),
+      bazelBin = Paths.get(extract(BAZEL_BIN)),
       release = bazelReleaseVersion,
       isBzlModEnabled = isBzlModEnabled,
       isWorkspaceEnabled = isWorkspaceEnabled,

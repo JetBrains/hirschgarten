@@ -1,13 +1,11 @@
 package org.jetbrains.bazel.base
 
-import ch.epfl.scala.bsp4j.BuildClientCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.InitializeBuildParams
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bazel.install.Install
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.FeatureFlags
-import org.jetbrains.bsp.protocol.InitializeBuildData
+import org.jetbrains.bsp.protocol.InitializeBuildParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.testkit.client.BasicTestClient
 import org.jetbrains.bsp.testkit.client.MockClient
 import org.jetbrains.bsp.testkit.client.TestClient
@@ -144,8 +142,8 @@ abstract class BazelBspTestBaseScenario {
     }
   }
 
-  protected fun createTestkitClient(jvmClasspathReceiver: Boolean = false): TestClient {
-    val (initializeBuildParams, bazelJsonTransformer) = createTestClientParams(jvmClasspathReceiver)
+  protected fun createTestkitClient(): TestClient {
+    val (initializeBuildParams, bazelJsonTransformer) = createTestClientParams()
 
     return TestClient(
       Path.of(workspaceDir),
@@ -170,20 +168,10 @@ abstract class BazelBspTestBaseScenario {
     val bazelJsonTransformer: BazelJsonTransformer,
   )
 
-  private fun createTestClientParams(jvmClasspathReceiver: Boolean = false): BazelTestClientParams {
+  private fun createTestClientParams(): BazelTestClientParams {
     println("Testing repo workspace path: $workspaceDir")
     println("Creating TestClient...")
 
-    val capabilities = BuildClientCapabilities(listOf("java", "scala", "kotlin", "cpp"))
-    capabilities.jvmCompileClasspathReceiver = jvmClasspathReceiver
-    val initializeBuildParams =
-      InitializeBuildParams(
-        "BspTestClient",
-        "1.0.0",
-        "2.0.0",
-        workspaceDir,
-        capabilities,
-      )
     val featureFlags =
       FeatureFlags(
         isPythonSupportEnabled = true,
@@ -192,7 +180,9 @@ abstract class BazelBspTestBaseScenario {
         isRustSupportEnabled = false,
         isPropagateExportsFromDepsEnabled = false,
       )
-    initializeBuildParams.data = InitializeBuildData(featureFlags = featureFlags)
+
+    val initializeBuildParams =
+      InitializeBuildParams(featureFlags = featureFlags)
 
     val bazelCache = Path(processBazelOutputWithDownloadRetry("info", "execution_root"))
     val bazelOutputBase = Path(processBazelOutput("info", "output_base"))

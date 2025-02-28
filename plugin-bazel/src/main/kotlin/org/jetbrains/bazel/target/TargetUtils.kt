@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.target
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.BuildTargetTag
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -21,7 +19,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.annotations.PublicApi
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.label
@@ -33,6 +31,8 @@ import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.LibraryItem
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
@@ -195,7 +195,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   }
 
   private fun getTargetsFromAncestorsForFile(file: VirtualFile): List<Label> {
-    return if (BspFeatureFlags.isRetrieveTargetsForFileFromAncestorsEnabled) {
+    return if (BazelFeatureFlags.isRetrieveTargetsForFileFromAncestorsEnabled) {
       val rootDir = project.rootDir
       var iter = file.parent
       while (iter != null && VfsUtil.isAncestor(rootDir, iter, false)) {

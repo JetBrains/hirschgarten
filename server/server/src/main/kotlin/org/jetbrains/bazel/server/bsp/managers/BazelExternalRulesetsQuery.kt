@@ -3,7 +3,6 @@ package org.jetbrains.bazel.server.bsp.managers
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.apache.logging.log4j.LogManager
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.label.Label
@@ -16,11 +15,11 @@ import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
 interface BazelExternalRulesetsQuery {
-  fun fetchExternalRulesetNames(cancelChecker: CancelChecker): List<String>
+  suspend fun fetchExternalRulesetNames(): List<String>
 }
 
 class BazelEnabledRulesetsQueryImpl(private val enabledRulesSpec: EnabledRulesSpec) : BazelExternalRulesetsQuery {
-  override fun fetchExternalRulesetNames(cancelChecker: CancelChecker): List<String> {
+  override suspend fun fetchExternalRulesetNames(): List<String> {
     val specifiedRules = enabledRulesSpec.values
     val neededTransitiveRules = specifiedRules.mapNotNull { rootRulesToNeededTransitiveRules[it] }.flatten()
 
@@ -35,16 +34,16 @@ class BazelExternalRulesetsQueryImpl(
   private val enabledRules: EnabledRulesSpec,
   private val bspClientLogger: BspClientLogger,
 ) : BazelExternalRulesetsQuery {
-  override fun fetchExternalRulesetNames(cancelChecker: CancelChecker): List<String> =
+  override suspend fun fetchExternalRulesetNames(): List<String> =
     when {
-      enabledRules.isNotEmpty() -> BazelEnabledRulesetsQueryImpl(enabledRules).fetchExternalRulesetNames(cancelChecker)
+      enabledRules.isNotEmpty() -> BazelEnabledRulesetsQueryImpl(enabledRules).fetchExternalRulesetNames()
       else ->
-        BazelBzlModExternalRulesetsQueryImpl(bazelRunner, isBzlModEnabled, bspClientLogger).fetchExternalRulesetNames(cancelChecker) +
+        BazelBzlModExternalRulesetsQueryImpl(bazelRunner, isBzlModEnabled, bspClientLogger).fetchExternalRulesetNames() +
           BazelWorkspaceExternalRulesetsQueryImpl(
             bazelRunner,
             isWorkspaceEnabled,
             bspClientLogger,
-          ).fetchExternalRulesetNames(cancelChecker)
+          ).fetchExternalRulesetNames()
     }
 }
 
@@ -53,7 +52,7 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
   private val isWorkspaceEnabled: Boolean,
   private val bspClientLogger: BspClientLogger,
 ) : BazelExternalRulesetsQuery {
-  override fun fetchExternalRulesetNames(cancelChecker: CancelChecker): List<String> =
+  override suspend fun fetchExternalRulesetNames(): List<String> =
     if (!isWorkspaceEnabled) {
       emptyList()
     } else {
@@ -67,7 +66,7 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
           }
 
         runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
-          .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
+          .waitAndGetResult(ensureAllOutputRead = true)
           .let { result ->
             if (result.isNotSuccess) {
               val queryFailedMessage = getQueryFailedMessage(result)
@@ -112,7 +111,7 @@ class BazelBzlModExternalRulesetsQueryImpl(
 ) : BazelExternalRulesetsQuery {
   private val gson = Gson()
 
-  override fun fetchExternalRulesetNames(cancelChecker: CancelChecker): List<String> {
+  override suspend fun fetchExternalRulesetNames(): List<String> {
     if (!isBzlModEnabled) return emptyList()
     val command =
       bazelRunner.buildBazelCommand {
@@ -121,7 +120,7 @@ class BazelBzlModExternalRulesetsQueryImpl(
     val bzlmodGraphJson =
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
-        .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
+        .waitAndGetResult(ensureAllOutputRead = true)
         .let { result ->
           if (result.isNotSuccess) {
             val queryFailedMessage = getQueryFailedMessage(result)

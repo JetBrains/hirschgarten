@@ -1,9 +1,9 @@
 package org.jetbrains.bazel
 
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.install.Install
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.time.Duration.Companion.minutes
 
 object ServerDownloadsBazeliskTest : BazelBspTestBaseScenario() {

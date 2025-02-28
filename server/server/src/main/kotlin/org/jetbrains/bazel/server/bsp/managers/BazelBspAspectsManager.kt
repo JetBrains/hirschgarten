@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.bsp.managers
 
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.aspect
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.buildManualTests
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.buildTagFilters
@@ -164,7 +163,6 @@ class BazelBspAspectsManager(
   private fun List<String>.toStarlarkString(): String = joinToString(prefix = "[", postfix = "]", separator = ", ") { "\"$it\"" }
 
   suspend fun fetchFilesFromOutputGroups(
-    cancelChecker: CancelChecker,
     targetsSpec: TargetsSpec,
     aspect: String,
     outputGroups: List<String>,
@@ -189,7 +187,6 @@ class BazelBspAspectsManager(
 
     return bazelBspCompilationManager
       .buildTargetsWithBep(
-        cancelChecker = cancelChecker,
         targetsSpec = targetsSpec,
         extraFlags = flagsToUse,
         originId = null,

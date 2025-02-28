@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import io.kotest.matchers.equals.shouldBeEqual
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.label.Label
@@ -26,7 +25,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
   }
 
   internal class BazelExternalRulesetsQueryMock(private val rulesetNames: List<String>) : BazelExternalRulesetsQuery {
-    override fun fetchExternalRulesetNames(cancelChecker: CancelChecker): List<String> = rulesetNames
+    override suspend fun fetchExternalRulesetNames(): List<String> = rulesetNames
   }
 
   private val defaultFileContent =
