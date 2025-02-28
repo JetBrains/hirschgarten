@@ -3,7 +3,6 @@ package org.jetbrains.bazel.server.bsp.managers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
@@ -21,7 +20,6 @@ class BazelBspCompilationManager(
   val workspaceRoot: Path,
 ) {
   suspend fun buildTargetsWithBep(
-    cancelChecker: CancelChecker,
     targetsSpec: TargetsSpec,
     extraFlags: List<String> = emptyList(),
     originId: String? = null,
@@ -49,7 +47,7 @@ class BazelBspCompilationManager(
         val result =
           bazelRunner
             .runBazelCommand(command, originId = originId, serverPidFuture = bepReader.serverPid, shouldLogInvocation = shouldLogInvocation)
-            .waitAndGetResult(cancelChecker, true)
+            .waitAndGetResult(true)
         bepReader.finishBuild()
         readerFuture.await()
         BepBuildResult(result, bepServer.bepOutput)

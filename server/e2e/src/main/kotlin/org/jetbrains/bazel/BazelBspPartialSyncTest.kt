@@ -1,6 +1,5 @@
 package org.jetbrains.bazel
 
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.install.Install
@@ -44,7 +43,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep("should do an initial sync on 1 target and then partial sync on another target") {
       testClient.test(3.minutes) { session ->
         // initial sync
-        val workspaceBuildTargetsResult = session.server.workspaceBuildTargets().await()
+        val workspaceBuildTargetsResult = session.server.workspaceBuildTargets()
         testClient.assertJsonEquals(expectedWorkspaceBuildTargetsResult(), workspaceBuildTargetsResult)
 
         val javaTargetsJavaLibraryJava =
@@ -64,7 +63,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
 
         val sourcesParams = SourcesParams(expectedTargetIdentifiers())
         val expectedSourcesResult = SourcesResult(listOf(javaTargetsJavaLibrarySources))
-        val buildTargetSourcesResult = session.server.buildTargetSources(sourcesParams).await()
+        val buildTargetSourcesResult = session.server.buildTargetSources(sourcesParams)
         testClient.assertJsonEquals(expectedSourcesResult, buildTargetSourcesResult)
 
         // partial sync
@@ -101,7 +100,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
           WorkspaceBuildTargetsPartialParams(listOf(BuildTargetIdentifier("$targetPrefix//java_targets:java_binary")))
         val expectedTargetsResult = WorkspaceBuildTargetsResult(listOf(javaTargetsJavaBinary))
 
-        val workspaceBuildTargetsPartialResult = session.server.workspaceBuildTargetsPartial(workspaceBuildTargetsPartialParams).await()
+        val workspaceBuildTargetsPartialResult = session.server.workspaceBuildTargetsPartial(workspaceBuildTargetsPartialParams)
         testClient.assertJsonEquals(expectedTargetsResult, workspaceBuildTargetsPartialResult)
 
         val javaTargetsJavaBinaryJava =
@@ -120,7 +119,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
 
         val partialSyncSourcesParams = SourcesParams(listOf(partialSyncTargetId))
         val expectedPartialSyncSourcesResult = SourcesResult(listOf(javaTargetsJavaBinarySources))
-        val result = session.server.buildTargetSources(partialSyncSourcesParams).await()
+        val result = session.server.buildTargetSources(partialSyncSourcesParams)
         testClient.assertJsonEquals(expectedPartialSyncSourcesResult, result)
       }
     }

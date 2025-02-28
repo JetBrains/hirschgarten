@@ -2,7 +2,6 @@ package org.jetbrains.bazel.run.commandLine
 
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.runners.ExecutionEnvironment
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.run.BspCommandLineStateBase
 import org.jetbrains.bazel.run.BspProcessHandler
@@ -37,6 +36,6 @@ class BspRunCommandLineState(
         environmentVariables = runState.env.envs,
         workingDirectory = runState.workingDirectory,
       )
-    server.buildTargetRun(runParams).await()
+    server.buildTargetRun(runParams)
   }
 }

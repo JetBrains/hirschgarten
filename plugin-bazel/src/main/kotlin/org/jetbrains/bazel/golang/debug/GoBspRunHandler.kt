@@ -7,7 +7,6 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.module.Module
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BspFeatureFlags
 import org.jetbrains.bazel.label.label
@@ -91,6 +90,6 @@ class GoRunWithDebugCommandLineState(
     val remoteDebugData = RemoteDebugData("go_dlv", debugServerAddress.port)
     val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
 
-    server.buildTargetRunWithDebug(runWithDebugParams).await()
+    server.buildTargetRunWithDebug(runWithDebugParams)
   }
 }

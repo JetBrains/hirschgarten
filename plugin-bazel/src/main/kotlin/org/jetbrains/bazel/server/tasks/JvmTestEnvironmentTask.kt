@@ -9,7 +9,7 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 class JvmTestEnvironmentTask(project: Project) : BspServerSingleTargetTask<JvmTestEnvironmentResult>("jvmTestEnvironment", project) {
   override suspend fun executeWithServer(server: JoinedBuildServer, targetId: BuildTargetIdentifier): JvmTestEnvironmentResult {
     val params = createJvmTestEnvironmentParams(targetId)
-    return server.buildTargetJvmTestEnvironment(params).get()
+    return server.buildTargetJvmTestEnvironment(params)
   }
 
   private fun createJvmTestEnvironmentParams(targetId: BuildTargetIdentifier) = JvmTestEnvironmentParams(listOf(targetId))

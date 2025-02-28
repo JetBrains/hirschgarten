@@ -1,6 +1,5 @@
 package org.jetbrains.bazel
 
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -47,7 +46,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
           session.server
             .workspaceBuildTargetsFirstPhase(
               WorkspaceBuildTargetsFirstPhaseParams("test origin id"),
-            ).await()
+            )
         testClient.assertJsonEquals(expectedWorkspaceBuildTargetsResult(), firstPhaseResult)
 
         assertFalse(javaLibraryJar.exists())
@@ -55,7 +54,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
         assertFalse(kotlinLibraryJar.exists())
         assertFalse(kotlinBinaryJar.exists())
 
-        val sourcesResult = session.server.buildTargetSources(SourcesParams(expectedTargetIdentifiers())).await()
+        val sourcesResult = session.server.buildTargetSources(SourcesParams(expectedTargetIdentifiers()))
         testClient.assertJsonEquals(expectedSourcesResult(), sourcesResult)
       }
     }

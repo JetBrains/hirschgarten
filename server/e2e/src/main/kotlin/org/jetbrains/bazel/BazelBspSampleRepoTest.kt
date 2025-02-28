@@ -1,6 +1,5 @@
 package org.jetbrains.bazel
 
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.commons.utils.OsFamily
@@ -1021,7 +1020,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       "non module targets",
     ) {
       client.test(30.seconds) { session ->
-        val targets = session.server.workspaceNonModuleTargets().await()
+        val targets = session.server.workspaceNonModuleTargets()
         client.assertJsonEquals(expectedTargets, targets)
       }
     }

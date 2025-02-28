@@ -3,7 +3,6 @@ package org.jetbrains.bazel.python
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.Sdk
-import com.intellij.openapi.rd.util.toPromise
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
@@ -31,7 +30,6 @@ import org.jetbrains.bazel.taskEvents.BspTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.concurrency.await
 
 class PythonDebugCommandLineState(
   env: ExecutionEnvironment,
@@ -53,7 +51,7 @@ class PythonDebugCommandLineState(
         arguments = transformProgramArguments(settings.programArguments),
       )
 
-    server.buildTargetCompile(buildParams).toPromise().await()
+    server.buildTargetCompile(buildParams)
   }
 
   fun asPythonState(): PythonCommandLineState = PythonScriptCommandLineState(pythonConfig(), environment)

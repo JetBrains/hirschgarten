@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.sync
 
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.AspectSyncProject
@@ -61,166 +60,154 @@ class ProjectSyncService(
   private val projectProvider: ProjectProvider,
   private val bazelInfo: BazelInfo,
 ) {
-  // TODO https://youtrack.jetbrains.com/issue/BAZEL-639
-  // We might consider doing the actual project reload in this endpoint
-  // i.e. just run projectProvider.refreshAndGet() and in workspaceBuildTargets
-  // just run projectProvider.get() although current approach seems to work
-  // correctly, so I am not changing anything.
-  fun workspaceReload(cancelChecker: CancelChecker): Any = Any()
-
-  fun workspaceBuildTargets(cancelChecker: CancelChecker, build: Boolean): WorkspaceBuildTargetsResult {
-    val project = projectProvider.refreshAndGet(cancelChecker, build = build)
+  fun workspaceBuildTargets(build: Boolean): WorkspaceBuildTargetsResult {
+    val project = projectProvider.refreshAndGet(build = build)
     return bspMapper.workspaceTargets(project)
   }
 
-  fun workspaceBuildTargetsPartial(cancelChecker: CancelChecker, targetsToSync: List<Label>): WorkspaceBuildTargetsResult {
+  fun workspaceBuildTargetsPartial(targetsToSync: List<Label>): WorkspaceBuildTargetsResult {
     val project =
       projectProvider.updateAndGet(
-        cancelChecker = cancelChecker,
         targetsToSync = targetsToSync,
       )
     return bspMapper.workspaceTargets(project)
   }
 
-  fun workspaceBuildFirstPhase(cancelChecker: CancelChecker, params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult {
-    val project = projectProvider.bazelQueryRefreshAndGet(cancelChecker, params.originId)
+  fun workspaceBuildFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult {
+    val project = projectProvider.bazelQueryRefreshAndGet(params.originId)
     return firstPhaseTargetToBspMapper.toWorkspaceBuildTargetsResult(project)
   }
 
-  fun workspaceBuildLibraries(cancelChecker: CancelChecker): WorkspaceLibrariesResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return WorkspaceLibrariesResult(emptyList())
+  fun workspaceBuildLibraries(): WorkspaceLibrariesResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return WorkspaceLibrariesResult(emptyList())
     return bspMapper.workspaceLibraries(project)
   }
 
-  fun workspaceBuildGoLibraries(cancelChecker: CancelChecker): WorkspaceGoLibrariesResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return WorkspaceGoLibrariesResult(emptyList())
+  fun workspaceBuildGoLibraries(): WorkspaceGoLibrariesResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return WorkspaceGoLibrariesResult(emptyList())
     return bspMapper.workspaceGoLibraries(project)
   }
 
-  fun workspaceNonModuleTargets(cancelChecker: CancelChecker): NonModuleTargetsResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return NonModuleTargetsResult(emptyList())
+  fun workspaceNonModuleTargets(): NonModuleTargetsResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return NonModuleTargetsResult(emptyList())
     return bspMapper.workspaceNonModuleTargets(project)
   }
 
-  fun workspaceDirectories(cancelChecker: CancelChecker): WorkspaceDirectoriesResult {
-    val project = projectProvider.get(cancelChecker)
+  fun workspaceDirectories(): WorkspaceDirectoriesResult {
+    val project = projectProvider.get()
     return bspMapper.workspaceDirectories(project)
   }
 
-  fun workspaceInvalidTargets(cancelChecker: CancelChecker): WorkspaceInvalidTargetsResult {
+  fun workspaceInvalidTargets(): WorkspaceInvalidTargetsResult {
     // TODO: BAZEL-1644
     return WorkspaceInvalidTargetsResult(emptyList())
-//    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return WorkspaceInvalidTargetsResult(emptyList())
+//    val project = projectProvider.get() as? AspectSyncProject ?: return WorkspaceInvalidTargetsResult(emptyList())
 //    return bspMapper.workspaceInvalidTargets(project)
   }
 
-  fun workspaceBazelRepoMapping(cancelChecker: CancelChecker): WorkspaceBazelRepoMappingResult {
-    val project = projectProvider.get(cancelChecker)
+  fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult {
+    val project = projectProvider.get()
     return bspMapper.workspaceBazelRepoMapping(project)
   }
 
-  fun workspaceBazelBinPath(cancelChecker: CancelChecker): WorkspaceBazelBinPathResult =
-    WorkspaceBazelBinPathResult(bazelInfo.bazelBin.toString())
+  fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = WorkspaceBazelBinPathResult(bazelInfo.bazelBin.toString())
 
-  fun buildTargetSources(cancelChecker: CancelChecker, sourcesParams: SourcesParams): SourcesResult {
-    val project = projectProvider.get(cancelChecker)
+  fun buildTargetSources(sourcesParams: SourcesParams): SourcesResult {
+    val project = projectProvider.get()
     return when (project) {
       is AspectSyncProject -> bspMapper.sources(project, sourcesParams)
       is FirstPhaseProject -> firstPhaseTargetToBspMapper.toSourcesResult(project, sourcesParams)
     }
   }
 
-  fun buildTargetResources(cancelChecker: CancelChecker, resourcesParams: ResourcesParams): ResourcesResult {
-    val project = projectProvider.get(cancelChecker)
+  fun buildTargetResources(resourcesParams: ResourcesParams): ResourcesResult {
+    val project = projectProvider.get()
     return when (project) {
       is AspectSyncProject -> bspMapper.resources(project, resourcesParams)
       is FirstPhaseProject -> firstPhaseTargetToBspMapper.toResourcesResult(project, resourcesParams)
     }
   }
 
-  fun buildTargetInverseSources(cancelChecker: CancelChecker, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return InverseSourcesResult(emptyList())
-    return bspMapper.inverseSources(project, inverseSourcesParams, cancelChecker)
+  suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return InverseSourcesResult(emptyList())
+    return bspMapper.inverseSources(project, inverseSourcesParams)
   }
 
-  fun buildTargetDependencySources(
-    cancelChecker: CancelChecker,
-    dependencySourcesParams: DependencySourcesParams,
-  ): DependencySourcesResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return DependencySourcesResult(emptyList())
+  fun buildTargetDependencySources(dependencySourcesParams: DependencySourcesParams): DependencySourcesResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return DependencySourcesResult(emptyList())
     return bspMapper.dependencySources(project, dependencySourcesParams)
   }
 
-  fun buildTargetOutputPaths(cancelChecker: CancelChecker, params: OutputPathsParams): OutputPathsResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return OutputPathsResult(emptyList())
+  fun buildTargetOutputPaths(params: OutputPathsParams): OutputPathsResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return OutputPathsResult(emptyList())
     return bspMapper.outputPaths(project, params)
   }
 
-  fun jvmRunEnvironment(cancelChecker: CancelChecker, params: JvmRunEnvironmentParams): JvmRunEnvironmentResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return JvmRunEnvironmentResult(emptyList())
-    return bspMapper.jvmRunEnvironment(project, params, cancelChecker)
+  suspend fun jvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return JvmRunEnvironmentResult(emptyList())
+    return bspMapper.jvmRunEnvironment(project, params)
   }
 
-  fun jvmTestEnvironment(cancelChecker: CancelChecker, params: JvmTestEnvironmentParams): JvmTestEnvironmentResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return JvmTestEnvironmentResult(emptyList())
-    return bspMapper.jvmTestEnvironment(project, params, cancelChecker)
+  suspend fun jvmTestEnvironment(params: JvmTestEnvironmentParams): JvmTestEnvironmentResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return JvmTestEnvironmentResult(emptyList())
+    return bspMapper.jvmTestEnvironment(project, params)
   }
 
-  fun jvmBinaryJars(cancelChecker: CancelChecker, params: JvmBinaryJarsParams): JvmBinaryJarsResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return JvmBinaryJarsResult(emptyList())
+  fun jvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return JvmBinaryJarsResult(emptyList())
     return bspMapper.jvmBinaryJars(project, params)
   }
 
-  fun jvmCompileClasspath(cancelChecker: CancelChecker, params: JvmCompileClasspathParams): JvmCompileClasspathResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return JvmCompileClasspathResult(emptyList())
-    return bspMapper.jvmCompileClasspath(project, params, cancelChecker)
+  suspend fun jvmCompileClasspath(params: JvmCompileClasspathParams): JvmCompileClasspathResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return JvmCompileClasspathResult(emptyList())
+    return bspMapper.jvmCompileClasspath(project, params)
   }
 
-  fun buildTargetJavacOptions(cancelChecker: CancelChecker, params: JavacOptionsParams): JavacOptionsResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return JavacOptionsResult(emptyList())
-    return bspMapper.buildTargetJavacOptions(project, params, cancelChecker)
+  suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return JavacOptionsResult(emptyList())
+    return bspMapper.buildTargetJavacOptions(project, params)
   }
 
-  fun buildTargetCppOptions(cancelChecker: CancelChecker, params: CppOptionsParams): CppOptionsResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return CppOptionsResult(emptyList())
+  fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return CppOptionsResult(emptyList())
     return bspMapper.buildTargetCppOptions(project, params)
   }
 
-  fun buildTargetPythonOptions(cancelChecker: CancelChecker, params: PythonOptionsParams): PythonOptionsResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return PythonOptionsResult(emptyList())
+  fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return PythonOptionsResult(emptyList())
     return bspMapper.buildTargetPythonOptions(project, params)
   }
 
-  fun buildTargetScalacOptions(cancelChecker: CancelChecker, params: ScalacOptionsParams): ScalacOptionsResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return ScalacOptionsResult(emptyList())
-    return bspMapper.buildTargetScalacOptions(project, params, cancelChecker)
+  suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return ScalacOptionsResult(emptyList())
+    return bspMapper.buildTargetScalacOptions(project, params)
   }
 
-  fun buildTargetScalaTestClasses(cancelChecker: CancelChecker, params: ScalaTestClassesParams): ScalaTestClassesResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return ScalaTestClassesResult(emptyList())
+  fun buildTargetScalaTestClasses(params: ScalaTestClassesParams): ScalaTestClassesResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return ScalaTestClassesResult(emptyList())
     return bspMapper.buildTargetScalaTestClasses(project, params)
   }
 
-  fun buildTargetScalaMainClasses(cancelChecker: CancelChecker, params: ScalaMainClassesParams): ScalaMainClassesResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return ScalaMainClassesResult(emptyList())
+  fun buildTargetScalaMainClasses(params: ScalaMainClassesParams): ScalaMainClassesResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return ScalaMainClassesResult(emptyList())
     return bspMapper.buildTargetScalaMainClasses(project, params)
   }
 
-  fun buildTargetDependencyModules(cancelChecker: CancelChecker, params: DependencyModulesParams): DependencyModulesResult {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return DependencyModulesResult(emptyList())
+  fun buildTargetDependencyModules(params: DependencyModulesParams): DependencyModulesResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return DependencyModulesResult(emptyList())
     return bspMapper.buildDependencyModules(project, params)
   }
 
-  fun rustWorkspace(cancelChecker: CancelChecker, params: RustWorkspaceParams): RustWorkspaceResult {
+  fun rustWorkspace(params: RustWorkspaceParams): RustWorkspaceResult {
     val project =
-      projectProvider.get(cancelChecker) as? AspectSyncProject
+      projectProvider.get() as? AspectSyncProject
         ?: return RustWorkspaceResult(emptyList(), emptyMap(), emptyMap(), emptyList())
     return bspMapper.rustWorkspace(project, params)
   }
 
-  fun resolveLocalToRemote(cancelChecker: CancelChecker, params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
-    bspMapper.resolveLocalToRemote(cancelChecker, params)
+  fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
+    bspMapper.resolveLocalToRemote(params)
 
-  fun resolveRemoteToLocal(cancelChecker: CancelChecker, params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult =
-    bspMapper.resolveRemoteToLocal(cancelChecker, params)
+  fun resolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult =
+    bspMapper.resolveRemoteToLocal(params)
 }

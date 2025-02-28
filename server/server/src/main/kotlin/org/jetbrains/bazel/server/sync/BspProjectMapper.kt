@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.sync
 
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.label
@@ -316,17 +315,13 @@ class BspProjectMapper(
     return ResourcesResult(resourcesItems)
   }
 
-  fun inverseSources(
-    project: AspectSyncProject,
-    inverseSourcesParams: InverseSourcesParams,
-    cancelChecker: CancelChecker,
-  ): InverseSourcesResult {
+  suspend fun inverseSources(project: AspectSyncProject, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
     val documentUri = BspMappings.toUri(inverseSourcesParams.textDocument)
     val documentRelativePath =
       documentUri
         .toPath()
         .relativeToOrNull(project.workspaceRoot.toPath()) ?: throw RuntimeException("File path outside of project root")
-    return InverseSourcesQuery.inverseSourcesQuery(documentRelativePath, bazelRunner, project.bazelRelease, cancelChecker)
+    return InverseSourcesQuery.inverseSourcesQuery(documentRelativePath, bazelRunner, project.bazelRelease)
   }
 
   fun dependencySources(project: AspectSyncProject, dependencySourcesParams: DependencySourcesParams): DependencySourcesResult {
@@ -361,43 +356,27 @@ class BspProjectMapper(
     return OutputPathsResult(items)
   }
 
-  fun jvmRunEnvironment(
-    project: AspectSyncProject,
-    params: JvmRunEnvironmentParams,
-    cancelChecker: CancelChecker,
-  ): JvmRunEnvironmentResult {
+  suspend fun jvmRunEnvironment(project: AspectSyncProject, params: JvmRunEnvironmentParams): JvmRunEnvironmentResult {
     val targets = params.targets
-    val result = getJvmEnvironmentItems(project, targets, cancelChecker)
+    val result = getJvmEnvironmentItems(project, targets)
     return JvmRunEnvironmentResult(result)
   }
 
-  fun jvmTestEnvironment(
-    project: AspectSyncProject,
-    params: JvmTestEnvironmentParams,
-    cancelChecker: CancelChecker,
-  ): JvmTestEnvironmentResult {
+  suspend fun jvmTestEnvironment(project: AspectSyncProject, params: JvmTestEnvironmentParams): JvmTestEnvironmentResult {
     val targets = params.targets
-    val result = getJvmEnvironmentItems(project, targets, cancelChecker)
+    val result = getJvmEnvironmentItems(project, targets)
     return JvmTestEnvironmentResult(result)
   }
 
-  fun jvmCompileClasspath(
-    project: AspectSyncProject,
-    params: JvmCompileClasspathParams,
-    cancelChecker: CancelChecker,
-  ): JvmCompileClasspathResult {
+  suspend fun jvmCompileClasspath(project: AspectSyncProject, params: JvmCompileClasspathParams): JvmCompileClasspathResult {
     val items =
-      params.targets.collectClasspathForTargetsAndApply(project, true, cancelChecker) { module, ideClasspath ->
+      params.targets.collectClasspathForTargetsAndApply(project, true) { module, ideClasspath ->
         JvmCompileClasspathItem(BspMappings.toBspId(module), ideClasspath.map { it.toString() })
       }
     return JvmCompileClasspathResult(items)
   }
 
-  private fun getJvmEnvironmentItems(
-    project: AspectSyncProject,
-    targets: List<BuildTargetIdentifier>,
-    cancelChecker: CancelChecker,
-  ): List<JvmEnvironmentItem> {
+  private suspend fun getJvmEnvironmentItems(project: AspectSyncProject, targets: List<BuildTargetIdentifier>): List<JvmEnvironmentItem> {
     fun extractJvmEnvironmentItem(module: Module, runtimeClasspath: List<URI>): JvmEnvironmentItem? =
       module.javaModule?.let { javaModule ->
         JvmEnvironmentItem(
@@ -413,7 +392,7 @@ class BspProjectMapper(
     return targets.mapNotNull {
       val label = it.label()
       val module = project.findModule(label)
-      val cqueryResult = ClasspathQuery.classPathQuery(label, cancelChecker, bspInfo, bazelRunner).runtime_classpath
+      val cqueryResult = ClasspathQuery.classPathQuery(label, bspInfo, bazelRunner).runtime_classpath
       val resolvedClasspath = resolveClasspath(cqueryResult)
       module?.let { extractJvmEnvironmentItem(module, resolvedClasspath) }
     }
@@ -435,13 +414,9 @@ class BspProjectMapper(
     return JvmBinaryJarsResult(jvmBinaryJarsItems)
   }
 
-  fun buildTargetJavacOptions(
-    project: AspectSyncProject,
-    params: JavacOptionsParams,
-    cancelChecker: CancelChecker,
-  ): JavacOptionsResult {
+  suspend fun buildTargetJavacOptions(project: AspectSyncProject, params: JavacOptionsParams): JavacOptionsResult {
     val items =
-      params.targets.collectClasspathForTargetsAndApply(project, false, cancelChecker) { module, ideClasspath ->
+      params.targets.collectClasspathForTargetsAndApply(project, false) { module, ideClasspath ->
         module.javaModule?.let { toJavacOptionsItem(module, it, ideClasspath) }
       }
     return JavacOptionsResult(items)
@@ -469,33 +444,28 @@ class BspProjectMapper(
       languagePluginsService.pythonLanguagePlugin.toPythonOptionsItem(module, it)
     }
 
-  fun buildTargetScalacOptions(
-    project: AspectSyncProject,
-    params: ScalacOptionsParams,
-    cancelChecker: CancelChecker,
-  ): ScalacOptionsResult {
+  suspend fun buildTargetScalacOptions(project: AspectSyncProject, params: ScalacOptionsParams): ScalacOptionsResult {
     val items =
-      params.targets.collectClasspathForTargetsAndApply(project, false, cancelChecker) { module, ideClasspath ->
+      params.targets.collectClasspathForTargetsAndApply(project, false) { module, ideClasspath ->
         toScalacOptionsItem(module, ideClasspath)
       }
     return ScalacOptionsResult(items)
   }
 
-  private fun <T> List<BuildTargetIdentifier>.collectClasspathForTargetsAndApply(
+  private suspend fun <T> List<BuildTargetIdentifier>.collectClasspathForTargetsAndApply(
     project: AspectSyncProject,
     includeClasspath: Boolean,
-    cancelChecker: CancelChecker,
     mapper: (Module, List<URI>) -> T?,
   ): List<T> =
     this
       .mapNotNull { project.findModule(Label.parse(it.uri)) }
       .mapNotNull {
-        val classpath = if (includeClasspath) readIdeClasspath(it.label, cancelChecker) else emptyList()
+        val classpath = if (includeClasspath) readIdeClasspath(it.label) else emptyList()
         mapper(it, classpath)
       }
 
-  private fun readIdeClasspath(targetLabel: Label, cancelChecker: CancelChecker): List<URI> {
-    val classPathFromQuery = ClasspathQuery.classPathQuery(targetLabel, cancelChecker, bspInfo, bazelRunner)
+  private suspend fun readIdeClasspath(targetLabel: Label): List<URI> {
+    val classPathFromQuery = ClasspathQuery.classPathQuery(targetLabel, bspInfo, bazelRunner)
     val ideClasspath =
       IdeClasspathResolver.resolveIdeClasspath(
         label = targetLabel,
@@ -564,12 +534,12 @@ class BspProjectMapper(
     return toRustWorkspaceResult(requestedModules, allRustModules)
   }
 
-  fun resolveLocalToRemote(cancelChecker: CancelChecker, params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult {
+  fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult {
     val resolve = languagePluginsService.goLanguagePlugin::resolveLocalToRemote
     return resolve(params)
   }
 
-  fun resolveRemoteToLocal(cancelChecker: CancelChecker, params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult {
+  fun resolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult {
     val resolve = languagePluginsService.goLanguagePlugin::resolveRemoteToLocal
     return resolve(params)
   }

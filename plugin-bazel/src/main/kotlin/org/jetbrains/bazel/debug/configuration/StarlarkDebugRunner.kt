@@ -19,8 +19,8 @@ import com.intellij.xdebugger.XDebuggerManager
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.withContext
 import org.jdom.Element
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -124,12 +124,12 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
       BspTaskEventsService.getInstance(project).saveListener(originId, taskListener)
       val params = AnalysisDebugParams(originId, port, listOf(target))
 
-      val buildFuture = server.buildTargetAnalysisDebug(params).asDeferred()
+      val buildDeferred = async { server.buildTargetAnalysisDebug(params) }
       try {
-        val result = buildFuture.await()
+        val result = buildDeferred.await()
         futureProxy.complete(result)
       } catch (e: Exception) {
-        buildFuture.cancel()
+        buildDeferred.cancel()
         futureProxy.completeExceptionally(e)
       } finally {
         BspTaskEventsService.getInstance(project).removeListener(originId)

@@ -3,10 +3,6 @@ package org.jetbrains.bazel.server.sync
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
-import org.eclipse.lsp4j.jsonrpc.ResponseErrorException
-import org.eclipse.lsp4j.jsonrpc.messages.ResponseError
-import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.HasAdditionalBazelOptions
@@ -60,7 +56,7 @@ class ExecuteService(
   private val additionalBuildTargetsProvider: AdditionalAndroidBuildTargetsProvider,
   private val featureFlags: FeatureFlags,
 ) {
-  private fun <T> withBepServer(originId: String?, body: (BepReader) -> T): T {
+  private fun <T> withBepServer(originId: String?, body: suspend (BepReader) -> T): T {
     val diagnosticsService = DiagnosticsService(compilationManager.workspaceRoot)
     val server = BepServer(compilationManager.client, diagnosticsService, originId, bazelPathsResolver)
     val bepReader = BepReader(server)
@@ -79,20 +75,20 @@ class ExecuteService(
     }
   }
 
-  fun compile(cancelChecker: CancelChecker, params: CompileParams): CompileResult =
+  fun compile(params: CompileParams): CompileResult =
     if (params.targets.isNotEmpty()) {
-      val result = build(cancelChecker, params.targets, params.originId, params.arguments ?: emptyList())
+      val result = build(params.targets, params.originId, params.arguments ?: emptyList())
       CompileResult(statusCode = result.bspStatusCode, originId = params.originId)
     } else {
       CompileResult(statusCode = StatusCode.ERROR, originId = params.originId)
     }
 
-  fun analysisDebug(cancelChecker: CancelChecker, params: AnalysisDebugParams): AnalysisDebugResult {
+  fun analysisDebug(params: AnalysisDebugParams): AnalysisDebugResult {
     val statusCode =
       if (params.targets.isNotEmpty()) {
         val debugFlags =
           listOf(BazelFlag.noBuild(), BazelFlag.starlarkDebug(), BazelFlag.starlarkDebugPort(params.port))
-        val result = build(cancelChecker, params.targets, params.originId, debugFlags)
+        val result = build(params.targets, params.originId, debugFlags)
         result.bspStatusCode
       } else {
         StatusCode.ERROR
@@ -100,13 +96,13 @@ class ExecuteService(
     return AnalysisDebugResult(statusCode)
   }
 
-  fun run(cancelChecker: CancelChecker, params: RunParams): RunResult = runImpl(cancelChecker, params)
+  suspend fun run(params: RunParams): RunResult = runImpl(params)
 
   /**
    * If `debugArguments` is empty, run task will be executed normally without any debugging options
    */
-  fun runWithDebug(cancelChecker: CancelChecker, params: RunWithDebugParams): RunResult {
-    val modules = selectModules(cancelChecker, listOf(params.runParams.target))
+  suspend fun runWithDebug(params: RunWithDebugParams): RunResult {
+    val modules = selectModules(listOf(params.runParams.target))
     val singleModule = modules.singleOrResponseError(params.runParams.target)
     val requestedDebugType = DebugType.fromDebugData(params.debug)
     val debugArguments = generateRunArguments(requestedDebugType)
@@ -114,11 +110,10 @@ class ExecuteService(
     val buildBeforeRun = buildBeforeRun(requestedDebugType)
     verifyDebugRequest(requestedDebugType, singleModule)
 
-    return runImpl(cancelChecker, params.runParams, debugArguments, debugOptions, buildBeforeRun)
+    return runImpl(params.runParams, debugArguments, debugOptions, buildBeforeRun)
   }
 
-  private fun runImpl(
-    cancelChecker: CancelChecker,
+  private suspend fun runImpl(
     params: RunParams,
     additionalProgramArguments: List<String>? = null,
     additionalOptions: List<String>? = null,
@@ -126,7 +121,7 @@ class ExecuteService(
   ): RunResult {
     if (buildBeforeRun) {
       val targets = listOf(params.target)
-      val result = build(cancelChecker, targets, params.originId)
+      val result = build(targets, params.originId)
       if (result.isNotSuccess) {
         return RunResult(statusCode = result.bspStatusCode, originId = params.originId)
       }
@@ -148,17 +143,17 @@ class ExecuteService(
           command,
           originId = params.originId,
           serverPidFuture = null,
-        ).waitAndGetResult(cancelChecker)
+        ).waitAndGetResult()
     return RunResult(statusCode = bazelProcessResult.bspStatusCode, originId = params.originId)
   }
 
   /**
    * If `debugArguments` is empty, test task will be executed normally without any debugging options
    */
-  fun testWithDebug(cancelChecker: CancelChecker, params: TestParams): TestResult {
+  suspend fun testWithDebug(params: TestParams): TestResult {
     val debugArguments =
       if (params.debug != null) {
-        val modules = selectModules(cancelChecker, params.targets)
+        val modules = selectModules(params.targets)
         val singleModule = modules.singleOrResponseError(params.targets.first())
         val requestedDebugType = DebugType.fromDebugData(params.debug)
         verifyDebugRequest(requestedDebugType, singleModule)
@@ -167,14 +162,10 @@ class ExecuteService(
         null
       }
 
-    return testImpl(cancelChecker, params, debugArguments)
+    return testImpl(params, debugArguments)
   }
 
-  private fun testImpl(
-    cancelChecker: CancelChecker,
-    params: TestParams,
-    additionalProgramArguments: List<String>?,
-  ): TestResult {
+  private suspend fun testImpl(params: TestParams, additionalProgramArguments: List<String>?): TestResult {
     val targetsSpec = TargetsSpec(params.targets.map { it.label() }, emptyList())
 
     val command =
@@ -211,13 +202,13 @@ class ExecuteService(
             command,
             originId = params.originId,
             serverPidFuture = bepReader.serverPid,
-          ).waitAndGetResult(cancelChecker, true)
+          ).waitAndGetResult(true)
       }
 
     return TestResult(statusCode = result.bspStatusCode, originId = params.originId)
   }
 
-  fun mobileInstall(cancelChecker: CancelChecker, params: MobileInstallParams): MobileInstallResult {
+  suspend fun mobileInstall(params: MobileInstallParams): MobileInstallResult {
     val startType =
       when (params.startType) {
         MobileInstallStartType.NO -> "no"
@@ -240,12 +231,12 @@ class ExecuteService(
       }
 
     val bazelProcessResult =
-      bazelRunner.runBazelCommand(command, originId = params.originId, serverPidFuture = null).waitAndGetResult(cancelChecker)
+      bazelRunner.runBazelCommand(command, originId = params.originId, serverPidFuture = null).waitAndGetResult()
     return MobileInstallResult(bazelProcessResult.bspStatusCode, params.originId)
   }
 
   @Suppress("UNUSED_PARAMETER") // params is used by BspRequestsRunner.handleRequest
-  fun clean(cancelChecker: CancelChecker, params: CleanCacheParams?): CleanCacheResult {
+  fun clean(params: CleanCacheParams?): CleanCacheResult {
     withBepServer(null) { bepReader ->
       val command =
         bazelRunner.buildBazelCommand {
@@ -253,18 +244,17 @@ class ExecuteService(
             useBes(bepReader.eventFile.toPath().toAbsolutePath())
           }
         }
-      bazelRunner.runBazelCommand(command, serverPidFuture = bepReader.serverPid).waitAndGetResult(cancelChecker)
+      bazelRunner.runBazelCommand(command, serverPidFuture = bepReader.serverPid).waitAndGetResult()
     }
     return CleanCacheResult(cleaned = true)
   }
 
   private fun build(
-    cancelChecker: CancelChecker,
     bspIds: List<BuildTargetIdentifier>,
     originId: String?,
     additionalArguments: List<String> = emptyList(),
   ): BazelProcessResult {
-    val allTargets = bspIds + getAdditionalBuildTargets(cancelChecker, bspIds)
+    val allTargets = bspIds + getAdditionalBuildTargets(bspIds)
     return withBepServer(originId) { bepReader ->
       val command =
         bazelRunner.buildBazelCommand {
@@ -276,19 +266,19 @@ class ExecuteService(
         }
       bazelRunner
         .runBazelCommand(command, originId = originId, serverPidFuture = bepReader.serverPid)
-        .waitAndGetResult(cancelChecker, true)
+        .waitAndGetResult(true)
     }
   }
 
-  private fun getAdditionalBuildTargets(cancelChecker: CancelChecker, bspIds: List<BuildTargetIdentifier>): List<BuildTargetIdentifier> =
+  private fun getAdditionalBuildTargets(bspIds: List<BuildTargetIdentifier>): List<BuildTargetIdentifier> =
     if (featureFlags.isAndroidSupportEnabled) {
-      additionalBuildTargetsProvider.getAdditionalBuildTargets(cancelChecker, bspIds)
+      additionalBuildTargetsProvider.getAdditionalBuildTargets(bspIds)
     } else {
       emptyList()
     }
 
-  private fun selectModules(cancelChecker: CancelChecker, targets: List<BuildTargetIdentifier>): List<Module> {
-    val project = projectProvider.get(cancelChecker) as? AspectSyncProject ?: return emptyList()
+  private fun selectModules(targets: List<BuildTargetIdentifier>): List<Module> {
+    val project = projectProvider.get() as? AspectSyncProject ?: return emptyList()
     val modules = BspMappings.getModules(project, targets)
     val ignoreManualTag = targets.size == 1
     return modules.filter { isBuildable(it, ignoreManualTag) }
@@ -306,12 +296,7 @@ class ExecuteService(
 
 private fun <T> List<T>.singleOrResponseError(requestedTarget: BuildTargetIdentifier): T =
   when {
-    this.isEmpty() -> throwResponseError("No supported target found for ${requestedTarget.uri}")
+    this.isEmpty() -> error("No supported target found for ${requestedTarget.uri}")
     this.size == 1 -> this.single()
-    else -> throwResponseError("More than one supported target found for ${requestedTarget.uri}")
+    else -> error("More than one supported target found for ${requestedTarget.uri}")
   }
-
-private fun throwResponseError(message: String, data: Any? = null): Nothing =
-  throw ResponseErrorException(
-    ResponseError(ResponseErrorCode.InvalidRequest, message, data),
-  )

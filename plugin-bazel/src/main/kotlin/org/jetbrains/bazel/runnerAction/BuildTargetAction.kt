@@ -2,7 +2,6 @@ package org.jetbrains.bazel.runnerAction
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BspPluginBundle
@@ -20,11 +19,9 @@ class BuildTargetAction(private val targetId: BuildTargetIdentifier) :
   }
 
   companion object {
-    private val log = logger<BuildTargetAction>()
-
     fun buildTarget(project: Project, targetId: BuildTargetIdentifier) {
       BspCoroutineService.getInstance(project).start {
-        runBuildTargetTask(listOf(targetId), project, log)
+        runBuildTargetTask(listOf(targetId), project)
       }
     }
   }

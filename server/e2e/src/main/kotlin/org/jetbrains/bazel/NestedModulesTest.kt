@@ -4,7 +4,6 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.paths.shouldExist
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldEndWith
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.install.Install
@@ -53,7 +52,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
       "compare workspace targets results",
     ) {
       testClient.test(60.seconds) { session ->
-        val targetsResult = session.server.workspaceBuildTargets().await()
+        val targetsResult = session.server.workspaceBuildTargets()
 
         targetsResult.targets.size shouldBe 4
         targetsResult.targets.map { Label.parse(it.id.uri) } shouldContainExactlyInAnyOrder
@@ -68,7 +67,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
           session.server
             .buildTargetSources(
               SourcesParams(targetsResult.targets.map { it.id }),
-            ).await()
+            )
 
         sourcesResult.items.size shouldBe 4
 
@@ -90,7 +89,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
       "compare workspace repo mapping results",
     ) {
       testClient.test(60.seconds) { session ->
-        val repoMapping = session.server.workspaceBazelRepoMapping().await()
+        val repoMapping = session.server.workspaceBazelRepoMapping()
 
         repoMapping.apparentRepoNameToCanonicalName shouldBe
           mapOf(
