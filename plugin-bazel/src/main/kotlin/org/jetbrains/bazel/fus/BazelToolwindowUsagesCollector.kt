@@ -7,10 +7,7 @@ import com.intellij.internal.statistic.service.fus.collectors.CounterUsagesColle
 import com.intellij.openapi.project.Project
 
 class BazelToolwindowUsagesCollector : CounterUsagesCollector() {
-
-  override fun getGroup(): EventLogGroup {
-    return GROUP
-  }
+  override fun getGroup(): EventLogGroup = GROUP
 
   /**
    * Recording a tool window activation event with two fields.

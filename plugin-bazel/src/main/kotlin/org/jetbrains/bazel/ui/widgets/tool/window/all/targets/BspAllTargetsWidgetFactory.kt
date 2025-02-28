@@ -16,7 +16,6 @@ import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BspToolWindowPanel
 import org.jetbrains.plugins.bsp.fus.BazelToolwindowUsagesCollector
 
-
 class BspAllTargetsWidgetFactory :
   ToolWindowFactory,
   DumbAware {
