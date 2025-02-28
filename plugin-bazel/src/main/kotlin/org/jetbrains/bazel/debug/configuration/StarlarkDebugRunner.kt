@@ -33,6 +33,7 @@ import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.taskEvents.BspTaskEventsService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise

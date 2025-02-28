@@ -62,6 +62,10 @@ object BazelFlag {
 
   @JvmStatic fun noBuild(): String = flag("nobuild")
 
+  @JvmStatic fun combinedReportLcov(): String = arg("combined_report", "lcov")
+
+  @JvmStatic fun instrumentationFilterAll(): String = arg("instrumentation_filter", "[:]")
+
   private fun arg(name: String, value: String) = String.format("--%s=%s", name, value)
 
   private fun flag(name: String) = "--$name"

@@ -109,6 +109,7 @@
     <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericBspTestHandlerProvider"
                         order="last"/>
     <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"/>
+    <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.BazelBinPathSyncHook"/>
     <projectStructureProvider
             implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
     <featureFlagsProvider implementation="org.jetbrains.bazel.config.DefaultBspFeatureFlagsProvider"/>
@@ -161,6 +162,11 @@
     <projectTaskRunner
             implementation="org.jetbrains.bazel.buildTask.BspProjectTaskRunner"/>
     <programRunner implementation="org.jetbrains.bazel.jvm.run.BspJvmDebugRunner"/>
+
+    <programRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageProgramRunner"/>
+    <coverageRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageRunner"/>
+    <coverageEngine implementation="org.jetbrains.bazel.run.coverage.BazelCoverageEngine"/>
+    <projectViewNodeDecorator implementation="org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecorator"/>
 
     <directoryProjectConfigurator
             implementation="org.jetbrains.bazel.flow.open.CounterPlatformProjectConfigurator"
@@ -238,9 +244,13 @@
   </extensions>
 
   <actions>
-    <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsAction">
+    <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsAction" id="BazelRunAllTestsAction">
       <add-to-group group-id="EditorPopupMenu" anchor="last"/>
       <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+    </action>
+    <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsWithCoverageAction">
+      <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="BazelRunAllTestsAction"/>
+      <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="BazelRunAllTestsAction"/>
     </action>
     <action id="Bsp.ResyncAction" class="org.jetbrains.bazel.action.registered.ResyncAction"
             icon="/icons/resync.svg"/>

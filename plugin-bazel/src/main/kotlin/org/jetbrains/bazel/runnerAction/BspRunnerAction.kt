@@ -13,17 +13,18 @@ import javax.swing.Icon
 
 abstract class BspRunnerAction(
   targetInfos: List<BuildTargetInfo>,
-  text: () -> String,
+  private val text: (includeTargetNameInText: Boolean) -> String,
   icon: Icon? = null,
   isDebugAction: Boolean = false,
-) : BaseRunnerAction(targetInfos, text, icon, isDebugAction) {
+  isCoverageAction: Boolean = false,
+) : BaseRunnerAction(targetInfos, { text(false) }, icon, isDebugAction, isCoverageAction) {
   fun getConfigurationType(project: Project): ConfigurationType = BazelRunConfigurationType()
 
   open fun RunnerAndConfigurationSettings.customizeRunConfiguration() {}
 
   override suspend fun getRunnerSettings(project: Project, buildTargetInfos: List<BuildTargetInfo>): RunnerAndConfigurationSettings? {
     val factory = getConfigurationType(project).configurationFactories.first()
-    val name = calculateConfigurationName(project, buildTargetInfos)
+    val name = text(true)
     val settings =
       RunManager.getInstance(project).createConfiguration(name, factory)
     (settings.configuration as BspRunConfiguration)

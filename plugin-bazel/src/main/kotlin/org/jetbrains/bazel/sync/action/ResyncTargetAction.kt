@@ -12,6 +12,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 class ResyncTargetAction private constructor(private val targetId: Label) :
   SuspendableAction({ BspPluginBundle.message("target.partial.sync.action.text") }, BspPluginIcons.reload) {

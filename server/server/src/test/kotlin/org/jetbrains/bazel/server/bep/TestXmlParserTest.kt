@@ -54,8 +54,7 @@ class TestXmlParserTest {
 
     override fun onRunPrintStderr(p0: PrintParams) {}
 
-    override fun onBuildPublishOutput(params: PublishOutputParams) {
-    }
+    override fun onPublishCoverageReport(report: CoverageReport) {}
   }
 
   @Test

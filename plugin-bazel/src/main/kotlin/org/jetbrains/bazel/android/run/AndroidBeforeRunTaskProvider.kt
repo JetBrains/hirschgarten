@@ -17,6 +17,7 @@ import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.MobileInstallStartType
 import org.jetbrains.bsp.protocol.StatusCode
 

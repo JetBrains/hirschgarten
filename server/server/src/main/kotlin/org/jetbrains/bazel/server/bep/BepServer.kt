@@ -33,6 +33,7 @@ import java.nio.file.FileSystemNotFoundException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.UUID
+import kotlin.io.path.toPath
 
 class BepServer(
   private val bspClient: JoinedBuildClient,
@@ -112,15 +113,16 @@ class BepServer(
           else -> TestStatus.FAILED
         }
 
-      val coverageReportUri = testResult.testActionOutputList.find { it.name == "test.lcov" }?.uri
-      if (coverageReportUri != null) {
-        bspClient.onBuildPublishOutput(
-          PublishOutputParams(
+      val coverageReport =
+        testResult.testActionOutputList
+          .find { it.name == "test.lcov" }
+          ?.uri
+          ?.let { URI(it).toPath() }
+      if (coverageReport != null) {
+        bspClient.onPublishCoverageReport(
+          CoverageReport(
             originId,
-            taskId,
-            Label.parse(event.id.testResult.label),
-            TestCoverageReport.DATA_KIND,
-            TestCoverageReport(coverageReportUri),
+            coverageReport,
           ),
         )
       }

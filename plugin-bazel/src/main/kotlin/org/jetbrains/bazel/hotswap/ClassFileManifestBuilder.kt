@@ -33,6 +33,7 @@ import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.utils.safeCastToURI
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams

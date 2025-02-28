@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.extensionPoints.BazelBuildTargetClassifier
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.junit.jupiter.api.Test
 
 class BazelBuildTargetClassifierTest {

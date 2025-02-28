@@ -10,6 +10,7 @@ private const val RELEASE = "release"
 private const val EXECUTION_ROOT = "execution_root"
 private const val OUTPUT_BASE = "output_base"
 private const val WORKSPACE = "workspace"
+private const val BAZEL_BIN = "bazel-bin"
 private const val STARLARK_SEMANTICS = "starlark-semantics"
 
 class BazelInfoResolver(private val bazelRunner: BazelRunner) {
@@ -19,7 +20,7 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
     val command =
       bazelRunner.buildBazelCommand {
         info {
-          options.addAll(listOf(RELEASE, EXECUTION_ROOT, OUTPUT_BASE, WORKSPACE, STARLARK_SEMANTICS))
+          options.addAll(listOf(RELEASE, EXECUTION_ROOT, OUTPUT_BASE, WORKSPACE, BAZEL_BIN, STARLARK_SEMANTICS))
         }
       }
     val processResult =
@@ -67,6 +68,7 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
       execRoot = extract(EXECUTION_ROOT),
       outputBase = Paths.get(extract(OUTPUT_BASE)),
       workspaceRoot = Paths.get(extract(WORKSPACE)),
+      bazelBin = Paths.get(extract(BAZEL_BIN)),
       release = bazelReleaseVersion,
       isBzlModEnabled = isBzlModEnabled,
       isWorkspaceEnabled = isWorkspaceEnabled,

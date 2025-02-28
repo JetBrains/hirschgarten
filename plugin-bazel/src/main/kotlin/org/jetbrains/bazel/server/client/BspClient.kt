@@ -185,7 +185,9 @@ class BspClient(
     }
   }
 
-  override fun onBuildPublishOutput(params: PublishOutputParams) {
-    // TODO: BAZEL-1364 Support starting coverage in IDE
+  override fun onPublishCoverageReport(report: CoverageReport) {
+    BspTaskEventsService.getInstance(project).withListener(report.originId) {
+      onPublishCoverageReport(report.coverageReport)
+    }
   }
 }

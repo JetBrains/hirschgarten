@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.sync
 
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.FirstPhaseProject
@@ -57,6 +58,7 @@ class ProjectSyncService(
   private val bspMapper: BspProjectMapper,
   private val firstPhaseTargetToBspMapper: FirstPhaseTargetToBspMapper,
   private val projectProvider: ProjectProvider,
+  private val bazelInfo: BazelInfo,
 ) {
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-639
   // We might consider doing the actual project reload in this endpoint
@@ -115,6 +117,9 @@ class ProjectSyncService(
     val project = projectProvider.get(cancelChecker)
     return bspMapper.workspaceBazelRepoMapping(project)
   }
+
+  fun workspaceBazelBinPath(cancelChecker: CancelChecker): WorkspaceBazelBinPathResult =
+    WorkspaceBazelBinPathResult(bazelInfo.bazelBin.toString())
 
   fun buildTargetSources(cancelChecker: CancelChecker, sourcesParams: SourcesParams): SourcesResult {
     val project = projectProvider.get(cancelChecker)

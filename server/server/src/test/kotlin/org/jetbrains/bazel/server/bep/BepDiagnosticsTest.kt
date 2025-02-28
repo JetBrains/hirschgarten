@@ -47,7 +47,7 @@ class BepDiagnosticsTest {
 
     override fun onRunPrintStderr(p0: PrintParams) {}
 
-    override fun onBuildPublishOutput(params: PublishOutputParams) {}
+    override fun onPublishCoverageReport(report: CoverageReport) {}
   }
 
   fun newBepServer(client: JoinedBuildClient): BepServer {
@@ -57,6 +57,7 @@ class BepDiagnosticsTest {
         execRoot = "execRoot",
         outputBase = Path("outputBase"),
         workspaceRoot = workspaceRoot,
+        bazelBin = Path("bazel-bin"),
         release = BazelRelease(7),
         isBzlModEnabled = true,
         isWorkspaceEnabled = false,

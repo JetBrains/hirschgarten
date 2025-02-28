@@ -87,6 +87,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         languageIds = listOf("java", "kotlin"),
         dependencies = listOf(Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString())),
         capabilities =
+          capabilities =
           BuildTargetCapabilities(
             canCompile = true,
             canTest = false,
@@ -105,6 +106,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         languageIds = listOf("java", "kotlin"),
         dependencies = listOf(Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString())),
         capabilities =
+          capabilities =
           BuildTargetCapabilities(
             canCompile = true,
             canTest = false,
@@ -162,8 +164,8 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//plugin_allopen_test:user"),
         tags = listOf("library"),
-        languageIds = listOf("java", "kotlin"),
-        dependencies =
+        languageIds = listOf("java", "kotlin"),dependencies =
+          dependencies =
           listOf(
             Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
             Label.parse("@//plugin_allopen_test:open_for_testing"),
@@ -185,8 +187,8 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//plugin_allopen_test:user_of_export"),
         tags = listOf("library"),
-        languageIds = listOf("java", "kotlin"),
-        dependencies =
+        languageIds = listOf("java", "kotlin"),dependencies =
+          dependencies =
           listOf(
             Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
             Label.parse("@//plugin_allopen_test:open_for_testing_export"),
@@ -208,13 +210,13 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//plugin_allopen_test:open_for_testing_export"),
         tags = listOf("library"),
-        languageIds = listOf("java", "kotlin"),
-        dependencies =
+        languageIds = listOf("java", "kotlin"),dependencies =
+          dependencies =
           listOf(
             Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
             Label.parse("@//plugin_allopen_test:open_for_testing"),
-          ),
-        capabilities =
+          ),capabilities =
+          capabilities =
           BuildTargetCapabilities(
             canCompile = true,
             canTest = false,

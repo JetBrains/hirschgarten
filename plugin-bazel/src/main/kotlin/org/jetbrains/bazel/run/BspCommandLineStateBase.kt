@@ -48,7 +48,7 @@ abstract class BspCommandLineStateBase(environment: ExecutionEnvironment, protec
         }
       }
 
-    handler = BspProcessHandler(runDeferred)
+    handler = BspProcessHandler(project, runDeferred)
     val runListener = createAndAddTaskListener(handler)
 
     with(BspTaskEventsService.getInstance(project)) {

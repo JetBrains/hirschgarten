@@ -13,6 +13,7 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 internal class InvalidTargetsProjectSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {

@@ -13,22 +13,25 @@ import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.backend.workspace.virtualFile
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import javax.swing.Icon
 
-internal class RunAllTestsAction :
-  SuspendableAction(
-    {
-      BspPluginBundle.message("action.run.all.test")
-    },
-    AllIcons.Actions.Execute,
+internal open class RunAllTestsBaseAction(
+  text: () -> String,
+  icon: Icon,
+  private val createAction: (targets: List<BuildTargetInfo>, directoryName: String) -> SuspendableAction,
+) : SuspendableAction(
+    text = text,
+    icon = icon,
   ) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val action =
-      TestTargetAction(
+      createAction(
         readAction { getAllTestTargetInfos(project, e) },
-        project = project,
+        e.getCurrentPath()?.name.orEmpty(),
       )
     action.actionPerformed(e)
   }
@@ -66,3 +69,25 @@ internal class RunAllTestsAction :
       .mapNotNull { targetUtilService.getBuildTargetInfoForLabel(it) }
   }
 }
+
+internal class RunAllTestsAction :
+  RunAllTestsBaseAction(
+    text = { BspPluginBundle.message("action.run.all.tests") },
+    icon = AllIcons.Actions.Execute,
+    createAction = { targets, directoryName ->
+      TestTargetAction(targets, text = {
+        BspPluginBundle.message("action.run.all.tests.under", directoryName)
+      })
+    },
+  )
+
+internal class RunAllTestsWithCoverageAction :
+  RunAllTestsBaseAction(
+    text = { BspPluginBundle.message("action.run.all.tests.with.coverage") },
+    icon = AllIcons.General.RunWithCoverage,
+    createAction = { targets, directoryName ->
+      RunWithCoverageAction(targets, text = {
+        BspPluginBundle.message("action.run.all.tests.under.with.coverage", directoryName)
+      })
+    },
+  )

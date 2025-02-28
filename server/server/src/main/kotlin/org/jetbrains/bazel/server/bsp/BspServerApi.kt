@@ -241,6 +241,9 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, Initial
   override fun workspaceBazelRepoMapping(): CompletableFuture<WorkspaceBazelRepoMappingResult> =
     runner.handleRequest("workspace/bazelRepoMapping", projectSyncService::workspaceBazelRepoMapping)
 
+  override fun workspaceBazelBinPath(): CompletableFuture<WorkspaceBazelBinPathResult> =
+    runner.handleRequest("workspace/bazelBinPath", projectSyncService::workspaceBazelBinPath)
+
   override fun rustWorkspace(params: RustWorkspaceParams): CompletableFuture<RustWorkspaceResult> =
     runner.handleRequest("buildTarget/rustWorkspace", projectSyncService::rustWorkspace, params)
 

@@ -83,5 +83,5 @@ open class MockClient : JoinedBuildClient {
     didChangeBuildTarget.add(params)
   }
 
-  override fun onBuildPublishOutput(params: PublishOutputParams) {}
+  override fun onPublishCoverageReport(report: CoverageReport) {}
 }

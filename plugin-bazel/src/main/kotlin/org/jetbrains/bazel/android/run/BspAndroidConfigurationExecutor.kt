@@ -35,6 +35,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.target.getModuleEntity
 import org.jetbrains.bazel.workspacemodel.entities.androidAddendumEntity
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import java.nio.file.Path
 import kotlin.io.path.exists
 

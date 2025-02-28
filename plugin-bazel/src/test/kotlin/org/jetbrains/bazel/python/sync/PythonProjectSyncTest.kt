@@ -5,9 +5,12 @@ import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.ModuleDependency
+import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
+import com.intellij.platform.workspace.jps.entities.SdkDependency
+import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
@@ -232,25 +235,28 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     targetInfo: GeneratedTargetInfo,
     dependenciesTargetInfo: List<GeneratedTargetInfo>,
     nameProvider: TargetNameReformatProvider,
-  ): ExpectedModuleEntity =
-    ExpectedModuleEntity(
+  ): ExpectedModuleEntity {
+    val sdkDependency: ModuleDependencyItem = SdkDependency(SdkId("${targetInfo.targetId.uri}-3", "PythonSDK"))
+    val moduleDependencies: List<ModuleDependencyItem> =
+      dependenciesTargetInfo.map {
+        ModuleDependency(
+          module = ModuleId(nameProvider(BuildTargetInfo(id = it.targetId))),
+          exported = true,
+          scope = DependencyScope.COMPILE,
+          productionOnTest = true,
+        )
+      }
+    return ExpectedModuleEntity(
       moduleEntity =
         ModuleEntity(
           name = nameProvider(BuildTargetInfo(id = targetInfo.targetId)),
           entitySource = BspProjectEntitySource,
-          dependencies =
-            dependenciesTargetInfo.map {
-              ModuleDependency(
-                module = ModuleId(nameProvider(BuildTargetInfo(id = it.targetId))),
-                exported = true,
-                scope = DependencyScope.COMPILE,
-                productionOnTest = true,
-              )
-            },
+          dependencies = moduleDependencies + sdkDependency,
         ) {
           type = ModuleTypeId("PYTHON_MODULE")
         },
     )
+  }
 
   private fun generateExpectedSourceRootEntities(
     sources: List<SourcesItem>,

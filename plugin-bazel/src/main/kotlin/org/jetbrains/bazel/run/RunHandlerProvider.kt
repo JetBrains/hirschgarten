@@ -8,6 +8,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 interface RunHandlerProvider {
   /**

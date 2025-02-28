@@ -28,6 +28,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
 
 class LanguagePluginServiceTest {
@@ -46,6 +47,7 @@ class LanguagePluginServiceTest {
         execRoot = "",
         outputBase = Paths.get(""),
         workspaceRoot = Paths.get(""),
+        bazelBin = Path("bazel-bin"),
         release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
         false,
         true,

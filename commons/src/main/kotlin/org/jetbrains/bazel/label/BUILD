@@ -4,4 +4,5 @@ kt_jvm_library(
     name = "label",
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
+    deps = ["//protocol"],
 )

@@ -9,6 +9,7 @@ data class BazelInfo(
   val execRoot: String,
   val outputBase: Path,
   val workspaceRoot: Path,
+  val bazelBin: Path,
   val release: BazelRelease,
   val isBzlModEnabled: Boolean,
   val isWorkspaceEnabled: Boolean,

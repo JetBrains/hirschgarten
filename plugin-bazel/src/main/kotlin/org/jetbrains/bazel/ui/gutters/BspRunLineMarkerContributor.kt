@@ -57,11 +57,11 @@ abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
   private fun BuildTargetInfo?.calculateEligibleActions(
     project: Project,
     singleTestFilter: String?,
-    verboseText: Boolean,
+    includeTargetNameInText: Boolean,
   ): List<AnAction> =
     if (this == null) {
       emptyList()
     } else {
-      DefaultActionGroup().fillWithEligibleActions(project, this, verboseText, singleTestFilter).childActionsOrStubs.toList()
+      DefaultActionGroup().fillWithEligibleActions(project, this, includeTargetNameInText, singleTestFilter).childActionsOrStubs.toList()
     }
 }

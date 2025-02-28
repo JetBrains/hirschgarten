@@ -3,6 +3,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 private const val WORKSPACE_MODEL_ENTITIES_FOLDER_MARKER = "workspace-model-entities-folder-marker"
 
