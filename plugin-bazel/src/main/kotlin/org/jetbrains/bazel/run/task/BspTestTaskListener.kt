@@ -17,6 +17,7 @@ import org.jetbrains.bsp.protocol.TestReport
 import org.jetbrains.bsp.protocol.TestStart
 import org.jetbrains.bsp.protocol.TestStatus
 import org.jetbrains.bsp.protocol.TestTask
+import java.nio.file.Path
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 

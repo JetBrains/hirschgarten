@@ -9,7 +9,6 @@ import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelEntity
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import kotlin.io.path.toPath
 
 internal abstract class ModuleDetailsToModuleTransformer<out T : WorkspaceModelEntity>(

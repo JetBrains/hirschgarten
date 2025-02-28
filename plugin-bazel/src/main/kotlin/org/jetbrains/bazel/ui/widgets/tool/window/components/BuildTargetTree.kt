@@ -12,7 +12,6 @@ import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import java.awt.Component
 import java.awt.Point
 import javax.swing.Icon

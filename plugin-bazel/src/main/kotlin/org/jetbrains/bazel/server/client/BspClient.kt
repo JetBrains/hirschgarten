@@ -6,13 +6,13 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.taskEvents.BspTaskEventsService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
+import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
 import org.jetbrains.bsp.protocol.DidChangeBuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.LogMessageParams
 import org.jetbrains.bsp.protocol.PrintParams
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
-import org.jetbrains.bsp.protocol.PublishOutputParams
 import org.jetbrains.bsp.protocol.ShowMessageParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskProgressParams

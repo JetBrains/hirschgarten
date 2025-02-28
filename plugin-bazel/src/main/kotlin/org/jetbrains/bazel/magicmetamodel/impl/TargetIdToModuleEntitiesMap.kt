@@ -14,7 +14,6 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tran
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bazel.workspacemodel.entities.isJvmOrAndroidTarget
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import java.nio.file.Path
 
 object TargetIdToModuleEntitiesMap {

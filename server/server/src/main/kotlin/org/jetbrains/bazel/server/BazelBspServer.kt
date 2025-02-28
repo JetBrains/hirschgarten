@@ -81,7 +81,7 @@ class BazelBspServer(
       )
     val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
     val projectSyncService =
-      ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider)
+      ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, bazelInfo)
     val additionalBuildTargetsProvider = AdditionalAndroidBuildTargetsProvider(projectProvider)
     val executeService =
       ExecuteService(

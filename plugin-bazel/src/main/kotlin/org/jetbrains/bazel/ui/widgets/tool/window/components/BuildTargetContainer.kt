@@ -4,7 +4,6 @@ import com.intellij.ui.PopupHandler
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import java.awt.Point
 import javax.swing.JComponent
 

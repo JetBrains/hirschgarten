@@ -17,7 +17,6 @@ import org.jetbrains.bazel.server.tasks.BspServerSingleTargetTask
 import org.jetbrains.bazel.server.tasks.BspTaskStatusLogger
 import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult

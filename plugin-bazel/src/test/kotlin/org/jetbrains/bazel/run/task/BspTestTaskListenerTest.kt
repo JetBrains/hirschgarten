@@ -9,7 +9,6 @@ import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BspProcessHandler
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.TestFinish

@@ -12,7 +12,6 @@ import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.search.LazySearchDisplay
 import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import java.awt.Point
 import java.util.concurrent.Callable
 import javax.swing.Icon

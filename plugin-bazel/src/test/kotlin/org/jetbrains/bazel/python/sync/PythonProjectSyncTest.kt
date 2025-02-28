@@ -236,7 +236,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     dependenciesTargetInfo: List<GeneratedTargetInfo>,
     nameProvider: TargetNameReformatProvider,
   ): ExpectedModuleEntity {
-    val sdkDependency: ModuleDependencyItem = SdkDependency(SdkId("${targetInfo.targetId.uri}-3", "PythonSDK"))
+    val sdkDependency: ModuleDependencyItem = SdkDependency(SdkId("${targetInfo.targetId.toShortString()}-3", "PythonSDK"))
     val moduleDependencies: List<ModuleDependencyItem> =
       dependenciesTargetInfo.map {
         ModuleDependency(

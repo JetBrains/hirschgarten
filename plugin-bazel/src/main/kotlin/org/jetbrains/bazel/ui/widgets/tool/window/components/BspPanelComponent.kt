@@ -10,7 +10,6 @@ import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.Icon

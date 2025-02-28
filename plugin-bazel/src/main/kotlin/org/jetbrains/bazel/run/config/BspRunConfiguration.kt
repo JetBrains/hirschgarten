@@ -15,7 +15,6 @@ import org.jdom.Element
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BspRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 // Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BspRunConfiguration.
 class BspRunConfiguration internal constructor(

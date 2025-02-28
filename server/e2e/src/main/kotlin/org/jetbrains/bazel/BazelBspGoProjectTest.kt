@@ -181,9 +181,9 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     val buildTargetData =
       BuildTarget(
         Label.parse("$targetPrefix//$targetDirectory:$targetName"),
-        tags = tags = tags,
+        tags = tags,
         languageIds = listOf("go"),
-        dependencies = dependencies = dependencies,
+        dependencies = dependencies,
         capabilities = capabilities,
         displayName = "$targetPrefix//$targetDirectory:$targetName",
         baseDirectory = "file://\$WORKSPACE/$targetDirectory/",

@@ -20,12 +20,11 @@ import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.protocol.CompileReport
 import org.jetbrains.bsp.protocol.CompileTask
+import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.JoinedBuildClient
-import org.jetbrains.bsp.protocol.PublishOutputParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TaskStartParams
-import org.jetbrains.bsp.protocol.TestCoverageReport
 import org.jetbrains.bsp.protocol.TestStatus
 import java.io.IOException
 import java.net.URI

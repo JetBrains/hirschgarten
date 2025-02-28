@@ -7,7 +7,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.runnerAction.RunWithLocalJvmRunnerAction
 import org.jetbrains.bazel.runnerAction.TestWithLocalJvmRunnerAction
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 abstract class DebugLocalJvmRunnerActionCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   override suspend fun doExecute(context: PlaybackContext) {

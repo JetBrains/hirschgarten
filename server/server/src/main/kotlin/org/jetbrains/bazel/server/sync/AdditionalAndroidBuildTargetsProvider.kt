@@ -6,7 +6,6 @@ import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.BspMappings
 import org.jetbrains.bazel.server.sync.languages.android.AndroidModule
 import org.jetbrains.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 /**
  * Every Kotlin Android target in rules_kotlin actually produces three targets, which we merge inside [KotlinAndroidModulesMerger].
