@@ -1,4 +1,4 @@
-#if( $javaEnabled == "true" && $bazel8OrAbove == "true" )
+#if( $javaEnabled == "true" && $bazel8OrAbove == "true" && $rulesetName != "" )
 load("@${rulesetName}//java/common:java_info.bzl", "JavaInfo")
 #end
 

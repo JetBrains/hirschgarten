@@ -1,0 +1,4 @@
+common --java_runtime_version=remotejdk_11
+# This is intentional! Bazel plugin should figure out that we need to load the bundled Java rules here,
+# despite that "rules_java" is not loaded explicitely.
+common --incompatible_autoload_externally="+java_common,+JavaInfo,java_library,java_library"

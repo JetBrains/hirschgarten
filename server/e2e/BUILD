@@ -144,6 +144,13 @@ bazel_integration_test_all_versions(
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:NestedModulesTest",
 )
 
+bazel_integration_test_all_versions(
+    name = "external_autoloads_test",
+    bzlmod_project_path = "test-projects/bzlmod/external-autoloads-project",
+    exclude_bazel_7 = True,
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:ExternalAutoloadsTest",
+)
+
 test_suite(
     name = "all_tests",
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
@@ -154,6 +161,7 @@ test_suite(
         ":android_project_test",
         ":build_and_sync_test",
         ":enabled_rules_test",
+        ":external_autoloads_test",
         ":first_phase_sync_test",
         ":go_project_test",
         ":java_diagnostics_test",

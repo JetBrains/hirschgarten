@@ -261,3 +261,16 @@ kt_jvm_binary(
         "@maven//:io_kotest_kotest_common_jvm",
     ],
 )
+
+kt_jvm_binary(
+    name = "ExternalAutoloadsTest",
+    srcs = ["ExternalAutoloadsTest.kt"],
+    main_class = "org.jetbrains.bazel.ExternalAutoloadsTest",
+    resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
+    visibility = ["//server/e2e:__subpackages__"],
+    deps = [
+        "//protocol",
+        "//server/commons",
+        "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
+    ],
+)
