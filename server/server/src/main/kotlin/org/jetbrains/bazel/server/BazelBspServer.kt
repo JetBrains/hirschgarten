@@ -40,7 +40,6 @@ import org.jetbrains.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
-import org.jetbrains.bsp.protocol.InitializeBuildParams
 import java.nio.file.Path
 
 class BazelBspServer(
@@ -49,7 +48,7 @@ class BazelBspServer(
   val workspaceRoot: Path,
 ) {
   fun bspServerData(
-    initializeBuildParams: InitializeBuildParams,
+    featureFlags: FeatureFlags,
     bspClientLogger: BspClientLogger,
     bazelRunner: BazelRunner,
     compilationManager: BazelBspCompilationManager,
@@ -58,7 +57,6 @@ class BazelBspServer(
     bazelPathsResolver: BazelPathsResolver,
   ): BazelServices {
     val languagePluginsService = createLanguagePluginsService(bazelPathsResolver, bspClientLogger)
-    val featureFlags = initializeBuildParams.featureFlags
     val projectProvider =
       createProjectProvider(
         bspInfo = bspInfo,

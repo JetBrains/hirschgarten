@@ -68,8 +68,7 @@ import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 
-class BspServerApi(private val bazelServicesBuilder: suspend (JoinedBuildClient, InitializeBuildParams) -> BazelServices) :
-  JoinedBuildServer {
+class BspServerApi(private val bazelServicesBuilder: suspend () -> BazelServices) : JoinedBuildServer {
   private lateinit var client: JoinedBuildClient
   private lateinit var serverLifetime: BazelBspServerLifetime
 
@@ -81,14 +80,10 @@ class BspServerApi(private val bazelServicesBuilder: suspend (JoinedBuildClient,
     this.serverLifetime = serverLifetime
   }
 
-  private suspend fun initializeServices(initializeBuildParams: InitializeBuildParams) {
-    val serverContainer = bazelServicesBuilder(client, initializeBuildParams)
+  override suspend fun buildInitialize(initializeBuildParams: InitializeBuildParams) {
+    val serverContainer = bazelServicesBuilder()
     this.projectSyncService = serverContainer.projectSyncService
     this.executeService = serverContainer.executeService
-  }
-
-  override suspend fun buildInitialize(initializeBuildParams: InitializeBuildParams) {
-    initializeServices(initializeBuildParams)
   }
 
   override suspend fun onBuildInitialized() {

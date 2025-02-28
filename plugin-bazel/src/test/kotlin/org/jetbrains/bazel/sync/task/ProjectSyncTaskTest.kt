@@ -45,17 +45,7 @@ private val mockBuildServer =
   )
 
 private class BspConnectionMock : BspConnection {
-  override suspend fun connect() {
-    // it's a mock, nothing to do
-  }
-
-  override suspend fun disconnect() {
-    // it's a mock, nothing to do
-  }
-
   override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T = task(mockBuildServer)
-
-  override fun isConnected(): Boolean = true
 }
 
 @DisplayName("ProjectSyncTask tests")

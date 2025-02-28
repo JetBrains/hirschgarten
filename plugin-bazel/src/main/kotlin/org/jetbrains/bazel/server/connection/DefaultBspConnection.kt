@@ -6,14 +6,12 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.server.client.BspClient
-import org.jetbrains.bazel.server.client.GenericConnection
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.console.ids.CONNECT_TASK_ID
@@ -37,45 +35,23 @@ class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectP
 }
 
 class DefaultBspConnection(private val project: Project) : BspConnection {
-  @Volatile
-  private var server: JoinedBuildServer? = null
+  private val bspClient = createBspClient()
+  private val workspaceRoot = project.rootDir.toNioPath()
+  private val projectPath = VfsUtil.findFile(workspaceRoot, true) ?: error("Project doesn't exist")
+  private var connectionResetConfig = generateNewConnectionResetConfig()
+  private val server =
+    startServer(
+      bspClient,
+      workspaceRoot = workspaceRoot,
+      projectViewFile = connectionResetConfig.projectViewFile,
+      featureFlags = FeatureFlagsProvider.getFeatureFlags(),
+    )
 
-  private var connectionResetConfig: ConnectionResetConfig? = null
-
-  private val mutex = Mutex()
-
-  override suspend fun connect() {
-    mutex.withLock {
-      ensureConnected()
-    }
-  }
-
-  private suspend fun ensureConnected() {
-    log.debug("ensuring the connection is established")
-    val bspClient = createBspClient()
-    val newConnectionResetConfig = generateNewConnectionResetConfig()
-    if (!isConnected() || newConnectionResetConfig != connectionResetConfig) {
-      connectionResetConfig = newConnectionResetConfig
-      val inMemoryConnection =
-        object : GenericConnection {
-          val installationDirectory = project.rootDir.toNioPath()
-          val conn =
-            Connection(
-              installationDirectory,
-              newConnectionResetConfig.projectViewFile,
-              installationDirectory,
-              bspClient,
-            )
-          val projectPath = VfsUtil.findFile(installationDirectory, true) ?: error("Project doesn't exist")
-
-          init {
-            DotBazelBspCreator(projectPath).create()
-          }
-
-          override val server: JoinedBuildServer
-            get() = conn.server
-        }
-      connectBuiltIn(inMemoryConnection, newConnectionResetConfig.initializeBuildData.featureFlags)
+  init {
+    DotBazelBspCreator(projectPath).create()
+    // TODO: don't use runBlocking
+    runBlocking {
+      connectBuiltIn(server, connectionResetConfig.initializeBuildData.featureFlags)
     }
   }
 
@@ -84,12 +60,11 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
       projectViewFile = project.bazelProjectSettings.projectViewPath?.toAbsolutePath(),
       initializeBuildData =
         InitializeBuildParams(
-          clientClassesRootDir = "${project.rootDir}/out",
           featureFlags = FeatureFlagsProvider.getFeatureFlags(),
         ),
     )
 
-  private suspend fun connectBuiltIn(connection: GenericConnection, featureFlags: FeatureFlags) {
+  private suspend fun connectBuiltIn(server: JoinedBuildServer, featureFlags: FeatureFlags) {
     coroutineScope {
       val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
       bspSyncConsole.startTask(
@@ -102,11 +77,10 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
         CONNECT_TASK_ID,
         BspPluginBundle.message("console.message.initialize.server.in.progress"),
       )
-      server =
-        connection.server.also {
-          it.buildInitialize(params = InitializeBuildParams(featureFlags = featureFlags))
-          it.onBuildInitialized()
-        }
+      server.let {
+        it.buildInitialize(params = InitializeBuildParams(featureFlags = featureFlags))
+        it.onBuildInitialized()
+      }
       bspSyncConsole.addMessage(
         CONNECT_TASK_ID,
         BspPluginBundle.message("console.message.initialize.server.success"),
@@ -126,12 +100,13 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
   }
 
   override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T {
-    connect()
-    val server = server ?: error("Cannot execute the task. Server not available.")
+    log.debug("ensuring the connection is established")
+    val newConnectionResetConfig = generateNewConnectionResetConfig()
+
+    if (newConnectionResetConfig != connectionResetConfig) {
+      connectionResetConfig = newConnectionResetConfig
+      // TODO: change server's projectview path once the spaghetti is untangled
+    }
     return task(server)
   }
-
-  override suspend fun disconnect() {}
-
-  override fun isConnected(): Boolean = server != null
 }

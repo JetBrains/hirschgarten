@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.testkit.client
 
-import org.jetbrains.bazel.server.connection.Connection
+import org.jetbrains.bazel.server.connection.startServer
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.nio.file.Path
 
@@ -9,13 +10,5 @@ import java.nio.file.Path
  * needed. The user is responsible for maintaining the correct BSP life-cycle.
  */
 class Session(val workspacePath: Path, val client: MockClient) {
-  val connection =
-    Connection(
-      installationDirectory = workspacePath,
-      projectViewFile = null,
-      workspace = workspacePath,
-      client = client,
-    )
-
-  val server: JoinedBuildServer = connection.server
+  val server: JoinedBuildServer = startServer(client, workspacePath, null, FeatureFlags())
 }
