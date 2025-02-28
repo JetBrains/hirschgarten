@@ -1,6 +1,7 @@
 <idea-plugin>
   <id>org.jetbrains.bazel</id>
-  <name>Bazel [JPS-version]</name>
+  <vendor>JetBrains</vendor>
+  <name>Bazel (EAP)</name>
   <description><![CDATA[
   <p>Bazel by JetBrains (EAP) for IntelliJ IDEA</p>
 
@@ -18,8 +19,6 @@
   </ul>
 
   <p>To learn more about how to use the features, please check <a href="https://www.jetbrains.com/help/idea/2024.3/bazel.html">the documentation page</a>.</p>
-
-  <p>This plugin depends on <a href="https://plugins.jetbrains.com/plugin/20329-build-server-protocol">Build Server Protocol for IntelliJ IDEA</a> to import Bazel projects.</p>
   ]]>
   </description>
 
@@ -133,7 +132,7 @@
 
     <commandLineInspectionProjectConfigurator
             implementation="org.jetbrains.bazel.startup.BspCommandLineInspectionConfigurator"/>
-    <configurationType implementation="org.jetbrains.bazel.run.config.BspRunConfigurationType"/>
+    <configurationType implementation="org.jetbrains.bazel.run.config.BazelRunConfigurationType"/>
 
     <notificationGroup id="Bazel" displayType="STICKY_BALLOON"/>
 
@@ -162,6 +161,11 @@
     <projectTaskRunner
             implementation="org.jetbrains.bazel.buildTask.BspProjectTaskRunner"/>
     <programRunner implementation="org.jetbrains.bazel.jvm.run.BspJvmDebugRunner"/>
+
+    <programRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageProgramRunner"/>
+    <coverageRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageRunner"/>
+    <coverageEngine implementation="org.jetbrains.bazel.run.coverage.BazelCoverageEngine"/>
+    <projectViewNodeDecorator implementation="org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecorator"/>
 
     <directoryProjectConfigurator
             implementation="org.jetbrains.bazel.flow.open.CounterPlatformProjectConfigurator"
@@ -239,9 +243,13 @@
   </extensions>
 
   <actions>
-    <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsAction">
+    <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsAction" id="BazelRunAllTestsAction">
       <add-to-group group-id="EditorPopupMenu" anchor="last"/>
       <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+    </action>
+    <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsWithCoverageAction">
+      <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="BazelRunAllTestsAction"/>
+      <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="BazelRunAllTestsAction"/>
     </action>
     <action id="Bsp.ResyncAction" class="org.jetbrains.bazel.action.registered.ResyncAction"
             icon="/icons/resync.svg"/>
@@ -477,8 +485,6 @@
     <registryKey defaultValue="true"
                  description="Force Bazel to shut down before each shard build to prevent Bazel memory leak issue"
                  key="bazel.shutdown.before.shard.build"/>
-    <configurationType implementation="org.jetbrains.bazel.run.BazelRunConfigurationType"/>
-
     <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
   </extensions>
 

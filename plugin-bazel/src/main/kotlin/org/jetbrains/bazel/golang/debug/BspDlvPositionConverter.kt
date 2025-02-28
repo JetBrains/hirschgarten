@@ -115,7 +115,7 @@ class BspDlvPositionConverter(
   }
 
   private suspend fun resolveLocalToRemoteOnServer(localPaths: List<String>): Map<String, String> =
-    project.connection.runWithServer { server, _ ->
+    project.connection.runWithServer { server ->
       val params =
         BazelResolveLocalToRemoteParams(
           localPaths = localPaths,
@@ -125,7 +125,7 @@ class BspDlvPositionConverter(
     }
 
   private suspend fun resolveRemoteToLocalOnServer(remotePaths: List<String>): Map<String, String> =
-    project.connection.runWithServer { server, _ ->
+    project.connection.runWithServer { server ->
       val params =
         BazelResolveRemoteToLocalParams(
           remotePaths = remotePaths,

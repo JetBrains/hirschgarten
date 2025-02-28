@@ -5,6 +5,6 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
-        "@maven//:ch_epfl_scala_bsp4j",
+        "//protocol",
     ],
 )

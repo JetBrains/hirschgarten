@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.target
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.ModuleCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 interface ConvertableFromState<out T> {
   fun fromState(): T

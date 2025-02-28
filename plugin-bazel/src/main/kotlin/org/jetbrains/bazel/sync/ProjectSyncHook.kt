@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 
 /**
@@ -42,7 +41,6 @@ interface ProjectSyncHook {
     val project: Project,
     val syncScope: ProjectSyncScope,
     val server: JoinedBuildServer,
-    val capabilities: BazelBuildServerCapabilities,
     val diff: AllProjectStructuresDiff,
     val taskId: String,
     val progressReporter: SequentialProgressReporter,

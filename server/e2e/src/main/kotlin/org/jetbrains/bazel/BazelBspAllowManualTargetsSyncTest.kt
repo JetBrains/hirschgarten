@@ -1,17 +1,17 @@
 package org.jetbrains.bazel
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.SourcesResult
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.SourceItemKind
+import org.jetbrains.bsp.protocol.SourcesItem
+import org.jetbrains.bsp.protocol.SourcesParams
+import org.jetbrains.bsp.protocol.SourcesResult
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -52,8 +52,8 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       SourcesItem(
         BuildTargetIdentifier("$targetPrefix//manual_target:java_library"),
         listOf(manualTargetTestJavaFile),
+        roots = listOf("file://\$WORKSPACE/"),
       )
-    manualTargetTestJavaFileSources.roots = listOf("file://\$WORKSPACE/")
 
     val manualTargetTestJavaTest =
       SourceItem("file://\$WORKSPACE/manual_target/JavaTest.java", SourceItemKind.FILE, false)
@@ -61,8 +61,8 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       SourcesItem(
         BuildTargetIdentifier("$targetPrefix//manual_target:java_test"),
         listOf(manualTargetTestJavaTest),
+        roots = listOf("file://\$WORKSPACE/"),
       )
-    manualTargetTestJavaTestSources.roots = listOf("file://\$WORKSPACE/")
 
     val manualTargetTestJavaBinary =
       SourceItem(
@@ -74,8 +74,8 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       SourcesItem(
         BuildTargetIdentifier("$targetPrefix//manual_target:java_binary"),
         listOf(manualTargetTestJavaBinary),
+        roots = listOf("file://\$WORKSPACE/"),
       )
-    manualTargetTestJavaBinarySources.roots = listOf("file://\$WORKSPACE/")
 
     val sourcesParams = SourcesParams(expectedTargetIdentifiers())
     val expectedSourcesResult =
@@ -99,67 +99,64 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
         "rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_\$OS$architecturePart/"
     val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
     val jvmBuildTarget =
-      JvmBuildTarget().also {
-        it.javaHome = javaHome
-        it.javaVersion = "11"
-      }
+      JvmBuildTarget(
+        javaHome = javaHome,
+        javaVersion = "11",
+      )
 
     val manualTargetJavaLibrary =
       BuildTarget(
         BuildTargetIdentifier("$targetPrefix//manual_target:java_library"),
-        listOf("library"),
-        listOf("java"),
-        emptyList(),
-        BuildTargetCapabilities().apply {
-          canCompile = true
-          canTest = false
-          canRun = false
-          canDebug = false
-        },
-      ).apply {
-        displayName = "$targetPrefix//manual_target:java_library"
-        baseDirectory = "file://\$WORKSPACE/manual_target/"
-        dataKind = "jvm"
-        data = jvmBuildTarget
-      }
+        tags = listOf("library"),
+        languageIds = listOf("java"),
+        dependencies = emptyList(),
+        capabilities =
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = false,
+            canDebug = false,
+          ),
+        displayName = "$targetPrefix//manual_target:java_library",
+        baseDirectory = "file://\$WORKSPACE/manual_target/",
+        data = jvmBuildTarget,
+      )
 
     val manualTargetJavaBinary =
       BuildTarget(
         BuildTargetIdentifier("$targetPrefix//manual_target:java_binary"),
-        listOf("application"),
-        listOf("java"),
-        emptyList(),
-        BuildTargetCapabilities().apply {
-          canCompile = true
-          canTest = false
-          canRun = true
-          canDebug = false
-        },
-      ).apply {
-        displayName = "$targetPrefix//manual_target:java_binary"
-        baseDirectory = "file://\$WORKSPACE/manual_target/"
-        dataKind = "jvm"
-        data = jvmBuildTarget
-      }
+        tags = listOf("application"),
+        languageIds = listOf("java"),
+        dependencies = emptyList(),
+        capabilities =
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = true,
+            canDebug = false,
+          ),
+        displayName = "$targetPrefix//manual_target:java_binary",
+        baseDirectory = "file://\$WORKSPACE/manual_target/",
+        data = jvmBuildTarget,
+      )
 
     val manualTargetJavaTest =
       BuildTarget(
         BuildTargetIdentifier("$targetPrefix//manual_target:java_test"),
-        listOf("test"),
-        listOf("java"),
-        emptyList(),
-        BuildTargetCapabilities().apply {
-          canCompile = true
-          canTest = true
-          canRun = false
-          canDebug = false
-        },
-      ).apply {
-        displayName = "$targetPrefix//manual_target:java_test"
-        baseDirectory = "file://\$WORKSPACE/manual_target/"
-        dataKind = "jvm"
-        data = jvmBuildTarget
-      }
+        tags = listOf("test"),
+        languageIds = listOf("java"),
+        dependencies = emptyList(),
+        capabilities =
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = true,
+            canRun = false,
+            canDebug = false,
+          ),
+        displayName = "$targetPrefix//manual_target:java_test",
+        baseDirectory = "file://\$WORKSPACE/manual_target/",
+        data = jvmBuildTarget,
+      )
 
     return WorkspaceBuildTargetsResult(
       listOfNotNull(

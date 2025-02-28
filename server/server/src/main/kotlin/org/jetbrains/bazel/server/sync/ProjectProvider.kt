@@ -3,7 +3,6 @@ package org.jetbrains.bazel.server.sync
 import kotlinx.coroutines.runBlocking
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.benchmark.openTelemetry
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.model.Project
@@ -35,7 +34,6 @@ class ProjectProvider(private val projectResolver: ProjectResolver, private val 
   ): AspectSyncProject =
     runBlocking {
       projectResolver.resolve(cancelChecker, build = build, targetsToSync, project as? FirstPhaseProject).also {
-        openTelemetry.sdkTracerProvider.forceFlush()
         projectResolver.releaseMemory()
       }
     }

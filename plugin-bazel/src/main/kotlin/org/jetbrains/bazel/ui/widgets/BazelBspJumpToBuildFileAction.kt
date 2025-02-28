@@ -45,8 +45,11 @@ class BazelBspJumpToBuildFileAction(private val buildTargetInfo: BuildTargetInfo
   }
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    val virtualFile = readAction { e.getPsiFile()?.virtualFile } ?: return
-    val buildTargetInfo = getBuildTargetInfo(project, virtualFile, e.getEditor()) ?: return
+    val buildTargetInfo =
+      this.buildTargetInfo ?: run {
+        val virtualFile = readAction { e.getPsiFile()?.virtualFile } ?: return
+        getBuildTargetInfo(project, virtualFile, e.getEditor()) ?: return
+      }
     jumpToBuildFile(project, buildTargetInfo)
   }
 

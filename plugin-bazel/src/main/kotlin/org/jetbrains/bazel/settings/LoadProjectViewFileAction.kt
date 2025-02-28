@@ -2,6 +2,7 @@ package org.jetbrains.bazel.settings
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
@@ -21,7 +22,7 @@ internal class LoadProjectViewFileAction :
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val projectViewFile = e.getPsiFile()?.virtualFile ?: return
     project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectViewFile.toNioPath().toAbsolutePath())
-    ResyncAction().actionPerformed(e)
+    ActionUtil.performActionDumbAwareWithCallbacks(ResyncAction(), e)
   }
 
   override fun update(project: Project, e: AnActionEvent) {

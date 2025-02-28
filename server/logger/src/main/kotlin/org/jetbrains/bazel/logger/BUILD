@@ -10,6 +10,5 @@ kt_jvm_library(
         "//protocol",
         "//server/commons",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
-        "@maven//:ch_epfl_scala_bsp4j",
     ],
 )

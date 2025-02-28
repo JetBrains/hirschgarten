@@ -1,16 +1,16 @@
 package org.jetbrains.bazel.runnerAction
 
-import ch.epfl.scala.bsp4j.JvmEnvironmentItem
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.server.tasks.JvmTestEnvironmentTask
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 
 public class TestWithLocalJvmRunnerAction(
   targetInfo: BuildTargetInfo,
   text: (() -> String)? = null,
   isDebugMode: Boolean = false,
-  verboseText: Boolean = false,
+  includeTargetNameInText: Boolean = false,
 ) : LocalJvmRunnerAction(
     targetInfo = targetInfo,
     text = {
@@ -19,12 +19,12 @@ public class TestWithLocalJvmRunnerAction(
       } else if (isDebugMode) {
         BspPluginBundle.message(
           "target.debug.with.jvm.runner.action.text",
-          if (verboseText) targetInfo.buildTargetName else "",
+          if (includeTargetNameInText) targetInfo.buildTargetName else "",
         )
       } else {
         BspPluginBundle.message(
           "target.test.with.jvm.runner.action.text",
-          if (verboseText) targetInfo.buildTargetName else "",
+          if (includeTargetNameInText) targetInfo.buildTargetName else "",
         )
       }
     },

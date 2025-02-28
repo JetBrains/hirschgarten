@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.server.sync.languages
 
 import org.jetbrains.bazel.server.sync.languages.jvm.SourceRootGuesser
-import org.jetbrains.bsp.protocol.EnhancedSourceItemData
 import java.io.File
 import java.nio.charset.Charset
 import java.nio.file.Path
@@ -24,7 +23,7 @@ object JVMLanguagePluginParser {
       } else {
         Paths.get("/").resolve(source.subpath(0, sourceRootEndIndex))
       }
-    return SourceRootAndData(sourceRoot, data = EnhancedSourceItemData(jvmPackagePrefix = sourcePackage))
+    return SourceRootAndData(sourceRoot, jvmPackagePrefix = sourcePackage)
   }
 
   private fun findPackage(source: Path, multipleLines: Boolean): String? =

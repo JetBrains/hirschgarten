@@ -24,6 +24,13 @@ def flatten(xss):
 def flatmap(f, xs):
     return flatten(map(f, xs))
 
+
+
+# Explanation: external paths usually start with `external/`, but if `--experimental_sibling_repository_layout`
+# is enabled, they start with `../`.
+def is_external_path(path):
+    return path.startswith("../") or path.startswith("external/")
+
 def file_location(file):
     if file == None:
         return None
@@ -32,7 +39,7 @@ def file_location(file):
         file.path,
         file.root.path if not file.is_source else "",
         file.is_source,
-        file.owner.workspace_root.startswith("..") or file.owner.workspace_root.startswith("external"),
+        is_external_path(file.owner.workspace_root),
     )
 
 def _strip_root_exec_path_fragment(path, root_fragment):
@@ -41,7 +48,7 @@ def _strip_root_exec_path_fragment(path, root_fragment):
     return path
 
 def _strip_external_workspace_prefix(path):
-    if path.startswith("../") or path.startswith("external/"):
+    if is_external_path(path):
         without_prefix = path.split("/", 2)
         if len(without_prefix) > 2:
             return without_prefix[2]
@@ -58,7 +65,7 @@ def to_file_location(exec_path, root_exec_path_fragment, is_source, is_external)
     root_exec_path_fragment = exec_path[:-(len("/" + relative_path))] if relative_path != "" else exec_path
 
     external_repo_name = None
-    if root_exec_path_fragment.startswith("external/") or root_exec_path_fragment.startswith("../"):
+    if is_external_path(root_exec_path_fragment):
         external_repo_name = root_exec_path_fragment.split("/")[1]
 
     for repo in REPO_MAPPING.keys():

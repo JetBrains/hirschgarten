@@ -1,5 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-import ch.epfl.scala.bsp4j.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 
 data class NonModuleTargetsResult(val nonModuleTargets: List<BuildTarget>)

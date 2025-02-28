@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.jvm.run
 
-import ch.epfl.scala.bsp4j.TestParams
-import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
@@ -21,10 +19,9 @@ import org.jetbrains.bazel.taskEvents.BspTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.isJvmTarget
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
-import org.jetbrains.bsp.protocol.TestWithDebugParams
+import org.jetbrains.bsp.protocol.TestParams
 import java.util.UUID
 
 class JvmBspTestHandler : BspRunHandler {
@@ -66,21 +63,19 @@ class JvmTestWithDebugCommandLineState(
 
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = executeWithTestConsole(executor)
 
-  override suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) {
-    if (!capabilities.testWithDebugProvider) {
-      throw ExecutionException("BSP server does not support testing with debugging")
-    }
-
+  override suspend fun startBsp(server: JoinedBuildServer) {
     val configuration = environment.runProfile as BspRunConfiguration
     val targetIds = configuration.targets
-    val testParams = TestParams(targetIds)
-    testParams.originId = originId
-    testParams.workingDirectory = settings.workingDirectory
-    testParams.arguments = transformProgramArguments(settings.programArguments)
-    testParams.environmentVariables = settings.env.envs
-    val remoteDebugData = RemoteDebugData("jdwp", getConnectionPort())
-    val testWithDebugParams = TestWithDebugParams(originId, testParams, remoteDebugData)
+    val testParams =
+      TestParams(
+        targets = targetIds,
+        originId = originId,
+        workingDirectory = settings.workingDirectory,
+        arguments = transformProgramArguments(settings.programArguments),
+        environmentVariables = settings.env.envs,
+        debug = RemoteDebugData("jdwp", getConnectionPort()),
+      )
 
-    server.buildTargetTestWithDebug(testWithDebugParams).asDeferred().await()
+    server.buildTargetTest(testParams).asDeferred().await()
   }
 }

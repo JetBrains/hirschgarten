@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.sync.languages.android
 
-import ch.epfl.scala.bsp4j.BuildTarget
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
@@ -12,6 +11,7 @@ import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinModule
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
 import org.jetbrains.bsp.protocol.AndroidTargetType
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.net.URI
 import java.nio.file.Path
 
@@ -48,7 +48,6 @@ class AndroidLanguagePlugin(
       androidBuildTarget.kotlinBuildTarget = it
     }
 
-    buildTarget.dataKind = "android"
     buildTarget.data = androidBuildTarget
   }
 

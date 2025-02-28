@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.server.sync.languages.rust
 
-import ch.epfl.scala.bsp4j.RustCrateType
-import ch.epfl.scala.bsp4j.RustPackage
-import ch.epfl.scala.bsp4j.RustTarget
-import ch.epfl.scala.bsp4j.RustTargetKind
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.protocol.RustCrateType
+import org.jetbrains.bsp.protocol.RustPackage
+import org.jetbrains.bsp.protocol.RustTarget
+import org.jetbrains.bsp.protocol.RustTargetKind
 
 class RustPackageResolver(val bazelPathsResolver: BazelPathsResolver) {
   private data class RustTargetModule(val module: Module, val rustModule: RustModule)
@@ -52,15 +52,14 @@ class RustPackageResolver(val bazelPathsResolver: BazelPathsResolver) {
         version,
         origin,
         edition,
-        targets,
-        allTargets,
-        allFeatures,
-        allFeatures.keys.toSet(),
+        resolvedTargets = targets,
+        allTargets = allTargets,
+        features = allFeatures,
+        enabledFeatures = allFeatures.keys.toSet(),
+        source = source,
+        env = env,
+        procMacroArtifact = procMacroArtifact,
       )
-    rustPackage.source = source
-    rustPackage.env = env
-    rustPackage.procMacroArtifact = procMacroArtifact
-
     return rustPackage
   }
 
@@ -144,14 +143,14 @@ class RustPackageResolver(val bazelPathsResolver: BazelPathsResolver) {
         genericData.label.target.toString(),
         rustData.crateRoot,
         parseTargetKind(rustData.kind),
-        rustData.edition,
+        edition = rustData.edition,
         // We set `doctest` always to false, as in Bazel doctests
         // are separate targets (`rust_doc_test`) that don't have CrateInfo
         // and therefore are not send in RustWorkspaceResult.
-        false,
+        doctest = false,
+        requiredFeatures = rustData.crateFeatures.toSet(),
+        crateTypes = parseCrateTypes(rustData.kind),
       )
-    buildTarget.requiredFeatures = rustData.crateFeatures.toSet()
-    buildTarget.crateTypes = parseCrateTypes(rustData.kind)
     return buildTarget
   }
 

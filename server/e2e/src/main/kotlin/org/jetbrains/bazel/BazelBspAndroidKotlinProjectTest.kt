@@ -1,15 +1,15 @@
 package org.jetbrains.bazel
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bazel.android.BazelBspAndroidProjectTestBase
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
 import org.jetbrains.bsp.protocol.AndroidTargetType
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 
 object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
   @JvmStatic
@@ -22,10 +22,10 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
     val javaHome =
       "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java~~toolchains~remotejdk17_$javaHomeArchitecture/"
     val jvmBuildTargetData =
-      JvmBuildTarget().also {
-        it.javaHome = javaHome
-        it.javaVersion = "17"
-      }
+      JvmBuildTarget(
+        javaHome = javaHome,
+        javaVersion = "17",
+      )
 
     val kotlinBuildTargetData =
       KotlinBuildTarget(
@@ -89,17 +89,16 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
           BuildTargetIdentifier("@@//src/main/java/com/example/myapplication:lib_base"),
           BuildTargetIdentifier("@@//src/main/java/com/example/myapplication:lib_kt"),
         ),
-        BuildTargetCapabilities().apply {
-          canCompile = true
-          canDebug = true
-          canRun = true
-          canTest = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = true,
+          canRun = true,
+          canDebug = false,
+        ),
+        displayName = "@@//src/main:app",
+        baseDirectory = "file://\$WORKSPACE/src/main/",
+        data = appAndroidBuildTargetData,
       )
-    appBuildTarget.displayName = "@@//src/main:app"
-    appBuildTarget.baseDirectory = "file://\$WORKSPACE/src/main/"
-    appBuildTarget.data = appAndroidBuildTargetData
-    appBuildTarget.dataKind = "android"
 
     val libBuildTarget =
       BuildTarget(
@@ -110,17 +109,16 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
           BuildTargetIdentifier("@@rules_jvm_external~~maven~maven//:androidx_appcompat_appcompat"),
           BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
         ),
-        BuildTargetCapabilities().apply {
-          canCompile = true
-          canDebug = false
-          canRun = false
-          canTest = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = false,
+          canRun = false,
+          canDebug = false,
+        ),
+        displayName = "@@//src/main/java/com/example/myapplication:lib",
+        baseDirectory = "file://\$WORKSPACE/src/main/java/com/example/myapplication/",
+        data = libAndroidBuildTargetData,
       )
-    libBuildTarget.displayName = "@@//src/main/java/com/example/myapplication:lib"
-    libBuildTarget.baseDirectory = "file://\$WORKSPACE/src/main/java/com/example/myapplication/"
-    libBuildTarget.data = libAndroidBuildTargetData
-    libBuildTarget.dataKind = "android"
 
     val libTestBuildTarget =
       BuildTarget(
@@ -136,17 +134,15 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
           BuildTargetIdentifier("@@rules_robolectric~//bazel:android-all"),
           BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
         ),
-        BuildTargetCapabilities().apply {
-          canCompile = true
-          canDebug = true
-          canRun = false
-          canTest = true
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canRun = false,
+          canTest = true,
+        ),
+        displayName = "@@//src/test/java/com/example/myapplication:lib_test",
+        baseDirectory = "file://\$WORKSPACE/src/test/java/com/example/myapplication/",
+        data = libTestAndroidBuildTargetData,
       )
-    libTestBuildTarget.displayName = "@@//src/test/java/com/example/myapplication:lib_test"
-    libTestBuildTarget.baseDirectory = "file://\$WORKSPACE/src/test/java/com/example/myapplication/"
-    libTestBuildTarget.data = libTestAndroidBuildTargetData
-    libTestBuildTarget.dataKind = "android"
 
     return WorkspaceBuildTargetsResult(listOf(appBuildTarget, libBuildTarget, libTestBuildTarget))
   }

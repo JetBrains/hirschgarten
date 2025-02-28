@@ -1,15 +1,14 @@
 package org.jetbrains.bazel.server.sync.languages.kotlin
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.bazel.info.BspTargetInfo
-import org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import java.net.URI
 import java.nio.file.Path
@@ -19,7 +18,6 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
   LanguagePlugin<KotlinModule>() {
   override fun applyModuleData(moduleData: KotlinModule, buildTarget: BuildTarget) {
     val kotlinBuildTarget = toKotlinBuildTarget(moduleData)
-    buildTarget.dataKind = "kotlin"
     buildTarget.data = kotlinBuildTarget
   }
 
@@ -53,16 +51,17 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
     )
   }
 
-  private fun KotlinTargetInfo.toKotlincOptArguments(): List<String> = kotlincOptsList + additionalKotlinOpts()
+  private fun BspTargetInfo.KotlinTargetInfo.toKotlincOptArguments(): List<String> = kotlincOptsList + additionalKotlinOpts()
 
-  private fun KotlinTargetInfo.additionalKotlinOpts(): List<String> = toKotlincPluginClasspathArguments() + toKotlincPluginOptionArguments()
+  private fun BspTargetInfo.KotlinTargetInfo.additionalKotlinOpts(): List<String> =
+    toKotlincPluginClasspathArguments() + toKotlincPluginOptionArguments()
 
-  private fun KotlinTargetInfo.toKotlincPluginOptionArguments(): List<String> =
+  private fun BspTargetInfo.KotlinTargetInfo.toKotlincPluginOptionArguments(): List<String> =
     kotlincPluginInfosList
       .flatMap { it.kotlincPluginOptionsList }
       .flatMap { listOf("-P", "plugin:${it.pluginId}:${it.optionValue}") }
 
-  private fun KotlinTargetInfo.toKotlincPluginClasspathArguments(): List<String> =
+  private fun BspTargetInfo.KotlinTargetInfo.toKotlincPluginClasspathArguments(): List<String> =
     kotlincPluginInfosList
       .flatMap { it.pluginJarsList }
       .map { "-Xplugin=${bazelPathsResolver.resolveUri(it).toPath()}" }

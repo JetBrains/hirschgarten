@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.intellij
 
-import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.BeforeRunTaskProvider
 import com.intellij.execution.configurations.RunConfiguration
@@ -12,6 +11,7 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
+import org.jetbrains.bsp.protocol.StatusCode
 
 private val PROVIDER_ID = Key.create<BuildPluginBeforeRunTaskProvider.Task>("BuildPluginBeforeRunTaskProvider")
 

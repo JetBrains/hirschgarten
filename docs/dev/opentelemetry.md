@@ -92,7 +92,7 @@ And lastly, if IDEA (and thus IntelliJ-BSP since they share the same telemetry) 
 
 Tracing, i.e. collecting time metrics, is done like so:
 ```
-tracer.spanBuilder("Resolve project").use {
+bspTracer.spanBuilder("Resolve project").use {
 	// ...
 }
 ```
