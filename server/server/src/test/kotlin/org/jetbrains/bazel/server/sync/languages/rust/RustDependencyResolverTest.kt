@@ -35,6 +35,7 @@ class RustDependencyResolverTest {
         release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
         false,
         true,
+        emptyList<String>(),
       )
 
     rustPackageResolver = RustPackageResolver(BazelPathsResolver(bazelInfo))

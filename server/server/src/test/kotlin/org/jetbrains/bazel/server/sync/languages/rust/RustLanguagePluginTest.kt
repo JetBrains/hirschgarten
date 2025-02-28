@@ -29,6 +29,7 @@ class RustLanguagePluginTest {
         release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
         false,
         true,
+        emptyList(),
       )
 
     bazelPathsResolver = BazelPathsResolver(bazelInfo)

@@ -46,16 +46,29 @@ class BazelBspAspectsManager(
   private val aspectsPath = Paths.get(aspectsResolver.bazelBspRoot, Constants.ASPECTS_ROOT)
   private val templateWriter = TemplateWriter(aspectsPath)
 
-  fun calculateRulesetLanguages(externalRulesetNames: List<String>): List<RulesetLanguage> =
+  fun calculateRulesetLanguages(externalRulesetNames: List<String>, externalAutoloads: List<String>): List<RulesetLanguage> =
     Language
       .entries
       .mapNotNull { language ->
-        if (language.isBundled && bazelRelease.major < 8) return@mapNotNull RulesetLanguage(null, language) // bundled in Bazel version < 8
-        val rulesetName = language.rulesetNames.firstOrNull { externalRulesetNames.contains(it) }
-        rulesetName?.let { RulesetLanguage(it, language) }
+        val rulesetName = language.rulesetNames.firstOrNull { it in externalRulesetNames }
+        rulesetName?.let {
+          return@mapNotNull RulesetLanguage(it, language)
+        }
+        if (language.isBundled(externalAutoloads)) {
+          return@mapNotNull RulesetLanguage(null, language)
+        }
+        null
       }.removeDisabledLanguages()
       .addNativeAndroidLanguageIfNeeded()
       .addExternalPythonLanguageIfNeeded(externalRulesetNames)
+
+  private fun Language.isBundled(externalAutoloads: List<String>): Boolean {
+    if (!isBundled) return false
+    // Bundled in Bazel version < 8
+    if (bazelRelease.major < 8) return true
+    // If a language is autoloaded in Bazel version >= 8, it effectively restores the old "bundled" behavior.
+    return (rulesetNames + autoloadHints).any { it in externalAutoloads }
+  }
 
   private fun List<RulesetLanguage>.removeDisabledLanguages(): List<RulesetLanguage> {
     val disabledLanguages =
@@ -102,7 +115,7 @@ class BazelBspAspectsManager(
       val templateFilePath = it.toAspectTemplateRelativePath()
       val variableMap =
         mapOf(
-          "rulesetName" to ruleLanguage?.calculateCanonicalName(repoMapping),
+          "rulesetName" to ruleLanguage?.calculateCanonicalName(repoMapping).orEmpty(),
           "addTransitiveCompileTimeJars" to
             workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
           "transitiveCompileTimeJarsTargetKinds" to
