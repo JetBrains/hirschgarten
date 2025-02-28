@@ -13,6 +13,11 @@ data class BazelInfo(
   val release: BazelRelease,
   val isBzlModEnabled: Boolean,
   val isWorkspaceEnabled: Boolean,
+  /**
+   * https://bazel.build/reference/command-line-reference#flag--incompatible_autoload_externally
+   * May include rule names and/or provider names.
+   */
+  val externalAutoloads: List<String>,
 ) {
   fun shouldUseInjectRepository(): Boolean = release.major >= 8
 

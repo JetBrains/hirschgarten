@@ -61,6 +61,7 @@ class BepDiagnosticsTest {
         release = BazelRelease(7),
         isBzlModEnabled = true,
         isWorkspaceEnabled = false,
+        externalAutoloads = emptyList(),
       )
     return BepServer(
       bspClient = client,

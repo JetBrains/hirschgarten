@@ -74,7 +74,7 @@ class ProjectResolver(
       val ruleLanguages =
         measured(
           "Mapping rule names to languages",
-        ) { bazelBspAspectsManager.calculateRulesetLanguages(externalRulesetNames) }
+        ) { bazelBspAspectsManager.calculateRulesetLanguages(externalRulesetNames, bazelInfo.externalAutoloads) }
 
       val toolchains =
         measured(
