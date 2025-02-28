@@ -9,7 +9,7 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPsiElementPointer
 import org.jetbrains.bazel.sdkcompat.shouldShowCoverageInProjectView
-import org.jetbrains.kotlin.psi.KtClass
+import org.jetbrains.kotlin.psi.KtClassOrObject
 
 class BazelCoverageClassNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
   override fun decorate(node: ProjectViewNode<*>, data: PresentationData) {
@@ -23,7 +23,7 @@ class BazelCoverageClassNodeDecorator(private val project: Project) : ProjectVie
         else -> null
       } ?: return
 
-    if (psiElement !is PsiClass && psiElement !is KtClass) return
+    if (psiElement !is PsiClass && psiElement !is KtClassOrObject) return
 
     val psiFile = psiElement.containingFile ?: return
     val coverageDataManager = CoverageDataManager.getInstance(project)
