@@ -45,7 +45,7 @@ class MobileInstallTargetTask(
     val mobileInstallDeferred =
       BspCoroutineService.getInstance(project).startAsync(lazy = true) {
         val mobileInstallParams = createMobileInstallParams(targetId, originId, targetDeviceSerialNumber)
-        server.buildTargetMobileInstall(mobileInstallParams).await()
+        server.buildTargetMobileInstall(mobileInstallParams)
       }
     return BspTaskStatusLogger(mobileInstallDeferred, bspBuildConsole, originId) { statusCode }.getResult()
   }

@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.bazelrunner
 
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.bazelrunner.utils.orLatestSupported
@@ -14,9 +13,9 @@ private const val BAZEL_BIN = "bazel-bin"
 private const val STARLARK_SEMANTICS = "starlark-semantics"
 
 class BazelInfoResolver(private val bazelRunner: BazelRunner) {
-  fun resolveBazelInfo(cancelChecker: CancelChecker): BazelInfo = bazelInfoFromBazel(cancelChecker)
+  suspend fun resolveBazelInfo(): BazelInfo = bazelInfoFromBazel()
 
-  private fun bazelInfoFromBazel(cancelChecker: CancelChecker): BazelInfo {
+  private suspend fun bazelInfoFromBazel(): BazelInfo {
     val command =
       bazelRunner.buildBazelCommand {
         info {
@@ -26,7 +25,7 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
     val processResult =
       bazelRunner
         .runBazelCommand(command, serverPidFuture = null)
-        .waitAndGetResult(cancelChecker, true)
+        .waitAndGetResult(true)
     return parseBazelInfo(processResult)
   }
 

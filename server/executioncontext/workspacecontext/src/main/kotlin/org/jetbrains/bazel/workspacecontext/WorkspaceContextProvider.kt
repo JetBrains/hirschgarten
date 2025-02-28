@@ -11,8 +11,8 @@ interface WorkspaceContextProvider {
 }
 
 class DefaultWorkspaceContextProvider(
-  private val workspaceRoot: Path,
-  private val projectViewPath: Path,
+  var workspaceRoot: Path,
+  var projectViewPath: Path,
   dotBazelBspDirPath: Path,
 ) : WorkspaceContextProvider {
   private val workspaceContextConstructor = WorkspaceContextConstructor(workspaceRoot, dotBazelBspDirPath)

@@ -31,7 +31,6 @@ import com.intellij.workspaceModel.ide.legacyBridge.impl.java.JAVA_SOURCE_ROOT_E
 import com.intellij.workspaceModel.ide.toPath
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.coroutines.BspCoroutineService
@@ -225,7 +224,6 @@ private suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileU
   project.connection.runWithServer { bspServer ->
     bspServer
       .buildTargetInverseSources(InverseSourcesParams(TextDocumentIdentifier(fileUrl.url)))
-      .await()
   }
 
 private fun Label.toModuleEntity(

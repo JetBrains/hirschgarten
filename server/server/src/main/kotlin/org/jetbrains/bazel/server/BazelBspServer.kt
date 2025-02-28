@@ -105,9 +105,9 @@ class BazelBspServer(
     )
   }
 
-  fun createBazelInfo(bazelRunner: BazelRunner): BazelInfo {
+  suspend fun createBazelInfo(bazelRunner: BazelRunner): BazelInfo {
     val bazelDataResolver = BazelInfoResolver(bazelRunner)
-    return bazelDataResolver.resolveBazelInfo { }
+    return bazelDataResolver.resolveBazelInfo()
   }
 
   private fun createLanguagePluginsService(
@@ -209,11 +209,11 @@ class BazelBspServer(
     return ProjectProvider(projectResolver, firstPhaseProjectResolver)
   }
 
-  fun verifyBazelVersion(bazelRunner: BazelRunner) {
+  suspend fun verifyBazelVersion(bazelRunner: BazelRunner) {
     val command = bazelRunner.buildBazelCommand { version {} }
     bazelRunner
       .runBazelCommand(command, serverPidFuture = null)
-      .waitAndGetResult({}, true)
+      .waitAndGetResult(true)
       .also {
         if (it.isNotSuccess) error("Querying Bazel version failed.\n${it.stderrLines.joinToString("\n")}")
       }

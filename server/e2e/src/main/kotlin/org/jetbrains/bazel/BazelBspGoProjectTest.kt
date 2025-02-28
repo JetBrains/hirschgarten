@@ -1,6 +1,5 @@
 package org.jetbrains.bazel
 
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -195,7 +194,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
   private fun librariesResult(): BazelBspTestScenarioStep =
     BazelBspTestScenarioStep("libraries results") {
       bazelTestClient.test(timeout = 1.minutes) { session ->
-        val libraries = session.server.workspaceGoLibraries().await()
+        val libraries = session.server.workspaceGoLibraries()
         bazelTestClient.assertJsonEquals<WorkspaceGoLibrariesResult>(expectedLibrariesResult(), libraries)
       }
     }

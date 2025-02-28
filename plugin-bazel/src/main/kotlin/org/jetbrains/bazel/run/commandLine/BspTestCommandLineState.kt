@@ -6,7 +6,6 @@ import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.run.BspCommandLineStateBase
 import org.jetbrains.bazel.run.BspProcessHandler
@@ -49,6 +48,6 @@ class BspTestCommandLineState(
         testFilter = state.testFilter,
         additionalBazelParams = state.additionalBazelParams,
       )
-    server.buildTargetTest(params).await()
+    server.buildTargetTest(params)
   }
 }

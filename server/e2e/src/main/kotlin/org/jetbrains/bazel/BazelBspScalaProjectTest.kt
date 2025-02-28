@@ -1,6 +1,5 @@
 package org.jetbrains.bazel
 
-import kotlinx.coroutines.future.await
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
@@ -139,7 +138,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
     val transformedParams = testClient.applyJsonTransform(params)
     testClient.test(60.seconds) { session ->
       session.client.clearDiagnostics()
-      val result = session.server.buildTargetCompile(transformedParams).await()
+      val result = session.server.buildTargetCompile(transformedParams)
       expectedDiagnostics.forEach { expected ->
         session.client.publishDiagnosticsNotifications
           .find { actual ->

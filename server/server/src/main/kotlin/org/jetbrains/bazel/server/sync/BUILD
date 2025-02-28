@@ -30,8 +30,8 @@ kt_jvm_library(
         "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
         "//third_party/bazel/src/main/protobuf:deps_java_proto",
         "@maven//:io_grpc_grpc_stub",
-        "@maven//:org_eclipse_lsp4j_org_eclipse_lsp4j_jsonrpc",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
+        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

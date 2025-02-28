@@ -5,7 +5,6 @@ import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.BazelBspServer
 import org.jetbrains.bazel.server.bsp.BazelBspServerLifetime
-import org.jetbrains.bazel.server.bsp.BspRequestsRunner
 import org.jetbrains.bazel.server.bsp.BspServerApi
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
@@ -66,7 +65,6 @@ private fun startServer(
       )
     }
   val serverLifetime = BazelBspServerLifetime(bspServer.workspaceContextProvider)
-  val bspRequestsRunner = BspRequestsRunner(serverLifetime)
-  bspServerApi.initialize(client, serverLifetime, bspRequestsRunner)
+  bspServerApi.initialize(client, serverLifetime)
   return bspServerApi
 }

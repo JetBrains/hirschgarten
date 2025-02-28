@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.sync
 
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.label.Label
@@ -10,29 +9,27 @@ import org.jetbrains.bsp.protocol.StatusCode
 import java.nio.file.Path
 
 object InverseSourcesQuery {
-  fun inverseSourcesQuery(
+  suspend fun inverseSourcesQuery(
     documentRelativePath: Path,
     bazelRunner: BazelRunner,
     bazelInfo: BazelRelease,
-    cancelChecker: CancelChecker,
   ): InverseSourcesResult {
     val fileLabel =
-      fileLabel(documentRelativePath, bazelRunner, cancelChecker)
+      fileLabel(documentRelativePath, bazelRunner)
         ?: return InverseSourcesResult(
           emptyList(),
         )
-    val listOfLabels = targetLabels(fileLabel, bazelRunner, bazelInfo, cancelChecker)
+    val listOfLabels = targetLabels(fileLabel, bazelRunner, bazelInfo)
     return InverseSourcesResult(listOfLabels.map { BuildTargetIdentifier(it.toString()) })
   }
 
   /**
    * @return list of targets that contain `fileLabel` in their `srcs` attribute
    */
-  private fun targetLabels(
+  private suspend fun targetLabels(
     fileLabel: String,
     bazelRunner: BazelRunner,
     bazelRelease: BazelRelease,
-    cancelChecker: CancelChecker,
   ): List<Label> {
     val packageLabel = fileLabel.replace(":.*".toRegex(), ":*")
     val consistentLabelsArg = listOfNotNull(if (bazelRelease.major >= 6) "--consistent_labels" else null) // #bazel5
@@ -46,7 +43,7 @@ object InverseSourcesQuery {
     val targetLabelsQuery =
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
-        .waitAndGetResult(cancelChecker)
+        .waitAndGetResult()
     if (targetLabelsQuery.bspStatusCode == StatusCode.OK) {
       return targetLabelsQuery.stdoutLines.map { Label.parse(it) }
     } else {
@@ -60,16 +57,12 @@ object InverseSourcesQuery {
    * For example when you pass a relative path like "foo/Lib.kt", you will receive "//foo:Lib.kt".
    * Null is returned in case the file does not exist or does not belong to any target's sources list
    */
-  private fun fileLabel(
-    relativePath: Path,
-    bazelRunner: BazelRunner,
-    cancelChecker: CancelChecker,
-  ): String? {
+  private suspend fun fileLabel(relativePath: Path, bazelRunner: BazelRunner): String? {
     val command = bazelRunner.buildBazelCommand { fileQuery(relativePath) }
     val fileLabelResult =
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
-        .waitAndGetResult(cancelChecker)
+        .waitAndGetResult()
     return if (fileLabelResult.bspStatusCode == StatusCode.OK && fileLabelResult.stdoutLines.size == 1) {
       fileLabelResult.stdoutLines.first()
     } else if (fileLabelResult.stderrLines.firstOrNull()?.startsWith("ERROR: no such target '") == true) {

@@ -71,7 +71,7 @@ class BspProjectTaskRunner : ProjectTaskRunner() {
     val targetIdentifiers = targetsToBuild.filter { it.capabilities.canCompile }.map { it.id }
     val result =
       BspCoroutineService.getInstance(project).startAsync {
-        runBuildTargetTask(targetIdentifiers, project, log)
+        runBuildTargetTask(targetIdentifiers, project)
       }
     return result
       .toPromise()

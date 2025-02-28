@@ -4,7 +4,6 @@ import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -13,7 +12,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.future.await
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BspPluginBundle
@@ -30,7 +28,6 @@ import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.StatusCode
 import java.util.UUID
-import java.util.concurrent.CancellationException
 
 @ApiStatus.Internal
 public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<CompileResult>("build targets", project) {
@@ -115,7 +112,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
       val compileParams = createCompileParams(targetsIds, originId)
 
       try {
-        val buildDeferred = async { server.buildTargetCompile(compileParams).await() }
+        val buildDeferred = async { server.buildTargetCompile(compileParams) }
         return@coroutineScope BspTaskStatusLogger(buildDeferred, bspBuildConsole, originId) { statusCode }.getResult()
       } finally {
         BspTaskEventsService.getInstance(project).removeListener(originId)
@@ -135,7 +132,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
       title = BspPluginBundle.message("console.task.build.title"),
       message = startBuildMessage,
       cancelAction = { cs.cancel() },
-      redoAction = { BspCoroutineService.getInstance(project).start { runBuildTargetTask(targetIds, project, log) } },
+      redoAction = { BspCoroutineService.getInstance(project).start { runBuildTargetTask(targetIds, project) } },
     )
   }
 
@@ -150,25 +147,11 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
     CompileParams(targetIds, originId = originId, arguments = listOf("--keep_going"))
 }
 
-public suspend fun runBuildTargetTask(
-  targetIds: List<BuildTargetIdentifier>,
-  project: Project,
-  log: Logger,
-): CompileResult? =
-  try {
-    saveAllFiles()
-    withBackgroundProgress(project, "Building target(s)...") {
-      BuildTargetTask(project).connectAndExecute(targetIds)
-    }.also {
-      VirtualFileManager.getInstance().asyncRefresh()
-    }
-  } catch (e: Exception) {
-    when {
-      e is CancellationException -> CompileResult(statusCode = StatusCode.CANCELLED)
-
-      else -> {
-        log.error(e)
-        null
-      }
-    }
+public suspend fun runBuildTargetTask(targetIds: List<BuildTargetIdentifier>, project: Project): CompileResult? {
+  saveAllFiles()
+  return withBackgroundProgress(project, "Building target(s)...") {
+    BuildTargetTask(project).connectAndExecute(targetIds)
+  }.also {
+    VirtualFileManager.getInstance().asyncRefresh()
   }
+}

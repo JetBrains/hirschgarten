@@ -6,7 +6,6 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.jetbrains.bazel.config.BspPluginBundle
@@ -105,7 +104,7 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
       )
       server =
         connection.server.also {
-          it.buildInitialize(params = InitializeBuildParams(featureFlags = featureFlags)).asDeferred().await()
+          it.buildInitialize(params = InitializeBuildParams(featureFlags = featureFlags))
           it.onBuildInitialized()
         }
       bspSyncConsole.addMessage(

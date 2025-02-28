@@ -57,7 +57,7 @@ class PythonBspDebugRunner : PyDebugRunner() {
     onBuildComplete: () -> Unit,
   ) {
     BspCoroutineService.getInstance(project).start {
-      runBuildTargetTask(listOf(targetId.toBspIdentifier()), project, log)
+      runBuildTargetTask(listOf(targetId.toBspIdentifier()), project)
       withContext(Dispatchers.EDT) {
         onBuildComplete()
       }

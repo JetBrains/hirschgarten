@@ -44,7 +44,7 @@ abstract class LocalJvmRunnerAction(
   }
 
   private suspend fun preBuild(project: Project): Boolean {
-    val buildResult = runBuildTargetTask(listOf(targetInfo.id), project, log)
+    val buildResult = runBuildTargetTask(listOf(targetInfo.id), project)
     return buildResult?.statusCode == StatusCode.OK
   }
 

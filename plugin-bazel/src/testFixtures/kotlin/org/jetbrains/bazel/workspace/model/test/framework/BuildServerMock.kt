@@ -37,7 +37,6 @@ import org.jetbrains.bsp.protocol.OutputPathsParams
 import org.jetbrains.bsp.protocol.OutputPathsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
-import org.jetbrains.bsp.protocol.ReadParams
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.RunParams
@@ -64,7 +63,6 @@ import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
-import java.util.concurrent.CompletableFuture
 
 class BuildServerMock(
   private val initializeBuildResult: Any? = null,
@@ -105,123 +103,105 @@ class BuildServerMock(
   private val bazelResolveRemoteToLocal: BazelResolveRemoteToLocalResult? = null,
   private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = null,
 ) : JoinedBuildServer {
-  override fun buildInitialize(initializeBuildParams: InitializeBuildParams): CompletableFuture<Any> = wrapInFuture(initializeBuildResult)
+  override suspend fun buildInitialize(initializeBuildParams: InitializeBuildParams) {}
 
-  override fun onBuildInitialized() { // it's a mock, nothing to do
+  override suspend fun onBuildInitialized() { // it's a mock, nothing to do
   }
 
-  override fun buildShutdown(): CompletableFuture<Any> = wrapInFuture(null)
+  override suspend fun buildShutdown() = wrapInFuture(null)
 
-  override fun onBuildExit() { // it's a mock, nothing to do
+  override suspend fun onBuildExit() { // it's a mock, nothing to do
   }
 
-  override fun workspaceBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult> = wrapInFuture(workspaceBuildTargetsResult)
+  override suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult = wrapInFuture(workspaceBuildTargetsResult)
 
-  override fun workspaceReload(): CompletableFuture<Any> = wrapInFuture(null)
+  override suspend fun buildTargetSources(sourcesParams: SourcesParams): SourcesResult = wrapInFuture(sourcesResult)
 
-  override fun buildTargetSources(sourcesParams: SourcesParams): CompletableFuture<SourcesResult> = wrapInFuture(sourcesResult)
-
-  override fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): CompletableFuture<InverseSourcesResult> =
+  override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult =
     wrapInFuture(inverseSourcesResult)
 
-  override fun buildTargetDependencySources(dependencySourcesParams: DependencySourcesParams): CompletableFuture<DependencySourcesResult> =
+  override suspend fun buildTargetDependencySources(dependencySourcesParams: DependencySourcesParams): DependencySourcesResult =
     wrapInFuture(dependencySourcesResult)
 
-  override fun buildTargetDependencyModules(dependencyModulesParams: DependencyModulesParams): CompletableFuture<DependencyModulesResult> =
+  override suspend fun buildTargetDependencyModules(dependencyModulesParams: DependencyModulesParams): DependencyModulesResult =
     wrapInFuture(dependencyModulesResult)
 
-  override fun buildTargetResources(resourcesParams: ResourcesParams): CompletableFuture<ResourcesResult> = wrapInFuture(resourcesResult)
+  override suspend fun buildTargetResources(resourcesParams: ResourcesParams): ResourcesResult = wrapInFuture(resourcesResult)
 
-  override fun buildTargetOutputPaths(outputPathsParams: OutputPathsParams): CompletableFuture<OutputPathsResult> =
-    wrapInFuture(outputPathsResult)
+  override suspend fun buildTargetOutputPaths(outputPathsParams: OutputPathsParams): OutputPathsResult = wrapInFuture(outputPathsResult)
 
-  override fun buildTargetCompile(compileParams: CompileParams): CompletableFuture<CompileResult> = wrapInFuture(compileResult)
+  override suspend fun buildTargetCompile(compileParams: CompileParams): CompileResult = wrapInFuture(compileResult)
 
-  override fun buildTargetRun(runParams: RunParams): CompletableFuture<RunResult> = wrapInFuture(runResult)
+  override suspend fun buildTargetRun(runParams: RunParams): RunResult = wrapInFuture(runResult)
 
-  override fun buildTargetTest(testParams: TestParams): CompletableFuture<TestResult> = wrapInFuture(testResult)
+  override suspend fun buildTargetTest(testParams: TestParams): TestResult = wrapInFuture(testResult)
 
-  override fun buildTargetCleanCache(cleanCacheParams: CleanCacheParams): CompletableFuture<CleanCacheResult> =
-    wrapInFuture(cleanCacheResult)
+  override suspend fun buildTargetCleanCache(cleanCacheParams: CleanCacheParams): CleanCacheResult = wrapInFuture(cleanCacheResult)
 
-  override fun onRunReadStdin(params: ReadParams) { // it's a mock, nothing to do
-  }
+  override suspend fun buildTargetJvmTestEnvironment(jvmTestEnvironmentParams: JvmTestEnvironmentParams): JvmTestEnvironmentResult =
+    wrapInFuture(jvmTestEnvironmentResult)
 
-  override fun buildTargetJvmTestEnvironment(
-    jvmTestEnvironmentParams: JvmTestEnvironmentParams,
-  ): CompletableFuture<JvmTestEnvironmentResult> = wrapInFuture(jvmTestEnvironmentResult)
-
-  override fun buildTargetJvmRunEnvironment(jvmRunEnvironmentParams: JvmRunEnvironmentParams): CompletableFuture<JvmRunEnvironmentResult> =
+  override suspend fun buildTargetJvmRunEnvironment(jvmRunEnvironmentParams: JvmRunEnvironmentParams): JvmRunEnvironmentResult =
     wrapInFuture(jvmRunEnvironmentResult)
 
-  override fun buildTargetJvmCompileClasspath(
-    jvmCompileClasspathParams: JvmCompileClasspathParams,
-  ): CompletableFuture<JvmCompileClasspathResult> = wrapInFuture(jvmCompileClasspathResult)
+  override suspend fun buildTargetJvmCompileClasspath(jvmCompileClasspathParams: JvmCompileClasspathParams): JvmCompileClasspathResult =
+    wrapInFuture(jvmCompileClasspathResult)
 
-  override fun buildTargetScalacOptions(scalacOptionsParams: ScalacOptionsParams): CompletableFuture<ScalacOptionsResult> =
+  override suspend fun buildTargetScalacOptions(scalacOptionsParams: ScalacOptionsParams): ScalacOptionsResult =
     wrapInFuture(scalacOptionsResult)
 
   @Deprecated("Deprecated in BSP. Use buildTarget/jvmTestEnvironment instead")
-  override fun buildTargetScalaTestClasses(scalaTestClassesParams: ScalaTestClassesParams): CompletableFuture<ScalaTestClassesResult> =
+  override suspend fun buildTargetScalaTestClasses(scalaTestClassesParams: ScalaTestClassesParams): ScalaTestClassesResult =
     wrapInFuture(scalaTestClassesResult)
 
   @Deprecated("Deprecated in BSP. Use buildTarget/jvmRunEnvironment instead")
-  override fun buildTargetScalaMainClasses(scalaMainClassesParams: ScalaMainClassesParams): CompletableFuture<ScalaMainClassesResult> =
+  override suspend fun buildTargetScalaMainClasses(scalaMainClassesParams: ScalaMainClassesParams): ScalaMainClassesResult =
     wrapInFuture(scalaMainClassesResult)
 
-  override fun buildTargetJavacOptions(javacOptionsParams: JavacOptionsParams): CompletableFuture<JavacOptionsResult> =
+  override suspend fun buildTargetJavacOptions(javacOptionsParams: JavacOptionsParams): JavacOptionsResult =
     wrapInFuture(javacOptionsResult)
 
-  override fun buildTargetCppOptions(params: CppOptionsParams): CompletableFuture<CppOptionsResult> = wrapInFuture(cppOptionsResult)
+  override suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult = wrapInFuture(cppOptionsResult)
 
-  override fun workspaceLibraries(): CompletableFuture<WorkspaceLibrariesResult> = wrapInFuture(workspaceLibrariesResult)
+  override suspend fun workspaceLibraries(): WorkspaceLibrariesResult = wrapInFuture(workspaceLibrariesResult)
 
-  override fun workspaceGoLibraries(): CompletableFuture<WorkspaceGoLibrariesResult> = wrapInFuture(workspaceGoLibrariesResult)
+  override suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult = wrapInFuture(workspaceGoLibrariesResult)
 
-  override fun workspaceNonModuleTargets(): CompletableFuture<NonModuleTargetsResult> = wrapInFuture(workspaceNonModuleTargetsResult)
+  override suspend fun workspaceNonModuleTargets(): NonModuleTargetsResult = wrapInFuture(workspaceNonModuleTargetsResult)
 
-  override fun workspaceDirectories(): CompletableFuture<WorkspaceDirectoriesResult> = wrapInFuture(workspaceDirectoriesResult)
+  override suspend fun workspaceDirectories(): WorkspaceDirectoriesResult = wrapInFuture(workspaceDirectoriesResult)
 
-  override fun workspaceInvalidTargets(): CompletableFuture<WorkspaceInvalidTargetsResult> = wrapInFuture(workspaceInvalidTargetsResult)
+  override suspend fun workspaceInvalidTargets(): WorkspaceInvalidTargetsResult = wrapInFuture(workspaceInvalidTargetsResult)
 
-  override fun buildTargetAnalysisDebug(params: AnalysisDebugParams): CompletableFuture<AnalysisDebugResult> =
-    wrapInFuture(analysisDebugResult)
+  override suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult = wrapInFuture(analysisDebugResult)
 
-  override fun buildTargetRunWithDebug(params: RunWithDebugParams): CompletableFuture<RunResult> = wrapInFuture(runResultWithDebug)
+  override suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult = wrapInFuture(runResultWithDebug)
 
-  override fun buildTargetMobileInstall(params: MobileInstallParams): CompletableFuture<MobileInstallResult> =
-    wrapInFuture(mobileInstallResult)
+  override suspend fun buildTargetMobileInstall(params: MobileInstallParams): MobileInstallResult = wrapInFuture(mobileInstallResult)
 
-  override fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): CompletableFuture<JvmBinaryJarsResult> =
-    wrapInFuture(jvmBinaryJarsResult)
+  override suspend fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult = wrapInFuture(jvmBinaryJarsResult)
 
-  override fun workspaceBuildAndGetBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult> =
-    wrapInFuture(workspaceBuildTargetsResultAndBuild)
+  override suspend fun workspaceBuildAndGetBuildTargets(): WorkspaceBuildTargetsResult = wrapInFuture(workspaceBuildTargetsResultAndBuild)
 
-  override fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): CompletableFuture<WorkspaceBuildTargetsResult> =
+  override suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult =
     wrapInFuture(workspaceBuildTargetsPartial)
 
-  override fun workspaceBuildTargetsFirstPhase(
-    params: WorkspaceBuildTargetsFirstPhaseParams,
-  ): CompletableFuture<WorkspaceBuildTargetsResult> = wrapInFuture(workspaceBuildTargetsFirstPhase)
+  override suspend fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult =
+    wrapInFuture(workspaceBuildTargetsFirstPhase)
 
-  override fun buildTargetPythonOptions(params: PythonOptionsParams): CompletableFuture<PythonOptionsResult> =
-    wrapInFuture(pythonOptionsResult)
+  override suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult = wrapInFuture(pythonOptionsResult)
 
-  override fun rustWorkspace(params: RustWorkspaceParams): CompletableFuture<RustWorkspaceResult> = wrapInFuture(rustWorkspaceResult)
+  override suspend fun rustWorkspace(params: RustWorkspaceParams): RustWorkspaceResult = wrapInFuture(rustWorkspaceResult)
 
-  override fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): CompletableFuture<BazelResolveLocalToRemoteResult> =
+  override suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
     wrapInFuture(bazelResolveLocalToRemote)
 
-  override fun bazelResolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): CompletableFuture<BazelResolveRemoteToLocalResult> =
+  override suspend fun bazelResolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult =
     wrapInFuture(bazelResolveRemoteToLocal)
 
-  override fun workspaceBazelRepoMapping(): CompletableFuture<WorkspaceBazelRepoMappingResult> =
-    wrapInFuture(workspaceBazelRepoMappingResult)
+  override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = wrapInFuture(workspaceBazelRepoMappingResult)
 
-  override fun workspaceBazelBinPath(): CompletableFuture<WorkspaceBazelBinPathResult> =
-    wrapInFuture(WorkspaceBazelBinPathResult("/path/to/bazel-bin"))
+  override suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = WorkspaceBazelBinPathResult("/path/to/bazel-bin")
 
-  private fun <T> wrapInFuture(value: T?): CompletableFuture<T> =
-    value?.let { CompletableFuture.completedFuture(it) } ?: CompletableFuture.failedFuture(Exception("mock value is null"))
+  private fun <T> wrapInFuture(value: T?): T = value ?: error("mock value is null")
 }

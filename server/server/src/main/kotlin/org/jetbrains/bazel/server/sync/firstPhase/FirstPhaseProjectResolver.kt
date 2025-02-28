@@ -2,7 +2,6 @@ package org.jetbrains.bazel.server.sync.firstPhase
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import kotlinx.coroutines.runBlocking
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
@@ -20,7 +19,7 @@ class FirstPhaseProjectResolver(
   private val bazelInfo: BazelInfo,
   private val bspClientLogger: BspClientLogger,
 ) {
-  fun resolve(originId: String, cancelChecker: CancelChecker): FirstPhaseProject =
+  fun resolve(originId: String): FirstPhaseProject =
     runBlocking {
       val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
       val command =
@@ -50,7 +49,7 @@ class FirstPhaseProjectResolver(
           repoMapping = repoMapping,
         )
 
-      bazelProcess.waitAndGetResult(cancelChecker, true)
+      bazelProcess.waitAndGetResult(true)
 
       project
     }
