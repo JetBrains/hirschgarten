@@ -92,4 +92,6 @@ interface JoinedBuildServer {
   fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): CompletableFuture<WorkspaceBuildTargetsResult>
 
   fun workspaceBazelRepoMapping(): CompletableFuture<WorkspaceBazelRepoMappingResult>
+
+  fun workspaceBazelBinPath(): CompletableFuture<WorkspaceBazelBinPathResult>
 }

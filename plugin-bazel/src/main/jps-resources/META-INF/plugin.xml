@@ -109,6 +109,7 @@
     <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericBspTestHandlerProvider"
                         order="last"/>
     <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"/>
+    <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.BazelBinPathSyncHook"/>
     <projectStructureProvider
             implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
     <featureFlagsProvider implementation="org.jetbrains.bazel.config.DefaultBspFeatureFlagsProvider"/>
