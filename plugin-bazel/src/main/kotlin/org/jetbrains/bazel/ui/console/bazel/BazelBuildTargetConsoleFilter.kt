@@ -16,7 +16,10 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
 import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.Main
+import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.references.BUILD_FILE_NAMES
 import org.jetbrains.bazel.languages.starlark.repomapping.apparentRepoNameToCanonicalName
@@ -24,18 +27,14 @@ import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPat
 
 class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
   private val highlightGroupName = "highlightGroup"
-  private val externalRepoGroupName = "externalRepoGroup"
-  private val pathGroupName = "pathGroup"
-  private val targetName = "targetName"
-  private val repoHead = "repoHead"
 
   // The set of characters allowed in labels is taken from https://bazel.build/concepts/labels#target-names
   private val bazelTargetRegex =
     """(^|\W)
         (?<$highlightGroupName>
-        ((?<$repoHead>@|@@)(?<$externalRepoGroupName>[a-zA-Z0-9!%\-^_"&'()*+,;<=>?\[\]{|}~/.\#]*))? #@ or @@ with potential external repo names
-        //(?<$pathGroupName>[a-zA-Z0-9!%\-@^_"&'()*+,;<=>?\[\]{|}~/.\#]*):      #path
-        (?<$targetName>[a-zA-Z0-9!%\-@^_"&'()*+,;<=>?\[\]{|}~/.\#]+)         #target
+        ((@|@@)([a-zA-Z0-9!%\-^_"&'()*+,;<=>?\[\]{|}~/.\#]*))? #@ or @@ with potential external repo names
+        //([a-zA-Z0-9!%\-@^_"&'()*+,;<=>?\[\]{|}~/.\#]*):      #path
+        ([a-zA-Z0-9!%\-@^_"&'()*+,;<=>?\[\]{|}~/.\#]+)         #target
         )
     """.trimMargin()
       .toRegex(setOf(RegexOption.COMMENTS, RegexOption.MULTILINE))
@@ -47,29 +46,27 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
 
   private fun MatchResult.toFilterResultOrNull(line: String, entireLength: Int): Filter.Result? {
     val highlightGroup = groups[highlightGroupName] ?: return null
-    val pathGroup = groups[pathGroupName] ?: return null
-    val externalRepoGroup = groups[externalRepoGroupName]
-    val target = groups[targetName] ?: return null
+    val label = Label.parseOrNull(highlightGroup.value) as? ResolvedLabel ?: return null
+
     val projectRoot =
-      if (externalRepoGroup != null && externalRepoGroup.value.isNotEmpty()) {
+      if (label.repo is Main) {
+        // when the repo name is "", it is the root repo itself
+        project.rootDir
+      } else {
         // this is an external repo
         // now we check if it is an apparent name or canonical repository name
-        val headGroup = groups[repoHead]
         val canonicalName =
-          if (headGroup != null && headGroup.value == "@") {
-            project.apparentRepoNameToCanonicalName[externalRepoGroup.value] ?: return null
+          if (label.repo is Apparent) {
+            project.apparentRepoNameToCanonicalName[label.repoName] ?: return null
           } else {
-            externalRepoGroup.value
+            label.repoName
           }
         val path = project.canonicalRepoNameToPath[canonicalName] ?: return null
         val virtualFileManager = VirtualFileManager.getInstance()
         virtualFileManager.findFileByNioPath(path) ?: return null
-      } else {
-        // when the repo name is "", it is the root repo itself
-        project.rootDir
       }
 
-    val hyperLinkInfo = getHyperLinkInfo(project, projectRoot, pathGroup.value, target.value) ?: return null
+    val hyperLinkInfo = getHyperLinkInfo(project, projectRoot, label.packagePath.toString(), label.targetName) ?: return null
     val highlightStartOffset = entireLength - line.length + highlightGroup.range.first
     val highlightEndOffset = entireLength - line.length + highlightGroup.range.last + 1
 
