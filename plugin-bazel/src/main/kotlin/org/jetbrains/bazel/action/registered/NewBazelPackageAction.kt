@@ -15,6 +15,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
 import com.intellij.util.PlatformIcons
+import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 
@@ -31,7 +32,7 @@ class NewBazelPackageAction : DumbAwareAction() {
     val buildSystem: String = BazelPluginConstants.BAZEL_DISPLAY_NAME
     presentation.text = String.format("%s Package", buildSystem)
     presentation.description = String.format("Create a new %s package", buildSystem)
-    presentation.icon = PlatformIcons.PACKAGE_ICON
+    presentation.icon = BazelPluginIcons.bazelDirectory
   }
 
   override fun actionPerformed(event: AnActionEvent) {
