@@ -62,6 +62,7 @@ object GitHub : Project({
         buildType(IdeStarterTests.ExternalRepoResolveTestGitHub)
         buildType(IdeStarterTests.JarSourceExcludeTestGitHub)
         buildType(IdeStarterTests.BazelProjectModelModifierTestGitHub)
+        buildType(IdeStarterTests.BazelCoverageTestGitHub)
         buildType(ServerE2eTests.SampleRepoGitHub)
         buildType(ServerE2eTests.LocalJdkGitHub)
         buildType(ServerE2eTests.RemoteJdkGitHub)
@@ -122,6 +123,7 @@ object GitHub : Project({
       IdeStarterTests.ExternalRepoResolveTestGitHub,
       IdeStarterTests.JarSourceExcludeTestGitHub,
       IdeStarterTests.BazelProjectModelModifierTestGitHub,
+      IdeStarterTests.BazelCoverageTestGitHub,
       ServerE2eTests.SampleRepoGitHub,
       ServerE2eTests.LocalJdkGitHub,
       ServerE2eTests.RemoteJdkGitHub,
@@ -171,6 +173,7 @@ object Space : Project({
         buildType(IdeStarterTests.ExternalRepoResolveTestSpace)
         buildType(IdeStarterTests.JarSourceExcludeTestSpace)
         buildType(IdeStarterTests.BazelProjectModelModifierTestSpace)
+        buildType(IdeStarterTests.BazelCoverageTestSpace)
         buildType(ServerE2eTests.SampleRepoSpace)
         buildType(ServerE2eTests.LocalJdkSpace)
         buildType(ServerE2eTests.RemoteJdkSpace)
@@ -231,6 +234,7 @@ object Space : Project({
       IdeStarterTests.ExternalRepoResolveTestSpace,
       IdeStarterTests.JarSourceExcludeTestSpace,
       IdeStarterTests.BazelProjectModelModifierTestSpace,
+      IdeStarterTests.BazelCoverageTestSpace,
       ServerE2eTests.SampleRepoSpace,
       ServerE2eTests.LocalJdkSpace,
       ServerE2eTests.RemoteJdkSpace,
