@@ -7,16 +7,10 @@ package org.jetbrains.bazel.languages.projectview.lexer
  * @param input The input to tokenize.
  */
 class ProjectViewLexerBase(input: CharSequence) {
-  /**
-   * A sequence of characters that are neither whitespace nor colon
-   * and is not a part of a comment.
-   */
-  private data class Identifier(val start: Int, val tokenType: ProjectViewTokenType)
-
   private val tokens = mutableListOf<Token>()
   private var buffer = input.toString()
   private var pos = 0
-  private var currentIdentifier: Identifier? = null
+  private var identifierStart: Int? = null
   private var isPosAfterNonWhitespaceCharInLine = false
 
   init {
@@ -52,15 +46,8 @@ class ProjectViewLexerBase(input: CharSequence) {
         }
         else -> {
           isPosAfterNonWhitespaceCharInLine = true
-          if (currentIdentifier == null) {
-            // The identifier is a keyword if it's at the beginning of the line.
-            val tokenType =
-              if ((pos == 1) || (buffer[pos - 2] == '\n')) {
-                ProjectViewTokenType.KEYWORD
-              } else {
-                ProjectViewTokenType.IDENTIFIER
-              }
-            currentIdentifier = Identifier(pos - 1, tokenType)
+          if (identifierStart == null) {
+            identifierStart = pos - 1
           }
         }
       }
@@ -70,9 +57,9 @@ class ProjectViewLexerBase(input: CharSequence) {
   }
 
   private fun addPrecedingIdentifier(end: Int) {
-    currentIdentifier?.let {
-      tokens.add(Token(it.tokenType, it.start, end))
-      currentIdentifier = null
+    identifierStart?.let {
+      tokens.add(Token(getIdentifierToken(it, end), it, end))
+      identifierStart = null
     }
   }
 
@@ -102,6 +89,15 @@ class ProjectViewLexerBase(input: CharSequence) {
     }
 
     tokens.add(Token(ProjectViewTokenType.WHITESPACE, oldPos, pos))
+  }
+
+  private fun getIdentifierToken(start: Int, end: Int): ProjectViewTokenType {
+    val identifier = buffer.substring(start, end)
+    return when (identifier) {
+      in ProjectViewTokenType.SCALAR_KEYWORDS_SET -> ProjectViewTokenType.SCALAR_KEYWORD
+      in ProjectViewTokenType.LIST_KEYWORDS_SET -> ProjectViewTokenType.LIST_KEYWORD
+      else -> ProjectViewTokenType.IDENTIFIER
+    }
   }
 
   private fun isHorizontalWhitespace(c: Char): Boolean = c == ' ' || c == '\t' || c == '\r'
