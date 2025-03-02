@@ -82,7 +82,7 @@ class AndroidBeforeRunTaskProvider : BeforeRunTaskProvider<AndroidBeforeRunTaskP
   private fun buildApkWithoutInstall(project: Project, targetId: BuildTargetIdentifier): Boolean {
     val buildResult =
       runBlocking {
-        runBuildTargetTask(listOf(targetId), project, log)
+        runBuildTargetTask(listOf(targetId), project)
       }
     return buildResult?.statusCode == StatusCode.OK
   }

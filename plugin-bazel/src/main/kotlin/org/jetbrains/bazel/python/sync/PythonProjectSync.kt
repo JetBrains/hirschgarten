@@ -24,9 +24,10 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.jetbrains.python.sdk.PyDetectedSdk
 import com.jetbrains.python.sdk.PythonSdkAdditionalData
 import com.jetbrains.python.sdk.PythonSdkType
+import com.jetbrains.python.sdk.PythonSdkUpdater
 import com.jetbrains.python.sdk.detectSystemWideSdks
 import com.jetbrains.python.sdk.guessedLanguageLevel
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
@@ -57,13 +58,15 @@ private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
 private val PYTHON_MODULE_TYPE = ModuleTypeId("PYTHON_MODULE")
 
 class PythonProjectSync : ProjectSyncHook {
-  override fun isEnabled(project: Project): Boolean = BspFeatureFlags.isPythonSupportEnabled
+  override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isPythonSupportEnabled
 
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     val pythonTargets = environment.baseTargetInfos.calculatePythonTargets()
     val moduleNameProvider = environment.project.findNameProvider().orDefault()
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
     val sdks = calculateAndAddSdks(pythonTargets, environment, virtualFileUrlManager)
+
+    sdks.values.updateAll(environment.project)
 
     pythonTargets.forEach {
       val moduleName = moduleNameProvider(BuildTargetInfo(id = it.target.id))
@@ -310,4 +313,9 @@ class PythonProjectSync : ProjectSyncHook {
       .let { sdks ->
         sdks.firstOrNull { it.guessedLanguageLevel?.isPy3K == true } ?: sdks.firstOrNull()
       }
+
+  private fun Collection<Sdk>.updateAll(project: Project) =
+    forEach {
+      PythonSdkUpdater.scheduleUpdate(it, project)
+    }
 }

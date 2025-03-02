@@ -8,6 +8,5 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         "@maven//:com_google_code_gson_gson",
-        "@maven//:org_eclipse_lsp4j_org_eclipse_lsp4j_jsonrpc",
     ],
 )

@@ -33,7 +33,7 @@ class BuildTargetTree(
   private val labelHighlighter: (String) -> String = { it },
   private val showAsList: Boolean = false,
 ) : BuildTargetContainer {
-  private val rootNode = DefaultMutableTreeNode(DirectoryNodeData("[root]"))
+  private val rootNode = DefaultMutableTreeNode(DirectoryNodeData("[root]", emptyList()))
   private val cellRenderer = TargetTreeCellRenderer(targetIcon, invalidTargetIcon, labelHighlighter)
   private var popupHandlerBuilder: ((BuildTargetContainer) -> PopupHandler)? = null
 
@@ -105,7 +105,7 @@ class BuildTargetTree(
     depth: Int,
   ): DefaultMutableTreeNode {
     val node = DefaultMutableTreeNode()
-    node.userObject = DirectoryNodeData(dirname)
+    node.userObject = DirectoryNodeData(dirname, targets)
 
     val pathToIdentifierMap = targets.groupBy { it.path.getOrNull(depth + 1) }
     val childrenNodeList =
@@ -168,7 +168,7 @@ class BuildTargetTree(
       val onlyChild = childrenList.first() as? DefaultMutableTreeNode
       val onlyChildObject = onlyChild?.userObject
       if (onlyChildObject is DirectoryNodeData) {
-        node.userObject = DirectoryNodeData("${dirname}${separator}${onlyChildObject.name}")
+        node.userObject = DirectoryNodeData("${dirname}${separator}${onlyChildObject.name}", onlyChildObject.targets)
         childrenList.clear()
         childrenList.addAll(onlyChild.children().toList())
       }
@@ -220,6 +220,28 @@ class BuildTargetTree(
     }
   }
 
+  override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTargetInfo> {
+    val selected = treeComponent.lastSelectedPathComponent as? DefaultMutableTreeNode
+    val userObject = selected?.userObject
+    return (
+      if (userObject is DirectoryNodeData) {
+        userObject.targets.mapNotNull { it.target }
+      } else {
+        emptyList()
+      }
+    )
+  }
+
+  override fun getSelectedComponentName(): String {
+    val selected = treeComponent.lastSelectedPathComponent as? DefaultMutableTreeNode
+    val userObject = selected?.userObject
+    return when (userObject) {
+      is TargetNodeData -> userObject.displayName
+      is DirectoryNodeData -> userObject.name
+      else -> ""
+    }
+  }
+
   override fun selectTopTargetAndFocus() {
     treeComponent.selectionRows = intArrayOf(0)
     treeComponent.requestFocus()
@@ -253,7 +275,7 @@ class BuildTargetTree(
 
 private interface NodeData
 
-private data class DirectoryNodeData(val name: String) : NodeData {
+private data class DirectoryNodeData(val name: String, val targets: List<BuildTargetTreeIdentifier>) : NodeData {
   override fun toString(): String = name
 }
 

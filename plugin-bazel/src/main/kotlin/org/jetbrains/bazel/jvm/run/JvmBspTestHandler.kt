@@ -6,7 +6,6 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
-import kotlinx.coroutines.future.asDeferred
 import org.jetbrains.bazel.run.BspProcessHandler
 import org.jetbrains.bazel.run.BspRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
@@ -76,6 +75,6 @@ class JvmTestWithDebugCommandLineState(
         debug = RemoteDebugData("jdwp", getConnectionPort()),
       )
 
-    server.buildTargetTest(testParams).asDeferred().await()
+    server.buildTargetTest(testParams)
   }
 }

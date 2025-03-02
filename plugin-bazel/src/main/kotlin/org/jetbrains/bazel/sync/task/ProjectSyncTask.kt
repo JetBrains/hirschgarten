@@ -20,7 +20,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.saveAllFiles
@@ -41,7 +40,6 @@ import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bazel.ui.console.syncConsole
 import java.util.concurrent.CancellationException
-import java.util.concurrent.CompletableFuture
 
 private val log = logger<ProjectSyncTask>()
 
@@ -193,21 +191,21 @@ class ProjectSyncTask(private val project: Project) {
 fun <Result> CoroutineScope.asyncQueryIf(
   check: Boolean,
   queryName: String,
-  doQuery: () -> CompletableFuture<Result>,
+  doQuery: suspend () -> Result,
 ): Deferred<Result?> = async { queryIf(check, queryName, doQuery) }
 
 suspend fun <Result> queryIf(
   check: Boolean,
   queryName: String,
-  doQuery: () -> CompletableFuture<Result>,
+  doQuery: suspend () -> Result,
 ): Result? = if (check) query(queryName, doQuery) else null
 
-fun <Result> CoroutineScope.asyncQuery(queryName: String, doQuery: () -> CompletableFuture<Result>): Deferred<Result> =
+fun <Result> CoroutineScope.asyncQuery(queryName: String, doQuery: suspend () -> Result): Deferred<Result> =
   async { query(queryName, doQuery) }
 
-suspend fun <Result> query(queryName: String, doQuery: () -> CompletableFuture<Result>): Result =
+suspend fun <Result> query(queryName: String, doQuery: suspend () -> Result): Result =
   try {
-    withContext(Dispatchers.IO) { doQuery().await() }
+    withContext(Dispatchers.IO) { doQuery() }
   } catch (e: Exception) {
     when (e) {
       is CancellationException -> fileLogger().info("Query $queryName is cancelled")

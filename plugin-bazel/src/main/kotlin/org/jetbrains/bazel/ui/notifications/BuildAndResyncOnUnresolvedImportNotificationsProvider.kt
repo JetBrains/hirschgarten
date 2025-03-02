@@ -12,7 +12,7 @@ import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.EditorNotifications
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.coroutines.BspCoroutineService
@@ -34,7 +34,7 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotification
     if (!project.isBspProject) return null
     if (file in disableNotificationForFile) return null
     if (project.isSyncInProgress()) return null
-    if (BspFeatureFlags.isBuildProjectOnSyncEnabled) return null
+    if (BazelFeatureFlags.isBuildProjectOnSyncEnabled) return null
     if (!project.service<IncompleteDependenciesService>().getState().isComplete) return null
 
     if (!hasUnresolvedImport(project, file)) return null

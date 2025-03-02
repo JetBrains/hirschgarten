@@ -43,7 +43,7 @@ public class BuildPluginBeforeRunTaskProvider : BeforeRunTaskProvider<BuildPlugi
     val targetIds = runConfiguration.targets
     val buildResult =
       runBlocking {
-        runBuildTargetTask(targetIds, environment.project, log)
+        runBuildTargetTask(targetIds, environment.project)
       }
     return buildResult?.statusCode == StatusCode.OK
   }

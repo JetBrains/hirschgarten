@@ -1,6 +1,5 @@
 package org.jetbrains.bazel
 
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.protocol.BuildTargetIdentifier
@@ -51,7 +50,7 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
       val expectedDeprecatedWarningFileUri = "file://$workspaceDir/DeprecatedWarning.java"
       testClient.test(60.seconds) { session ->
         session.client.clearDiagnostics()
-        val result = session.server.buildTargetCompile(transformedParams).await()
+        val result = session.server.buildTargetCompile(transformedParams)
         assertEquals(StatusCode.OK, result.statusCode)
         assertEquals(params.originId, result.originId)
         println(session.client.publishDiagnosticsNotifications)
@@ -118,7 +117,7 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
 
       testClient.test(60.seconds) { session ->
         session.client.clearDiagnostics()
-        val result = session.server.buildTargetCompile(transformedParams).await()
+        val result = session.server.buildTargetCompile(transformedParams)
         println(session.client.logMessageNotifications)
         assertEquals(StatusCode.ERROR, result.statusCode)
         assertEquals(params.originId, result.originId)

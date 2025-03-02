@@ -19,7 +19,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.annotations.PublicApi
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.label
@@ -195,7 +195,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   }
 
   private fun getTargetsFromAncestorsForFile(file: VirtualFile): List<Label> {
-    return if (BspFeatureFlags.isRetrieveTargetsForFileFromAncestorsEnabled) {
+    return if (BazelFeatureFlags.isRetrieveTargetsForFileFromAncestorsEnabled) {
       val rootDir = project.rootDir
       var iter = file.parent
       while (iter != null && VfsUtil.isAncestor(rootDir, iter, false)) {

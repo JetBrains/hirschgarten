@@ -4,7 +4,6 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.run.BspProcessHandler
 import org.jetbrains.bazel.run.BspRunHandler
@@ -82,6 +81,6 @@ class JvmRunWithDebugCommandLineState(
     val remoteDebugData = RemoteDebugData("jdwp", getConnectionPort())
     val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
 
-    server.buildTargetRunWithDebug(runWithDebugParams).await()
+    server.buildTargetRunWithDebug(runWithDebugParams)
   }
 }

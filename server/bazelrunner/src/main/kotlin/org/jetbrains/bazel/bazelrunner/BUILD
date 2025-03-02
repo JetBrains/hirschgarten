@@ -21,7 +21,6 @@ kt_jvm_library(
         "@maven//:com_google_code_gson_gson",
         "@maven//:org_apache_logging_log4j_log4j_api",
         "@maven//:org_apache_logging_log4j_log4j_core",
-        "@maven//:org_eclipse_lsp4j_org_eclipse_lsp4j_jsonrpc",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

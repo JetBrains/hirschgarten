@@ -7,9 +7,8 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.module.Module
-import kotlinx.coroutines.future.await
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.BspFeatureFlags
 import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.run.BspProcessHandler
 import org.jetbrains.bazel.run.BspRunHandler
@@ -62,7 +61,7 @@ class GoBspRunHandler(private val configuration: BspRunConfiguration) : BspRunHa
     override fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler = GoBspRunHandler(configuration)
 
     override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
-      BspFeatureFlags.isGoSupportEnabled && targetInfos.all { it.languageIds.includesGo() }
+      BazelFeatureFlags.isGoSupportEnabled && targetInfos.all { it.languageIds.includesGo() }
 
     override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)
   }
@@ -91,6 +90,6 @@ class GoRunWithDebugCommandLineState(
     val remoteDebugData = RemoteDebugData("go_dlv", debugServerAddress.port)
     val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
 
-    server.buildTargetRunWithDebug(runWithDebugParams).await()
+    server.buildTargetRunWithDebug(runWithDebugParams)
   }
 }

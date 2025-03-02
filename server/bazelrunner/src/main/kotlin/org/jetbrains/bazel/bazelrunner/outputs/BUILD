@@ -9,5 +9,6 @@ kt_jvm_library(
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/utils",
         "//server/commons",
         "//server/logger",
+        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",
     ],
 )

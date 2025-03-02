@@ -6,8 +6,8 @@ import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationNamesInfo
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.config.BazelFeatureFlags.isKotlinPluginK2Mode
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.BspFeatureFlags.isKotlinPluginK2Mode
 import org.jetbrains.bazel.startup.BspProjectActivity
 import org.jetbrains.kotlin.idea.KotlinIcons
 import org.jetbrains.kotlin.idea.configuration.ui.KotlinPluginKindSwitcherController

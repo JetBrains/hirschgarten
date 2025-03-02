@@ -1,6 +1,5 @@
 package org.jetbrains.bazel
 
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -36,7 +35,7 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
       "Compare workspace/buildTargets",
     ) {
       testClient.test(timeout = 5.minutes) { session ->
-        val result = session.server.workspaceBuildTargets().await()
+        val result = session.server.workspaceBuildTargets()
         testClient.assertJsonEquals<WorkspaceBuildTargetsResult>(expectedWorkspaceBuildTargetsResult(), result)
         assertFalse(mainJar.exists())
         assertFalse(genruleShouldNotBeBuilt.exists())
@@ -48,7 +47,7 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
       "Compare workspace/buildAndGetBuildTargets",
     ) {
       testClient.test(timeout = 5.minutes) { session ->
-        val result = session.server.workspaceBuildAndGetBuildTargets().await()
+        val result = session.server.workspaceBuildAndGetBuildTargets()
         testClient.assertJsonEquals<WorkspaceBuildTargetsResult>(expectedWorkspaceBuildTargetsResult(), result)
         assertTrue(mainJar.exists())
         assertFalse(genruleShouldNotBeBuilt.exists())

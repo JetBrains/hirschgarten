@@ -24,7 +24,7 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import kotlinx.coroutines.coroutineScope
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
@@ -54,7 +54,7 @@ private const val GO_RESOURCE_ROOT_TYPE = "go-resource"
 private val GO_MODULE_TYPE = ModuleTypeId("WEB_MODULE")
 
 class GoProjectSync : ProjectSyncHook {
-  override fun isEnabled(project: Project): Boolean = BspFeatureFlags.isGoSupportEnabled
+  override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isGoSupportEnabled
 
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
     val goTargets = environment.baseTargetInfos.calculateGoTargets()

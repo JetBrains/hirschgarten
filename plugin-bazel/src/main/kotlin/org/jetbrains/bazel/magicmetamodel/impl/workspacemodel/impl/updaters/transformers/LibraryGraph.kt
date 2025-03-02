@@ -2,7 +2,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
@@ -25,7 +25,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
 
   fun calculateAllDependencies(
     target: BuildTarget,
-    includesTransitive: Boolean = !BspFeatureFlags.isWrapLibrariesInsideModulesEnabled,
+    includesTransitive: Boolean = !BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled,
   ): LibraryGraphDependencies =
     if (includesTransitive) {
       calculateAllTransitiveDependencies(target)
@@ -96,7 +96,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
       }
 
   fun createLibraryModules(nameProvider: TargetNameReformatProvider, defaultJdkName: String?): List<JavaModule> {
-    if (!BspFeatureFlags.isWrapLibrariesInsideModulesEnabled) return emptyList()
+    if (!BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled) return emptyList()
 
     return libraries
       .map { library ->
