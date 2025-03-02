@@ -16,7 +16,6 @@ import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.console.ids.CONNECT_TASK_ID
 import org.jetbrains.bsp.protocol.FeatureFlags
-import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.nio.file.Path
 
@@ -24,7 +23,7 @@ import java.nio.file.Path
  * a temporary piece of data that signals built-in connection to reset to account for changes in configs
  * TODO: purge along with BSP complete removal
  */
-private data class ConnectionResetConfig(val projectViewFile: Path?, val initializeBuildData: InitializeBuildParams)
+private data class ConnectionResetConfig(val projectViewFile: Path?, val featureFlags: FeatureFlags)
 
 private val log = logger<DefaultBspConnection>()
 
@@ -40,28 +39,23 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
   private val projectPath = VfsUtil.findFile(workspaceRoot, true) ?: error("Project doesn't exist")
   private var connectionResetConfig = generateNewConnectionResetConfig()
   private val server =
-    startServer(
-      bspClient,
-      workspaceRoot = workspaceRoot,
-      projectViewFile = connectionResetConfig.projectViewFile,
-      featureFlags = FeatureFlagsProvider.getFeatureFlags(),
-    )
+    runBlocking {
+      startServer(
+        bspClient,
+        workspaceRoot = workspaceRoot,
+        projectViewFile = connectionResetConfig.projectViewFile,
+        featureFlags = FeatureFlagsProvider.getFeatureFlags(),
+      )
+    }
 
   init {
     DotBazelBspCreator(projectPath).create()
-    // TODO: don't use runBlocking
-    runBlocking {
-      connectBuiltIn(server, connectionResetConfig.initializeBuildData.featureFlags)
-    }
   }
 
   private fun generateNewConnectionResetConfig(): ConnectionResetConfig =
     ConnectionResetConfig(
       projectViewFile = project.bazelProjectSettings.projectViewPath?.toAbsolutePath(),
-      initializeBuildData =
-        InitializeBuildParams(
-          featureFlags = FeatureFlagsProvider.getFeatureFlags(),
-        ),
+      featureFlags = FeatureFlagsProvider.getFeatureFlags(),
     )
 
   private suspend fun connectBuiltIn(server: JoinedBuildServer, featureFlags: FeatureFlags) {
@@ -77,10 +71,6 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
         CONNECT_TASK_ID,
         BspPluginBundle.message("console.message.initialize.server.in.progress"),
       )
-      server.let {
-        it.buildInitialize(params = InitializeBuildParams(featureFlags = featureFlags))
-        it.onBuildInitialized()
-      }
       bspSyncConsole.addMessage(
         CONNECT_TASK_ID,
         BspPluginBundle.message("console.message.initialize.server.success"),
@@ -105,8 +95,10 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
 
     if (newConnectionResetConfig != connectionResetConfig) {
       connectionResetConfig = newConnectionResetConfig
+      connectBuiltIn(server, connectionResetConfig.featureFlags)
       // TODO: change server's projectview path once the spaghetti is untangled
     }
+
     return task(server)
   }
 }

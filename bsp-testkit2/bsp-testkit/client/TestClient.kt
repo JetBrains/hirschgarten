@@ -9,7 +9,6 @@ import org.jetbrains.bsp.protocol.DependencyModulesParams
 import org.jetbrains.bsp.protocol.DependencyModulesResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
-import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
@@ -50,21 +49,8 @@ suspend fun withSession(
   test(session)
 }
 
-suspend fun withLifetime(
-  initializeParams: InitializeBuildParams,
-  session: Session,
-  f: suspend () -> Unit,
-) {
-  session.server.buildInitialize(initializeParams)
-  session.server.onBuildInitialized()
-  f()
-  session.server.buildShutdown()
-  session.server.onBuildExit()
-}
-
 open class BasicTestClient(
   val workspacePath: Path,
-  val initializeParams: InitializeBuildParams,
   val transformJson: (String) -> String,
   val client: MockClient,
 ) {
@@ -85,21 +71,15 @@ open class BasicTestClient(
   fun test(timeout: Duration, doTest: suspend (Session) -> Unit) {
     runTest(timeout = timeout) {
       withSession(workspacePath, client) { session ->
-        withLifetime(initializeParams, session) {
-          doTest(session)
-        }
+        doTest(session)
       }
     }
   }
 }
 
-class TestClient(
-  workspacePath: Path,
-  initializeParams: InitializeBuildParams,
-  transformJson: (String) -> String,
-) : BasicTestClient(
+class TestClient(workspacePath: Path, transformJson: (String) -> String) :
+  BasicTestClient(
     workspacePath,
-    initializeParams,
     transformJson,
     MockClient(),
   ) {
