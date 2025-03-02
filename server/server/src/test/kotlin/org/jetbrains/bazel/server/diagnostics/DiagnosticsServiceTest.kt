@@ -2,7 +2,6 @@ package org.jetbrains.bazel.server.diagnostics
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.Range
@@ -36,7 +35,7 @@ class DiagnosticsServiceTest {
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/path/to/package/BUILD"),
-          BuildTargetIdentifier("@//path/to/package:test"),
+          Label.parse("@//path/to/package:test"),
           errorDiagnostic(
             Position(12, 37),
             "in java_test rule //path/to/package:test: target '//path/to/another/package:lib' is not visible from target '//path/to/package:test'. Check the visibility declaration of the former target if you think the dependency is legitimate",
@@ -85,7 +84,7 @@ class DiagnosticsServiceTest {
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/path/to/package/Test.scala"),
-          BuildTargetIdentifier("@//path/to/package:test"),
+          Label.parse("@//path/to/package:test"),
           errorDiagnostic(
             Position(3, 18),
             """type mismatch;
@@ -147,7 +146,7 @@ class DiagnosticsServiceTest {
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/path/to/package/Test1.scala"),
-          BuildTargetIdentifier("@//path/to/package:test"),
+          Label.parse("@//path/to/package:test"),
           errorDiagnostic(
             Position(21, 21),
             """type mismatch;
@@ -160,7 +159,7 @@ class DiagnosticsServiceTest {
         ),
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/path/to/package/Test2.scala"),
-          BuildTargetIdentifier("@//path/to/package:test"),
+          Label.parse("@//path/to/package:test"),
           errorDiagnostic(
             Position(37, 18),
             """type mismatch;
@@ -220,7 +219,7 @@ class DiagnosticsServiceTest {
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/path/to/package/Test.scala"),
-          BuildTargetIdentifier("@//path/to/package:test"),
+          Label.parse("@//path/to/package:test"),
           errorDiagnostic(
             Position(21, 21),
             """type mismatch;
@@ -292,7 +291,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(
             "file:///user/workspace/server/src/test/java/org/jetbrains/bazel/server/diagnostics/DiagnosticsServiceTest.kt",
           ),
-          BuildTargetIdentifier(label.toString()),
+          Label.parse(label.toString()),
           errorDiagnostic(
             Position(12, 18),
             """type mismatch: inferred type is String but Int was expected
@@ -346,7 +345,7 @@ class DiagnosticsServiceTest {
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/project/src/main/scala/com/example/project/File1.scala"),
-          BuildTargetIdentifier(label.toString()),
+          Label.parse(label.toString()),
           errorDiagnostic(
             Position(11, 18),
             """type mismatch;
@@ -366,7 +365,7 @@ class DiagnosticsServiceTest {
         ),
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/project/src/main/scala/com/example/project/File2.scala"),
-          BuildTargetIdentifier(label.toString()),
+          Label.parse(label.toString()),
           warningDiagnostic(
             Position(26, 24),
             """private val versionsWriter in object File2 is never used
@@ -418,7 +417,7 @@ class DiagnosticsServiceTest {
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/Hello.scala"),
-          BuildTargetIdentifier(label.toString()),
+          Label.parse(label.toString()),
           errorDiagnostic(
             Position(19, 20),
             """|Type Mismatch Error
@@ -472,7 +471,7 @@ class DiagnosticsServiceTest {
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/Hello.scala"),
-          BuildTargetIdentifier(label.toString()),
+          Label.parse(label.toString()),
           errorDiagnostic(
             Position(18, 20),
             """|Type Mismatch Error
@@ -526,7 +525,7 @@ class DiagnosticsServiceTest {
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/drd/messaging/src/main/scala/bots/Bot.scala"),
-          BuildTargetIdentifier(label.toString()),
+          Label.parse(label.toString()),
           errorDiagnostic(
             Position(143, 26),
             """|Not Found Error
@@ -571,7 +570,7 @@ class DiagnosticsServiceTest {
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/path/to/file.scala"),
-          BuildTargetIdentifier(label.toString()),
+          Label.parse(label.toString()),
           errorDiagnostic(
             Position(27, 10),
             "Error\nend of statement expected but 'type' found",
@@ -619,7 +618,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(
             "file:///user/workspace/intellij/release-tool/src/main/scala/com/intellij/releasetool/PluginResolver.scala",
           ),
-          BuildTargetIdentifier(label.toString()),
+          Label.parse(label.toString()),
           warningDiagnostic(
             Position(14, 5),
             """match may not be exhaustive.
@@ -633,7 +632,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(
             "file:///user/workspace/intellij/release-tool/src/main/scala/com/intellij/releasetool/Json.scala",
           ),
-          BuildTargetIdentifier(label.toString()),
+          Label.parse(label.toString()),
           warningDiagnostic(
             Position(29, 37),
             """trait ScalaObjectMapper in package scala is deprecated (since 2.12.1): ScalaObjectMapper is deprecated because Manifests are not supported in Scala3, you might want to use ClassTagExtensions as a replacement
@@ -678,7 +677,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(
             "file:///user/workspace/server/src/main/java/org/jetbrains/bazel/server/sync/ProjectResolver.java",
           ),
-          BuildTargetIdentifier(label.toString()),
+          Label.parse(label.toString()),
           errorDiagnostic(
             Position(20, 8),
             """symbol not found org.jetbrains.bazel.server.bsp.config.ProjectViewProvider
@@ -733,7 +732,7 @@ class DiagnosticsServiceTest {
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/server/src/main/java/org/jetbrains/bazel/server/bep/BepServer.java"),
-          BuildTargetIdentifier(label.toString()),
+          Label.parse(label.toString()),
           errorDiagnostic(
             Position(55, 34),
             """
@@ -751,7 +750,7 @@ class DiagnosticsServiceTest {
 
   private fun publishDiagnosticsParams(
     textDocument: TextDocumentIdentifier,
-    buildTarget: BuildTargetIdentifier,
+    buildTarget: Label,
     vararg diagnostics: BspDiagnostic,
   ): PublishDiagnosticsParams =
     PublishDiagnosticsParams(

@@ -21,7 +21,6 @@ import org.jetbrains.bazel.action.getEditor
 import org.jetbrains.bazel.action.getPsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.SingleTarget
-import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
@@ -77,7 +76,7 @@ private fun findBuildFileTarget(project: Project, buildTargetInfo: BuildTargetIn
   val buildFile = findBuildFile(project, buildTargetInfo) ?: return null
 
   // Try to jump to a specific target
-  val target = buildTargetInfo.id.label().target as? SingleTarget
+  val target = buildTargetInfo.id.target as? SingleTarget
   if (target != null) {
     (buildFile as? StarlarkFile)?.findRuleTarget(target.targetName)?.let { return it }
   }

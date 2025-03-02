@@ -8,7 +8,6 @@ import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.RustWorkspaceResult
 
 class RustLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<RustModule>() {
@@ -71,7 +70,7 @@ class RustLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : L
       packages
         .filter { it.origin == "WORKSPACE" }
         .flatMap { it.resolvedTargets.map { it2 -> it.id + ':' + it2.name } }
-        .map { BuildTargetIdentifier(it) }
+        .map { Label.parse(it) }
 
     return RustWorkspaceResult(
       packages,

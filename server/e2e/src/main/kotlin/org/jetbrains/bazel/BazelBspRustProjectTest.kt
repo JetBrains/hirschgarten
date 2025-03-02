@@ -2,9 +2,9 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.RustCrateType
 import org.jetbrains.bsp.protocol.RustDepKindInfo
 import org.jetbrains.bsp.protocol.RustDependency
@@ -53,7 +53,7 @@ object BazelBspRustProjectTest : BazelBspTestBaseScenario() {
   private fun makeExampleLib(): BuildTarget {
     val exampleLibDependencies =
       listOf(
-        BuildTargetIdentifier("@crate_index__instant-0.1.12//:instant"),
+        Label.parse("@crate_index__instant-0.1.12//:instant"),
       )
     return makeBuildTarget("example-lib", "example_lib", "library", exampleLibDependencies, false)
   }
@@ -61,8 +61,8 @@ object BazelBspRustProjectTest : BazelBspTestBaseScenario() {
   private fun makeExample(): BuildTarget {
     val exampleDependencies =
       listOf(
-        BuildTargetIdentifier("$targetPrefix//example-lib:example_lib"),
-        BuildTargetIdentifier("@crate_index__itertools-0.10.5//:itertools"),
+        Label.parse("$targetPrefix//example-lib:example_lib"),
+        Label.parse("@crate_index__itertools-0.10.5//:itertools"),
       )
     return makeBuildTarget("example", "example", "application", exampleDependencies, true)
   }
@@ -70,9 +70,9 @@ object BazelBspRustProjectTest : BazelBspTestBaseScenario() {
   private fun makeExampleFeature(): BuildTarget {
     val exampleFeatureDependencies =
       listOf(
-        BuildTargetIdentifier("$targetPrefix//example-lib:example_lib"),
-        BuildTargetIdentifier("@crate_index__itertools-0.10.5//:itertools"),
-        BuildTargetIdentifier("@crate_index__itoa-1.0.6//:itoa"),
+        Label.parse("$targetPrefix//example-lib:example_lib"),
+        Label.parse("@crate_index__itertools-0.10.5//:itertools"),
+        Label.parse("@crate_index__itoa-1.0.6//:itoa"),
       )
     return makeBuildTarget("example", "example_foo", "application", exampleFeatureDependencies, true)
   }
@@ -81,12 +81,12 @@ object BazelBspRustProjectTest : BazelBspTestBaseScenario() {
     packageName: String,
     name: String,
     type: String,
-    dependencies: List<BuildTargetIdentifier>,
+    dependencies: List<Label>,
     canRun: Boolean,
   ): BuildTarget {
     val buildtarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//$packageName:$name"),
+        Label.parse("$targetPrefix//$packageName:$name"),
         listOf(type),
         listOf("rust"),
         dependencies,
@@ -96,7 +96,7 @@ object BazelBspRustProjectTest : BazelBspTestBaseScenario() {
           canRun = canRun,
           canDebug = false,
         ),
-        displayName = "$targetPrefix//$packageName:$name",
+        displayName = "//$packageName:$name",
         baseDirectory = "file://\$WORKSPACE/$packageName/",
       )
 
@@ -106,11 +106,11 @@ object BazelBspRustProjectTest : BazelBspTestBaseScenario() {
   private fun rustWorkspaceResults(): BazelBspTestScenarioStep {
     val expectedTargetIdentifiers =
       expectedTargetIdentifiers().filter {
-        it.uri != "bsp-workspace-root"
+        it != Label.synthetic("bsp-workspace-root")
       }
     val expectedResolvedTargets =
       expectedTargetIdentifiers.filter {
-        it.uri != "@//example"
+        it != Label.parse("@//example")
       }
     val expectedRustWorkspaceResult =
       RustWorkspaceResult(

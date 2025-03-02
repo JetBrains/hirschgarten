@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class BuildTargetEvent(val target: BuildTargetIdentifier, val kind: BuildTargetEventKind? = null)
+import org.jetbrains.bazel.label.Label
+
+data class BuildTargetEvent(val target: Label, val kind: BuildTargetEventKind? = null)

@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class ResourcesParams(val targets: List<BuildTargetIdentifier>)
+import org.jetbrains.bazel.label.Label
+
+data class ResourcesParams(val targets: List<Label>)

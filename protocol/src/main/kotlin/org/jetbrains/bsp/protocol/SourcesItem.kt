@@ -1,7 +1,9 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.bazel.label.Label
+
 data class SourcesItem(
-  val target: BuildTargetIdentifier,
+  val target: Label,
   val sources: List<SourceItem>,
   val roots: List<String> = emptyList(),
 )

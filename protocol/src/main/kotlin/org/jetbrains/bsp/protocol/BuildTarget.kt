@@ -1,11 +1,12 @@
 package org.jetbrains.bsp.protocol
+import org.jetbrains.bazel.label.Label
 import java.net.URI
 
 data class BuildTarget(
-  val id: BuildTargetIdentifier,
+  val id: Label,
   val tags: List<String>,
   val languageIds: List<String>,
-  val dependencies: List<BuildTargetIdentifier>,
+  val dependencies: List<Label>,
   val capabilities: BuildTargetCapabilities,
   val displayName: String? = null,
   val baseDirectory: String? = null,
@@ -18,7 +19,7 @@ public data class KotlinBuildTarget(
   val languageVersion: String,
   val apiVersion: String,
   val kotlincOptions: List<String>,
-  val associates: List<BuildTargetIdentifier>,
+  val associates: List<Label>,
   var jvmBuildTarget: JvmBuildTarget? = null,
 ) : BuildTargetData
 

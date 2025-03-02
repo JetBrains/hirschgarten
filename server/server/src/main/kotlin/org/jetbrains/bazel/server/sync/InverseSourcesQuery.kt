@@ -3,7 +3,6 @@ package org.jetbrains.bazel.server.sync
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.StatusCode
 import java.nio.file.Path
@@ -20,7 +19,7 @@ object InverseSourcesQuery {
           emptyList(),
         )
     val listOfLabels = targetLabels(fileLabel, bazelRunner, bazelInfo)
-    return InverseSourcesResult(listOfLabels.map { BuildTargetIdentifier(it.toString()) })
+    return InverseSourcesResult(listOfLabels)
   }
 
   /**

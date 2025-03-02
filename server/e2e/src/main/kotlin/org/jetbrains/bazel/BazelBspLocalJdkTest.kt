@@ -2,9 +2,9 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.time.Duration.Companion.seconds
@@ -45,7 +45,7 @@ object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
 
     val exampleExampleBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//example:example"),
+        Label.parse("$targetPrefix//example:example"),
         listOf("application"),
         listOf("java"),
         emptyList(),
@@ -55,7 +55,7 @@ object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
           canRun = true,
           canDebug = false,
         ),
-        displayName = "$targetPrefix//example:example",
+        displayName = "//example",
         baseDirectory = "file://\$WORKSPACE/example/",
         exampleExampleJvmBuildTarget,
       )

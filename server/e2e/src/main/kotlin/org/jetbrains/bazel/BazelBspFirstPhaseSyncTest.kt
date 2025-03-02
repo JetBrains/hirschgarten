@@ -2,9 +2,9 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
@@ -62,7 +62,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val srcJavaLibTarget =
       BuildTarget(
-        BuildTargetIdentifier("//src:java-lib"),
+        Label.parse("//src:java-lib"),
         tags = listOf("library"),
         languageIds = listOf("java"),
         dependencies = emptyList(),
@@ -77,10 +77,10 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
 
     val srcJavaBinaryTarget =
       BuildTarget(
-        BuildTargetIdentifier("//src:java-binary"),
+        Label.parse("//src:java-binary"),
         tags = listOf("application"),
         languageIds = listOf("java"),
-        dependencies = listOf(BuildTargetIdentifier("//src:java-lib")),
+        dependencies = listOf(Label.parse("//src:java-lib")),
         capabilities =
           BuildTargetCapabilities(
             canCompile = true,
@@ -92,7 +92,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
 
     val srcKotlinLibTarget =
       BuildTarget(
-        BuildTargetIdentifier("//src:kt-lib"),
+        Label.parse("//src:kt-lib"),
         tags = listOf("library"),
         languageIds = listOf("kotlin"),
         dependencies = emptyList(),
@@ -107,10 +107,10 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
 
     val srcKotlinBinaryTarget =
       BuildTarget(
-        BuildTargetIdentifier("//src:kt-binary"),
+        Label.parse("//src:kt-binary"),
         tags = listOf("application"),
         languageIds = listOf("kotlin"),
-        dependencies = listOf(BuildTargetIdentifier("//src:kt-lib")),
+        dependencies = listOf(Label.parse("//src:kt-lib")),
         capabilities =
           BuildTargetCapabilities(
             canCompile = true,
@@ -126,26 +126,26 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
   fun expectedSourcesResult(): SourcesResult {
     val srcJavaLibSource =
       SourcesItem(
-        BuildTargetIdentifier("//src:java-lib"),
+        Label.parse("//src:java-lib"),
         listOf(SourceItem("file://\$WORKSPACE/src/Lib.java", SourceItemKind.FILE, false)),
         roots = listOf("file://\$WORKSPACE/src/"),
       )
     val srcJavaBinarySource =
       SourcesItem(
-        BuildTargetIdentifier("//src:java-binary"),
+        Label.parse("//src:java-binary"),
         listOf(SourceItem("file://\$WORKSPACE/src/Main.java", SourceItemKind.FILE, false)),
         roots = listOf("file://\$WORKSPACE/src/"),
       )
     val srcKotlinLibSource =
       SourcesItem(
-        BuildTargetIdentifier("//src:kt-lib"),
+        Label.parse("//src:kt-lib"),
         listOf(SourceItem("file://\$WORKSPACE/src/Lib.kt", SourceItemKind.FILE, false)),
         roots = listOf("file://\$WORKSPACE/src/"),
       )
 
     val srcKotlinBinarySource =
       SourcesItem(
-        BuildTargetIdentifier("//src:kt-binary"),
+        Label.parse("//src:kt-binary"),
         listOf(SourceItem("file://\$WORKSPACE/src/Main.kt", SourceItemKind.FILE, false)),
         roots = listOf("file://\$WORKSPACE/src/"),
       )

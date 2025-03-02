@@ -26,6 +26,7 @@ import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.RawUriToDirectoryPathTransformer
@@ -40,7 +41,6 @@ import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 import kotlin.io.path.toPath
@@ -180,7 +180,7 @@ class GoProjectSync : ProjectSyncHook {
     inputEntity: BaseTargetInfo,
     moduleId: ModuleId,
     virtualFileUrlManager: VirtualFileUrlManager,
-    idToGoTargetMap: Map<BuildTargetIdentifier, BaseTargetInfo>,
+    idToGoTargetMap: Map<Label, BaseTargetInfo>,
     entitySource: BspModuleEntitySource,
   ): VgoStandaloneModuleEntity.Builder {
     val goBuildInfo = extractGoBuildTarget(inputEntity.target)

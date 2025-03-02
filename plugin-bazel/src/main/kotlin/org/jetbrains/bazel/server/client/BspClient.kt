@@ -124,7 +124,7 @@ class BspClient(
 
     val originId = params.originId
     val textDocument = params.textDocument.uri
-    val buildTarget = params.buildTarget.uri
+    val buildTarget = params.buildTarget
 
     BspTaskEventsService.getInstance(project).withListener(originId) {
       params.diagnostics.forEach {

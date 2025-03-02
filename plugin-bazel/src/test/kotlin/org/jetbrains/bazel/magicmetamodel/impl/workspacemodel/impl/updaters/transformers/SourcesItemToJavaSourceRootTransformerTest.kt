@@ -3,10 +3,10 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
@@ -51,7 +51,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -59,7 +59,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem),
             roots = sourceRoots,
           ),
@@ -96,7 +96,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("test"),
             listOf("java"),
             emptyList(),
@@ -104,7 +104,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem),
             roots = sourceRoots,
           ),
@@ -141,7 +141,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -149,7 +149,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem),
             roots = sourceRoots,
           ),
@@ -204,7 +204,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -212,7 +212,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem1, sourceItem2, sourceItem3),
             roots = sourceRoots,
           ),
@@ -280,7 +280,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -288,7 +288,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem1),
             roots = sourceRoots,
           ),
@@ -297,7 +297,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -305,7 +305,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem2, sourceItem3),
             roots = sourceRoots,
           ),
@@ -375,7 +375,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -383,7 +383,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem1),
             roots = sourceRoots,
           ),
@@ -392,7 +392,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -400,7 +400,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem2, sourceItem3),
             roots = sourceRoots,
           ),

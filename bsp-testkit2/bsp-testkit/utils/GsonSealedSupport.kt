@@ -32,7 +32,7 @@ class SealedClassTypeAdapter<T : Any>(val kclass: KClass<Any>, val gson: Gson) :
     val nextName = jsonReader.nextName() // get the name on the object
     val innerClass =
       kclass.sealedSubclasses.firstOrNull {
-        it.simpleName!!.contains(nextName)
+        it.qualifiedName == nextName
       } ?: throw Exception("$nextName is not found to be a data class of the sealed class ${kclass.qualifiedName}")
     val x = gson.fromJson<T>(jsonReader, innerClass.javaObjectType)
     jsonReader.endObject()
@@ -48,9 +48,7 @@ class SealedClassTypeAdapter<T : Any>(val kclass: KClass<Any>, val gson: Gson) :
     val json = gson.toJsonTree(value)
     out.beginObject()
     out.name(
-      value.javaClass.canonicalName
-        .splitToSequence(".")
-        .last(),
+      value.javaClass.canonicalName,
     )
     gson.toJson(json, out)
     out.endObject()

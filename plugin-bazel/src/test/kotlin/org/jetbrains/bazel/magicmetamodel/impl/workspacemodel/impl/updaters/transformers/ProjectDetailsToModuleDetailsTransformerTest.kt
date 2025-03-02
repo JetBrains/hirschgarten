@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.ResourcesItem
@@ -20,7 +20,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
   @Test
   fun `should return empty module details for singular module`() {
     // given
-    val targetId = BuildTargetIdentifier("target")
+    val targetId = Label.parse("target")
     val target =
       BuildTarget(
         targetId,
@@ -68,7 +68,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
   @Test
   fun `should return one module details for project details with one target`() {
     // given
-    val targetId = BuildTargetIdentifier("target")
+    val targetId = Label.parse("target")
     val target =
       BuildTarget(
         targetId,
@@ -139,8 +139,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
   @Test
   fun `should multiple module details for project details with multiple targets`() {
     // given
-    val target1Id = BuildTargetIdentifier("target1")
-    val target2Id = BuildTargetIdentifier("target2")
+    val target1Id = Label.parse("target1")
+    val target2Id = Label.parse("target2")
     val target1 =
       BuildTarget(
         target1Id,
@@ -205,7 +205,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         listOf("file:///lib/test/2.0.0/test-sources.jar"),
       )
 
-    val target3Id = BuildTargetIdentifier("target3")
+    val target3Id = Label.parse("target3")
     val target3 =
       BuildTarget(
         target3Id,
@@ -227,7 +227,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         "class/dir3",
       )
 
-    val target4Id = BuildTargetIdentifier("target4")
+    val target4Id = Label.parse("target4")
     val target4 =
       BuildTarget(
         target4Id,

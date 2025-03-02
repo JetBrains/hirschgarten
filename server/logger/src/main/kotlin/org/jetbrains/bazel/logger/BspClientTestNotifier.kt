@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.logger
 
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.toBspIdentifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.StatusCode
@@ -86,7 +85,7 @@ class BspClientTestNotifier(private val bspClient: JoinedBuildClient, private va
    * @param taskId           TaskId of the testing target execution
    */
   fun beginTestTarget(targetIdentifier: Label, taskId: TaskId) {
-    val testingBegin = TestTask(targetIdentifier.toBspIdentifier())
+    val testingBegin = TestTask(targetIdentifier)
     val taskStartParams =
       TaskStartParams(
         taskId,
@@ -109,7 +108,7 @@ class BspClientTestNotifier(private val bspClient: JoinedBuildClient, private va
   ) {
     val testReport =
       TestReport(
-        targetIdentifier.toBspIdentifier(),
+        targetIdentifier,
         passedTests,
         failedTests,
         ignoredTests,

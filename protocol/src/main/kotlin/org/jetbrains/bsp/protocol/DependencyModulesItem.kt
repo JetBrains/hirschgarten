@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class DependencyModulesItem(val target: BuildTargetIdentifier, val modules: List<DependencyModule>)
+import org.jetbrains.bazel.label.Label
+
+data class DependencyModulesItem(val target: Label, val modules: List<DependencyModule>)

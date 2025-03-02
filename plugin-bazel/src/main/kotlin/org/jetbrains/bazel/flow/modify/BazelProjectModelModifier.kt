@@ -94,7 +94,7 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
     if (labelToInsert !is ResolvedLabel) return false
     val fromBuildTargetInfo = from.project.targetUtils.getBuildTargetInfoForModule(from) ?: return false
     val targetBuildFile = readAction { findBuildFile(from.project, fromBuildTargetInfo) } ?: return false
-    val targetRuleLabel = Label.parseOrNull(fromBuildTargetInfo.id.uri) ?: return false
+    val targetRuleLabel = fromBuildTargetInfo.id
     val ruleTarget = readAction { targetBuildFile.findRuleTarget(targetRuleLabel.targetName) } ?: return false
     val depsList =
       readAction {
