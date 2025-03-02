@@ -21,7 +21,7 @@ import java.nio.file.Path
  */
 private data class ConnectionResetConfig(val projectViewFile: Path?, val featureFlags: FeatureFlags)
 
-private val log = logger<DefaultBspConnection>()
+private val log = logger<DefaultBazelServerConnection>()
 
 class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectPath.toNioPath()) {
   override fun create() {
@@ -29,7 +29,7 @@ class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectP
   }
 }
 
-class DefaultBspConnection(private val project: Project) : BspConnection {
+class DefaultBazelServerConnection(private val project: Project) : BazelServerConnection {
   private val bspClient = createBspClient()
   private val workspaceRoot = project.rootDir.toNioPath()
   private val projectPath = VfsUtil.findFile(workspaceRoot, true) ?: error("Project doesn't exist")
