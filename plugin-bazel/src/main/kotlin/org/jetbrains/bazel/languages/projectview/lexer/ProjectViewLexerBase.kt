@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.languages.projectview.lexer
 
+import org.jetbrains.bazel.languages.projectview.section.ProjectViewListSection
+import org.jetbrains.bazel.languages.projectview.section.ProjectViewScalarSection
+
 /**
  * A base class responsible for tokenizing a given [input] project view into a list of tokens.
  *
@@ -93,9 +96,11 @@ class ProjectViewLexerBase(input: CharSequence) {
 
   private fun getIdentifierToken(start: Int, end: Int): ProjectViewTokenType {
     val identifier = buffer.substring(start, end)
-    return when (identifier) {
-      in ProjectViewTokenType.SCALAR_KEYWORDS_SET -> ProjectViewTokenType.SCALAR_KEYWORD
-      in ProjectViewTokenType.LIST_KEYWORDS_SET -> ProjectViewTokenType.LIST_KEYWORD
+    return when {
+      ProjectViewScalarSection.KEYWORD_MAP.containsKey(identifier)
+      -> ProjectViewTokenType.SCALAR_KEYWORD
+      ProjectViewListSection.KEYWORD_MAP.containsKey(identifier)
+      -> ProjectViewTokenType.LIST_KEYWORD
       else -> ProjectViewTokenType.IDENTIFIER
     }
   }

@@ -39,42 +39,6 @@ class ProjectViewTokenType private constructor(debugName: String) : IElementType
 
     /** A consecutive sequence of characters from the set { ' ', '\r', '\t' }. */
     val WHITESPACE = ProjectViewTokenType("whitespace")
-
-    /** Possible values of list keywords. */
-    val LIST_KEYWORDS_SET =
-      setOf(
-        "additional_languages",
-        "build_flags",
-        "directories",
-        "exclude_library",
-        "exclude_target",
-        "excluded_libraries",
-        "excluded_sources",
-        "import_run_configurations",
-        "import_target_output",
-        "sync_flags",
-        "targets",
-        "test_flags",
-        "test_sources",
-      )
-
-    /** Possible values of scalar keywords. */
-    val SCALAR_KEYWORDS_SET =
-      setOf(
-        "allow_manual_targets_sync",
-        "bazel_binary",
-        "derive_targets_from_directories",
-        "import",
-        "java_language_level",
-        "shard_sync",
-        "target_shard_size",
-        "try_import",
-        "use_exclusion_patterns",
-        "use_query_sync",
-        "view_project_root",
-        "workspace_buildrc_file",
-        "workspace_type",
-      )
   }
 
   override fun toString(): String = "ProjectView:" + super.toString()
