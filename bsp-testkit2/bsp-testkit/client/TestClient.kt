@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.testkit.client
 
 import kotlinx.coroutines.test.runTest
+import org.jetbrains.bazel.server.connection.startServer
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.CppOptionsParams
@@ -9,6 +10,7 @@ import org.jetbrains.bsp.protocol.DependencyModulesParams
 import org.jetbrains.bsp.protocol.DependencyModulesResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
@@ -40,15 +42,6 @@ import org.jetbrains.bsp.testkit.gsonSealedSupport
 import java.nio.file.Path
 import kotlin.time.Duration
 
-suspend fun withSession(
-  workspace: Path,
-  client: MockClient,
-  test: suspend (Session) -> Unit,
-) {
-  val session = Session(workspace, client)
-  test(session)
-}
-
 open class BasicTestClient(
   val workspacePath: Path,
   val transformJson: (String) -> String,
@@ -70,9 +63,10 @@ open class BasicTestClient(
 
   fun test(timeout: Duration, doTest: suspend (Session) -> Unit) {
     runTest(timeout = timeout) {
-      withSession(workspacePath, client) { session ->
-        doTest(session)
-      }
+      // TODO: allow feature flag customization
+      val server = startServer(client, workspacePath, null, FeatureFlags())
+      val session = Session(client, server)
+      doTest(session)
     }
   }
 }

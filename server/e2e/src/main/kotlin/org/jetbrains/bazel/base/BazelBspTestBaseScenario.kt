@@ -146,7 +146,6 @@ abstract class BazelBspTestBaseScenario {
 
     return TestClient(
       Path.of(workspaceDir),
-      initializeBuildParams,
       { s: String -> bazelJsonTransformer.transformJson(s) },
     ).also { println("Created TestClient done.") }
   }
@@ -156,7 +155,6 @@ abstract class BazelBspTestBaseScenario {
 
     return BasicTestClient(
       Path.of(workspaceDir),
-      featureFlags,
       { s: String -> bazelJsonTransformer.transformJson(s) },
       MockClient(),
     ).also { println("Created TestClient done.") }

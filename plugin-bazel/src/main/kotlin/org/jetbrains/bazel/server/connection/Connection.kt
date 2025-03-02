@@ -26,6 +26,9 @@ suspend fun startServer(
       projectViewPath = projectViewFile ?: workspaceRoot.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME),
       dotBazelBspDirPath = bspInfo.bazelBspDir(),
     )
+  // Run it here to force the workspace context to be initialized
+  // It should download bazelisk if bazel is missing
+  workspaceContextProvider.currentWorkspaceContext()
   val bspServer = BazelBspServer(bspInfo, workspaceContextProvider, workspaceRoot)
   val bspClientLogger = BspClientLogger(client)
   val bazelRunner = BazelRunner(bspServer.workspaceContextProvider, bspClientLogger, bspServer.workspaceRoot)
@@ -50,8 +53,5 @@ suspend fun startServer(
       services.projectSyncService,
       services.executeService,
     )
-  // Run it here to force the workspace context to be initialized
-  // It should download bazelisk if bazel is missing
-  workspaceContextProvider.currentWorkspaceContext()
   return bspServerApi
 }

@@ -4,17 +4,13 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.server.client.BspClient
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.ui.console.BspConsoleService
-import org.jetbrains.bazel.ui.console.ids.CONNECT_TASK_ID
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.nio.file.Path
@@ -58,27 +54,6 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
       featureFlags = FeatureFlagsProvider.getFeatureFlags(),
     )
 
-  private suspend fun connectBuiltIn(server: JoinedBuildServer, featureFlags: FeatureFlags) {
-    coroutineScope {
-      val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-      bspSyncConsole.startTask(
-        taskId = CONNECT_TASK_ID,
-        title = BspPluginBundle.message("console.task.auto.connect.title"),
-        message = BspPluginBundle.message("console.task.auto.connect.in.progress"),
-        cancelAction = { coroutineContext.cancel() },
-      )
-      bspSyncConsole.addMessage(
-        CONNECT_TASK_ID,
-        BspPluginBundle.message("console.message.initialize.server.in.progress"),
-      )
-      bspSyncConsole.addMessage(
-        CONNECT_TASK_ID,
-        BspPluginBundle.message("console.message.initialize.server.success"),
-      )
-      bspSyncConsole.finishTask(CONNECT_TASK_ID, BspPluginBundle.message("console.task.auto.connect.success"))
-    }
-  }
-
   private fun createBspClient(): BspClient {
     val bspConsoleService = BspConsoleService.getInstance(project)
 
@@ -95,7 +70,6 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
 
     if (newConnectionResetConfig != connectionResetConfig) {
       connectionResetConfig = newConnectionResetConfig
-      connectBuiltIn(server, connectionResetConfig.featureFlags)
       // TODO: change server's projectview path once the spaghetti is untangled
     }
 

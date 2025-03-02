@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync.task
 
+import com.intellij.testFramework.registerOrReplaceServiceInstance
 import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectPostSyncHook
@@ -8,8 +9,8 @@ import org.jetbrains.bazel.impl.flow.sync.DisabledTestProjectSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectPostSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectPreSyncHook
 import org.jetbrains.bazel.impl.flow.sync.TestProjectSyncHook
+import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.server.connection.BspConnection
-import org.jetbrains.bazel.server.connection.setMockTestConnection
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook
@@ -48,12 +49,16 @@ private class BspConnectionMock : BspConnection {
   override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T = task(mockBuildServer)
 }
 
+private class BazelServerServiceMock : BazelServerService {
+  override val connection: BspConnection = BspConnectionMock()
+}
+
 @DisplayName("ProjectSyncTask tests")
 class ProjectSyncTaskTest : MockProjectBaseTest() {
   @Test
   fun `should call all enabled pre-sync, sync and post-sync hooks`() {
     // given
-    project.setMockTestConnection(BspConnectionMock())
+    project.registerOrReplaceServiceInstance(BazelServerService::class.java, BazelServerServiceMock(), disposable)
 
     // pre-sync hooks
     val preSyncHook = TestProjectPreSyncHook()
