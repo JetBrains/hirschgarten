@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class OutputPathsItem(val target: BuildTargetIdentifier, val outputPaths: List<OutputPathItem>)
+import org.jetbrains.bazel.label.Label
+
+data class OutputPathsItem(val target: Label, val outputPaths: List<OutputPathItem>)

@@ -3,10 +3,10 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -36,7 +36,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // given
     val buildTarget =
       BuildTarget(
-        BuildTargetIdentifier("//target"),
+        Label.parse("//target"),
         emptyList(),
         emptyList(),
         listOf(),
@@ -74,7 +74,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // given
     val buildTarget =
       BuildTarget(
-        BuildTargetIdentifier("//target"),
+        Label.parse("//target"),
         listOf("test"),
         emptyList(),
         listOf(),
@@ -112,7 +112,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // given
     val buildTarget =
       BuildTarget(
-        BuildTargetIdentifier("//target"),
+        Label.parse("//target"),
         emptyList(),
         emptyList(),
         listOf(),
@@ -150,7 +150,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // given
     val buildTarget =
       BuildTarget(
-        BuildTargetIdentifier("//target"),
+        Label.parse("//target"),
         emptyList(),
         emptyList(),
         listOf(),
@@ -208,7 +208,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // given
     val buildTarget =
       BuildTarget(
-        BuildTargetIdentifier("//target"),
+        Label.parse("//target"),
         emptyList(),
         emptyList(),
         listOf(),
@@ -254,7 +254,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // given
     val buildTarget =
       BuildTarget(
-        BuildTargetIdentifier("//target"),
+        Label.parse("//target"),
         emptyList(),
         emptyList(),
         listOf(),
@@ -327,7 +327,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // given
     val buildTarget =
       BuildTarget(
-        BuildTargetIdentifier("//target"),
+        Label.parse("//target"),
         emptyList(),
         emptyList(),
         listOf(),

@@ -4,7 +4,6 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.label.label
-import org.jetbrains.bazel.server.model.BspMappings
 import org.jetbrains.bazel.server.model.Language
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.model.Tag
@@ -90,7 +89,7 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
     } else {
       withScalaAndJavaModules(module) { _, javaModule: JavaModule ->
         val mainClasses: List<String> = listOfNotNull(javaModule.mainClass)
-        val id = BspMappings.toBspId(module)
+        val id = module.label
         ScalaTestClassesItem(id, classes = mainClasses)
       }
     }
@@ -104,7 +103,7 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
     } else {
       withScalaAndJavaModulesOpt(module) { _, javaModule: JavaModule ->
         javaModule.mainClass?.let { mainClass: String ->
-          val id = BspMappings.toBspId(module)
+          val id = module.label
           val args = javaModule.args
           val jvmOpts = javaModule.jvmOps
           val scalaMainClass = ScalaMainClass(mainClass, args.toList(), jvmOpts.toList())

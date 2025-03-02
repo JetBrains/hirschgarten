@@ -60,7 +60,6 @@ import org.jetbrains.bazel.workspacemodel.entities.includesJava
 import org.jetbrains.bazel.workspacemodel.entities.includesScala
 import org.jetbrains.bazel.workspacemodel.entities.toBuildTargetInfo
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -283,7 +282,7 @@ class CollectProjectDetailsTask(
               if (syncScope is FullProjectSync) {
                 syncedTargetIdToTargetInfo
               } else {
-                project.targetUtils.labelToTargetInfo.mapKeys { BuildTargetIdentifier(it.key.toString()) } +
+                project.targetUtils.labelToTargetInfo.mapKeys { it.key } +
                   syncedTargetIdToTargetInfo
               }
             val targetIdToModuleEntityMap =
@@ -554,8 +553,8 @@ suspend fun calculateProjectDetailsWithCapabilities(
     }
   }
 
-private fun List<BaseTargetInfo>.calculateJavaTargetIds(): List<BuildTargetIdentifier> =
+private fun List<BaseTargetInfo>.calculateJavaTargetIds(): List<Label> =
   filter { it.target.languageIds.includesJava() }.map { it.target.id }
 
-private fun List<BaseTargetInfo>.calculateScalaTargetIds(): List<BuildTargetIdentifier> =
+private fun List<BaseTargetInfo>.calculateScalaTargetIds(): List<Label> =
   filter { it.target.languageIds.includesScala() }.map { it.target.id }

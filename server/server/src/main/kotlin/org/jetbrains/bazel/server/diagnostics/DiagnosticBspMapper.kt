@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.server.diagnostics
 
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import java.nio.file.Path
@@ -17,7 +17,7 @@ class DiagnosticBspMapper(private val workspaceRoot: Path) {
         val bspDiagnostics = kv.value.map { createDiagnostic(it) }
         val doc = TextDocumentIdentifier(toAbsoluteUri(kv.key.first))
         val publishDiagnosticsParams =
-          PublishDiagnosticsParams(doc, BuildTargetIdentifier(kv.key.second.toString()), originId = originId, bspDiagnostics, true)
+          PublishDiagnosticsParams(doc, Label.parse(kv.key.second.toString()), originId = originId, bspDiagnostics, true)
         publishDiagnosticsParams
       }
 

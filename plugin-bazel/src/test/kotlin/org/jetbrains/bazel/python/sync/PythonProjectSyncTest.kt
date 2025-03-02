@@ -15,6 +15,7 @@ import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.orDefault
@@ -33,7 +34,6 @@ import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.ResourcesItem
@@ -50,9 +50,9 @@ private data class PythonTestSet(
 )
 
 private data class GeneratedTargetInfo(
-  val targetId: BuildTargetIdentifier,
+  val targetId: Label,
   val type: String,
-  val dependencies: List<BuildTargetIdentifier> = listOf(),
+  val dependencies: List<Label> = listOf(),
   val resourcesItems: List<String> = listOf(),
 )
 
@@ -144,17 +144,17 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   private fun generateTestSet(): PythonTestSet {
     val pythonLibrary1 =
       GeneratedTargetInfo(
-        targetId = BuildTargetIdentifier("@@server.lib:lib1"),
+        targetId = Label.parse("@@server.lib:lib1"),
         type = "library",
       )
     val pythonLibrary2 =
       GeneratedTargetInfo(
-        targetId = BuildTargetIdentifier("@@server/lib:lib2"),
+        targetId = Label.parse("@@server/lib:lib2"),
         type = "library",
       )
     val pythonBinary =
       GeneratedTargetInfo(
-        targetId = BuildTargetIdentifier("@@server:main_app"),
+        targetId = Label.parse("@@server:main_app"),
         type = "PYTHON_MODULE",
         dependencies = listOf(pythonLibrary1.targetId, pythonLibrary2.targetId),
       )
@@ -180,7 +180,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   private fun generateTestSetWithSources(): PythonTestSet {
     val pythonBinary =
       GeneratedTargetInfo(
-        targetId = BuildTargetIdentifier("@@server:main_app"),
+        targetId = Label.parse("@@server:main_app"),
         type = "PYTHON_MODULE",
         dependencies = listOf(),
       )
@@ -236,7 +236,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     dependenciesTargetInfo: List<GeneratedTargetInfo>,
     nameProvider: TargetNameReformatProvider,
   ): ExpectedModuleEntity {
-    val sdkDependency: ModuleDependencyItem = SdkDependency(SdkId("${targetInfo.targetId.uri}-3", "PythonSDK"))
+    val sdkDependency: ModuleDependencyItem = SdkDependency(SdkId("${targetInfo.targetId.toShortString()}-3", "PythonSDK"))
     val moduleDependencies: List<ModuleDependencyItem> =
       dependenciesTargetInfo.map {
         ModuleDependency(

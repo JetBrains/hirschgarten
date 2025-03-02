@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class JvmCompileClasspathItem(val target: BuildTargetIdentifier, val classpath: List<String>)
+import org.jetbrains.bazel.label.Label
+
+data class JvmCompileClasspathItem(val target: Label, val classpath: List<String>)

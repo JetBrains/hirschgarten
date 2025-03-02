@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class JvmRunEnvironmentParams(val targets: List<BuildTargetIdentifier>, val originId: String? = null)
+import org.jetbrains.bazel.label.Label
+
+data class JvmRunEnvironmentParams(val targets: List<Label>, val originId: String? = null)

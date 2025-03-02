@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class PythonOptionsItem(val target: BuildTargetIdentifier, val interpreterOptions: List<String>)
+import org.jetbrains.bazel.label.Label
+
+data class PythonOptionsItem(val target: Label, val interpreterOptions: List<String>)

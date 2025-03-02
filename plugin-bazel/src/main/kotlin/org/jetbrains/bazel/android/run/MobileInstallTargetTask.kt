@@ -12,11 +12,11 @@ import org.jetbrains.android.sdk.AndroidSdkUtils
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.tasks.BspServerSingleTargetTask
 import org.jetbrains.bazel.server.tasks.BspTaskStatusLogger
 import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
@@ -33,7 +33,7 @@ class MobileInstallTargetTask(
 ) : BspServerSingleTargetTask<MobileInstallResult>("mobile install target", project) {
   private val log = logger<MobileInstallTargetTask>()
 
-  override suspend fun executeWithServer(server: JoinedBuildServer, targetId: BuildTargetIdentifier): MobileInstallResult {
+  override suspend fun executeWithServer(server: JoinedBuildServer, targetId: Label): MobileInstallResult {
     val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
     val originId = "mobile-install-" + UUID.randomUUID().toString()
     val cancelOn = CompletableFuture<Void>()
@@ -51,7 +51,7 @@ class MobileInstallTargetTask(
   }
 
   private fun startMobileInstallConsoleTask(
-    targetId: BuildTargetIdentifier,
+    targetId: Label,
     deviceFuture: ListenableFuture<IDevice>,
     startType: MobileInstallStartType,
     bspBuildConsole: TaskConsole,
@@ -61,7 +61,7 @@ class MobileInstallTargetTask(
     bspBuildConsole.startTask(
       originId,
       BspPluginBundle.message("console.task.mobile.install.title"),
-      BspPluginBundle.message("console.task.mobile.install.in.progress.target", targetId.uri),
+      BspPluginBundle.message("console.task.mobile.install.in.progress.target", targetId.toShortString()),
       { cancelOn.cancel(true) },
     ) {
       BspCoroutineService.getInstance(project).start {
@@ -71,7 +71,7 @@ class MobileInstallTargetTask(
   }
 
   private fun createMobileInstallParams(
-    targetId: BuildTargetIdentifier,
+    targetId: Label,
     originId: String,
     targetDeviceSerialNumber: String,
   ): MobileInstallParams {
@@ -105,7 +105,7 @@ class MobileInstallTargetTask(
 }
 
 suspend fun runMobileInstallTargetTask(
-  targetId: BuildTargetIdentifier,
+  targetId: Label,
   deviceFuture: ListenableFuture<IDevice>,
   startType: MobileInstallStartType,
   project: Project,

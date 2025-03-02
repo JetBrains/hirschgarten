@@ -13,7 +13,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsActions
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
-import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.target.targetUtils
 import java.io.File
@@ -29,7 +28,7 @@ class BazelCoverageEngine : CoverageEngine() {
   override fun isApplicableTo(configuration: RunConfigurationBase<*>): Boolean {
     if (configuration !is BspRunConfiguration) return false
     val targetUtils = configuration.project.targetUtils
-    return configuration.targets.all { targetUtils.getBuildTargetInfoForLabel(it.label())?.capabilities?.canTest == true }
+    return configuration.targets.all { targetUtils.getBuildTargetInfoForLabel(it)?.capabilities?.canTest == true }
   }
 
   override fun createCoverageEnabledConfiguration(configuration: RunConfigurationBase<*>): CoverageEnabledConfiguration =

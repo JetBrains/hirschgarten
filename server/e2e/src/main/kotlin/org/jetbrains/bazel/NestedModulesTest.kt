@@ -55,7 +55,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
         val targetsResult = session.server.workspaceBuildTargets()
 
         targetsResult.targets.size shouldBe 4
-        targetsResult.targets.map { Label.parse(it.id.uri) } shouldContainExactlyInAnyOrder
+        targetsResult.targets.map { it.id } shouldContainExactlyInAnyOrder
           listOf(
             Label.parse("@@inner+//:lib_inner"),
             Label.parse("@@inner+//:bin_inner"),

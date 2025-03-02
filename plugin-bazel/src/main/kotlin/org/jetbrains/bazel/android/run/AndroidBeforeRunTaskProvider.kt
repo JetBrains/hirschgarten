@@ -14,9 +14,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.MobileInstallStartType
 import org.jetbrains.bsp.protocol.StatusCode
 
@@ -62,7 +62,7 @@ class AndroidBeforeRunTaskProvider : BeforeRunTaskProvider<AndroidBeforeRunTaskP
 
   private fun runMobileInstall(
     environment: ExecutionEnvironment,
-    targetId: BuildTargetIdentifier,
+    targetId: Label,
     deviceFuture: ListenableFuture<IDevice>,
   ): Boolean {
     val startType =
@@ -79,7 +79,7 @@ class AndroidBeforeRunTaskProvider : BeforeRunTaskProvider<AndroidBeforeRunTaskP
     return mobileInstallResult?.statusCode == StatusCode.OK
   }
 
-  private fun buildApkWithoutInstall(project: Project, targetId: BuildTargetIdentifier): Boolean {
+  private fun buildApkWithoutInstall(project: Project, targetId: Label): Boolean {
     val buildResult =
       runBlocking {
         runBuildTargetTask(listOf(targetId), project)

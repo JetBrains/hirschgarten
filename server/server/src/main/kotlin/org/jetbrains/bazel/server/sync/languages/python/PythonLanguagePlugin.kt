@@ -5,7 +5,6 @@ import org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.label.label
-import org.jetbrains.bazel.server.model.BspMappings
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
@@ -63,7 +62,7 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
 
   fun toPythonOptionsItem(module: Module, pythonModule: PythonModule): PythonOptionsItem =
     PythonOptionsItem(
-      BspMappings.toBspId(module),
+      module.label,
       emptyList(),
     )
 
