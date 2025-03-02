@@ -66,6 +66,7 @@ val mockBazelInfo =
     release = BazelRelease(7),
     isBzlModEnabled = true,
     isWorkspaceEnabled = true,
+    externalAutoloads = emptyList(),
   )
 
 val contextProvider =

@@ -44,6 +44,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/projectAware",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run/coverage/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/runnerAction",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/scala",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/client",

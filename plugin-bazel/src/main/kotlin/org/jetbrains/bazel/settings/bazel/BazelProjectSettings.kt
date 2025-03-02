@@ -15,6 +15,7 @@ data class BazelProjectSettings(
   val projectViewPath: Path? = null,
   val hotSwapEnabled: Boolean = true,
   val showExcludedDirectoriesAsSeparateNode: Boolean = true,
+  val enableLocalJvmActions: Boolean = false,
 ) {
   fun withNewProjectViewPath(newProjectViewFilePath: Path): BazelProjectSettings = copy(projectViewPath = newProjectViewFilePath)
 
@@ -25,6 +26,7 @@ internal data class BazelProjectSettingsState(
   var projectViewPathUri: String? = null,
   var hotSwapEnabled: Boolean = true,
   var showExcludedDirectoriesAsSeparateNode: Boolean = true,
+  var enableLocalJvmActions: Boolean = false,
 ) {
   fun isEmptyState(): Boolean = this == BazelProjectSettingsState()
 }
@@ -45,6 +47,7 @@ internal class BazelProjectSettingsService :
       projectViewPathUri = settings.projectViewPath?.toUri()?.toString(),
       hotSwapEnabled = settings.hotSwapEnabled,
       showExcludedDirectoriesAsSeparateNode = settings.showExcludedDirectoriesAsSeparateNode,
+      enableLocalJvmActions = settings.enableLocalJvmActions,
     )
 
   override fun loadState(settingsState: BazelProjectSettingsState) {
@@ -59,6 +62,7 @@ internal class BazelProjectSettingsService :
             },
           hotSwapEnabled = settingsState.hotSwapEnabled,
           showExcludedDirectoriesAsSeparateNode = settingsState.showExcludedDirectoriesAsSeparateNode,
+          enableLocalJvmActions = settingsState.enableLocalJvmActions,
         )
     }
   }

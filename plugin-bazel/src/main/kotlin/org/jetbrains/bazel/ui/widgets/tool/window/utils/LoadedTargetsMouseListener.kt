@@ -2,12 +2,16 @@ package org.jetbrains.bazel.ui.widgets.tool.window.utils
 
 import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
+import org.jetbrains.bazel.action.SuspendableAction
+import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.run.RunHandlerProvider
@@ -18,6 +22,7 @@ import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.RunWithLocalJvmRunnerAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.TestWithLocalJvmRunnerAction
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.ui.widgets.BazelBspJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BuildTargetContainer
@@ -52,7 +57,10 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
     x: Int,
     y: Int,
   ) {
-    val actionGroup = container.getSelectedBuildTarget()?.let { calculatePopupGroup(it) }
+    val actionGroup =
+      container.getSelectedBuildTarget()?.let { calculatePopupGroup(it) }
+        ?: calculatePopupGroup(container.getSelectedBuildTargetsUnderDirectory())
+
     if (actionGroup != null) {
       ActionManager
         .getInstance()
@@ -74,6 +82,18 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
       add(BazelBspJumpToBuildFileAction(target))
       if (StarlarkDebugAction.isApplicableTo(target)) add(StarlarkDebugAction(target.id))
     }
+
+  private fun calculatePopupGroup(targets: List<BuildTargetInfo>): ActionGroup? {
+    val testTargets = targets.filter { it.capabilities.canTest }
+    return if (testTargets.isEmpty()) {
+      null
+    } else {
+      DefaultActionGroup().apply {
+        addAction(RunAllTestsActionInTargetTreeAction(testTargets, container.getSelectedComponentName()))
+        addAction(RunAllTestsActionWithCoverageInTargetTreeAction(testTargets, container.getSelectedComponentName()))
+      }
+    }
+  }
 
   private fun MouseEvent.isDoubleClick(): Boolean = this.mouseButton == MouseButton.Left && this.clickCount == 2
 
@@ -124,7 +144,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
     addAction(RunWithCoverageAction(listOf(target), includeTargetNameInText = includeTargetNameInText, singleTestFilter = singleTestFilter))
   }
 
-  if (target.languageIds.isJvmTarget()) {
+  if (project.bazelProjectSettings.enableLocalJvmActions && target.languageIds.isJvmTarget()) {
     if (target.capabilities.canRun) {
       addAction(RunWithLocalJvmRunnerAction(target, includeTargetNameInText = includeTargetNameInText))
       addAction(RunWithLocalJvmRunnerAction(target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
@@ -135,4 +155,36 @@ fun DefaultActionGroup.fillWithEligibleActions(
     }
   }
   return this
+}
+
+internal class RunAllTestsActionInTargetTreeAction(private val targets: List<BuildTargetInfo>, private val directoryName: String) :
+  SuspendableAction(
+    text = { BspPluginBundle.message("action.run.all.tests") },
+    icon = AllIcons.Actions.Execute,
+  ) {
+  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
+    TestTargetAction(
+      targets,
+      text = {
+        BspPluginBundle.message("action.run.all.tests.under", directoryName)
+      },
+    ).actionPerformed(e)
+  }
+}
+
+internal class RunAllTestsActionWithCoverageInTargetTreeAction(
+  private val targets: List<BuildTargetInfo>,
+  private val directoryName: String,
+) : SuspendableAction(
+    text = { BspPluginBundle.message("action.run.all.tests.with.coverage") },
+    icon = AllIcons.General.RunWithCoverage,
+  ) {
+  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
+    RunWithCoverageAction(
+      targets,
+      text = {
+        BspPluginBundle.message("action.run.all.tests.under.with.coverage", directoryName)
+      },
+    ).actionPerformed(e)
+  }
 }
