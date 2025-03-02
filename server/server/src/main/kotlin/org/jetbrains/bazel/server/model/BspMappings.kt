@@ -1,14 +1,11 @@
 package org.jetbrains.bazel.server.model
 
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import java.net.URI
 
 object BspMappings {
-  fun toBspId(module: Module): BuildTargetIdentifier = BuildTargetIdentifier(module.label.toString())
-
   fun toBspTag(tag: Tag): String? =
     when (tag) {
       Tag.APPLICATION -> BuildTargetTag.APPLICATION
@@ -21,10 +18,7 @@ object BspMappings {
 
   fun toBspUri(uri: URI): String = uri.toString()
 
-  fun getModules(project: AspectSyncProject, targets: List<BuildTargetIdentifier>): Set<Module> =
-    toLabels(targets).mapNotNull(project::findModule).toSet()
+  fun getModules(project: AspectSyncProject, targets: List<Label>): Set<Module> = targets.mapNotNull(project::findModule).toSet()
 
   fun toUri(textDocument: TextDocumentIdentifier): URI = URI.create(textDocument.uri)
-
-  fun toLabels(targets: List<BuildTargetIdentifier>): Set<Label> = targets.map(BuildTargetIdentifier::uri).map { Label.parse(it) }.toSet()
 }

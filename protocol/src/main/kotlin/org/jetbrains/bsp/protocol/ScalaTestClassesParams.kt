@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class ScalaTestClassesParams(val targets: List<BuildTargetIdentifier>, val originId: String? = null)
+import org.jetbrains.bazel.label.Label
+
+data class ScalaTestClassesParams(val targets: List<Label>, val originId: String? = null)

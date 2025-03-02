@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.utils.safeCastToURI
@@ -8,11 +9,10 @@ import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelEntity
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import kotlin.io.path.toPath
 
 internal abstract class ModuleDetailsToModuleTransformer<out T : WorkspaceModelEntity>(
-  targetsMap: Map<BuildTargetIdentifier, BuildTargetInfo>,
+  targetsMap: Map<Label, BuildTargetInfo>,
   nameProvider: TargetNameReformatProvider,
 ) : WorkspaceModelEntityTransformer<ModuleDetails, T> {
   protected abstract val type: ModuleTypeId

@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.bsp
 
-import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
@@ -115,7 +114,7 @@ class BspServerApi(private val bazelServicesBuilder: suspend (JoinedBuildClient,
 
   override suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult =
     projectSyncService.workspaceBuildTargetsPartial(
-      targetsToSync = params.targets.map { it.label() },
+      targetsToSync = params.targets,
     )
 
   override suspend fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult =

@@ -1,5 +1,7 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.bazel.label.Label
+
 /**
  * See [mobile-install docs](https://bazel.build/docs/user-manual#start)
  */
@@ -11,7 +13,7 @@ public enum class MobileInstallStartType(public val value: Int) {
 }
 
 public data class MobileInstallParams(
-  val target: BuildTargetIdentifier,
+  val target: Label,
   val originId: String,
   val targetDeviceSerialNumber: String,
   val startType: MobileInstallStartType,

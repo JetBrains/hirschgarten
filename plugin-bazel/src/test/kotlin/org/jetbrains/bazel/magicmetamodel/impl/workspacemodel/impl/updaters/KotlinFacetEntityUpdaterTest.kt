@@ -9,13 +9,13 @@ import com.intellij.testFramework.runInEdtAndWait
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
@@ -40,7 +40,7 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
           languageVersion = "1.8",
           apiVersion = "1.8",
           kotlincOptions = listOf(),
-          associates = associates.map { BuildTargetIdentifier(it) },
+          associates = associates.map { Label.parse(it) },
           jvmBuildTarget =
             JvmBuildTarget(
               javaHome = javaHome,

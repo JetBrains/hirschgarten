@@ -4,6 +4,8 @@ import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.config.BazelPluginConstants
+import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
@@ -30,5 +32,15 @@ abstract class BspRunnerAction(
 
     settings.customizeRunConfiguration()
     return settings
+  }
+
+  private fun calculateConfigurationName(project: Project, targetInfo: List<BuildTargetInfo>): String {
+    val targetDisplayName = targetInfo.joinToString(";") { it.id.toShortString() }
+    val actionNameKey =
+      when {
+        this is TestTargetAction -> "target.test.config.name"
+        else -> "target.run.config.name"
+      }
+    return BspPluginBundle.message(actionNameKey, targetDisplayName, BazelPluginConstants.BAZEL_DISPLAY_NAME)
   }
 }

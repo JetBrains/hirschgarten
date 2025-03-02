@@ -6,7 +6,6 @@ import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.Diagnostic
@@ -80,13 +79,13 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
 
     val target =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//scala_targets:library"),
+        Label.parse("$targetPrefix//scala_targets:library"),
         listOf("library"),
         listOf("scala"),
         listOf(
-          BuildTargetIdentifier(Label.synthetic("scala-compiler-2.12.14.jar").toString()),
-          BuildTargetIdentifier(Label.synthetic("scala-library-2.12.14.jar").toString()),
-          BuildTargetIdentifier(Label.synthetic("scala-reflect-2.12.14.jar").toString()),
+          Label.parse(Label.synthetic("scala-compiler-2.12.14.jar").toString()),
+          Label.parse(Label.synthetic("scala-library-2.12.14.jar").toString()),
+          Label.parse(Label.synthetic("scala-reflect-2.12.14.jar").toString()),
         ),
         BuildTargetCapabilities(
           canCompile = true,
@@ -94,7 +93,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
           canRun = false,
           canDebug = false,
         ),
-        displayName = "$targetPrefix//scala_targets:library",
+        displayName = "//scala_targets:library",
         baseDirectory = "file://\$WORKSPACE/scala_targets/",
         data = scalaBuildTarget,
       )
@@ -109,7 +108,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
     ) { testClient.testWorkspaceTargets(120.seconds, expectedWorkspaceBuildTargetsResult()) }
 
   private fun scalaOptionsResults(): BazelBspTestScenarioStep {
-    val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it.uri != "bsp-workspace-root" }
+    val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it != Label.synthetic("bsp-workspace-root") }
     val expectedScalaOptionsItems =
       expectedTargetIdentifiers.map {
         ScalacOptionsItem(
@@ -154,7 +153,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
   }
 
   private fun compileWithWarnings(): BazelBspTestScenarioStep {
-    val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it.uri != "bsp-workspace-root" }
+    val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it != Label.synthetic("bsp-workspace-root") }
     val compileParams = CompileParams(expectedTargetIdentifiers, originId = UUID.randomUUID().toString())
 
     val expectedCompilerResult = CompileResult(StatusCode.OK)

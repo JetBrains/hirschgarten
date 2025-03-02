@@ -2,8 +2,8 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.Library
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -29,7 +29,7 @@ class DependencySourcesItemToLibraryTransformerTest {
       DependencySourcesAndJvmClassPaths(
         dependencySources =
           DependencySourcesItem(
-            BuildTargetIdentifier("//target"),
+            Label.parse("//target"),
             listOf("file:///m2/repo.maven.apache.org/test/1.0.0/test-1.0.0-sources.jar"),
           ),
         listOf("file:///m2/repo.maven.apache.org/test/1.0.0/test-1.0.0.jar"),
@@ -55,7 +55,7 @@ class DependencySourcesItemToLibraryTransformerTest {
       DependencySourcesAndJvmClassPaths(
         dependencySources =
           DependencySourcesItem(
-            BuildTargetIdentifier("//target"),
+            Label.parse("//target"),
             listOf(
               "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar",
               "file:///m2/repo.maven.apache.org/test3/3.0.0/test3-3.0.0-sources.jar",
@@ -97,7 +97,7 @@ class DependencySourcesItemToLibraryTransformerTest {
       DependencySourcesAndJvmClassPaths(
         dependencySources =
           DependencySourcesItem(
-            BuildTargetIdentifier("//target"),
+            Label.parse("//target"),
             listOf(
               "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar",
             ),
@@ -110,7 +110,7 @@ class DependencySourcesItemToLibraryTransformerTest {
       DependencySourcesAndJvmClassPaths(
         dependencySources =
           DependencySourcesItem(
-            BuildTargetIdentifier("//target"),
+            Label.parse("//target"),
             listOf(
               "file:///m2/repo.maven.apache.org/test3/3.0.0/test3-3.0.0-sources.jar",
             ),

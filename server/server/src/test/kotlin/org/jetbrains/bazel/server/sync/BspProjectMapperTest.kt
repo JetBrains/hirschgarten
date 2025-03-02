@@ -7,7 +7,6 @@ import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.Library
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.model.SourceSet
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.DependencyModule
 import org.jetbrains.bsp.protocol.DependencyModulesItem
 import org.jetbrains.bsp.protocol.DependencyModulesParams
@@ -150,7 +149,7 @@ class BspProjectMapperTest {
       BspProjectMapper.buildDependencyModulesStatic(
         project,
         DependencyModulesParams(
-          allLibraries.subList(mavenDepCount, mavenDepCount + libCount).map { BuildTargetIdentifier(it.label.toString()) },
+          allLibraries.subList(mavenDepCount, mavenDepCount + libCount).map { it.label },
         ),
       )
 
@@ -158,7 +157,7 @@ class BspProjectMapperTest {
       DependencyModulesResult(
         allLibraries.subList(mavenDepCount, mavenDepCount + libCount).map {
           DependencyModulesItem(
-            BuildTargetIdentifier(it.label.toString()),
+            it.label,
             expectedDepModules,
           )
         },

@@ -15,7 +15,6 @@ import com.jetbrains.python.run.PythonScriptCommandLineState
 import com.jetbrains.python.sdk.PythonSdkUtil
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.run.BspCommandLineStateBase
@@ -36,7 +35,7 @@ class PythonDebugCommandLineState(
   originId: OriginId,
   private val settings: GenericRunState,
 ) : BspCommandLineStateBase(env, originId) {
-  val target: Label? = (env.runProfile as? BspRunConfiguration)?.targets?.singleOrNull()?.label()
+  val target: Label? = (env.runProfile as? BspRunConfiguration)?.targets?.singleOrNull()
   private val scriptName = target?.let { PythonDebugUtils.guessRunScriptName(env.project, it) }
 
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspRunTaskListener(handler)
