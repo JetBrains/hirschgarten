@@ -8,7 +8,7 @@ kt_jvm_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/performance",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/performance",
         "//protocol",
         "//server/bazelrunner",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/utils",
