@@ -11,7 +11,6 @@ class JvmSyncHook : ProjectSyncHook {
     task.execute(
       project = environment.project,
       server = environment.server,
-      capabilities = environment.capabilities,
       progressReporter = environment.progressReporter,
       baseTargetInfos = environment.baseTargetInfos,
       syncScope = environment.syncScope,

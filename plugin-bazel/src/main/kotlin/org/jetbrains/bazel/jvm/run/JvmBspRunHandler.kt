@@ -1,12 +1,9 @@
 package org.jetbrains.bazel.jvm.run
 
-import ch.epfl.scala.bsp4j.RunParams
-import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.run.BspProcessHandler
 import org.jetbrains.bazel.run.BspRunHandler
@@ -21,9 +18,9 @@ import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.includesAndroid
 import org.jetbrains.bazel.workspacemodel.entities.isJvmTarget
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
+import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import java.util.UUID
 
@@ -70,21 +67,20 @@ class JvmRunWithDebugCommandLineState(
 ) : JvmDebuggableCommandLineState(environment, originId) {
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspRunTaskListener(handler)
 
-  override suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) {
-    if (!capabilities.runWithDebugProvider) {
-      throw ExecutionException("BSP server does not support running")
-    }
-
+  override suspend fun startBsp(server: JoinedBuildServer) {
     val configuration = environment.runProfile as BspRunConfiguration
     val targetId = configuration.targets.single()
-    val runParams = RunParams(targetId)
-    runParams.originId = originId
-    runParams.workingDirectory = settings.workingDirectory
-    runParams.arguments = transformProgramArguments(settings.programArguments)
-    runParams.environmentVariables = settings.env.envs
+    val runParams =
+      RunParams(
+        targetId,
+        originId = originId,
+        arguments = transformProgramArguments(settings.programArguments),
+        environmentVariables = settings.env.envs,
+        workingDirectory = settings.workingDirectory,
+      )
     val remoteDebugData = RemoteDebugData("jdwp", getConnectionPort())
     val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
 
-    server.buildTargetRunWithDebug(runWithDebugParams).await()
+    server.buildTargetRunWithDebug(runWithDebugParams)
   }
 }

@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.target
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.ModuleCapabilities
 
@@ -18,7 +18,7 @@ data class BuildTargetInfoState(
 ) : ConvertableFromState<BuildTargetInfo> {
   override fun fromState(): BuildTargetInfo =
     BuildTargetInfo(
-      id = BuildTargetIdentifier(id),
+      id = Label.parse(id),
       displayName = displayName,
       capabilities = capabilities.fromState(),
       tags = tags,
@@ -29,7 +29,7 @@ data class BuildTargetInfoState(
 
 fun BuildTargetInfo.toState(): BuildTargetInfoState =
   BuildTargetInfoState(
-    id = id.uri,
+    id = id.toString(),
     displayName = displayName,
     capabilities = capabilities.toState(),
     tags = tags,

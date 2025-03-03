@@ -203,6 +203,20 @@ proto_library(
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
   }
 
+  @Test
+  fun `should not match an file URI followed by colon`() {
+    // given
+    val path = createBazelFileInProject("plugin-bazel/src", "BUILD.bazel")
+    val uri = path.toAbsolutePath().toUri()
+    val line = "$TEST_LINE_PREFIX$uri:1$TEST_LINE_SUFFIX"
+
+    // when
+    val result = filter.applyFilter(line, line.length + 100)
+
+    // then
+    result!!.resultItems.size shouldBe 0
+  }
+
   private fun createBazelFileInProject(relativePath: String, buildFileName: String = "BUILD"): Path =
     runWriteAction {
       project.rootDir

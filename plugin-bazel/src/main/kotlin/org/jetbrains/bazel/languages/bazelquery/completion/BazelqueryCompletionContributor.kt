@@ -5,6 +5,7 @@ import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
+import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PlatformPatterns.psiElement
@@ -15,9 +16,7 @@ import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenType
 import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryQueryVal
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.ProjectManager
-import org.jetbrains.bazel.target.targetUtils
+import com.intellij.psi.util.startOffset
 
 
 class BazelqueryCompletionContributor : CompletionContributor() {
@@ -26,10 +25,27 @@ class BazelqueryCompletionContributor : CompletionContributor() {
   }
 }
 
-val wordsOrCommandsTokens = TokenSet.create(
+val knownCommands =
+  BazelqueryTokenSets.COMMANDS.types.map { tokenType ->
+    tokenType as BazelqueryTokenType
+    tokenType.completionText() + "()"
+  }.toList()
+
+class BazelqueryPrefixMatcher(prefix: String) : PrefixMatcher(prefix) {
+
+  override fun prefixMatches(name: String): Boolean {
+    return name.startsWith(prefix, ignoreCase = true)
+  }
+
+  override fun cloneWithPrefix(newPrefix: String): PrefixMatcher {
+    return BazelqueryPrefixMatcher(newPrefix)
+  }
+}
+
+private val wordsOrCommandsTokens = TokenSet.create(
   *BazelqueryTokenSets.WORDS.types,
   *BazelqueryTokenSets.COMMANDS.types,
-  )
+)
 
 private class BazelWordCompletionProvider : CompletionProvider<CompletionParameters>() {
   companion object {
@@ -45,36 +61,25 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
         )
   }
 
-  val knownCommands =
-    BazelqueryTokenSets.COMMANDS.types.map { tokenType ->
-      tokenType as BazelqueryTokenType
-      tokenType.completionText() + "()"
-    }.toList()
-
-  val project: Project? = ProjectManager.getInstance().openProjects.firstOrNull()
-  val targetUtils = project?.targetUtils
-  val targets = targetUtils?.allTargets()?.mapNotNull {it.targetName}
-//  val temporaryTargetUtils = project?.targetUtils
-//  val targetsIds = temporaryTargetUtils?.allTargetIds()
-//  val targets = targetsIds?.mapNotNull { targetId ->
-//    temporaryTargetUtils?.getBuildTargetInfoForId(targetId)?.displayName
-//  }
-
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
+    val prefix = parameters.position.text
+      .take(parameters.offset - parameters.position.startOffset)
+      .trim()
+      .removePrefix("\"")
+      .removePrefix("'")
+    val targetSuggestions = generateTargetCompletions(prefix)
 
-
-    result.run {
+    result.withPrefixMatcher(BazelqueryPrefixMatcher(prefix)).run {
       addAllElements(
         knownCommands.map(::functionLookupElement),
       )
       addAllElements(
-        targets?.map(::functionLookupElement) ?: emptyList(),
+        targetSuggestions.map(::functionLookupElement)
       )
-      // TODO: prioritize targets
     }
   }
 

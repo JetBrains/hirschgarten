@@ -1,44 +1,29 @@
 package org.jetbrains.bsp.protocol.utils
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.PythonBuildTarget
-import ch.epfl.scala.bsp4j.ScalaBuildTarget
-import com.google.gson.Gson
-import com.google.gson.JsonObject
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
+import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.protocol.PythonBuildTarget
+import org.jetbrains.bsp.protocol.ScalaBuildTarget
 
-private inline fun <reified Data> extractData(target: BuildTarget, kind: String): Data? =
-  if (target.dataKind == kind) {
-    if (target.data is Data) {
-      target.data as Data
-    } else {
-      Gson().fromJson(
-        target.data as JsonObject,
-        Data::class.java,
-      )
-    }
-  } else {
-    null
-  }
+private inline fun <reified Data> extractData(target: BuildTarget): Data? = target.data as? Data
 
-public fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? = extractData(target, BuildTargetDataKind.PYTHON)
+fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? = extractData(target)
 
-public fun extractScalaBuildTarget(target: BuildTarget): ScalaBuildTarget? = extractData(target, BuildTargetDataKind.SCALA)
+fun extractScalaBuildTarget(target: BuildTarget): ScalaBuildTarget? = extractData(target)
 
-public fun extractAndroidBuildTarget(target: BuildTarget): AndroidBuildTarget? = extractData(target, "android")
+fun extractAndroidBuildTarget(target: BuildTarget): AndroidBuildTarget? = extractData(target)
 
-public fun extractGoBuildTarget(target: BuildTarget): GoBuildTarget? = extractData(target, "go")
+fun extractGoBuildTarget(target: BuildTarget): GoBuildTarget? = extractData(target)
 
-public fun extractKotlinBuildTarget(target: BuildTarget): KotlinBuildTarget? =
-  extractData(target, "kotlin")
+fun extractKotlinBuildTarget(target: BuildTarget): KotlinBuildTarget? =
+  extractData(target)
     ?: extractAndroidBuildTarget(target)?.kotlinBuildTarget
 
-public fun extractJvmBuildTarget(target: BuildTarget): JvmBuildTarget? =
-  extractData(target, BuildTargetDataKind.JVM)
+fun extractJvmBuildTarget(target: BuildTarget): JvmBuildTarget? =
+  extractData(target)
     ?: extractAndroidBuildTarget(target)?.jvmBuildTarget
     ?: extractKotlinBuildTarget(target)?.jvmBuildTarget
     ?: extractScalaBuildTarget(target)?.jvmBuildTarget

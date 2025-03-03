@@ -1,11 +1,5 @@
 package org.jetbrains.bazel.jvm.sync
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.DependencySourcesResult
-import ch.epfl.scala.bsp4j.JavacOptionsParams
-import ch.epfl.scala.bsp4j.ScalacOptionsParams
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.application.writeAction
@@ -23,7 +17,7 @@ import org.jetbrains.bazel.android.AndroidSdk
 import org.jetbrains.bazel.android.AndroidSdkGetterExtension
 import org.jetbrains.bazel.android.androidSdkGetterExtension
 import org.jetbrains.bazel.android.androidSdkGetterExtensionExists
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.bspProjectName
 import org.jetbrains.bazel.config.defaultJdkName
@@ -51,7 +45,9 @@ import org.jetbrains.bazel.sync.BaseTargetInfo
 import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
+import org.jetbrains.bazel.sync.task.asyncQuery
 import org.jetbrains.bazel.sync.task.asyncQueryIf
+import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.task.queryIf
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
@@ -63,10 +59,12 @@ import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bazel.workspacemodel.entities.includesJava
 import org.jetbrains.bazel.workspacemodel.entities.includesScala
 import org.jetbrains.bazel.workspacemodel.entities.toBuildTargetInfo
-import org.jetbrains.bsp.protocol.BazelBuildServer
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.DependencySourcesParams
+import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
+import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
@@ -75,7 +73,6 @@ import org.jetbrains.kotlin.analysis.api.platform.analysisMessageBus
 import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinModificationTopics
 import java.net.URI
 import java.util.concurrent.CancellationException
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import kotlin.io.path.toPath
 
@@ -96,13 +93,12 @@ class CollectProjectDetailsTask(
     project: Project,
     server: JoinedBuildServer,
     syncScope: ProjectSyncScope,
-    capabilities: BazelBuildServerCapabilities,
     progressReporter: SequentialProgressReporter,
     baseTargetInfos: BaseTargetInfos,
   ) {
     val projectDetails =
       progressReporter.sizedStep(workSize = 50, text = BspPluginBundle.message("progress.bar.collect.project.details")) {
-        collectModel(project, server, capabilities, baseTargetInfos)
+        collectModel(project, server, baseTargetInfos)
       }
 
     progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
@@ -123,7 +119,7 @@ class CollectProjectDetailsTask(
       }
     }
 
-    if (BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
+    if (BazelFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
       progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
         calculateAllAndroidSdkInfosSubtask(projectDetails)
       }
@@ -137,7 +133,6 @@ class CollectProjectDetailsTask(
   private suspend fun collectModel(
     project: Project,
     server: JoinedBuildServer,
-    capabilities: BazelBuildServerCapabilities,
     baseTargetInfos: BaseTargetInfos,
   ): ProjectDetails =
     try {
@@ -151,7 +146,6 @@ class CollectProjectDetailsTask(
         calculateProjectDetailsWithCapabilities(
           project = project,
           server = server,
-          buildServerCapabilities = capabilities,
           baseTargetInfos = baseTargetInfos,
         )
 
@@ -288,7 +282,7 @@ class CollectProjectDetailsTask(
               if (syncScope is FullProjectSync) {
                 syncedTargetIdToTargetInfo
               } else {
-                project.targetUtils.labelToTargetInfo.mapKeys { BuildTargetIdentifier(it.key.toString()) } +
+                project.targetUtils.labelToTargetInfo.mapKeys { it.key } +
                   syncedTargetIdToTargetInfo
               }
             val targetIdToModuleEntityMap =
@@ -299,7 +293,7 @@ class CollectProjectDetailsTask(
                 projectBasePath = projectBasePath,
                 project = project,
                 nameProvider = nameProvider,
-                isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
+                isAndroidSupportEnabled = BazelFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
               )
 
             if (syncScope is FullProjectSync) {
@@ -319,7 +313,7 @@ class CollectProjectDetailsTask(
 
         val compiledSourceCodeInsideJarToExclude =
           bspTracer.spanBuilder("calculate.non.generated.class.files.to.exclude").use {
-            if (BspFeatureFlags.excludeCompiledSourceCodeInsideJars) {
+            if (BazelFeatureFlags.excludeCompiledSourceCodeInsideJars) {
               ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(modulesToLoad)
             } else {
               null
@@ -336,7 +330,7 @@ class CollectProjectDetailsTask(
               virtualFileUrlManager = virtualFileUrlManager,
               projectBasePath = projectBasePath,
               project = project,
-              isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
+              isAndroidSupportEnabled = BazelFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
             )
 
           workspaceModelUpdater.loadModules(modulesToLoad + libraryModules)
@@ -371,7 +365,7 @@ class CollectProjectDetailsTask(
     addBspFetchedJavacOptions()
     addBspFetchedScalaSdks()
 
-    if (BspFeatureFlags.isAndroidSupportEnabled) {
+    if (BazelFeatureFlags.isAndroidSupportEnabled) {
       addBspFetchedAndroidSdks()
     }
 
@@ -482,42 +476,30 @@ class CollectProjectDetailsTask(
 suspend fun calculateProjectDetailsWithCapabilities(
   project: Project,
   server: JoinedBuildServer,
-  buildServerCapabilities: BazelBuildServerCapabilities,
   baseTargetInfos: BaseTargetInfos,
 ): ProjectDetails =
   coroutineScope {
     try {
       val javaTargetIds = baseTargetInfos.infos.calculateJavaTargetIds()
       val scalaTargetIds = baseTargetInfos.infos.calculateScalaTargetIds()
-      val libraries: WorkspaceLibrariesResult? =
-        queryIf(buildServerCapabilities.workspaceLibrariesProvider, "workspace/libraries") {
-          (server as BazelBuildServer).workspaceLibraries()
+      val libraries: WorkspaceLibrariesResult =
+        query("workspace/libraries") {
+          server.workspaceLibraries()
         }
 
       val dependencySourcesResult =
-        asyncQueryIf(buildServerCapabilities.dependencySourcesProvider == true, "buildTarget/dependencySources") {
-          val dependencySourcesTargetIds =
-            if (libraries == null) {
-              baseTargetInfos.allTargetIds
-            } else {
-              emptyList()
-            }
-          if (dependencySourcesTargetIds.isNotEmpty()) {
-            server.buildTargetDependencySources(DependencySourcesParams(dependencySourcesTargetIds))
-          } else {
-            CompletableFuture.completedFuture(DependencySourcesResult(emptyList()))
-          }
+        asyncQuery("buildTarget/dependencySources") {
+          server.buildTargetDependencySources(DependencySourcesParams(baseTargetInfos.allTargetIds))
         }
 
       val nonModuleTargets =
-        queryIf(buildServerCapabilities.workspaceNonModuleTargetsProvider, "workspace/nonModuleTargets") {
-          (server as BazelBuildServer).workspaceNonModuleTargets()
+        query("workspace/nonModuleTargets") {
+          server.workspaceNonModuleTargets()
         }
 
       val jvmBinaryJarsResult =
         queryIf(
-          buildServerCapabilities.jvmBinaryJarsProvider &&
-            javaTargetIds.isNotEmpty() &&
+          javaTargetIds.isNotEmpty() &&
             project.shouldImportJvmBinaryJars(),
           "buildTarget/jvmBinaryJars",
         ) {
@@ -531,16 +513,13 @@ suspend fun calculateProjectDetailsWithCapabilities(
       // In this case we can use this request to retrieve the javac options without the overhead of passing the whole classpath.
       // There's no capability for javacOptions.
       val javacOptionsResult =
-        if (libraries == null || buildServerCapabilities.jvmCompileClasspathProvider) {
-          asyncQueryIf(javaTargetIds.isNotEmpty(), "buildTarget/javacOptions") {
-            server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
-          }
-        } else {
-          null
+        asyncQueryIf(javaTargetIds.isNotEmpty(), "buildTarget/javacOptions") {
+          server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
         }
 
       // Same for Scala
       val scalacOptionsResult =
+        // TODO: Son
         if (libraries == null) {
           asyncQueryIf(scalaTargetIds.isNotEmpty(), "buildTarget/scalacOptions") {
             server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
@@ -554,11 +533,12 @@ suspend fun calculateProjectDetailsWithCapabilities(
         targets = baseTargetInfos.infos.map { it.target }.toSet(),
         sources = baseTargetInfos.infos.flatMap { it.sources },
         resources = baseTargetInfos.infos.flatMap { it.resources },
-        dependenciesSources = dependencySourcesResult.await()?.items ?: emptyList(),
-        javacOptions = javacOptionsResult?.await()?.items ?: emptyList(),
+        dependenciesSources = dependencySourcesResult.await().items,
+        javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
+        // TODO: Son
         scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
-        libraries = libraries?.libraries,
-        nonModuleTargets = nonModuleTargets?.nonModuleTargets ?: emptyList(),
+        libraries = libraries.libraries,
+        nonModuleTargets = nonModuleTargets.nonModuleTargets,
         jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
       )
     } catch (e: Exception) {
@@ -573,8 +553,8 @@ suspend fun calculateProjectDetailsWithCapabilities(
     }
   }
 
-private fun List<BaseTargetInfo>.calculateJavaTargetIds(): List<BuildTargetIdentifier> =
+private fun List<BaseTargetInfo>.calculateJavaTargetIds(): List<Label> =
   filter { it.target.languageIds.includesJava() }.map { it.target.id }
 
-private fun List<BaseTargetInfo>.calculateScalaTargetIds(): List<BuildTargetIdentifier> =
+private fun List<BaseTargetInfo>.calculateScalaTargetIds(): List<Label> =
   filter { it.target.languageIds.includesScala() }.map { it.target.id }

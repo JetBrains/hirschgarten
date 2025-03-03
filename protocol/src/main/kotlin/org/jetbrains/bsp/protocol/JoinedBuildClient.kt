@@ -1,7 +1,23 @@
 package org.jetbrains.bsp.protocol
 
-import ch.epfl.scala.bsp4j.BuildClient
+interface JoinedBuildClient {
+  fun onBuildShowMessage(params: ShowMessageParams): Unit
 
-interface JoinedBuildClient :
-  BuildClient,
-  BazelBuildClient
+  fun onBuildLogMessage(params: LogMessageParams): Unit
+
+  fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams): Unit
+
+  fun onBuildTargetDidChange(params: DidChangeBuildTarget): Unit
+
+  fun onBuildTaskStart(params: TaskStartParams): Unit
+
+  fun onBuildTaskProgress(params: TaskProgressParams): Unit
+
+  fun onBuildTaskFinish(params: TaskFinishParams): Unit
+
+  fun onRunPrintStdout(params: PrintParams): Unit
+
+  fun onRunPrintStderr(params: PrintParams): Unit
+
+  fun onPublishCoverageReport(report: CoverageReport)
+}

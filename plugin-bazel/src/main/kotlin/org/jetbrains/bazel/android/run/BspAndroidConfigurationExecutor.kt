@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.android.run
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.android.ddmlib.IDevice
 import com.android.tools.deployer.Deployer
 import com.android.tools.idea.execution.common.AndroidConfigurationExecutor
@@ -32,7 +31,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.workspaceModel.ide.toPath
 import com.intellij.xdebugger.impl.XDebugSessionImpl
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.target.getModuleEntity
 import org.jetbrains.bazel.workspacemodel.entities.androidAddendumEntity
@@ -43,7 +42,7 @@ class BspAndroidConfigurationExecutor(private val environment: ExecutionEnvironm
   override val configuration: RunConfiguration
     get() = environment.runProfile as RunConfiguration
 
-  private val targetId: BuildTargetIdentifier
+  private val targetId: Label
     get() =
       (environment.runProfile as? BspRunConfiguration)?.targets?.singleOrNull()
         ?: throw ExecutionException("Couldn't get BSP target from run configuration")
@@ -137,7 +136,7 @@ class BspAndroidConfigurationExecutor(private val environment: ExecutionEnvironm
 
   private fun deployApk(
     environment: ExecutionEnvironment,
-    targetId: BuildTargetIdentifier,
+    targetId: Label,
     device: IDevice,
     console: ConsoleView,
     indicator: ProgressIndicator,
@@ -180,8 +179,8 @@ class BspAndroidConfigurationExecutor(private val environment: ExecutionEnvironm
     state.launch(device, deployResult.app, apkProvider, isDebug, flags, console, RunStats.from(environment))
   }
 
-  private fun getApkPath(project: Project, targetId: BuildTargetIdentifier): Path? {
-    val moduleEntity = targetId.label().getModuleEntity(project) ?: return null
+  private fun getApkPath(project: Project, targetId: Label): Path? {
+    val moduleEntity = targetId.getModuleEntity(project) ?: return null
     val androidAddendumEntity = moduleEntity.androidAddendumEntity ?: return null
     return androidAddendumEntity.apk?.toPath()
   }

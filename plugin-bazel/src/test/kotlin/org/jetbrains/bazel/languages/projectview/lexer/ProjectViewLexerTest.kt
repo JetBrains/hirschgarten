@@ -12,7 +12,23 @@ class ProjectViewLexerTest : LexerTestCase() {
     // when & then
     code shouldLexTo
       listOf(
-        "ProjectView:scalar_keyword",
+        "ProjectView:keyword",
+        "ProjectView:whitespace",
+        "ProjectView:identifier",
+      )
+  }
+
+  @Test
+  fun `should not lex indented keywords`() {
+    // given
+    val code = "  shard_sync: true"
+
+    // when & then
+    code shouldLexTo
+      listOf(
+        "ProjectView:indent",
+        "ProjectView:identifier",
+        "ProjectView:colon",
         "ProjectView:whitespace",
         "ProjectView:identifier",
       )
@@ -26,7 +42,7 @@ class ProjectViewLexerTest : LexerTestCase() {
     // when & then
     code shouldLexTo
       listOf(
-        "ProjectView:scalar_keyword",
+        "ProjectView:keyword",
         "ProjectView:colon",
         "ProjectView:whitespace",
         "ProjectView:identifier",
@@ -48,7 +64,7 @@ class ProjectViewLexerTest : LexerTestCase() {
       listOf(
         "ProjectView:comment",
         "ProjectView:newline",
-        "ProjectView:list_keyword",
+        "ProjectView:keyword",
         "ProjectView:colon",
         "ProjectView:newline",
         "ProjectView:indent",
@@ -88,7 +104,7 @@ class ProjectViewLexerTest : LexerTestCase() {
     // when & then
     code shouldLexTo
       listOf(
-        "ProjectView:list_keyword",
+        "ProjectView:keyword",
         "ProjectView:colon",
         "ProjectView:newline",
         "ProjectView:indent",
@@ -98,7 +114,7 @@ class ProjectViewLexerTest : LexerTestCase() {
         "ProjectView:identifier",
         "ProjectView:newline",
         "ProjectView:newline",
-        "ProjectView:list_keyword",
+        "ProjectView:keyword",
         "ProjectView:colon",
         "ProjectView:newline",
         "ProjectView:indent",

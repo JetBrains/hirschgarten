@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.hotswap
 
-import com.android.annotations.TestOnly
 import org.jetbrains.bazel.hotswap.FilesDiff.Companion.diffFiles
 import java.io.File
 
@@ -16,7 +15,6 @@ import java.io.File
 data class FilesDiff(
   val newFileState: Map<File, Long>,
   val updatedFiles: List<File>,
-  @TestOnly
   val removedFiles: Set<File>,
 ) {
   companion object {

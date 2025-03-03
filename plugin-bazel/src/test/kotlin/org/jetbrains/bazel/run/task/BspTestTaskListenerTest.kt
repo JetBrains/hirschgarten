@@ -1,22 +1,24 @@
 package org.jetbrains.bazel.run.task
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.StatusCode
-import ch.epfl.scala.bsp4j.TestFinish
-import ch.epfl.scala.bsp4j.TestStart
-import ch.epfl.scala.bsp4j.TestStatus
-import ch.epfl.scala.bsp4j.TestTask
 import com.google.idea.testing.BazelTestApplication
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import io.kotest.matchers.equals.shouldBeEqual
 import kotlinx.coroutines.CompletableDeferred
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BspProcessHandler
+import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
+import org.jetbrains.bsp.protocol.StatusCode
+import org.jetbrains.bsp.protocol.TestFinish
+import org.jetbrains.bsp.protocol.TestStart
+import org.jetbrains.bsp.protocol.TestStatus
+import org.jetbrains.bsp.protocol.TestTask
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-internal class MockBspProcessHandler : BspProcessHandler(CompletableDeferred(0)) {
+internal class MockBspProcessHandler(project: Project) : BspProcessHandler(project, CompletableDeferred(0)) {
   var latestText: String = ""
 
   override fun notifyTextAvailable(text: String, outputType: Key<*>) {
@@ -31,13 +33,13 @@ internal class MockBspProcessHandler : BspProcessHandler(CompletableDeferred(0))
 }
 
 @BazelTestApplication
-class BspTestTaskListenerTest {
+class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
   private lateinit var handler: MockBspProcessHandler
   private lateinit var listener: BspTestTaskListener
 
   @BeforeEach
   fun init() {
-    handler = MockBspProcessHandler()
+    handler = MockBspProcessHandler(project)
     listener = BspTestTaskListener(handler)
   }
 
@@ -45,7 +47,7 @@ class BspTestTaskListenerTest {
   fun `test-task`() {
     // given
     val expectedText = ServiceMessageBuilder("testingStarted").toString()
-    val data = TestTask(BuildTargetIdentifier("id"))
+    val data = TestTask(Label.parse("id"))
 
     // when
     listener.onTaskStart(taskId = "task-id", parentId = null, message = "", data = data)
@@ -100,9 +102,7 @@ class BspTestTaskListenerTest {
     // given
     val durationSeconds = 1.23456
     val taskId = "task-id"
-    val testFinishData = TestFinish("testSuite", TestStatus.PASSED)
-    testFinishData.data = JUnitStyleTestSuiteData(durationSeconds, null, null)
-    testFinishData.dataKind = JUnitStyleTestSuiteData.DATA_KIND
+    val testFinishData = TestFinish("testSuite", TestStatus.PASSED, data = JUnitStyleTestSuiteData(durationSeconds, null, null))
 
     val expectedDurationMillis = (1234).toLong()
     val expectedText =

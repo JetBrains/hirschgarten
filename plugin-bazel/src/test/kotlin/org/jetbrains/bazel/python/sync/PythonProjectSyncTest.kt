@@ -1,25 +1,21 @@
 package org.jetbrains.bazel.python.sync
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.PythonBuildTarget
-import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.ModuleDependency
+import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
+import com.intellij.platform.workspace.jps.entities.SdkDependency
+import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.orDefault
@@ -29,14 +25,21 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
+import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
+import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
+import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
+import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
+import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
-import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
-import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
-import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
-import org.jetbrains.workspace.model.test.framework.BuildServerMock
-import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.DependencySourcesResult
+import org.jetbrains.bsp.protocol.PythonBuildTarget
+import org.jetbrains.bsp.protocol.ResourcesItem
+import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.SourceItemKind
+import org.jetbrains.bsp.protocol.SourcesItem
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -47,9 +50,9 @@ private data class PythonTestSet(
 )
 
 private data class GeneratedTargetInfo(
-  val targetId: BuildTargetIdentifier,
+  val targetId: Label,
   val type: String,
-  val dependencies: List<BuildTargetIdentifier> = listOf(),
+  val dependencies: List<Label> = listOf(),
   val resourcesItems: List<String> = listOf(),
 )
 
@@ -68,8 +71,10 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add module with dependencies to workspace model diff`() {
     // given
-    val server = BuildServerMock()
-    val capabilities = BazelBuildServerCapabilities()
+    val server =
+      BuildServerMock(
+        dependencySourcesResult = DependencySourcesResult(emptyList()),
+      )
     val diff = AllProjectStructuresProvider(project).newDiff()
     val pythonTestTargets = generateTestSet()
 
@@ -81,7 +86,6 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             project = project,
             syncScope = SecondPhaseSync,
             server = server,
-            capabilities = capabilities,
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
@@ -104,8 +108,10 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add module with sources to workspace model diff`() {
     // given
-    val server = BuildServerMock()
-    val capabilities = BazelBuildServerCapabilities()
+    val server =
+      BuildServerMock(
+        dependencySourcesResult = DependencySourcesResult(emptyList()),
+      )
     val diff = AllProjectStructuresProvider(project).newDiff()
     val pythonTestTargets = generateTestSetWithSources()
 
@@ -117,7 +123,6 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             project = project,
             syncScope = SecondPhaseSync,
             server = server,
-            capabilities = capabilities,
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
@@ -139,17 +144,17 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   private fun generateTestSet(): PythonTestSet {
     val pythonLibrary1 =
       GeneratedTargetInfo(
-        targetId = BuildTargetIdentifier("@@server.lib:lib1"),
+        targetId = Label.parse("@@server.lib:lib1"),
         type = "library",
       )
     val pythonLibrary2 =
       GeneratedTargetInfo(
-        targetId = BuildTargetIdentifier("@@server/lib:lib2"),
+        targetId = Label.parse("@@server/lib:lib2"),
         type = "library",
       )
     val pythonBinary =
       GeneratedTargetInfo(
-        targetId = BuildTargetIdentifier("@@server:main_app"),
+        targetId = Label.parse("@@server:main_app"),
         type = "PYTHON_MODULE",
         dependencies = listOf(pythonLibrary1.targetId, pythonLibrary2.targetId),
       )
@@ -175,7 +180,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   private fun generateTestSetWithSources(): PythonTestSet {
     val pythonBinary =
       GeneratedTargetInfo(
-        targetId = BuildTargetIdentifier("@@server:main_app"),
+        targetId = Label.parse("@@server:main_app"),
         type = "PYTHON_MODULE",
         dependencies = listOf(),
       )
@@ -214,15 +219,14 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         listOf("python"),
         info.dependencies,
         BuildTargetCapabilities(),
+        displayName = info.targetId.toString(),
+        baseDirectory = "file:///targets_base_dir",
+        data =
+          PythonBuildTarget(
+            version = "3",
+            interpreter = "file:///path/to/interpreter",
+          ),
       )
-    target.displayName = target.id.toString()
-    target.baseDirectory = "file:///targets_base_dir"
-    target.dataKind = "python"
-    target.data =
-      PythonBuildTarget().also {
-        it.version = "3"
-        it.interpreter = "/path/to/interpreter"
-      }
 
     return BaseTargetInfo(target, emptyList(), emptyList())
   }
@@ -231,25 +235,28 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     targetInfo: GeneratedTargetInfo,
     dependenciesTargetInfo: List<GeneratedTargetInfo>,
     nameProvider: TargetNameReformatProvider,
-  ): ExpectedModuleEntity =
-    ExpectedModuleEntity(
+  ): ExpectedModuleEntity {
+    val sdkDependency: ModuleDependencyItem = SdkDependency(SdkId("${targetInfo.targetId.toShortString()}-3", "PythonSDK"))
+    val moduleDependencies: List<ModuleDependencyItem> =
+      dependenciesTargetInfo.map {
+        ModuleDependency(
+          module = ModuleId(nameProvider(BuildTargetInfo(id = it.targetId))),
+          exported = true,
+          scope = DependencyScope.COMPILE,
+          productionOnTest = true,
+        )
+      }
+    return ExpectedModuleEntity(
       moduleEntity =
         ModuleEntity(
           name = nameProvider(BuildTargetInfo(id = targetInfo.targetId)),
           entitySource = BspProjectEntitySource,
-          dependencies =
-            dependenciesTargetInfo.map {
-              ModuleDependency(
-                module = ModuleId(nameProvider(BuildTargetInfo(id = it.targetId))),
-                exported = true,
-                scope = DependencyScope.COMPILE,
-                productionOnTest = true,
-              )
-            },
+          dependencies = moduleDependencies + sdkDependency,
         ) {
           type = ModuleTypeId("PYTHON_MODULE")
         },
     )
+  }
 
   private fun generateExpectedSourceRootEntities(
     sources: List<SourcesItem>,

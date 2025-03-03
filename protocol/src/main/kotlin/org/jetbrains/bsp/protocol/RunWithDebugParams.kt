@@ -1,13 +1,13 @@
 package org.jetbrains.bsp.protocol
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.RunParams
-import ch.epfl.scala.bsp4j.StatusCode
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.RunParams
+import org.jetbrains.bsp.protocol.StatusCode
 
 data class AnalysisDebugParams(
   val originId: String,
   val port: Int,
-  val targets: List<BuildTargetIdentifier>,
+  val targets: List<Label>,
 )
 
 data class AnalysisDebugResult(val statusCode: StatusCode)

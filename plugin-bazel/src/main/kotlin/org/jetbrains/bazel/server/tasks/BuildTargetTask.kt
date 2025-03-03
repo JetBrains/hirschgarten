@@ -1,16 +1,9 @@
 package org.jetbrains.bazel.server.tasks
 
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.CompileParams
-import ch.epfl.scala.bsp4j.CompileReport
-import ch.epfl.scala.bsp4j.CompileResult
-import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -19,29 +12,28 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.future.await
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.taskEvents.BspTaskEventsService
 import org.jetbrains.bazel.taskEvents.BspTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
 import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
+import org.jetbrains.bsp.protocol.CompileParams
+import org.jetbrains.bsp.protocol.CompileReport
+import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.StatusCode
 import java.util.UUID
-import java.util.concurrent.CancellationException
 
 @ApiStatus.Internal
 public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<CompileResult>("build targets", project) {
   private val log = logger<BuildTargetTask>()
 
-  protected override suspend fun executeWithServer(
-    server: JoinedBuildServer,
-    capabilities: BuildServerCapabilities,
-    targetsIds: List<BuildTargetIdentifier>,
-  ): CompileResult =
+  protected override suspend fun executeWithServer(server: JoinedBuildServer, targetsIds: List<Label>): CompileResult =
     coroutineScope {
       val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
       val originId = "build-" + UUID.randomUUID().toString()
@@ -93,7 +85,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
 
           override fun onDiagnostic(
             textDocument: String,
-            buildTarget: String,
+            buildTarget: Label,
             line: Int,
             character: Int,
             severity: MessageEvent.Kind,
@@ -120,7 +112,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
       val compileParams = createCompileParams(targetsIds, originId)
 
       try {
-        val buildDeferred = async { server.buildTargetCompile(compileParams).await() }
+        val buildDeferred = async { server.buildTargetCompile(compileParams) }
         return@coroutineScope BspTaskStatusLogger(buildDeferred, bspBuildConsole, originId) { statusCode }.getResult()
       } finally {
         BspTaskEventsService.getInstance(project).removeListener(originId)
@@ -128,7 +120,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
     }
 
   private fun startBuildConsoleTask(
-    targetIds: List<BuildTargetIdentifier>,
+    targetIds: List<Label>,
     bspBuildConsole: TaskConsole,
     originId: String,
     cs: CoroutineScope,
@@ -140,43 +132,26 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
       title = BspPluginBundle.message("console.task.build.title"),
       message = startBuildMessage,
       cancelAction = { cs.cancel() },
-      redoAction = { BspCoroutineService.getInstance(project).start { runBuildTargetTask(targetIds, project, log) } },
+      redoAction = { BspCoroutineService.getInstance(project).start { runBuildTargetTask(targetIds, project) } },
     )
   }
 
-  private fun calculateStartBuildMessage(targetIds: List<BuildTargetIdentifier>): String =
+  private fun calculateStartBuildMessage(targetIds: List<Label>): String =
     when (targetIds.size) {
       0 -> BspPluginBundle.message("console.task.build.no.targets")
-      1 -> BspPluginBundle.message("console.task.build.in.progress.one", targetIds.first().uri)
+      1 -> BspPluginBundle.message("console.task.build.in.progress.one", targetIds.first().toShortString())
       else -> BspPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
     }
 
-  private fun createCompileParams(targetIds: List<BuildTargetIdentifier>, originId: String) =
-    CompileParams(targetIds).apply {
-      this.originId = originId
-      this.arguments = listOf("--keep_going")
-    }
+  private fun createCompileParams(targetIds: List<Label>, originId: String) =
+    CompileParams(targetIds, originId = originId, arguments = listOf("--keep_going"))
 }
 
-public suspend fun runBuildTargetTask(
-  targetIds: List<BuildTargetIdentifier>,
-  project: Project,
-  log: Logger,
-): CompileResult? =
-  try {
-    saveAllFiles()
-    withBackgroundProgress(project, "Building target(s)...") {
-      BuildTargetTask(project).connectAndExecute(targetIds)
-    }.also {
-      VirtualFileManager.getInstance().asyncRefresh()
-    }
-  } catch (e: Exception) {
-    when {
-      e is CancellationException -> CompileResult(StatusCode.CANCELLED)
-
-      else -> {
-        log.error(e)
-        null
-      }
-    }
+public suspend fun runBuildTargetTask(targetIds: List<Label>, project: Project): CompileResult? {
+  saveAllFiles()
+  return withBackgroundProgress(project, "Building target(s)...") {
+    BuildTargetTask(project).connectAndExecute(targetIds)
+  }.also {
+    VirtualFileManager.getInstance().asyncRefresh()
   }
+}

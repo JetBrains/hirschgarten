@@ -10,7 +10,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.run.BspRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
@@ -60,7 +60,7 @@ class AndroidBspRunHandler(private val configuration: BspRunConfiguration) : Bsp
     override fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler = AndroidBspRunHandler(configuration)
 
     override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
-      BspFeatureFlags.isAndroidSupportEnabled &&
+      BazelFeatureFlags.isAndroidSupportEnabled &&
         targetInfos.singleOrNull()?.let { it.languageIds.includesAndroid() && !it.capabilities.canTest } ?: false
 
     override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)

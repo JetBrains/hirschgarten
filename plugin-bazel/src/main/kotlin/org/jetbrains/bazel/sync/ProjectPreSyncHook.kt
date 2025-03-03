@@ -38,8 +38,8 @@ interface ProjectPreSyncHook {
   )
 }
 
-val Project.defaultProjectPreSyncHooks: List<ProjectPreSyncHook>
+val Project.projectPreSyncHooks: List<ProjectPreSyncHook>
   get() =
     ProjectPreSyncHook.ep
-      .extensions
+      .extensionList
       .filter { it.isEnabled(this) }

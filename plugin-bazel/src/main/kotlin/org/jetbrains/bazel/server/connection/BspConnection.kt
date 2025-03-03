@@ -3,7 +3,6 @@ package org.jetbrains.bazel.server.connection
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.TestOnly
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 
 /**
@@ -27,7 +26,7 @@ public interface BspConnection {
    * Executes a task on server, taking care of the connection to the server and
    * making sure that the newest available server is used (by calling [org.jetbrains.bazel.impl.server.connection.ConnectionDetailsProviderExtension.provideNewConnectionDetails])
    */
-  public suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) -> T): T
+  public suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer) -> T): T
 
   /**
    * Returns *true* if connection is active ([connect] was called, but [disconnect] wasn't)
