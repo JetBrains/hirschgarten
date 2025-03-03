@@ -199,6 +199,9 @@
         <registryKey defaultValue="true"
                      description="Add the so-called &quot;dummy&quot; modules to make Java resolve work correctly."
                      key="bsp.add.dummy.modules"/>
+        <registryKey defaultValue="false"
+                     description="Allow &quot;dummy&quot; modules to be added at the project root (makes scanning longer)."
+                     key="bsp.allow.dummy.modules.at.project.root"/>
         <registryKey defaultValue="true"
                      description="Exclude class files inside jars (and source files inside source jars) if they match up with a source file in the current project."
                      key="bsp.exclude.compiled.source.code.inside.jars"/>

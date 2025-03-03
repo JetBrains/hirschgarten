@@ -13,6 +13,7 @@ private const val WRAP_LIBRARIES_INSIDE_MODULES = "bsp.wrap.libraries.inside.mod
 private const val USE_PHASED_SYNC = "bsp.use.phased.sync"
 private const val EXECUTE_SECOND_PHASE_ON_SYNC = "bsp.execute.second.phase.on.sync"
 private const val ADD_DUMMY_MODULES = "bsp.add.dummy.modules"
+private const val ALLOW_DUMMY_MODULES_AT_PROJECT_ROOT = "bsp.allow.dummy.modules.at.project.root"
 private const val EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS = "bsp.exclude.compiled.source.code.inside.jars"
 private const val ENABLE_PARTIAL_SYNC = "bsp.enable.partial.sync"
 private const val SYMLINK_SCAN_MAX_DEPTH = "bazel.symlink.scan.max.depth"
@@ -51,6 +52,9 @@ object BazelFeatureFlags {
 
   val addDummyModules: Boolean
     get() = Registry.`is`(ADD_DUMMY_MODULES)
+
+  val allowDummyModulesAtRootDir: Boolean
+    get() = Registry.`is`(ALLOW_DUMMY_MODULES_AT_PROJECT_ROOT)
 
   val excludeCompiledSourceCodeInsideJars: Boolean
     get() = Registry.`is`(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS)

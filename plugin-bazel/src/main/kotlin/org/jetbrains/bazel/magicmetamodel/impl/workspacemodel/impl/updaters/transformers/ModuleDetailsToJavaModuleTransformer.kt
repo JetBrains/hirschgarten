@@ -107,7 +107,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
   private fun GenericModuleInfo.applyHACK(inputEntity: ModuleDetails, projectBasePath: Path): GenericModuleInfo {
     if (!BazelFeatureFlags.addDummyModules) return this
     val dummyJavaModuleDependencies =
-      calculateDummyJavaModuleNames(calculateDummyJavaSourceRoots(toJavaSourceRoots(inputEntity)), projectBasePath)
+      calculateDummyJavaModuleNames(calculateDummyJavaSourceRoots(toJavaSourceRoots(inputEntity), projectBasePath), projectBasePath)
         .filter { it.isNotEmpty() }
         .map { IntermediateModuleDependency(it) }
     return this.copy(modulesDependencies = modulesDependencies + dummyJavaModuleDependencies)

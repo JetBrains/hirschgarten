@@ -4,6 +4,7 @@ import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bspProjectName
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
@@ -34,7 +35,7 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
   }
 
   override fun transform(inputEntity: JavaModule): List<JavaModule> {
-    val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity.sourceRoots)
+    val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity.sourceRoots, projectBasePath)
     val dummyJavaModuleNames = calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath)
     val dummyJavaResourcePath = calculateDummyResourceRootPath(inputEntity, dummyJavaModuleSourceRoots, projectBasePath, project)
     return if (dummyJavaModuleNames.isEmpty() && dummyJavaResourcePath != null) {
@@ -197,21 +198,25 @@ private fun calculateDummyResourceRootPath(
   }
 }
 
-internal fun calculateDummyJavaSourceRoots(sourceRoots: List<JavaSourceRoot>): List<DummySourceRootWithPackagePrefix> =
+internal fun calculateDummyJavaSourceRoots(
+  sourceRoots: List<JavaSourceRoot>,
+  projectBasePath: Path,
+): List<DummySourceRootWithPackagePrefix> =
   sourceRoots
     .asSequence()
     .filter { !it.generated }
     .mapNotNull {
-      restoreSourceRootFromPackagePrefix(it)
+      restoreSourceRootFromPackagePrefix(it, projectBasePath)
     }.distinct()
     .toList()
 
-private fun restoreSourceRootFromPackagePrefix(sourceRoot: JavaSourceRoot): DummySourceRootWithPackagePrefix? {
+private fun restoreSourceRootFromPackagePrefix(sourceRoot: JavaSourceRoot, projectBasePath: Path): DummySourceRootWithPackagePrefix? {
   if (sourceRoot.sourcePath.notExists() || sourceRoot.sourcePath.isDirectory()) return null
   val packagePrefixPath = sourceRoot.packagePrefix.replace('.', File.separatorChar)
   val sourceParent = sourceRoot.sourcePath.parent.pathString
   val sourceRootString = sourceParent.removeSuffix(packagePrefixPath)
   val sourceRootPath = Path(sourceRootString)
+  if (sourceRootPath == projectBasePath && !BazelFeatureFlags.allowDummyModulesAtRootDir) return null
   if (sourceParent == sourceRootString) return DummySourceRootWithPackagePrefix(sourceRootPath, sourceRoot.packagePrefix)
   return DummySourceRootWithPackagePrefix(sourceRootPath)
 }
