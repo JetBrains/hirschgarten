@@ -39,12 +39,6 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult
 
-  @Deprecated("")
-  suspend fun buildTargetScalaTestClasses(params: ScalaTestClassesParams): ScalaTestClassesResult
-
-  @Deprecated("")
-  suspend fun buildTargetScalaMainClasses(params: ScalaMainClassesParams): ScalaMainClassesResult
-
   suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult
 
   suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult
