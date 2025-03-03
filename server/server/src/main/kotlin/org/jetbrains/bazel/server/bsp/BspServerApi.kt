@@ -14,8 +14,6 @@ import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
-import org.jetbrains.bsp.protocol.DependencyModulesParams
-import org.jetbrains.bsp.protocol.DependencyModulesResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.InitializeBuildParams
@@ -143,9 +141,6 @@ class BspServerApi(private val bazelServicesBuilder: suspend (JoinedBuildClient,
   override suspend fun buildTargetMobileInstall(params: MobileInstallParams): MobileInstallResult = executeService.mobileInstall(params)
 
   override suspend fun buildTargetCleanCache(params: CleanCacheParams): CleanCacheResult = executeService.clean(params)
-
-  override suspend fun buildTargetDependencyModules(params: DependencyModulesParams): DependencyModulesResult =
-    projectSyncService.buildTargetDependencyModules(params)
 
   override suspend fun buildTargetOutputPaths(params: OutputPathsParams): OutputPathsResult =
     projectSyncService.buildTargetOutputPaths(params)

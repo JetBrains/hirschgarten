@@ -12,8 +12,6 @@ import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
-import org.jetbrains.bsp.protocol.DependencyModulesParams
-import org.jetbrains.bsp.protocol.DependencyModulesResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.InitializeBuildParams
@@ -65,12 +63,10 @@ import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 
 class BuildServerMock(
-  private val initializeBuildResult: Any? = null,
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
   private val sourcesResult: SourcesResult? = null,
   private val inverseSourcesResult: InverseSourcesResult? = null,
   private val dependencySourcesResult: DependencySourcesResult? = null,
-  private val dependencyModulesResult: DependencyModulesResult? = null,
   private val resourcesResult: ResourcesResult? = null,
   private val outputPathsResult: OutputPathsResult? = null,
   private val compileResult: CompileResult? = null,
@@ -122,9 +118,6 @@ class BuildServerMock(
 
   override suspend fun buildTargetDependencySources(dependencySourcesParams: DependencySourcesParams): DependencySourcesResult =
     wrapInFuture(dependencySourcesResult)
-
-  override suspend fun buildTargetDependencyModules(dependencyModulesParams: DependencyModulesParams): DependencyModulesResult =
-    wrapInFuture(dependencyModulesResult)
 
   override suspend fun buildTargetResources(resourcesParams: ResourcesParams): ResourcesResult = wrapInFuture(resourcesResult)
 
