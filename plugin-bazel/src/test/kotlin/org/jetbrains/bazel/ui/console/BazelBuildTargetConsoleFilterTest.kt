@@ -164,7 +164,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   fun `should match top level build files`() {
     // given
     createBazelFileInProject(".")
-    val bazelTarget = "//:format"
+    val bazelTarget = "//:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
@@ -199,7 +199,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     // given
     createBazelFileInProject(".", "BUILD.bazel")
     createBazelFileInProject(".", "BUILD")
-    val bazelTarget = "//:format"
+    val bazelTarget = "//:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
@@ -233,7 +233,7 @@ proto_library(
     result!!.resultItems.size shouldBe 1
     val hyperLink = (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo)
     hyperLink.virtualFile?.toNioPath().toString() shouldContain "plugin-bazel"
-    hyperLink.descriptor?.offset shouldBe 16
+    hyperLink.descriptor?.offset shouldBe 1
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
   }
