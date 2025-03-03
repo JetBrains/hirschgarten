@@ -10,6 +10,6 @@
     <orderEntry type="library" name="kotlin-stdlib" level="project" />
     <orderEntry type="library" scope="TEST" name="JUnit5" level="project" />
     <orderEntry type="library" name="gson" level="project" />
-    <orderEntry type="library" name="ch.epfl.scala.bsp4j" level="project" exported=""/>
+    <orderEntry type="module" module-name="intellij.bazel.commons" />
   </component>
 </module>
