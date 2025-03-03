@@ -25,6 +25,10 @@ check_in_protobuf(
             "path": "third_party/bazel/src/main/protobuf/build_proto-speed-src.jar",
         },
         {
+            "label": "//third_party/bazel/src/main/protobuf:deps_java_proto",
+            "path": "third_party/bazel/src/main/protobuf/deps_proto-speed-src.jar",
+        },
+        {
             "label": "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
             "path": "third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto/build_event_stream_proto-speed-src.jar",
         },
