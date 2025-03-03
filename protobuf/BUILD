@@ -64,6 +64,10 @@ check_in_protobuf(
             "label": "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/intellij:intellij_plugin_deploy_target_info",
             "path": "plugin-bazel/src/main/kotlin/org/jetbrains/bazel/intellij/intellij_plugin_deploy_target_info_lib-speed-src.jar",
         },
+        {
+            "label": "//third_party/bazel/src/main/protobuf:stardoc_output_java_proto",
+            "path": "third_party/bazel/src/main/protobuf/stardoc_output_proto-speed-src.jar",
+        },
     ],
     tool = ":extract_bin",
 )

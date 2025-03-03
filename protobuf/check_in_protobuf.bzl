@@ -69,6 +69,6 @@ def check_in_protobuf(name, jars, tool = ":extract_bin"):
     write_source_files(
         name = name,
         files = {
-            "src/main/java": ":" + run_binary_name,
+            "src/main/gen": ":" + run_binary_name,
         },
     )
