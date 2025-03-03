@@ -9,7 +9,6 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bazel.sync.ProjectSyncHook
@@ -23,17 +22,15 @@ import java.nio.file.Path
 
 class DirectoriesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
-    coroutineScope {
-      val directories = query("workspace/directories") { environment.server.workspaceDirectories() }
-      val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).getBazelSymlinksToExclude()
-      val entity = createEntity(environment.project, directories, additionalExcludes)
+    val directories = query("workspace/directories") { environment.server.workspaceDirectories() }
+    val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).getBazelSymlinksToExclude()
+    val entity = createEntity(environment.project, directories, additionalExcludes)
 
-      environment.diff.workspaceModelDiff.mutableEntityStorage
-        .addEntity(entity)
+    environment.diff.workspaceModelDiff.mutableEntityStorage
+      .addEntity(entity)
 
-      environment.diff.workspaceModelDiff.addPostApplyAction {
-        removeExcludedVcsMappings(environment.project)
-      }
+    environment.diff.workspaceModelDiff.addPostApplyAction {
+      removeExcludedVcsMappings(environment.project)
     }
   }
 

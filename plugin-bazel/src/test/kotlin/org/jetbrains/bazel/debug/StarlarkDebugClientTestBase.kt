@@ -6,7 +6,7 @@ import org.jetbrains.bazel.debug.connector.ThreadAwareEventHandler
 import org.jetbrains.bazel.debug.platform.StarlarkBreakpointHandler
 import org.jetbrains.bazel.debug.utils.MockDebugSession
 import org.jetbrains.bazel.debug.utils.MockSocket
-import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
+import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 
 abstract class StarlarkDebugClientTestBase : MockProjectBaseTest() {
   protected fun establishMockConnection(): MockConnectionPack {

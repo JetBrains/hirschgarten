@@ -1,21 +1,16 @@
 package org.jetbrains.bazel.server.tasks
 
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.JvmTestEnvironmentParams
-import ch.epfl.scala.bsp4j.JvmTestEnvironmentResult
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
+import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 
 class JvmTestEnvironmentTask(project: Project) : BspServerSingleTargetTask<JvmTestEnvironmentResult>("jvmTestEnvironment", project) {
-  override suspend fun executeWithServer(
-    server: JoinedBuildServer,
-    capabilities: BuildServerCapabilities,
-    targetId: BuildTargetIdentifier,
-  ): JvmTestEnvironmentResult {
+  override suspend fun executeWithServer(server: JoinedBuildServer, targetId: Label): JvmTestEnvironmentResult {
     val params = createJvmTestEnvironmentParams(targetId)
-    return server.buildTargetJvmTestEnvironment(params).get()
+    return server.buildTargetJvmTestEnvironment(params)
   }
 
-  private fun createJvmTestEnvironmentParams(targetId: BuildTargetIdentifier) = JvmTestEnvironmentParams(listOf(targetId))
+  private fun createJvmTestEnvironmentParams(targetId: Label) = JvmTestEnvironmentParams(listOf(targetId))
 }

@@ -113,7 +113,7 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
     JavaModule(
       genericModuleInfo =
         GenericModuleInfo(
-          name = "@//target",
+          name = "//target",
           type = ModuleTypeId("JAVA_MODULE"),
           modulesDependencies = emptyList(),
           librariesDependencies = emptyList(),

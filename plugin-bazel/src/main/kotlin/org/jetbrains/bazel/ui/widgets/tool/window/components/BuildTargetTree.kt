@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.components
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.treeStructure.Tree
@@ -8,6 +7,7 @@ import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.extensionPoints.BazelBuildTargetClassifier
 import org.jetbrains.bazel.extensionPoints.DefaultBuildTargetClassifierExtension
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
@@ -29,11 +29,11 @@ class BuildTargetTree(
   private val targetIcon: Icon,
   private val invalidTargetIcon: Icon,
   private val targets: Collection<BuildTargetInfo>,
-  private val invalidTargets: List<BuildTargetIdentifier>,
+  private val invalidTargets: List<Label>,
   private val labelHighlighter: (String) -> String = { it },
   private val showAsList: Boolean = false,
 ) : BuildTargetContainer {
-  private val rootNode = DefaultMutableTreeNode(DirectoryNodeData("[root]"))
+  private val rootNode = DefaultMutableTreeNode(DirectoryNodeData("[root]", emptyList()))
   private val cellRenderer = TargetTreeCellRenderer(targetIcon, invalidTargetIcon, labelHighlighter)
   private var popupHandlerBuilder: ((BuildTargetContainer) -> PopupHandler)? = null
 
@@ -79,7 +79,7 @@ class BuildTargetTree(
   }
 
   // only used with Bazel projects
-  private fun BuildTargetIdentifier.toFakeBuildTargetInfo() = BuildTargetInfo(id = this)
+  private fun Label.toFakeBuildTargetInfo() = BuildTargetInfo(id = this)
 
   private fun generateTreeFromIdentifiers(targets: List<BuildTargetTreeIdentifier>, separator: String?) {
     val pathToIdentifierMap = targets.groupBy { it.path.firstOrNull() }
@@ -105,7 +105,7 @@ class BuildTargetTree(
     depth: Int,
   ): DefaultMutableTreeNode {
     val node = DefaultMutableTreeNode()
-    node.userObject = DirectoryNodeData(dirname)
+    node.userObject = DirectoryNodeData(dirname, targets)
 
     val pathToIdentifierMap = targets.groupBy { it.path.getOrNull(depth + 1) }
     val childrenNodeList =
@@ -168,7 +168,7 @@ class BuildTargetTree(
       val onlyChild = childrenList.first() as? DefaultMutableTreeNode
       val onlyChildObject = onlyChild?.userObject
       if (onlyChildObject is DirectoryNodeData) {
-        node.userObject = DirectoryNodeData("${dirname}${separator}${onlyChildObject.name}")
+        node.userObject = DirectoryNodeData("${dirname}${separator}${onlyChildObject.name}", onlyChildObject.targets)
         childrenList.clear()
         childrenList.addAll(onlyChild.children().toList())
       }
@@ -220,6 +220,28 @@ class BuildTargetTree(
     }
   }
 
+  override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTargetInfo> {
+    val selected = treeComponent.lastSelectedPathComponent as? DefaultMutableTreeNode
+    val userObject = selected?.userObject
+    return (
+      if (userObject is DirectoryNodeData) {
+        userObject.targets.mapNotNull { it.target }
+      } else {
+        emptyList()
+      }
+    )
+  }
+
+  override fun getSelectedComponentName(): String {
+    val selected = treeComponent.lastSelectedPathComponent as? DefaultMutableTreeNode
+    val userObject = selected?.userObject
+    return when (userObject) {
+      is TargetNodeData -> userObject.displayName
+      is DirectoryNodeData -> userObject.name
+      else -> ""
+    }
+  }
+
   override fun selectTopTargetAndFocus() {
     treeComponent.selectionRows = intArrayOf(0)
     treeComponent.requestFocus()
@@ -227,14 +249,12 @@ class BuildTargetTree(
 
   override fun isPointSelectable(point: Point): Boolean = treeComponent.getPathForLocation(point.x, point.y) != null
 
-  override fun createNewWithTargets(
-    newTargets: Collection<BuildTargetInfo>,
-    newInvalidTargets: List<BuildTargetIdentifier>,
-  ): BuildTargetTree = createNewWithTargetsAndHighlighter(newTargets, newInvalidTargets, labelHighlighter)
+  override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>, newInvalidTargets: List<Label>): BuildTargetTree =
+    createNewWithTargetsAndHighlighter(newTargets, newInvalidTargets, labelHighlighter)
 
   fun createNewWithTargetsAndHighlighter(
     newTargets: Collection<BuildTargetInfo>,
-    newInvalidTargets: List<BuildTargetIdentifier>,
+    newInvalidTargets: List<Label>,
     labelHighlighter: (String) -> String,
   ): BuildTargetTree {
     val new =
@@ -253,21 +273,21 @@ class BuildTargetTree(
 
 private interface NodeData
 
-private data class DirectoryNodeData(val name: String) : NodeData {
+private data class DirectoryNodeData(val name: String, val targets: List<BuildTargetTreeIdentifier>) : NodeData {
   override fun toString(): String = name
 }
 
 private data class TargetNodeData(
-  val id: BuildTargetIdentifier,
+  val id: Label,
   val target: BuildTargetInfo?,
   val displayName: String,
   val isValid: Boolean,
 ) : NodeData {
-  override fun toString(): String = target?.displayName ?: id.uri
+  override fun toString(): String = target?.displayName ?: id.toShortString()
 }
 
 private data class BuildTargetTreeIdentifier(
-  val id: BuildTargetIdentifier,
+  val id: Label,
   val target: BuildTargetInfo?,
   val path: List<String>,
   val displayName: String,

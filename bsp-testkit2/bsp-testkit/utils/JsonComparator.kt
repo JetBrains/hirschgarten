@@ -1,7 +1,6 @@
 package org.jetbrains.bsp.testkit
 
 import com.google.common.collect.Maps
-import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
@@ -11,7 +10,8 @@ import java.lang.reflect.Type
 import java.util.TreeSet
 
 object JsonComparator {
-  private val gson = GsonBuilder().create()
+  private val gson = gsonSealedSupport
+
   private val mapType: Type = object : TypeToken<Map<String?, Any?>?>() {}.type
 
   fun <T> assertJsonEquals(

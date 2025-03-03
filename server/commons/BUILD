@@ -4,6 +4,6 @@ kt_jvm_library(
     name = "commons",
     visibility = ["//visibility:public"],
     exports = [
-        "//server/commons/src/main/kotlin/org/jetbrains/bsp/bazel/commons",
+        "//server/commons/src/main/kotlin/org/jetbrains/bazel/commons",
     ],
 )

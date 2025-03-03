@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.SourcesItem
 import java.nio.file.Path
 import kotlin.io.path.toPath
 
@@ -59,7 +59,7 @@ internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModel
   }
 
   private fun calculatePackagePrefix(sourceRoot: SourceRoot, sourceRoots: Set<Path>): JavaSourceRootPackagePrefix {
-    val packagePrefixFromData = sourceRoot.additionalData?.jvmPackagePrefix
+    val packagePrefixFromData = sourceRoot.jvmPackagePrefix
     if (packagePrefixFromData != null) return JavaSourceRootPackagePrefix(packagePrefixFromData)
     val packageDetails =
       JavaSourcePackageDetails(

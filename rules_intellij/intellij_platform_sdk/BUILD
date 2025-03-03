@@ -74,7 +74,6 @@ java_library(
 # For tests, we need the IJ API at runtime, so we can't use the neverlink rule.
 java_library(
     name = "plugin_api_for_tests",
-    testonly = 1,
     data = select_from_plugin_api_directory(
         android_studio = [
             ":kotlinc_version",

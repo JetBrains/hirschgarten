@@ -2,10 +2,6 @@
 
 package org.jetbrains.bazel.workspace
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.InverseSourcesParams
-import ch.epfl.scala.bsp4j.InverseSourcesResult
-import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -35,12 +31,10 @@ import com.intellij.workspaceModel.ide.legacyBridge.impl.java.JAVA_SOURCE_ROOT_E
 import com.intellij.workspaceModel.ide.toPath
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.server.connection.connection
@@ -50,6 +44,9 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.isSourceFile
 import org.jetbrains.bazel.utils.safeCastToURI
+import org.jetbrains.bsp.protocol.InverseSourcesParams
+import org.jetbrains.bsp.protocol.InverseSourcesResult
+import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.jetbrains.kotlin.config.KOTLIN_SOURCE_ROOT_TYPE_ID
 
 class AssignFileToModuleListener : BulkFileListener {
@@ -176,7 +173,6 @@ private suspend fun processFileCreated(
   val url = newFile.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   val uri = url.toPath().toUri()
   queryTargetsForFile(project, url)
-    ?.map { it.label() }
     ?.let { targets ->
       val modules = targets.mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
       modules.forEach { url.addToModule(workspaceModel, it, newFile.extension) }
@@ -207,7 +203,7 @@ private suspend fun processFileRemoved(
   project.targetUtils.removeFileToTargetIdEntry(oldUri)
 }
 
-private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<BuildTargetIdentifier>? =
+private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<Label>? =
   if (!BspSyncStatusService.getInstance(project).isSyncInProgress) {
     try {
       askForInverseSources(project, fileUrl)
@@ -221,15 +217,10 @@ private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUr
     null
   }
 
-private suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileUrl): InverseSourcesResult? =
-  project.connection.runWithServer { bspServer, bazelBuildServerCapabilities ->
-    if (bazelBuildServerCapabilities.inverseSourcesProvider) {
-      bspServer
-        .buildTargetInverseSources(InverseSourcesParams(TextDocumentIdentifier(fileUrl.url)))
-        .await()
-    } else {
-      null
-    }
+private suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileUrl): InverseSourcesResult =
+  project.connection.runWithServer { bspServer ->
+    bspServer
+      .buildTargetInverseSources(InverseSourcesParams(TextDocumentIdentifier(fileUrl.url)))
   }
 
 private fun Label.toModuleEntity(

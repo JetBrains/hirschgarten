@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.runnerAction
 
+import com.intellij.coverage.CoverageExecutor
 import com.intellij.execution.Executor
+import com.intellij.execution.ExecutorRegistry
 import com.intellij.execution.RunManagerEx
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.executors.DefaultDebugExecutor
@@ -24,9 +26,10 @@ public abstract class BaseRunnerAction(
   text: () -> String,
   icon: Icon? = null,
   private val isDebugAction: Boolean = false,
+  private val isCoverageAction: Boolean = false,
 ) : SuspendableAction(
     text = text,
-    icon = icon ?: if (isDebugAction) AllIcons.Actions.StartDebugger else AllIcons.Actions.Execute,
+    icon = icon ?: getIcon(isDebugAction, isCoverageAction),
   ) {
   protected abstract suspend fun getRunnerSettings(
     project: Project,
@@ -60,10 +63,23 @@ public abstract class BaseRunnerAction(
     }
   }
 
-  private fun getExecutor(): Executor =
-    if (isDebugAction) {
+  private fun getExecutor(): Executor {
+    require(!isDebugAction || !isCoverageAction) { "Coverage with debug not supported" }
+    return if (isDebugAction) {
       DefaultDebugExecutor.getDebugExecutorInstance()
+    } else if (isCoverageAction) {
+      checkNotNull(ExecutorRegistry.getInstance().getExecutorById(CoverageExecutor.EXECUTOR_ID)) { "Can't get Coverage executor" }
     } else {
       DefaultRunExecutor.getRunExecutorInstance()
     }
+  }
+
+  companion object {
+    private fun getIcon(isDebugAction: Boolean, isCoverageAction: Boolean): Icon =
+      when {
+        isCoverageAction -> AllIcons.General.RunWithCoverage
+        isDebugAction -> AllIcons.Actions.StartDebugger
+        else -> AllIcons.Actions.Execute
+      }
+  }
 }

@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.server.tasks
 
-import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.build.events.impl.FailureResultImpl
 import kotlinx.coroutines.Deferred
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.ui.console.TaskConsole
+import org.jetbrains.bsp.protocol.StatusCode
 import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeoutException
 

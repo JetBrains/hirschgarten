@@ -15,12 +15,6 @@
  */
 package org.jetbrains.bazel.hotswap
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.JvmEnvironmentItem
-import ch.epfl.scala.bsp4j.JvmRunEnvironmentParams
-import ch.epfl.scala.bsp4j.JvmRunEnvironmentResult
-import ch.epfl.scala.bsp4j.JvmTestEnvironmentParams
-import ch.epfl.scala.bsp4j.JvmTestEnvironmentResult
 import com.intellij.debugger.impl.HotSwapProgress
 import com.intellij.execution.RunCanceledByUserException
 import com.intellij.execution.application.ApplicationConfiguration
@@ -33,13 +27,18 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BazelHotSwapBundle
 import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.hotswap.BazelHotSwapManager.HotSwappableDebugSession
-import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.runnerAction.LocalJvmRunnerAction
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.JvmEnvironmentItem
+import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
+import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
+import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
+import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import java.io.File
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.atomic.AtomicReference
@@ -81,7 +80,7 @@ object ClassFileManifestBuilder {
     }
     val jvmEnvDeferred: Deferred<JvmEnvironmentResult?> =
       BspCoroutineService.getInstance(project).startAsync {
-        project.connection.runWithServer { server, _ ->
+        project.connection.runWithServer { server ->
           val targets = configuration.getUserData(LocalJvmRunnerAction.targetsToPreBuild)?.take(1) ?: listOf()
           if (targets.isEmpty()) {
             progress?.addMessage(
@@ -125,14 +124,14 @@ object ClassFileManifestBuilder {
     return ClassFileManifest.modifiedClasses(oldManifest, newManifest)
   }
 
-  private fun BuildTargetIdentifier.isTestTarget(project: Project): Boolean =
+  private fun Label.isTestTarget(project: Project): Boolean =
     project.targetUtils
-      .getBuildTargetInfoForLabel(this.label())
+      .getBuildTargetInfoForLabel(this)
       ?.capabilities
       ?.canTest == true
 
   private suspend fun queryJvmEnvironment(
-    target: BuildTargetIdentifier,
+    target: Label,
     server: JoinedBuildServer,
     isTest: Boolean,
   ): JvmEnvironmentResult =
