@@ -121,12 +121,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     ): PsiFile? {
       // buildFilePsi may be excluded, in which case we can't get the parent PsiDirectory.
       // Therefore get virtualFile then parent and not vice-versa
-      val targetFile =
-        try {
-          buildFilePsi.virtualFile?.parent?.findFileByRelativePath(label.targetName) ?: return null
-        } catch (_: java.nio.file.NoSuchFileException) {
-          return null
-        }
+      val targetFile = buildFilePsi.virtualFile?.parent?.findFileByRelativePath(label.targetName) ?: return null
 
       return PsiManager.getInstance(project).findFile(targetFile)
     }
