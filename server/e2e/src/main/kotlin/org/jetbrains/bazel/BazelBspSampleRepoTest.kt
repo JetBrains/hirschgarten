@@ -28,14 +28,7 @@ import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
-import org.jetbrains.bsp.protocol.ScalaMainClass
-import org.jetbrains.bsp.protocol.ScalaMainClassesItem
-import org.jetbrains.bsp.protocol.ScalaMainClassesParams
-import org.jetbrains.bsp.protocol.ScalaMainClassesResult
 import org.jetbrains.bsp.protocol.ScalaPlatform
-import org.jetbrains.bsp.protocol.ScalaTestClassesItem
-import org.jetbrains.bsp.protocol.ScalaTestClassesParams
-import org.jetbrains.bsp.protocol.ScalaTestClassesResult
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
@@ -102,8 +95,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       resourcesResults(),
       inverseSourcesResults(),
       dependencySourcesResults(),
-      scalaMainClasses(),
-      scalaTestClasses(),
       jvmRunEnvironment(),
       jvmTestEnvironment(),
       javacOptionsResult(),
@@ -418,80 +409,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         30.seconds,
         inverseSourcesParams,
         expectedInverseSourcesResult,
-      )
-    }
-  }
-
-  // FIXME: Is it even correct? Here when queried for *all* targets we return only the ones that
-  //   are actually Scala ones. It kinda makes sense, but it seems to be inconsistent.
-  private fun scalaMainClasses(): BazelBspTestScenarioStep {
-    val scalaMainClassesParams = ScalaMainClassesParams(expectedTargetIdentifiers())
-    val scalaTargetsScalaBinary =
-      ScalaMainClassesItem(
-        Label.parse("$targetPrefix//scala_targets:scala_binary"),
-        listOf(
-          ScalaMainClass(
-            "example.Example",
-            listOf("arg1", "arg2"),
-            listOf("-Xms2G -Xmx5G"),
-          ),
-        ),
-      )
-    val targetWithoutJvmFlagsBinary =
-      ScalaMainClassesItem(
-        Label.parse("$targetPrefix//target_without_jvm_flags:binary"),
-        listOf(ScalaMainClass("example.Example", listOf("arg1", "arg2"), emptyList())),
-      )
-    val targetWithoutArgsBinary =
-      ScalaMainClassesItem(
-        Label.parse("$targetPrefix//target_without_args:binary"),
-        listOf(
-          ScalaMainClass(
-            "example.Example",
-            emptyList(),
-            listOf("-Xms2G -Xmx5G"),
-          ),
-        ),
-      )
-
-    // FIXME: I'd like to add a test case where target's environment variables field is non-null.
-    //  But how can I even populate it?
-    //  Apparently it is populated in JVM run environment?
-    val expectedScalaMainClassesResult =
-      ScalaMainClassesResult(
-        listOf(scalaTargetsScalaBinary, targetWithoutJvmFlagsBinary, targetWithoutArgsBinary),
-      )
-    return BazelBspTestScenarioStep(
-      "Scala main classes",
-    ) {
-      testClient.testScalaMainClasses(
-        30.seconds,
-        scalaMainClassesParams,
-        expectedScalaMainClassesResult,
-      )
-    }
-  }
-
-  // FIXME: Re-add a spec2 test target. But that requires messing with the bazel toolchain
-  //  See:
-  // https://github.com/bazelbuild/rules_scala/tree/9b85affa2e08a350a4315882b602eda55b262356/examples/testing/multi_frameworks_toolchain
-  //  See: https://github.com/JetBrains/bazel-bsp/issues/96
-  private fun scalaTestClasses(): BazelBspTestScenarioStep {
-    val scalaTestClassesParams = ScalaTestClassesParams(expectedTargetIdentifiers())
-    val scalaTargetsScalaTest =
-      ScalaTestClassesItem(
-        Label.parse("$targetPrefix//scala_targets:scala_test"),
-        listOf("io.bazel.rulesscala.scala_test.Runner"),
-      )
-
-    val expectedScalaTestClassesResult = ScalaTestClassesResult(listOf(scalaTargetsScalaTest))
-    return BazelBspTestScenarioStep(
-      "Scala test classes",
-    ) {
-      testClient.testScalaTestClasses(
-        30.seconds,
-        scalaTestClassesParams,
-        expectedScalaTestClassesResult,
       )
     }
   }

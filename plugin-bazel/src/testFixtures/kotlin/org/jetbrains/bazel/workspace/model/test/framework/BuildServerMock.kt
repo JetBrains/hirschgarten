@@ -40,10 +40,6 @@ import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.RustWorkspaceParams
 import org.jetbrains.bsp.protocol.RustWorkspaceResult
-import org.jetbrains.bsp.protocol.ScalaMainClassesParams
-import org.jetbrains.bsp.protocol.ScalaMainClassesResult
-import org.jetbrains.bsp.protocol.ScalaTestClassesParams
-import org.jetbrains.bsp.protocol.ScalaTestClassesResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourcesParams
@@ -75,8 +71,6 @@ class BuildServerMock(
   private val jvmRunEnvironmentResult: JvmRunEnvironmentResult? = null,
   private val jvmCompileClasspathResult: JvmCompileClasspathResult? = null,
   private val scalacOptionsResult: ScalacOptionsResult? = null,
-  private val scalaTestClassesResult: ScalaTestClassesResult? = null,
-  private val scalaMainClassesResult: ScalaMainClassesResult? = null,
   private val javacOptionsResult: JavacOptionsResult? = null,
   private val cppOptionsResult: CppOptionsResult? = null,
   private val workspaceLibrariesResult: WorkspaceLibrariesResult? = null,
@@ -139,14 +133,6 @@ class BuildServerMock(
 
   override suspend fun buildTargetScalacOptions(scalacOptionsParams: ScalacOptionsParams): ScalacOptionsResult =
     wrapInFuture(scalacOptionsResult)
-
-  @Deprecated("Deprecated in BSP. Use buildTarget/jvmTestEnvironment instead")
-  override suspend fun buildTargetScalaTestClasses(scalaTestClassesParams: ScalaTestClassesParams): ScalaTestClassesResult =
-    wrapInFuture(scalaTestClassesResult)
-
-  @Deprecated("Deprecated in BSP. Use buildTarget/jvmRunEnvironment instead")
-  override suspend fun buildTargetScalaMainClasses(scalaMainClassesParams: ScalaMainClassesParams): ScalaMainClassesResult =
-    wrapInFuture(scalaMainClassesResult)
 
   override suspend fun buildTargetJavacOptions(javacOptionsParams: JavacOptionsParams): JavacOptionsResult =
     wrapInFuture(javacOptionsResult)

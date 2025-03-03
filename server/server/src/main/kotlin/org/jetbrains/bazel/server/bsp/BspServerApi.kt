@@ -43,10 +43,6 @@ import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.RustWorkspaceParams
 import org.jetbrains.bsp.protocol.RustWorkspaceResult
-import org.jetbrains.bsp.protocol.ScalaMainClassesParams
-import org.jetbrains.bsp.protocol.ScalaMainClassesResult
-import org.jetbrains.bsp.protocol.ScalaTestClassesParams
-import org.jetbrains.bsp.protocol.ScalaTestClassesResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourcesParams
@@ -143,14 +139,6 @@ class BspServerApi(private val bazelServicesBuilder: suspend (JoinedBuildClient,
 
   override suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult =
     projectSyncService.buildTargetScalacOptions(params)
-
-  @Deprecated("Deprecated in BSP. Use buildTarget/jvmTestEnvironment instead")
-  override suspend fun buildTargetScalaTestClasses(params: ScalaTestClassesParams): ScalaTestClassesResult =
-    projectSyncService.buildTargetScalaTestClasses(params)
-
-  @Deprecated("Deprecated in BSP. Use buildTarget/jvmRunEnvironment instead")
-  override suspend fun buildTargetScalaMainClasses(params: ScalaMainClassesParams): ScalaMainClassesResult =
-    projectSyncService.buildTargetScalaMainClasses(params)
 
   override suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult =
     projectSyncService.buildTargetJavacOptions(params)
