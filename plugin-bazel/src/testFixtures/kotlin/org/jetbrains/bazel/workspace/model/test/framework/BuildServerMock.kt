@@ -33,8 +33,6 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
-import org.jetbrains.bsp.protocol.OutputPathsParams
-import org.jetbrains.bsp.protocol.OutputPathsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ResourcesParams
@@ -72,7 +70,6 @@ class BuildServerMock(
   private val dependencySourcesResult: DependencySourcesResult? = null,
   private val dependencyModulesResult: DependencyModulesResult? = null,
   private val resourcesResult: ResourcesResult? = null,
-  private val outputPathsResult: OutputPathsResult? = null,
   private val compileResult: CompileResult? = null,
   private val runResult: RunResult? = null,
   private val testResult: TestResult? = null,
@@ -127,8 +124,6 @@ class BuildServerMock(
     wrapInFuture(dependencyModulesResult)
 
   override suspend fun buildTargetResources(resourcesParams: ResourcesParams): ResourcesResult = wrapInFuture(resourcesResult)
-
-  override suspend fun buildTargetOutputPaths(outputPathsParams: OutputPathsParams): OutputPathsResult = wrapInFuture(outputPathsResult)
 
   override suspend fun buildTargetCompile(compileParams: CompileParams): CompileResult = wrapInFuture(compileResult)
 

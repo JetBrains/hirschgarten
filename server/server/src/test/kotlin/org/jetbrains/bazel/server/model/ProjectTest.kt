@@ -186,7 +186,6 @@ class ProjectTest {
       baseDirectory = URI.create("file:///path/to/$this"),
       sourceSet = SourceSet(emptySet(), emptySet(), emptySet()),
       resources = emptySet(),
-      outputs = emptySet(),
       sourceDependencies = emptySet(),
       languageData = null,
       environmentVariables = emptyMap(),

@@ -56,11 +56,6 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
-import org.jetbrains.bsp.protocol.OutputPathItem
-import org.jetbrains.bsp.protocol.OutputPathItemKind
-import org.jetbrains.bsp.protocol.OutputPathsItem
-import org.jetbrains.bsp.protocol.OutputPathsParams
-import org.jetbrains.bsp.protocol.OutputPathsResult
 import org.jetbrains.bsp.protocol.PythonOptionsItem
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
@@ -335,22 +330,6 @@ class BspProjectMapper(
     val labels = dependencySourcesParams.targets
     val items = labels.map(::getDependencySourcesItem)
     return DependencySourcesResult(items)
-  }
-
-  fun outputPaths(project: AspectSyncProject, params: OutputPathsParams): OutputPathsResult {
-    fun getItem(label: Label): OutputPathsItem {
-      val items =
-        project
-          .findModule(label)
-          ?.let { module ->
-            module.outputs.map { OutputPathItem(BspMappings.toBspUri(it), OutputPathItemKind.DIRECTORY) }
-          }.orEmpty()
-      return OutputPathsItem(label, items)
-    }
-
-    val labels = params.targets
-    val items = labels.map(::getItem)
-    return OutputPathsResult(items)
   }
 
   suspend fun jvmRunEnvironment(project: AspectSyncProject, params: JvmRunEnvironmentParams): JvmRunEnvironmentResult {
