@@ -27,8 +27,6 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetTest(params: TestParams): TestResult
 
-  suspend fun buildTargetCleanCache(params: CleanCacheParams): CleanCacheResult
-
   suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult
 
   suspend fun bazelResolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult

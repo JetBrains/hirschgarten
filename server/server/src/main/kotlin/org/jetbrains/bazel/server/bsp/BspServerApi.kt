@@ -8,8 +8,6 @@ import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
-import org.jetbrains.bsp.protocol.CleanCacheParams
-import org.jetbrains.bsp.protocol.CleanCacheResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.CppOptionsParams
@@ -139,8 +137,6 @@ class BspServerApi(private val bazelServicesBuilder: suspend (JoinedBuildClient,
   override suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult = executeService.runWithDebug(params)
 
   override suspend fun buildTargetMobileInstall(params: MobileInstallParams): MobileInstallResult = executeService.mobileInstall(params)
-
-  override suspend fun buildTargetCleanCache(params: CleanCacheParams): CleanCacheResult = executeService.clean(params)
 
   override suspend fun buildTargetDependencyModules(params: DependencyModulesParams): DependencyModulesResult =
     projectSyncService.buildTargetDependencyModules(params)

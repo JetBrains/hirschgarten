@@ -6,8 +6,6 @@ import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
-import org.jetbrains.bsp.protocol.CleanCacheParams
-import org.jetbrains.bsp.protocol.CleanCacheResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.CppOptionsParams
@@ -73,7 +71,6 @@ class BuildServerMock(
   private val compileResult: CompileResult? = null,
   private val runResult: RunResult? = null,
   private val testResult: TestResult? = null,
-  private val cleanCacheResult: CleanCacheResult? = null,
   private val jvmTestEnvironmentResult: JvmTestEnvironmentResult? = null,
   private val jvmRunEnvironmentResult: JvmRunEnvironmentResult? = null,
   private val jvmCompileClasspathResult: JvmCompileClasspathResult? = null,
@@ -130,8 +127,6 @@ class BuildServerMock(
   override suspend fun buildTargetRun(runParams: RunParams): RunResult = wrapInFuture(runResult)
 
   override suspend fun buildTargetTest(testParams: TestParams): TestResult = wrapInFuture(testResult)
-
-  override suspend fun buildTargetCleanCache(cleanCacheParams: CleanCacheParams): CleanCacheResult = wrapInFuture(cleanCacheResult)
 
   override suspend fun buildTargetJvmTestEnvironment(jvmTestEnvironmentParams: JvmTestEnvironmentParams): JvmTestEnvironmentResult =
     wrapInFuture(jvmTestEnvironmentResult)
