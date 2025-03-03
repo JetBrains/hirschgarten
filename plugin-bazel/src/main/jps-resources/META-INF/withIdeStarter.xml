@@ -1,0 +1,9 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.jetbrains">
+        <performancePlugin.commandProvider implementation="org.jetbrains.bazel.performanceImpl.BazelCommandProvider"/>
+        <performancePlugin.commandProvider implementation="org.jetbrains.bazel.hotswap.ideStarter.HotSwapCommandProvider"/>
+        <performancePlugin.commandProvider implementation="org.jetbrains.bazel.workspace.ideStarter.WorkspaceCommandProvider"/>
+        <performancePlugin.commandProvider implementation="org.jetbrains.bazel.flow.modify.ideStarter.BazelProjectModelModifierCommandProvider"/>
+        <performancePlugin.commandProvider implementation="org.jetbrains.bazel.run.coverage.ideStarter.BazelCoverageCommandProvider"/>
+    </extensions>
+</idea-plugin>

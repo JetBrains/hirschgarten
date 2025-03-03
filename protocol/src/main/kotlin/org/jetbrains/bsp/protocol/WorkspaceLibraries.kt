@@ -1,11 +1,11 @@
 package org.jetbrains.bsp.protocol
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import org.jetbrains.bazel.label.Label
 import java.net.URI
 
 public data class LibraryItem(
-  val id: BuildTargetIdentifier,
-  val dependencies: List<BuildTargetIdentifier>,
+  val id: Label,
+  val dependencies: List<Label>,
   val ijars: List<String>,
   val jars: List<String>,
   val sourceJars: List<String>,
@@ -19,7 +19,7 @@ data class MavenCoordinates(
 )
 
 public data class GoLibraryItem(
-  val id: BuildTargetIdentifier,
+  val id: Label,
   val goImportPath: String? = null,
   val goRoot: URI? = null,
 )

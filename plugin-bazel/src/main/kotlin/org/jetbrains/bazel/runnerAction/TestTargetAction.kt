@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.runnerAction
 
 import com.intellij.execution.RunnerAndConfigurationSettings
-import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.run.config.BspRunConfiguration
@@ -10,26 +9,25 @@ import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
 class TestTargetAction(
   targetInfos: List<BuildTargetInfo>,
-  text: (() -> String)? = null,
+  text: ((includeTargetNameInText: Boolean) -> String)? = null,
   isDebugAction: Boolean = false,
-  verboseText: Boolean = false,
+  includeTargetNameInText: Boolean = false,
   private val singleTestFilter: String? = null,
-  project: Project,
 ) : BspRunnerAction(
     targetInfos = targetInfos,
-    text = {
+    text = { includeTargetNameInTextParam ->
       if (text != null) {
-        text()
+        text(includeTargetNameInTextParam || includeTargetNameInText)
       } else if (isDebugAction) {
         BspPluginBundle.message(
           "target.debug.test.action.text",
-          if (verboseText) targetInfos.joinToString(";") { it.buildTargetName } else "",
+          if (includeTargetNameInTextParam || includeTargetNameInText) targetInfos.joinToString(";") { it.buildTargetName } else "",
           BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       } else {
         BspPluginBundle.message(
           "target.test.action.text",
-          if (verboseText) targetInfos.joinToString(";") { it.buildTargetName } else "",
+          if (includeTargetNameInTextParam || includeTargetNameInText) targetInfos.joinToString(";") { it.buildTargetName } else "",
           BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       }

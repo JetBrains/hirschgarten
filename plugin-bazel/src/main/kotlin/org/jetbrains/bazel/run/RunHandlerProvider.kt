@@ -1,11 +1,10 @@
 package org.jetbrains.bazel.run
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
@@ -48,10 +47,10 @@ interface RunHandlerProvider {
 
     /** Finds a BspRunHandlerProvider that will be able to create a BspRunHandler for the given targets.
      *  Needs to query WM for Build Target Infos. */
-    fun getRunHandlerProvider(project: Project, targets: List<BuildTargetIdentifier>): RunHandlerProvider {
+    fun getRunHandlerProvider(project: Project, targets: List<Label>): RunHandlerProvider {
       val targetInfos =
         targets.mapNotNull {
-          project.service<TargetUtils>().getBuildTargetInfoForLabel(it.label())
+          project.service<TargetUtils>().getBuildTargetInfoForLabel(it)
         }
       if (targetInfos.size != targets.size) {
         thisLogger().warn("Some targets could not be found: ${targets - targetInfos.map { it.id }.toSet()}")

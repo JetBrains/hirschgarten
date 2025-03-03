@@ -4,6 +4,6 @@ kt_jvm_library(
     name = "logger",
     visibility = ["//visibility:public"],
     exports = [
-        "//server/logger/src/main/kotlin/org/jetbrains/bsp/bazel/logger",
+        "//server/logger/src/main/kotlin/org/jetbrains/bazel/logger",
     ],
 )

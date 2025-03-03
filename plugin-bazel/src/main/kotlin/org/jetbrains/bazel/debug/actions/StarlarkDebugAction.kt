@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.debug.actions
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.execution.ExecutorRegistry
 import com.intellij.execution.ProgramRunnerUtil
 import com.intellij.execution.RunManager
@@ -14,9 +13,10 @@ import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.debug.configuration.StarlarkDebugConfiguration
 import org.jetbrains.bazel.debug.configuration.StarlarkDebugConfigurationType
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
-class StarlarkDebugAction(private val targetId: BuildTargetIdentifier) :
+class StarlarkDebugAction(private val targetId: Label) :
   SuspendableAction(
     text = BazelPluginBundle.message("starlark.debug.action.name"),
     icon = AllIcons.Actions.StartDebugger,
@@ -30,7 +30,7 @@ class StarlarkDebugAction(private val targetId: BuildTargetIdentifier) :
 
   private fun createConfigSettings(project: Project): RunnerAndConfigurationSettings {
     val runManager = RunManager.getInstance(project)
-    val configName = BazelPluginBundle.message("starlark.debug.config.template", targetId.uri)
+    val configName = BazelPluginBundle.message("starlark.debug.config.template", targetId.toShortString())
     val factory = StarlarkDebugConfigurationType().configurationFactories.first()
     return runManager.createConfiguration(configName, factory).withTarget(targetId)
   }
@@ -40,8 +40,8 @@ class StarlarkDebugAction(private val targetId: BuildTargetIdentifier) :
   }
 }
 
-private fun RunnerAndConfigurationSettings.withTarget(target: BuildTargetIdentifier): RunnerAndConfigurationSettings {
-  (this.configuration as? StarlarkDebugConfiguration)?.setTarget(target.uri)
+private fun RunnerAndConfigurationSettings.withTarget(target: Label): RunnerAndConfigurationSettings {
+  (this.configuration as? StarlarkDebugConfiguration)?.setTarget(target.toString())
   return this
 }
 

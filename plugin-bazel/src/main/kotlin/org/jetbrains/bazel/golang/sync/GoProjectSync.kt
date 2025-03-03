@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.golang.sync
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.goide.project.GoModuleSettings
 import com.goide.sdk.GoSdk
 import com.goide.sdk.GoSdkService
@@ -26,8 +24,9 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import kotlinx.coroutines.coroutineScope
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.RawUriToDirectoryPathTransformer
@@ -36,11 +35,12 @@ import org.jetbrains.bazel.sync.BaseTargetInfo
 import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
-import org.jetbrains.bazel.sync.task.queryIf
+import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 import kotlin.io.path.toPath
@@ -54,7 +54,7 @@ private const val GO_RESOURCE_ROOT_TYPE = "go-resource"
 private val GO_MODULE_TYPE = ModuleTypeId("WEB_MODULE")
 
 class GoProjectSync : ProjectSyncHook {
-  override fun isEnabled(project: Project): Boolean = BspFeatureFlags.isGoSupportEnabled
+  override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isGoSupportEnabled
 
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
     val goTargets = environment.baseTargetInfos.calculateGoTargets()
@@ -180,7 +180,7 @@ class GoProjectSync : ProjectSyncHook {
     inputEntity: BaseTargetInfo,
     moduleId: ModuleId,
     virtualFileUrlManager: VirtualFileUrlManager,
-    idToGoTargetMap: Map<BuildTargetIdentifier, BaseTargetInfo>,
+    idToGoTargetMap: Map<Label, BaseTargetInfo>,
     entitySource: BspModuleEntitySource,
   ): VgoStandaloneModuleEntity.Builder {
     val goBuildInfo = extractGoBuildTarget(inputEntity.target)
@@ -196,7 +196,7 @@ class GoProjectSync : ProjectSyncHook {
               isMainModule = false,
               internal = true,
             ) {
-              this.root = virtualFileUrlManager.getOrCreateFromUrl(dependencyTargetInfo.target.baseDirectory)
+              this.root = virtualFileUrlManager.getOrCreateFromUrl(dependencyTargetInfo.target.baseDirectory!!)
             }
           }
         }
@@ -218,15 +218,15 @@ class GoProjectSync : ProjectSyncHook {
       moduleId = moduleId,
       entitySource = entitySource,
       importPath = goBuildInfo?.importPath ?: "",
-      root = virtualFileUrlManager.getOrCreateFromUrl(inputEntity.target.baseDirectory),
+      root = virtualFileUrlManager.getOrCreateFromUrl(inputEntity.target.baseDirectory!!),
     ) {
       this.dependencies = vgoModuleDependencies + (vgoModuleLibraries ?: listOf())
     }
   }
 
-  private suspend fun queryGoLibraries(environment: ProjectSyncHook.ProjectSyncHookEnvironment): WorkspaceGoLibrariesResult? =
+  private suspend fun queryGoLibraries(environment: ProjectSyncHook.ProjectSyncHookEnvironment): WorkspaceGoLibrariesResult =
     coroutineScope {
-      queryIf(environment.capabilities.workspaceLibrariesProvider, "workspace/goLibraries") {
+      query("workspace/goLibraries") {
         environment.server.workspaceGoLibraries()
       }
     }

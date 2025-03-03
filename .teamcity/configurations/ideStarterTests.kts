@@ -1,6 +1,5 @@
 package configurations
 
-import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
@@ -49,7 +48,7 @@ sealed class IdeStarterTests(
         """
           #!/bin/bash
           set -euxo
-          
+
           cp -R /home/teamcity/agent/system/.persistent_cache/bazel/_bazel_hirschuser/*/execroot/_main/bazel-out/k8-fastbuild/testlogs .
           """.trimIndent()
     }
@@ -80,6 +79,22 @@ sealed class JarSourceExcludeTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/java:CompiledSourceCodeInsideJarExcludeTest",
 )
 
+sealed class BazelProjectModelModifierTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Bazel Project Model Modifier test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/flow/modify:BazelProjectModelModifierTest"
+)
+
+sealed class BazelCoverageTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Bazel Coverage test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/run/coverage:BazelCoverageTest"
+)
+
 object HotswapTestGitHub : HotswapTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
@@ -101,5 +116,21 @@ object JarSourceExcludeTestGitHub : JarSourceExcludeTest(
 )
 
 object JarSourceExcludeTestSpace : JarSourceExcludeTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object BazelProjectModelModifierTestGitHub : BazelProjectModelModifierTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object BazelProjectModelModifierTestSpace : BazelProjectModelModifierTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object BazelCoverageTestGitHub : BazelCoverageTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object BazelCoverageTestSpace : BazelCoverageTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )
