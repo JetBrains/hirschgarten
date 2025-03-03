@@ -36,8 +36,6 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
-import org.jetbrains.bsp.protocol.OutputPathsParams
-import org.jetbrains.bsp.protocol.OutputPathsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ResourcesParams
@@ -146,9 +144,6 @@ class BspServerApi(private val bazelServicesBuilder: suspend (JoinedBuildClient,
 
   override suspend fun buildTargetDependencyModules(params: DependencyModulesParams): DependencyModulesResult =
     projectSyncService.buildTargetDependencyModules(params)
-
-  override suspend fun buildTargetOutputPaths(params: OutputPathsParams): OutputPathsResult =
-    projectSyncService.buildTargetOutputPaths(params)
 
   override suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult =
     projectSyncService.buildTargetScalacOptions(params)
