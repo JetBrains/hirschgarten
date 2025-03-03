@@ -28,8 +28,6 @@ import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
-import org.jetbrains.bsp.protocol.CleanCacheParams
-import org.jetbrains.bsp.protocol.CleanCacheResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.FeatureFlags
@@ -231,20 +229,6 @@ class ExecuteService(
     val bazelProcessResult =
       bazelRunner.runBazelCommand(command, originId = params.originId, serverPidFuture = null).waitAndGetResult()
     return MobileInstallResult(bazelProcessResult.bspStatusCode, params.originId)
-  }
-
-  @Suppress("UNUSED_PARAMETER") // params is used by BspRequestsRunner.handleRequest
-  fun clean(params: CleanCacheParams?): CleanCacheResult {
-    withBepServer(null) { bepReader ->
-      val command =
-        bazelRunner.buildBazelCommand {
-          clean {
-            useBes(bepReader.eventFile.toPath().toAbsolutePath())
-          }
-        }
-      bazelRunner.runBazelCommand(command, serverPidFuture = bepReader.serverPid).waitAndGetResult()
-    }
-    return CleanCacheResult(cleaned = true)
   }
 
   private fun build(
