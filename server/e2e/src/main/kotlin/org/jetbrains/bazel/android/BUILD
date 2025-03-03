@@ -6,9 +6,9 @@ kt_jvm_library(
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/utils",
+        "//protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
-        "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:commons_io_commons_io",
     ],
 )

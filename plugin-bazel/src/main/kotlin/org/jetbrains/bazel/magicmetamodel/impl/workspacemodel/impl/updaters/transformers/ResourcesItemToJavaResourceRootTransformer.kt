@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.ResourcesItem
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.ResourcesItem
 import kotlin.io.path.toPath
 
 internal data class BuildTargetAndResourcesItem(val buildTarget: BuildTarget, val resourcesItem: ResourcesItem)

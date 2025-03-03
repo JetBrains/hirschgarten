@@ -278,3 +278,17 @@ object NestedModulesGitHub : NestedModules(
 object NestedModulesSpace : NestedModules(
   vcsRoot = BaseConfiguration.SpaceVcs,
 )
+
+open class ExternalAutoloads(vcsRoot: GitVcsRoot) :
+  E2ETest(
+    vcsRoot = vcsRoot,
+    targets = "//server/e2e:external_autoloads_test",
+  )
+
+object ExternalAutoloadsGitHub : ExternalAutoloads(
+  vcsRoot = BaseConfiguration.GitHubVcs,
+)
+
+object ExternalAutoloadsSpace : ExternalAutoloads(
+  vcsRoot = BaseConfiguration.SpaceVcs,
+)

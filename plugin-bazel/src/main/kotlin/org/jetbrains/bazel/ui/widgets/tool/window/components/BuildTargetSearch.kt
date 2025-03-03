@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.components
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
 import com.intellij.ui.PopupHandler
@@ -8,6 +7,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
 import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.search.LazySearchDisplay
 import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
@@ -129,16 +129,18 @@ class BuildTargetSearch(
 
   override fun getSelectedBuildTarget(): BuildTargetInfo? = chooseTargetSearchPanel().getSelectedBuildTarget()
 
+  override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTargetInfo> =
+    listOfNotNull(chooseTargetSearchPanel().getSelectedBuildTarget())
+
+  override fun getSelectedComponentName(): String = chooseTargetSearchPanel().getSelectedBuildTarget()?.displayName ?: ""
+
   override fun isPointSelectable(point: Point): Boolean = chooseTargetSearchPanel().isPointSelectable(point)
 
   override fun selectTopTargetAndFocus() {
     chooseTargetSearchPanel().selectTopTargetAndFocus()
   }
 
-  override fun createNewWithTargets(
-    newTargets: Collection<BuildTargetInfo>,
-    newInvalidTargets: List<BuildTargetIdentifier>,
-  ): BuildTargetSearch {
+  override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>, newInvalidTargets: List<Label>): BuildTargetSearch {
     val new = BuildTargetSearch(targetIcon, toolName, newTargets, searchBarPanel)
     popupHandlerBuilder?.let { new.registerPopupHandler(it) }
     return new

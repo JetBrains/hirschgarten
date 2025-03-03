@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryEntityUpdater
@@ -50,7 +50,7 @@ class WorkspaceModelUpdaterImpl(
   private suspend fun loadModule(module: Module) {
     when (module) {
       is JavaModule -> {
-        if (BspFeatureFlags.addDummyModules) {
+        if (BazelFeatureFlags.addDummyModules) {
           val dummyJavaModules = javaModuleToDummyJavaModulesTransformerHACK.transform(module)
           javaModuleUpdater.addEntities(dummyJavaModules.filterNot { it.isAlreadyAdded() })
         }

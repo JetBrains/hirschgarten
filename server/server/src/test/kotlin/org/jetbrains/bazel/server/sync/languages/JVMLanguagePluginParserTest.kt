@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.server.sync.languages
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bsp.protocol.EnhancedSourceItemData
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -70,7 +69,7 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData(sourceRoot, EnhancedSourceItemData(packageName))
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceRoot, packageName)
   }
 
   @Test
@@ -96,7 +95,7 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData(sourceDir, EnhancedSourceItemData(packageName))
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceDir, packageName)
   }
 
   @Test
@@ -122,7 +121,7 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData(sourceDir, EnhancedSourceItemData("com.example"))
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceDir, "com.example")
   }
 
   @Test
@@ -148,7 +147,7 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData(sourceRoot, EnhancedSourceItemData("com.example"))
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceRoot, "com.example")
   }
 
   @Test
@@ -175,6 +174,6 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData(sourceRoot, EnhancedSourceItemData(packageName))
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceRoot, packageName)
   }
 }

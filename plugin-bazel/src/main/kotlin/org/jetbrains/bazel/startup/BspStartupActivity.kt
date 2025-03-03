@@ -4,7 +4,7 @@ import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBspProjectInitialized
 import org.jetbrains.bazel.config.openedTimesSinceLastStartupResync
 import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
@@ -72,14 +72,14 @@ class BspStartupActivity : BspProjectActivity() {
 
   private suspend fun Project.resyncProjectIfNeeded() {
     if (isProjectInIncompleteState()) {
-      if (BspFeatureFlags.isPhasedSync) {
+      if (BazelFeatureFlags.isPhasedSync) {
         log.info("Running BSP phased sync task")
         PhasedSync(this).sync()
       } else {
         log.info("Running BSP sync task")
         ProjectSyncTask(this).sync(
           syncScope = SecondPhaseSync,
-          buildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
+          buildProject = BazelFeatureFlags.isBuildProjectOnSyncEnabled,
         )
       }
 

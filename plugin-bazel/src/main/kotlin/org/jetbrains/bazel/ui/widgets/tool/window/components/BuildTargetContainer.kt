@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.components
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.ui.PopupHandler
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import java.awt.Point
@@ -40,6 +40,10 @@ interface BuildTargetContainer {
    */
   fun getSelectedBuildTarget(): BuildTargetInfo?
 
+  fun getSelectedBuildTargetsUnderDirectory(): List<BuildTargetInfo>
+
+  fun getSelectedComponentName(): String
+
   /**
    * Selects the topmost displayed target (or directory, in case of a tree) and gives focus to this container's component
    */
@@ -55,5 +59,5 @@ interface BuildTargetContainer {
    * @param newInvalidTargets collection of invalid targets the new container will contain
    * @return the newly created container
    */
-  fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>, newInvalidTargets: List<BuildTargetIdentifier>): BuildTargetContainer
+  fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>, newInvalidTargets: List<Label>): BuildTargetContainer
 }

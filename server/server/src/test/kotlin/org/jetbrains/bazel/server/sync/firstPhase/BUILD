@@ -20,7 +20,6 @@ kt_junit5_test(
         "//protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/firstPhase",
         "//third_party/bazel/src/main/protobuf:build_java_proto",
-        "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:com_google_protobuf_protobuf_java",
     ],
 )
@@ -34,7 +33,6 @@ kt_junit5_test(
         "//protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/firstPhase",
         "//third_party/bazel/src/main/protobuf:build_java_proto",
-        "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:com_google_protobuf_protobuf_java",
     ],
 )

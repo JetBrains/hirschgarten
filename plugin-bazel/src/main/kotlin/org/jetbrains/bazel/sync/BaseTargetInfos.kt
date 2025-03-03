@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.sync
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.SourcesItem
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.ResourcesItem
+import org.jetbrains.bsp.protocol.SourcesItem
 
-data class BaseTargetInfos(val allTargetIds: List<BuildTargetIdentifier>, val infos: List<BaseTargetInfo>)
+data class BaseTargetInfos(val allTargetIds: List<Label>, val infos: List<BaseTargetInfo>)
 
 data class BaseTargetInfo(
   val target: BuildTarget,

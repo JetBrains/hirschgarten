@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.run.config
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.configurations.RunConfigurationWithSuppressedDefaultDebugAction
@@ -13,14 +12,15 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BspRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
 
-// Use BspRunConfigurationType.createTemplateConfiguration(project) to create a new BspRunConfiguration.
+// Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BspRunConfiguration.
 class BspRunConfiguration internal constructor(
   private val project: Project,
   name: String,
-  configurationType: BspRunConfigurationType,
+  configurationType: BazelRunConfigurationType,
 ) : LocatableConfigurationBase<RunProfileState>(project, configurationType, name),
   RunConfigurationWithSuppressedDefaultDebugAction,
   SMRunnerConsolePropertiesProvider {
@@ -29,10 +29,10 @@ class BspRunConfiguration internal constructor(
   /** The BSP-specific parts of the last serialized state of this run configuration. */
   private var bspElementState = Element(BSP_STATE_TAG)
 
-  var targets: List<BuildTargetIdentifier> = emptyList()
+  var targets: List<Label> = emptyList()
     private set // private because we need to set the targets directly when running readExternal
 
-  fun updateTargets(newTargets: List<BuildTargetIdentifier>) {
+  fun updateTargets(newTargets: List<Label>) {
     targets = newTargets
     updateHandlerIfDifferentProvider(RunHandlerProvider.getRunHandlerProvider(project, newTargets))
   }
@@ -40,6 +40,7 @@ class BspRunConfiguration internal constructor(
   private var handlerProvider: RunHandlerProvider? = null
 
   var handler: BspRunHandler? = null
+    private set
 
   private fun updateHandlerIfDifferentProvider(newProvider: RunHandlerProvider) {
     if (newProvider == handlerProvider) return
@@ -74,7 +75,7 @@ class BspRunConfiguration internal constructor(
       targets.add(targetElement.text)
     }
 
-    this.targets = targets.map { BuildTargetIdentifier(it) }
+    this.targets = targets.map { Label.parse(it) }
 
     // It should be possible to load the configuration before the project is synchronized,
     // so we can't access targets' data here. Instead, we have to use the stored provider ID.
@@ -123,7 +124,7 @@ class BspRunConfiguration internal constructor(
 
     for (target in targets) {
       val targetElement = Element(TARGET_TAG)
-      targetElement.text = target.uri
+      targetElement.text = target.toShortString()
       bspElementState.addContent(targetElement)
     }
 

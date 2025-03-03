@@ -1,10 +1,9 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
@@ -13,19 +12,17 @@ import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Library
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 
-data class LibraryGraphDependencies(
-  val libraryDependencies: Set<BuildTargetIdentifier>,
-  val moduleDependencies: Set<BuildTargetIdentifier>,
-)
+data class LibraryGraphDependencies(val libraryDependencies: Set<Label>, val moduleDependencies: Set<Label>)
 
 class LibraryGraph(private val libraries: List<LibraryItem>) {
   private val graph = libraries.associate { it.id to it.dependencies }
 
   fun calculateAllDependencies(
     target: BuildTarget,
-    includesTransitive: Boolean = !BspFeatureFlags.isWrapLibrariesInsideModulesEnabled,
+    includesTransitive: Boolean = !BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled,
   ): LibraryGraphDependencies =
     if (includesTransitive) {
       calculateAllTransitiveDependencies(target)
@@ -35,10 +32,10 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
 
   private fun calculateAllTransitiveDependencies(target: BuildTarget): LibraryGraphDependencies {
     val toVisit = target.dependencies.toMutableSet()
-    val visited = mutableSetOf<BuildTargetIdentifier>(target.id)
+    val visited = mutableSetOf<Label>(target.id)
 
-    val resultLibraries = mutableSetOf<BuildTargetIdentifier>()
-    val resultModules = mutableSetOf<BuildTargetIdentifier>()
+    val resultLibraries = mutableSetOf<Label>()
+    val resultModules = mutableSetOf<Label>()
 
     while (toVisit.isNotEmpty()) {
       val currentNode = toVisit.first()
@@ -70,12 +67,9 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
     )
   }
 
-  private fun BuildTargetIdentifier.isCurrentNodeLibrary() = this in graph
+  private fun Label.isCurrentNodeLibrary() = this in graph
 
-  private fun BuildTargetIdentifier.addToCorrectResultSet(
-    resultLibraries: MutableSet<BuildTargetIdentifier>,
-    resultModules: MutableSet<BuildTargetIdentifier>,
-  ) {
+  private fun Label.addToCorrectResultSet(resultLibraries: MutableSet<Label>, resultModules: MutableSet<Label>) {
     if (isCurrentNodeLibrary()) {
       resultLibraries += this
     } else {
@@ -96,7 +90,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
       }
 
   fun createLibraryModules(nameProvider: TargetNameReformatProvider, defaultJdkName: String?): List<JavaModule> {
-    if (!BspFeatureFlags.isWrapLibrariesInsideModulesEnabled) return emptyList()
+    if (!BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled) return emptyList()
 
     return libraries
       .map { library ->
@@ -126,5 +120,5 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
       }
   }
 
-  private fun BuildTargetIdentifier.isLibraryId() = this in graph.keys
+  private fun Label.isLibraryId() = this in graph.keys
 }

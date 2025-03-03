@@ -1,11 +1,10 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.JvmBuildTarget
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bspProjectName
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.utils.StringUtils
@@ -20,6 +19,7 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.ScalaAddendum
+import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
@@ -28,7 +28,7 @@ import java.nio.file.Path
 import kotlin.io.path.toPath
 
 internal class ModuleDetailsToJavaModuleTransformer(
-  targetsMap: Map<BuildTargetIdentifier, BuildTargetInfo>,
+  targetsMap: Map<Label, BuildTargetInfo>,
   nameProvider: TargetNameReformatProvider,
   private val projectBasePath: Path,
   private val project: Project,
@@ -105,7 +105,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
   }
 
   private fun GenericModuleInfo.applyHACK(inputEntity: ModuleDetails, projectBasePath: Path): GenericModuleInfo {
-    if (!BspFeatureFlags.addDummyModules) return this
+    if (!BazelFeatureFlags.addDummyModules) return this
     val dummyJavaModuleDependencies =
       calculateDummyJavaModuleNames(calculateDummyJavaSourceRoots(toJavaSourceRoots(inputEntity)), projectBasePath)
         .filter { it.isNotEmpty() }
@@ -166,7 +166,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
     }
   }
 
-  private fun toAssociates(inputEntity: ModuleDetails): List<BuildTargetIdentifier> {
+  private fun toAssociates(inputEntity: ModuleDetails): List<Label> {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
     return kotlinBuildTarget
       ?.associates

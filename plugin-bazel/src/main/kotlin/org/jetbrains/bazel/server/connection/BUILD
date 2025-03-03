@@ -17,7 +17,6 @@ kt_jvm_library(
         "//protocol",
         "//server/install/src/main/kotlin/org/jetbrains/bazel/install",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server",
-        "@maven//:ch_epfl_scala_bsp4j",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

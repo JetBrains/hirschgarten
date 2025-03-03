@@ -1,11 +1,5 @@
 package org.jetbrains.bazel.run.task
 
-import ch.epfl.scala.bsp4j.StatusCode
-import ch.epfl.scala.bsp4j.TestFinish
-import ch.epfl.scala.bsp4j.TestReport
-import ch.epfl.scala.bsp4j.TestStart
-import ch.epfl.scala.bsp4j.TestStatus
-import ch.epfl.scala.bsp4j.TestTask
 import com.intellij.execution.process.AnsiEscapeDecoder
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
@@ -17,10 +11,18 @@ import org.jetbrains.bazel.taskEvents.BspTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
+import org.jetbrains.bsp.protocol.StatusCode
+import org.jetbrains.bsp.protocol.TestFinish
+import org.jetbrains.bsp.protocol.TestReport
+import org.jetbrains.bsp.protocol.TestStart
+import org.jetbrains.bsp.protocol.TestStatus
+import org.jetbrains.bsp.protocol.TestTask
+import java.nio.file.Path
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListener {
+class BspTestTaskListener(private val handler: BspProcessHandler, private val coverageReportListener: ((Path) -> Unit)? = null) :
+  BspTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
 
   init {
@@ -110,13 +112,17 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
     }
   }
 
+  override fun onPublishCoverageReport(coverageReport: Path) {
+    coverageReportListener?.invoke(coverageReport)
+  }
+
   private fun checkTestStatus(
     taskId: TaskId,
     data: TestFinish,
     details: JUnitStyleTestCaseData?,
   ) {
     val failureMessageBuilder =
-      when (data.status!!) {
+      when (data.status) {
         TestStatus.FAILED -> {
           ServiceMessageBuilder.testFailed(data.displayName)
         }
@@ -148,7 +154,7 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
   }
 
   private fun processTestCaseFinish(taskId: TaskId, data: TestFinish): ServiceMessageBuilder {
-    val details = data.data as? JUnitStyleTestCaseData
+    val details = extractTestFinishData<JUnitStyleTestCaseData>(data)
 
     checkTestStatus(taskId, data, details)
 
@@ -160,7 +166,7 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
   }
 
   private fun processTestSuiteFinish(taskId: TaskId, data: TestFinish): ServiceMessageBuilder {
-    val details = data.data as? JUnitStyleTestSuiteData
+    val details = extractTestFinishData<JUnitStyleTestSuiteData>(data)
 
     details?.systemOut?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDOUT) }
     details?.systemErr?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDERR) }
@@ -182,4 +188,6 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
       ?.inWholeMilliseconds
       ?.let { this.addAttribute("duration", it.toString()) }
       ?: this
+
+  private inline fun <reified Data> extractTestFinishData(testFinishData: TestFinish): Data? = testFinishData.data as? Data
 }

@@ -2,21 +2,27 @@ package org.jetbrains.bazel.ui.widgets.tool.window.utils
 
 import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
+import org.jetbrains.bazel.action.SuspendableAction
+import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.runnerAction.BspRunnerAction
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
 import org.jetbrains.bazel.runnerAction.RunTargetAction
+import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.RunWithLocalJvmRunnerAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.TestWithLocalJvmRunnerAction
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.ui.widgets.BazelBspJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BuildTargetContainer
@@ -51,7 +57,10 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
     x: Int,
     y: Int,
   ) {
-    val actionGroup = container.getSelectedBuildTarget()?.let { calculatePopupGroup(it) }
+    val actionGroup =
+      container.getSelectedBuildTarget()?.let { calculatePopupGroup(it) }
+        ?: calculatePopupGroup(container.getSelectedBuildTargetsUnderDirectory())
+
     if (actionGroup != null) {
       ActionManager
         .getInstance()
@@ -74,13 +83,25 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
       if (StarlarkDebugAction.isApplicableTo(target)) add(StarlarkDebugAction(target.id))
     }
 
+  private fun calculatePopupGroup(targets: List<BuildTargetInfo>): ActionGroup? {
+    val testTargets = targets.filter { it.capabilities.canTest }
+    return if (testTargets.isEmpty()) {
+      null
+    } else {
+      DefaultActionGroup().apply {
+        addAction(RunAllTestsActionInTargetTreeAction(testTargets, container.getSelectedComponentName()))
+        addAction(RunAllTestsActionWithCoverageInTargetTreeAction(testTargets, container.getSelectedComponentName()))
+      }
+    }
+  }
+
   private fun MouseEvent.isDoubleClick(): Boolean = this.mouseButton == MouseButton.Left && this.clickCount == 2
 
   private fun onDoubleClick() {
     container.getSelectedBuildTarget()?.also {
       when {
-        it.capabilities.canTest -> TestTargetAction(project = project, targetInfos = listOf(it)).prepareAndPerform(project)
-        it.capabilities.canRun -> RunTargetAction(project = project, targetInfo = it).prepareAndPerform(project)
+        it.capabilities.canTest -> TestTargetAction(targetInfos = listOf(it)).prepareAndPerform(project)
+        it.capabilities.canRun -> RunTargetAction(targetInfo = it).prepareAndPerform(project)
         it.capabilities.canCompile -> BuildTargetAction.buildTarget(project, it.id)
       }
     }
@@ -97,41 +118,73 @@ private fun BspRunnerAction.prepareAndPerform(project: Project) {
 fun DefaultActionGroup.fillWithEligibleActions(
   project: Project,
   target: BuildTargetInfo,
-  verboseText: Boolean,
+  includeTargetNameInText: Boolean,
   singleTestFilter: String? = null,
 ): DefaultActionGroup {
   val canBeDebugged = RunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
   if (target.capabilities.canRun) {
-    addAction(RunTargetAction(target, verboseText = verboseText, project = project))
+    addAction(RunTargetAction(target, includeTargetNameInText = includeTargetNameInText))
     if (canBeDebugged) {
-      addAction(RunTargetAction(target, isDebugAction = true, verboseText = verboseText, project = project))
+      addAction(RunTargetAction(target, isDebugAction = true, includeTargetNameInText = includeTargetNameInText))
     }
   }
 
   if (target.capabilities.canTest) {
-    addAction(TestTargetAction(listOf(target), verboseText = verboseText, project = project, singleTestFilter = singleTestFilter))
+    addAction(TestTargetAction(listOf(target), includeTargetNameInText = includeTargetNameInText, singleTestFilter = singleTestFilter))
     if (canBeDebugged) {
       addAction(
         TestTargetAction(
           listOf(target),
           isDebugAction = true,
-          verboseText = verboseText,
-          project = project,
+          includeTargetNameInText = includeTargetNameInText,
           singleTestFilter = singleTestFilter,
         ),
       )
     }
+    addAction(RunWithCoverageAction(listOf(target), includeTargetNameInText = includeTargetNameInText, singleTestFilter = singleTestFilter))
   }
 
-  if (target.languageIds.isJvmTarget()) {
+  if (project.bazelProjectSettings.enableLocalJvmActions && target.languageIds.isJvmTarget()) {
     if (target.capabilities.canRun) {
-      addAction(RunWithLocalJvmRunnerAction(target, verboseText = verboseText))
-      addAction(RunWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
+      addAction(RunWithLocalJvmRunnerAction(target, includeTargetNameInText = includeTargetNameInText))
+      addAction(RunWithLocalJvmRunnerAction(target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
     }
     if (target.capabilities.canTest) {
-      addAction(TestWithLocalJvmRunnerAction(target, verboseText = verboseText))
-      addAction(TestWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
+      addAction(TestWithLocalJvmRunnerAction(target, includeTargetNameInText = includeTargetNameInText))
+      addAction(TestWithLocalJvmRunnerAction(target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
     }
   }
   return this
+}
+
+internal class RunAllTestsActionInTargetTreeAction(private val targets: List<BuildTargetInfo>, private val directoryName: String) :
+  SuspendableAction(
+    text = { BspPluginBundle.message("action.run.all.tests") },
+    icon = AllIcons.Actions.Execute,
+  ) {
+  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
+    TestTargetAction(
+      targets,
+      text = {
+        BspPluginBundle.message("action.run.all.tests.under", directoryName)
+      },
+    ).actionPerformed(e)
+  }
+}
+
+internal class RunAllTestsActionWithCoverageInTargetTreeAction(
+  private val targets: List<BuildTargetInfo>,
+  private val directoryName: String,
+) : SuspendableAction(
+    text = { BspPluginBundle.message("action.run.all.tests.with.coverage") },
+    icon = AllIcons.General.RunWithCoverage,
+  ) {
+  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
+    RunWithCoverageAction(
+      targets,
+      text = {
+        BspPluginBundle.message("action.run.all.tests.under.with.coverage", directoryName)
+      },
+    ).actionPerformed(e)
+  }
 }

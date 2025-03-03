@@ -62,9 +62,11 @@ val mockBazelInfo =
     execRoot = "execRoot",
     outputBase = Path("outputBase"),
     workspaceRoot = Path("workspaceRoot"),
+    bazelBin = Path("bazel-bin"),
     release = BazelRelease(7),
     isBzlModEnabled = true,
     isWorkspaceEnabled = true,
+    externalAutoloads = emptyList(),
   )
 
 val contextProvider =

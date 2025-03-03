@@ -1,16 +1,15 @@
 package org.jetbrains.bazel
 
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.paths.shouldExist
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldEndWith
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.SourcesParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import java.net.URI
 import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
@@ -52,11 +51,11 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "compare workspace targets results",
     ) {
-      testClient.test(60.seconds) { session, _ ->
-        val targetsResult = session.server.workspaceBuildTargets().await()
+      testClient.test(60.seconds) { session ->
+        val targetsResult = session.server.workspaceBuildTargets()
 
         targetsResult.targets.size shouldBe 4
-        targetsResult.targets.map { Label.parse(it.id.uri) } shouldContainExactlyInAnyOrder
+        targetsResult.targets.map { it.id } shouldContainExactlyInAnyOrder
           listOf(
             Label.parse("@@inner+//:lib_inner"),
             Label.parse("@@inner+//:bin_inner"),
@@ -68,7 +67,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
           session.server
             .buildTargetSources(
               SourcesParams(targetsResult.targets.map { it.id }),
-            ).await()
+            )
 
         sourcesResult.items.size shouldBe 4
 
@@ -89,8 +88,8 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "compare workspace repo mapping results",
     ) {
-      testClient.test(60.seconds) { session, _ ->
-        val repoMapping = session.server.workspaceBazelRepoMapping().await()
+      testClient.test(60.seconds) { session ->
+        val repoMapping = session.server.workspaceBazelRepoMapping()
 
         repoMapping.apparentRepoNameToCanonicalName shouldBe
           mapOf(

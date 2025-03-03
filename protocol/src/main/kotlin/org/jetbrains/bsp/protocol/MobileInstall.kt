@@ -1,14 +1,10 @@
 package org.jetbrains.bsp.protocol
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.StatusCode
-import com.google.gson.annotations.JsonAdapter
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapter
+import org.jetbrains.bazel.label.Label
 
 /**
  * See [mobile-install docs](https://bazel.build/docs/user-manual#start)
  */
-@JsonAdapter(EnumTypeAdapter.Factory::class)
 public enum class MobileInstallStartType(public val value: Int) {
   NO(1),
   COLD(2),
@@ -17,7 +13,7 @@ public enum class MobileInstallStartType(public val value: Int) {
 }
 
 public data class MobileInstallParams(
-  val target: BuildTargetIdentifier,
+  val target: Label,
   val originId: String,
   val targetDeviceSerialNumber: String,
   val startType: MobileInstallStartType,

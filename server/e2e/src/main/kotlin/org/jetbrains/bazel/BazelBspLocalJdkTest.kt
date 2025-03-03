@@ -1,13 +1,12 @@
 package org.jetbrains.bazel
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.time.Duration.Companion.seconds
 
 object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
@@ -39,28 +38,27 @@ object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
       }
 
     val exampleExampleJvmBuildTarget =
-      JvmBuildTarget().also {
-        it.javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/${javaHomePrefix}local_jdk/"
-        it.javaVersion = "17"
-      }
+      JvmBuildTarget(
+        javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/${javaHomePrefix}local_jdk/",
+        javaVersion = "17",
+      )
 
     val exampleExampleBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//example:example"),
+        Label.parse("$targetPrefix//example:example"),
         listOf("application"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = true
-          it.canDebug = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = false,
+          canRun = true,
+          canDebug = false,
+        ),
+        displayName = "//example",
+        baseDirectory = "file://\$WORKSPACE/example/",
+        exampleExampleJvmBuildTarget,
       )
-    exampleExampleBuildTarget.displayName = "$targetPrefix//example:example"
-    exampleExampleBuildTarget.baseDirectory = "file://\$WORKSPACE/example/"
-    exampleExampleBuildTarget.data = exampleExampleJvmBuildTarget
-    exampleExampleBuildTarget.dataKind = BuildTargetDataKind.JVM
 
     return WorkspaceBuildTargetsResult(
       listOf(exampleExampleBuildTarget),

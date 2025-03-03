@@ -1,7 +1,6 @@
 // Do not change this package, see https://youtrack.jetbrains.com/issue/BAZEL-1632
 package org.jetbrains.bazel.label
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -240,6 +239,10 @@ sealed interface Label {
           else -> AmbiguousEmptyTarget
         }
 
+      if (packageType is AllPackagesBeneath && target is SingleTarget) {
+        throw IllegalArgumentException("Cannot have a single target in a wildcard package")
+      }
+
       if (!value.contains("//")) {
         return RelativeLabel(packageType, target)
       }
@@ -262,10 +265,6 @@ sealed interface Label {
       }
   }
 }
-
-fun Label.toBspIdentifier(): BuildTargetIdentifier = BuildTargetIdentifier(toString())
-
-fun BuildTargetIdentifier.label(): Label = Label.parse(uri)
 
 fun Label.asRelative(): RelativeLabel? = this as? RelativeLabel
 

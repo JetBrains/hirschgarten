@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.jvm.run
 
-import ch.epfl.scala.bsp4j.JvmEnvironmentItem
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunProfile
@@ -8,6 +7,7 @@ import com.intellij.execution.runners.JavaProgramPatcher
 import com.intellij.openapi.util.UserDataHolderBase
 import org.jetbrains.bazel.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
 import org.jetbrains.bazel.runnerAction.LocalJvmRunnerAction
+import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 
 class BspJvmEnvironmentProgramPatcher : JavaProgramPatcher() {
   override fun patchJavaParameters(

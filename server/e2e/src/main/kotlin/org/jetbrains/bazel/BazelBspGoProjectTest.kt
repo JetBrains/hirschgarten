@@ -1,19 +1,18 @@
 package org.jetbrains.bazel
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.SourcesResult
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.GoLibraryItem
+import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.SourceItemKind
+import org.jetbrains.bsp.protocol.SourcesItem
+import org.jetbrains.bsp.protocol.SourcesParams
+import org.jetbrains.bsp.protocol.SourcesResult
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import java.net.URI
 import kotlin.time.Duration.Companion.minutes
@@ -68,10 +67,9 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       )
     val targetHelloSources =
       SourcesItem(
-        BuildTargetIdentifier("$targetPrefix//example:hello"),
+        Label.parse("$targetPrefix//example:hello"),
         listOf(targetHello),
       )
-    targetHelloSources.roots = listOf()
 
     val targetGoDefaultLibrary =
       SourceItem(
@@ -81,10 +79,9 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       )
     val targetGoDefaultLibrarySources =
       SourcesItem(
-        BuildTargetIdentifier("$targetPrefix//lib:go_default_library"),
+        Label.parse("$targetPrefix//lib:go_default_library"),
         listOf(targetGoDefaultLibrary),
       )
-    targetGoDefaultLibrarySources.roots = listOf()
 
     val targetGoDefaultTest =
       SourceItem(
@@ -94,12 +91,11 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       )
     val targetGoDefaultTestSources =
       SourcesItem(
-        BuildTargetIdentifier("$targetPrefix//lib:go_default_test"),
+        Label.parse("$targetPrefix//lib:go_default_test"),
         listOf(
           targetGoDefaultTest,
         ),
       )
-    targetGoDefaultTestSources.roots = listOf()
 
     val sourcesParams = SourcesParams(expectedTargetIdentifiers())
     val expectedSourcesResult =
@@ -121,16 +117,16 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       targetName = "hello",
       tags = listOf("application"),
       capabilities =
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = true
-          it.canDebug = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = false,
+          canRun = true,
+          canDebug = false,
+        ),
       dependencies =
         listOf(
-          BuildTargetIdentifier("$targetPrefix//lib:go_default_library"),
-          BuildTargetIdentifier("@org_golang_x_text//cases:cases"),
+          Label.parse("$targetPrefix//lib:go_default_library"),
+          Label.parse("@org_golang_x_text//cases:cases"),
         ),
       importPath = "example/hello",
     )
@@ -141,12 +137,12 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       targetName = "go_default_library",
       tags = listOf("library"),
       capabilities =
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = false
-          it.canRun = false
-          it.canDebug = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = false,
+          canRun = false,
+          canDebug = false,
+        ),
       importPath = "example.com/lib",
     )
 
@@ -156,12 +152,12 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       targetName = "go_default_test",
       tags = listOf("test"),
       capabilities =
-        BuildTargetCapabilities().also {
-          it.canCompile = true
-          it.canTest = true
-          it.canRun = false
-          it.canDebug = false
-        },
+        BuildTargetCapabilities(
+          canCompile = true,
+          canTest = true,
+          canRun = false,
+          canDebug = false,
+        ),
       importPath = "testmain",
     )
 
@@ -172,7 +168,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     capabilities: BuildTargetCapabilities,
     importPath: String,
     sdkHomePath: URI = defaultSdkHomePath,
-    dependencies: List<BuildTargetIdentifier> = listOf(),
+    dependencies: List<Label> = listOf(),
   ): BuildTarget {
     val goBuildTarget =
       GoBuildTarget(
@@ -183,25 +179,22 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
 
     val buildTargetData =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//$targetDirectory:$targetName"),
-        tags,
-        listOf("go"),
-        dependencies,
-        capabilities,
+        Label.parse("$targetPrefix//$targetDirectory:$targetName"),
+        tags = tags,
+        languageIds = listOf("go"),
+        dependencies = dependencies,
+        capabilities = capabilities,
+        displayName = "//$targetDirectory:$targetName",
+        baseDirectory = "file://\$WORKSPACE/$targetDirectory/",
+        data = goBuildTarget,
       )
-
-    buildTargetData.displayName = "$targetPrefix//$targetDirectory:$targetName"
-    buildTargetData.baseDirectory = "file://\$WORKSPACE/$targetDirectory/"
-    buildTargetData.data = goBuildTarget
-    buildTargetData.dataKind = "go"
-
     return buildTargetData
   }
 
   private fun librariesResult(): BazelBspTestScenarioStep =
     BazelBspTestScenarioStep("libraries results") {
-      bazelTestClient.test(timeout = 1.minutes) { session, _ ->
-        val libraries = session.server.workspaceGoLibraries().await()
+      bazelTestClient.test(timeout = 1.minutes) { session ->
+        val libraries = session.server.workspaceGoLibraries()
         bazelTestClient.assertJsonEquals<WorkspaceGoLibrariesResult>(expectedLibrariesResult(), libraries)
       }
     }
@@ -211,42 +204,42 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     val expectedLibraries =
       listOf(
         GoLibraryItem(
-          id = BuildTargetIdentifier("@org_golang_x_text//cases:cases"),
+          id = Label.parse("@org_golang_x_text//cases:cases"),
           goImportPath = "golang.org/x/text/cases",
           goRoot = URI.create(libraryRoot + "cases/"),
         ),
         GoLibraryItem(
-          id = BuildTargetIdentifier("@org_golang_x_text//internal:internal"),
+          id = Label.parse("@org_golang_x_text//internal:internal"),
           goImportPath = "golang.org/x/text/internal",
           goRoot = URI.create(libraryRoot + "internal/"),
         ),
         GoLibraryItem(
-          id = BuildTargetIdentifier("@org_golang_x_text//internal/language:language"),
+          id = Label.parse("@org_golang_x_text//internal/language:language"),
           goImportPath = "golang.org/x/text/internal/language",
           goRoot = URI.create(libraryRoot + "internal/language/"),
         ),
         GoLibraryItem(
-          id = BuildTargetIdentifier("@org_golang_x_text//internal/language/compact:compact"),
+          id = Label.parse("@org_golang_x_text//internal/language/compact:compact"),
           goImportPath = "golang.org/x/text/internal/language/compact",
           goRoot = URI.create(libraryRoot + "internal/language/compact/"),
         ),
         GoLibraryItem(
-          id = BuildTargetIdentifier("@org_golang_x_text//internal/tag:tag"),
+          id = Label.parse("@org_golang_x_text//internal/tag:tag"),
           goImportPath = "golang.org/x/text/internal/tag",
           goRoot = URI.create(libraryRoot + "internal/tag/"),
         ),
         GoLibraryItem(
-          id = BuildTargetIdentifier("@org_golang_x_text//language:language"),
+          id = Label.parse("@org_golang_x_text//language:language"),
           goImportPath = "golang.org/x/text/language",
           goRoot = URI.create(libraryRoot + "language/"),
         ),
         GoLibraryItem(
-          id = BuildTargetIdentifier("@org_golang_x_text//transform:transform"),
+          id = Label.parse("@org_golang_x_text//transform:transform"),
           goImportPath = "golang.org/x/text/transform",
           goRoot = URI.create(libraryRoot + "transform/"),
         ),
         GoLibraryItem(
-          id = BuildTargetIdentifier("@org_golang_x_text//unicode/norm:norm"),
+          id = Label.parse("@org_golang_x_text//unicode/norm:norm"),
           goImportPath = "golang.org/x/text/unicode/norm",
           goRoot = URI.create(libraryRoot + "unicode/norm/"),
         ),

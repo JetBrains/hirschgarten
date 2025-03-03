@@ -1,11 +1,7 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.JavacOptionsItem
-import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
@@ -15,6 +11,10 @@ import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.includesJavaOrScala
 import org.jetbrains.bazel.workspacemodel.entities.toBuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.toModuleCapabilities
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.DependencySourcesItem
+import org.jetbrains.bsp.protocol.JavacOptionsItem
+import org.jetbrains.bsp.protocol.ScalacOptionsItem
 
 internal data class BspModuleDetails(
   val target: BuildTarget,
@@ -22,13 +22,13 @@ internal data class BspModuleDetails(
   val javacOptions: JavacOptionsItem?,
   val scalacOptions: ScalacOptionsItem?,
   val type: ModuleTypeId,
-  val associates: List<BuildTargetIdentifier> = listOf(),
-  val moduleDependencies: List<BuildTargetIdentifier>,
-  val libraryDependencies: List<BuildTargetIdentifier>?,
+  val associates: List<Label> = listOf(),
+  val moduleDependencies: List<Label>,
+  val libraryDependencies: List<Label>?,
 )
 
 internal class BspModuleDetailsToModuleTransformer(
-  private val targetsMap: Map<BuildTargetIdentifier, BuildTargetInfo>,
+  private val targetsMap: Map<Label, BuildTargetInfo>,
   private val nameProvider: TargetNameReformatProvider,
 ) : WorkspaceModelEntityTransformer<BspModuleDetails, GenericModuleInfo> {
   override fun transform(inputEntity: BspModuleDetails): GenericModuleInfo =
@@ -80,8 +80,8 @@ internal object DependencySourcesItemToLibraryDependencyTransformer :
 }
 
 internal class BuildTargetToModuleDependencyTransformer(
-  private val allTargetsIds: Set<BuildTargetIdentifier>,
-  private val targetsMap: Map<BuildTargetIdentifier, BuildTargetInfo>,
+  private val allTargetsIds: Set<Label>,
+  private val targetsMap: Map<Label, BuildTargetInfo>,
   private val moduleNameProvider: TargetNameReformatProvider,
 ) : WorkspaceModelEntityPartitionTransformer<BuildTarget, IntermediateModuleDependency> {
   override fun transform(inputEntity: BuildTarget): List<IntermediateModuleDependency> =
@@ -96,7 +96,7 @@ internal fun BuildTargetInfo.toModuleDependency(moduleNameProvider: TargetNameRe
     moduleName = moduleNameProvider(this),
   )
 
-internal fun BuildTargetIdentifier.toLibraryDependency(
+internal fun Label.toLibraryDependency(
   nameProvider: TargetNameReformatProvider,
   isProjectLevelLibrary: Boolean,
 ): IntermediateLibraryDependency =

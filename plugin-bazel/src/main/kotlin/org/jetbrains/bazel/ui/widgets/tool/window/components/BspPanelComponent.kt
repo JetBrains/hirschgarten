@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.components
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
@@ -48,7 +48,7 @@ class BspPanelComponent private constructor(
     invalidTargetIcon: Icon,
     toolName: String,
     targets: Collection<BuildTargetInfo>,
-    invalidTargets: List<BuildTargetIdentifier>,
+    invalidTargets: List<Label>,
     searchBarPanel: SearchBarPanel,
   ) : this(
     targetIcon = targetIcon,
@@ -124,7 +124,7 @@ class BspPanelComponent private constructor(
    * @param targets collection of build targets which the new panel will contain
    * @return newly created panel
    */
-  fun createNewWithTargets(targets: Collection<BuildTargetInfo>, invalidTargets: List<BuildTargetIdentifier>): BspPanelComponent =
+  fun createNewWithTargets(targets: Collection<BuildTargetInfo>, invalidTargets: List<Label>): BspPanelComponent =
     BspPanelComponent(
       targetIcon,
       toolName,

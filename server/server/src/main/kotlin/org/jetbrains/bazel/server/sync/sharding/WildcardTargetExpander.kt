@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.server.sync.sharding
 
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.commons.BazelStatus
@@ -47,11 +46,10 @@ object WildcardTargetExpander {
     )
 
   /** Runs a sharded Bazel query to expand wildcard targets to individual Bazel targets  */
-  fun expandToSingleTargets(
+  suspend fun expandToSingleTargets(
     packageTargets: List<Label>,
     excludes: List<Label>,
     bazelRunner: BazelRunner,
-    cancelChecker: CancelChecker,
     bspClientLogger: BspClientLogger,
     context: WorkspaceContext,
   ): ExpandedTargetsResult? {
@@ -67,7 +65,6 @@ object WildcardTargetExpander {
           shard,
           excludes,
           bazelRunner,
-          cancelChecker,
           context,
         )
       output =
@@ -88,11 +85,10 @@ object WildcardTargetExpander {
   }
 
   /** Runs a Bazel query to expand the input target patterns to individual Bazel targets.  */
-  fun queryIndividualTargets(
+  suspend fun queryIndividualTargets(
     includedPatterns: List<Label>,
     excludedTargets: List<Label>,
     bazelRunner: BazelRunner,
-    cancelChecker: CancelChecker,
     context: WorkspaceContext,
   ): ExpandedTargetsResult {
     val targetsSpec =
@@ -112,7 +108,7 @@ object WildcardTargetExpander {
     val queryResult =
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null, shouldLogInvocation = false)
-        .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
+        .waitAndGetResult(ensureAllOutputRead = true)
     return ExpandedTargetsResult(
       singleTargets = queryResult.stdoutLines.map { Label.parse(it) },
       queryResult.bazelStatus,

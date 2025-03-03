@@ -20,7 +20,7 @@ sealed class CopyTargetIdAction : AnAction({ BspPluginBundle.message("widget.cop
 
   private fun BuildTargetInfo.copyIdToClipboard() {
     val clipboard = CopyPasteManager.getInstance()
-    val transferable = TextTransferable(this.id.uri as CharSequence)
+    val transferable = TextTransferable(this.id.toShortString() as CharSequence)
     clipboard.setContents(transferable)
   }
 

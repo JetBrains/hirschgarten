@@ -1,15 +1,15 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.SourceItemKind
+import org.jetbrains.bsp.protocol.SourcesItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI
@@ -51,7 +51,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -59,11 +59,10 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
 
     // when
@@ -97,7 +96,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("test"),
             listOf("java"),
             emptyList(),
@@ -105,11 +104,10 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
 
     // when
@@ -143,7 +141,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -151,11 +149,10 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
 
     // when
@@ -207,7 +204,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -215,11 +212,10 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem1, sourceItem2, sourceItem3),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
 
     // when
@@ -284,7 +280,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -292,17 +288,16 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem1),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
     val buildTargetAndSourceItem2 =
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -310,11 +305,10 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem2, sourceItem3),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
 
     val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)
@@ -381,7 +375,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -389,17 +383,16 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem1),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
     val buildTargetAndSourceItem2 =
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -407,11 +400,10 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem2, sourceItem3),
-          ).also {
-            it.roots = sourceRoots
-          },
+            roots = sourceRoots,
+          ),
       )
 
     val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)

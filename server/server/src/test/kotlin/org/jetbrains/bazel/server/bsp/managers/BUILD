@@ -8,7 +8,6 @@ kt_junit5_test(
         "//server/commons",
         "//server/install:install-lib",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/managers",
-        "@maven//:org_eclipse_lsp4j_org_eclipse_lsp4j_jsonrpc",
     ],
 )
 

@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -60,8 +60,8 @@ class LibraryGraphTest {
       // then
       dependencies.libraryDependencies shouldContainExactlyInAnyOrder
         listOf(
-          BuildTargetIdentifier("lib1"),
-          BuildTargetIdentifier("lib2"),
+          Label.parse("lib1"),
+          Label.parse("lib2"),
         )
       dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
     }
@@ -121,13 +121,13 @@ class LibraryGraphTest {
       // then
       dependencies.libraryDependencies shouldContainExactlyInAnyOrder
         listOf(
-          BuildTargetIdentifier("lib1"),
-          BuildTargetIdentifier("lib2"),
-          BuildTargetIdentifier("lib3"),
-          BuildTargetIdentifier("lib4"),
-          BuildTargetIdentifier("lib5"),
-          BuildTargetIdentifier("lib6"),
-          BuildTargetIdentifier("lib7"),
+          Label.parse("lib1"),
+          Label.parse("lib2"),
+          Label.parse("lib3"),
+          Label.parse("lib4"),
+          Label.parse("lib5"),
+          Label.parse("lib6"),
+          Label.parse("lib7"),
         )
       dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
     }
@@ -187,18 +187,18 @@ class LibraryGraphTest {
       // then
       dependencies.libraryDependencies shouldContainExactlyInAnyOrder
         listOf(
-          BuildTargetIdentifier("lib1"),
-          BuildTargetIdentifier("lib2"),
-          BuildTargetIdentifier("lib3"),
-          BuildTargetIdentifier("lib4"),
-          BuildTargetIdentifier("lib5"),
-          BuildTargetIdentifier("lib6"),
-          BuildTargetIdentifier("lib7"),
+          Label.parse("lib1"),
+          Label.parse("lib2"),
+          Label.parse("lib3"),
+          Label.parse("lib4"),
+          Label.parse("lib5"),
+          Label.parse("lib6"),
+          Label.parse("lib7"),
         )
       dependencies.moduleDependencies shouldContainExactlyInAnyOrder
         listOf(
-          BuildTargetIdentifier("target2"),
-          BuildTargetIdentifier("target3"),
+          Label.parse("target2"),
+          Label.parse("target3"),
         )
     }
 
@@ -224,7 +224,7 @@ class LibraryGraphTest {
       val dependencies = libraryGraph.calculateAllDependencies(target, true)
 
       // then
-      dependencies.libraryDependencies shouldContainExactlyInAnyOrder (1..1000).map { BuildTargetIdentifier("lib$it") }
+      dependencies.libraryDependencies shouldContainExactlyInAnyOrder (1..1000).map { Label.parse("lib$it") }
       dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
     }
   }
@@ -277,8 +277,8 @@ class LibraryGraphTest {
       // then
       dependencies.libraryDependencies shouldContainExactlyInAnyOrder
         listOf(
-          BuildTargetIdentifier("lib1"),
-          BuildTargetIdentifier("lib2"),
+          Label.parse("lib1"),
+          Label.parse("lib2"),
         )
       dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
     }
@@ -338,8 +338,8 @@ class LibraryGraphTest {
       // then
       dependencies.libraryDependencies shouldContainExactlyInAnyOrder
         listOf(
-          BuildTargetIdentifier("lib1"),
-          BuildTargetIdentifier("lib2"),
+          Label.parse("lib1"),
+          Label.parse("lib2"),
         )
       dependencies.moduleDependencies shouldContainExactlyInAnyOrder emptyList()
     }
@@ -391,13 +391,13 @@ class LibraryGraphTest {
       // then
       dependencies.libraryDependencies shouldContainExactlyInAnyOrder
         listOf(
-          BuildTargetIdentifier("lib1"),
-          BuildTargetIdentifier("lib2"),
+          Label.parse("lib1"),
+          Label.parse("lib2"),
         )
       dependencies.moduleDependencies shouldContainExactlyInAnyOrder
         listOf(
-          BuildTargetIdentifier("target2"),
-          BuildTargetIdentifier("target3"),
+          Label.parse("target2"),
+          Label.parse("target3"),
         )
     }
   }
@@ -405,17 +405,17 @@ class LibraryGraphTest {
 
 private fun mockTarget(id: String, dependencies: List<String>): BuildTarget =
   BuildTarget(
-    BuildTargetIdentifier(id),
+    Label.parse(id),
     emptyList(),
     emptyList(),
-    dependencies.map { BuildTargetIdentifier(it) },
+    dependencies.map { Label.parse(it) },
     BuildTargetCapabilities(),
   )
 
 private fun mockLibraryItem(id: String, dependencies: List<String>): LibraryItem =
   LibraryItem(
-    id = BuildTargetIdentifier(id),
-    dependencies = dependencies.map { BuildTargetIdentifier(it) },
+    id = Label.parse(id),
+    dependencies = dependencies.map { Label.parse(it) },
     ijars = emptyList(),
     jars = emptyList(),
     sourceJars = emptyList(),

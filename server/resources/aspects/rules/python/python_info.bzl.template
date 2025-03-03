@@ -5,13 +5,13 @@ load("//aspects:utils/utils.bzl", "create_struct", "file_location", "to_file_loc
 #if( $pythonEnabled == "false")
 # Not enabled
 
-#elseif( $bazel8OrAbove == "true" )
+#elseif( $bazel8OrAbove == "true" && $rulesetName != "" )
 # Bazel 8+: Use only the rules_python providers.
 load("@rules_python//python:defs.bzl", "PyInfo", "PyRuntimeInfo")
 PyInfo_Secondary = None
 PyRuntimeInfo_Secondary = None
 
-#elseif( $rulesetName )
+#elseif( $rulesetName != "" )
 # Non-Bazel 8+ workspace that has rules_python present: Support both builtin and rules_python providers.
 load("@rules_python//python:defs.bzl", PyInfo_Secondary = "PyInfo", PyRuntimeInfo_Secondary = "PyRuntimeInfo")
 

@@ -1,13 +1,5 @@
 package org.jetbrains.bazel.server.sync.firstPhase
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.ResourcesParams
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
-import ch.epfl.scala.bsp4j.SourcesParams
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -36,8 +28,14 @@ import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.TransitiveCompileTimeJarsTargetKindsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
-import org.jetbrains.bsp.protocol.EnhancedSourceItem
-import org.jetbrains.bsp.protocol.EnhancedSourceItemData
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.ResourcesItem
+import org.jetbrains.bsp.protocol.ResourcesParams
+import org.jetbrains.bsp.protocol.SourceItem
+import org.jetbrains.bsp.protocol.SourceItemKind
+import org.jetbrains.bsp.protocol.SourcesItem
+import org.jetbrains.bsp.protocol.SourcesParams
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -162,88 +160,95 @@ class FirstPhaseTargetToBspMapperTest {
       result.targets shouldContainExactlyInAnyOrder
         listOf(
           BuildTarget(
-            BuildTargetIdentifier("//target1"),
-            listOf("library"),
-            listOf("java"),
-            listOf(BuildTargetIdentifier("//dep/target1"), BuildTargetIdentifier("//dep/target2")),
-            BuildTargetCapabilities().apply {
-              canCompile = true
-              canRun = false
-              canTest = false
-              canDebug = false
-            },
+            Label.parse("//target1"),
+            tags = listOf("library"),
+            languageIds = listOf("java"),
+            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            capabilities =
+              BuildTargetCapabilities(
+                canCompile = true,
+                canRun = false,
+                canTest = false,
+                canDebug = false,
+              ),
           ),
           BuildTarget(
-            BuildTargetIdentifier("//target2"),
-            listOf("application"),
-            listOf("java"),
-            listOf(BuildTargetIdentifier("//dep/target1"), BuildTargetIdentifier("//dep/target2")),
-            BuildTargetCapabilities().apply {
-              canCompile = true
-              canRun = true
-              canTest = false
-              canDebug = false
-            },
+            Label.parse("//target2"),
+            tags = listOf("application"),
+            languageIds = listOf("java"),
+            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            capabilities =
+              BuildTargetCapabilities(
+                canCompile = true,
+                canRun = true,
+                canTest = false,
+                canDebug = false,
+              ),
           ),
           BuildTarget(
-            BuildTargetIdentifier("//target3"),
-            listOf("test"),
-            listOf("java"),
-            listOf(BuildTargetIdentifier("//dep/target1"), BuildTargetIdentifier("//dep/target2")),
-            BuildTargetCapabilities().apply {
-              canCompile = true
-              canRun = false
-              canTest = true
-              canDebug = false
-            },
+            Label.parse("//target3"),
+            tags = listOf("test"),
+            languageIds = listOf("java"),
+            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            capabilities =
+              BuildTargetCapabilities(
+                canCompile = true,
+                canRun = false,
+                canTest = true,
+                canDebug = false,
+              ),
           ),
           BuildTarget(
-            BuildTargetIdentifier("//target4"),
-            listOf("library"),
-            listOf("kotlin"),
-            listOf(BuildTargetIdentifier("//dep/target1"), BuildTargetIdentifier("//dep/target2")),
-            BuildTargetCapabilities().apply {
-              canCompile = true
-              canRun = false
-              canTest = false
-              canDebug = false
-            },
+            Label.parse("//target4"),
+            tags = listOf("library"),
+            languageIds = listOf("kotlin"),
+            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            capabilities =
+              BuildTargetCapabilities(
+                canCompile = true,
+                canRun = false,
+                canTest = false,
+                canDebug = false,
+              ),
           ),
           BuildTarget(
-            BuildTargetIdentifier("//target5"),
-            listOf("application"),
-            listOf("kotlin"),
-            listOf(BuildTargetIdentifier("//dep/target1"), BuildTargetIdentifier("//dep/target2")),
-            BuildTargetCapabilities().apply {
-              canCompile = true
-              canRun = true
-              canTest = false
-              canDebug = false
-            },
+            Label.parse("//target5"),
+            tags = listOf("application"),
+            languageIds = listOf("kotlin"),
+            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            capabilities =
+              BuildTargetCapabilities(
+                canCompile = true,
+                canRun = true,
+                canTest = false,
+                canDebug = false,
+              ),
           ),
           BuildTarget(
-            BuildTargetIdentifier("//target6"),
-            listOf("test"),
-            listOf("kotlin"),
-            listOf(BuildTargetIdentifier("//dep/target1"), BuildTargetIdentifier("//dep/target2")),
-            BuildTargetCapabilities().apply {
-              canCompile = true
-              canRun = false
-              canTest = true
-              canDebug = false
-            },
+            Label.parse("//target6"),
+            tags = listOf("test"),
+            languageIds = listOf("kotlin"),
+            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            capabilities =
+              BuildTargetCapabilities(
+                canCompile = true,
+                canRun = false,
+                canTest = true,
+                canDebug = false,
+              ),
           ),
           BuildTarget(
-            BuildTargetIdentifier("//target7"),
-            listOf("library"),
-            listOf("java"),
-            emptyList(),
-            BuildTargetCapabilities().apply {
-              canCompile = true
-              canRun = false
-              canTest = false
-              canDebug = false
-            },
+            Label.parse("//target7"),
+            tags = listOf("library"),
+            languageIds = listOf("java"),
+            dependencies = emptyList(),
+            capabilities =
+              BuildTargetCapabilities(
+                canCompile = true,
+                canRun = false,
+                canTest = false,
+                canDebug = false,
+              ),
           ),
         )
     }
@@ -272,7 +277,7 @@ class FirstPhaseTargetToBspMapperTest {
       val result = mapper.toWorkspaceBuildTargetsResult(project)
 
       // then
-      result.targets.map { it.id.uri } shouldContainExactlyInAnyOrder
+      result.targets.map { it.id.toShortString() } shouldContainExactlyInAnyOrder
         listOf(
           "//target1",
           "//manual_target",
@@ -325,8 +330,8 @@ class FirstPhaseTargetToBspMapperTest {
       val params =
         SourcesParams(
           listOf(
-            BuildTargetIdentifier("//target1"),
-            BuildTargetIdentifier("//target2"),
+            Label.parse("//target1"),
+            Label.parse("//target2"),
           ),
         )
       val result = mapper.toSourcesResult(project, params)
@@ -335,33 +340,30 @@ class FirstPhaseTargetToBspMapperTest {
       result.items shouldContainExactlyInAnyOrder
         listOf(
           SourcesItem(
-            BuildTargetIdentifier("//target1"),
+            Label.parse("//target1"),
             listOf(
-              EnhancedSourceItem(target1Src1.toUri().toString(), SourceItemKind.FILE, false),
-              EnhancedSourceItem(target1Src2.toUri().toString(), SourceItemKind.FILE, false),
+              SourceItem(target1Src1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
+              SourceItem(target1Src2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example.a"),
             ),
-          ).apply {
-            roots = listOf(target1Root1.toUri().toString(), target1Root2.toUri().toString())
-          },
+            roots = listOf(target1Root1.toUri().toString(), target1Root2.toUri().toString()),
+          ),
           SourcesItem(
-            BuildTargetIdentifier("//target2"),
+            Label.parse("//target2"),
             listOf(
-              EnhancedSourceItem(target2Src1.toUri().toString(), SourceItemKind.FILE, false),
-              EnhancedSourceItem(target2Src2.toUri().toString(), SourceItemKind.FILE, false),
+              SourceItem(target2Src1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
+              SourceItem(target2Src2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
             ),
-          ).apply {
-            roots = listOf(target2Root.toUri().toString())
-          },
+            roots = listOf(target2Root.toUri().toString()),
+          ),
         )
       result.items
         .flatMap { it.sources }
-        .map { it as EnhancedSourceItem }
-        .map { it.data } shouldContainExactly
+        .map { it.jvmPackagePrefix } shouldContainExactly
         listOf(
-          EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
-          EnhancedSourceItemData(jvmPackagePrefix = "com.example.a"),
-          EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
-          EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
+          "com.example",
+          "com.example.a",
+          "com.example",
+          "com.example",
         )
     }
 
@@ -399,7 +401,7 @@ class FirstPhaseTargetToBspMapperTest {
       val params =
         SourcesParams(
           listOf(
-            BuildTargetIdentifier("//target1"),
+            Label.parse("//target1"),
           ),
         )
       val result = mapper.toSourcesResult(project, params)
@@ -408,26 +410,24 @@ class FirstPhaseTargetToBspMapperTest {
       result.items shouldContainExactlyInAnyOrder
         listOf(
           SourcesItem(
-            BuildTargetIdentifier("//target1"),
+            Label.parse("//target1"),
             listOf(
-              EnhancedSourceItem(target1Src1.toUri().toString(), SourceItemKind.FILE, false),
-              EnhancedSourceItem(target1Src2.toUri().toString(), SourceItemKind.FILE, false),
-              EnhancedSourceItem(filegroupSrc1.toUri().toString(), SourceItemKind.FILE, false),
-              EnhancedSourceItem(filegroupSrc2.toUri().toString(), SourceItemKind.FILE, false),
+              SourceItem(target1Src1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
+              SourceItem(target1Src2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
+              SourceItem(filegroupSrc1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
+              SourceItem(filegroupSrc2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example.a"),
             ),
-          ).apply {
-            roots = listOf(target1Root.toUri().toString(), filegroupRoot1.toUri().toString(), filegroupRoot2.toUri().toString())
-          },
+            roots = listOf(target1Root.toUri().toString(), filegroupRoot1.toUri().toString(), filegroupRoot2.toUri().toString()),
+          ),
         )
       result.items
         .flatMap { it.sources }
-        .map { it as EnhancedSourceItem }
-        .map { it.data } shouldContainExactly
+        .map { it.jvmPackagePrefix } shouldContainExactly
         listOf(
-          EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
-          EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
-          EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
-          EnhancedSourceItemData(jvmPackagePrefix = "com.example.a"),
+          "com.example",
+          "com.example",
+          "com.example",
+          "com.example.a",
         )
     }
   }
@@ -471,21 +471,21 @@ class FirstPhaseTargetToBspMapperTest {
       val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
 
       // when
-      val params = ResourcesParams(listOf(BuildTargetIdentifier("//target1"), BuildTargetIdentifier("//target2")))
+      val params = ResourcesParams(listOf(Label.parse("//target1"), Label.parse("//target2")))
       val result = mapper.toResourcesResult(project, params)
 
       // then
       result.items shouldContainExactlyInAnyOrder
         listOf(
           ResourcesItem(
-            BuildTargetIdentifier("//target1"),
+            Label.parse("//target1"),
             listOf(
               target1Resource1.toUri().toString(),
               target1Resource2.toUri().toString(),
             ),
           ),
           ResourcesItem(
-            BuildTargetIdentifier("//target2"),
+            Label.parse("//target2"),
             listOf(
               target2Resource1.toUri().toString(),
               target2Resource2.toUri().toString(),
@@ -522,14 +522,14 @@ class FirstPhaseTargetToBspMapperTest {
       val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
 
       // when
-      val params = ResourcesParams(listOf(BuildTargetIdentifier("//target1")))
+      val params = ResourcesParams(listOf(Label.parse("//target1")))
       val result = mapper.toResourcesResult(project, params)
 
       // then
       result.items shouldContainExactlyInAnyOrder
         listOf(
           ResourcesItem(
-            BuildTargetIdentifier("//target1"),
+            Label.parse("//target1"),
             listOf(
               target1Resource1.toUri().toString(),
               target1Resource2.toUri().toString(),
