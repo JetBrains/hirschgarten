@@ -1,0 +1,5 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="org.jetbrains.plugins.terminal">
+        <commandSpecsProvider implementation="org.jetbrains.bazel.languages.bazelquery.terminal.BazelqueryCommandSpecsProvider"/>
+    </extensions>
+</idea-plugin>

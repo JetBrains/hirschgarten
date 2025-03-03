@@ -55,6 +55,12 @@ optional_plugin_dep(
     plugin_xml = "//plugin-bazel/src:main/xml/bsp-withCodeWithMe.xml",
 )
 
+optional_plugin_dep(
+    name = "terminal_plugin",
+    module = ["org.jetbrains.plugins.terminal"],
+    plugin_xml = "//plugin-bazel/src:main/xml/terminal-plugin.xml",
+)
+
 intellij_plugin_library(
     name = "plugin_library",
     optional_plugin_deps = [
@@ -64,6 +70,7 @@ intellij_plugin_library(
         ":bsp_ide_starter",
         ":bsp_devkit",
         ":bsp_code_with_me",
+        ":terminal_plugin",
     ],
     plugin_deps = [
         "com.intellij.modules.platform",
