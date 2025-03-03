@@ -21,8 +21,6 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetResources(params: ResourcesParams): ResourcesResult
 
-  suspend fun buildTargetOutputPaths(params: OutputPathsParams): OutputPathsResult
-
   suspend fun buildTargetCompile(params: CompileParams): CompileResult
 
   suspend fun buildTargetRun(params: RunParams): RunResult

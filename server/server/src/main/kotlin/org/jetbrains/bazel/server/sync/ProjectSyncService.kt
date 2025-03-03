@@ -28,8 +28,6 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
-import org.jetbrains.bsp.protocol.OutputPathsParams
-import org.jetbrains.bsp.protocol.OutputPathsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ResourcesParams
@@ -136,11 +134,6 @@ class ProjectSyncService(
   fun buildTargetDependencySources(dependencySourcesParams: DependencySourcesParams): DependencySourcesResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return DependencySourcesResult(emptyList())
     return bspMapper.dependencySources(project, dependencySourcesParams)
-  }
-
-  fun buildTargetOutputPaths(params: OutputPathsParams): OutputPathsResult {
-    val project = projectProvider.get() as? AspectSyncProject ?: return OutputPathsResult(emptyList())
-    return bspMapper.outputPaths(project, params)
   }
 
   suspend fun jvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult {
