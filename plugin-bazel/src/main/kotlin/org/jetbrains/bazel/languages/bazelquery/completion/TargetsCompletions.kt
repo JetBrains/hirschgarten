@@ -10,6 +10,7 @@ private val targets = ProjectManager.getInstance()
     it.toString().removePrefix("@")
   }
 
+// TODO: add current directory
 fun generateTargetCompletions(prefix: String): List<String> {
   val suggestions = mutableListOf<String>()
   val allTargets =  targets?.toSet() ?: emptySet()

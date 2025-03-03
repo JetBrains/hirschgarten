@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.ui.dialogs
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.CollapsiblePanel
+import com.intellij.ui.EditorTextField
 import com.intellij.ui.RawCommandLineEditor
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
@@ -15,6 +17,7 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextPane
+import org.jetbrains.bazel.languages.bazelquery.BazelqueryFileType
 
 
 class BazelQueryDialogWindow(private val project: Project) : DialogWrapper(true) {
@@ -51,6 +54,14 @@ class BazelQueryDialogWindow(private val project: Project) : DialogWrapper(true)
     fun isSelected() = checkBox.isSelected
   }
 
+  val editorTextField = EditorTextField(
+    EditorFactory.getInstance().createDocument(""),
+    project,
+    BazelqueryFileType,
+    false,
+    true
+  )
+
   private companion object {
     private val defaultFlags = listOf(
       QueryFlagField("flag1"),
@@ -86,7 +97,7 @@ class BazelQueryDialogWindow(private val project: Project) : DialogWrapper(true)
   }
 
   private fun clear() {
-    commandField.text = ""
+    editorTextField.text = ""
     resultField.text = ""
     flagsPanel.updateUI()
   }
@@ -99,7 +110,7 @@ class BazelQueryDialogWindow(private val project: Project) : DialogWrapper(true)
     val quoteLabelR = JLabel("\"")
     queryPanel.add(quoteLabelL, BorderLayout.EAST)
     queryPanel.add(quoteLabelR, BorderLayout.WEST)
-    queryPanel.add(commandField, BorderLayout.CENTER)
+    queryPanel.add(editorTextField, BorderLayout.CENTER)
 
 
     dialogPanel.layout = BoxLayout(dialogPanel, BoxLayout.Y_AXIS)
@@ -136,7 +147,7 @@ class BazelQueryDialogWindow(private val project: Project) : DialogWrapper(true)
   }
 
   private fun evaluate() {
-    val resultTextBuilder = StringBuilder("bazel query \"" + commandField.text + "\"")
+    val resultTextBuilder = StringBuilder("bazel query \"" + editorTextField.text + "\"")
     for (flag in defaultFlags) {
       if (flag.isSelected()) resultTextBuilder.append(" --").append(flag.flag)
     }
