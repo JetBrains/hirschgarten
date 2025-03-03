@@ -7,23 +7,17 @@ import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findFile
-import com.intellij.openapi.vfs.findFileOrDirectory
 import com.intellij.openapi.vfs.findPsiFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
 import org.jetbrains.bazel.config.isBspProject
-import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.references.BUILD_FILE_NAMES
-import org.jetbrains.bazel.languages.starlark.repomapping.apparentRepoNameToCanonicalName
-import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
+import org.jetbrains.bazel.languages.starlark.references.BazelLabelReference
 
 class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
   private val highlightGroupName = "highlightGroup"
@@ -47,40 +41,21 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
   private fun MatchResult.toFilterResultOrNull(line: String, entireLength: Int): Filter.Result? {
     val highlightGroup = groups[highlightGroupName] ?: return null
     val label = Label.parseOrNull(highlightGroup.value) as? ResolvedLabel ?: return null
+    val packageRoot = BazelLabelReference.findReferredAbsolutePackage(project, null, label, false) ?: return null
 
-    val projectRoot =
-      if (label.repo is Main) {
-        // when the repo name is "", it is the root repo itself
-        project.rootDir
-      } else {
-        // this is an external repo
-        // now we check if it is an apparent name or canonical repository name
-        val canonicalName =
-          if (label.repo is Apparent) {
-            project.apparentRepoNameToCanonicalName[label.repoName] ?: return null
-          } else {
-            label.repoName
-          }
-        val path = project.canonicalRepoNameToPath[canonicalName] ?: return null
-        val virtualFileManager = VirtualFileManager.getInstance()
-        virtualFileManager.findFileByNioPath(path) ?: return null
-      }
-
-    val hyperLinkInfo = getHyperLinkInfo(project, projectRoot, label.packagePath.toString(), label.targetName) ?: return null
+    val hyperLinkInfo = getHyperLinkInfo(project, packageRoot, label.targetName) ?: return null
     val highlightStartOffset = entireLength - line.length + highlightGroup.range.first
     val highlightEndOffset = entireLength - line.length + highlightGroup.range.last + 1
-
     return Filter.Result(highlightStartOffset, highlightEndOffset, hyperLinkInfo)
   }
 
   private fun getHyperLinkInfo(
     project: Project,
-    virtualFileRoot: VirtualFile,
-    buildFileName: String,
+    packageRootVirtualFile: VirtualFile?,
     target: String,
   ): HyperlinkInfo? {
-    val virtualFile = buildFileName.toBazelFileInProject(virtualFileRoot) ?: return null
-
+    if (packageRootVirtualFile == null || !packageRootVirtualFile.isDirectory) return null
+    val virtualFile = BUILD_FILE_NAMES.mapNotNull { packageRootVirtualFile.findFile(it) }.firstOrNull() ?: return null
     return runReadAction {
       val psiElement =
         virtualFile
@@ -92,12 +67,6 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
           }
       OpenFileHyperlinkInfo(project, virtualFile, psiElement?.calculateLineNumber() ?: 0, 0)
     }
-  }
-
-  private fun String.toBazelFileInProject(root: VirtualFile): VirtualFile? {
-    val vf = root.findFileOrDirectory(this)
-    if (vf == null || !vf.isDirectory) return null
-    return BUILD_FILE_NAMES.mapNotNull { vf.findFile(it) }.firstOrNull()
   }
 
   private fun PsiElement.calculateLineNumber(): Int? =

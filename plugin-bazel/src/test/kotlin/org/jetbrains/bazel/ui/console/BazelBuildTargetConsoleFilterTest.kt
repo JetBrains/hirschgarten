@@ -32,6 +32,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     val virtualFileManager = VirtualFileManager.getInstance()
     project.rootDir = virtualFileManager.findFileByNioPath(Path(project.basePath!!))!!
     filter = BazelBuildTargetConsoleFilter(project)
+    BazelRepoMappingService.getInstance(project).canonicalRepoNameToPath = mapOf("" to project.rootDir.toNioPath())
   }
 
   @Test
@@ -92,7 +93,8 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     val path = createBazelFile(externalRootDir, "plugin-bazel/src")
     val bazelTarget = "@@externalRepo//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
-    BazelRepoMappingService.getInstance(project).canonicalRepoNameToPath = mapOf("externalRepo" to externalRootDir)
+    BazelRepoMappingService.getInstance(project).canonicalRepoNameToPath =
+      mapOf("externalRepo" to externalRootDir, "" to project.rootDir.toNioPath())
 
     // when
     val result = filter.applyFilter(line, line.length + 100)
@@ -114,7 +116,8 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     val bazelTarget = "@externalRepo2//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
-    BazelRepoMappingService.getInstance(project).canonicalRepoNameToPath = mapOf("externalRepo2+" to externalRootDir)
+    BazelRepoMappingService.getInstance(project).canonicalRepoNameToPath =
+      mapOf("externalRepo2+" to externalRootDir, "" to project.rootDir.toNioPath())
     BazelRepoMappingService.getInstance(project).apparentRepoNameToCanonicalName = mapOf("externalRepo2" to "externalRepo2+")
 
     // when

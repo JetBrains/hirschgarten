@@ -97,38 +97,45 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     return PsiManager.getInstance(project).findFile(targetFile)
   }
 
-  private fun findReferredAbsolutePackage(
-    project: Project,
-    containingFile: VirtualFile,
-    label: ResolvedLabel,
-  ): VirtualFile? {
-    val foundRepoRoot =
-      if (label.repoName.isEmpty()) {
-        findContainingBazelRepo(project, containingFile)
-      } else if (label.isApparent) {
-        project.apparentRepoNameToCanonicalName[label.repoName]?.let { canonicalRepoName ->
-          project.canonicalRepoNameToPath[canonicalRepoName]
-        }
-      } else {
-        project.canonicalRepoNameToPath[label.repoName]
-      }
-
-    val repoRoot =
-      foundRepoRoot?.let {
-        VirtualFileManager.getInstance().refreshAndFindFileByNioPath(foundRepoRoot)
-      } ?: project.rootDir
-
-    return repoRoot.findFileByRelativePath(label.packagePath.toString())
-  }
-
-  private fun findContainingBazelRepo(project: Project, file: VirtualFile): Path? {
-    val path = file.toNioPath()
-    val repositoryPaths = project.repositoryPaths
-    return path.allAncestorsSequence().firstOrNull { it in repositoryPaths }
-  }
-
   private fun findBuildFile(packageDir: VirtualFile): VirtualFile? = BUILD_FILE_NAMES.mapNotNull { packageDir.findChild(it) }.firstOrNull()
 
   private fun findBuildFilePsi(project: Project, buildFile: VirtualFile): StarlarkFile? =
     PsiManager.getInstance(project).findFile(buildFile) as? StarlarkFile
+
+  companion object {
+    public fun findReferredAbsolutePackage(
+      project: Project,
+      containingFile: VirtualFile?,
+      label: ResolvedLabel,
+      allowFallbackToRootDir: Boolean = true,
+    ): VirtualFile? {
+      val foundRepoRoot =
+        if (label.repoName.isEmpty() && containingFile != null) {
+          findContainingBazelRepo(project, containingFile)
+        } else if (label.isApparent) {
+          project.apparentRepoNameToCanonicalName[label.repoName]?.let { canonicalRepoName ->
+            project.canonicalRepoNameToPath[canonicalRepoName]
+          }
+        } else {
+          project.canonicalRepoNameToPath[label.repoName]
+        }
+
+      val repoRoot =
+        foundRepoRoot?.let {
+          VirtualFileManager.getInstance().refreshAndFindFileByNioPath(foundRepoRoot)
+        } ?: if (allowFallbackToRootDir) {
+          project.rootDir
+        } else {
+          return null
+        }
+
+      return repoRoot.findFileByRelativePath(label.packagePath.toString())
+    }
+
+    private fun findContainingBazelRepo(project: Project, file: VirtualFile): Path? {
+      val path = file.toNioPath()
+      val repositoryPaths = project.repositoryPaths
+      return path.allAncestorsSequence().firstOrNull { it in repositoryPaths }
+    }
+  }
 }
