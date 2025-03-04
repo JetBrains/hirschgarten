@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.kotlin.tools.projectWizard.BuildSystemKotlinNewProjectWizard
-import org.jetbrains.kotlin.tools.projectWizard.KotlinNewProjectWizard
 import org.jetbrains.kotlin.tools.projectWizard.KotlinNewProjectWizard.Step
 
 class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
@@ -17,7 +16,7 @@ class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
   override val name: @NlsContexts.Label String
     get() = BazelPluginConstants.BAZEL_DISPLAY_NAME
 
-  override fun createStep(parent: KotlinNewProjectWizard.Step): NewProjectWizardStep {
+  override fun createStep(parent: Step): NewProjectWizardStep {
     return AssetsStep(parent)
   }
 
