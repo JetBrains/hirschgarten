@@ -1,9 +1,4 @@
-load(
-    "//:build-visibility.bzl",
-    "INTELLIJ_PLUGINS_VISIBILITY",
-)
-
-package(default_visibility = INTELLIJ_PLUGINS_VISIBILITY)
+package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 

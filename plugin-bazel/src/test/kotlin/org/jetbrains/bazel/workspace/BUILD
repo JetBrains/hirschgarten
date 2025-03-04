@@ -1,4 +1,4 @@
-load("@rules_intellij//testing:test_defs_kt.bzl", "intellij_integration_test_suite")
+load("//rules_intellij/testing:test_defs_kt.bzl", "intellij_integration_test_suite")
 
 intellij_integration_test_suite(
     name = "workspace",

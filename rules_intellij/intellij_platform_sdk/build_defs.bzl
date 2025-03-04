@@ -82,7 +82,7 @@ def _do_select_for_plugin_api(params):
         if ij_product == "default":
             select_params["//conditions:default"] = value
         else:
-            select_params["@rules_intellij//intellij_platform_sdk:" + ij_product] = value
+            select_params["//rules_intellij/intellij_platform_sdk:" + ij_product] = value
 
     return select(
         select_params,

@@ -11,7 +11,7 @@ kt_intellij_junit4_test(
     src = "StarlarkParamsCompletionContributorTest.kt",
     deps = [
         "//plugin-bazel:intellij-bazel",
-        "@rules_intellij//intellij_platform_sdk:plugin_api",
+        "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )
 

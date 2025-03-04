@@ -10,7 +10,7 @@ the 'deps' and 'javaagents' attribute are deployed to the plugin sandbox.
 
 Any files are stripped of their prefix and installed into
 <sandbox>/plugins. If you need structure, first put the files
-into //build_defs:build_defs%repackage_files.
+into //rules_intellij/build_defs:build_defs%repackage_files.
 
 intellij_plugin_debug_targets can be nested.
 
@@ -35,7 +35,7 @@ intellij_plugin_debug_target(
 
 """
 
-load("//build_defs:build_defs.bzl", "output_path", "repackaged_files_data")
+load("//rules_intellij/build_defs:build_defs.bzl", "output_path", "repackaged_files_data")
 
 SUFFIX = ".intellij-plugin-debug-target-deploy-info"
 
