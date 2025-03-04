@@ -12,27 +12,24 @@ import com.intellij.openapi.util.NlsContexts
 import org.jetbrains.bazel.config.BazelPluginConstants
 
 class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
-
   override val name: @NlsContexts.Label String
     get() = BazelPluginConstants.BAZEL_DISPLAY_NAME
 
-  override fun createStep(parent: Step): NewProjectWizardStep =
-    AssetsStep(parent)
-
+  override fun createStep(parent: Step): NewProjectWizardStep = AssetsStep(parent)
 
   private class AssetsStep(parent: Step) : AssetsNewProjectWizardStep(parent) {
-
     // we could dynamically fetch versions and whatnot,
     // but it's probably easier and safer to just update and test everything together once in a while
-    val gitignoreAssets: List<GeneratorAsset> = listOf(
-      GeneratorFile(".gitignore", ".bazelbsp/\n.idea/"),
-      GeneratorFile(".bazelversion", BAZEL_VERSION),
-      GeneratorFile("MODULE.bazel", moduleBazel(context)),
-      GeneratorFile("src/main/org/example/BUILD.bazel", buildBazelMain()),
-      GeneratorFile("src/main/org/example/Main.java", mainJava()),
-      GeneratorFile("src/test/org/example/BUILD.bazel", buildBazelTest()),
-      GeneratorFile("src/test/org/example/Tests.java", testJava())
-    )
+    val gitignoreAssets: List<GeneratorAsset> =
+      listOf(
+        GeneratorFile(".gitignore", ".bazelbsp/\n.idea/"),
+        GeneratorFile(".bazelversion", BAZEL_VERSION),
+        GeneratorFile("MODULE.bazel", moduleBazel(context)),
+        GeneratorFile("src/main/org/example/BUILD.bazel", buildBazelMain()),
+        GeneratorFile("src/main/org/example/Main.java", mainJava()),
+        GeneratorFile("src/test/org/example/BUILD.bazel", buildBazelTest()),
+        GeneratorFile("src/test/org/example/Tests.java", testJava()),
+      )
 
     override fun setupAssets(project: Project) {
       if (context.isCreatingNewProject) {
@@ -41,13 +38,13 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
     }
 
     companion object {
-
       const val BAZEL_VERSION = "8.1.1"
       const val RULES_JAVA_VERSION = "7.11.1"
       const val RULES_JVM_EXTERNAL_VERSION = "6.7"
       const val JUNIT_VERSION = "4.13.2"
 
-      private fun moduleBazel(context: WizardContext): String = """
+      private fun moduleBazel(context: WizardContext): String =
+        """
         module(
             name = "${context.projectName}",
             version = "0.1.0",
@@ -68,10 +65,11 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
             ],
         )
         use_repo(maven, "maven")
-      """.trimIndent()
+        """.trimIndent()
     }
 
-    private fun buildBazelMain() = """
+    private fun buildBazelMain() =
+      """
       load("@rules_java//java:defs.bzl", "java_binary")
       
       package(default_visibility = ["//visibility:public"])
@@ -80,9 +78,10 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
           name = "Main",
           srcs = glob(["**/*.java"]),
       )
-    """.trimIndent()
+      """.trimIndent()
 
-    private fun mainJava() = """
+    private fun mainJava() =
+      """
       package org.example;
       
       public class Main {
@@ -92,7 +91,8 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
       }
       """.trimIndent()
 
-    private fun buildBazelTest() = """
+    private fun buildBazelTest() =
+      """
       # JUnit 4 test target
       java_test(
           name = "tests",
@@ -103,9 +103,10 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
               "@maven//:junit_junit",  # JUnit 4 dependency from Maven
           ],
       )
-    """.trimIndent()
+      """.trimIndent()
 
-    private fun testJava() = """
+    private fun testJava() =
+      """
       package com.example;
 
       import org.junit.Tests;
@@ -117,6 +118,6 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
               assertEquals("Basic addition should work", 4, 2 + 2);
           }
       }
-    """.trimIndent()
+      """.trimIndent()
   }
 }
