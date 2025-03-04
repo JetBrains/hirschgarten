@@ -135,14 +135,9 @@
 
         <workspaceModel.fileIndexContributor
                 implementation="org.jetbrains.bazel.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
-        <!--        <workspaceModel.fileIndexContributor-->
-        <!--                implementation="org.jetbrains.bazel.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"/>-->
-        <fileTypeOverrider
-                implementation="org.jetbrains.bazel.workspace.DummyModuleSourcePlainTextTypeOverrider"/>
-        <fileType name="BSP_PLAIN_TEXT"
-                  language="TEXT"
-                  implementationClass="org.jetbrains.bazel.workspace.BspPlainTextFileType"
-                  fieldName="INSTANCE"/>
+        <workspaceModel.fileIndexContributor
+                implementation="org.jetbrains.bazel.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"/>
+        <ignoredFileProvider implementation="org.jetbrains.bazel.workspace.BazelProjectExcludesIgnoredFileProvider"/>
         <workspaceModel.fileIndexContributor
                 implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
 
