@@ -28,8 +28,6 @@ import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.ResourcesResult
-import org.jetbrains.bsp.protocol.RustWorkspaceParams
-import org.jetbrains.bsp.protocol.RustWorkspaceResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourcesParams
@@ -161,13 +159,6 @@ class ProjectSyncService(
   suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return ScalacOptionsResult(emptyList())
     return bspMapper.buildTargetScalacOptions(project, params)
-  }
-
-  fun rustWorkspace(params: RustWorkspaceParams): RustWorkspaceResult {
-    val project =
-      projectProvider.get() as? AspectSyncProject
-        ?: return RustWorkspaceResult(emptyList(), emptyMap(), emptyMap(), emptyList())
-    return bspMapper.rustWorkspace(project, params)
   }
 
   fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =

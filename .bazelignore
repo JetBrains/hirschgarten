@@ -19,5 +19,4 @@ server/e2e/test-projects/workspace/cpp-project/bazel-cpp-project
 server/e2e/test-projects/workspace/local-jdk-project/bazel-local-jdk-project
 server/e2e/test-projects/workspace/python-project/bazel-python-project
 server/e2e/test-projects/workspace/remote-jdk-project/bazel-remote-jdk-project
-server/e2e/test-projects/workspace/rust-project/bazel-rust-project
 server/e2e/test-projects/workspace/sample-repo/bazel-sample-repo

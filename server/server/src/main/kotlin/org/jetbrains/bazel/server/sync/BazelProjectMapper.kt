@@ -35,7 +35,6 @@ import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
-import org.jetbrains.bazel.server.sync.languages.rust.RustModule
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.net.URI
@@ -212,26 +211,9 @@ class BazelProjectMapper(
       measure("Save invalid target labels") {
         removeDotBazelBspTarget(rootTargets) - targetsToImport.map { it.label() }.toSet()
       }
-    val rustExternalTargetsToImport =
-      measureIf(
-        description = "Select external Rust targets",
-        predicate = { featureFlags.isRustSupportEnabled },
-        ifFalse = emptySequence(),
-      ) {
-        selectRustExternalTargetsToImport(rootTargets, dependencyGraph, repoMapping, transitiveCompileTimeJarsTargetKinds)
-      }
-    val rustExternalModules =
-      measureIf(
-        description = "Create Rust external modules",
-        predicate = { featureFlags.isRustSupportEnabled },
-        ifFalse = emptySequence(),
-      ) {
-        createRustExternalModules(rustExternalTargetsToImport, dependencyGraph, librariesFromDeps)
-      }
-    val allModules = mergedModulesFromBazel + rustExternalModules
 
     val nonModuleTargetIds =
-      (removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys).toSet()
+      (removeDotBazelBspTarget(targets.keys) - mergedModulesFromBazel.map { it.label }.toSet() - librariesToImport.keys).toSet()
     val nonModuleTargets =
       createNonModuleTargets(
         targets.filterKeys {
@@ -244,7 +226,7 @@ class BazelProjectMapper(
     return AspectSyncProject(
       workspaceRoot = workspaceRoot,
       bazelRelease = bazelInfo.release,
-      modules = allModules.toList(),
+      modules = mergedModulesFromBazel.toList(),
       libraries = librariesToImport,
       goLibraries = goLibrariesToImport,
       invalidTargets = invalidTargets,
@@ -873,17 +855,6 @@ class BazelProjectMapper(
 
   private fun getGoRootUri(targetInfo: TargetInfo): URI = targetInfo.label().assumeResolved().toDirectoryUri()
 
-  private fun selectRustExternalTargetsToImport(
-    rootTargets: Set<Label>,
-    graph: DependencyGraph,
-    repoMapping: RepoMapping,
-    transitiveCompileTimeJarsTargetKinds: Set<String>,
-  ): Sequence<TargetInfo> =
-    graph
-      .allTargetsAtDepth(-1, rootTargets)
-      .asSequence()
-      .filter { !isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds) && isRustTarget(it) }
-
   private fun selectTargetsToImport(
     workspaceContext: WorkspaceContext,
     rootTargets: Set<Label>,
@@ -924,11 +895,6 @@ class BazelProjectMapper(
       it.relativePath.endsWith(".go")
     }
 
-  private fun hasKnownRustSources(targetInfo: TargetInfo) =
-    targetInfo.sourcesList.any {
-      it.relativePath.endsWith(".rs")
-    }
-
   private fun externalRepositoriesTreatedAsInternal(repoMapping: RepoMapping) =
     when (repoMapping) {
       is BzlmodRepoMapping -> repoMapping.canonicalRepoNameToLocalPath.keys
@@ -954,10 +920,7 @@ class BazelProjectMapper(
           hasKnownPythonSources(target) ||
           featureFlags.isGoSupportEnabled &&
           target.hasGoTargetInfo() &&
-          hasKnownGoSources(target) ||
-          featureFlags.isRustSupportEnabled &&
-          target.hasRustCrateInfo() &&
-          hasKnownRustSources(target)
+          hasKnownGoSources(target)
       )
 
   private fun shouldImportTargetKind(kind: String, transitiveCompileTimeJarsTargetKinds: Set<String>): Boolean =
@@ -974,9 +937,6 @@ class BazelProjectMapper(
       "scala_library",
       "scala_binary",
       "scala_test",
-      "rust_test",
-      "rust_doc",
-      "rust_doc_test",
       "android_library",
       "android_binary",
       "android_local_test",
@@ -987,8 +947,6 @@ class BazelProjectMapper(
       "go_binary",
       "go_test",
     )
-
-  private fun isRustTarget(target: TargetInfo): Boolean = target.hasRustCrateInfo()
 
   private suspend fun createModules(
     targetsToImport: Sequence<TargetInfo>,
@@ -1116,15 +1074,4 @@ class BazelProjectMapper(
     targets.filter {
       it.isMainWorkspace && !it.packagePath.toString().startsWith(".bazelbsp")
     }
-
-  private suspend fun createRustExternalModules(
-    targetsToImport: Sequence<TargetInfo>,
-    dependencyGraph: DependencyGraph,
-    generatedLibraries: Map<Label, Collection<Library>>,
-  ): Sequence<Module> {
-    val modules = createModules(targetsToImport, dependencyGraph, generatedLibraries, emptySet())
-    return modules.asSequence().onEach {
-      (it.languageData as? RustModule)?.isExternalModule = true
-    }
-  }
 }

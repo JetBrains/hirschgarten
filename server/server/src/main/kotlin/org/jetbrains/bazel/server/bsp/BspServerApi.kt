@@ -37,8 +37,6 @@ import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
-import org.jetbrains.bsp.protocol.RustWorkspaceParams
-import org.jetbrains.bsp.protocol.RustWorkspaceResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourcesParams
@@ -162,8 +160,6 @@ class BspServerApi(private val bazelServicesBuilder: suspend (JoinedBuildClient,
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = projectSyncService.workspaceBazelRepoMapping()
 
   override suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = projectSyncService.workspaceBazelBinPath()
-
-  override suspend fun rustWorkspace(params: RustWorkspaceParams): RustWorkspaceResult = projectSyncService.rustWorkspace(params)
 
   override suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
     projectSyncService.resolveLocalToRemote(params)
