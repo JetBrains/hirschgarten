@@ -83,9 +83,7 @@ class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
           name = "Main",
           srcs = glob(["**/*.kt"]),
           main_class = "org.example.MainKt",
-          deps = [
-              "@maven//:org_jetbrains_kotlin_kotlin_stdlib",
-          ],
+
       )
     """.trimIndent()
 
