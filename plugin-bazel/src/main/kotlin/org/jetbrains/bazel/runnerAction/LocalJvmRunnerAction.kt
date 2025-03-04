@@ -6,7 +6,6 @@ import com.intellij.execution.ShortenCommandLine
 import com.intellij.execution.application.ApplicationConfiguration
 import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
@@ -124,8 +123,6 @@ abstract class LocalJvmRunnerAction(
     val includeJpsClassPaths: Key<Boolean> = Key<Boolean>("includeJpsClassPaths")
   }
 }
-
-private val log = logger<LocalJvmRunnerAction>()
 
 private const val RETRIEVE_JVM_ENVIRONMENT_ID = "bsp-retrieve-jvm-environment"
 

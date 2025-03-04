@@ -5,7 +5,6 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/taskEvents",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console/ids",

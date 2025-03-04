@@ -8,7 +8,6 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/client",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings/bazel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/status",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console",

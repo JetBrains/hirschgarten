@@ -1,9 +1,7 @@
 package org.jetbrains.bazel.startup
 
-import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBspProjectInitialized
 import org.jetbrains.bazel.config.openedTimesSinceLastStartupResync
@@ -60,14 +58,6 @@ class BspStartupActivity : BspProjectActivity() {
     updateBspFileTargetsWidget()
     RunConfigurationProducersDisabler(this)
     BspWorkspace.getInstance(this).initialize()
-  }
-
-  private fun Project.handleFailedFirstOpening() {
-    log.info("Cancelling BSP sync. Closing the project window")
-    // TODO https://youtrack.jetbrains.com/issue/BAZEL-623
-    AppUIExecutor.onUiThread().execute {
-      CloseProjectWindowHelper().windowClosing(this)
-    }
   }
 
   private suspend fun Project.resyncProjectIfNeeded() {
