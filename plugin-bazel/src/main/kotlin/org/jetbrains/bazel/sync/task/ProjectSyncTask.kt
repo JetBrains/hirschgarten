@@ -105,8 +105,11 @@ class ProjectSyncTask(private val project: Project) {
       withBackgroundProgress(project, "Syncing project...", true) {
         reportSequentialProgress {
           executePreSyncHooks(it)
-          executeSyncHooks(it, syncScope, buildProject)
+          val hasError = executeSyncHooks(it, syncScope, buildProject)
           executePostSyncHooks(it)
+          if (hasError) {
+            throw Exception("Part of the sync failed")
+          }
         }
       }
     }
@@ -141,29 +144,33 @@ class ProjectSyncTask(private val project: Project) {
     progressReporter: SequentialProgressReporter,
     syncScope: ProjectSyncScope,
     buildProject: Boolean,
-  ) {
+  ): Boolean {
     val diff = AllProjectStructuresProvider(project).newDiff()
-    project.connection.runWithServer { server ->
-      bspTracer.spanBuilder("collect.project.details.ms").use {
-        val baseTargetInfos = BaseProjectSync(project).execute(syncScope, buildProject, server, PROJECT_SYNC_TASK_ID)
-        val environment =
-          ProjectSyncHookEnvironment(
-            project = project,
-            server = server,
-            diff = diff,
-            taskId = PROJECT_SYNC_TASK_ID,
-            progressReporter = progressReporter,
-            baseTargetInfos = baseTargetInfos,
-            syncScope = syncScope,
-          )
+    val hasError =
+      project.connection.runWithServer { server ->
+        bspTracer.spanBuilder("collect.project.details.ms").use {
+          // if this bazel build fails, we still want the sync hooks to be executed
+          val baseTargetInfos = BaseProjectSync(project).execute(syncScope, buildProject, server, PROJECT_SYNC_TASK_ID)
+          val environment =
+            ProjectSyncHookEnvironment(
+              project = project,
+              server = server,
+              diff = diff,
+              taskId = PROJECT_SYNC_TASK_ID,
+              progressReporter = progressReporter,
+              baseTargetInfos = baseTargetInfos,
+              syncScope = syncScope,
+            )
 
-        project.projectSyncHooks.forEach {
-          it.onSync(environment)
+          project.projectSyncHooks.forEach {
+            it.onSync(environment)
+          }
+          baseTargetInfos.hasError
         }
       }
-    }
 
     diff.applyAll(syncScope, PROJECT_SYNC_TASK_ID)
+    return hasError
   }
 
   private suspend fun executePostSyncHooks(progressReporter: SequentialProgressReporter) {

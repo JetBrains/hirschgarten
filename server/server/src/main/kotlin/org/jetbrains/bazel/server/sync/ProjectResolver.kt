@@ -162,7 +162,7 @@ class ProjectResolver(
         }
       return@useWithScope measured(
         "Mapping to internal model",
-      ) { bazelProjectMapper.createProject(targets, rootTargets, workspaceContext, featureFlags, bazelInfo, repoMapping) }
+      ) { bazelProjectMapper.createProject(targets, rootTargets, workspaceContext, featureFlags, bazelInfo, repoMapping,buildAspectResult.isFailure) }
     }
 
   private suspend fun buildProjectWithAspect(

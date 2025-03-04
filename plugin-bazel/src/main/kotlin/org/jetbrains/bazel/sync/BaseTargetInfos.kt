@@ -5,7 +5,11 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.SourcesItem
 
-data class BaseTargetInfos(val allTargetIds: List<Label>, val infos: List<BaseTargetInfo>)
+data class BaseTargetInfos(
+  val allTargetIds: List<Label>,
+  val infos: List<BaseTargetInfo>,
+  val hasError: Boolean = false,
+)
 
 data class BaseTargetInfo(
   val target: BuildTarget,
