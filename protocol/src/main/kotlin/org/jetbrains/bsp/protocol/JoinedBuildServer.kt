@@ -17,8 +17,6 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetDependencySources(params: DependencySourcesParams): DependencySourcesResult
 
-  suspend fun buildTargetDependencyModules(params: DependencyModulesParams): DependencyModulesResult
-
   suspend fun buildTargetResources(params: ResourcesParams): ResourcesResult
 
   suspend fun buildTargetCompile(params: CompileParams): CompileResult
