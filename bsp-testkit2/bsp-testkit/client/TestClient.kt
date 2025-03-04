@@ -12,8 +12,6 @@ import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JavacOptionsResult
-import org.jetbrains.bsp.protocol.JvmCompileClasspathParams
-import org.jetbrains.bsp.protocol.JvmCompileClasspathResult
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
@@ -249,18 +247,6 @@ class TestClient(
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetJvmTestEnvironment(transformedParams)
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
-  fun testJvmCompileClasspath(
-    timeout: Duration,
-    params: JvmCompileClasspathParams,
-    expectedResult: JvmCompileClasspathResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.buildTargetJvmCompileClasspath(transformedParams)
       assertJsonEquals(expectedResult, result)
     }
   }

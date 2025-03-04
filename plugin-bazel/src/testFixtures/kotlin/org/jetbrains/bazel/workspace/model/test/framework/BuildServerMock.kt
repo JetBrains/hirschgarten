@@ -20,8 +20,6 @@ import org.jetbrains.bsp.protocol.JavacOptionsResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
-import org.jetbrains.bsp.protocol.JvmCompileClasspathParams
-import org.jetbrains.bsp.protocol.JvmCompileClasspathResult
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
@@ -65,7 +63,6 @@ class BuildServerMock(
   private val testResult: TestResult? = null,
   private val jvmTestEnvironmentResult: JvmTestEnvironmentResult? = null,
   private val jvmRunEnvironmentResult: JvmRunEnvironmentResult? = null,
-  private val jvmCompileClasspathResult: JvmCompileClasspathResult? = null,
   private val scalacOptionsResult: ScalacOptionsResult? = null,
   private val javacOptionsResult: JavacOptionsResult? = null,
   private val cppOptionsResult: CppOptionsResult? = null,
@@ -120,9 +117,6 @@ class BuildServerMock(
 
   override suspend fun buildTargetJvmRunEnvironment(jvmRunEnvironmentParams: JvmRunEnvironmentParams): JvmRunEnvironmentResult =
     wrapInFuture(jvmRunEnvironmentResult)
-
-  override suspend fun buildTargetJvmCompileClasspath(jvmCompileClasspathParams: JvmCompileClasspathParams): JvmCompileClasspathResult =
-    wrapInFuture(jvmCompileClasspathResult)
 
   override suspend fun buildTargetScalacOptions(scalacOptionsParams: ScalacOptionsParams): ScalacOptionsResult =
     wrapInFuture(scalacOptionsResult)

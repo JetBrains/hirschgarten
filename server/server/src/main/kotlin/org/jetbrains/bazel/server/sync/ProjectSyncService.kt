@@ -19,8 +19,6 @@ import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JavacOptionsResult
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
-import org.jetbrains.bsp.protocol.JvmCompileClasspathParams
-import org.jetbrains.bsp.protocol.JvmCompileClasspathResult
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
@@ -143,11 +141,6 @@ class ProjectSyncService(
   fun jvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return JvmBinaryJarsResult(emptyList())
     return bspMapper.jvmBinaryJars(project, params)
-  }
-
-  suspend fun jvmCompileClasspath(params: JvmCompileClasspathParams): JvmCompileClasspathResult {
-    val project = projectProvider.get() as? AspectSyncProject ?: return JvmCompileClasspathResult(emptyList())
-    return bspMapper.jvmCompileClasspath(project, params)
   }
 
   suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult {
