@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
-import com.intellij.platform.workspace.jps.entities.ExcludeUrlEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
@@ -30,7 +29,7 @@ class ContentRootEntityUpdater(private val workspaceModelEntityUpdaterConfig: Wo
 
     val contentRootEntities =
       (entitiesToAdd zip resolvedContentRootsPaths).map { (entityToAdd, contentRootPath) ->
-        createContentRootEntity(moduleEntity, entityToAdd, contentRootPath)
+        createContentRootEntity(moduleEntity, contentRootPath)
       }
 
     val updatedModuleEntity =
@@ -41,28 +40,12 @@ class ContentRootEntityUpdater(private val workspaceModelEntityUpdaterConfig: Wo
     return updatedModuleEntity.contentRoots.takeLast(contentRootEntities.size)
   }
 
-  private fun createContentRootEntity(
-    moduleEntity: ModuleEntity,
-    entityToAdd: ContentRoot,
-    contentRootPath: VirtualFileUrl,
-  ): ContentRootEntity.Builder {
-    val excludedUrls =
-      entityToAdd.excludedPaths.map { it.toResolvedVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager) }
-    val excludes =
-      excludedUrls.map {
-        ExcludeUrlEntity(
-          url = it,
-          entitySource = moduleEntity.entitySource,
-        )
-      }
-    return ContentRootEntity(
+  private fun createContentRootEntity(moduleEntity: ModuleEntity, contentRootPath: VirtualFileUrl): ContentRootEntity.Builder =
+    ContentRootEntity(
       url = contentRootPath,
       excludedPatterns = ArrayList(),
       entitySource = moduleEntity.entitySource,
-    ) {
-      this.excludedUrls = excludes
-    }
-  }
+    )
 
   override suspend fun addEntity(entityToAdd: ContentRoot, parentModuleEntity: ModuleEntity): ContentRootEntity =
     addEntities(listOf(entityToAdd), parentModuleEntity).single()

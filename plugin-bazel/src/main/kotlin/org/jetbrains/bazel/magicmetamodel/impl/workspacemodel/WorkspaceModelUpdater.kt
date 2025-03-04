@@ -19,7 +19,6 @@ data class ModuleDetails(
   val dependenciesSources: List<DependencySourcesItem>,
   val javacOptions: JavacOptionsItem?,
   val scalacOptions: ScalacOptionsItem?,
-  val outputPathUris: List<String>,
   val libraryDependencies: List<Label>?,
   val moduleDependencies: List<Label>,
   val defaultJdkName: String?,

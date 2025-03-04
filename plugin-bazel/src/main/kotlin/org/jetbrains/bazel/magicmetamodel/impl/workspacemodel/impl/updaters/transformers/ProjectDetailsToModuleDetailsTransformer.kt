@@ -25,7 +25,6 @@ class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: Proje
       dependenciesSources = dependenciesSourcesIndex[targetId].orEmpty(),
       javacOptions = javacOptionsIndex[targetId],
       scalacOptions = scalacOptionsIndex[targetId],
-      outputPathUris = emptyList(),
       libraryDependencies = allDependencies.libraryDependencies.takeIf { projectDetails.libraries != null }?.toList(),
       moduleDependencies = allDependencies.moduleDependencies.toList(),
       defaultJdkName = projectDetails.defaultJdkName,
