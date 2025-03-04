@@ -1,8 +1,8 @@
+package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
+
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.storage.entities
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityWithoutParentModuleUpdater
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity

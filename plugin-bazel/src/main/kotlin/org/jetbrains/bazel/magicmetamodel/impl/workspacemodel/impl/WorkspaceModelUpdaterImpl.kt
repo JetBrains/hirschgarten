@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl
 
-import CompiledSourceCodeInsideJarExcludeEntityUpdater
 import com.intellij.openapi.externalSystem.service.project.manage.ExternalProjectsManagerImpl
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleId
@@ -8,6 +7,7 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.CompiledSourceCodeInsideJarExcludeEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig

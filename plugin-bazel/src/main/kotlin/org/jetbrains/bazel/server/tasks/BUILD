@@ -5,6 +5,7 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/performance",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
@@ -12,7 +13,6 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jpsCompilation/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/performance",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/connection",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/taskEvents",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console",
