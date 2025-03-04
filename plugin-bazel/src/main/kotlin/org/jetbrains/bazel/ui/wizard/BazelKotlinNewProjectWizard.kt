@@ -12,27 +12,24 @@ import org.jetbrains.kotlin.tools.projectWizard.BuildSystemKotlinNewProjectWizar
 import org.jetbrains.kotlin.tools.projectWizard.KotlinNewProjectWizard.Step
 
 class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
-
   override val name: @NlsContexts.Label String
     get() = BazelPluginConstants.BAZEL_DISPLAY_NAME
 
-  override fun createStep(parent: Step): NewProjectWizardStep {
-    return AssetsStep(parent)
-  }
+  override fun createStep(parent: Step): NewProjectWizardStep = AssetsStep(parent)
 
   private class AssetsStep(parent: Step) : AssetsNewProjectWizardStep(parent) {
-
     // we could dynamically fetch versions and whatnot,
     // but it's probably easier and safer to just update and test everything together once in a while
-    val gitignoreAssets: List<GeneratorAsset> = listOf(
-      GeneratorFile(".gitignore", ".bazelbsp/\n.idea/"),
-      GeneratorFile(".bazelversion", BAZEL_VERSION),
-      GeneratorFile("MODULE.bazel", moduleBazel(context)),
-      GeneratorFile("src/main/org/example/BUILD.bazel", buildBazelMain()),
-      GeneratorFile("src/main/org/example/Main.kt", mainKotlin()),
-      GeneratorFile("src/test/org/example/BUILD.bazel", buildBazelTest()),
-      GeneratorFile("src/test/org/example/Tests.kt", testKotlin())
-    )
+    val gitignoreAssets: List<GeneratorAsset> =
+      listOf(
+        GeneratorFile(".gitignore", ".bazelbsp/\n.idea/"),
+        GeneratorFile(".bazelversion", BAZEL_VERSION),
+        GeneratorFile("MODULE.bazel", moduleBazel(context)),
+        GeneratorFile("src/main/org/example/BUILD.bazel", buildBazelMain()),
+        GeneratorFile("src/main/org/example/Main.kt", mainKotlin()),
+        GeneratorFile("src/test/org/example/BUILD.bazel", buildBazelTest()),
+        GeneratorFile("src/test/org/example/Tests.kt", testKotlin()),
+      )
 
     override fun setupAssets(project: Project) {
       if (context.isCreatingNewProject) {
@@ -41,14 +38,14 @@ class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
     }
 
     companion object {
-
       const val BAZEL_VERSION = "8.1.1"
       const val RULES_KOTLIN_VERSION = "1.9.1"
       const val RULES_JVM_EXTERNAL_VERSION = "6.7"
       const val JUNIT_VERSION = "4.13.2"
       const val KOTLIN_VERSION = "1.9.0"
 
-      private fun moduleBazel(context: WizardContext): String = """
+      private fun moduleBazel(context: WizardContext): String =
+        """
         module(
             name = "${context.projectName}",
             version = "0.1.0",
@@ -71,10 +68,11 @@ class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
             ],
         )
         use_repo(maven, "maven")
-      """.trimIndent()
+        """.trimIndent()
     }
 
-    private fun buildBazelMain() = """
+    private fun buildBazelMain() =
+      """
       load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
 
       package(default_visibility = ["//visibility:public"])
@@ -87,9 +85,10 @@ class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
               "@maven//:org_jetbrains_kotlin_kotlin_stdlib",
           ],
       )
-    """.trimIndent()
+      """.trimIndent()
 
-    private fun mainKotlin() = """
+    private fun mainKotlin() =
+      """
       package org.example
 
       fun main() {
@@ -97,7 +96,8 @@ class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
       }
       """.trimIndent()
 
-    private fun buildBazelTest() = """
+    private fun buildBazelTest() =
+      """
       load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_test")
 
       kt_jvm_test(
@@ -109,9 +109,10 @@ class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
               "@maven//:junit_junit",
           ],
       )
-    """.trimIndent()
+      """.trimIndent()
 
-    private fun testKotlin() = """
+    private fun testKotlin() =
+      """
       package org.example
 
       import kotlin.test.Test
@@ -123,6 +124,6 @@ class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
               assertEquals(4, 2 + 2, "Basic addition should work")
           }
       }
-    """.trimIndent()
+      """.trimIndent()
   }
 }
