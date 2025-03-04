@@ -17,6 +17,7 @@ import org.jetbrains.bazel.server.client.GenericConnection
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.console.ids.CONNECT_TASK_ID
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.nio.file.Path
@@ -74,7 +75,7 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
           override val server: JoinedBuildServer
             get() = conn.server
         }
-      connectBuiltIn(inMemoryConnection)
+      connectBuiltIn(inMemoryConnection, newConnectionResetConfig.initializeBuildData.featureFlags)
     }
   }
 
@@ -88,7 +89,7 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
         ),
     )
 
-  private suspend fun connectBuiltIn(connection: GenericConnection) {
+  private suspend fun connectBuiltIn(connection: GenericConnection, featureFlags: FeatureFlags) {
     coroutineScope {
       val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
       bspSyncConsole.startTask(
@@ -103,7 +104,7 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
       )
       server =
         connection.server.also {
-          it.buildInitialize(params = InitializeBuildParams())
+          it.buildInitialize(params = InitializeBuildParams(featureFlags = featureFlags))
           it.onBuildInitialized()
         }
       bspSyncConsole.addMessage(
