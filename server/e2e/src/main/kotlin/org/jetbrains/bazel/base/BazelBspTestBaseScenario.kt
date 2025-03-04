@@ -2,6 +2,8 @@ package org.jetbrains.bazel.base
 
 import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bazel.install.Install
+import org.jetbrains.bazel.install.cli.CliOptions
+import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.InitializeBuildParams
@@ -39,8 +41,6 @@ abstract class BazelBspTestBaseScenario {
   private val mainBinName = if (majorBazelVersion >= 7) "_main" else "__main__"
   val bazelBinDirectory get() = "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/$mainBinName/bazel-out/$bazelArch-fastbuild/bin"
 
-  open fun additionalServerInstallArguments(): Array<String> = emptyArray()
-
   init {
     installServer()
   }
@@ -62,15 +62,14 @@ abstract class BazelBspTestBaseScenario {
 
   // TODO: remove Install.main and run setup methods directly
   protected open fun installServer() {
-    Install.main(
-      arrayOf(
-        "-d",
-        workspaceDir,
-        "-b",
-        bazelBinary,
-        "-t",
-        "//...",
-        *additionalServerInstallArguments(),
+    Install.runInstall(
+      CliOptions(
+        workspaceDir = Path(workspaceDir),
+        projectViewCliOptions =
+          ProjectViewCliOptions(
+            bazelBinary = Path(bazelBinary),
+            targets = listOf("//..."),
+          ),
       ),
     )
   }

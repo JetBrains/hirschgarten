@@ -14,10 +14,10 @@ import kotlin.io.path.name
 import kotlin.io.path.notExists
 import kotlin.io.path.readText
 
-abstract class EnvironmentCreator(private val projectRootDir: Path) {
-  abstract fun create()
+class EnvironmentCreator(private val projectRootDir: Path) {
+  fun create() = createDotBazelBsp()
 
-  protected fun createDotBazelBsp(): Path {
+  private fun createDotBazelBsp(): Path {
     val bazelBspDir = createDir(projectRootDir, Constants.DOT_BAZELBSP_DIR_NAME)
     createDotBazelBspFiles(bazelBspDir)
     return bazelBspDir

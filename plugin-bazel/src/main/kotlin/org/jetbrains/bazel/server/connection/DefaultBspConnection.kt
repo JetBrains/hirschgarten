@@ -2,8 +2,6 @@ package org.jetbrains.bazel.server.connection
 
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
@@ -28,12 +26,6 @@ import java.nio.file.Path
 private data class ConnectionResetConfig(val projectViewFile: Path?, val initializeBuildData: InitializeBuildParams)
 
 private val log = logger<DefaultBspConnection>()
-
-class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectPath.toNioPath()) {
-  override fun create() {
-    createDotBazelBsp()
-  }
-}
 
 class DefaultBspConnection(private val project: Project) : BspConnection {
   @Volatile
@@ -65,10 +57,9 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
               installationDirectory,
               bspClient,
             )
-          val projectPath = VfsUtil.findFile(installationDirectory, true) ?: error("Project doesn't exist")
 
           init {
-            DotBazelBspCreator(projectPath).create()
+            EnvironmentCreator(installationDirectory).create()
           }
 
           override val server: JoinedBuildServer
