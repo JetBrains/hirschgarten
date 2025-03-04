@@ -3,9 +3,12 @@ package org.jetbrains.bazel.settings
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.ex.ActionUtil
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.action.getPsiFile
 import org.jetbrains.bazel.action.registered.ResyncAction
@@ -15,14 +18,18 @@ import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
 internal class LoadProjectViewFileAction :
-  SuspendableAction({
-    BazelPluginBundle.message("action.load.project.view.file")
-  }),
+  SuspendableAction(
+    {
+      BazelPluginBundle.message("action.load.project.view.file")
+    },
+  ),
   DumbAware {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val projectViewFile = e.getPsiFile()?.virtualFile ?: return
     project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectViewFile.toNioPath().toAbsolutePath())
-    ActionUtil.performActionDumbAwareWithCallbacks(ResyncAction(), e)
+    withContext(Dispatchers.EDT) {
+      ActionUtil.performActionDumbAwareWithCallbacks(ResyncAction(), e)
+    }
   }
 
   override fun update(project: Project, e: AnActionEvent) {
@@ -35,6 +42,7 @@ internal class LoadProjectViewFileAction :
       !project.isBspProject -> false
       psiFile.isProjectViewFile() &&
         psiFile.isDifferentProjectViewFileSelected() -> true
+
       else -> false
     }
   }
