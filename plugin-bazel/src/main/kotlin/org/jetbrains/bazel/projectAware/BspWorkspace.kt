@@ -18,6 +18,7 @@ import com.intellij.util.ui.tree.TreeUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.workspace.unregisterProjectExcludesIgnoredFileProvider
 import org.jetbrains.kotlin.tooling.core.Interner
 import org.jetbrains.kotlin.tooling.core.WeakInterner
 
@@ -27,8 +28,9 @@ class BspWorkspace(val project: Project) : Disposable {
   val interner: Interner = WeakInterner()
 
   @Synchronized
-  public fun initialize() {
+  fun initialize() {
     if (!initialized) {
+      unregisterProjectExcludesIgnoredFileProvider()
       BspProjectAware.initialize(this)
       BspProjectModuleBuildTasksTracker.initialize(this)
       BspExternalServicesSubscriber(project).subscribe()

@@ -9,7 +9,9 @@ import org.jetbrains.bazel.workspacemodel.entities.BspDummyEntitySource
 
 /**
  * If a source file is added to a dummy module and is not associated with any other module, it should not be indexed or analyzed.
- * This functionality is currently disabled due to this [UX issue](https://youtrack.jetbrains.com/issue/BAZEL-1653).
+ * This functionality causes this [UX issue](https://youtrack.jetbrains.com/issue/BAZEL-1653).
+ * A workaround is given by [BazelProjectExcludesIgnoredFileProvider]
+ *
  * For this contributor to work correctly, [AssignFileToModuleListener] must always precede it.
  * However, this order is currently not guaranteed,
  * as when a new file is created,
