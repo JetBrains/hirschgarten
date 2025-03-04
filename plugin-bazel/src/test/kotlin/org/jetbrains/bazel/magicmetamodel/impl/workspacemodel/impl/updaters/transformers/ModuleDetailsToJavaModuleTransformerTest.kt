@@ -37,12 +37,10 @@ import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.net.URI
 import java.nio.file.Files
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.io.path.name
-import kotlin.io.path.toPath
 
 @DisplayName("ModuleDetailsToJavaModuleTransformer.transform(moduleDetails) tests")
 class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
@@ -149,8 +147,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         "file:///compiler/output.jar",
       )
 
-    val outputPathUris = listOf("file:///output/file1.out", "file:///output/file2.out")
-
     val moduleDetails =
       ModuleDetails(
         target = buildTarget,
@@ -159,7 +155,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         dependenciesSources = listOf(dependencySourcesItem),
         javacOptions = javacOptionsItem,
         scalacOptions = null,
-        outputPathUris = outputPathUris,
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -200,11 +195,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    val expectedBaseDirContentRoot =
-      ContentRoot(
-        path = projectRoot.toAbsolutePath(),
-        excludedPaths = outputPathUris.map { URI.create(it).toPath() },
-      )
+    val expectedBaseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath())
 
     val expectedJavaSourceRoot1 =
       JavaSourceRoot(
@@ -320,7 +311,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         dependenciesSources = listOf(),
         javacOptions = null,
         scalacOptions = null,
-        outputPathUris = listOf(),
         libraryDependencies =
           listOf(
             Label.parse("@maven//:lib1"),
@@ -369,7 +359,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val expectedBaseDirContentRoot =
       ContentRoot(
         path = projectRoot.toAbsolutePath(),
-        excludedPaths = listOf(),
       )
 
     val expectedJavaModule =
@@ -394,7 +383,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
   @Test
   fun `should return multiple java modules for multiple module details`() {
     // given
-
     val module1Root = createTempDirectory(projectBasePath, "module1").toAbsolutePath()
     module1Root.toFile().deleteOnExit()
 
@@ -471,7 +459,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         ),
         "file:///compiler/output1.jar",
       )
-    val target1OutputPathUris = listOf("file:///output/dir1a", "file:///output/file1b.out")
 
     val moduleDetails1 =
       ModuleDetails(
@@ -481,7 +468,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         dependenciesSources = listOf(dependencySourcesItem1),
         javacOptions = target1JavacOptionsItem,
         scalacOptions = null,
-        outputPathUris = target1OutputPathUris,
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -544,7 +530,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         listOf("file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
         "file:///compiler/output2.jar",
       )
-    val target2OutputPathUris = listOf("file:///output/dir2a", "file:///output/file2b.out")
 
     val moduleDetails2 =
       ModuleDetails(
@@ -554,7 +539,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         dependenciesSources = listOf(dependencySourcesItem2),
         javacOptions = target2JavacOptionsItem,
         scalacOptions = null,
-        outputPathUris = target2OutputPathUris,
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -596,11 +580,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    val expectedBaseDirContentRoot1 =
-      ContentRoot(
-        path = module1Root,
-        excludedPaths = target1OutputPathUris.map { URI.create(it).toPath() },
-      )
+    val expectedBaseDirContentRoot1 = ContentRoot(path = module1Root)
 
     val expectedJavaSourceRoot11 =
       JavaSourceRoot(
@@ -672,11 +652,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    val expectedBaseDirContentRoot2 =
-      ContentRoot(
-        path = module2Root,
-        excludedPaths = target2OutputPathUris.map { URI.create(it).toPath() },
-      )
+    val expectedBaseDirContentRoot2 = ContentRoot(path = module2Root)
 
     val expectedJavaSourceRoot21 =
       JavaSourceRoot(

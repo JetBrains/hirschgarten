@@ -49,10 +49,7 @@ internal open class SourceEntityUpdater(
     when (sourceRoots.size) {
       0 -> null
       else ->
-        ContentRoot(
-          path = sourceRoots.first().sourcePath.parent,
-          excludedPaths = sourceRoots.flatMap { it.excludedPaths },
-        )
+        ContentRoot(path = sourceRoots.first().sourcePath.parent)
     }
 
   private suspend fun addContentRootEntities(
@@ -61,10 +58,7 @@ internal open class SourceEntityUpdater(
   ): List<ContentRootEntity> {
     val contentRoots =
       entitiesToAdd.map { entityToAdd ->
-        ContentRoot(
-          path = entityToAdd.sourcePath,
-          excludedPaths = entityToAdd.excludedPaths,
-        )
+        ContentRoot(path = entityToAdd.sourcePath)
       }
 
     return contentRootEntityUpdater.addEntities(contentRoots, parentModuleEntity)

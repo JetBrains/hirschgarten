@@ -64,7 +64,6 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
       val baseDirContentRoot =
         ContentRoot(
           path = projectBasePath.toAbsolutePath(),
-          excludedPaths = listOf(),
         )
       val javaModule =
         JavaModule(

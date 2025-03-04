@@ -27,7 +27,6 @@ internal class JavaSourceEntityUpdater(
           GenericSourceRoot(
             entityToAdd.sourcePath,
             entityToAdd.rootType,
-            entityToAdd.excludedPaths,
           )
         },
         parentModuleEntity,
