@@ -26,9 +26,9 @@ bazel_dep(name = "rules_jvm_external", version = "6.7")
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     artifacts = [
-        "com.fasterxml.jackson.core:jackson-databind:2.18.2",
-        "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.2",
-        "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2",
+        "com.fasterxml.jackson.core:jackson-databind:2.18.3",
+        "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.3",
+        "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.3",
         "com.google.code.gson:gson:2.12.1",
         "com.google.guava:guava:31.0.1-jre",
         "com.jetbrains.intellij.tools:ide-metrics-collector-starter:251.22821.72-EAP-SNAPSHOT",
@@ -114,7 +114,7 @@ switched_rules.use_languages(
     java = True,
 )
 
-bazel_dep(name = "rules_apple", version = "3.17.1")
+bazel_dep(name = "rules_apple", version = "3.19.1")
 
 # Needed because googleapis transitively pulls in a broken version
 single_version_override(
