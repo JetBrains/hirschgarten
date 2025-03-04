@@ -82,6 +82,7 @@ class BazelProjectMapper(
     workspaceContext: WorkspaceContext,
     bazelInfo: BazelInfo,
     repoMapping: RepoMapping,
+    hasError: Boolean,
   ): AspectSyncProject {
     languagePluginsService.prepareSync(targets.values.asSequence())
     val dependencyGraph =
@@ -250,6 +251,7 @@ class BazelProjectMapper(
       invalidTargets = invalidTargets,
       nonModuleTargets = nonModuleTargets,
       repoMapping = repoMapping,
+      hasError = hasError,
     )
   }
 
