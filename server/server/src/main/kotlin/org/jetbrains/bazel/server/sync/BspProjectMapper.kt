@@ -88,7 +88,7 @@ class BspProjectMapper(
   }
 
   fun workspaceInvalidTargets(project: AspectSyncProject): WorkspaceInvalidTargetsResult =
-    WorkspaceInvalidTargetsResult(project.invalidTargets).apply { project.hasError }
+    WorkspaceInvalidTargetsResult(project.invalidTargets)
 
   fun workspaceLibraries(project: AspectSyncProject): WorkspaceLibrariesResult {
     val libraries =
