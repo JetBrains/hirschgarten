@@ -27,10 +27,6 @@ import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.RustWorkspaceParams
 import org.jetbrains.bsp.protocol.RustWorkspaceResult
-import org.jetbrains.bsp.protocol.ScalaMainClassesParams
-import org.jetbrains.bsp.protocol.ScalaMainClassesResult
-import org.jetbrains.bsp.protocol.ScalaTestClassesParams
-import org.jetbrains.bsp.protocol.ScalaTestClassesResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourcesParams
@@ -219,32 +215,6 @@ class TestClient(
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetInverseSources(transformedParams)
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
-  @Suppress("DEPRECATION")
-  fun testScalaMainClasses(
-    timeout: Duration,
-    params: ScalaMainClassesParams,
-    expectedResult: ScalaMainClassesResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.buildTargetScalaMainClasses(transformedParams)
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
-  @Suppress("DEPRECATION")
-  fun testScalaTestClasses(
-    timeout: Duration,
-    params: ScalaTestClassesParams,
-    expectedResult: ScalaTestClassesResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.buildTargetScalaTestClasses(transformedParams)
       assertJsonEquals(expectedResult, result)
     }
   }

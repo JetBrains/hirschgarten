@@ -56,11 +56,6 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
-import org.jetbrains.bsp.protocol.OutputPathItem
-import org.jetbrains.bsp.protocol.OutputPathItemKind
-import org.jetbrains.bsp.protocol.OutputPathsItem
-import org.jetbrains.bsp.protocol.OutputPathsParams
-import org.jetbrains.bsp.protocol.OutputPathsResult
 import org.jetbrains.bsp.protocol.PythonOptionsItem
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
@@ -69,10 +64,6 @@ import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.RustWorkspaceParams
 import org.jetbrains.bsp.protocol.RustWorkspaceResult
-import org.jetbrains.bsp.protocol.ScalaMainClassesParams
-import org.jetbrains.bsp.protocol.ScalaMainClassesResult
-import org.jetbrains.bsp.protocol.ScalaTestClassesParams
-import org.jetbrains.bsp.protocol.ScalaTestClassesResult
 import org.jetbrains.bsp.protocol.ScalacOptionsItem
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
@@ -337,22 +328,6 @@ class BspProjectMapper(
     return DependencySourcesResult(items)
   }
 
-  fun outputPaths(project: AspectSyncProject, params: OutputPathsParams): OutputPathsResult {
-    fun getItem(label: Label): OutputPathsItem {
-      val items =
-        project
-          .findModule(label)
-          ?.let { module ->
-            module.outputs.map { OutputPathItem(BspMappings.toBspUri(it), OutputPathItemKind.DIRECTORY) }
-          }.orEmpty()
-      return OutputPathsItem(label, items)
-    }
-
-    val labels = params.targets
-    val items = labels.map(::getItem)
-    return OutputPathsResult(items)
-  }
-
   suspend fun jvmRunEnvironment(project: AspectSyncProject, params: JvmRunEnvironmentParams): JvmRunEnvironmentResult {
     val targets = params.targets
     val result = getJvmEnvironmentItems(project, targets)
@@ -500,20 +475,6 @@ class BspProjectMapper(
       ideClasspath.map { it.toString() },
       javaModule.mainOutput.toString(),
     )
-
-  fun buildTargetScalaTestClasses(project: AspectSyncProject, params: ScalaTestClassesParams): ScalaTestClassesResult {
-    val modules = BspMappings.getModules(project, params.targets)
-    val scalaLanguagePlugin = languagePluginsService.scalaLanguagePlugin
-    val items = modules.mapNotNull(scalaLanguagePlugin::toScalaTestClassesItem)
-    return ScalaTestClassesResult(items)
-  }
-
-  fun buildTargetScalaMainClasses(project: AspectSyncProject, params: ScalaMainClassesParams): ScalaMainClassesResult {
-    val modules = BspMappings.getModules(project, params.targets)
-    val scalaLanguagePlugin = languagePluginsService.scalaLanguagePlugin
-    val items = modules.mapNotNull(scalaLanguagePlugin::toScalaMainClassesItem)
-    return ScalaMainClassesResult(items)
-  }
 
   fun buildDependencyModules(project: AspectSyncProject, params: DependencyModulesParams): DependencyModulesResult =
     buildDependencyModulesStatic(project, params)

@@ -88,7 +88,6 @@ class KotlinAndroidModulesMerger(private val featureFlags: FeatureFlags) {
         baseDirectory = parentModule.baseDirectory,
         sourceSet = kotlinModule.sourceSet,
         resources = androidModule.resources + parentModule.resources,
-        outputs = kotlinModule.outputs + androidModule.outputs,
         sourceDependencies = kotlinModule.sourceDependencies + androidModule.sourceDependencies,
         languageData = kotlinAndroidLanguageData,
         environmentVariables = kotlinModule.environmentVariables + androidModule.environmentVariables,

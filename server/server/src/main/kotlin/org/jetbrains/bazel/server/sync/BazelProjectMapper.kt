@@ -1040,7 +1040,6 @@ class BazelProjectMapper(
       baseDirectory = baseDirectory,
       sourceSet = sourceSet,
       resources = resources,
-      outputs = emptySet(),
       sourceDependencies = sourceDependencies,
       languageData = languageData,
       environmentVariables = environment,

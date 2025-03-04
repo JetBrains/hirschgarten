@@ -6,8 +6,6 @@ import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
-import org.jetbrains.bsp.protocol.CleanCacheParams
-import org.jetbrains.bsp.protocol.CleanCacheResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.CppOptionsParams
@@ -33,8 +31,6 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
-import org.jetbrains.bsp.protocol.OutputPathsParams
-import org.jetbrains.bsp.protocol.OutputPathsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ResourcesParams
@@ -44,10 +40,6 @@ import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.RustWorkspaceParams
 import org.jetbrains.bsp.protocol.RustWorkspaceResult
-import org.jetbrains.bsp.protocol.ScalaMainClassesParams
-import org.jetbrains.bsp.protocol.ScalaMainClassesResult
-import org.jetbrains.bsp.protocol.ScalaTestClassesParams
-import org.jetbrains.bsp.protocol.ScalaTestClassesResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourcesParams
@@ -72,17 +64,13 @@ class BuildServerMock(
   private val dependencySourcesResult: DependencySourcesResult? = null,
   private val dependencyModulesResult: DependencyModulesResult? = null,
   private val resourcesResult: ResourcesResult? = null,
-  private val outputPathsResult: OutputPathsResult? = null,
   private val compileResult: CompileResult? = null,
   private val runResult: RunResult? = null,
   private val testResult: TestResult? = null,
-  private val cleanCacheResult: CleanCacheResult? = null,
   private val jvmTestEnvironmentResult: JvmTestEnvironmentResult? = null,
   private val jvmRunEnvironmentResult: JvmRunEnvironmentResult? = null,
   private val jvmCompileClasspathResult: JvmCompileClasspathResult? = null,
   private val scalacOptionsResult: ScalacOptionsResult? = null,
-  private val scalaTestClassesResult: ScalaTestClassesResult? = null,
-  private val scalaMainClassesResult: ScalaMainClassesResult? = null,
   private val javacOptionsResult: JavacOptionsResult? = null,
   private val cppOptionsResult: CppOptionsResult? = null,
   private val workspaceLibrariesResult: WorkspaceLibrariesResult? = null,
@@ -128,15 +116,11 @@ class BuildServerMock(
 
   override suspend fun buildTargetResources(resourcesParams: ResourcesParams): ResourcesResult = wrapInFuture(resourcesResult)
 
-  override suspend fun buildTargetOutputPaths(outputPathsParams: OutputPathsParams): OutputPathsResult = wrapInFuture(outputPathsResult)
-
   override suspend fun buildTargetCompile(compileParams: CompileParams): CompileResult = wrapInFuture(compileResult)
 
   override suspend fun buildTargetRun(runParams: RunParams): RunResult = wrapInFuture(runResult)
 
   override suspend fun buildTargetTest(testParams: TestParams): TestResult = wrapInFuture(testResult)
-
-  override suspend fun buildTargetCleanCache(cleanCacheParams: CleanCacheParams): CleanCacheResult = wrapInFuture(cleanCacheResult)
 
   override suspend fun buildTargetJvmTestEnvironment(jvmTestEnvironmentParams: JvmTestEnvironmentParams): JvmTestEnvironmentResult =
     wrapInFuture(jvmTestEnvironmentResult)
@@ -149,14 +133,6 @@ class BuildServerMock(
 
   override suspend fun buildTargetScalacOptions(scalacOptionsParams: ScalacOptionsParams): ScalacOptionsResult =
     wrapInFuture(scalacOptionsResult)
-
-  @Deprecated("Deprecated in BSP. Use buildTarget/jvmTestEnvironment instead")
-  override suspend fun buildTargetScalaTestClasses(scalaTestClassesParams: ScalaTestClassesParams): ScalaTestClassesResult =
-    wrapInFuture(scalaTestClassesResult)
-
-  @Deprecated("Deprecated in BSP. Use buildTarget/jvmRunEnvironment instead")
-  override suspend fun buildTargetScalaMainClasses(scalaMainClassesParams: ScalaMainClassesParams): ScalaMainClassesResult =
-    wrapInFuture(scalaMainClassesResult)
 
   override suspend fun buildTargetJavacOptions(javacOptionsParams: JavacOptionsParams): JavacOptionsResult =
     wrapInFuture(javacOptionsResult)

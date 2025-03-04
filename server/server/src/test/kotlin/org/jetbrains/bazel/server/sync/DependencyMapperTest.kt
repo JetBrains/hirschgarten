@@ -161,7 +161,6 @@ class DependencyMapperTest {
         SourceSet(emptySet(), emptySet(), emptySet()),
         emptySet(),
         emptySet(),
-        emptySet(),
         null,
         emptyMap(),
       )
@@ -220,7 +219,6 @@ class DependencyMapperTest {
         emptySet(),
         currentUri,
         SourceSet(emptySet(), emptySet(), emptySet()),
-        emptySet(),
         emptySet(),
         emptySet(),
         null,

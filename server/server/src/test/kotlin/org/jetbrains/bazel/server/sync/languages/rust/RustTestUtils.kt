@@ -29,7 +29,6 @@ fun createModule(
         sourceRoots = setOf(),
       ),
     resources = setOf(),
-    outputs = setOf(),
     sourceDependencies = setOf(),
     languageData = rustModule,
     environmentVariables = mapOf(),
