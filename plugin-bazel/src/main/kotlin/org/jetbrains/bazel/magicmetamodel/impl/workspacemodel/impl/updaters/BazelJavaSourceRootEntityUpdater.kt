@@ -1,21 +1,22 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.workspacemodel.entities.BazelJavaSourceRootEntity
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.GeneratedJavaSourceRootEntity
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.PackageNameId
 import java.nio.file.Path
+import kotlin.io.path.extension
 
-internal class GeneratedJavaSourceEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
-  WorkspaceModelEntityWithoutParentModuleUpdater<JavaSourceRoot, GeneratedJavaSourceRootEntity> {
-  override suspend fun addEntity(entityToAdd: JavaSourceRoot): GeneratedJavaSourceRootEntity = addEntities(listOf(entityToAdd)).single()
+internal class BazelJavaSourceRootEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+  WorkspaceModelEntityWithoutParentModuleUpdater<JavaSourceRoot, BazelJavaSourceRootEntity> {
+  override suspend fun addEntity(entityToAdd: JavaSourceRoot): BazelJavaSourceRootEntity = addEntities(listOf(entityToAdd)).single()
 
-  override suspend fun addEntities(entitiesToAdd: List<JavaSourceRoot>): List<GeneratedJavaSourceRootEntity> {
+  override suspend fun addEntities(entitiesToAdd: List<JavaSourceRoot>): List<BazelJavaSourceRootEntity> {
     val packages = mutableMapOf<String, MutableList<Path>>()
     for (entity in entitiesToAdd) {
-      if (!entity.generated) continue
-      if (entity.packagePrefix.isEmpty()) continue
+      if (!shouldAddBazelJavaSourceRootEntity(entity)) continue
       val packagePaths = packages.getOrPut(entity.packagePrefix) { mutableListOf() }
       packagePaths.add(entity.sourcePath)
     }
@@ -26,7 +27,7 @@ internal class GeneratedJavaSourceEntityUpdater(private val workspaceModelEntity
           sourceRoots.map {
             it.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
           }
-        GeneratedJavaSourceRootEntity(
+        BazelJavaSourceRootEntity(
           packageNameId = PackageNameId(packageName),
           sourceRoots = sourceRootUrls,
           entitySource = BspProjectEntitySource,
@@ -34,5 +35,13 @@ internal class GeneratedJavaSourceEntityUpdater(private val workspaceModelEntity
       }.map {
         workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(it)
       }
+  }
+
+  companion object {
+    fun shouldAddBazelJavaSourceRootEntity(root: JavaSourceRoot): Boolean {
+      if (root.sourcePath.extension != "java") return false
+      if (BazelFeatureFlags.enableBazelJavaClassFinder) return true
+      return root.generated
+    }
   }
 }

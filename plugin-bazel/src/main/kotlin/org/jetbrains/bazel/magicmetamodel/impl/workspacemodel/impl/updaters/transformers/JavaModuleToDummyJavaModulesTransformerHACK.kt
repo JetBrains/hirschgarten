@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bazel.config.bspProjectName
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.BazelJavaSourceRootEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
 import org.jetbrains.bazel.utils.allAncestorsSequence
@@ -200,7 +201,7 @@ private fun calculateDummyResourceRootPath(
 internal fun calculateDummyJavaSourceRoots(sourceRoots: List<JavaSourceRoot>): List<DummySourceRootWithPackagePrefix> =
   sourceRoots
     .asSequence()
-    .filter { !it.generated }
+    .filter { !BazelJavaSourceRootEntityUpdater.shouldAddBazelJavaSourceRootEntity(it) }
     .mapNotNull {
       restoreSourceRootFromPackagePrefix(it)
     }.distinct()

@@ -2,14 +2,12 @@ package org.jetbrains.bazel.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
-import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.SymbolicEntityId
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
-import com.intellij.platform.workspace.storage.WorkspaceEntityWithSymbolicId
 import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.SoftLinkable
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
@@ -21,14 +19,14 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
-import org.jetbrains.bazel.workspacemodel.entities.GeneratedJavaSourceRootEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelJavaSourceRootEntity
 import org.jetbrains.bazel.workspacemodel.entities.PackageNameId
 
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class GeneratedJavaSourceRootEntityImpl(private val dataSource: GeneratedJavaSourceRootEntityData) :
-  GeneratedJavaSourceRootEntity, WorkspaceEntityBase(dataSource) {
+internal class BazelJavaSourceRootEntityImpl(private val dataSource: BazelJavaSourceRootEntityData) : BazelJavaSourceRootEntity, WorkspaceEntityBase(
+  dataSource) {
 
   private companion object {
 
@@ -61,18 +59,18 @@ internal class GeneratedJavaSourceRootEntityImpl(private val dataSource: Generat
   }
 
 
-  internal class Builder(result: GeneratedJavaSourceRootEntityData?) :
-    ModifiableWorkspaceEntityBase<GeneratedJavaSourceRootEntity, GeneratedJavaSourceRootEntityData>(result),
-    GeneratedJavaSourceRootEntity.Builder {
-    internal constructor() : this(GeneratedJavaSourceRootEntityData())
+  internal class Builder(result: BazelJavaSourceRootEntityData?) : ModifiableWorkspaceEntityBase<BazelJavaSourceRootEntity, BazelJavaSourceRootEntityData>(
+    result), BazelJavaSourceRootEntity.Builder {
+    internal constructor() : this(BazelJavaSourceRootEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
       if (this.diff != null) {
         if (existsInBuilder(builder)) {
           this.diff = builder
           return
-        } else {
-          error("Entity GeneratedJavaSourceRootEntity is already created in a different builder")
+        }
+        else {
+          error("Entity BazelJavaSourceRootEntity is already created in a different builder")
         }
       }
 
@@ -95,10 +93,10 @@ internal class GeneratedJavaSourceRootEntityImpl(private val dataSource: Generat
         error("Field WorkspaceEntity#entitySource should be initialized")
       }
       if (!getEntityData().isPackageNameIdInitialized()) {
-        error("Field GeneratedJavaSourceRootEntity#packageNameId should be initialized")
+        error("Field BazelJavaSourceRootEntity#packageNameId should be initialized")
       }
       if (!getEntityData().isSourceRootsInitialized()) {
-        error("Field GeneratedJavaSourceRootEntity#sourceRoots should be initialized")
+        error("Field BazelJavaSourceRootEntity#sourceRoots should be initialized")
       }
     }
 
@@ -115,7 +113,7 @@ internal class GeneratedJavaSourceRootEntityImpl(private val dataSource: Generat
 
     // Relabeling code, move information from dataSource to this builder
     override fun relabel(dataSource: WorkspaceEntity, parents: Set<WorkspaceEntity>?) {
-      dataSource as GeneratedJavaSourceRootEntity
+      dataSource as BazelJavaSourceRootEntity
       if (this.entitySource != dataSource.entitySource) this.entitySource = dataSource.entitySource
       if (this.packageNameId != dataSource.packageNameId) this.packageNameId = dataSource.packageNameId
       if (this.sourceRoots != dataSource.sourceRoots) this.sourceRoots = dataSource.sourceRoots.toMutableList()
@@ -152,7 +150,8 @@ internal class GeneratedJavaSourceRootEntityImpl(private val dataSource: Generat
         if (collection_sourceRoots !is MutableWorkspaceList) return collection_sourceRoots
         if (diff == null || modifiable.get()) {
           collection_sourceRoots.setModificationUpdateAction(sourceRootsUpdater)
-        } else {
+        }
+        else {
           collection_sourceRoots.cleanModificationUpdateAction()
         }
         return collection_sourceRoots
@@ -163,12 +162,12 @@ internal class GeneratedJavaSourceRootEntityImpl(private val dataSource: Generat
         sourceRootsUpdater.invoke(value)
       }
 
-    override fun getEntityClass(): Class<GeneratedJavaSourceRootEntity> = GeneratedJavaSourceRootEntity::class.java
+    override fun getEntityClass(): Class<BazelJavaSourceRootEntity> = BazelJavaSourceRootEntity::class.java
   }
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class GeneratedJavaSourceRootEntityData : WorkspaceEntityData<GeneratedJavaSourceRootEntity>(), SoftLinkable {
+internal class BazelJavaSourceRootEntityData : WorkspaceEntityData<BazelJavaSourceRootEntity>(), SoftLinkable {
   lateinit var packageNameId: PackageNameId
   lateinit var sourceRoots: MutableList<VirtualFileUrl>
 
@@ -208,7 +207,8 @@ internal class GeneratedJavaSourceRootEntityData : WorkspaceEntityData<Generated
     val packageNameId_data = if (packageNameId == oldLink) {
       changed = true
       newLink as PackageNameId
-    } else {
+    }
+    else {
       null
     }
     if (packageNameId_data != null) {
@@ -217,18 +217,18 @@ internal class GeneratedJavaSourceRootEntityData : WorkspaceEntityData<Generated
     return changed
   }
 
-  override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<GeneratedJavaSourceRootEntity> {
-    val modifiable = GeneratedJavaSourceRootEntityImpl.Builder(null)
+  override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<BazelJavaSourceRootEntity> {
+    val modifiable = BazelJavaSourceRootEntityImpl.Builder(null)
     modifiable.diff = diff
     modifiable.id = createEntityId()
     return modifiable
   }
 
   @OptIn(EntityStorageInstrumentationApi::class)
-  override fun createEntity(snapshot: EntityStorageInstrumentation): GeneratedJavaSourceRootEntity {
+  override fun createEntity(snapshot: EntityStorageInstrumentation): BazelJavaSourceRootEntity {
     val entityId = createEntityId()
     return snapshot.initializeEntity(entityId) {
-      val entity = GeneratedJavaSourceRootEntityImpl(this)
+      val entity = BazelJavaSourceRootEntityImpl(this)
       entity.snapshot = snapshot
       entity.id = entityId
       entity
@@ -236,22 +236,23 @@ internal class GeneratedJavaSourceRootEntityData : WorkspaceEntityData<Generated
   }
 
   override fun getMetadata(): EntityMetadata {
-    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.bazel.workspacemodel.entities.GeneratedJavaSourceRootEntity") as EntityMetadata
+    return MetadataStorageImpl.getMetadataByTypeFqn(
+      "org.jetbrains.bazel.workspacemodel.entities.BazelJavaSourceRootEntity") as EntityMetadata
   }
 
-  override fun clone(): GeneratedJavaSourceRootEntityData {
+  override fun clone(): BazelJavaSourceRootEntityData {
     val clonedEntity = super.clone()
-    clonedEntity as GeneratedJavaSourceRootEntityData
+    clonedEntity as BazelJavaSourceRootEntityData
     clonedEntity.sourceRoots = clonedEntity.sourceRoots.toMutableWorkspaceList()
     return clonedEntity
   }
 
   override fun getEntityInterface(): Class<out WorkspaceEntity> {
-    return GeneratedJavaSourceRootEntity::class.java
+    return BazelJavaSourceRootEntity::class.java
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
-    return GeneratedJavaSourceRootEntity(packageNameId, sourceRoots, entitySource) {
+    return BazelJavaSourceRootEntity(packageNameId, sourceRoots, entitySource) {
     }
   }
 
@@ -264,7 +265,7 @@ internal class GeneratedJavaSourceRootEntityData : WorkspaceEntityData<Generated
     if (other == null) return false
     if (this.javaClass != other.javaClass) return false
 
-    other as GeneratedJavaSourceRootEntityData
+    other as BazelJavaSourceRootEntityData
 
     if (this.entitySource != other.entitySource) return false
     if (this.packageNameId != other.packageNameId) return false
@@ -276,7 +277,7 @@ internal class GeneratedJavaSourceRootEntityData : WorkspaceEntityData<Generated
     if (other == null) return false
     if (this.javaClass != other.javaClass) return false
 
-    other as GeneratedJavaSourceRootEntityData
+    other as BazelJavaSourceRootEntityData
 
     if (this.packageNameId != other.packageNameId) return false
     if (this.sourceRoots != other.sourceRoots) return false
