@@ -12,13 +12,13 @@ import org.jetbrains.bazel.buildTask.BspOnlyModuleBuildTask
 import org.jetbrains.bazel.buildTask.CustomModuleBuildTask
 import org.jetbrains.bazel.buildTask.JpsOnlyModuleBuildTask
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.config.isBspProject
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.bazel.ui.console.isBuildInProgress
 
 internal abstract class CustomCompileProjectAction(text: String) : SuspendableAction(text) {
   override fun update(project: Project, e: AnActionEvent) {
-    e.presentation.isVisible = project.isBspProject
+    e.presentation.isVisible = project.isBazelProject
     e.presentation.isEnabled = !project.isBuildInProgress()
   }
 
@@ -31,8 +31,8 @@ internal abstract class CustomCompileProjectAction(text: String) : SuspendableAc
   abstract fun getProjectTask(project: Project): ProjectTask
 }
 
-internal class CompileProjectWithBspAction :
-  CustomCompileProjectAction(BspPluginBundle.message("project.task.action.name.build.project.bsp")) {
+internal class CompileProjectWithBazelAction :
+  CustomCompileProjectAction(BspPluginBundle.message("project.task.action.name.build.project.bazel")) {
   override fun getProjectTask(project: Project): ProjectTask = createAllCustomModuleBuildTasks(project, ::BspOnlyModuleBuildTask)
 }
 

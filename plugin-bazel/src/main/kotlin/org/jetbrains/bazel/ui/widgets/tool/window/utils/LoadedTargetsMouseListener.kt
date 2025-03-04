@@ -12,10 +12,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.run.RunHandlerProvider
-import org.jetbrains.bazel.runnerAction.BspRunnerAction
+import org.jetbrains.bazel.runnerAction.BazelRunnerAction
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
 import org.jetbrains.bazel.runnerAction.RunTargetAction
 import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
@@ -24,7 +24,7 @@ import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.TestWithLocalJvmRunnerAction
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
-import org.jetbrains.bazel.ui.widgets.BazelBspJumpToBuildFileAction
+import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.isJvmTarget
@@ -79,7 +79,7 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
         addAction(BuildTargetAction(target.id))
       }
       fillWithEligibleActions(project, target, false)
-      add(BazelBspJumpToBuildFileAction(target))
+      add(BazelJumpToBuildFileAction(target))
       if (StarlarkDebugAction.isApplicableTo(target)) add(StarlarkDebugAction(target.id))
     }
 
@@ -108,8 +108,8 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
   }
 }
 
-private fun BspRunnerAction.prepareAndPerform(project: Project) {
-  BspCoroutineService.getInstance(project).start {
+private fun BazelRunnerAction.prepareAndPerform(project: Project) {
+  BazelCoroutineService.getInstance(project).start {
     doPerformAction(project)
   }
 }

@@ -4,7 +4,7 @@ import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
-import org.jetbrains.bazel.config.bspProjectName
+import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.BazelJavaSourceRootEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
@@ -143,7 +143,7 @@ private fun calculateDummyResourceRootPath(
   projectBasePath: Path,
   project: Project,
 ): Path? {
-  if (!project.bspProjectName.startsWith("hirschgarten")) return null
+  if (!project.bazelProjectName.startsWith("hirschgarten")) return null
   if (entity.androidAddendum != null) return null // Resource roots are handled already for Android
   val resourceRoots = entity.resourceRoots
   if (entity.resourceRoots.isEmpty()) return null

@@ -5,7 +5,7 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
@@ -19,7 +19,7 @@ interface RunHandlerProvider {
   /**
    * Creates a {@link BspRunHandler} for the given configuration.
    */
-  fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler
+  fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler
 
   /**
    * Returns true if this provider can create a {@link BspRunHandler} for running the given targets.

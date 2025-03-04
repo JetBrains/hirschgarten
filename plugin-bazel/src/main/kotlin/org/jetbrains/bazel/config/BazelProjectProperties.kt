@@ -16,8 +16,8 @@ import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
 
-data class BspProjectPropertiesState(
-  var isBspProject: Boolean = false,
+data class BazelProjectPropertiesState(
+  var isBazelProject: Boolean = false,
   var isInitialized: Boolean = false,
   var rootDirUrl: String? = null,
   var buildToolId: String? = null,
@@ -27,12 +27,12 @@ data class BspProjectPropertiesState(
 
 @Service(Service.Level.PROJECT)
 @State(
-  name = "BspProjectProperties",
+  name = "BazelProjectProperties",
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
-class BspProjectProperties(private val project: Project) : PersistentStateComponent<BspProjectPropertiesState> {
+class BazelProjectProperties(private val project: Project) : PersistentStateComponent<BazelProjectPropertiesState> {
   var isInitialized: Boolean = false
-  var isBspProject: Boolean = false
+  var isBazelProject: Boolean = false
   var rootDir: VirtualFile? = null
   var defaultJdkName: String? = null
   var isBrokenBspProject: Boolean = false
@@ -43,18 +43,18 @@ class BspProjectProperties(private val project: Project) : PersistentStateCompon
    */
   var openedTimesSinceLastStartupResync: Int = 0
 
-  override fun getState(): BspProjectPropertiesState? =
-    BspProjectPropertiesState(
+  override fun getState(): BazelProjectPropertiesState? =
+    BazelProjectPropertiesState(
       isInitialized = isInitialized,
-      isBspProject = isBspProject,
+      isBazelProject = isBazelProject,
       rootDirUrl = rootDir?.url,
       defaultJdkName = defaultJdkName,
       openedTimesSinceLastStartupResync = openedTimesSinceLastStartupResync,
     )
 
-  override fun loadState(state: BspProjectPropertiesState) {
+  override fun loadState(state: BazelProjectPropertiesState) {
     isInitialized = state.isInitialized
-    isBspProject = state.isBspProject
+    isBazelProject = state.isBazelProject
     rootDir = state.rootDirUrl?.let { VirtualFileManager.getInstance().findFileByUrl(it) }
     defaultJdkName = state.defaultJdkName
     openedTimesSinceLastStartupResync = state.openedTimesSinceLastStartupResync
@@ -77,50 +77,50 @@ class BspProjectProperties(private val project: Project) : PersistentStateCompon
       .firstOrNull()
 }
 
-val Project.bspProjectProperties: BspProjectProperties
-  get() = service<BspProjectProperties>()
+val Project.bazelProjectProperties: BazelProjectProperties
+  get() = service<BazelProjectProperties>()
 
-var Project.isBspProject: Boolean
-  get() = bspProjectProperties.isBspProject
+var Project.isBazelProject: Boolean
+  get() = bazelProjectProperties.isBazelProject
   set(value) {
-    bspProjectProperties.isBspProject = value
+    bazelProjectProperties.isBazelProject = value
   }
 
-var Project.isBspProjectInitialized: Boolean
-  get() = bspProjectProperties.isInitialized
+var Project.isBazelProjectInitialized: Boolean
+  get() = bazelProjectProperties.isInitialized
   set(value) {
-    bspProjectProperties.isInitialized = value
+    bazelProjectProperties.isInitialized = value
   }
 
-val Project.isBspProjectLoaded: Boolean
-  get() = isBspProjectInitialized && workspaceModelLoadedFromCache
+val Project.isBazelProjectLoaded: Boolean
+  get() = isBazelProjectInitialized && workspaceModelLoadedFromCache
 
 val Project.workspaceModelLoadedFromCache: Boolean
   get() = (workspaceModel as WorkspaceModelImpl).loadedFromCache
 
 val Project.isBrokenBspProject: Boolean
-  get() = bspProjectProperties.isBrokenBspProject
+  get() = bazelProjectProperties.isBrokenBspProject
 
 var Project.openedTimesSinceLastStartupResync: Int
-  get() = bspProjectProperties.openedTimesSinceLastStartupResync
+  get() = bazelProjectProperties.openedTimesSinceLastStartupResync
   set(value) {
-    bspProjectProperties.openedTimesSinceLastStartupResync = value
+    bazelProjectProperties.openedTimesSinceLastStartupResync = value
   }
 
 @PublicApi
 var Project.rootDir: VirtualFile
   get() =
-    bspProjectProperties.rootDir
-      ?: error("BSP project root dir is not set. Reimport the project to fix this.")
+    bazelProjectProperties.rootDir
+      ?: error("Bazel project root dir is not set. Reimport the project to fix this.")
   set(value) {
-    bspProjectProperties.rootDir = value
+    bazelProjectProperties.rootDir = value
   }
 
-val Project.bspProjectName: String
+val Project.bazelProjectName: String
   get() = rootDir.name
 
 var Project.defaultJdkName: String?
-  get() = bspProjectProperties.defaultJdkName
+  get() = bazelProjectProperties.defaultJdkName
   set(value) {
-    bspProjectProperties.defaultJdkName = value
+    bazelProjectProperties.defaultJdkName = value
   }

@@ -15,7 +15,7 @@ import com.intellij.psi.impl.ResolveScopeManager
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.search.UseScopeEnlarger
-import org.jetbrains.bazel.config.isBspProject
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.workspacemodel.entities.BazelJavaSourceRootEntity
 import org.jetbrains.bazel.workspacemodel.entities.PackageNameId
 import org.jetbrains.kotlin.idea.core.util.toPsiFile
@@ -81,7 +81,7 @@ internal class BazelJavaUseScopeEnlarger : UseScopeEnlarger() {
     if (psiClass !is PsiClass) return null
 
     val project = psiClass.project
-    if (!project.isBspProject) return null
+    if (!project.isBazelProject) return null
 
     val packageName = (psiClass.containingFile as? PsiJavaFile)?.packageName ?: return null
 

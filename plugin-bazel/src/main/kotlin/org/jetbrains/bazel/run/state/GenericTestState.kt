@@ -6,11 +6,11 @@ import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.util.xmlb.annotations.Attribute
-import org.jetbrains.bazel.run.BspRunConfigurationState
-import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.run.BazelRunConfigurationState
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 
 class GenericTestState :
-  BspRunConfigurationState<GenericTestState>(),
+  BazelRunConfigurationState<GenericTestState>(),
   HasEnv,
   HasProgramArguments,
   HasWorkingDirectory,
@@ -37,10 +37,10 @@ class GenericTestState :
   @com.intellij.configurationStore.Property(description = "Bazel parameters")
   override var additionalBazelParams: String? by string()
 
-  override fun getEditor(configuration: BspRunConfiguration): SettingsEditor<GenericTestState> = GenericTestStateEditor(configuration)
+  override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<GenericTestState> = GenericTestStateEditor(configuration)
 }
 
-class GenericTestStateEditor(private val config: BspRunConfiguration) :
+class GenericTestStateEditor(private val config: BazelRunConfiguration) :
   FragmentedSettingsEditor<GenericTestState>(config.handler?.state as GenericTestState) {
   override fun createFragments(): Collection<SettingsEditorFragment<GenericTestState, *>> =
     SettingsEditorFragmentContainer.fragments {

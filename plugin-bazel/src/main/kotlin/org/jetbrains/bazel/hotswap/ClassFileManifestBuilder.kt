@@ -25,7 +25,7 @@ import com.intellij.util.ui.MessageCategory
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BazelHotSwapBundle
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.hotswap.BazelHotSwapManager.HotSwappableDebugSession
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.runnerAction.LocalJvmRunnerAction
@@ -79,7 +79,7 @@ object ClassFileManifestBuilder {
       return null
     }
     val jvmEnvDeferred: Deferred<JvmEnvironmentResult?> =
-      BspCoroutineService.getInstance(project).startAsync {
+      BazelCoroutineService.getInstance(project).startAsync {
         project.connection.runWithServer { server ->
           val targets = configuration.getUserData(LocalJvmRunnerAction.targetsToPreBuild)?.take(1) ?: listOf()
           if (targets.isEmpty()) {

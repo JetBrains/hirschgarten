@@ -20,7 +20,7 @@ class BazelRunConfigurationType :
     description = BspPluginBundle.message("runconfig.run.description", BAZEL_DISPLAY_NAME),
   ),
   DumbAware {
-  override fun createTemplateConfiguration(project: Project): RunConfiguration = BspRunConfiguration(project, "", this)
+  override fun createTemplateConfiguration(project: Project): RunConfiguration = BazelRunConfiguration(project, "", this)
 
   override fun isEditableInDumbMode(): Boolean = true
 

@@ -12,7 +12,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.task.query
-import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
+import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 
 internal class InvalidTargetsProjectSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
@@ -24,7 +24,7 @@ internal class InvalidTargetsProjectSyncHook : ProjectSyncHook {
     bazelInvalidTargetsService.invalidTargets = invalidTargetsResult
 
     if (bazelInvalidTargetsService.invalidTargets.isNotEmpty()) {
-      BspBalloonNotifier.warn(
+      BazelBalloonNotifier.warn(
         BazelPluginBundle.message("widget.collect.targets.not.imported.properly.title"),
         BazelPluginBundle.message("widget.collect.targets.not.imported.properly.message"),
       )

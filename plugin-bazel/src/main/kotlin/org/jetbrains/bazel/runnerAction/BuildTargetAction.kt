@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 
@@ -20,7 +20,7 @@ class BuildTargetAction(private val targetId: Label) :
 
   companion object {
     fun buildTarget(project: Project, targetId: Label) {
-      BspCoroutineService.getInstance(project).start {
+      BazelCoroutineService.getInstance(project).start {
         runBuildTargetTask(listOf(targetId), project)
       }
     }
