@@ -23,8 +23,6 @@ import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
-import org.jetbrains.bsp.protocol.JvmCompileClasspathParams
-import org.jetbrains.bsp.protocol.JvmCompileClasspathResult
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
@@ -145,9 +143,6 @@ class BspServerApi(private val bazelServicesBuilder: suspend (JoinedBuildClient,
 
   override suspend fun buildTargetJvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult =
     projectSyncService.jvmRunEnvironment(params)
-
-  override suspend fun buildTargetJvmCompileClasspath(params: JvmCompileClasspathParams): JvmCompileClasspathResult =
-    projectSyncService.jvmCompileClasspath(params)
 
   override suspend fun buildTargetJvmTestEnvironment(params: JvmTestEnvironmentParams): JvmTestEnvironmentResult =
     projectSyncService.jvmTestEnvironment(params)

@@ -41,9 +41,6 @@ import org.jetbrains.bsp.protocol.JavacOptionsResult
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
-import org.jetbrains.bsp.protocol.JvmCompileClasspathItem
-import org.jetbrains.bsp.protocol.JvmCompileClasspathParams
-import org.jetbrains.bsp.protocol.JvmCompileClasspathResult
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 import org.jetbrains.bsp.protocol.JvmMainClass
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
@@ -334,14 +331,6 @@ class BspProjectMapper(
     val targets = params.targets
     val result = getJvmEnvironmentItems(project, targets)
     return JvmTestEnvironmentResult(result)
-  }
-
-  suspend fun jvmCompileClasspath(project: AspectSyncProject, params: JvmCompileClasspathParams): JvmCompileClasspathResult {
-    val items =
-      params.targets.collectClasspathForTargetsAndApply(project, true) { module, ideClasspath ->
-        JvmCompileClasspathItem(module.label, ideClasspath.map { it.toString() })
-      }
-    return JvmCompileClasspathResult(items)
   }
 
   private suspend fun getJvmEnvironmentItems(project: AspectSyncProject, targets: List<Label>): List<JvmEnvironmentItem> {

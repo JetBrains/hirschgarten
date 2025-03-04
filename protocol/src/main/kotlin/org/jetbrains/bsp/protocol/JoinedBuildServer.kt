@@ -33,8 +33,6 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetJvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult
 
-  suspend fun buildTargetJvmCompileClasspath(params: JvmCompileClasspathParams): JvmCompileClasspathResult
-
   suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult
 
   suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult
