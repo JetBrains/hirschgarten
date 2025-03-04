@@ -77,7 +77,7 @@ class BspRunConfigurationEditor(private val runConfiguration: BspRunConfiguratio
       },
       { JBTextField().apply { isEditable = false } },
       { s, c ->
-        c.text = s.targets.joinToString(", ") { it.uri }
+        c.text = s.targets.joinToString(", ") { it.toShortString() }
       },
       { _, _ ->
         {}

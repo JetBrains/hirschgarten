@@ -7,7 +7,6 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.CppBuildTarget
 import org.jetbrains.bsp.protocol.CppOptionsItem
 import org.jetbrains.bsp.protocol.CppOptionsParams
@@ -42,10 +41,10 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
 
     val exampleExampleBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//example:example"),
+        Label.parse("$targetPrefix//example:example"),
         tags = ImmutableList.of("application"),
         languageIds = ImmutableList.of(Constants.CPP),
-        dependencies = ImmutableList.of(BuildTargetIdentifier("@com_google_googletest//:gtest_main")),
+        dependencies = ImmutableList.of(Label.parse("@com_google_googletest//:gtest_main")),
         capabilities =
           BuildTargetCapabilities(
             canCompile = true,
@@ -53,14 +52,14 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
             canRun = true,
             canDebug = false,
           ),
-        displayName = "$targetPrefix//example:example",
+        displayName = "//example",
         baseDirectory = "file://\$WORKSPACE/example/",
         data = exampleExampleCppBuildTarget,
       )
 
     val bspWorkspaceRootExampleBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier(Label.synthetic("bsp-workspace-root").toString()),
+        Label.synthetic("bsp-workspace-root"),
         tags = ImmutableList.of(),
         languageIds = ImmutableList.of(),
         dependencies = ImmutableList.of(),
@@ -78,11 +77,11 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
   }
 
   private fun cppOptions(): BazelBspTestScenarioStep {
-    val cppOptionsParams = CppOptionsParams(ImmutableList.of(BuildTargetIdentifier("$targetPrefix//example:example")))
+    val cppOptionsParams = CppOptionsParams(ImmutableList.of(Label.parse("$targetPrefix//example:example")))
 
     val exampleExampleCppOptionsItem =
       CppOptionsItem(
-        BuildTargetIdentifier("$targetPrefix//example:example"),
+        Label.parse("$targetPrefix//example:example"),
         ImmutableList.of("-Iexternal/gtest/include"),
         ImmutableList.of("BOOST_FALLTHROUGH"),
         ImmutableList.of("-pthread"),

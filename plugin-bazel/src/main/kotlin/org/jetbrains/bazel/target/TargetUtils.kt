@@ -22,7 +22,6 @@ import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -31,7 +30,6 @@ import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.LibraryItem
 import java.net.URI
@@ -84,22 +82,22 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   @ApiStatus.Internal
   suspend fun saveTargets(
-    targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>,
-    targetIdToModuleEntity: Map<BuildTargetIdentifier, Module>,
-    targetIdToModuleDetails: Map<BuildTargetIdentifier, ModuleDetails>,
+    targetIdToTargetInfo: Map<Label, BuildTargetInfo>,
+    targetIdToModuleEntity: Map<Label, Module>,
+    targetIdToModuleDetails: Map<Label, ModuleDetails>,
     libraryItems: List<LibraryItem>?,
     libraryModules: List<JavaModule>,
     nameProvider: TargetNameReformatProvider,
   ) {
-    this.labelToTargetInfo = targetIdToTargetInfo.mapKeys { it.key.label() }
+    this.labelToTargetInfo = targetIdToTargetInfo.mapKeys { it.key }
     moduleIdToTarget =
       targetIdToModuleEntity.entries.associate { (targetId, module) ->
-        module.getModuleName() to targetId.label()
+        module.getModuleName() to targetId
       }
     libraryIdToTarget =
       libraryItems
         ?.associate { library ->
-          nameProvider.invoke(BuildTargetInfo(id = library.id)) to library.id.label()
+          nameProvider.invoke(BuildTargetInfo(id = library.id)) to library.id
         }.orEmpty()
 
     fileToTarget =
@@ -114,7 +112,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   private fun ModuleDetails.toPairsUrlToId(): List<Pair<URI, Label>> =
     sources.flatMap { sources ->
-      sources.sources.mapNotNull { it.uri.processUriString().safeCastToURI() }.map { it to target.id.label() }
+      sources.sources.mapNotNull { it.uri.processUriString().safeCastToURI() }.map { it to target.id }
     }
 
   private fun String.processUriString() = this.trimEnd('/')

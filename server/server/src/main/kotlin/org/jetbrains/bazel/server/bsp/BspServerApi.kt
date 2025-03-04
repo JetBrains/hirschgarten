@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.bsp
 
-import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
@@ -9,8 +8,6 @@ import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
-import org.jetbrains.bsp.protocol.CleanCacheParams
-import org.jetbrains.bsp.protocol.CleanCacheResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.CppOptionsParams
@@ -37,8 +34,6 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
-import org.jetbrains.bsp.protocol.OutputPathsParams
-import org.jetbrains.bsp.protocol.OutputPathsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ResourcesParams
@@ -48,10 +43,6 @@ import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.RustWorkspaceParams
 import org.jetbrains.bsp.protocol.RustWorkspaceResult
-import org.jetbrains.bsp.protocol.ScalaMainClassesParams
-import org.jetbrains.bsp.protocol.ScalaMainClassesResult
-import org.jetbrains.bsp.protocol.ScalaTestClassesParams
-import org.jetbrains.bsp.protocol.ScalaTestClassesResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourcesParams
@@ -115,7 +106,7 @@ class BspServerApi(private val bazelServicesBuilder: suspend (JoinedBuildClient,
 
   override suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult =
     projectSyncService.workspaceBuildTargetsPartial(
-      targetsToSync = params.targets.map { it.label() },
+      targetsToSync = params.targets,
     )
 
   override suspend fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult =
@@ -143,24 +134,11 @@ class BspServerApi(private val bazelServicesBuilder: suspend (JoinedBuildClient,
 
   override suspend fun buildTargetMobileInstall(params: MobileInstallParams): MobileInstallResult = executeService.mobileInstall(params)
 
-  override suspend fun buildTargetCleanCache(params: CleanCacheParams): CleanCacheResult = executeService.clean(params)
-
   override suspend fun buildTargetDependencyModules(params: DependencyModulesParams): DependencyModulesResult =
     projectSyncService.buildTargetDependencyModules(params)
 
-  override suspend fun buildTargetOutputPaths(params: OutputPathsParams): OutputPathsResult =
-    projectSyncService.buildTargetOutputPaths(params)
-
   override suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult =
     projectSyncService.buildTargetScalacOptions(params)
-
-  @Deprecated("Deprecated in BSP. Use buildTarget/jvmTestEnvironment instead")
-  override suspend fun buildTargetScalaTestClasses(params: ScalaTestClassesParams): ScalaTestClassesResult =
-    projectSyncService.buildTargetScalaTestClasses(params)
-
-  @Deprecated("Deprecated in BSP. Use buildTarget/jvmRunEnvironment instead")
-  override suspend fun buildTargetScalaMainClasses(params: ScalaMainClassesParams): ScalaMainClassesResult =
-    projectSyncService.buildTargetScalaMainClasses(params)
 
   override suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult =
     projectSyncService.buildTargetJavacOptions(params)

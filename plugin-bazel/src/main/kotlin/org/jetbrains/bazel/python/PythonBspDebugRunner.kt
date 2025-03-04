@@ -19,8 +19,6 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.label
-import org.jetbrains.bazel.label.toBspIdentifier
 import org.jetbrains.bazel.run.config.BspRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.concurrency.AsyncPromise
@@ -57,7 +55,7 @@ class PythonBspDebugRunner : PyDebugRunner() {
     onBuildComplete: () -> Unit,
   ) {
     BspCoroutineService.getInstance(project).start {
-      runBuildTargetTask(listOf(targetId.toBspIdentifier()), project)
+      runBuildTargetTask(listOf(targetId), project)
       withContext(Dispatchers.EDT) {
         onBuildComplete()
       }
@@ -80,7 +78,7 @@ class PythonBspDebugRunner : PyDebugRunner() {
   private fun PyDebugProcess.withPositionConverter(): PyDebugProcess =
     also {
       val targetId = (session.runProfile as BspRunConfiguration).targets.single() // canRun(...) checks that, should never fail
-      it.positionConverter = BazelPyDebugPositionConverter(session.project, targetId.label())
+      it.positionConverter = BazelPyDebugPositionConverter(session.project, targetId)
     }
 
   companion object {

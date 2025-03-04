@@ -2,9 +2,9 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.time.Duration.Companion.minutes
@@ -42,7 +42,7 @@ object ExternalAutoloadsTest : BazelBspTestBaseScenario() {
 
     val exampleExampleBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//src:hello"),
+        Label.parse("$targetPrefix//src:hello"),
         listOf("library"),
         listOf("java"),
         emptyList(),
@@ -52,7 +52,7 @@ object ExternalAutoloadsTest : BazelBspTestBaseScenario() {
           canRun = false,
           canDebug = false,
         ),
-        displayName = "$targetPrefix//src:hello",
+        displayName = "//src:hello",
         baseDirectory = "file://\$WORKSPACE/src/",
         data = exampleExampleJvmBuildTarget,
       )

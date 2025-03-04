@@ -28,18 +28,12 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
-import org.jetbrains.bsp.protocol.OutputPathsParams
-import org.jetbrains.bsp.protocol.OutputPathsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.RustWorkspaceParams
 import org.jetbrains.bsp.protocol.RustWorkspaceResult
-import org.jetbrains.bsp.protocol.ScalaMainClassesParams
-import org.jetbrains.bsp.protocol.ScalaMainClassesResult
-import org.jetbrains.bsp.protocol.ScalaTestClassesParams
-import org.jetbrains.bsp.protocol.ScalaTestClassesResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourcesParams
@@ -138,11 +132,6 @@ class ProjectSyncService(
     return bspMapper.dependencySources(project, dependencySourcesParams)
   }
 
-  fun buildTargetOutputPaths(params: OutputPathsParams): OutputPathsResult {
-    val project = projectProvider.get() as? AspectSyncProject ?: return OutputPathsResult(emptyList())
-    return bspMapper.outputPaths(project, params)
-  }
-
   suspend fun jvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return JvmRunEnvironmentResult(emptyList())
     return bspMapper.jvmRunEnvironment(project, params)
@@ -181,16 +170,6 @@ class ProjectSyncService(
   suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return ScalacOptionsResult(emptyList())
     return bspMapper.buildTargetScalacOptions(project, params)
-  }
-
-  fun buildTargetScalaTestClasses(params: ScalaTestClassesParams): ScalaTestClassesResult {
-    val project = projectProvider.get() as? AspectSyncProject ?: return ScalaTestClassesResult(emptyList())
-    return bspMapper.buildTargetScalaTestClasses(project, params)
-  }
-
-  fun buildTargetScalaMainClasses(params: ScalaMainClassesParams): ScalaMainClassesResult {
-    val project = projectProvider.get() as? AspectSyncProject ?: return ScalaMainClassesResult(emptyList())
-    return bspMapper.buildTargetScalaMainClasses(project, params)
   }
 
   fun buildTargetDependencyModules(params: DependencyModulesParams): DependencyModulesResult {

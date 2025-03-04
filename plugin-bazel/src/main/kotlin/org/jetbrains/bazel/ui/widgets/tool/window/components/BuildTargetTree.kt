@@ -7,11 +7,11 @@ import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.extensionPoints.BazelBuildTargetClassifier
 import org.jetbrains.bazel.extensionPoints.DefaultBuildTargetClassifierExtension
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import java.awt.Component
 import java.awt.Point
 import javax.swing.Icon
@@ -29,7 +29,7 @@ class BuildTargetTree(
   private val targetIcon: Icon,
   private val invalidTargetIcon: Icon,
   private val targets: Collection<BuildTargetInfo>,
-  private val invalidTargets: List<BuildTargetIdentifier>,
+  private val invalidTargets: List<Label>,
   private val labelHighlighter: (String) -> String = { it },
   private val showAsList: Boolean = false,
 ) : BuildTargetContainer {
@@ -79,7 +79,7 @@ class BuildTargetTree(
   }
 
   // only used with Bazel projects
-  private fun BuildTargetIdentifier.toFakeBuildTargetInfo() = BuildTargetInfo(id = this)
+  private fun Label.toFakeBuildTargetInfo() = BuildTargetInfo(id = this)
 
   private fun generateTreeFromIdentifiers(targets: List<BuildTargetTreeIdentifier>, separator: String?) {
     val pathToIdentifierMap = targets.groupBy { it.path.firstOrNull() }
@@ -249,14 +249,12 @@ class BuildTargetTree(
 
   override fun isPointSelectable(point: Point): Boolean = treeComponent.getPathForLocation(point.x, point.y) != null
 
-  override fun createNewWithTargets(
-    newTargets: Collection<BuildTargetInfo>,
-    newInvalidTargets: List<BuildTargetIdentifier>,
-  ): BuildTargetTree = createNewWithTargetsAndHighlighter(newTargets, newInvalidTargets, labelHighlighter)
+  override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>, newInvalidTargets: List<Label>): BuildTargetTree =
+    createNewWithTargetsAndHighlighter(newTargets, newInvalidTargets, labelHighlighter)
 
   fun createNewWithTargetsAndHighlighter(
     newTargets: Collection<BuildTargetInfo>,
-    newInvalidTargets: List<BuildTargetIdentifier>,
+    newInvalidTargets: List<Label>,
     labelHighlighter: (String) -> String,
   ): BuildTargetTree {
     val new =
@@ -280,16 +278,16 @@ private data class DirectoryNodeData(val name: String, val targets: List<BuildTa
 }
 
 private data class TargetNodeData(
-  val id: BuildTargetIdentifier,
+  val id: Label,
   val target: BuildTargetInfo?,
   val displayName: String,
   val isValid: Boolean,
 ) : NodeData {
-  override fun toString(): String = target?.displayName ?: id.uri
+  override fun toString(): String = target?.displayName ?: id.toShortString()
 }
 
 private data class BuildTargetTreeIdentifier(
-  val id: BuildTargetIdentifier,
+  val id: Label,
   val target: BuildTargetInfo?,
   val path: List<String>,
   val displayName: String,

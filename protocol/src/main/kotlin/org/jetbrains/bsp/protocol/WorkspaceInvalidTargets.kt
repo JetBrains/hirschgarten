@@ -2,6 +2,6 @@
 
 package org.jetbrains.bsp.protocol
 
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bazel.label.Label
 
-public data class WorkspaceInvalidTargetsResult(val targets: List<BuildTargetIdentifier>)
+public data class WorkspaceInvalidTargetsResult(val targets: List<Label>)

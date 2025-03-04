@@ -154,7 +154,7 @@ class BspTestTaskListener(private val handler: BspProcessHandler, private val co
   }
 
   private fun processTestCaseFinish(taskId: TaskId, data: TestFinish): ServiceMessageBuilder {
-    val details = data.data as? JUnitStyleTestCaseData
+    val details = extractTestFinishData<JUnitStyleTestCaseData>(data)
 
     checkTestStatus(taskId, data, details)
 
@@ -166,7 +166,7 @@ class BspTestTaskListener(private val handler: BspProcessHandler, private val co
   }
 
   private fun processTestSuiteFinish(taskId: TaskId, data: TestFinish): ServiceMessageBuilder {
-    val details = data.data as? JUnitStyleTestSuiteData
+    val details = extractTestFinishData<JUnitStyleTestSuiteData>(data)
 
     details?.systemOut?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDOUT) }
     details?.systemErr?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDERR) }
@@ -188,4 +188,6 @@ class BspTestTaskListener(private val handler: BspProcessHandler, private val co
       ?.inWholeMilliseconds
       ?.let { this.addAttribute("duration", it.toString()) }
       ?: this
+
+  private inline fun <reified Data> extractTestFinishData(testFinishData: TestFinish): Data? = testFinishData.data as? Data
 }

@@ -10,6 +10,7 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.orDefault
@@ -25,7 +26,6 @@ import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.SourceItem
@@ -60,9 +60,9 @@ private data class ExpectedVgoDependencyEntity(
 )
 
 private data class GeneratedTargetInfo(
-  val targetId: BuildTargetIdentifier,
+  val targetId: Label,
   val type: String,
-  val dependencies: List<BuildTargetIdentifier> = listOf(),
+  val dependencies: List<Label> = listOf(),
   val resourcesItems: List<String> = listOf(),
   val importPath: String,
 )
@@ -148,20 +148,20 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   private fun generateTestSet(nameProvider: TargetNameReformatProvider): GoTestSet {
     val goLibrary1 =
       GeneratedTargetInfo(
-        targetId = BuildTargetIdentifier("@@server/lib:hello_lib"),
+        targetId = Label.parse("@@server/lib:hello_lib"),
         type = "library",
         importPath = "server/lib/file1.go",
       )
     val goLibrary2 =
       GeneratedTargetInfo(
-        targetId = BuildTargetIdentifier("@@server/parser:parser_lib"),
+        targetId = Label.parse("@@server/parser:parser_lib"),
         dependencies = listOf(goLibrary1.targetId),
         type = "library",
         importPath = "server/lib/file1.go",
       )
     val goApplication =
       GeneratedTargetInfo(
-        targetId = BuildTargetIdentifier("@@server:main_app"),
+        targetId = Label.parse("@@server:main_app"),
         type = "application",
         dependencies = listOf(goLibrary1.targetId, goLibrary2.targetId),
         importPath = "server/main_file.go",

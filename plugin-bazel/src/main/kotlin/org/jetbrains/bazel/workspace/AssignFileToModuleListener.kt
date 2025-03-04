@@ -35,7 +35,6 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBspProject
 import org.jetbrains.bazel.coroutines.BspCoroutineService
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.server.connection.connection
@@ -45,7 +44,6 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.isSourceFile
 import org.jetbrains.bazel.utils.safeCastToURI
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
@@ -175,7 +173,6 @@ private suspend fun processFileCreated(
   val url = newFile.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   val uri = url.toPath().toUri()
   queryTargetsForFile(project, url)
-    ?.map { it.label() }
     ?.let { targets ->
       val modules = targets.mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
       modules.forEach { url.addToModule(workspaceModel, it, newFile.extension) }
@@ -206,7 +203,7 @@ private suspend fun processFileRemoved(
   project.targetUtils.removeFileToTargetIdEntry(oldUri)
 }
 
-private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<BuildTargetIdentifier>? =
+private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<Label>? =
   if (!BspSyncStatusService.getInstance(project).isSyncInProgress) {
     try {
       askForInverseSources(project, fileUrl)

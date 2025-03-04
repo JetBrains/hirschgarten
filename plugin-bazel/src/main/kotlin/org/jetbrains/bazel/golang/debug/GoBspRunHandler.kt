@@ -9,7 +9,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.module.Module
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.label.label
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BspProcessHandler
 import org.jetbrains.bazel.run.BspRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
@@ -24,7 +24,6 @@ import org.jetbrains.bazel.taskEvents.BspTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.includesGo
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunParams
@@ -42,7 +41,7 @@ class GoBspRunHandler(private val configuration: BspRunConfiguration) : BspRunHa
       executor is DefaultDebugExecutor -> {
         val config = GoApplicationConfiguration(environment.project, "default", BazelRunConfigurationType())
         val target = getTargetId(environment)
-        val module = target.label().getModule(environment.project) ?: error("Could not find module for target $target")
+        val module = target.getModule(environment.project) ?: error("Could not find module for target $target")
         GoRunWithDebugCommandLineState(environment, UUID.randomUUID().toString(), module, config, state)
       }
 
@@ -51,7 +50,7 @@ class GoBspRunHandler(private val configuration: BspRunConfiguration) : BspRunHa
       }
     }
 
-  private fun getTargetId(environment: ExecutionEnvironment): BuildTargetIdentifier =
+  private fun getTargetId(environment: ExecutionEnvironment): Label =
     (environment.runProfile as? BspRunConfiguration)?.targets?.singleOrNull()
       ?: throw ExecutionException("Couldn't get BSP target from run configuration")
 

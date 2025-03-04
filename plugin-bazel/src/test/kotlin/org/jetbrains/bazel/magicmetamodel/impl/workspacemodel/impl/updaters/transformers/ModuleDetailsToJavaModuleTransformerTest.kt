@@ -7,6 +7,7 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.DefaultNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -24,7 +25,6 @@ import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JvmBuildTarget
@@ -79,16 +79,16 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val data = JvmBuildTarget(javaHome, javaVersion)
 
-    val buildTargetId = BuildTargetIdentifier("module1")
+    val buildTargetId = Label.parse("module1")
     val buildTarget =
       BuildTarget(
         buildTargetId,
         listOf("library"),
         listOf("java"),
         listOf(
-          BuildTargetIdentifier("module2"),
-          BuildTargetIdentifier("module3"),
-          BuildTargetIdentifier("@maven//:lib1"),
+          Label.parse("module2"),
+          Label.parse("module3"),
+          Label.parse("@maven//:lib1"),
         ),
         BuildTargetCapabilities(),
         baseDirectory = projectRoot.toUri().toString(),
@@ -163,14 +163,14 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         libraryDependencies = null,
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("module2"),
-            BuildTargetIdentifier("module3"),
+            Label.parse("module2"),
+            Label.parse("module3"),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
 
-    val targetsMap = listOf(buildTargetId.uri, "module2", "module3").toDefaultTargetsMap()
+    val targetsMap = listOf(buildTargetId.toShortString(), "module2", "module3").toDefaultTargetsMap()
     // when
     val javaModule =
       ModuleDetailsToJavaModuleTransformer(
@@ -284,8 +284,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         kotlincOptions = listOf(),
         associates =
           listOf(
-            BuildTargetIdentifier("//target4"),
-            BuildTargetIdentifier("//target5"),
+            Label.parse("//target4"),
+            Label.parse("//target5"),
           ),
         jvmBuildTarget =
           JvmBuildTarget(
@@ -294,16 +294,16 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
       )
 
-    val buildTargetId = BuildTargetIdentifier("module1")
+    val buildTargetId = Label.parse("module1")
     val buildTarget =
       BuildTarget(
         buildTargetId,
         listOf("library"),
         listOf("java"),
         listOf(
-          BuildTargetIdentifier("module2"),
-          BuildTargetIdentifier("module3"),
-          BuildTargetIdentifier("@maven//:lib1"),
+          Label.parse("module2"),
+          Label.parse("module3"),
+          Label.parse("@maven//:lib1"),
         ),
         BuildTargetCapabilities(),
         baseDirectory = projectRoot.toUri().toString(),
@@ -323,18 +323,18 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         outputPathUris = listOf(),
         libraryDependencies =
           listOf(
-            BuildTargetIdentifier("@maven//:lib1"),
+            Label.parse("@maven//:lib1"),
           ),
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("module2"),
-            BuildTargetIdentifier("module3"),
+            Label.parse("module2"),
+            Label.parse("module3"),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
       )
 
-    val targetsMap = listOf(buildTargetId.uri, "module2", "module3").toDefaultTargetsMap()
+    val targetsMap = listOf(buildTargetId.toShortString(), "module2", "module3").toDefaultTargetsMap()
 
     // when
     val javaModule =
@@ -398,16 +398,16 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val module1Root = createTempDirectory(projectBasePath, "module1").toAbsolutePath()
     module1Root.toFile().deleteOnExit()
 
-    val buildTargetId1 = BuildTargetIdentifier("module1")
+    val buildTargetId1 = Label.parse("module1")
     val buildTarget1 =
       BuildTarget(
         buildTargetId1,
         listOf("library"),
         listOf("java"),
         listOf(
-          BuildTargetIdentifier("module2"),
-          BuildTargetIdentifier("module3"),
-          BuildTargetIdentifier("@maven//:lib1"),
+          Label.parse("module2"),
+          Label.parse("module3"),
+          Label.parse("@maven//:lib1"),
         ),
         BuildTargetCapabilities(),
         baseDirectory = module1Root.toUri().toString(),
@@ -485,8 +485,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         libraryDependencies = null,
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("module2"),
-            BuildTargetIdentifier("module3"),
+            Label.parse("module2"),
+            Label.parse("module3"),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -495,15 +495,15 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
     module2Root.toFile().deleteOnExit()
 
-    val buildTargetId2 = BuildTargetIdentifier("module2")
+    val buildTargetId2 = Label.parse("module2")
     val buildTarget2 =
       BuildTarget(
         buildTargetId2,
         listOf("test"),
         listOf("java"),
         listOf(
-          BuildTargetIdentifier("module3"),
-          BuildTargetIdentifier("@maven//:lib1"),
+          Label.parse("module3"),
+          Label.parse("@maven//:lib1"),
         ),
         BuildTargetCapabilities(),
         baseDirectory = module2Root.toUri().toString(),
@@ -558,7 +558,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         libraryDependencies = null,
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("module3"),
+            Label.parse("module3"),
           ),
         defaultJdkName = null,
         jvmBinaryJars = emptyList(),
@@ -772,10 +772,10 @@ class ExtractJvmBuildTargetTest {
   private fun buildDummyTarget(data: BuildTargetData? = null): BuildTarget {
     val buildTarget =
       BuildTarget(
-        BuildTargetIdentifier("target"),
+        Label.parse("target"),
         listOf("tag1", "tag2"),
         listOf("language1"),
-        listOf(BuildTargetIdentifier("dep1"), BuildTargetIdentifier("dep2")),
+        listOf(Label.parse("dep1"), Label.parse("dep2")),
         BuildTargetCapabilities(
           canCompile = true,
           canTest = false,
