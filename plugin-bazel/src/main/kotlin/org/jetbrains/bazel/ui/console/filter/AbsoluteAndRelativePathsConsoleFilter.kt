@@ -6,9 +6,8 @@ import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.bazel.config.isBspProject
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
-import kotlin.text.get
 
 /**
  * A better version of [com.intellij.execution.filters.RegexpFilter] which supports relative paths as well
@@ -82,5 +81,5 @@ class AbsoluteAndRelativePathsConsoleFilter(private val project: Project) : Filt
 
 class AbsoluteAndRelativePathsConsoleFilterProvider : ConsoleFilterProvider {
   override fun getDefaultFilters(project: Project): Array<out Filter> =
-    if (project.isBspProject) arrayOf(AbsoluteAndRelativePathsConsoleFilter(project)) else emptyArray()
+    if (project.isBazelProject) arrayOf(AbsoluteAndRelativePathsConsoleFilter(project)) else emptyArray()
 }

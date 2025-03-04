@@ -9,7 +9,7 @@ import com.intellij.openapi.util.Ref
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.DirectoryProjectConfigurator
-import org.jetbrains.bazel.config.isBspProject
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.flow.open.findProjectFolderFromEligibleFile
 
 /**
@@ -25,7 +25,7 @@ internal class BazelSymlinkExcludeDirectoryProjectConfigurator : DirectoryProjec
     isProjectCreatedWithWizard: Boolean,
   ) {
     // Fake Module is going to be removed by CounterPlatformProjectConfigurator anyway
-    if (project.isBspProject) return
+    if (project.isBazelProject) return
     val module = moduleRef.get() ?: return
 
     val bazelWorkspace = findProjectFolderFromEligibleFile(baseDir) ?: return

@@ -4,9 +4,9 @@ import com.intellij.execution.process.AnsiEscapeDecoder
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
-import org.jetbrains.bazel.taskEvents.BspTaskListener
+import org.jetbrains.bazel.taskEvents.BazelTaskListener
 
-class StarlarkDebugTaskListener(private val console: ConsoleView) : BspTaskListener {
+class StarlarkDebugTaskListener(private val console: ConsoleView) : BazelTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
 
   /** Function for checking if debug execution is currently suspended */

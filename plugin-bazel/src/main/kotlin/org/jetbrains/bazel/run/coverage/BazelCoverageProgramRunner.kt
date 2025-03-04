@@ -12,8 +12,8 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.GenericProgramRunner
 import com.intellij.execution.ui.ExecutionUiService
 import com.intellij.execution.ui.RunContentDescriptor
-import org.jetbrains.bazel.run.commandLine.BspTestCommandLineState
-import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import java.nio.file.Path
 import kotlin.io.path.copyTo
 import kotlin.io.path.createParentDirectories
@@ -25,19 +25,19 @@ class BazelCoverageProgramRunner : GenericProgramRunner<RunnerSettings>() {
 
   override fun canRun(executorId: String, profile: RunProfile): Boolean {
     if (executorId != CoverageExecutor.EXECUTOR_ID) return false
-    if (profile !is BspRunConfiguration) return false
+    if (profile !is BazelRunConfiguration) return false
     return BazelCoverageEngine.getInstance().isApplicableTo(profile)
   }
 
   override fun createConfigurationData(settingsProvider: ConfigurationInfoProvider): RunnerSettings? = CoverageRunnerData()
 
   override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor? {
-    val configuration = environment.runProfile as? BspRunConfiguration ?: return null
+    val configuration = environment.runProfile as? BazelRunConfiguration ?: return null
     val coverageEnabledConfiguration =
       CoverageEnabledConfiguration.getOrCreate(configuration) as? BazelCoverageEnabledConfiguration ?: return null
     val coverageOutputDirectory = coverageEnabledConfiguration.coverageFilePath?.let { Path.of(it) } ?: return null
 
-    if (state !is BspTestCommandLineState) return null
+    if (state !is BazelTestCommandLineState) return null
     var coverageFileIndex = 0
     state.coverageReportListener = { coverageReport ->
       // There can be several coverage files, e.g. if we run several test targets at once. Save them to a directory.

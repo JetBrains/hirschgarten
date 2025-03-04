@@ -15,10 +15,10 @@ import kotlinx.coroutines.coroutineScope
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.taskEvents.BspTaskEventsService
-import org.jetbrains.bazel.taskEvents.BspTaskListener
+import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
 import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
@@ -39,7 +39,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
       val originId = "build-" + UUID.randomUUID().toString()
 
       val taskListener =
-        object : BspTaskListener {
+        object : BazelTaskListener {
           override fun onTaskStart(
             taskId: TaskId,
             parentId: TaskId?,
@@ -106,7 +106,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
           }
         }
 
-      BspTaskEventsService.getInstance(project).saveListener(originId, taskListener)
+      BazelTaskEventsService.getInstance(project).saveListener(originId, taskListener)
 
       startBuildConsoleTask(targetsIds, bspBuildConsole, originId, this)
       val compileParams = createCompileParams(targetsIds, originId)
@@ -115,7 +115,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
         val buildDeferred = async { server.buildTargetCompile(compileParams) }
         return@coroutineScope BspTaskStatusLogger(buildDeferred, bspBuildConsole, originId) { statusCode }.getResult()
       } finally {
-        BspTaskEventsService.getInstance(project).removeListener(originId)
+        BazelTaskEventsService.getInstance(project).removeListener(originId)
       }
     }
 
@@ -132,7 +132,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
       title = BspPluginBundle.message("console.task.build.title"),
       message = startBuildMessage,
       cancelAction = { cs.cancel() },
-      redoAction = { BspCoroutineService.getInstance(project).start { runBuildTargetTask(targetIds, project) } },
+      redoAction = { BazelCoroutineService.getInstance(project).start { runBuildTargetTask(targetIds, project) } },
     )
   }
 

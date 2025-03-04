@@ -12,8 +12,8 @@ import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import org.jetbrains.bazel.config.isBspProject
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import javax.swing.Icon
 
 private val log = logger<SuspendableAction>()
@@ -33,7 +33,7 @@ abstract class SuspendableAction(text: () -> String, icon: Icon? = null) :
     val project = e.project
 
     if (project != null) {
-      BspCoroutineService.getInstance(project).start {
+      BazelCoroutineService.getInstance(project).start {
         saveAllFiles()
         actionPerformed(project, e)
       }
@@ -56,8 +56,8 @@ abstract class SuspendableAction(text: () -> String, icon: Icon? = null) :
 
   private fun doUpdate(project: Project, e: AnActionEvent) {
     if (project.isTrusted()) {
-      e.presentation.isVisible = project.isBspProject
-      if (project.isBspProject) {
+      e.presentation.isVisible = project.isBazelProject
+      if (project.isBazelProject) {
         update(project, e)
       }
     } else {

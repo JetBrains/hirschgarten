@@ -6,12 +6,11 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.withBackgroundProgress
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.guava.await
 import org.jetbrains.android.sdk.AndroidSdkUtils
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.tasks.BspServerSingleTargetTask
 import org.jetbrains.bazel.server.tasks.BspTaskStatusLogger
@@ -43,7 +42,7 @@ class MobileInstallTargetTask(
       getTargetAndroidDeviceSerialNumber(bspBuildConsole)
         ?: return MobileInstallResult(StatusCode.ERROR)
     val mobileInstallDeferred =
-      BspCoroutineService.getInstance(project).startAsync(lazy = true) {
+      BazelCoroutineService.getInstance(project).startAsync(lazy = true) {
         val mobileInstallParams = createMobileInstallParams(targetId, originId, targetDeviceSerialNumber)
         server.buildTargetMobileInstall(mobileInstallParams)
       }
@@ -64,7 +63,7 @@ class MobileInstallTargetTask(
       BspPluginBundle.message("console.task.mobile.install.in.progress.target", targetId.toShortString()),
       { cancelOn.cancel(true) },
     ) {
-      BspCoroutineService.getInstance(project).start {
+      BazelCoroutineService.getInstance(project).start {
         runMobileInstallTargetTask(targetId, deviceFuture, startType, project, log)
       }
     }

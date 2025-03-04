@@ -10,7 +10,7 @@ import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
-import org.jetbrains.bazel.server.client.BspClient
+import org.jetbrains.bazel.server.client.BazelClient
 import org.jetbrains.bazel.server.client.GenericConnection
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.ui.console.BspConsoleService
@@ -105,10 +105,10 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
     }
   }
 
-  private fun createBspClient(): BspClient {
+  private fun createBspClient(): BazelClient {
     val bspConsoleService = BspConsoleService.getInstance(project)
 
-    return BspClient(
+    return BazelClient(
       bspConsoleService.bspSyncConsole,
       bspConsoleService.bspBuildConsole,
       project,

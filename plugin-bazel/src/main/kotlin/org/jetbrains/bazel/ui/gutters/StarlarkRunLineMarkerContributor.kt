@@ -9,7 +9,7 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
-import org.jetbrains.bazel.config.isBspProject
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
@@ -35,7 +35,7 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
   }
 
   private fun PsiElement.shouldAddMarker(grandParent: PsiElement): Boolean =
-    this.project.isBspProject &&
+    this.project.isBazelProject &&
       this.elementType == StarlarkTokenTypes.IDENTIFIER &&
       grandParent is StarlarkCallExpression &&
       isTopLevelCall(

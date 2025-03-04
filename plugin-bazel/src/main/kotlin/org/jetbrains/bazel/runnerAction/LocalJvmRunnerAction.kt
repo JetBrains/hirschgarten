@@ -14,7 +14,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.projectAware.BspProjectModuleBuildTasksTracker
+import org.jetbrains.bazel.projectAware.BazelProjectModuleBuildTasksTracker
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.target.getModule
 import org.jetbrains.bazel.ui.console.BspConsoleService
@@ -65,7 +65,7 @@ abstract class LocalJvmRunnerAction(
         programParameters = mainClass.arguments.joinToString(" ")
         putUserData(jvmEnvironment, environment)
         putUserData(targetsToPreBuild, listOf(targetInfo.id))
-        putUserData(includeJpsClassPaths, BspProjectModuleBuildTasksTracker.getInstance(project).lastBuiltByJps)
+        putUserData(includeJpsClassPaths, BazelProjectModuleBuildTasksTracker.getInstance(project).lastBuiltByJps)
         shortenCommandLine = ShortenCommandLine.MANIFEST
       }
     val runManager = RunManagerImpl.getInstanceImpl(project)

@@ -10,10 +10,10 @@ import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.util.Key
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.getModule
-import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
+import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import java.io.IOException
 import java.net.URI
 import java.nio.file.Path
@@ -33,7 +33,7 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
   override fun getName(): String = BspPluginBundle.message("console.task.copy.plugin.to.sandbox")
 
   override fun createTask(configuration: RunConfiguration): Task? =
-    if (configuration is BspRunConfiguration) {
+    if (configuration is BazelRunConfiguration) {
       Task()
     } else {
       null
@@ -45,7 +45,7 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
     environment: ExecutionEnvironment,
     task: Task,
   ): Boolean {
-    val runConfiguration = environment.runProfile as? BspRunConfiguration ?: return false
+    val runConfiguration = environment.runProfile as? BazelRunConfiguration ?: return false
     if (runConfiguration.handler !is IntellijPluginRunHandler) return false
     val pluginSandbox =
       checkNotNull(environment.getUserData(INTELLIJ_PLUGIN_SANDBOX_KEY)) {
@@ -99,6 +99,6 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
   // Throwing an ExecutionException doesn't work from before run tasks, so we have to show the notification ourselves.
   private fun showError(message: String) {
     val title = BspPluginBundle.message("console.task.exception.copy.plugin.to.sandbox")
-    BspBalloonNotifier.warn(title, message)
+    BazelBalloonNotifier.warn(title, message)
   }
 }
