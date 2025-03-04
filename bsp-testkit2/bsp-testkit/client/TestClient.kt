@@ -5,8 +5,6 @@ import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
-import org.jetbrains.bsp.protocol.DependencyModulesParams
-import org.jetbrains.bsp.protocol.DependencyModulesResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.InitializeBuildParams
@@ -263,18 +261,6 @@ class TestClient(
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetJvmCompileClasspath(transformedParams)
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
-  fun testDependencyModule(
-    timeout: Duration,
-    params: DependencyModulesParams,
-    expectedResult: DependencyModulesResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.buildTargetDependencyModules(transformedParams)
       assertJsonEquals(expectedResult, result)
     }
   }
