@@ -52,7 +52,6 @@ bazel_integration_test_all_versions(
 bazel_integration_test_all_versions(
     name = "kotlin_project_test",
     bzlmod_project_path = "test-projects/bzlmod/kotlin-project",
-    exclude_bazel_5 = True,  # bazel 5 will be deprecated soon, project fails to build with bazel 5 so let's just skip it
     project_path = "test-projects/workspace/kotlin-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspKotlinProjectTest",
 )
@@ -60,7 +59,6 @@ bazel_integration_test_all_versions(
 bazel_integration_test_all_versions(
     name = "kotlin_project_with_enabled_rules_test",
     bzlmod_project_path = "test-projects/bzlmod/kotlin-project",
-    exclude_bazel_5 = True,  # bazel 5 will be deprecated soon, project fails to build with bazel 5 so let's just skip it
     project_path = "test-projects/workspace/kotlin-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspKotlinProjectWithEnabledRulesTest",
 )
