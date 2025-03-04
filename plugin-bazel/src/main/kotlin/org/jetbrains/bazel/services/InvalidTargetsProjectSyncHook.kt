@@ -8,11 +8,11 @@ import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
 internal class InvalidTargetsProjectSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
@@ -41,14 +41,14 @@ internal data class BazelInvalidTargetsServiceState(var invalidTargets: List<Str
 )
 @Service(Service.Level.PROJECT)
 internal class BazelInvalidTargetsService : PersistentStateComponent<BazelInvalidTargetsServiceState> {
-  internal var invalidTargets: List<BuildTargetIdentifier> = emptyList()
+  internal var invalidTargets: List<Label> = emptyList()
 
   override fun getState(): BazelInvalidTargetsServiceState? =
-    BazelInvalidTargetsServiceState(invalidTargets.map { it.uri })
+    BazelInvalidTargetsServiceState(invalidTargets.map { it.toShortString() })
       .takeIf { it.invalidTargets.isNotEmpty() }
 
   override fun loadState(state: BazelInvalidTargetsServiceState) {
-    invalidTargets = state.invalidTargets.map { BuildTargetIdentifier(it) }
+    invalidTargets = state.invalidTargets.map { Label.parse(it) }
   }
 
   companion object {
@@ -56,5 +56,5 @@ internal class BazelInvalidTargetsService : PersistentStateComponent<BazelInvali
   }
 }
 
-val Project.invalidTargets: List<BuildTargetIdentifier>
+val Project.invalidTargets: List<Label>
   get() = BazelInvalidTargetsService.getInstance(this).invalidTargets

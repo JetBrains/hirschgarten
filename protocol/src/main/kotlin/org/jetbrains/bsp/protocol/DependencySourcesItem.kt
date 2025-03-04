@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class DependencySourcesItem(val target: BuildTargetIdentifier, val sources: List<String>)
+import org.jetbrains.bazel.label.Label
+
+data class DependencySourcesItem(val target: Label, val sources: List<String>)

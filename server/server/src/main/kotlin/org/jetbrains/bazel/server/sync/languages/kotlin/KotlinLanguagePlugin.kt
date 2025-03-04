@@ -8,7 +8,6 @@ import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import java.net.URI
 import java.nio.file.Path
@@ -28,7 +27,7 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
           languageVersion = languageVersion,
           apiVersion = apiVersion,
           kotlincOptions = kotlincOptions,
-          associates = associates.map { BuildTargetIdentifier(it.toString()) }.distinct(),
+          associates = associates.distinct(),
         )
       }
     kotlinModule.javaModule?.let { javaLanguagePlugin.toJvmBuildTarget(it) }?.let {

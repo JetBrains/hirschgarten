@@ -29,6 +29,7 @@ import com.jetbrains.python.sdk.detectSystemWideSdks
 import com.jetbrains.python.sdk.guessedLanguageLevel
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.orDefault
@@ -44,7 +45,6 @@ import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
@@ -188,7 +188,7 @@ class PythonProjectSync : ProjectSyncHook {
     targets: List<BaseTargetInfo>,
     environment: ProjectSyncHookEnvironment,
     virtualFileUrlManager: VirtualFileUrlManager,
-  ): Map<BuildTargetIdentifier, Sdk> =
+  ): Map<Label, Sdk> =
     environment.progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
       environment.project.syncConsole.withSubtask(
         taskId = environment.taskId,
@@ -203,14 +203,14 @@ class PythonProjectSync : ProjectSyncHook {
     targetIdToDependenciesSourcesMap: Map<String, List<DependencySourcesItem>>,
     targets: List<BaseTargetInfo>,
     virtualFileUrlManager: VirtualFileUrlManager,
-  ): Map<BuildTargetIdentifier, Sdk> {
+  ): Map<Label, Sdk> {
     val detectedSdk: PyDetectedSdk? = getSystemSdk()
     return targets
       .mapNotNull { targetInfo ->
         val sdk =
           calculateAndAddSdkIfPossible(
             target = targetInfo.target,
-            dependenciesSources = targetIdToDependenciesSourcesMap[targetInfo.target.id.uri] ?: emptyList(),
+            dependenciesSources = targetIdToDependenciesSourcesMap[targetInfo.target.id.toShortString()] ?: emptyList(),
             defaultSdk = detectedSdk,
             virtualFileUrlManager = virtualFileUrlManager,
           ) ?: return@mapNotNull null
@@ -222,7 +222,7 @@ class PythonProjectSync : ProjectSyncHook {
   private suspend fun calculateDependenciesSources(
     targets: List<BaseTargetInfo>,
     environment: ProjectSyncHookEnvironment,
-  ): Map<String, List<DependencySourcesItem>> = queryDependenciesSources(environment, targets).items.groupBy { it.target.uri }
+  ): Map<String, List<DependencySourcesItem>> = queryDependenciesSources(environment, targets).items.groupBy { it.target.toShortString() }
 
   private suspend fun queryDependenciesSources(
     environment: ProjectSyncHookEnvironment,
@@ -241,7 +241,7 @@ class PythonProjectSync : ProjectSyncHook {
     extractPythonBuildTarget(target)?.let {
       if (it.interpreter != null && it.version != null) {
         calculateAndAddSdk(
-          sdkName = "${target.id.uri}-${it.version}",
+          sdkName = "${target.id.toShortString()}-${it.version}",
           sdkInterpreterUri = it.interpreter!!,
           sdkDependencies = dependenciesSources,
           virtualFileUrlManager = virtualFileUrlManager,
@@ -251,7 +251,7 @@ class PythonProjectSync : ProjectSyncHook {
           ?.homePath
           ?.let { homePath ->
             calculateAndAddSdk(
-              sdkName = "${target.id.uri}-detected",
+              sdkName = "${target.id.toShortString()}-detected",
               sdkInterpreterUri = Path(homePath).toUri().toString(),
               sdkDependencies = dependenciesSources,
               virtualFileUrlManager = virtualFileUrlManager,

@@ -21,15 +21,11 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetResources(params: ResourcesParams): ResourcesResult
 
-  suspend fun buildTargetOutputPaths(params: OutputPathsParams): OutputPathsResult
-
   suspend fun buildTargetCompile(params: CompileParams): CompileResult
 
   suspend fun buildTargetRun(params: RunParams): RunResult
 
   suspend fun buildTargetTest(params: TestParams): TestResult
-
-  suspend fun buildTargetCleanCache(params: CleanCacheParams): CleanCacheResult
 
   suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult
 
@@ -42,12 +38,6 @@ interface JoinedBuildServer {
   suspend fun buildTargetJvmCompileClasspath(params: JvmCompileClasspathParams): JvmCompileClasspathResult
 
   suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult
-
-  @Deprecated("")
-  suspend fun buildTargetScalaTestClasses(params: ScalaTestClassesParams): ScalaTestClassesResult
-
-  @Deprecated("")
-  suspend fun buildTargetScalaMainClasses(params: ScalaMainClassesParams): ScalaMainClassesResult
 
   suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult
 

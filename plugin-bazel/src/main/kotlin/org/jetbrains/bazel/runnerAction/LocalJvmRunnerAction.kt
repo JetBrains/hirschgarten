@@ -14,13 +14,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.projectAware.BspProjectModuleBuildTasksTracker
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.target.getModule
 import org.jetbrains.bazel.ui.console.BspConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 import org.jetbrains.bsp.protocol.StatusCode
 import javax.swing.Icon
@@ -120,7 +120,7 @@ abstract class LocalJvmRunnerAction(
 
   companion object {
     val jvmEnvironment: Key<JvmEnvironmentItem> = Key<JvmEnvironmentItem>("jvmEnvironment")
-    val targetsToPreBuild: Key<List<BuildTargetIdentifier>> = Key<List<BuildTargetIdentifier>>("targetsToPreBuild")
+    val targetsToPreBuild: Key<List<Label>> = Key<List<Label>>("targetsToPreBuild")
     val includeJpsClassPaths: Key<Boolean> = Key<Boolean>("includeJpsClassPaths")
   }
 }

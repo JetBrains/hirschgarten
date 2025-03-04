@@ -2,7 +2,7 @@ package org.jetbrains.bazel.base
 
 import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bazel.install.Install
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -198,7 +198,7 @@ abstract class BazelBspTestBaseScenario {
 
   private fun executeScenarioSteps(): Boolean = scenarioSteps().map { it.executeAndReturnResult() }.all { it }
 
-  protected fun expectedTargetIdentifiers(): List<BuildTargetIdentifier> = expectedWorkspaceBuildTargetsResult().targets.map { it.id }
+  protected fun expectedTargetIdentifiers(): List<Label> = expectedWorkspaceBuildTargetsResult().targets.map { it.id }
 
   protected abstract fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult
 

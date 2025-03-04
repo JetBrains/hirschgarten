@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class InverseSourcesResult(val targets: List<BuildTargetIdentifier>)
+import org.jetbrains.bazel.label.Label
+
+data class InverseSourcesResult(val targets: List<Label>)
