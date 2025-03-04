@@ -10,7 +10,6 @@ class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: Proje
   private val targetsIndex = projectDetails.targets.associateBy { it.id }
   private val sourcesIndex = projectDetails.sources.groupBy { it.target }
   private val resourcesIndex = projectDetails.resources.groupBy { it.target }
-  private val dependenciesSourcesIndex = projectDetails.dependenciesSources.groupBy { it.target }
   private val javacOptionsIndex = projectDetails.javacOptions.associateBy { it.target }
   private val scalacOptionsIndex = projectDetails.scalacOptions.associateBy { it.target }
   private val jvmBinaryJarsIndex = projectDetails.jvmBinaryJars.groupBy { it.target }
@@ -22,7 +21,6 @@ class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: Proje
       target = target,
       sources = sourcesIndex[target.id].orEmpty(),
       resources = resourcesIndex[targetId].orEmpty(),
-      dependenciesSources = dependenciesSourcesIndex[targetId].orEmpty(),
       javacOptions = javacOptionsIndex[targetId],
       scalacOptions = scalacOptionsIndex[targetId],
       libraryDependencies = allDependencies.libraryDependencies.takeIf { projectDetails.libraries != null }?.toList(),

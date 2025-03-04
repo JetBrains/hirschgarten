@@ -6,7 +6,6 @@ import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.SourceItem
@@ -35,7 +34,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targets = setOf(target),
         sources = emptyList(),
         resources = emptyList(),
-        dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         libraries = null,
         scalacOptions = emptyList(),
@@ -52,7 +50,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         target = target,
         sources = emptyList(),
         resources = emptyList(),
-        dependenciesSources = emptyList(),
         javacOptions = null,
         scalacOptions = null,
         libraryDependencies = null,
@@ -86,11 +83,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targetId,
         listOf("file:///root/dir/resource/File.txt"),
       )
-    val targetDependencySources =
-      DependencySourcesItem(
-        targetId,
-        listOf("file:///lib/test/1.0.0/test-sources.jar"),
-      )
     val javacOptions =
       JavacOptionsItem(
         targetId,
@@ -105,7 +97,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targets = setOf(target),
         sources = listOf(targetSources),
         resources = listOf(targetResources),
-        dependenciesSources = listOf(targetDependencySources),
         javacOptions = listOf(javacOptions),
         libraries = emptyList(),
         scalacOptions = emptyList(),
@@ -122,7 +113,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         target = target,
         sources = listOf(targetSources),
         resources = listOf(targetResources),
-        dependenciesSources = listOf(targetDependencySources),
         javacOptions = javacOptions,
         scalacOptions = null,
         libraryDependencies = emptyList(),
@@ -156,11 +146,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ResourcesItem(
         target1Id,
         listOf("file:///root/dir1/resource/File.txt"),
-      )
-    val target1DependencySources =
-      DependencySourcesItem(
-        target1Id,
-        listOf("file:///lib/test/1.0.0/test-sources.jar"),
       )
     val target1JavacOptionsItem =
       JavacOptionsItem(
@@ -196,11 +181,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ResourcesItem(
         target2Id,
         listOf("file:///root/dir2/resource/File.txt"),
-      )
-    val target2DependencySources =
-      DependencySourcesItem(
-        target2Id,
-        listOf("file:///lib/test/2.0.0/test-sources.jar"),
       )
 
     val target3Id = Label.parse("target3")
@@ -248,7 +228,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targets = setOf(target2, target1, target3, target4),
         sources = listOf(target3Sources, target2Sources1, target1Sources, target2Sources2, target4Sources),
         resources = listOf(target1Resources, target2Resources),
-        dependenciesSources = listOf(target2DependencySources, target1DependencySources),
         javacOptions = listOf(target3JavacOptionsItem, target1JavacOptionsItem),
         libraries = emptyList(),
         scalacOptions = emptyList(),
@@ -268,7 +247,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         target = target1,
         sources = listOf(target1Sources),
         resources = listOf(target1Resources),
-        dependenciesSources = listOf(target1DependencySources),
         javacOptions = target1JavacOptionsItem,
         scalacOptions = null,
         libraryDependencies = emptyList(),
@@ -281,7 +259,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         target = target2,
         sources = listOf(target2Sources1, target2Sources2),
         resources = listOf(target2Resources),
-        dependenciesSources = listOf(target2DependencySources),
         javacOptions = null,
         scalacOptions = null,
         libraryDependencies = emptyList(),
@@ -294,7 +271,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         target = target3,
         sources = listOf(target3Sources),
         resources = emptyList(),
-        dependenciesSources = emptyList(),
         javacOptions = target3JavacOptionsItem,
         scalacOptions = null,
         libraryDependencies = emptyList(),
@@ -307,7 +283,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         target = target4,
         sources = listOf(target4Sources),
         resources = emptyList(),
-        dependenciesSources = emptyList(),
         javacOptions = null,
         scalacOptions = null,
         libraryDependencies = emptyList(),

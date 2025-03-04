@@ -28,7 +28,6 @@ internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModel
 
   private fun getSourceRoots(sourcesItem: SourcesItem): Set<Path> =
     sourcesItem.roots
-      .orEmpty()
       .map { it.safeCastToURI().toPath() }
       .toSet()
 

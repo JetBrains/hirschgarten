@@ -14,18 +14,15 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.workspacemodel.entities.JavaAddendum
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
-import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.BuildTargetData
-import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
@@ -34,7 +31,6 @@ import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
@@ -44,7 +40,6 @@ import kotlin.io.path.name
 
 @DisplayName("ModuleDetailsToJavaModuleTransformer.transform(moduleDetails) tests")
 class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
-  @Disabled
   @Test
   fun `should return no java modules roots for no modules details`() {
     // given
@@ -65,7 +60,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     javaModules shouldBe emptyList()
   }
 
-  @Disabled
   @Test
   fun `should return single java module for single module details`() {
     // given
@@ -128,14 +122,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         listOf(resourceFilePath.toUri().toString()),
       )
 
-    val dependencySourcesItem =
-      DependencySourcesItem(
-        buildTargetId,
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar",
-          "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar",
-        ),
-      )
     val javacOptionsItem =
       JavacOptionsItem(
         buildTargetId,
@@ -152,7 +138,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         target = buildTarget,
         sources = listOf(sourcesItem),
         resources = listOf(resourcesItem),
-        dependenciesSources = listOf(dependencySourcesItem),
         javacOptions = javacOptionsItem,
         scalacOptions = null,
         libraryDependencies = null,
@@ -188,11 +173,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
             IntermediateModuleDependency("module3"),
             IntermediateModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath)),
           ),
-        librariesDependencies =
-          listOf(
-            IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
-            IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar"),
-          ),
+        librariesDependencies = emptyList(),
       )
 
     val expectedBaseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath())
@@ -225,19 +206,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         rootType = SourceRootTypeId("java-resource"),
       )
 
-    val expectedLibrary1 =
-      Library(
-        displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-        sourceJars = listOf("jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar!/"),
-        classJars = listOf("jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/"),
-      )
-    val expectedLibrary2 =
-      Library(
-        displayName = "BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
-        sourceJars = listOf("jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/"),
-        classJars = listOf("jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/"),
-      )
-
     val expectedJavaAddendum = JavaAddendum(languageVersion = javaVersion, javacOptions = emptyList())
 
     val expectedJavaModule =
@@ -249,11 +217,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         jvmJdkName = projectBasePath.name.projectNameToJdkName(javaHome),
         kotlinAddendum = null,
         javaAddendum = expectedJavaAddendum,
-        moduleLevelLibraries =
-          listOf(
-            expectedLibrary1,
-            expectedLibrary2,
-          ),
       )
 
     validateJavaModule(javaModule, expectedJavaModule)
@@ -308,13 +271,9 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         target = buildTarget,
         sources = listOf(),
         resources = listOf(),
-        dependenciesSources = listOf(),
         javacOptions = null,
         scalacOptions = null,
-        libraryDependencies =
-          listOf(
-            Label.parse("@maven//:lib1"),
-          ),
+        libraryDependencies = emptyList(),
         moduleDependencies =
           listOf(
             Label.parse("module2"),
@@ -345,10 +304,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
             IntermediateModuleDependency("module2"),
             IntermediateModuleDependency("module3"),
           ),
-        librariesDependencies =
-          listOf(
-            IntermediateLibraryDependency("@maven//:lib1", true),
-          ),
+        librariesDependencies = emptyList(),
         associates =
           listOf(
             IntermediateModuleDependency("//target4"),
@@ -367,7 +323,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         baseDirContentRoot = expectedBaseDirContentRoot,
         sourceRoots = listOf(),
         resourceRoots = listOf(),
-        moduleLevelLibraries = null,
         jvmJdkName = projectBasePath.name.projectNameToJdkName(javaHome),
         kotlinAddendum =
           KotlinAddendum(
@@ -441,14 +396,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         ),
       )
 
-    val dependencySourcesItem1 =
-      DependencySourcesItem(
-        buildTargetId1,
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar",
-          "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar",
-        ),
-      )
     val target1JavacOptionsItem =
       JavacOptionsItem(
         buildTargetId1,
@@ -465,7 +412,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         target = buildTarget1,
         sources = listOf(sourcesItem1),
         resources = listOf(resourcesItem1),
-        dependenciesSources = listOf(dependencySourcesItem1),
         javacOptions = target1JavacOptionsItem,
         scalacOptions = null,
         libraryDependencies = null,
@@ -518,11 +464,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         listOf(resourceDirPath21.toUri().toString()),
       )
 
-    val dependencySourcesItem2 =
-      DependencySourcesItem(
-        buildTargetId2,
-        listOf("file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar"),
-      )
     val target2JavacOptionsItem =
       JavacOptionsItem(
         buildTargetId2,
@@ -536,7 +477,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         target = buildTarget2,
         sources = listOf(sourcesItem2),
         resources = listOf(resourcesItem2),
-        dependenciesSources = listOf(dependencySourcesItem2),
         javacOptions = target2JavacOptionsItem,
         scalacOptions = null,
         libraryDependencies = null,
@@ -573,11 +513,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
             IntermediateModuleDependency("module3"),
             IntermediateModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath)),
           ),
-        librariesDependencies =
-          listOf(
-            IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
-            IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar"),
-          ),
+        librariesDependencies = emptyList(),
       )
 
     val expectedBaseDirContentRoot1 = ContentRoot(path = module1Root)
@@ -614,18 +550,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         resourcePath = resourceFilePath12,
         rootType = SourceRootTypeId("java-resource"),
       )
-    val expectedLibrary1 =
-      Library(
-        displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-        sourceJars = listOf("jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar!/"),
-        classJars = listOf("jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/"),
-      )
-    val expectedLibrary2 =
-      Library(
-        displayName = "BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
-        sourceJars = listOf("jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/"),
-        classJars = listOf("jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/"),
-      )
 
     val expectedJavaModule1 =
       JavaModule(
@@ -635,7 +559,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         resourceRoots = listOf(expectedResourceRoot11, expectedResourceRoot12),
         jvmJdkName = null,
         kotlinAddendum = null,
-        moduleLevelLibraries = listOf(expectedLibrary1, expectedLibrary2),
       )
 
     val expectedModule2 =
@@ -646,10 +569,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           listOf(
             IntermediateModuleDependency("module3"),
           ),
-        librariesDependencies =
-          listOf(
-            IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
-          ),
+        librariesDependencies = emptyList(),
       )
 
     val expectedBaseDirContentRoot2 = ContentRoot(path = module2Root)
@@ -676,7 +596,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         resourceRoots = listOf(expectedResourceRoot21),
         jvmJdkName = null,
         kotlinAddendum = null,
-        moduleLevelLibraries = listOf(expectedLibrary1),
       )
 
     javaModules shouldContainExactlyInAnyOrder (

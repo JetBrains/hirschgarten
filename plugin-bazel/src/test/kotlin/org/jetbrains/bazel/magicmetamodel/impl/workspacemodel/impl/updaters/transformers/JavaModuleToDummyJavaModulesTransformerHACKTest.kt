@@ -16,7 +16,6 @@ import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -88,7 +87,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             ),
           ),
         resourceRoots = listOf(),
-        moduleLevelLibraries = listOf(Library(displayName = "lib1")),
         jvmJdkName = javaVersion,
         kotlinAddendum = null,
       )
@@ -120,7 +118,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             ),
           ),
         resourceRoots = listOf(),
-        moduleLevelLibraries = emptyList(),
         jvmJdkName = givenJavaModule.jvmJdkName,
         kotlinAddendum = givenJavaModule.kotlinAddendum,
       )
@@ -191,7 +188,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
               rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
             ),
           ),
-        moduleLevelLibraries = listOf(Library(displayName = "lib1")),
         jvmJdkName = javaVersion,
         kotlinAddendum = null,
       )
@@ -229,7 +225,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
               rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
             ),
           ),
-        moduleLevelLibraries = emptyList(),
         jvmJdkName = givenJavaModule.jvmJdkName,
         kotlinAddendum = givenJavaModule.kotlinAddendum,
       )
@@ -274,7 +269,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
               rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
             ),
           ),
-        moduleLevelLibraries = listOf(Library(displayName = "lib1")),
         jvmJdkName = javaVersion,
         kotlinAddendum = null,
       )
@@ -305,83 +299,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
               rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
             ),
           ),
-        moduleLevelLibraries = emptyList(),
-        jvmJdkName = givenJavaModule.jvmJdkName,
-        kotlinAddendum = givenJavaModule.kotlinAddendum,
-      )
-
-    javaModules shouldContainExactlyInAnyOrder (
-      listOf(expectedJavaModule) to { actual, expected -> validateJavaModule(actual, expected) }
-    )
-  }
-
-  fun `should return dummy module with no sources and with multiple resources in common path`() {
-    // given
-    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "module1")
-    val projectRootName = projectRoot.name
-    val javaVersion = "11"
-
-    val givenModule =
-      GenericModuleInfo(
-        name = projectRootName,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = emptyList(),
-        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
-      )
-    val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
-    val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
-    val resourcesPath = createTempDirectoryAndDeleteItOnExit(mainPath, "resources")
-    val messagesPath = createTempDirectoryAndDeleteItOnExit(resourcesPath, "messages")
-    val resourceFilePath = createTempFile(messagesPath, "Resources", ".properties")
-    val iconsPath = createTempDirectoryAndDeleteItOnExit(resourcesPath, "icons")
-    val iconFilePath = createTempFile(iconsPath, "icon", ".png")
-    resourceFilePath.toFile().deleteOnExit()
-
-    val givenJavaModule =
-      JavaModule(
-        genericModuleInfo = givenModule,
-        baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
-        sourceRoots =
-          listOf(),
-        resourceRoots =
-          listOf(
-            ResourceRoot(
-              resourcePath = resourceFilePath.toAbsolutePath(),
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
-            ),
-          ),
-        moduleLevelLibraries = listOf(Library(displayName = "lib1")),
-        jvmJdkName = javaVersion,
-        kotlinAddendum = null,
-      )
-
-    // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(givenJavaModule)
-
-    // then
-    val expectedModule =
-      GenericModuleInfo(
-        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${resourcesPath.name}".addIntelliJDummyPrefix(),
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = listOf(),
-        librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
-        languageIds = listOf("java", "scala", "kotlin"),
-      )
-
-    val expectedJavaModule =
-      JavaModule(
-        genericModuleInfo = expectedModule,
-        baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
-        sourceRoots =
-          listOf(),
-        resourceRoots =
-          listOf(
-            ResourceRoot(
-              resourcePath = resourcesPath.toAbsolutePath(),
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
-            ),
-          ),
-        moduleLevelLibraries = emptyList(),
         jvmJdkName = givenJavaModule.jvmJdkName,
         kotlinAddendum = givenJavaModule.kotlinAddendum,
       )
@@ -444,7 +361,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
               rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
             ),
           ),
-        moduleLevelLibraries = listOf(Library(displayName = "lib1")),
         jvmJdkName = javaVersion,
         kotlinAddendum = null,
       )
@@ -476,7 +392,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             ),
           ),
         resourceRoots = emptyList(),
-        moduleLevelLibraries = emptyList(),
         jvmJdkName = givenJavaModule.jvmJdkName,
         kotlinAddendum = givenJavaModule.kotlinAddendum,
       )
@@ -524,7 +439,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             ),
           ),
         resourceRoots = listOf(),
-        moduleLevelLibraries = listOf(),
         jvmJdkName = null,
         kotlinAddendum = null,
       )
@@ -551,7 +465,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             ),
           ),
         resourceRoots = listOf(),
-        moduleLevelLibraries = listOf(),
         jvmJdkName = null,
         kotlinAddendum = null,
       )
@@ -584,7 +497,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             ),
           ),
         resourceRoots = listOf(),
-        moduleLevelLibraries = emptyList(),
         jvmJdkName = null,
         kotlinAddendum = null,
       )
@@ -611,7 +523,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             ),
           ),
         resourceRoots = listOf(),
-        moduleLevelLibraries = emptyList(),
         jvmJdkName = null,
         kotlinAddendum = null,
       )
@@ -653,7 +564,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             ),
           ),
         resourceRoots = listOf(),
-        moduleLevelLibraries = listOf(),
         jvmJdkName = null,
         kotlinAddendum = null,
       )
@@ -680,7 +590,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             ),
           ),
         resourceRoots = listOf(),
-        moduleLevelLibraries = listOf(),
         jvmJdkName = null,
         kotlinAddendum = null,
       )
@@ -726,7 +635,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             ),
           ),
         resourceRoots = listOf(),
-        moduleLevelLibraries = listOf(),
         jvmJdkName = null,
         kotlinAddendum = null,
       )
@@ -757,7 +665,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     actual.baseDirContentRoot shouldBe expected.baseDirContentRoot
     actual.sourceRoots shouldContainExactlyInAnyOrder expected.sourceRoots
     actual.resourceRoots shouldContainExactlyInAnyOrder expected.resourceRoots
-    actual.moduleLevelLibraries shouldContainExactlyInAnyOrder expected.moduleLevelLibraries
   }
 
   private fun validateModule(actual: GenericModuleInfo, expected: GenericModuleInfo) {

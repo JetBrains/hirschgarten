@@ -44,17 +44,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
       baseDirContentRoot = toBaseDirContentRoot(inputEntity),
       sourceRoots = toJavaSourceRoots(inputEntity),
       resourceRoots = toResourceRoots(inputEntity),
-      moduleLevelLibraries =
-        if (inputEntity.libraryDependencies == null) {
-          DependencySourcesItemToLibraryTransformer
-            .transform(
-              inputEntity.dependenciesSources.map {
-                DependencySourcesAndJvmClassPaths(it, inputEntity.toJvmClassPaths())
-              },
-            )
-        } else {
-          null
-        },
       // Any java module must be assigned a jdk if there is any available.
       jvmJdkName = inputEntity.toJdkNameOrDefault(),
       jvmBinaryJars = inputEntity.jvmBinaryJars.flatMap { it.jars }.map { it.safeCastToURI().toPath() },
@@ -92,7 +81,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
     val bspModuleDetails =
       BspModuleDetails(
         target = inputEntity.target,
-        dependencySources = inputEntity.dependenciesSources,
         type = type,
         javacOptions = inputEntity.javacOptions,
         associates = toAssociates(inputEntity),

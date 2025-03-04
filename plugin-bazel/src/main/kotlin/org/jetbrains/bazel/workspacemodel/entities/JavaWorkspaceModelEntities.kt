@@ -16,9 +16,6 @@ data class JavaModule(
   val baseDirContentRoot: ContentRoot?,
   val sourceRoots: List<JavaSourceRoot>,
   val resourceRoots: List<ResourceRoot>,
-  // we will calculate this value only if there are no libraries in MagicMetamodelImpl.libraries,
-  // otherwise it will be null
-  val moduleLevelLibraries: List<Library>?,
   val jvmJdkName: String? = null,
   val jvmBinaryJars: List<Path> = emptyList(),
   val kotlinAddendum: KotlinAddendum? = null,
