@@ -1,5 +1,6 @@
+load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
 load(
-    "@rules_intellij//build_defs:build_defs.bzl",
+    "//rules_intellij/build_defs:build_defs.bzl",
     "intellij_plugin",
     "intellij_plugin_library",
     "optional_plugin_dep",
@@ -8,10 +9,9 @@ load(
     "stamped_plugin_xml",
 )
 load(
-    "@rules_intellij//build_defs:intellij_plugin_debug_target.bzl",
+    "//rules_intellij/build_defs:intellij_plugin_debug_target.bzl",
     "intellij_plugin_debug_target",
 )
-load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
 
 intellij_plugin_library(
     name = "plugin_library",

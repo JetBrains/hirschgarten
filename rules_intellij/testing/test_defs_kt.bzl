@@ -8,7 +8,7 @@
 load("@rules_java//java:defs.bzl", "java_test")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_test")
 load(
-    "//build_defs:build_defs.bzl",
+    "//rules_intellij/build_defs:build_defs.bzl",
     "api_version_txt",
 )
 
@@ -233,8 +233,8 @@ def intellij_integration_test_suite(
 
     deps = list(deps)
     deps.extend([
-        "@rules_intellij//testing:lib",
-        "@rules_intellij//intellij_platform_sdk:plugin_api_for_tests",
+        "//rules_intellij/testing:lib",
+        "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
         "@maven//:org_junit_jupiter_junit_jupiter",
         "@maven//:org_junit_jupiter_junit_jupiter_engine",
         "@maven//:org_junit_platform_junit_platform_console",
@@ -246,8 +246,8 @@ def intellij_integration_test_suite(
     ])
     runtime_deps = list(runtime_deps)
     runtime_deps.extend([
-        "@rules_intellij//intellij_platform_sdk:bundled_plugins",
-        "@rules_intellij//intellij_platform_sdk:plugin_api_for_tests",
+        "//rules_intellij/intellij_platform_sdk:bundled_plugins",
+        "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
     ])
 
     resources = kwargs.pop("resources", [])

@@ -1,5 +1,5 @@
 load("@//rules/testing:junit5.bzl", "kt_junit5_test")
-load("@rules_intellij//testing:test_defs_kt.bzl", "intellij_integration_test_suite")
+load("//rules_intellij/testing:test_defs_kt.bzl", "intellij_integration_test_suite")
 
 kt_junit5_test(
     name = "WorkspaceContextConstructorTest",

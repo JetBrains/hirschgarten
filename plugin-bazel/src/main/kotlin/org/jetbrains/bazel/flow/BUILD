@@ -19,6 +19,6 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/notifications",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/widgets",
-        "@rules_intellij//intellij_platform_sdk:plugin_api",
+        "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )

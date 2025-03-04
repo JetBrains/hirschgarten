@@ -1,5 +1,5 @@
-load("@rules_intellij//testing:test_defs_kt.bzl", "intellij_integration_test_suite")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("//rules_intellij/testing:test_defs_kt.bzl", "intellij_integration_test_suite")
 
 exports_files(glob([
     "main/jps-resources/**/*",
@@ -101,12 +101,12 @@ kt_jvm_library(
         ":intellij-bazel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
         "//protocol",
+        "//rules_intellij/testing:lib",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
         "@maven//:io_kotest_kotest_assertions_shared_jvm",
         "@maven//:io_kotest_kotest_common_jvm",
         "@maven//:org_junit_jupiter_junit_jupiter",
-        "@rules_intellij//testing:lib",
         "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_test",
     ],
 )

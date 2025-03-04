@@ -1,5 +1,4 @@
 .jps-compiled
-rules_intellij
 out
 server/e2e/test-projects/bzlmod/allow-manual-targets-sync-project/bazel-allow-manual-targets-sync-project
 server/e2e/test-projects/bzlmod/bazel-build-and-sync-test

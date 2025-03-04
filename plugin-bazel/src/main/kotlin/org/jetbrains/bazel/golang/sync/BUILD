@@ -16,7 +16,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
         "//protocol",
-        "@rules_intellij//intellij_platform_sdk:plugin_api",
-        "@rules_intellij//third_party/go",
+        "//rules_intellij/intellij_platform_sdk:plugin_api",
+        "//rules_intellij/third_party/go",
     ],
 )

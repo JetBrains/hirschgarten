@@ -5,6 +5,6 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
-        "@rules_intellij//intellij_platform_sdk:plugin_api",
+        "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )
