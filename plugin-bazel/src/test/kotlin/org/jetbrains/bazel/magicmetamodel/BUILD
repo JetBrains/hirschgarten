@@ -8,7 +8,6 @@ intellij_integration_test_suite(
     ]),
     associates = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel/impl/updaters",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel/impl/updaters/transformers",
     ],
     test_package_root = "org.jetbrains",
     runtime_deps = [
@@ -16,6 +15,7 @@ intellij_integration_test_suite(
     ],
     deps = [
         "//plugin-bazel/src:test_fixtures",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl",
         "//protocol",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",

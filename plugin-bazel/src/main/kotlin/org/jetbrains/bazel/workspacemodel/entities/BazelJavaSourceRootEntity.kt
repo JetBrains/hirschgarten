@@ -15,19 +15,19 @@ public data class PackageNameId(public val packageName: String) : SymbolicEntity
     get() = packageName
 }
 
-public interface GeneratedJavaSourceRootEntity : WorkspaceEntity {
+public interface BazelJavaSourceRootEntity : WorkspaceEntity {
   public val packageNameId: PackageNameId
   public val sourceRoots: List<VirtualFileUrl>
 
   //region generated code
   @GeneratedCodeApiVersion(3)
-  interface Builder : WorkspaceEntity.Builder<GeneratedJavaSourceRootEntity> {
+  interface Builder : WorkspaceEntity.Builder<BazelJavaSourceRootEntity> {
     override var entitySource: EntitySource
     var packageNameId: PackageNameId
     var sourceRoots: MutableList<VirtualFileUrl>
   }
 
-  companion object : EntityType<GeneratedJavaSourceRootEntity, Builder>() {
+  companion object : EntityType<BazelJavaSourceRootEntity, Builder>() {
     @JvmOverloads
     @JvmStatic
     @JvmName("create")
@@ -45,12 +45,12 @@ public interface GeneratedJavaSourceRootEntity : WorkspaceEntity {
       return builder
     }
   }
-//endregion
+  //endregion
 }
 
 //region generated code
-fun MutableEntityStorage.modifyGeneratedJavaSourceRootEntity(
-  entity: GeneratedJavaSourceRootEntity,
-  modification: GeneratedJavaSourceRootEntity.Builder.() -> Unit,
-): GeneratedJavaSourceRootEntity = modifyEntity(GeneratedJavaSourceRootEntity.Builder::class.java, entity, modification)
+fun MutableEntityStorage.modifyBazelJavaSourceRootEntity(
+  entity: BazelJavaSourceRootEntity,
+  modification: BazelJavaSourceRootEntity.Builder.() -> Unit,
+): BazelJavaSourceRootEntity = modifyEntity(BazelJavaSourceRootEntity.Builder::class.java, entity, modification)
 //endregion

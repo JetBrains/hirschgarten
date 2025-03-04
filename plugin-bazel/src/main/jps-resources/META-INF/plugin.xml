@@ -147,7 +147,8 @@
                 implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
 
         <java.programPatcher implementation="org.jetbrains.bazel.jvm.run.BspJvmEnvironmentProgramPatcher"/>
-        <java.elementFinder implementation="org.jetbrains.bazel.services.GeneratedClassFinder"/>
+        <java.elementFinder implementation="org.jetbrains.bazel.services.BazelJavaClassFinder"/>
+        <useScopeEnlarger implementation="org.jetbrains.bazel.services.BazelJavaUseScopeEnlarger"/>
 
         <postStartupActivity
                 implementation="org.jetbrains.bazel.startup.BspStartupActivity"/>
@@ -487,6 +488,9 @@
         <registryKey defaultValue="true"
                      description="Force Bazel to shut down before each shard build to prevent Bazel memory leak issue"
                      key="bazel.shutdown.before.shard.build"/>
+        <registryKey defaultValue="false"
+                     description="Enable a custom class finder for Java instead of &quot;dummy&quot; modules"
+                     key="bazel.enable.custom.java.class.finder"/>
         <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
     </extensions>
 

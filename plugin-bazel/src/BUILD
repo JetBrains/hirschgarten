@@ -39,7 +39,6 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel/impl",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel/impl/updaters",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel/impl/updaters/transformers",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/performanceImpl",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/projectAware",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/sync",
