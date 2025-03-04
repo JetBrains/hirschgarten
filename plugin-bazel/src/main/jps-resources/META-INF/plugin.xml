@@ -487,6 +487,8 @@
                      description="Enable a custom class finder for Java instead of &quot;dummy&quot; modules"
                      key="bazel.enable.custom.java.class.finder"/>
         <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
+
+        <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.wizard.BazelJavaNewProjectWizard"/>
     </extensions>
 
     <actions>
