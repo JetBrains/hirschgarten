@@ -46,7 +46,7 @@ class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
       const val RULES_KOTLIN_VERSION = "1.9.1"
       const val RULES_JVM_EXTERNAL_VERSION = "6.7"
       const val JUNIT_VERSION = "4.13.2"
-      const val KOTLIN_VERSION = "1.9.0"
+      const val KOTLIN_VERSION = "2.1.0"
 
       private fun moduleBazel(context: WizardContext): String = """
         module(
