@@ -3,12 +3,15 @@ package org.jetbrains.bazel.android
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.install.Install
+import org.jetbrains.bazel.install.cli.CliOptions
+import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import java.net.URI
+import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.name
 import kotlin.io.path.toPath
@@ -20,18 +23,16 @@ abstract class BazelBspAndroidProjectTestBase : BazelBspTestBaseScenario() {
   protected abstract val enabledRules: List<String>
 
   override fun installServer() {
-    Install.main(
-      arrayOf(
-        "-d",
-        workspaceDir,
-        "-b",
-        bazelBinary,
-        "-t",
-        "//...",
-        "--enabled-rules",
-        *enabledRules.toTypedArray(),
-        "-f",
-        "--action_env=ANDROID_HOME=${AndroidSdkDownloader.androidSdkPath}",
+    Install.runInstall(
+      CliOptions(
+        workspaceDir = Path(workspaceDir),
+        projectViewCliOptions =
+          ProjectViewCliOptions(
+            bazelBinary = Path(bazelBinary),
+            targets = listOf("//..."),
+            enabledRules = enabledRules,
+            buildFlags = listOf("--action_env=ANDROID_HOME=${AndroidSdkDownloader.androidSdkPath}"),
+          ),
       ),
     )
   }

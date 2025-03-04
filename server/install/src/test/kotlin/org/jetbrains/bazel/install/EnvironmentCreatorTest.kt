@@ -12,12 +12,6 @@ import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 
 class EnvironmentCreatorTest {
-  class MockEnvironmentCreator(projectRootDir: Path) : EnvironmentCreator(projectRootDir) {
-    override fun create(): Unit = Unit
-
-    fun testCreateDotBazelBsp() = createDotBazelBsp()
-  }
-
   @Nested
   @DisplayName("environmentCreator.create tests")
   inner class CopyAspectsTest {
@@ -32,7 +26,7 @@ class EnvironmentCreatorTest {
     @Test
     fun `should copy aspects from resources to dot bazelbsp directory`() {
       // when
-      val dotBazelBsp = MockEnvironmentCreator(tempRoot).testCreateDotBazelBsp()
+      val dotBazelBsp = EnvironmentCreator(tempRoot).create()
 
       // then
       dotBazelBsp shouldNotBe null

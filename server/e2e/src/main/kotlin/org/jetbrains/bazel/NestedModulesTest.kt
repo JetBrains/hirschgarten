@@ -7,6 +7,8 @@ import io.kotest.matchers.string.shouldEndWith
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.install.Install
+import org.jetbrains.bazel.install.cli.CliOptions
+import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -23,16 +25,14 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
   fun main(args: Array<String>) = executeScenario()
 
   override fun installServer() {
-    Install.main(
-      arrayOf(
-        "-d",
-        workspaceDir,
-        "-b",
-        bazelBinary,
-        "-t",
-        "@//...",
-        "-t",
-        "@inner//...",
+    Install.runInstall(
+      CliOptions(
+        workspaceDir = Path(workspaceDir),
+        projectViewCliOptions =
+          ProjectViewCliOptions(
+            bazelBinary = Path(bazelBinary),
+            targets = listOf("@//...", "@inner//..."),
+          ),
       ),
     )
   }
