@@ -35,7 +35,6 @@ import org.jetbrains.bazel.server.sync.languages.java.JdkResolver
 import org.jetbrains.bazel.server.sync.languages.java.JdkVersionResolver
 import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.python.PythonLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.rust.RustLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
@@ -116,7 +115,6 @@ class BazelBspServer(
     val kotlinLanguagePlugin = KotlinLanguagePlugin(javaLanguagePlugin, bazelPathsResolver)
     val thriftLanguagePlugin = ThriftLanguagePlugin(bazelPathsResolver)
     val pythonLanguagePlugin = PythonLanguagePlugin(bazelPathsResolver)
-    val rustLanguagePlugin = RustLanguagePlugin(bazelPathsResolver)
     val androidLanguagePlugin =
       AndroidLanguagePlugin(workspaceContextProvider, javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
     val goLanguagePlugin = GoLanguagePlugin(bazelPathsResolver, bspClientLogger)
@@ -128,7 +126,6 @@ class BazelBspServer(
       kotlinLanguagePlugin,
       thriftLanguagePlugin,
       pythonLanguagePlugin,
-      rustLanguagePlugin,
       androidLanguagePlugin,
       goLanguagePlugin,
     )

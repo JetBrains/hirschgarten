@@ -21,8 +21,6 @@ import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.ResourcesResult
-import org.jetbrains.bsp.protocol.RustWorkspaceParams
-import org.jetbrains.bsp.protocol.RustWorkspaceResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourcesParams
@@ -167,18 +165,6 @@ class TestClient(
     }
   }
 
-  fun testRustWorkspace(
-    timeout: Duration,
-    params: RustWorkspaceParams,
-    expectedResult: RustWorkspaceResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.rustWorkspace(transformedParams)
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
   fun testSources(
     timeout: Duration,
     params: SourcesParams,
@@ -270,8 +256,6 @@ class TestClient(
         session.server.buildTargetCppOptions(CppOptionsParams(cppTargetIds))
         val pythonTargetIds = targets.filter { it.languageIds.contains("python") }.map { it.id }
         session.server.buildTargetPythonOptions(PythonOptionsParams(pythonTargetIds))
-        val rustTargetIds = targets.filter { it.languageIds.contains("rust") }.map { it.id }
-        session.server.rustWorkspace(RustWorkspaceParams(rustTargetIds))
       }
     }
   }

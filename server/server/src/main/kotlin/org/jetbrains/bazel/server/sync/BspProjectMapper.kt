@@ -55,8 +55,6 @@ import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.ResourcesResult
-import org.jetbrains.bsp.protocol.RustWorkspaceParams
-import org.jetbrains.bsp.protocol.RustWorkspaceResult
 import org.jetbrains.bsp.protocol.ScalacOptionsItem
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
@@ -460,17 +458,6 @@ class BspProjectMapper(
       ideClasspath.map { it.toString() },
       javaModule.mainOutput.toString(),
     )
-
-  fun rustWorkspace(project: AspectSyncProject, params: RustWorkspaceParams): RustWorkspaceResult {
-    val allRustModules = project.modules.filter { Language.RUST in it.languages }
-    val requestedModules =
-      BspMappings
-        .getModules(project, params.targets)
-        .filter { Language.RUST in it.languages }
-    val toRustWorkspaceResult = languagePluginsService.rustLanguagePlugin::toRustWorkspaceResult
-
-    return toRustWorkspaceResult(requestedModules, allRustModules)
-  }
 
   fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult {
     val resolve = languagePluginsService.goLanguagePlugin::resolveLocalToRemote

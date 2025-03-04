@@ -80,12 +80,6 @@ bazel_integration_test(
     workspace_path = "test-projects/workspace/sample-repo",
 )
 
-bazel_integration_test_all_versions(
-    name = "rust_project_test",
-    project_path = "test-projects/workspace/rust-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspRustProjectTest",
-)
-
 bazel_integration_test_current_version(
     name = "android_project_test",
     project_path = "test-projects/workspace/android-project",
@@ -170,7 +164,6 @@ test_suite(
         ":partial_sync_test",
         ":python_project_test",
         ":remote_jdk_test",
-        ":rust_project_test",
         ":sample_repo_test",
         ":server_downloads_bazelisk_test",
     ],

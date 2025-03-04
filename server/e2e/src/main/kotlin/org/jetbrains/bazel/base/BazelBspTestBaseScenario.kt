@@ -23,7 +23,6 @@ abstract class BazelBspTestBaseScenario {
   val targetPrefix = "@"
 
   val isBzlmod = majorBazelVersion >= 7
-  val isBazel8OrHigher = majorBazelVersion >= 8
   val bzlmodRepoNameSeparator = if (majorBazelVersion == 7) "~" else "+"
 
   private val architecturePart
@@ -177,7 +176,6 @@ abstract class BazelBspTestBaseScenario {
         isPythonSupportEnabled = true,
         isAndroidSupportEnabled = true,
         isGoSupportEnabled = true,
-        isRustSupportEnabled = false,
         isPropagateExportsFromDepsEnabled = false,
       )
 

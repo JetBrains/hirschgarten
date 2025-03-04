@@ -41,8 +41,6 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult
 
-  suspend fun rustWorkspace(params: RustWorkspaceParams): RustWorkspaceResult
-
   suspend fun workspaceLibraries(): WorkspaceLibrariesResult
 
   suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult

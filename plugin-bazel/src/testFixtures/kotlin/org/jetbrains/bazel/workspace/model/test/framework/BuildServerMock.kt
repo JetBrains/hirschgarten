@@ -34,8 +34,6 @@ import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
-import org.jetbrains.bsp.protocol.RustWorkspaceParams
-import org.jetbrains.bsp.protocol.RustWorkspaceResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourcesParams
@@ -79,7 +77,6 @@ class BuildServerMock(
   private val workspaceBuildTargetsPartial: WorkspaceBuildTargetsResult? = null,
   private val workspaceBuildTargetsFirstPhase: WorkspaceBuildTargetsResult? = null,
   private val pythonOptionsResult: PythonOptionsResult? = null,
-  private val rustWorkspaceResult: RustWorkspaceResult? = null,
   private val bazelResolveLocalToRemote: BazelResolveLocalToRemoteResult? = null,
   private val bazelResolveRemoteToLocal: BazelResolveRemoteToLocalResult? = null,
   private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = null,
@@ -153,8 +150,6 @@ class BuildServerMock(
     wrapInFuture(workspaceBuildTargetsFirstPhase)
 
   override suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult = wrapInFuture(pythonOptionsResult)
-
-  override suspend fun rustWorkspace(params: RustWorkspaceParams): RustWorkspaceResult = wrapInFuture(rustWorkspaceResult)
 
   override suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
     wrapInFuture(bazelResolveLocalToRemote)

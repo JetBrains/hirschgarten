@@ -76,7 +76,6 @@ object FeatureFlagsProvider {
         isPythonSupportEnabled = isPythonSupportEnabled,
         isAndroidSupportEnabled = isAndroidSupportEnabled,
         isGoSupportEnabled = isGoSupportEnabled,
-        isRustSupportEnabled = false, // No corresponding registry key for now
         isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
         bazelSymlinksScanMaxDepth = symlinkScanMaxDepth,
         bazelShutDownBeforeShardBuild = shutDownBeforeShardBuild,
