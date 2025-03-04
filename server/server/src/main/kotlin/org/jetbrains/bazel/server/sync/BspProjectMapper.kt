@@ -91,7 +91,7 @@ class BspProjectMapper(
 ) {
   fun workspaceTargets(project: AspectSyncProject): WorkspaceBuildTargetsResult {
     val buildTargets = project.modules.map { it.toBuildTarget() }
-    return WorkspaceBuildTargetsResult(buildTargets).apply { hasError = project.hasError }
+    return WorkspaceBuildTargetsResult(buildTargets, hasError = project.hasError)
   }
 
   fun workspaceInvalidTargets(project: AspectSyncProject): WorkspaceInvalidTargetsResult =
