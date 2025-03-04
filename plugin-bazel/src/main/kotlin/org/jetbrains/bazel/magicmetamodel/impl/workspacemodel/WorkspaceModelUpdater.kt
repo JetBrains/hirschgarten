@@ -5,7 +5,6 @@ import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarEx
 import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.ResourcesItem
@@ -16,7 +15,6 @@ data class ModuleDetails(
   val target: BuildTarget,
   val sources: List<SourcesItem>,
   val resources: List<ResourcesItem>,
-  val dependenciesSources: List<DependencySourcesItem>,
   val javacOptions: JavacOptionsItem?,
   val scalacOptions: ScalacOptionsItem?,
   val libraryDependencies: List<Label>?,

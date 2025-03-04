@@ -45,7 +45,6 @@ import org.jetbrains.bazel.sync.BaseTargetInfo
 import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
-import org.jetbrains.bazel.sync.task.asyncQuery
 import org.jetbrains.bazel.sync.task.asyncQueryIf
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.task.queryIf
@@ -60,7 +59,6 @@ import org.jetbrains.bazel.workspacemodel.entities.includesJava
 import org.jetbrains.bazel.workspacemodel.entities.includesScala
 import org.jetbrains.bazel.workspacemodel.entities.toBuildTargetInfo
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
@@ -487,11 +485,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
           server.workspaceLibraries()
         }
 
-      val dependencySourcesResult =
-        asyncQuery("buildTarget/dependencySources") {
-          server.buildTargetDependencySources(DependencySourcesParams(baseTargetInfos.allTargetIds))
-        }
-
       val nonModuleTargets =
         query("workspace/nonModuleTargets") {
           server.workspaceNonModuleTargets()
@@ -533,7 +526,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
         targets = baseTargetInfos.infos.map { it.target }.toSet(),
         sources = baseTargetInfos.infos.flatMap { it.sources },
         resources = baseTargetInfos.infos.flatMap { it.resources },
-        dependenciesSources = dependencySourcesResult.await().items,
         javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
         // TODO: Son
         scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),

@@ -40,11 +40,6 @@ internal class JavaModuleWithSourcesUpdater(
     if (entityToAdd.isRoot(projectBasePath)) {
       // TODO https://youtrack.jetbrains.com/issue/BAZEL-664
     } else {
-      val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
-
-      // all module-level libraries are treated as project-level libraries for memory efficiency
-      entityToAdd.moduleLevelLibraries?.let { libraryEntityUpdater.addEntities(it) }
-
       val javaSourceEntityUpdater =
         JavaSourceEntityUpdater(
           workspaceModelEntityUpdaterConfig,

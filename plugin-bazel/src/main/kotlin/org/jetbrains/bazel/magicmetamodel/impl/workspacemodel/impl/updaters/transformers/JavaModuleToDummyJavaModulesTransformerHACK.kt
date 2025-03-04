@@ -85,7 +85,6 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
             rootType = DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
           ),
         ),
-      moduleLevelLibraries = listOf(),
       jvmJdkName = javaModule.jvmJdkName,
       kotlinAddendum = javaModule.kotlinAddendum,
       javaAddendum = javaModule.javaAddendum,
@@ -131,7 +130,6 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
         } else {
           listOf()
         },
-      moduleLevelLibraries = listOf(),
       jvmJdkName = javaModule.jvmJdkName,
       kotlinAddendum = javaModule.kotlinAddendum,
       javaAddendum = javaModule.javaAddendum,

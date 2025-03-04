@@ -71,7 +71,6 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
           baseDirContentRoot = baseDirContentRoot,
           sourceRoots = listOf(),
           resourceRoots = listOf(),
-          moduleLevelLibraries = listOf(),
           jvmJdkName = "${projectBasePath.name}-$javaVersion",
           kotlinAddendum =
             KotlinAddendum(

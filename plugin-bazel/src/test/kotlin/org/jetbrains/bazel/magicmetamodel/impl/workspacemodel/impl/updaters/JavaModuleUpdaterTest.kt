@@ -35,7 +35,6 @@ import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -121,27 +120,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             ),
           )
 
-        val libraries =
-          listOf(
-            Library(
-              displayName = "lib1",
-              sourceJars = listOf("jar:///lib1/1.0.0/lib1-1.0.0-sources.jar!/"),
-              classJars = listOf("jar:///lib1/1.0.0/lib1.jar!/"),
-            ),
-            Library(
-              displayName = "lib2",
-              sourceJars = listOf("jar:///lib2/1.0.0/lib2-2.0.0-sources.jar!/"),
-              classJars = listOf("jar:///lib2/1.0.0/lib2-2.0.0.jar!/"),
-            ),
-          )
-
         val javaModule =
           JavaModule(
             genericModuleInfo = module,
             baseDirContentRoot = baseDirContentRoot,
             sourceRoots = sourceRoots,
             resourceRoots = resourceRoots,
-            moduleLevelLibraries = libraries,
             jvmJdkName = "test-proj-11",
           )
 
@@ -394,26 +378,11 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             ),
           )
 
-        val libraries1 =
-          listOf(
-            Library(
-              displayName = "lib1",
-              sourceJars = listOf("jar:///lib1/1.0.0/lib1-1.0.0-sources.jar!/"),
-              classJars = listOf("jar:///lib1/1.0.0/lib1-1.0.0.jar!/"),
-            ),
-            Library(
-              displayName = "lib2",
-              sourceJars = listOf("jar:///lib2/2.0.0/lib2-2.0.0-sources.jar!/"),
-              classJars = listOf("jar:///lib2/1.0.0/lib2-2.0.0.jar!/"),
-            ),
-          )
-
         val javaModule1 =
           JavaModule(
             genericModuleInfo = module1,
             sourceRoots = sourceRoots1,
             resourceRoots = resourceRoots1,
-            moduleLevelLibraries = libraries1,
             baseDirContentRoot = baseDirContentRoot1,
             jvmJdkName = "test-proj-11",
             kotlinAddendum = null,
@@ -464,22 +433,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             ),
           )
 
-        val libraries2 =
-          listOf(
-            Library(
-              displayName = "lib1",
-              sourceJars = listOf("jar:///lib1/1.0.0/lib1-1.0.0-sources.jar!/"),
-              classJars = listOf("jar:///lib1/1.0.0/lib1-1.0.0.jar!/"),
-            ),
-          )
-
         val javaModule2 =
           JavaModule(
             genericModuleInfo = module2,
             baseDirContentRoot = baseDirContentRoot2,
             sourceRoots = sourceRoots2,
             resourceRoots = resourceRoots2,
-            moduleLevelLibraries = libraries2,
             jvmJdkName = "test-proj-11",
             kotlinAddendum = null,
           )
@@ -790,7 +749,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             baseDirContentRoot = baseDirContentRoot,
             sourceRoots = emptyList(),
             resourceRoots = emptyList(),
-            moduleLevelLibraries = emptyList(),
             jvmJdkName = null,
             kotlinAddendum = null,
           )
@@ -844,7 +802,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             baseDirContentRoot = baseDirContentRoot1,
             sourceRoots = emptyList(),
             resourceRoots = emptyList(),
-            moduleLevelLibraries = emptyList(),
             jvmJdkName = null,
             kotlinAddendum = null,
           )
@@ -870,7 +827,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             baseDirContentRoot = baseDirContentRoot2,
             sourceRoots = emptyList(),
             resourceRoots = emptyList(),
-            moduleLevelLibraries = emptyList(),
             jvmJdkName = null,
             kotlinAddendum = null,
           )

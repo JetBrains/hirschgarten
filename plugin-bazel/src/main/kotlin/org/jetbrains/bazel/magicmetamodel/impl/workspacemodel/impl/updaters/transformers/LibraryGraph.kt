@@ -113,7 +113,6 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
             ),
           jvmJdkName = defaultJdkName,
           baseDirContentRoot = null,
-          moduleLevelLibraries = null,
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
         )
