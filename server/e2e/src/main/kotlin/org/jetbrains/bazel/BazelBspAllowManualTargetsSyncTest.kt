@@ -60,36 +60,43 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
   private fun sourcesResults(): BazelBspTestScenarioStep {
     val manualTargetTestJavaFile =
       SourceItem(
-        "file://\$WORKSPACE/manual_target/TestJavaFile.java",
-        SourceItemKind.FILE,
-        false,
+        uri = "file://\$WORKSPACE/manual_target/TestJavaFile.java",
+        kind = SourceItemKind.FILE,
+        generated = false,
+        jvmPackagePrefix = "manual_target",
       )
     val manualTargetTestJavaFileSources =
       SourcesItem(
-        Label.parse("$targetPrefix//manual_target:java_library"),
-        listOf(manualTargetTestJavaFile),
+        target = Label.parse("$targetPrefix//manual_target:java_library"),
+        sources = listOf(manualTargetTestJavaFile),
         roots = listOf("file://\$WORKSPACE/"),
       )
 
     val manualTargetTestJavaTest =
-      SourceItem("file://\$WORKSPACE/manual_target/JavaTest.java", SourceItemKind.FILE, false)
+      SourceItem(
+        uri = "file://\$WORKSPACE/manual_target/JavaTest.java",
+        kind = SourceItemKind.FILE,
+        generated = false,
+        jvmPackagePrefix = "manual_target",
+      )
     val manualTargetTestJavaTestSources =
       SourcesItem(
-        Label.parse("$targetPrefix//manual_target:java_test"),
-        listOf(manualTargetTestJavaTest),
+        target = Label.parse("$targetPrefix//manual_target:java_test"),
+        sources = listOf(manualTargetTestJavaTest),
         roots = listOf("file://\$WORKSPACE/"),
       )
 
     val manualTargetTestJavaBinary =
       SourceItem(
-        "file://\$WORKSPACE/manual_target/TestJavaBinary.java",
-        SourceItemKind.FILE,
-        false,
+        uri = "file://\$WORKSPACE/manual_target/TestJavaBinary.java",
+        kind = SourceItemKind.FILE,
+        generated = false,
+        jvmPackagePrefix = "manual_target",
       )
     val manualTargetTestJavaBinarySources =
       SourcesItem(
-        Label.parse("$targetPrefix//manual_target:java_binary"),
-        listOf(manualTargetTestJavaBinary),
+        target = Label.parse("$targetPrefix//manual_target:java_binary"),
+        sources = listOf(manualTargetTestJavaBinary),
         roots = listOf("file://\$WORKSPACE/"),
       )
 

@@ -6,7 +6,6 @@ import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.FeatureFlags
-import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.testkit.client.BasicTestClient
 import org.jetbrains.bsp.testkit.client.MockClient
@@ -141,30 +140,27 @@ abstract class BazelBspTestBaseScenario {
   }
 
   protected fun createTestkitClient(): TestClient {
-    val (initializeBuildParams, bazelJsonTransformer) = createTestClientParams()
+    val (featureFlags, bazelJsonTransformer) = createTestClientParams()
 
     return TestClient(
       Path.of(workspaceDir),
-      initializeBuildParams,
       { s: String -> bazelJsonTransformer.transformJson(s) },
+      featureFlags,
     ).also { println("Created TestClient done.") }
   }
 
   protected fun createBazelClient(): BasicTestClient {
-    val (initializeBuildParams, bazelJsonTransformer) = createTestClientParams()
+    val (featureFlags, bazelJsonTransformer) = createTestClientParams()
 
     return BasicTestClient(
       Path.of(workspaceDir),
-      initializeBuildParams,
       { s: String -> bazelJsonTransformer.transformJson(s) },
       MockClient(),
+      featureFlags,
     ).also { println("Created TestClient done.") }
   }
 
-  private data class BazelTestClientParams(
-    val initializeBuildParams: InitializeBuildParams,
-    val bazelJsonTransformer: BazelJsonTransformer,
-  )
+  private data class BazelTestClientParams(val featureFlags: FeatureFlags, val bazelJsonTransformer: BazelJsonTransformer)
 
   private fun createTestClientParams(): BazelTestClientParams {
     println("Testing repo workspace path: $workspaceDir")
@@ -178,9 +174,6 @@ abstract class BazelBspTestBaseScenario {
         isPropagateExportsFromDepsEnabled = false,
       )
 
-    val initializeBuildParams =
-      InitializeBuildParams(featureFlags = featureFlags)
-
     val bazelCache = Path(processBazelOutputWithDownloadRetry("info", "execution_root"))
     val bazelOutputBase = Path(processBazelOutput("info", "output_base"))
 
@@ -190,7 +183,7 @@ abstract class BazelBspTestBaseScenario {
         bazelCache,
         bazelOutputBase,
       )
-    return BazelTestClientParams(initializeBuildParams, bazelJsonTransformer)
+    return BazelTestClientParams(featureFlags, bazelJsonTransformer)
   }
 
   private fun executeScenarioSteps(): Boolean = scenarioSteps().map { it.executeAndReturnResult() }.all { it }

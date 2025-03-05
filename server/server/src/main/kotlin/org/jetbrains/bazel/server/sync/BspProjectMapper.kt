@@ -191,7 +191,7 @@ class BspProjectMapper(
         tags = tags,
         languageIds = languages,
         capabilities = capabilities,
-        displayName = label.toString(),
+        displayName = label.toShortString(),
         baseDirectory = baseDirectory,
         dependencies = emptyList(),
       )

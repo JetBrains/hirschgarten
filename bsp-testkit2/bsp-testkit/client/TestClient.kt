@@ -1,13 +1,14 @@
 package org.jetbrains.bsp.testkit.client
 
 import kotlinx.coroutines.test.runTest
+import org.jetbrains.bazel.server.connection.startServer
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
-import org.jetbrains.bsp.protocol.InitializeBuildParams
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
@@ -31,32 +32,11 @@ import org.jetbrains.bsp.testkit.gsonSealedSupport
 import java.nio.file.Path
 import kotlin.time.Duration
 
-suspend fun withSession(
-  workspace: Path,
-  client: MockClient,
-  test: suspend (Session) -> Unit,
-) {
-  val session = Session(workspace, client)
-  test(session)
-}
-
-suspend fun withLifetime(
-  initializeParams: InitializeBuildParams,
-  session: Session,
-  f: suspend () -> Unit,
-) {
-  session.server.buildInitialize(initializeParams)
-  session.server.onBuildInitialized()
-  f()
-  session.server.buildShutdown()
-  session.server.onBuildExit()
-}
-
 open class BasicTestClient(
   val workspacePath: Path,
-  val initializeParams: InitializeBuildParams,
   val transformJson: (String) -> String,
   val client: MockClient,
+  val featureFlags: FeatureFlags,
 ) {
   val gson = gsonSealedSupport
 
@@ -74,24 +54,22 @@ open class BasicTestClient(
 
   fun test(timeout: Duration, doTest: suspend (Session) -> Unit) {
     runTest(timeout = timeout) {
-      withSession(workspacePath, client) { session ->
-        withLifetime(initializeParams, session) {
-          doTest(session)
-        }
-      }
+      val server = startServer(client, workspacePath, null, featureFlags)
+      val session = Session(client, server)
+      doTest(session)
     }
   }
 }
 
 class TestClient(
   workspacePath: Path,
-  initializeParams: InitializeBuildParams,
   transformJson: (String) -> String,
+  featureFlags: FeatureFlags,
 ) : BasicTestClient(
     workspacePath,
-    initializeParams,
     transformJson,
     MockClient(),
+    featureFlags,
   ) {
   fun testJavacOptions(
     timeout: Duration,

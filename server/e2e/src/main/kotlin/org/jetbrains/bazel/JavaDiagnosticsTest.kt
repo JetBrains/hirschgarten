@@ -52,7 +52,6 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         session.client.clearDiagnostics()
         val result = session.server.buildTargetCompile(transformedParams)
         assertEquals(StatusCode.OK, result.statusCode)
-        assertEquals(params.originId, result.originId)
         println(session.client.publishDiagnosticsNotifications)
         assertEquals(1, session.client.publishDiagnosticsNotifications.size)
         val deprecatedWarning =
@@ -120,7 +119,6 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         val result = session.server.buildTargetCompile(transformedParams)
         println(session.client.logMessageNotifications)
         assertEquals(StatusCode.ERROR, result.statusCode)
-        assertEquals(params.originId, result.originId)
         assertEquals(2, session.client.publishDiagnosticsNotifications.size)
         val noSuchMethodError =
           session.client.publishDiagnosticsNotifications.find {

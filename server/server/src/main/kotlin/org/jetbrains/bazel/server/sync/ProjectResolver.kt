@@ -26,7 +26,6 @@ import org.jetbrains.bazel.workspacecontext.IllegalTargetsSizeException
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
-import org.jetbrains.bsp.protocol.FeatureFlags
 
 /** Responsible for querying bazel and constructing Project instance  */
 class ProjectResolver(
@@ -41,7 +40,6 @@ class ProjectResolver(
   private val bazelRunner: BazelRunner,
   private val bazelPathsResolver: BazelPathsResolver,
   private val bspClientLogger: BspClientLogger,
-  private val featureFlags: FeatureFlags,
 ) {
   private suspend fun <T> measured(description: String, f: suspend () -> T): T = bspTracer.spanBuilder(description).useWithScope { f() }
 
@@ -101,7 +99,7 @@ class ProjectResolver(
       val buildAspectResult =
         measured(
           "Building project with aspect",
-        ) { buildProjectWithAspect(workspaceContext, build, targetsToSync, featureFlags, firstPhaseProject) }
+        ) { buildProjectWithAspect(workspaceContext, build, targetsToSync, firstPhaseProject) }
 
       val aspectOutputs =
         measured(
@@ -154,7 +152,6 @@ class ProjectResolver(
     workspaceContext: WorkspaceContext,
     build: Boolean,
     targetsToSync: TargetsSpec,
-    featureFlags: FeatureFlags,
     firstPhaseProject: FirstPhaseProject?,
   ): BazelBspAspectsManagerResult =
     coroutineScope {
@@ -187,7 +184,7 @@ class ProjectResolver(
             BazelBuildTargetSharder.expandAndShardTargets(
               bazelPathsResolver,
               bazelInfo,
-              featureFlags,
+              workspaceContextProvider,
               targetsToSync,
               workspaceContext,
               bazelRunner,
@@ -200,7 +197,7 @@ class ProjectResolver(
           var suggestedTargetShardSize: Int = workspaceContext.targetShardSize.value
           while (remainingShardedTargetsSpecs.isNotEmpty()) {
             ensureActive()
-            if (featureFlags.bazelShutDownBeforeShardBuild) {
+            if (workspaceContextProvider.currentFeatureFlags().bazelShutDownBeforeShardBuild) {
               // Prevent memory leak by forcing Bazel to shut down before it builds a shard
               // This may cause the build to become slower, but it is necessary, at least before this issue is solved
               // https://github.com/bazelbuild/bazel/issues/19412

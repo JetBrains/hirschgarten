@@ -2,9 +2,9 @@ package org.jetbrains.bazel.server.bsp.managers
 
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.FeatureFlags
+import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 
-class BazelToolchainManager(private val bazelRunner: BazelRunner, private val featureFlags: FeatureFlags) {
+class BazelToolchainManager(private val bazelRunner: BazelRunner, private val workspaceContextProvider: WorkspaceContextProvider) {
   suspend fun getToolchain(rulesetLanguage: RulesetLanguage): Label? =
     when (rulesetLanguage.language) {
       Language.Scala -> Label.parse("@io_bazel_rules_scala//scala:toolchain_type")
@@ -21,7 +21,7 @@ class BazelToolchainManager(private val bazelRunner: BazelRunner, private val fe
    * or `@rules_android//toolchains/android_sdk:toolchain_type` depending on the version.
    */
   suspend fun getAndroidToolchain(rulesetLanguage: RulesetLanguage): Label? {
-    if (!featureFlags.isAndroidSupportEnabled) return null
+    if (!workspaceContextProvider.currentFeatureFlags().isAndroidSupportEnabled) return null
     if (rulesetLanguage.rulesetName == null) return NATIVE_ANDROID_TOOLCHAIN
     val androidToolchain = Label.parse("@${rulesetLanguage.rulesetName}//toolchains/android_sdk:toolchain_type")
     val androidToolchainExists =

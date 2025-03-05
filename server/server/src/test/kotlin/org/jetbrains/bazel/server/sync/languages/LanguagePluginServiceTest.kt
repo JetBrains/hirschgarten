@@ -18,6 +18,7 @@ import org.jetbrains.bazel.server.sync.languages.python.PythonLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
 import org.jetbrains.bazel.workspacecontext.DefaultWorkspaceContextProvider
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -52,7 +53,7 @@ class LanguagePluginServiceTest {
         true,
         emptyList(),
       )
-    val provider = DefaultWorkspaceContextProvider(Paths.get(""), projectViewFile, dotBazelBspDirPath)
+    val provider = DefaultWorkspaceContextProvider(Paths.get(""), projectViewFile, dotBazelBspDirPath, FeatureFlags())
     val bazelPathsResolver = BazelPathsResolver(bazelInfo)
     val jdkResolver = JdkResolver(bazelPathsResolver, JdkVersionResolver())
     val javaLanguagePlugin = JavaLanguagePlugin(provider, bazelPathsResolver, jdkResolver)

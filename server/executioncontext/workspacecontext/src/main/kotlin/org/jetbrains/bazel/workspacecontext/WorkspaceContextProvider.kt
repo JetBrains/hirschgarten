@@ -3,17 +3,21 @@ package org.jetbrains.bazel.workspacecontext
 import org.jetbrains.bazel.projectview.generator.DefaultProjectViewGenerator
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.parser.DefaultProjectViewParser
+import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
 import kotlin.io.path.notExists
 
 interface WorkspaceContextProvider {
   fun currentWorkspaceContext(): WorkspaceContext
+
+  fun currentFeatureFlags(): FeatureFlags
 }
 
 class DefaultWorkspaceContextProvider(
   var workspaceRoot: Path,
   var projectViewPath: Path,
   dotBazelBspDirPath: Path,
+  var featureFlags: FeatureFlags,
 ) : WorkspaceContextProvider {
   private val workspaceContextConstructor = WorkspaceContextConstructor(workspaceRoot, dotBazelBspDirPath)
 
@@ -22,6 +26,8 @@ class DefaultWorkspaceContextProvider(
 
     return workspaceContextConstructor.construct(projectView)
   }
+
+  override fun currentFeatureFlags(): FeatureFlags = featureFlags
 
   private fun ensureProjectViewExistsAndParse(): ProjectView {
     if (projectViewPath.notExists()) {

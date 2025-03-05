@@ -27,6 +27,7 @@ import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.TransitiveCompileTimeJarsTargetKindsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
 import kotlin.io.path.Path
@@ -72,6 +73,8 @@ val mockBazelInfo =
 val contextProvider =
   object : WorkspaceContextProvider {
     override fun currentWorkspaceContext(): WorkspaceContext = mockContext
+
+    override fun currentFeatureFlags() = FeatureFlags()
   }
 
 val bazelRunner = BazelRunner(contextProvider, null, mockBazelInfo.workspaceRoot)

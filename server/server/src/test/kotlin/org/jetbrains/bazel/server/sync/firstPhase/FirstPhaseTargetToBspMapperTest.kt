@@ -30,6 +30,7 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.SourceItem
@@ -70,6 +71,8 @@ private class MockWorkspaceContextProvider(private val allowManualTargetsSync: B
       targetShardSize = TargetShardSizeSpec(DEFAULT_TARGET_SHARD_SIZE),
       shardingApproachSpec = ShardingApproachSpec(null),
     )
+
+  override fun currentFeatureFlags(): FeatureFlags = FeatureFlags()
 }
 
 private fun createMockProject(lightweightModules: List<Build.Target>): FirstPhaseProject =
