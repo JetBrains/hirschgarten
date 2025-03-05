@@ -19,7 +19,7 @@ import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.seconds
 
 object NestedModulesTest : BazelBspTestBaseScenario() {
-  private val testClient = createBazelClient()
+  private val testClient = createTestkitClient()
 
   @JvmStatic
   fun main(args: Array<String>) = executeScenario()
