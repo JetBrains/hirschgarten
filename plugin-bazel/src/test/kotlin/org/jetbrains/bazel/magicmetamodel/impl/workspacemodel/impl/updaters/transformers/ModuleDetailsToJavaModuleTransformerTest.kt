@@ -151,7 +151,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           listOf(
             IntermediateModuleDependency("module2"),
             IntermediateModuleDependency("module3"),
-            IntermediateModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath)),
           ),
         librariesDependencies = emptyList(),
       )
@@ -477,7 +476,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           listOf(
             IntermediateModuleDependency("module2"),
             IntermediateModuleDependency("module3"),
-            IntermediateModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath)),
           ),
         librariesDependencies = emptyList(),
       )
@@ -559,6 +557,174 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     javaModules shouldContainExactlyInAnyOrder (
       listOf(expectedJavaModule1, expectedJavaModule2) to { actual, expected -> validateJavaModule(actual, expected) }
     )
+  }
+
+  @Test
+  fun `should add dependency on dummy module properly`() {
+    // given
+    val projectRoot = createTempDirectory(projectBasePath, "project").toAbsolutePath()
+    projectRoot.toFile().deleteOnExit()
+
+    val javaHome = "/fake/path/to/local_jdk"
+    val javaVersion = "11"
+
+    val data = JvmBuildTarget(javaHome, javaVersion)
+
+    val buildTargetId = Label.parse("module1")
+    val buildTarget =
+      BuildTarget(
+        buildTargetId,
+        listOf("library"),
+        listOf("java"),
+        listOf(
+          Label.parse("module2"),
+          Label.parse("module3"),
+          Label.parse("@maven//:lib1"),
+        ),
+        BuildTargetCapabilities(),
+        baseDirectory = projectRoot.toUri().toString(),
+        data = data,
+      )
+
+    val packageA1Path = createTempDirectory(projectRoot, "packageA1")
+    packageA1Path.toFile().deleteOnExit()
+    val packageA2Path = createTempDirectory(packageA1Path, "packageA2")
+    packageA2Path.toFile().deleteOnExit()
+    val file1APath = createTempFile(packageA2Path, "File1", ".java")
+    file1APath.toFile().deleteOnExit()
+    val file2APath = createTempFile(packageA2Path, "File2", ".java")
+    file2APath.toFile().deleteOnExit()
+
+    val outOfSourceFile = createTempFile(packageA2Path, "File3", ".java")
+    outOfSourceFile.toFile().deleteOnExit()
+
+    val packageB1Path = createTempDirectory(projectRoot, "packageB1")
+    packageB1Path.toFile().deleteOnExit()
+    val packageB2Path = createTempDirectory(packageB1Path, "packageB2")
+    packageB2Path.toFile().deleteOnExit()
+    val dir1BPath = createTempDirectory(packageB2Path, "dir1")
+    dir1BPath.toFile().deleteOnExit()
+
+    val sourcesItem =
+      SourcesItem(
+        buildTargetId,
+        listOf(
+          SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
+          SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
+          SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+        ),
+        roots = listOf(projectRoot.toUri().toString()),
+      )
+
+    val resourceFilePath = createTempFile(projectBasePath, "resource", "File.txt")
+    resourceFilePath.toFile().deleteOnExit()
+    val resourcesItem =
+      ResourcesItem(
+        buildTargetId,
+        listOf(resourceFilePath.toUri().toString()),
+      )
+
+    val javacOptionsItem =
+      JavacOptionsItem(
+        buildTargetId,
+        listOf("opt1", "opt2", "opt3"),
+        listOf(
+          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
+          "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
+        ),
+        "file:///compiler/output.jar",
+      )
+
+    val moduleDetails =
+      ModuleDetails(
+        target = buildTarget,
+        sources = listOf(sourcesItem),
+        resources = listOf(resourcesItem),
+        javacOptions = javacOptionsItem,
+        scalacOptions = null,
+        libraryDependencies = null,
+        moduleDependencies =
+          listOf(
+            Label.parse("module2"),
+            Label.parse("module3"),
+          ),
+        defaultJdkName = null,
+        jvmBinaryJars = emptyList(),
+      )
+
+    val targetsMap = listOf(buildTargetId.toShortString(), "module2", "module3").toDefaultTargetsMap()
+    // when
+    val javaModules =
+      ModuleDetailsToJavaModuleTransformer(
+        targetsMap,
+        DefaultNameProvider,
+        projectBasePath,
+        project,
+      ).transform(
+        moduleDetails,
+      )
+
+    // then
+    val dummyJavaModuleName = calculateDummyJavaModuleName(projectRoot, projectBasePath)
+    val expectedModule =
+      GenericModuleInfo(
+        name = "module1",
+        type = ModuleTypeId("JAVA_MODULE"),
+        modulesDependencies =
+          listOf(
+            IntermediateModuleDependency("module2"),
+            IntermediateModuleDependency("module3"),
+            IntermediateModuleDependency(dummyJavaModuleName),
+          ),
+        librariesDependencies = emptyList(),
+      )
+
+    val expectedBaseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath())
+
+    val expectedJavaSourceRoot1 =
+      JavaSourceRoot(
+        sourcePath = file1APath,
+        generated = false,
+        packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+        rootType = SourceRootTypeId("java-source"),
+      )
+    val expectedJavaSourceRoot2 =
+      JavaSourceRoot(
+        sourcePath = file2APath,
+        generated = false,
+        packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+        rootType = SourceRootTypeId("java-source"),
+      )
+    val expectedJavaSourceRoot3 =
+      JavaSourceRoot(
+        sourcePath = dir1BPath,
+        generated = false,
+        packagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
+        rootType = SourceRootTypeId("java-source"),
+      )
+
+    val expectedResourceRoot1 =
+      ResourceRoot(
+        resourcePath = resourceFilePath,
+        rootType = SourceRootTypeId("java-resource"),
+      )
+
+    val expectedJavaAddendum = JavaAddendum(languageVersion = javaVersion, javacOptions = emptyList())
+
+    val expectedJavaModule =
+      JavaModule(
+        genericModuleInfo = expectedModule,
+        baseDirContentRoot = expectedBaseDirContentRoot,
+        sourceRoots = listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2, expectedJavaSourceRoot3),
+        resourceRoots = listOf(expectedResourceRoot1),
+        jvmJdkName = projectBasePath.name.projectNameToJdkName(javaHome),
+        kotlinAddendum = null,
+        javaAddendum = expectedJavaAddendum,
+      )
+
+    validateJavaModule(javaModules.first(), expectedJavaModule)
+    javaModules.size shouldBe 2
+    javaModules[1].getModuleName() shouldBe dummyJavaModuleName
   }
 
   private infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(

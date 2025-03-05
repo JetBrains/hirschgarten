@@ -2,7 +2,6 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
-import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
@@ -31,7 +30,7 @@ import kotlin.io.path.toPath
 internal class ModuleDetailsToJavaModuleTransformer(
   targetsMap: Map<Label, BuildTargetInfo>,
   nameProvider: TargetNameReformatProvider,
-  private val projectBasePath: Path,
+  projectBasePath: Path,
   private val project: Project,
   private val isAndroidSupportEnabled: Boolean = false,
 ) {
@@ -102,9 +101,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
       },
     )
 
-  private fun ModuleDetails.toJvmClassPaths() =
-    (this.javacOptions?.classpath.orEmpty() + this.scalacOptions?.classpath.orEmpty()).distinct()
-
   private fun toGenericModuleInfo(inputEntity: ModuleDetails): GenericModuleInfo {
     val bspModuleDetails =
       BspModuleDetails(
@@ -117,7 +113,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
         scalacOptions = inputEntity.scalacOptions,
       )
 
-    return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails).applyHACK(inputEntity, projectBasePath)
+    return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
   }
 
   private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
@@ -125,15 +121,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
       // TODO https://youtrack.jetbrains.com/issue/BAZEL-635
       path = (inputEntity.target.baseDirectory ?: "file:///todo").safeCastToURI().toPath(),
     )
-
-  private fun GenericModuleInfo.applyHACK(inputEntity: ModuleDetails, projectBasePath: Path): GenericModuleInfo {
-    if (!BazelFeatureFlags.addDummyModules) return this
-    val dummyJavaModuleDependencies =
-      calculateDummyJavaModuleNames(calculateDummyJavaSourceRoots(toJavaSourceRoots(inputEntity)), projectBasePath)
-        .filter { it.isNotEmpty() }
-        .map { IntermediateModuleDependency(it) }
-    return this.copy(modulesDependencies = modulesDependencies + dummyJavaModuleDependencies)
-  }
 
   private fun ModuleDetails.toJdkNameOrDefault(): String? = toJdkName() ?: defaultJdkName
 

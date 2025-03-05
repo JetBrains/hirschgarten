@@ -240,7 +240,7 @@ private fun calculateDummyResourceRootPath(
   }
 }
 
-internal fun calculateDummyJavaSourceRoots(sourceRoots: List<JavaSourceRoot>): List<JavaSourceRoot> =
+private fun calculateDummyJavaSourceRoots(sourceRoots: List<JavaSourceRoot>): List<JavaSourceRoot> =
   sourceRoots
     .asSequence()
     .filter { !BazelJavaSourceRootEntityUpdater.shouldAddBazelJavaSourceRootEntity(it) }
@@ -269,7 +269,7 @@ private fun restoreSourceRootFromPackagePrefix(sourceRoot: JavaSourceRoot): Java
   )
 }
 
-internal fun calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots: List<JavaSourceRoot>, projectBasePath: Path): List<String> =
+private fun calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots: List<JavaSourceRoot>, projectBasePath: Path): List<String> =
   dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it.sourcePath, projectBasePath) }
 
 internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {
