@@ -17,7 +17,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.projectAware.BazelProjectModuleBuildTasksTracker
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.target.getModule
-import org.jetbrains.bazel.ui.console.BspConsoleService
+import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
@@ -36,7 +36,7 @@ abstract class LocalJvmRunnerAction(
   override suspend fun getRunnerSettings(project: Project, buildTargetInfos: List<BuildTargetInfo>): RunnerAndConfigurationSettings? {
     val module = targetInfo.getModule(project) ?: return null
 
-    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+    val bspSyncConsole = ConsoleService.getInstance(project).syncConsole
     if (!preBuild(project)) return null
     val environment = queryJvmEnvironment(project, bspSyncConsole) ?: return null
     return calculateConfigurationSettings(environment, module, project, targetInfo)

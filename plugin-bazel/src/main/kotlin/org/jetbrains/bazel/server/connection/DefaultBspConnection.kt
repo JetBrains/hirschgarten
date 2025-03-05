@@ -13,7 +13,7 @@ import org.jetbrains.bazel.install.EnvironmentCreator
 import org.jetbrains.bazel.server.client.BazelClient
 import org.jetbrains.bazel.server.client.GenericConnection
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import org.jetbrains.bazel.ui.console.BspConsoleService
+import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.ui.console.ids.CONNECT_TASK_ID
 import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -81,7 +81,7 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
 
   private suspend fun connectBuiltIn(connection: GenericConnection) {
     coroutineScope {
-      val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+      val bspSyncConsole = ConsoleService.getInstance(project).syncConsole
       bspSyncConsole.startTask(
         taskId = CONNECT_TASK_ID,
         title = BspPluginBundle.message("console.task.auto.connect.title"),
@@ -106,11 +106,11 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
   }
 
   private fun createBspClient(): BazelClient {
-    val bspConsoleService = BspConsoleService.getInstance(project)
+    val consoleService = ConsoleService.getInstance(project)
 
     return BazelClient(
-      bspConsoleService.bspSyncConsole,
-      bspConsoleService.bspBuildConsole,
+      consoleService.syncConsole,
+      consoleService.buildConsole,
       project,
     )
   }

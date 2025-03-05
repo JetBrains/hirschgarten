@@ -62,10 +62,12 @@ class BazelClient(
 
     log.debug("Got task start: $params")
     val originId = params.originId
-    val maybeParent = params.taskId.parents?.firstOrNull()
+    val maybeParent = params.taskId.parents.firstOrNull()
+
+    val message = params.message ?: return
 
     BazelTaskEventsService.getInstance(project).withListener(originId) {
-      onTaskStart(taskId, maybeParent, params.message.orEmpty(), params.data)
+      onTaskStart(taskId, maybeParent, message, params.data)
     }
   }
 
@@ -75,8 +77,10 @@ class BazelClient(
     val taskId = params.taskId.id
     val originId = params.originId
 
+    val message = params.message ?: return
+
     BazelTaskEventsService.getInstance(project).withListener(originId) {
-      onTaskProgress(taskId, params.message.orEmpty(), null)
+      onTaskProgress(taskId, message, null)
     }
   }
 
@@ -88,8 +92,10 @@ class BazelClient(
 
     val status = params.status
 
+    val message = params.message ?: return
+
     BazelTaskEventsService.getInstance(project).withListener(originId) {
-      onTaskFinish(taskId, maybeParent, params.message.orEmpty(), status, params.data)
+      onTaskFinish(taskId, maybeParent, message, status, params.data)
     }
   }
 
