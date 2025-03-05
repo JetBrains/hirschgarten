@@ -4,5 +4,5 @@ kt_intellij_junit4_test(
     name = "BazelrcCommenterTest",
     src = "BazelrcCommenterTest.kt",
     data = ["//plugin-bazel/src/test/testData/bazelrc/commenter"],
-    deps = ["//plugin-bazel:intellij-bazel"],
+    deps = ["//plugin-bazel"],
 )

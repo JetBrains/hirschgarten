@@ -14,6 +14,5 @@ kt_jvm_library(
         "//server/install/src/main/kotlin/org/jetbrains/bazel/install/cli",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/utils:fileutils",
         "@maven//:com_google_code_gson_gson",
-        "@maven//:commons_cli_commons_cli",
     ],
 )
