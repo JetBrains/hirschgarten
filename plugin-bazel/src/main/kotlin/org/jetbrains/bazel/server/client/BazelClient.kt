@@ -8,14 +8,10 @@ import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
-import org.jetbrains.bsp.protocol.DidChangeBuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.LogMessageParams
-import org.jetbrains.bsp.protocol.PrintParams
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
-import org.jetbrains.bsp.protocol.ShowMessageParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
-import org.jetbrains.bsp.protocol.TaskProgressParams
 import org.jetbrains.bsp.protocol.TaskStartParams
 
 const val IMPORT_SUBTASK_ID: String = "import-subtask-id"
@@ -28,17 +24,6 @@ class BazelClient(
   private val log = logger<BazelClient>()
 
   private val bazelLogger = bazelLogger<BazelClient>()
-
-  override fun onBuildShowMessage(params: ShowMessageParams) {
-    log.debug("Got show message: $params")
-
-    val originId = params.originId
-    val message = params.message
-
-    BazelTaskEventsService.getInstance(project).withListener(originId) {
-      onShowMessage(message)
-    }
-  }
 
   override fun onBuildLogMessage(params: LogMessageParams) {
     log.debug("Got log message: $params")
@@ -71,19 +56,6 @@ class BazelClient(
     }
   }
 
-  override fun onBuildTaskProgress(params: TaskProgressParams) {
-    log.debug("Got task progress: $params")
-
-    val taskId = params.taskId.id
-    val originId = params.originId
-
-    val message = params.message ?: return
-
-    BazelTaskEventsService.getInstance(project).withListener(originId) {
-      onTaskProgress(taskId, message, null)
-    }
-  }
-
   override fun onBuildTaskFinish(params: TaskFinishParams) {
     val taskId = params.taskId.id
     log.debug("Got task finish: $params")
@@ -96,28 +68,6 @@ class BazelClient(
 
     BazelTaskEventsService.getInstance(project).withListener(originId) {
       onTaskFinish(taskId, maybeParent, message, status, params.data)
-    }
-  }
-
-  override fun onRunPrintStdout(params: PrintParams) {
-    log.debug("Got print stdout: $params")
-    val originId = params.originId
-    val taskId = params.task.id
-    val message = params.message
-
-    BazelTaskEventsService.getInstance(project).withListener(originId) {
-      onOutputStream(taskId, message)
-    }
-  }
-
-  override fun onRunPrintStderr(params: PrintParams) {
-    log.debug("Got print stderr: $params")
-    val originId = params.originId
-    val taskId = params.task.id
-    val message = params.message
-
-    BazelTaskEventsService.getInstance(project).withListener(originId) {
-      onErrorStream(taskId, message)
     }
   }
 
@@ -144,9 +94,6 @@ class BazelClient(
         )
       }
     }
-  }
-
-  override fun onBuildTargetDidChange(params: DidChangeBuildTarget) {
   }
 
   private fun addMessageToConsole(originId: String?, message: String) {
