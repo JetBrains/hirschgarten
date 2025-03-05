@@ -36,7 +36,7 @@ import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.FeatureFlags
+import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
@@ -58,7 +58,7 @@ class BazelProjectMapper(
   private val mavenCoordinatesResolver: MavenCoordinatesResolver,
   private val kotlinAndroidModulesMerger: KotlinAndroidModulesMerger,
   private val bspClientLogger: BspClientLogger,
-  private val featureFlags: FeatureFlags,
+  private val workspaceContextProvider: WorkspaceContextProvider,
 ) {
   private suspend fun <T> measure(description: String, body: suspend () -> T): T =
     bspTracer.spanBuilder(description).useWithScope { body() }
@@ -198,7 +198,7 @@ class BazelProjectMapper(
     val goLibrariesToImport =
       measureIf(
         description = "Merge all Go libraries",
-        predicate = { featureFlags.isGoSupportEnabled },
+        predicate = { workspaceContextProvider.currentFeatureFlags().isGoSupportEnabled },
         ifFalse = emptyMap(),
       ) {
         goLibrariesMapper.values
@@ -915,10 +915,10 @@ class BazelProjectMapper(
         shouldImportTargetKind(target.kind, transitiveCompileTimeJarsTargetKinds) ||
           target.hasJvmTargetInfo() &&
           hasKnownJvmSources(target) ||
-          featureFlags.isPythonSupportEnabled &&
+          workspaceContextProvider.currentFeatureFlags().isPythonSupportEnabled &&
           target.hasPythonTargetInfo() &&
           hasKnownPythonSources(target) ||
-          featureFlags.isGoSupportEnabled &&
+          workspaceContextProvider.currentFeatureFlags().isGoSupportEnabled &&
           target.hasGoTargetInfo() &&
           hasKnownGoSources(target)
       )

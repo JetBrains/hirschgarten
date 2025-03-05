@@ -1,14 +1,6 @@
 package org.jetbrains.bsp.protocol
 
 interface JoinedBuildServer {
-  suspend fun buildInitialize(params: InitializeBuildParams)
-
-  suspend fun onBuildInitialized()
-
-  suspend fun buildShutdown()
-
-  suspend fun onBuildExit()
-
   suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult
 
   suspend fun buildTargetSources(params: SourcesParams): SourcesResult

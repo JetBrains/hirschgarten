@@ -12,7 +12,6 @@ import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
-import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
@@ -81,16 +80,6 @@ class BuildServerMock(
   private val bazelResolveRemoteToLocal: BazelResolveRemoteToLocalResult? = null,
   private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = null,
 ) : JoinedBuildServer {
-  override suspend fun buildInitialize(initializeBuildParams: InitializeBuildParams) {}
-
-  override suspend fun onBuildInitialized() { // it's a mock, nothing to do
-  }
-
-  override suspend fun buildShutdown() = wrapInFuture(null)
-
-  override suspend fun onBuildExit() { // it's a mock, nothing to do
-  }
-
   override suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult = wrapInFuture(workspaceBuildTargetsResult)
 
   override suspend fun buildTargetSources(sourcesParams: SourcesParams): SourcesResult = wrapInFuture(sourcesResult)

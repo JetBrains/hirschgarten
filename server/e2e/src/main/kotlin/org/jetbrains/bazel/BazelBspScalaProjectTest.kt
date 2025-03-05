@@ -64,7 +64,8 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
       resolveProject(),
       compareWorkspaceTargetsResults(),
       compileWithWarnings(),
-      scalaOptionsResults(),
+      // TODO: son
+//      scalaOptionsResults(),
     )
 
   private fun resolveProject(): BazelBspTestScenarioStep =

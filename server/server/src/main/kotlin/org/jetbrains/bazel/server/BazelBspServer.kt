@@ -38,8 +38,6 @@ import org.jetbrains.bazel.server.sync.languages.python.PythonLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
-import org.jetbrains.bsp.protocol.FeatureFlags
-import org.jetbrains.bsp.protocol.InitializeBuildParams
 import java.nio.file.Path
 
 class BazelBspServer(
@@ -48,7 +46,6 @@ class BazelBspServer(
   val workspaceRoot: Path,
 ) {
   fun bspServerData(
-    initializeBuildParams: InitializeBuildParams,
     bspClientLogger: BspClientLogger,
     bazelRunner: BazelRunner,
     compilationManager: BazelBspCompilationManager,
@@ -57,7 +54,6 @@ class BazelBspServer(
     bazelPathsResolver: BazelPathsResolver,
   ): BazelServices {
     val languagePluginsService = createLanguagePluginsService(bazelPathsResolver, bspClientLogger)
-    val featureFlags = initializeBuildParams.featureFlags
     val projectProvider =
       createProjectProvider(
         bspInfo = bspInfo,
@@ -68,7 +64,6 @@ class BazelBspServer(
         bazelPathsResolver = bazelPathsResolver,
         compilationManager = compilationManager,
         bspClientLogger = bspClientLogger,
-        featureFlags = featureFlags,
       )
     val bspProjectMapper =
       BspProjectMapper(
@@ -90,7 +85,6 @@ class BazelBspServer(
         workspaceContextProvider = workspaceContextProvider,
         bazelPathsResolver = bazelPathsResolver,
         additionalBuildTargetsProvider = additionalBuildTargetsProvider,
-        featureFlags = featureFlags,
       )
 
     return BazelServices(
@@ -140,7 +134,6 @@ class BazelBspServer(
     bazelPathsResolver: BazelPathsResolver,
     compilationManager: BazelBspCompilationManager,
     bspClientLogger: BspClientLogger,
-    featureFlags: FeatureFlags,
   ): ProjectProvider {
     val aspectsResolver =
       InternalAspectsResolver(
@@ -154,15 +147,14 @@ class BazelBspServer(
         bazelBspCompilationManager = compilationManager,
         aspectsResolver = aspectsResolver,
         workspaceContextProvider = workspaceContextProvider,
-        featureFlags = featureFlags,
         bazelRelease = bazelInfo.release,
       )
-    val bazelToolchainManager = BazelToolchainManager(bazelRunner, featureFlags)
+    val bazelToolchainManager = BazelToolchainManager(bazelRunner, workspaceContextProvider)
     val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver)
     val bazelLabelExpander = BazelLabelExpander(bazelRunner)
     val targetTagsResolver = TargetTagsResolver()
     val mavenCoordinatesResolver = MavenCoordinatesResolver()
-    val kotlinAndroidModulesMerger = KotlinAndroidModulesMerger(featureFlags)
+    val kotlinAndroidModulesMerger = KotlinAndroidModulesMerger(workspaceContextProvider)
     val bazelProjectMapper =
       BazelProjectMapper(
         languagePluginsService,
@@ -171,7 +163,7 @@ class BazelBspServer(
         mavenCoordinatesResolver,
         kotlinAndroidModulesMerger,
         bspClientLogger,
-        featureFlags,
+        workspaceContextProvider,
       )
     val targetInfoReader = TargetInfoReader(bspClientLogger)
 
@@ -188,7 +180,6 @@ class BazelBspServer(
         bazelRunner = bazelRunner,
         bazelPathsResolver = bazelPathsResolver,
         bspClientLogger = bspClientLogger,
-        featureFlags = featureFlags,
       )
     val firstPhaseProjectResolver =
       FirstPhaseProjectResolver(

@@ -2,7 +2,7 @@ package org.jetbrains.bazel.server.sync
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.HasAdditionalBazelOptions
@@ -30,7 +30,6 @@ import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
-import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.MobileInstallStartType
@@ -51,20 +50,19 @@ class ExecuteService(
   private val workspaceContextProvider: WorkspaceContextProvider,
   private val bazelPathsResolver: BazelPathsResolver,
   private val additionalBuildTargetsProvider: AdditionalAndroidBuildTargetsProvider,
-  private val featureFlags: FeatureFlags,
 ) {
-  private fun <T> withBepServer(originId: String?, body: suspend (BepReader) -> T): T {
+  private suspend fun <T> withBepServer(originId: String?, body: suspend (BepReader) -> T): T {
     val diagnosticsService = DiagnosticsService(compilationManager.workspaceRoot)
     val server = BepServer(compilationManager.client, diagnosticsService, originId, bazelPathsResolver)
     val bepReader = BepReader(server)
 
-    return runBlocking {
+    return coroutineScope {
       val reader =
         async(Dispatchers.Default) {
           bepReader.start()
         }
       try {
-        return@runBlocking body(bepReader)
+        return@coroutineScope body(bepReader)
       } finally {
         bepReader.finishBuild()
         reader.await()
@@ -72,15 +70,15 @@ class ExecuteService(
     }
   }
 
-  fun compile(params: CompileParams): CompileResult =
+  suspend fun compile(params: CompileParams): CompileResult =
     if (params.targets.isNotEmpty()) {
       val result = build(params.targets, params.originId, params.arguments ?: emptyList())
-      CompileResult(statusCode = result.bspStatusCode, originId = params.originId)
+      CompileResult(statusCode = result.bspStatusCode)
     } else {
-      CompileResult(statusCode = StatusCode.ERROR, originId = params.originId)
+      CompileResult(statusCode = StatusCode.ERROR)
     }
 
-  fun analysisDebug(params: AnalysisDebugParams): AnalysisDebugResult {
+  suspend fun analysisDebug(params: AnalysisDebugParams): AnalysisDebugResult {
     val statusCode =
       if (params.targets.isNotEmpty()) {
         val debugFlags =
@@ -231,7 +229,7 @@ class ExecuteService(
     return MobileInstallResult(bazelProcessResult.bspStatusCode, params.originId)
   }
 
-  private fun build(
+  private suspend fun build(
     bspIds: List<Label>,
     originId: String?,
     additionalArguments: List<String> = emptyList(),
@@ -253,7 +251,7 @@ class ExecuteService(
   }
 
   private fun getAdditionalBuildTargets(bspIds: List<Label>): List<Label> =
-    if (featureFlags.isAndroidSupportEnabled) {
+    if (workspaceContextProvider.currentFeatureFlags().isAndroidSupportEnabled) {
       additionalBuildTargetsProvider.getAdditionalBuildTargets(bspIds)
     } else {
       emptyList()

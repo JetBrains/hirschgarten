@@ -297,6 +297,9 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
+        <projectService serviceInterface="org.jetbrains.bazel.server.connection.BazelServerService"
+                        serviceImplementation="org.jetbrains.bazel.server.connection.BazelServerServiceImpl"/>
+
         <consoleFilterProvider implementation="org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilterProvider"/>
 
         <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider"/>
