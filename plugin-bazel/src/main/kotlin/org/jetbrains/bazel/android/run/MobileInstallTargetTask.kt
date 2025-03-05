@@ -14,7 +14,7 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.tasks.BspServerSingleTargetTask
 import org.jetbrains.bazel.server.tasks.BspTaskStatusLogger
-import org.jetbrains.bazel.ui.console.BspConsoleService
+import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.MobileInstallParams
@@ -33,7 +33,7 @@ class MobileInstallTargetTask(
   private val log = logger<MobileInstallTargetTask>()
 
   override suspend fun executeWithServer(server: JoinedBuildServer, targetId: Label): MobileInstallResult {
-    val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
+    val bspBuildConsole = ConsoleService.getInstance(project).buildConsole
     val originId = "mobile-install-" + UUID.randomUUID().toString()
     val cancelOn = CompletableFuture<Void>()
 

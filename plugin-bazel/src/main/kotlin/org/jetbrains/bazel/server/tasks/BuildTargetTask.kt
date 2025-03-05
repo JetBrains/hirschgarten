@@ -20,7 +20,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
-import org.jetbrains.bazel.ui.console.BspConsoleService
+import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileReport
@@ -35,7 +35,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
 
   protected override suspend fun executeWithServer(server: JoinedBuildServer, targetsIds: List<Label>): CompileResult =
     coroutineScope {
-      val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
+      val bspBuildConsole = ConsoleService.getInstance(project).buildConsole
       val originId = "build-" + UUID.randomUUID().toString()
 
       val taskListener =
