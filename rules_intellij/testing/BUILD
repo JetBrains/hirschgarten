@@ -7,39 +7,37 @@
 # Common test utilities for IntelliJ plugins.
 
 load(
-    "//:build-visibility.bzl",
-    "INTELLIJ_PLUGINS_VISIBILITY",
-)
-load(
-    "//intellij_platform_sdk:build_defs.bzl",
+    "//rules_intellij/intellij_platform_sdk:build_defs.bzl",
     "select_for_ide",
     "select_for_plugin_api",
 )
 
-package(default_visibility = INTELLIJ_PLUGINS_VISIBILITY)
+package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
+
+exports_files(["test_defs_kt.bzl"])
 
 java_library(
     name = "lib",
     testonly = 1,
     srcs = glob(["src/**/*.java"]),
-    exports = ["//testing/src/com/google/idea/testing/runfiles"],
+    exports = ["//rules_intellij/testing/src/com/google/idea/testing/runfiles"],
     deps = [
-        "//intellij_platform_sdk:plugin_api_for_tests",
-        "@rules_intellij_maven//:org_junit_jupiter_junit_jupiter",
-        "@rules_intellij_maven//:org_junit_jupiter_junit_jupiter_api",
-        "@rules_intellij_maven//:org_junit_platform_junit_platform_console",
-        "@rules_intellij_maven//:org_junit_platform_junit_platform_engine",
-        "@rules_intellij_maven//:org_junit_platform_junit_platform_launcher",
-        "@rules_intellij_maven//:org_junit_platform_junit_platform_suite_api",
-        "@rules_intellij_maven//:org_junit_platform_junit_platform_suite_engine",
-        "@rules_intellij_maven//:org_junit_vintage_junit_vintage_engine",
+        "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
+        "@maven//:org_junit_jupiter_junit_jupiter",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+        "@maven//:org_junit_platform_junit_platform_console",
+        "@maven//:org_junit_platform_junit_platform_engine",
+        "@maven//:org_junit_platform_junit_platform_launcher",
+        "@maven//:org_junit_platform_junit_platform_suite_api",
+        "@maven//:org_junit_platform_junit_platform_suite_engine",
+        "@maven//:org_junit_vintage_junit_vintage_engine",
     ],
 )
 
 java_library(
     name = "runfiles",
     testonly = 1,
-    exports = ["//testing/src/com/google/idea/testing/runfiles"],
+    exports = ["//rules_intellij/testing/src/com/google/idea/testing/runfiles"],
 )

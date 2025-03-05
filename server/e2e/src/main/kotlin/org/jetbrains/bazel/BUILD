@@ -125,19 +125,6 @@ kt_jvm_binary(
 )
 
 kt_jvm_binary(
-    name = "BazelBspRustProjectTest",
-    srcs = ["BazelBspRustProjectTest.kt"],
-    main_class = "org.jetbrains.bazel.BazelBspRustProjectTest",
-    resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
-    visibility = ["//server/e2e:__subpackages__"],
-    deps = [
-        "//protocol",
-        "//server/commons",
-        "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
-    ],
-)
-
-kt_jvm_binary(
     name = "BazelBspAndroidProjectTest",
     srcs = ["BazelBspAndroidProjectTest.kt"],
     main_class = "org.jetbrains.bazel.BazelBspAndroidProjectTest",

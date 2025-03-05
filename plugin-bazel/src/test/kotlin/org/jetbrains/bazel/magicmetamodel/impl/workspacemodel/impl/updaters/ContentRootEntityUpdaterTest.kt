@@ -34,7 +34,6 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     val contentRoot =
       ContentRoot(
         path = contentPath,
-        excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt")),
       )
 
     // when
@@ -46,13 +45,9 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     val expectedContentRootEntity =
       ExpectedContentRootEntity(
         url = contentPath.toVirtualFileUrl(virtualFileUrlManager),
-        excludedUrls = listOf(Path("/root/dir/example/resource/ExcludedFile.txt").toVirtualFileUrl(virtualFileUrlManager)),
-        excludedPatterns = emptyList(),
         parentModuleEntity = parentModuleEntity,
       )
 
-    // TODO it's odd, but it doubles the excluded urls xd
-    // returnedContentRootEntity shouldBeEqual expectedContentRootEntity
     loadedEntries(ContentRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedContentRootEntity)
   }
 
@@ -63,7 +58,6 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     val contentRoot1 =
       ContentRoot(
         path = contentPath1,
-        excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt")),
       )
 
     val contentPath2 = Path("/root/dir/example/resource/File2.txt")
@@ -89,35 +83,24 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     val expectedContentRootEntity1 =
       ExpectedContentRootEntity(
         url = contentPath1.toVirtualFileUrl(virtualFileUrlManager),
-        excludedPatterns = emptyList(),
-        excludedUrls =
-          listOf(
-            Path("/root/dir/example/resource/ExcludedFile.txt").toVirtualFileUrl(virtualFileUrlManager),
-          ),
         parentModuleEntity = parentModuleEntity,
       )
 
     val expectedContentRootEntity2 =
       ExpectedContentRootEntity(
         url = contentPath2.toVirtualFileUrl(virtualFileUrlManager),
-        excludedUrls = emptyList(),
-        excludedPatterns = emptyList(),
         parentModuleEntity = parentModuleEntity,
       )
 
     val expectedContentRootEntity3 =
       ExpectedContentRootEntity(
         url = contentPath3.toVirtualFileUrl(virtualFileUrlManager),
-        excludedUrls = emptyList(),
-        excludedPatterns = emptyList(),
         parentModuleEntity = parentModuleEntity,
       )
 
     val expectedContentRootEntries =
       listOf(expectedContentRootEntity1, expectedContentRootEntity2, expectedContentRootEntity3)
 
-    // TODO it's odd, but it doubles the excluded urls xd
-    // returnedContentRootEntries shouldContainExactlyInAnyOrder expectedContentRootEntries
     loadedEntries(ContentRootEntity::class.java) shouldContainExactlyInAnyOrder expectedContentRootEntries
   }
 }

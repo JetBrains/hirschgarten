@@ -15,7 +15,6 @@ import org.jetbrains.bazel.server.sync.languages.java.JdkResolver
 import org.jetbrains.bazel.server.sync.languages.java.JdkVersionResolver
 import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.python.PythonLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.rust.RustLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
 import org.jetbrains.bazel.workspacecontext.DefaultWorkspaceContextProvider
@@ -62,7 +61,6 @@ class LanguagePluginServiceTest {
     val kotlinLanguagePlugin = KotlinLanguagePlugin(javaLanguagePlugin, bazelPathsResolver)
     val thriftLanguagePlugin = ThriftLanguagePlugin(bazelPathsResolver)
     val pythonLanguagePlugin = PythonLanguagePlugin(bazelPathsResolver)
-    val rustLanguagePlugin = RustLanguagePlugin(bazelPathsResolver)
     val androidLanguagePlugin = AndroidLanguagePlugin(provider, javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
     val goLanguagePlugin = GoLanguagePlugin(bazelPathsResolver)
     languagePluginsService =
@@ -73,7 +71,6 @@ class LanguagePluginServiceTest {
         kotlinLanguagePlugin,
         thriftLanguagePlugin,
         pythonLanguagePlugin,
-        rustLanguagePlugin,
         androidLanguagePlugin,
         goLanguagePlugin,
       )
@@ -165,18 +162,6 @@ class LanguagePluginServiceTest {
       // then
       plugin shouldNotBe null
     }
-  }
-
-  @Test
-  fun `should return RustLanguagePlugin for Rust Language`() {
-    // given
-    val languages: Set<Language> = hashSetOf(Language.RUST)
-
-    // when
-    val plugin = languagePluginsService.getPlugin(languages) as? RustLanguagePlugin
-
-    // then
-    plugin shouldNotBe null
   }
 
   @Nested

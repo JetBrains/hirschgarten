@@ -2,8 +2,6 @@ package org.jetbrains.bazel.server.connection
 
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
@@ -12,10 +10,10 @@ import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.FeatureFlagsProvider
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.install.EnvironmentCreator
-import org.jetbrains.bazel.server.client.BspClient
+import org.jetbrains.bazel.server.client.BazelClient
 import org.jetbrains.bazel.server.client.GenericConnection
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import org.jetbrains.bazel.ui.console.BspConsoleService
+import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.ui.console.ids.CONNECT_TASK_ID
 import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -28,12 +26,6 @@ import java.nio.file.Path
 private data class ConnectionResetConfig(val projectViewFile: Path?, val initializeBuildData: InitializeBuildParams)
 
 private val log = logger<DefaultBspConnection>()
-
-class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectPath.toNioPath()) {
-  override fun create() {
-    createDotBazelBsp()
-  }
-}
 
 class DefaultBspConnection(private val project: Project) : BspConnection {
   @Volatile
@@ -65,10 +57,9 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
               installationDirectory,
               bspClient,
             )
-          val projectPath = VfsUtil.findFile(installationDirectory, true) ?: error("Project doesn't exist")
 
           init {
-            DotBazelBspCreator(projectPath).create()
+            EnvironmentCreator(installationDirectory).create()
           }
 
           override val server: JoinedBuildServer
@@ -90,7 +81,7 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
 
   private suspend fun connectBuiltIn(connection: GenericConnection) {
     coroutineScope {
-      val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+      val bspSyncConsole = ConsoleService.getInstance(project).syncConsole
       bspSyncConsole.startTask(
         taskId = CONNECT_TASK_ID,
         title = BspPluginBundle.message("console.task.auto.connect.title"),
@@ -114,12 +105,12 @@ class DefaultBspConnection(private val project: Project) : BspConnection {
     }
   }
 
-  private fun createBspClient(): BspClient {
-    val bspConsoleService = BspConsoleService.getInstance(project)
+  private fun createBspClient(): BazelClient {
+    val consoleService = ConsoleService.getInstance(project)
 
-    return BspClient(
-      bspConsoleService.bspSyncConsole,
-      bspConsoleService.bspBuildConsole,
+    return BazelClient(
+      consoleService.syncConsole,
+      consoleService.buildConsole,
       project,
     )
   }

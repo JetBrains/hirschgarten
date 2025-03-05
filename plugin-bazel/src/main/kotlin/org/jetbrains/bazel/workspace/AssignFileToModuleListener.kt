@@ -32,8 +32,8 @@ import com.intellij.workspaceModel.ide.toPath
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.isBspProject
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
@@ -75,7 +75,7 @@ class AssignFileToModuleListener : BulkFileListener {
         return
       } ?: pendingEvents.put(this, mutableListOf(event))
     }
-    BspCoroutineService.getInstance(this).start {
+    BazelCoroutineService.getInstance(this).start {
       delay(PROCESSING_DELAY)
       synchronized(pendingEvents) { pendingEvents.remove(this)?.singleOrNull() }?.process(this)
     }
@@ -117,7 +117,7 @@ private fun VirtualFile.getRelatedProjects(): List<Project> {
   }
 }
 
-private fun Project.doWeCareAboutIt(): Boolean = this.isBspProject && this.isTrusted()
+private fun Project.doWeCareAboutIt(): Boolean = this.isBazelProject && this.isTrusted()
 
 private fun VFileEvent.process(project: Project) {
   val workspaceModel = WorkspaceModel.getInstance(project)
@@ -156,7 +156,7 @@ private fun VFileEvent.process(project: Project) {
 }
 
 private fun runInBackgroundWithProgress(project: Project, action: suspend () -> Unit): Job =
-  BspCoroutineService.getInstance(project).start {
+  BazelCoroutineService.getInstance(project).start {
     withBackgroundProgress(project, BazelPluginBundle.message("file.change.processing.title")) {
       action()
     }

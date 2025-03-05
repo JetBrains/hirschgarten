@@ -12,7 +12,7 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
@@ -103,7 +103,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     project.bazelProjectSettings = currentProjectSettings
 
     if (isProjectViewPathChanged) {
-      BspCoroutineService.getInstance(project).start {
+      BazelCoroutineService.getInstance(project).start {
         ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
       }
     }

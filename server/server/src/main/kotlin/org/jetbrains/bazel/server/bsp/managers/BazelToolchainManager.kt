@@ -10,7 +10,6 @@ class BazelToolchainManager(private val bazelRunner: BazelRunner, private val fe
       Language.Scala -> Label.parse("@io_bazel_rules_scala//scala:toolchain_type")
       Language.Java -> Label.parse("@bazel_tools//tools/jdk:runtime_toolchain_type")
       Language.Kotlin -> Label.parse("@${rulesetLanguage.rulesetName}//kotlin/internal:kt_toolchain_type")
-      Language.Rust -> Label.parse("@${rulesetLanguage.rulesetName}//rust:toolchain_type")
       Language.Android -> getAndroidToolchain(rulesetLanguage)
       Language.Go -> Label.parse("@${rulesetLanguage.rulesetName}//go:toolchain")
       else -> null

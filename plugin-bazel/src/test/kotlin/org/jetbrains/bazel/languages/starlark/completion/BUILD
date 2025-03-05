@@ -7,11 +7,23 @@ kt_intellij_junit4_test(
 )
 
 kt_intellij_junit4_test(
+    name = "BazelNativeRulesCompletionContributorTest",
+    src = "BazelNativeRulesCompletionContributorTest.kt",
+    deps = ["//plugin-bazel:intellij-bazel"],
+)
+
+kt_intellij_junit4_test(
+    name = "BazelNativeRulesArgumentCompletionContributorTest",
+    src = "BazelNativeRulesArgumentCompletionContributorTest.kt",
+    deps = ["//plugin-bazel:intellij-bazel"],
+)
+
+kt_intellij_junit4_test(
     name = "StarlarkParamsCompletionContributorTest",
     src = "StarlarkParamsCompletionContributorTest.kt",
     deps = [
         "//plugin-bazel:intellij-bazel",
-        "@rules_intellij//intellij_platform_sdk:plugin_api",
+        "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )
 

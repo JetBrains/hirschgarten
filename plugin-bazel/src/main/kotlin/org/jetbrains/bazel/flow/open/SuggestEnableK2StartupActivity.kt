@@ -8,7 +8,7 @@ import com.intellij.openapi.application.ApplicationNamesInfo
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelFeatureFlags.isKotlinPluginK2Mode
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.startup.BspProjectActivity
+import org.jetbrains.bazel.startup.BazelProjectActivity
 import org.jetbrains.kotlin.idea.KotlinIcons
 import org.jetbrains.kotlin.idea.configuration.ui.KotlinPluginKindSwitcherController
 import org.jetbrains.kotlin.idea.configuration.ui.USE_K2_PLUGIN_VM_OPTION_PREFIX
@@ -18,8 +18,8 @@ private const val SUGGEST_ENABLE_K2_NOTIFICATION_GROUP = "Enable K2 Compiler Mod
 /**
  * Based on org.jetbrains.kotlin.onboarding.k2.EnableK2NotificationService
  */
-class SuggestEnableK2StartupActivity : BspProjectActivity() {
-  override suspend fun Project.executeForBspProject() {
+class SuggestEnableK2StartupActivity : BazelProjectActivity() {
+  override suspend fun Project.executeForBazelProject() {
     if (isKotlinPluginK2Mode) return
 
     NotificationGroupManager

@@ -14,12 +14,6 @@ import kotlin.io.path.createTempDirectory
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BazelBspLanguageExtensionsGeneratorTest {
-  class MockEnvironmentCreator(projectRootDir: Path) : EnvironmentCreator(projectRootDir) {
-    override fun create(): Unit = Unit
-
-    fun testCreateDotBazelBsp() = createDotBazelBsp()
-  }
-
   internal class BspInfoMock(private val dotBazelBspPath: Path, projectRootPath: Path) : BspInfo(projectRootPath) {
     override fun bazelBspDir(): Path = dotBazelBspPath
   }
@@ -92,7 +86,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
   fun before() {
     val tempRoot = createTempDirectory("test-workspace-root")
     tempRoot.toFile().deleteOnExit()
-    val dotBazelBspPath = MockEnvironmentCreator(tempRoot).testCreateDotBazelBsp()
+    val dotBazelBspPath = EnvironmentCreator(tempRoot).create()
 
     dotBazelBspAspectsPath = dotBazelBspPath.resolve("aspects")
     internalAspectsResolverMock = InternalAspectsResolver(BspInfoMock(dotBazelBspPath, tempRoot), bazelRelease, false)

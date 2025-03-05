@@ -10,6 +10,7 @@ kt_jvm_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/performance",
         "//protocol",
+        "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/bazelrunner",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/utils",
         "//server/commons",
@@ -32,6 +33,5 @@ kt_jvm_library(
         "@maven//:io_grpc_grpc_stub",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",
-        "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

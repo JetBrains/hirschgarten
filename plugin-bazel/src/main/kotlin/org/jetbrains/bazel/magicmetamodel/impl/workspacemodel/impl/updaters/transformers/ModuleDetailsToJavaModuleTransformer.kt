@@ -3,7 +3,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.bspProjectName
+import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -44,17 +44,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
       baseDirContentRoot = toBaseDirContentRoot(inputEntity),
       sourceRoots = toJavaSourceRoots(inputEntity),
       resourceRoots = toResourceRoots(inputEntity),
-      moduleLevelLibraries =
-        if (inputEntity.libraryDependencies == null) {
-          DependencySourcesItemToLibraryTransformer
-            .transform(
-              inputEntity.dependenciesSources.map {
-                DependencySourcesAndJvmClassPaths(it, inputEntity.toJvmClassPaths())
-              },
-            )
-        } else {
-          null
-        },
       // Any java module must be assigned a jdk if there is any available.
       jvmJdkName = inputEntity.toJdkNameOrDefault(),
       jvmBinaryJars = inputEntity.jvmBinaryJars.flatMap { it.jars }.map { it.safeCastToURI().toPath() },
@@ -92,7 +81,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
     val bspModuleDetails =
       BspModuleDetails(
         target = inputEntity.target,
-        dependencySources = inputEntity.dependenciesSources,
         type = type,
         javacOptions = inputEntity.javacOptions,
         associates = toAssociates(inputEntity),
@@ -117,7 +105,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   private fun ModuleDetails.toJdkName(): String? = extractJvmBuildTarget(this.target).toJdkName()
 
-  private fun JvmBuildTarget?.toJdkName(): String? = this?.javaHome?.let { project.bspProjectName.projectNameToJdkName(it) }
+  private fun JvmBuildTarget?.toJdkName(): String? = this?.javaHome?.let { project.bazelProjectName.projectNameToJdkName(it) }
 
   private fun toKotlinAddendum(inputEntity: ModuleDetails): KotlinAddendum? {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)

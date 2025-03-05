@@ -14,7 +14,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.console.StarlarkDebugTaskListener
 import org.jetbrains.bazel.debug.platform.StarlarkBreakpointHandler
 import org.jetbrains.bazel.debug.platform.StarlarkDebugProcess
@@ -47,7 +47,7 @@ class StarlarkDebugSessionManager(private val project: Project) : Disposable {
       messenger = it
       val breakpointHandler = StarlarkBreakpointHandler(it)
       eventHandler = ThreadAwareEventHandler(session, it, breakpointHandler::getBreakpointByPathAndLine)
-      loop = BspCoroutineService.getInstance(project).start { runLoop() }
+      loop = BazelCoroutineService.getInstance(project).start { runLoop() }
       val debugProcess =
         StarlarkDebugProcess(connector, session, breakpointHandler, console)
       taskListener.setDebugPausedChecker { debugProcess.isSuspended() }

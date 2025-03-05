@@ -4,7 +4,8 @@ import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
-import org.jetbrains.bazel.config.bspProjectName
+import org.jetbrains.bazel.config.bazelProjectName
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.BazelJavaSourceRootEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
 import org.jetbrains.bazel.utils.allAncestorsSequence
@@ -84,7 +85,6 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
             rootType = DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
           ),
         ),
-      moduleLevelLibraries = listOf(),
       jvmJdkName = javaModule.jvmJdkName,
       kotlinAddendum = javaModule.kotlinAddendum,
       javaAddendum = javaModule.javaAddendum,
@@ -130,7 +130,6 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
         } else {
           listOf()
         },
-      moduleLevelLibraries = listOf(),
       jvmJdkName = javaModule.jvmJdkName,
       kotlinAddendum = javaModule.kotlinAddendum,
       javaAddendum = javaModule.javaAddendum,
@@ -144,7 +143,7 @@ private fun calculateDummyResourceRootPath(
   projectBasePath: Path,
   project: Project,
 ): Path? {
-  if (!project.bspProjectName.startsWith("hirschgarten")) return null
+  if (!project.bazelProjectName.startsWith("hirschgarten")) return null
   if (entity.androidAddendum != null) return null // Resource roots are handled already for Android
   val resourceRoots = entity.resourceRoots
   if (entity.resourceRoots.isEmpty()) return null
@@ -200,7 +199,7 @@ private fun calculateDummyResourceRootPath(
 internal fun calculateDummyJavaSourceRoots(sourceRoots: List<JavaSourceRoot>): List<DummySourceRootWithPackagePrefix> =
   sourceRoots
     .asSequence()
-    .filter { !it.generated }
+    .filter { !BazelJavaSourceRootEntityUpdater.shouldAddBazelJavaSourceRootEntity(it) }
     .mapNotNull {
       restoreSourceRootFromPackagePrefix(it)
     }.distinct()

@@ -1,0 +1,86 @@
+package org.jetbrains.bazel.startup
+
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.config.isBazelProjectInitialized
+import org.jetbrains.bazel.config.openedTimesSinceLastStartupResync
+import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
+import org.jetbrains.bazel.projectAware.BazelWorkspace
+import org.jetbrains.bazel.sync.scope.SecondPhaseSync
+import org.jetbrains.bazel.sync.task.PhasedSync
+import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.ui.widgets.fileTargets.updateBazelFileTargetsWidget
+import org.jetbrains.bazel.ui.widgets.tool.window.all.targets.registerBazelToolWindow
+import org.jetbrains.bazel.utils.RunConfigurationProducersDisabler
+import java.util.Collections
+import java.util.WeakHashMap
+
+private val log = logger<BazelStartupActivity>()
+
+// Use WeakHashMap to avoid leaking the Project instance
+private val executedForProject: MutableSet<Project> =
+  Collections.synchronizedSet(Collections.newSetFromMap(WeakHashMap()))
+
+/**
+ * Runs actions after the project has started up and the index is up-to-date.
+ *
+ * @see BazelProjectOpenProcessor for additional actions that
+ * may run when a project is being imported for the first time.
+ */
+class BazelStartupActivity : BazelProjectActivity() {
+  override suspend fun Project.executeForBazelProject() {
+    if (startupActivityExecutedAlready()) {
+      log.info("Bazel startup activity executed already for project: $this")
+      return
+    }
+    log.info("Executing Bazel startup activity for project: $this")
+    BazelStartupActivityTracker.startConfigurationPhase(this)
+    executeOnEveryProjectStartup()
+
+    resyncProjectIfNeeded()
+
+    updateProjectProperties()
+
+    BazelStartupActivityTracker.stopConfigurationPhase(this)
+  }
+
+  /**
+   * Make sure calling [BazelOpenProjectProvider.performOpenBazelProject]
+   * won't cause [BazelStartupActivity] to execute twice.
+   */
+  private fun Project.startupActivityExecutedAlready(): Boolean = !executedForProject.add(this)
+
+  private suspend fun Project.executeOnEveryProjectStartup() {
+    log.debug("Executing Bazel startup activities for every opening")
+    registerBazelToolWindow(this)
+    updateBazelFileTargetsWidget()
+    RunConfigurationProducersDisabler(this)
+    BazelWorkspace.getInstance(this).initialize()
+  }
+
+  private suspend fun Project.resyncProjectIfNeeded() {
+    if (isProjectInIncompleteState()) {
+      if (BazelFeatureFlags.isPhasedSync) {
+        log.info("Running Bazel phased sync task")
+        PhasedSync(this).sync()
+      } else {
+        log.info("Running Bazel sync task")
+        ProjectSyncTask(this).sync(
+          syncScope = SecondPhaseSync,
+          buildProject = BazelFeatureFlags.isBuildProjectOnSyncEnabled,
+        )
+      }
+
+      openedTimesSinceLastStartupResync = 0
+    }
+  }
+
+  private fun Project.isProjectInIncompleteState() = targetUtils.allTargets().isEmpty() || !workspaceModelLoadedFromCache
+
+  private fun Project.updateProjectProperties() {
+    isBazelProjectInitialized = true
+    openedTimesSinceLastStartupResync += 1
+  }
+}

@@ -8,19 +8,13 @@
 #   Defines a package group that restricts access to the JetBrains
 #   plugin apis to known packages that build plugins. Only packages
 #   listed here may depend on these libraries.
-
-load(
-    "//:build-visibility.bzl",
-    "INTELLIJ_PLUGINS_VISIBILITY",
-    "create_test_libs_visibility_package",
-)
 load(
     ":build_defs.bzl",
     "select_for_plugin_api",
     "select_from_plugin_api_directory",
 )
 
-package(default_visibility = INTELLIJ_PLUGINS_VISIBILITY)
+package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 

@@ -170,7 +170,6 @@ class ProjectResolver(
               aspect = ASPECT_NAME,
               outputGroups = outputGroups,
               shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
-              isRustEnabled = featureFlags.isRustSupportEnabled,
               shouldLogInvocation = false,
             ).also {
               if (it.status == BazelStatus.OOM_ERROR) {
@@ -218,7 +217,6 @@ class ProjectResolver(
                   aspect = ASPECT_NAME,
                   outputGroups = outputGroups,
                   shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
-                  isRustEnabled = featureFlags.isRustSupportEnabled,
                   shouldLogInvocation = false,
                 )
             if (result.isFailure) {

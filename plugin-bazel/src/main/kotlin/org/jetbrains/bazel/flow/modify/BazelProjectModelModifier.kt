@@ -22,7 +22,7 @@ import com.intellij.pom.java.LanguageLevel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
@@ -33,7 +33,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLitera
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToApparentName
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
+import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bazel.ui.widgets.findBuildFile
 import org.jetbrains.bazel.ui.widgets.jumpToBuildFile
 import org.jetbrains.concurrency.AsyncPromise
@@ -116,7 +116,7 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
       log.warn("Failed to insert target $labelToInsert as a dependency for target $targetRuleLabel", e)
     }
     if (insertSuccessful) {
-      BspCoroutineService.getInstance(from.project).start {
+      BazelCoroutineService.getInstance(from.project).start {
         formatBuildFile(targetBuildFile)
       }
     }
@@ -140,7 +140,7 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
   }
 
   private fun notifyAutomaticDependencyAdditionFailure() {
-    BspBalloonNotifier.warn(
+    BazelBalloonNotifier.warn(
       BazelPluginBundle.message("balloon.add.target.dependency.to.build.file.failed.title"),
       BazelPluginBundle.message("balloon.add.target.dependency.to.build.file.failed.message"),
     )
@@ -184,7 +184,7 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
 
   private fun asyncPromise(callable: suspend () -> Unit): Promise<Void> =
     AsyncPromise<Void>().also { promise ->
-      BspCoroutineService.getInstance(project).startAsync(callable = callable).invokeOnCompletion { throwable ->
+      BazelCoroutineService.getInstance(project).startAsync(callable = callable).invokeOnCompletion { throwable ->
         if (throwable != null) {
           promise.setError(throwable)
         } else {

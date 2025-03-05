@@ -10,8 +10,6 @@ import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
-import org.jetbrains.bsp.protocol.DependencyModulesParams
-import org.jetbrains.bsp.protocol.DependencyModulesResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.InitializeBuildParams
@@ -22,8 +20,6 @@ import org.jetbrains.bsp.protocol.JavacOptionsResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
-import org.jetbrains.bsp.protocol.JvmCompileClasspathParams
-import org.jetbrains.bsp.protocol.JvmCompileClasspathResult
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
@@ -38,8 +34,6 @@ import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
-import org.jetbrains.bsp.protocol.RustWorkspaceParams
-import org.jetbrains.bsp.protocol.RustWorkspaceResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourcesParams
@@ -57,19 +51,16 @@ import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 
 class BuildServerMock(
-  private val initializeBuildResult: Any? = null,
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
   private val sourcesResult: SourcesResult? = null,
   private val inverseSourcesResult: InverseSourcesResult? = null,
   private val dependencySourcesResult: DependencySourcesResult? = null,
-  private val dependencyModulesResult: DependencyModulesResult? = null,
   private val resourcesResult: ResourcesResult? = null,
   private val compileResult: CompileResult? = null,
   private val runResult: RunResult? = null,
   private val testResult: TestResult? = null,
   private val jvmTestEnvironmentResult: JvmTestEnvironmentResult? = null,
   private val jvmRunEnvironmentResult: JvmRunEnvironmentResult? = null,
-  private val jvmCompileClasspathResult: JvmCompileClasspathResult? = null,
   private val scalacOptionsResult: ScalacOptionsResult? = null,
   private val javacOptionsResult: JavacOptionsResult? = null,
   private val cppOptionsResult: CppOptionsResult? = null,
@@ -86,7 +77,6 @@ class BuildServerMock(
   private val workspaceBuildTargetsPartial: WorkspaceBuildTargetsResult? = null,
   private val workspaceBuildTargetsFirstPhase: WorkspaceBuildTargetsResult? = null,
   private val pythonOptionsResult: PythonOptionsResult? = null,
-  private val rustWorkspaceResult: RustWorkspaceResult? = null,
   private val bazelResolveLocalToRemote: BazelResolveLocalToRemoteResult? = null,
   private val bazelResolveRemoteToLocal: BazelResolveRemoteToLocalResult? = null,
   private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = null,
@@ -111,9 +101,6 @@ class BuildServerMock(
   override suspend fun buildTargetDependencySources(dependencySourcesParams: DependencySourcesParams): DependencySourcesResult =
     wrapInFuture(dependencySourcesResult)
 
-  override suspend fun buildTargetDependencyModules(dependencyModulesParams: DependencyModulesParams): DependencyModulesResult =
-    wrapInFuture(dependencyModulesResult)
-
   override suspend fun buildTargetResources(resourcesParams: ResourcesParams): ResourcesResult = wrapInFuture(resourcesResult)
 
   override suspend fun buildTargetCompile(compileParams: CompileParams): CompileResult = wrapInFuture(compileResult)
@@ -127,9 +114,6 @@ class BuildServerMock(
 
   override suspend fun buildTargetJvmRunEnvironment(jvmRunEnvironmentParams: JvmRunEnvironmentParams): JvmRunEnvironmentResult =
     wrapInFuture(jvmRunEnvironmentResult)
-
-  override suspend fun buildTargetJvmCompileClasspath(jvmCompileClasspathParams: JvmCompileClasspathParams): JvmCompileClasspathResult =
-    wrapInFuture(jvmCompileClasspathResult)
 
   override suspend fun buildTargetScalacOptions(scalacOptionsParams: ScalacOptionsParams): ScalacOptionsResult =
     wrapInFuture(scalacOptionsResult)
@@ -166,8 +150,6 @@ class BuildServerMock(
     wrapInFuture(workspaceBuildTargetsFirstPhase)
 
   override suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult = wrapInFuture(pythonOptionsResult)
-
-  override suspend fun rustWorkspace(params: RustWorkspaceParams): RustWorkspaceResult = wrapInFuture(rustWorkspaceResult)
 
   override suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
     wrapInFuture(bazelResolveLocalToRemote)

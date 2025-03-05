@@ -7,12 +7,14 @@
 # Scripts for building IntelliJ plugins
 
 load("@rules_python//python:defs.bzl", "py_binary")
-load(
-    "//:build-visibility.bzl",
-    "INTELLIJ_PLUGINS_VISIBILITY",
-)
 
-package(default_visibility = INTELLIJ_PLUGINS_VISIBILITY)
+exports_files([
+    "build_defs.bzl",
+    "intellij_plugin.bzl",
+    "intellij_plugin_debug_target.bzl",
+])
+
+package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 

@@ -6,7 +6,7 @@ import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
-import org.jetbrains.bazel.config.isBspProject
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.references.BazelLabelReference
@@ -47,5 +47,5 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
 
 class BazelBuildTargetConsoleFilterProvider : ConsoleFilterProvider {
   override fun getDefaultFilters(project: Project): Array<out Filter> =
-    if (project.isBspProject) arrayOf(BazelBuildTargetConsoleFilter(project)) else emptyArray()
+    if (project.isBazelProject) arrayOf(BazelBuildTargetConsoleFilter(project)) else emptyArray()
 }

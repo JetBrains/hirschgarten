@@ -34,17 +34,13 @@ fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
 
 abstract class WorkspaceModelEntity
 
-data class ContentRoot(val path: Path, val excludedPaths: List<Path> = ArrayList()) : WorkspaceModelEntity()
+data class ContentRoot(val path: Path) : WorkspaceModelEntity()
 
 interface ResourceRootEntity
 
 interface EntityDependency
 
-data class GenericSourceRoot(
-  val sourcePath: Path,
-  val rootType: SourceRootTypeId,
-  val excludedPaths: List<Path> = ArrayList(),
-) : WorkspaceModelEntity()
+data class GenericSourceRoot(val sourcePath: Path, val rootType: SourceRootTypeId) : WorkspaceModelEntity()
 
 data class ResourceRoot(val resourcePath: Path, val rootType: SourceRootTypeId) :
   WorkspaceModelEntity(),

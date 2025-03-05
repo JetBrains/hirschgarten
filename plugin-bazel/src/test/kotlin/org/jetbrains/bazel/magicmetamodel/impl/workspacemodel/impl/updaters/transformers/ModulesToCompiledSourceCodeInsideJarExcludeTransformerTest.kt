@@ -121,6 +121,5 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
       baseDirContentRoot = null,
       sourceRoots = sourceRoots,
       resourceRoots = emptyList(),
-      moduleLevelLibraries = emptyList(),
     )
 }

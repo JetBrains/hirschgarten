@@ -8,7 +8,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel/impl/updaters/transformers",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel/impl/updaters",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/connection",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/projectStructure/workspaceModel",
@@ -16,7 +16,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
         "//protocol",
-        "@rules_intellij//intellij_platform_sdk:plugin_api",
-        "@rules_intellij//third_party/go",
+        "//rules_intellij/intellij_platform_sdk:plugin_api",
+        "//rules_intellij/third_party/go",
     ],
 )

@@ -36,7 +36,6 @@ enum class Language(
     true,
     Java.autoloadHints + Scala.autoloadHints + Kotlin.autoloadHints,
   ),
-  Rust("//aspects:rules/rust/rust_info.bzl", listOf("rules_rust"), listOf("extract_rust_crate_info"), false, false),
   Android(
     "//aspects:rules/android/android_info.bzl",
     listOf("rules_android", "build_bazel_rules_android"),

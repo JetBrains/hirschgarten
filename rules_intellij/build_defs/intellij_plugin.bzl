@@ -45,7 +45,7 @@ intellij_plugin(
 load("@rules_java//java:defs.bzl", "java_binary", "java_import")
 load("@rules_java//java/common:java_info.bzl", "JavaInfo")
 load(
-    "//build_defs:restrictions.bzl",
+    "//rules_intellij/build_defs:restrictions.bzl",
     "RestrictedInfo",
     "restricted_deps_aspect",
     "validate_restrictions",
@@ -341,17 +341,17 @@ _intellij_plugin_jar = rule(
         "restricted_deps": attr.label_list(aspects = [restricted_deps_aspect]),
         "plugin_icons": attr.label_list(allow_files = True),
         "_merge_xml_binary": attr.label(
-            default = Label("@rules_intellij//build_defs:merge_xml"),
+            default = Label("//rules_intellij/build_defs:merge_xml"),
             executable = True,
             cfg = "exec",
         ),
         "_append_optional_xml_elements": attr.label(
-            default = Label("@rules_intellij//build_defs:append_optional_xml_elements"),
+            default = Label("//rules_intellij/build_defs:append_optional_xml_elements"),
             executable = True,
             cfg = "exec",
         ),
         "_package_meta_inf_files": attr.label(
-            default = Label("@rules_intellij//build_defs:package_meta_inf_files"),
+            default = Label("//rules_intellij/build_defs:package_meta_inf_files"),
             executable = True,
             cfg = "exec",
         ),

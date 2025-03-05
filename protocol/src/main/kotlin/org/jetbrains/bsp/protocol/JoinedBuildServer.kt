@@ -17,8 +17,6 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetDependencySources(params: DependencySourcesParams): DependencySourcesResult
 
-  suspend fun buildTargetDependencyModules(params: DependencyModulesParams): DependencyModulesResult
-
   suspend fun buildTargetResources(params: ResourcesParams): ResourcesResult
 
   suspend fun buildTargetCompile(params: CompileParams): CompileResult
@@ -35,8 +33,6 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetJvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult
 
-  suspend fun buildTargetJvmCompileClasspath(params: JvmCompileClasspathParams): JvmCompileClasspathResult
-
   suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult
 
   suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult
@@ -44,8 +40,6 @@ interface JoinedBuildServer {
   suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult
 
   suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult
-
-  suspend fun rustWorkspace(params: RustWorkspaceParams): RustWorkspaceResult
 
   suspend fun workspaceLibraries(): WorkspaceLibrariesResult
 

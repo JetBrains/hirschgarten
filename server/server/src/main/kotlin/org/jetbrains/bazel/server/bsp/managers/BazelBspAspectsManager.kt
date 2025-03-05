@@ -75,7 +75,6 @@ class BazelBspAspectsManager(
       buildSet {
         if (!featureFlags.isAndroidSupportEnabled) add(Language.Android)
         if (!featureFlags.isGoSupportEnabled) add(Language.Go)
-        if (!featureFlags.isRustSupportEnabled) add(Language.Rust)
         if (!featureFlags.isCppSupportEnabled) add(Language.Cpp)
         if (!featureFlags.isPythonSupportEnabled) add(Language.Python)
       }
@@ -180,7 +179,6 @@ class BazelBspAspectsManager(
     aspect: String,
     outputGroups: List<String>,
     shouldSyncManualFlags: Boolean,
-    isRustEnabled: Boolean,
     shouldLogInvocation: Boolean,
   ): BazelBspAspectsManagerResult {
     if (targetsSpec.values.isEmpty()) return BazelBspAspectsManagerResult(BepOutput(), BazelStatus.SUCCESS)
@@ -203,15 +201,7 @@ class BazelBspAspectsManager(
         targetsSpec = targetsSpec,
         extraFlags = flagsToUse,
         originId = null,
-        // Setting `CARGO_BAZEL_REPIN=1` updates `cargo_lockfile`
-        // (`Cargo.lock` file) based on dependencies specified in `manifest`
-        // (`Cargo.toml` file) and syncs `lockfile` (`Cargo.bazel.lock` file) with `cargo_lockfile`.
-        // Ensures that both Bazel and Cargo are using the same versions of dependencies.
-        // Mentioned `cargo_lockfile`, `lockfile` and `manifest` are defined in
-        // `crates_repository` from `rules_rust`,
-        // see: https://bazelbuild.github.io/rules_rust/crate_universe.html#crates_repository.
-        // In our server used only with `bazel build` command.
-        environment = if (isRustEnabled) listOf(Pair("CARGO_BAZEL_REPIN", "1")) else emptyList(),
+        environment = emptyList(),
         shouldLogInvocation = shouldLogInvocation,
       ).let { BazelBspAspectsManagerResult(it.bepOutput, it.processResult.bazelStatus) }
   }

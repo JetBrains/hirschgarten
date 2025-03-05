@@ -9,7 +9,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bsp.protocol.StatusCode
 
@@ -25,7 +25,7 @@ public class BuildPluginBeforeRunTaskProvider : BeforeRunTaskProvider<BuildPlugi
   override fun getName(): String = BspPluginBundle.message("console.task.build.title")
 
   override fun createTask(configuration: RunConfiguration): Task? =
-    if (configuration is BspRunConfiguration) {
+    if (configuration is BazelRunConfiguration) {
       Task()
     } else {
       null
@@ -37,7 +37,7 @@ public class BuildPluginBeforeRunTaskProvider : BeforeRunTaskProvider<BuildPlugi
     environment: ExecutionEnvironment,
     task: Task,
   ): Boolean {
-    val runConfiguration = environment.runProfile as? BspRunConfiguration ?: return false
+    val runConfiguration = environment.runProfile as? BazelRunConfiguration ?: return false
     if (runConfiguration.handler !is IntellijPluginRunHandler) return false
 
     val targetIds = runConfiguration.targets

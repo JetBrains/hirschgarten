@@ -8,7 +8,7 @@ class RunTargetAction(
   targetInfo: BuildTargetInfo,
   isDebugAction: Boolean = false,
   includeTargetNameInText: Boolean = false,
-) : BspRunnerAction(
+) : BazelRunnerAction(
     targetInfos = listOf(targetInfo),
     text = { includeTargetNameInTextParam ->
       if (isDebugAction) {

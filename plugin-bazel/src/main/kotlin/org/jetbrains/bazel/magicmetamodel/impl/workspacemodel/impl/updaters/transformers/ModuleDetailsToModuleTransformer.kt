@@ -28,6 +28,5 @@ internal abstract class ModuleDetailsToModuleTransformer<out T : WorkspaceModelE
     ContentRoot(
       // TODO https://youtrack.jetbrains.com/issue/BAZEL-635
       path = (inputEntity.target.baseDirectory ?: "file:///todo").safeCastToURI().toPath(),
-      excludedPaths = inputEntity.outputPathUris.map { it.safeCastToURI().toPath() },
     )
 }

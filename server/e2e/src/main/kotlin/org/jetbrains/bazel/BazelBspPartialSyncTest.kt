@@ -3,6 +3,8 @@ package org.jetbrains.bazel
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.install.Install
+import org.jetbrains.bazel.install.cli.CliOptions
+import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
@@ -14,6 +16,7 @@ import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
+import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 
 object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
@@ -24,15 +27,15 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
   fun main(args: Array<String>) = executeScenario()
 
   override fun installServer() {
-    Install.main(
-      arrayOf(
-        "-d",
-        workspaceDir,
-        "-b",
-        bazelBinary,
-        "-t",
-        "@//java_targets:java_library",
-        *additionalServerInstallArguments(),
+    Install.runInstall(
+      CliOptions(
+        workspaceDir = Path(workspaceDir),
+        projectViewCliOptions =
+          ProjectViewCliOptions(
+            bazelBinary = Path(bazelBinary),
+            targets = listOf("@//java_targets:java_library"),
+            directories = listOf(workspaceDir),
+          ),
       ),
     )
   }

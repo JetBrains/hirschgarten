@@ -19,7 +19,7 @@ import org.jetbrains.bazel.android.androidSdkGetterExtension
 import org.jetbrains.bazel.android.androidSdkGetterExtensionExists
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.config.bspProjectName
+import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.config.defaultJdkName
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.extensionPoints.shouldImportJvmBinaryJars
@@ -45,14 +45,13 @@ import org.jetbrains.bazel.sync.BaseTargetInfo
 import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
-import org.jetbrains.bazel.sync.task.asyncQuery
 import org.jetbrains.bazel.sync.task.asyncQueryIf
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.task.queryIf
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
-import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
+import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bazel.utils.isSourceFile
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
@@ -60,7 +59,6 @@ import org.jetbrains.bazel.workspacemodel.entities.includesJava
 import org.jetbrains.bazel.workspacemodel.entities.includesScala
 import org.jetbrains.bazel.workspacemodel.entities.toBuildTargetInfo
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
@@ -105,7 +103,7 @@ class CollectProjectDetailsTask(
       calculateAllUniqueJdkInfosSubtask(projectDetails)
       uniqueJavaHomes.orEmpty().also {
         if (it.isNotEmpty()) {
-          projectDetails.defaultJdkName = project.bspProjectName.projectNameToJdkName(it.first())
+          projectDetails.defaultJdkName = project.bazelProjectName.projectNameToJdkName(it.first())
         } else {
           projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
         }
@@ -360,7 +358,7 @@ class CollectProjectDetailsTask(
     // This will be handled properly after this ticket:
     // https://youtrack.jetbrains.com/issue/BAZEL-426/Configure-JDK-using-workspace-model-API-instead-of-ProjectJdkTable
     project.targetUtils.fireSyncListeners(targetListChanged)
-    SdkUtils.cleanUpInvalidJdks(project.bspProjectName)
+    SdkUtils.cleanUpInvalidJdks(project.bazelProjectName)
     addBspFetchedJdks()
     addBspFetchedJavacOptions()
     addBspFetchedScalaSdks()
@@ -383,7 +381,7 @@ class CollectProjectDetailsTask(
       bspTracer.spanBuilder("add.bsp.fetched.jdks.ms").useWithScope {
         uniqueJavaHomes?.forEach {
           SdkUtils.addJdkIfNeeded(
-            projectName = project.bspProjectName,
+            projectName = project.bazelProjectName,
             javaHomeUri = it,
           )
         }
@@ -456,7 +454,7 @@ class CollectProjectDetailsTask(
     secondTarget: Label,
     source: URI,
   ) {
-    BspBalloonNotifier.warn(
+    BazelBalloonNotifier.warn(
       BspPluginBundle.message("widget.collect.targets.overlapping.sources.title"),
       BspPluginBundle.message(
         "widget.collect.targets.overlapping.sources.message",
@@ -485,11 +483,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
       val libraries: WorkspaceLibrariesResult =
         query("workspace/libraries") {
           server.workspaceLibraries()
-        }
-
-      val dependencySourcesResult =
-        asyncQuery("buildTarget/dependencySources") {
-          server.buildTargetDependencySources(DependencySourcesParams(baseTargetInfos.allTargetIds))
         }
 
       val nonModuleTargets =
@@ -533,7 +526,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
         targets = baseTargetInfos.infos.map { it.target }.toSet(),
         sources = baseTargetInfos.infos.flatMap { it.sources },
         resources = baseTargetInfos.infos.flatMap { it.resources },
-        dependenciesSources = dependencySourcesResult.await().items,
         javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
         // TODO: Son
         scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),

@@ -11,8 +11,6 @@ import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
-import org.jetbrains.bsp.protocol.DependencyModulesParams
-import org.jetbrains.bsp.protocol.DependencyModulesResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.InverseSourcesParams
@@ -21,8 +19,6 @@ import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JavacOptionsResult
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
-import org.jetbrains.bsp.protocol.JvmCompileClasspathParams
-import org.jetbrains.bsp.protocol.JvmCompileClasspathResult
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
@@ -32,8 +28,6 @@ import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.ResourcesResult
-import org.jetbrains.bsp.protocol.RustWorkspaceParams
-import org.jetbrains.bsp.protocol.RustWorkspaceResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourcesParams
@@ -147,11 +141,6 @@ class ProjectSyncService(
     return bspMapper.jvmBinaryJars(project, params)
   }
 
-  suspend fun jvmCompileClasspath(params: JvmCompileClasspathParams): JvmCompileClasspathResult {
-    val project = projectProvider.get() as? AspectSyncProject ?: return JvmCompileClasspathResult(emptyList())
-    return bspMapper.jvmCompileClasspath(project, params)
-  }
-
   suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return JavacOptionsResult(emptyList())
     return bspMapper.buildTargetJavacOptions(project, params)
@@ -170,18 +159,6 @@ class ProjectSyncService(
   suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return ScalacOptionsResult(emptyList())
     return bspMapper.buildTargetScalacOptions(project, params)
-  }
-
-  fun buildTargetDependencyModules(params: DependencyModulesParams): DependencyModulesResult {
-    val project = projectProvider.get() as? AspectSyncProject ?: return DependencyModulesResult(emptyList())
-    return bspMapper.buildDependencyModules(project, params)
-  }
-
-  fun rustWorkspace(params: RustWorkspaceParams): RustWorkspaceResult {
-    val project =
-      projectProvider.get() as? AspectSyncProject
-        ?: return RustWorkspaceResult(emptyList(), emptyMap(), emptyMap(), emptyList())
-    return bspMapper.rustWorkspace(project, params)
   }
 
   fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =

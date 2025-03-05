@@ -12,7 +12,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
         "//protocol",
+        "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//third_party/bazel/src/main/java/com/google/devtools/build/lib/starlarkdebug/proto:starlark_debugging_java_proto",
-        "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

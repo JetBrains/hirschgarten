@@ -28,10 +28,6 @@ import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.CppOptionsItem
 import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
-import org.jetbrains.bsp.protocol.DependencyModule
-import org.jetbrains.bsp.protocol.DependencyModulesItem
-import org.jetbrains.bsp.protocol.DependencyModulesParams
-import org.jetbrains.bsp.protocol.DependencyModulesResult
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
@@ -45,9 +41,6 @@ import org.jetbrains.bsp.protocol.JavacOptionsResult
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
-import org.jetbrains.bsp.protocol.JvmCompileClasspathItem
-import org.jetbrains.bsp.protocol.JvmCompileClasspathParams
-import org.jetbrains.bsp.protocol.JvmCompileClasspathResult
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 import org.jetbrains.bsp.protocol.JvmMainClass
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
@@ -62,8 +55,6 @@ import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.ResourcesResult
-import org.jetbrains.bsp.protocol.RustWorkspaceParams
-import org.jetbrains.bsp.protocol.RustWorkspaceResult
 import org.jetbrains.bsp.protocol.ScalacOptionsItem
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
@@ -340,14 +331,6 @@ class BspProjectMapper(
     return JvmTestEnvironmentResult(result)
   }
 
-  suspend fun jvmCompileClasspath(project: AspectSyncProject, params: JvmCompileClasspathParams): JvmCompileClasspathResult {
-    val items =
-      params.targets.collectClasspathForTargetsAndApply(project, true) { module, ideClasspath ->
-        JvmCompileClasspathItem(module.label, ideClasspath.map { it.toString() })
-      }
-    return JvmCompileClasspathResult(items)
-  }
-
   private suspend fun getJvmEnvironmentItems(project: AspectSyncProject, targets: List<Label>): List<JvmEnvironmentItem> {
     fun extractJvmEnvironmentItem(module: Module, runtimeClasspath: List<URI>): JvmEnvironmentItem? =
       module.javaModule?.let { javaModule ->
@@ -476,20 +459,6 @@ class BspProjectMapper(
       javaModule.mainOutput.toString(),
     )
 
-  fun buildDependencyModules(project: AspectSyncProject, params: DependencyModulesParams): DependencyModulesResult =
-    buildDependencyModulesStatic(project, params)
-
-  fun rustWorkspace(project: AspectSyncProject, params: RustWorkspaceParams): RustWorkspaceResult {
-    val allRustModules = project.modules.filter { Language.RUST in it.languages }
-    val requestedModules =
-      BspMappings
-        .getModules(project, params.targets)
-        .filter { Language.RUST in it.languages }
-    val toRustWorkspaceResult = languagePluginsService.rustLanguagePlugin::toRustWorkspaceResult
-
-    return toRustWorkspaceResult(requestedModules, allRustModules)
-  }
-
   fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult {
     val resolve = languagePluginsService.goLanguagePlugin::resolveLocalToRemote
     return resolve(params)
@@ -498,34 +467,5 @@ class BspProjectMapper(
   fun resolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult {
     val resolve = languagePluginsService.goLanguagePlugin::resolveRemoteToLocal
     return resolve(params)
-  }
-
-  companion object {
-    @JvmStatic
-    fun buildDependencyModulesStatic(project: AspectSyncProject, params: DependencyModulesParams): DependencyModulesResult {
-      val targetSet = params.targets.toSet()
-      val cache = mutableMapOf<String, List<DependencyModule>>()
-      val dependencyModulesItems =
-        project.modules.filter { targetSet.contains(it.label) }.map { module ->
-          val buildTargetId = module.label
-          val moduleDependencies = DependencyMapper.allModuleDependencies(project, module)
-          // moduleDependencies are sorted here to have a deterministic output (used in tests) and not strictly necessary.
-          val moduleItems =
-            moduleDependencies.sortedBy { it.label.toString() }.flatMap { libraryDep ->
-              cache.getOrPut(libraryDep.label.toString()) {
-                if (libraryDep.outputs.isNotEmpty()) {
-                  val mavenDependencyModule = DependencyMapper.extractMavenDependencyInfo(libraryDep)
-                  val dependencyModule =
-                    DependencyModule(libraryDep.label.toString(), mavenDependencyModule?.version ?: "", mavenDependencyModule)
-                  listOf(dependencyModule)
-                } else {
-                  emptyList()
-                }
-              }
-            }
-          DependencyModulesItem(buildTargetId, moduleItems)
-        }
-      return DependencyModulesResult(dependencyModulesItems)
-    }
   }
 }

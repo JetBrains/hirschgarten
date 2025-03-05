@@ -22,7 +22,6 @@ enum class Language(
   CPP("cpp", hashSetOf(".C", ".cc", ".cpp", ".CPP", ".c++", ".cp", "cxx", ".h", ".hpp")),
   PYTHON("python", hashSetOf(".py")),
   THRIFT("thrift", hashSetOf(".thrift")),
-  RUST("rust", hashSetOf(".rs")),
   ANDROID(
     "android",
     emptySet(),

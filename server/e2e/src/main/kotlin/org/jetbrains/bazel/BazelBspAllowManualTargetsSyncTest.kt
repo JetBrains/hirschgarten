@@ -2,6 +2,9 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.install.Install
+import org.jetbrains.bazel.install.cli.CliOptions
+import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
@@ -12,6 +15,7 @@ import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
+import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -22,7 +26,19 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
   @JvmStatic
   fun main(args: Array<String>) = executeScenario()
 
-  override fun additionalServerInstallArguments(): Array<String> = arrayOf("-allow-manual-targets-sync")
+  override fun installServer() {
+    Install.runInstall(
+      CliOptions(
+        workspaceDir = Path(workspaceDir),
+        projectViewCliOptions =
+          ProjectViewCliOptions(
+            bazelBinary = Path(bazelBinary),
+            targets = listOf("//..."),
+            allowManualTargetsSync = true,
+          ),
+      ),
+    )
+  }
 
   override fun scenarioSteps(): List<BazelBspTestScenarioStep> =
     listOf(

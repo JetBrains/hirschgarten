@@ -10,6 +10,7 @@ import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.DependencyScope
@@ -21,6 +22,7 @@ import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import kotlinx.coroutines.coroutineScope
@@ -29,7 +31,6 @@ import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.RawUriToDirectoryPathTransformer
 import org.jetbrains.bazel.magicmetamodel.orDefault
 import org.jetbrains.bazel.sync.BaseTargetInfo
 import org.jetbrains.bazel.sync.BaseTargetInfos
@@ -157,7 +158,7 @@ class GoProjectSync : ProjectSyncHook {
   ): List<ContentRootEntity.Builder> =
     target.resources.flatMap {
       it.resources.map { resource ->
-        val resourceUrl = RawUriToDirectoryPathTransformer.transform(resource).toVirtualFileUrl(virtualFileUrlManager)
+        val resourceUrl = resource.asDirectoryOrParent(virtualFileUrlManager)
         val resourceRootEntity =
           SourceRootEntity(
             url = resourceUrl,
@@ -174,6 +175,12 @@ class GoProjectSync : ProjectSyncHook {
         }
       }
     }
+
+  private fun String.asDirectoryOrParent(virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl {
+    val url = virtualFileUrlManager.findByUrl(this) ?: error("Could not find virtual file url for $this.")
+
+    return if (url.virtualFile?.isDirectory == true) url else url.parent ?: error("Could not find parent for $url.")
+  }
 
   private suspend fun prepareVgoModule(
     environment: ProjectSyncHook.ProjectSyncHookEnvironment,
@@ -203,7 +210,7 @@ class GoProjectSync : ProjectSyncHook {
       }
 
     val vgoModuleLibraries =
-      queryGoLibraries(environment)?.libraries?.map {
+      queryGoLibraries(environment).libraries.map {
         VgoDependencyEntity(
           importPath = it.goImportPath ?: "",
           entitySource = entitySource,
@@ -220,7 +227,7 @@ class GoProjectSync : ProjectSyncHook {
       importPath = goBuildInfo?.importPath ?: "",
       root = virtualFileUrlManager.getOrCreateFromUrl(inputEntity.target.baseDirectory!!),
     ) {
-      this.dependencies = vgoModuleDependencies + (vgoModuleLibraries ?: listOf())
+      this.dependencies = vgoModuleDependencies + vgoModuleLibraries
     }
   }
 

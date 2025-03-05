@@ -9,7 +9,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReferenceBase
-import org.jetbrains.bazel.config.isBspProject
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Label
@@ -31,7 +31,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), soft) {
   override fun resolve(): PsiElement? {
     val project = element.project
-    if (!project.isBspProject || isInNameArgument()) return null
+    if (!project.isBazelProject || isInNameArgument()) return null
     val label = Label.parseOrNull(element.getStringContents()) ?: return null
 
     return resolveLabel(project, label, element.containingFile.originalFile.virtualFile, true)
