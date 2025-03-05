@@ -83,7 +83,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   @ApiStatus.Internal
   suspend fun saveTargets(
     targetIdToTargetInfo: Map<Label, BuildTargetInfo>,
-    targetIdToModuleEntity: Map<Label, Module>,
+    targetIdToModuleEntity: Map<Label, List<Module>>,
     targetIdToModuleDetails: Map<Label, ModuleDetails>,
     libraryItems: List<LibraryItem>?,
     libraryModules: List<JavaModule>,
@@ -91,8 +91,8 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   ) {
     this.labelToTargetInfo = targetIdToTargetInfo.mapKeys { it.key }
     moduleIdToTarget =
-      targetIdToModuleEntity.entries.associate { (targetId, module) ->
-        module.getModuleName() to targetId
+      targetIdToModuleEntity.entries.associate { (targetId, modules) ->
+        modules.first().getModuleName() to targetId
       }
     libraryIdToTarget =
       libraryItems

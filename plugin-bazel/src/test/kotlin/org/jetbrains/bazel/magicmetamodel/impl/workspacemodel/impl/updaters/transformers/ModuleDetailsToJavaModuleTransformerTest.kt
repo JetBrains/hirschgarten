@@ -41,26 +41,6 @@ import kotlin.io.path.name
 @DisplayName("ModuleDetailsToJavaModuleTransformer.transform(moduleDetails) tests")
 class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
   @Test
-  fun `should return no java modules roots for no modules details`() {
-    // given
-    val emptyModulesDetails = listOf<ModuleDetails>()
-
-    // when
-    val javaModules =
-      ModuleDetailsToJavaModuleTransformer(
-        mapOf(),
-        DefaultNameProvider,
-        projectBasePath,
-        project,
-      ).transform(
-        emptyModulesDetails,
-      )
-
-    // then
-    javaModules shouldBe emptyList()
-  }
-
-  @Test
   fun `should return single java module for single module details`() {
     // given
     val projectRoot = createTempDirectory(projectBasePath, "project").toAbsolutePath()
@@ -160,7 +140,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         project,
       ).transform(
         moduleDetails,
-      )
+      ).first()
 
     // then
     val expectedModule =
@@ -178,25 +158,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val expectedBaseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath())
 
-    val expectedJavaSourceRoot1 =
+    val expectedMergedJavaSourceRoot =
       JavaSourceRoot(
-        sourcePath = file1APath,
+        sourcePath = projectRoot,
         generated = false,
-        packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
-        rootType = SourceRootTypeId("java-source"),
-      )
-    val expectedJavaSourceRoot2 =
-      JavaSourceRoot(
-        sourcePath = file2APath,
-        generated = false,
-        packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
-        rootType = SourceRootTypeId("java-source"),
-      )
-    val expectedJavaSourceRoot3 =
-      JavaSourceRoot(
-        sourcePath = dir1BPath,
-        generated = false,
-        packagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
+        packagePrefix = "",
         rootType = SourceRootTypeId("java-source"),
       )
 
@@ -212,7 +178,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       JavaModule(
         genericModuleInfo = expectedModule,
         baseDirContentRoot = expectedBaseDirContentRoot,
-        sourceRoots = listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2, expectedJavaSourceRoot3),
+        sourceRoots = listOf(expectedMergedJavaSourceRoot),
         resourceRoots = listOf(expectedResourceRoot1),
         jvmJdkName = projectBasePath.name.projectNameToJdkName(javaHome),
         kotlinAddendum = null,
@@ -292,7 +258,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         DefaultNameProvider,
         projectBasePath,
         project,
-      ).transform(moduleDetails)
+      ).transform(moduleDetails).first()
 
     // then
     val expectedModule =
@@ -493,14 +459,14 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val targetsMap = listOf("module1", "module2", "module3").toDefaultTargetsMap()
     // when
     val javaModules =
-      ModuleDetailsToJavaModuleTransformer(
-        targetsMap,
-        DefaultNameProvider,
-        projectBasePath,
-        project,
-      ).transform(
-        modulesDetails,
-      )
+      modulesDetails.map { entity ->
+        ModuleDetailsToJavaModuleTransformer(
+          targetsMap,
+          DefaultNameProvider,
+          projectBasePath,
+          project,
+        ).transform(entity).first()
+      }
 
     // then
     val expectedModule1 =
@@ -516,27 +482,16 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         librariesDependencies = emptyList(),
       )
 
-    val expectedBaseDirContentRoot1 = ContentRoot(path = module1Root)
+    val expectedBaseDirContentRoot1 =
+      ContentRoot(
+        path = module1Root,
+      )
 
-    val expectedJavaSourceRoot11 =
+    val expectedMergedJavaSourceRoot1 =
       JavaSourceRoot(
-        sourcePath = file1APath,
+        sourcePath = module1Root,
         generated = false,
-        packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
-        rootType = SourceRootTypeId("java-source"),
-      )
-    val expectedJavaSourceRoot12 =
-      JavaSourceRoot(
-        sourcePath = file2APath,
-        generated = false,
-        packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
-        rootType = SourceRootTypeId("java-source"),
-      )
-    val expectedJavaSourceRoot13 =
-      JavaSourceRoot(
-        sourcePath = dir1BPath,
-        generated = false,
-        packagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
+        packagePrefix = "",
         rootType = SourceRootTypeId("java-source"),
       )
 
@@ -555,7 +510,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       JavaModule(
         genericModuleInfo = expectedModule1,
         baseDirContentRoot = expectedBaseDirContentRoot1,
-        sourceRoots = listOf(expectedJavaSourceRoot11, expectedJavaSourceRoot12, expectedJavaSourceRoot13),
+        sourceRoots = listOf(expectedMergedJavaSourceRoot1),
         resourceRoots = listOf(expectedResourceRoot11, expectedResourceRoot12),
         jvmJdkName = null,
         kotlinAddendum = null,
@@ -572,7 +527,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         librariesDependencies = emptyList(),
       )
 
-    val expectedBaseDirContentRoot2 = ContentRoot(path = module2Root)
+    val expectedBaseDirContentRoot2 =
+      ContentRoot(
+        path = module2Root,
+      )
 
     val expectedJavaSourceRoot21 =
       JavaSourceRoot(

@@ -11,6 +11,7 @@ import org.jetbrains.bazel.utils.StringUtils
 import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.AndroidAddendum
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.workspacemodel.entities.JavaAddendum
@@ -33,26 +34,53 @@ internal class ModuleDetailsToJavaModuleTransformer(
   private val projectBasePath: Path,
   private val project: Project,
   private val isAndroidSupportEnabled: Boolean = false,
-) : ModuleDetailsToModuleTransformer<JavaModule>(targetsMap, nameProvider) {
-  override val type = ModuleTypeId("JAVA_MODULE")
-
+) {
+  private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(targetsMap, nameProvider)
+  private val type = ModuleTypeId("JAVA_MODULE")
   private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer()
+  private val javaModuleToDummyJavaModulesTransformerHACK = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project)
 
-  override fun transform(inputEntity: ModuleDetails): JavaModule =
-    JavaModule(
-      genericModuleInfo = toGenericModuleInfo(inputEntity),
-      baseDirContentRoot = toBaseDirContentRoot(inputEntity),
-      sourceRoots = toJavaSourceRoots(inputEntity),
-      resourceRoots = toResourceRoots(inputEntity),
-      // Any java module must be assigned a jdk if there is any available.
-      jvmJdkName = inputEntity.toJdkNameOrDefault(),
-      jvmBinaryJars = inputEntity.jvmBinaryJars.flatMap { it.jars }.map { it.safeCastToURI().toPath() },
-      kotlinAddendum = toKotlinAddendum(inputEntity),
-      scalaAddendum = toScalaAddendum(inputEntity),
-      javaAddendum = toJavaAddendum(inputEntity),
-      androidAddendum = if (isAndroidSupportEnabled) toAndroidAddendum(inputEntity) else null,
-      workspaceModelEntitiesFolderMarker = inputEntity.workspaceModelEntitiesFolderMarker,
-    )
+  fun transform(inputEntity: ModuleDetails): List<JavaModule> {
+    val javaModule =
+      JavaModule(
+        genericModuleInfo = toGenericModuleInfo(inputEntity),
+        baseDirContentRoot = toBaseDirContentRoot(inputEntity),
+        sourceRoots = toJavaSourceRoots(inputEntity),
+        resourceRoots = toResourceRoots(inputEntity),
+        // Any java module must be assigned a jdk if there is any available.
+        jvmJdkName = inputEntity.toJdkNameOrDefault(),
+        jvmBinaryJars = inputEntity.jvmBinaryJars.flatMap { it.jars }.map { it.safeCastToURI().toPath() },
+        kotlinAddendum = toKotlinAddendum(inputEntity),
+        scalaAddendum = toScalaAddendum(inputEntity),
+        javaAddendum = toJavaAddendum(inputEntity),
+        androidAddendum = if (isAndroidSupportEnabled) toAndroidAddendum(inputEntity) else null,
+        workspaceModelEntitiesFolderMarker = inputEntity.workspaceModelEntitiesFolderMarker,
+      )
+
+    val dummyModulesResult = javaModuleToDummyJavaModulesTransformerHACK.transform(javaModule)
+    return when (dummyModulesResult) {
+      is JavaModuleToDummyJavaModulesTransformerHACK.DummyModulesToAdd -> {
+        val dummyModules = dummyModulesResult.dummyModules
+        val dummyModuleDependencies = dummyModules.map { IntermediateModuleDependency(it.genericModuleInfo.name) }
+        val javaModuleWithDummyDependencies =
+          javaModule.copy(
+            genericModuleInfo =
+              javaModule.genericModuleInfo.copy(
+                modulesDependencies =
+                  javaModule.genericModuleInfo.modulesDependencies + dummyModuleDependencies,
+              ),
+          )
+        listOf(javaModuleWithDummyDependencies) + dummyModules
+      }
+      is JavaModuleToDummyJavaModulesTransformerHACK.MergedSourceRoots -> {
+        val javaModuleWithMergedSourceRoots =
+          javaModule.copy(
+            sourceRoots = dummyModulesResult.mergedSourceRoots,
+          )
+        listOf(javaModuleWithMergedSourceRoots)
+      }
+    }
+  }
 
   private fun toJavaSourceRoots(inputEntity: ModuleDetails): List<JavaSourceRoot> =
     SourcesItemToJavaSourceRootTransformer(inputEntity.workspaceModelEntitiesFolderMarker).transform(
@@ -77,7 +105,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
   private fun ModuleDetails.toJvmClassPaths() =
     (this.javacOptions?.classpath.orEmpty() + this.scalacOptions?.classpath.orEmpty()).distinct()
 
-  override fun toGenericModuleInfo(inputEntity: ModuleDetails): GenericModuleInfo {
+  private fun toGenericModuleInfo(inputEntity: ModuleDetails): GenericModuleInfo {
     val bspModuleDetails =
       BspModuleDetails(
         target = inputEntity.target,
@@ -91,6 +119,12 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails).applyHACK(inputEntity, projectBasePath)
   }
+
+  private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
+    ContentRoot(
+      // TODO https://youtrack.jetbrains.com/issue/BAZEL-635
+      path = (inputEntity.target.baseDirectory ?: "file:///todo").safeCastToURI().toPath(),
+    )
 
   private fun GenericModuleInfo.applyHACK(inputEntity: ModuleDetails, projectBasePath: Path): GenericModuleInfo {
     if (!BazelFeatureFlags.addDummyModules) return this

@@ -307,7 +307,7 @@ class CollectProjectDetailsTask(
             targetIdToModuleEntityMap
           }
 
-        val modulesToLoad = targetIdToModuleEntitiesMap.values.toList()
+        val modulesToLoad = targetIdToModuleEntitiesMap.values.flatten().distinctBy { module -> module.getModuleName() }
 
         val compiledSourceCodeInsideJarToExclude =
           bspTracer.spanBuilder("calculate.non.generated.class.files.to.exclude").use {

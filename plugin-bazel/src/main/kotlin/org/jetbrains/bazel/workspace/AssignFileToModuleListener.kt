@@ -3,10 +3,12 @@
 package org.jetbrains.bazel.workspace
 
 import com.intellij.ide.impl.isTrusted
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectLocator
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent
@@ -40,10 +42,12 @@ import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.status.BspSyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
+import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.isSourceFile
 import org.jetbrains.bazel.utils.safeCastToURI
+import org.jetbrains.bazel.workspacemodel.entities.BspDummyEntitySource
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
@@ -170,6 +174,9 @@ private suspend fun processFileCreated(
   storage: ImmutableEntityStorage,
   moduleNameProvider: TargetNameReformatProvider,
 ) {
+  val existingModule = readAction { ProjectFileIndex.getInstance(project).getModuleForFile(newFile) }
+  if (existingModule != null && existingModule.moduleEntity?.entitySource != BspDummyEntitySource) return
+
   val url = newFile.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   val uri = url.toPath().toUri()
   queryTargetsForFile(project, url)
