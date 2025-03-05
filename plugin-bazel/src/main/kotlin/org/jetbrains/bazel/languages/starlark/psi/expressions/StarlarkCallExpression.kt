@@ -6,9 +6,11 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
+import org.jetbrains.bazel.languages.starlark.references.BazelNativeRuleReference
 import org.jetbrains.bazel.languages.starlark.references.StarlarkFunctionCallReference
 import org.jetbrains.kotlin.idea.base.psi.relativeTo
 
+@Suppress("UnstableApiUsage")
 class StarlarkCallExpression(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitCallExpression(this)
 
@@ -27,4 +29,7 @@ class StarlarkCallExpression(node: ASTNode) : StarlarkBaseElement(node) {
   fun getTargetName(): String? = getArgumentList()?.getNameArgumentValue()
 
   fun getArgumentList(): StarlarkArgumentList? = findChildrenByClass(StarlarkArgumentList::class.java).firstOrNull()
+
+  override fun getOwnReferences(): Collection<BazelNativeRuleReference> =
+    name?.let { listOf(BazelNativeRuleReference(this)) } ?: emptyList()
 }
