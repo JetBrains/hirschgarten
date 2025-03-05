@@ -4,6 +4,7 @@ import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.externalSystem.service.project.manage.ExternalProjectsManagerImpl
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vcs.BranchChangeListener
@@ -30,6 +31,8 @@ class BazelWorkspace(val project: Project) : Disposable {
   @Synchronized
   fun initialize() {
     if (!initialized) {
+      // store generated IML files outside the project directory
+      ExternalProjectsManagerImpl.getInstance(project).setStoreExternally(true)
       unregisterProjectExcludesIgnoredFileProvider()
       BazelProjectAware.initialize(this)
       BazelProjectModuleBuildTasksTracker.initialize(this)
