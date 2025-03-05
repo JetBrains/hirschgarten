@@ -27,7 +27,7 @@ class PythonBazelRunHandler : BazelRunHandler {
   }
 
   class Provider : RunHandlerProvider {
-    override val id: String = "PythonBspRunHandlerProvider"
+    override val id: String = "PythonBazelRunHandlerProvider"
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = PythonBazelRunHandler()
 
