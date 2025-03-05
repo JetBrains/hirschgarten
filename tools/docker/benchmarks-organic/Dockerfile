@@ -21,4 +21,11 @@ RUN --mount=type=secret,id=space_git_credentials,uid=1001 \
     && git clone --depth 1 https://github.com/JetBrains/hirschgarten.git project_Hirschgarten \
     && git clone --depth 1 https://github.com/bazelbuild/bazel.git project_Bazel \
     && git clone --depth 1 https://github.com/grpc/grpc-java.git project_gRPC-Java \
-    && git clone --depth 1 https://github.com/JetBrains/bazel-bsp.git project_Bazel-BSP
+    && git clone --depth 1 https://github.com/JetBrains/bazel-bsp.git project_Bazel-BSP \
+    && cp -r project_Hirschgarten project_Hirschgarten_bad \
+    && cp -r project_Hirschgarten project_Hirschgarten_good \
+    && cd project_Hirschgarten_bad \
+    && git checkout 69d29bf08739fd8a77e5a4fa7921031c3b941af6 \
+    && cd .. \
+    && cd project_Hirschgarten_good \
+    && git checkout 3909bf319462e729947b40ba3d125659dd349f56
