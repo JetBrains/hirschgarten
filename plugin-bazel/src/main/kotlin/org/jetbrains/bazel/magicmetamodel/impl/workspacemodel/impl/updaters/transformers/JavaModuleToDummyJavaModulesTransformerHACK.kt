@@ -4,6 +4,7 @@ import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.BazelJavaSourceRootEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
@@ -75,6 +76,8 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
     dummyJavaModuleSourceRoots: List<JavaSourceRoot>,
     dummyJavaResourcePath: Path?,
   ): Boolean {
+    if (!BazelFeatureFlags.mergeSourceRoots) return false
+
     if (dummyJavaResourcePath != null) return false
 
     val mergedSourceRoots: Set<Path> = dummyJavaModuleSourceRoots.map { it.sourcePath }.toSet()
