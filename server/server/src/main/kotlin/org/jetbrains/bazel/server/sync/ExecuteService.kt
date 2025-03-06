@@ -169,6 +169,7 @@ class ExecuteService(
             it.options.add(BazelFlag.combinedReportLcov())
             it.options.add(BazelFlag.instrumentationFilterAll())
           }
+
         else -> bazelRunner.buildBazelCommand { test() }
       }
 
@@ -250,14 +251,14 @@ class ExecuteService(
     }
   }
 
-  private fun getAdditionalBuildTargets(bspIds: List<Label>): List<Label> =
+  private suspend fun getAdditionalBuildTargets(bspIds: List<Label>): List<Label> =
     if (workspaceContextProvider.currentFeatureFlags().isAndroidSupportEnabled) {
       additionalBuildTargetsProvider.getAdditionalBuildTargets(bspIds)
     } else {
       emptyList()
     }
 
-  private fun selectModules(targets: List<Label>): List<Module> {
+  private suspend fun selectModules(targets: List<Label>): List<Module> {
     val project = projectProvider.get() as? AspectSyncProject ?: return emptyList()
     val modules = BspMappings.getModules(project, targets)
     val ignoreManualTag = targets.size == 1
