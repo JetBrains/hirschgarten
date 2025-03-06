@@ -14,7 +14,6 @@ import org.jetbrains.bazel.server.model.Project
 import org.jetbrains.bazel.server.model.Tag
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePluginsService
-import org.jetbrains.bazel.server.sync.languages.java.IdeClasspathResolver
 import org.jetbrains.bazel.server.sync.languages.java.JavaModule
 import org.jetbrains.bazel.server.sync.languages.jvm.javaModule
 import org.jetbrains.bazel.server.sync.languages.scala.ScalaModule
@@ -367,11 +366,11 @@ class BspProjectMapper(
     return JvmBinaryJarsResult(jvmBinaryJarsItems)
   }
 
-  suspend fun buildTargetJavacOptions(project: AspectSyncProject, params: JavacOptionsParams): JavacOptionsResult {
+  fun buildTargetJavacOptions(project: AspectSyncProject, params: JavacOptionsParams): JavacOptionsResult {
     val items =
-      params.targets.collectClasspathForTargetsAndApply(project, false) { module, ideClasspath ->
-        module.javaModule?.let { toJavacOptionsItem(module, it, ideClasspath) }
-      }
+      params.targets
+        .mapNotNull { project.findModule(it) }
+        .mapNotNull { module -> module.javaModule?.let { toJavacOptionsItem(module, it) } }
     return JavacOptionsResult(items)
   }
 
@@ -397,35 +396,12 @@ class BspProjectMapper(
       languagePluginsService.pythonLanguagePlugin.toPythonOptionsItem(module, it)
     }
 
-  suspend fun buildTargetScalacOptions(project: AspectSyncProject, params: ScalacOptionsParams): ScalacOptionsResult {
+  fun buildTargetScalacOptions(project: AspectSyncProject, params: ScalacOptionsParams): ScalacOptionsResult {
     val items =
-      params.targets.collectClasspathForTargetsAndApply(project, false) { module, ideClasspath ->
-        toScalacOptionsItem(module, ideClasspath)
-      }
+      params.targets
+        .mapNotNull { project.findModule(it) }
+        .mapNotNull { toScalacOptionsItem(it) }
     return ScalacOptionsResult(items)
-  }
-
-  private suspend fun <T> List<Label>.collectClasspathForTargetsAndApply(
-    project: AspectSyncProject,
-    includeClasspath: Boolean,
-    mapper: (Module, List<URI>) -> T?,
-  ): List<T> =
-    this
-      .mapNotNull { project.findModule(it) }
-      .mapNotNull {
-        val classpath = if (includeClasspath) readIdeClasspath(it.label) else emptyList()
-        mapper(it, classpath)
-      }
-
-  private suspend fun readIdeClasspath(targetLabel: Label): List<URI> {
-    val classPathFromQuery = ClasspathQuery.classPathQuery(targetLabel, bspInfo, bazelRunner)
-    val ideClasspath =
-      IdeClasspathResolver.resolveIdeClasspath(
-        label = targetLabel,
-        runtimeClasspath = resolveClasspath(classPathFromQuery.runtime_classpath),
-        compileClasspath = resolveClasspath(classPathFromQuery.compile_classpath),
-      )
-    return ideClasspath
   }
 
   private fun resolveClasspath(cqueryResult: List<String>) =
@@ -434,29 +410,21 @@ class BspProjectMapper(
       .filter { it.toFile().exists() } // I'm surprised this is needed, but we literally test it in e2e tests
       .map { it.toUri() }
 
-  private fun toScalacOptionsItem(module: Module, ideClasspath: List<URI>): ScalacOptionsItem? =
+  private fun toScalacOptionsItem(module: Module): ScalacOptionsItem? =
     (module.languageData as? ScalaModule)?.let { scalaModule ->
       scalaModule.javaModule?.let { javaModule ->
-        val javacOptions = toJavacOptionsItem(module, javaModule, ideClasspath)
+        val javacOptions = toJavacOptionsItem(module, javaModule)
         ScalacOptionsItem(
           javacOptions.target,
           scalaModule.scalacOpts,
-          javacOptions.classpath,
-          javacOptions.classDirectory,
         )
       }
     }
 
-  private fun toJavacOptionsItem(
-    module: Module,
-    javaModule: JavaModule,
-    ideClasspath: List<URI>,
-  ): JavacOptionsItem =
+  private fun toJavacOptionsItem(module: Module, javaModule: JavaModule): JavacOptionsItem =
     JavacOptionsItem(
       module.label,
       javaModule.javacOpts.toList(),
-      ideClasspath.map { it.toString() },
-      javaModule.mainOutput.toString(),
     )
 
   fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult {

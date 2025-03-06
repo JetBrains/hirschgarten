@@ -126,11 +126,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       JavacOptionsItem(
         buildTargetId,
         listOf("opt1", "opt2", "opt3"),
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-          "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
-        ),
-        "file:///compiler/output.jar",
       )
 
     val moduleDetails =
@@ -400,11 +395,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       JavacOptionsItem(
         buildTargetId1,
         listOf("opt1.1", "opt1.2", "opt1.3"),
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-          "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
-        ),
-        "file:///compiler/output1.jar",
       )
 
     val moduleDetails1 =
@@ -468,8 +458,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       JavacOptionsItem(
         buildTargetId2,
         listOf("opt2.1", "opt2.2"),
-        listOf("file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
-        "file:///compiler/output2.jar",
       )
 
     val moduleDetails2 =

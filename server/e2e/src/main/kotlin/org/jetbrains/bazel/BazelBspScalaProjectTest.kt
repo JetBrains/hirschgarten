@@ -131,11 +131,6 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
         ScalacOptionsItem(
           it,
           emptyList(),
-          listOf(
-            "$bazelBinDirectory/external/io_bazel_rules_scala_scala_library/io_bazel_rules_scala_scala_library.stamp/scala-library-2.12.14-stamped.jar",
-            "$bazelBinDirectory/external/io_bazel_rules_scala_scala_reflect/io_bazel_rules_scala_scala_reflect.stamp/scala-reflect-2.12.14-stamped.jar",
-          ),
-          "$bazelBinDirectory/scala_targets/library.jar",
         )
       }
     val expectedScalaOptionsResult = ScalacOptionsResult(expectedScalaOptionsItems)

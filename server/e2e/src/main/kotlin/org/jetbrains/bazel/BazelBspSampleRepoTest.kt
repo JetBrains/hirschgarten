@@ -879,12 +879,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
               "--add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
               "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
             ),
-            emptyList(),
-            if (isBzlmod) {
-              "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/target_with_javac_exports/libjava_library.jar"
-            } else {
-              "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/__main__/bazel-out/$bazelArch-fastbuild/bin/target_with_javac_exports/libjava_library.jar"
-            },
           ),
         ),
       )

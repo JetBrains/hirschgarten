@@ -62,11 +62,6 @@ class BspModuleDetailsToModuleTransformerTest {
       JavacOptionsItem(
         targetId,
         emptyList(),
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-          "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
-        ),
-        "file:///compiler/output.jar",
       )
 
     val bspModuleDetails =
@@ -219,11 +214,6 @@ class BspModuleDetailsToModuleTransformerTest {
       JavacOptionsItem(
         target1Id,
         emptyList(),
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-          "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
-        ),
-        "file:///compiler/output1.jar",
       )
 
     val bspModuleDetails1 =
@@ -259,10 +249,6 @@ class BspModuleDetailsToModuleTransformerTest {
       JavacOptionsItem(
         target2Id,
         emptyList(),
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-        ),
-        "file:///compiler/output2.jar",
       )
     val bspModuleDetails2 =
       BspModuleDetails(
@@ -346,11 +332,6 @@ class BspModuleDetailsToModuleTransformerTest {
       JavacOptionsItem(
         targetId,
         emptyList(),
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-          "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
-        ),
-        "file:///compiler/output.jar",
       )
 
     val bspModuleDetails =
