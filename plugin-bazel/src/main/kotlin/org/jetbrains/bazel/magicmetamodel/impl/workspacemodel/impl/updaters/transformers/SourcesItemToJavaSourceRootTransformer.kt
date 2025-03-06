@@ -10,11 +10,13 @@ import kotlin.io.path.toPath
 
 internal data class BuildTargetAndSourceItem(val buildTarget: BuildTarget, val sourcesItem: SourcesItem)
 
+internal val JAVA_SOURCE_ROOT_TYPE = SourceRootTypeId("java-source")
+internal val JAVA_TEST_SOURCE_ROOT_TYPE = SourceRootTypeId("java-test")
+internal val JAVA_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-resource")
+internal val JAVA_TEST_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-test-resource")
+
 internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModelEntitiesFolderMarker: Boolean = false) :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, JavaSourceRoot> {
-  private val sourceRootType = SourceRootTypeId("java-source")
-  private val testSourceRootType = SourceRootTypeId("java-test")
-
   override fun transform(inputEntity: BuildTargetAndSourceItem): List<JavaSourceRoot> {
     val sourceRoots = getSourceRoots(inputEntity.sourcesItem)
     val rootType = inferRootType(inputEntity.buildTarget)
@@ -32,7 +34,7 @@ internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModel
       .toSet()
 
   private fun inferRootType(buildTarget: BuildTarget): SourceRootTypeId =
-    if (buildTarget.tags.contains("test")) testSourceRootType else sourceRootType
+    if (buildTarget.tags.contains("test")) JAVA_TEST_SOURCE_ROOT_TYPE else JAVA_SOURCE_ROOT_TYPE
 
   private fun Path.toJavaSourceRoot(rootType: SourceRootTypeId): JavaSourceRoot =
     JavaSourceRoot(

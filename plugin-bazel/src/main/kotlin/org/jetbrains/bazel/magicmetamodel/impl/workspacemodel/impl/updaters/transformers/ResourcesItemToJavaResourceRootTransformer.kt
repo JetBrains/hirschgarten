@@ -26,9 +26,4 @@ internal class ResourcesItemToJavaResourceRootTransformer :
 
   private fun BuildTarget.inferRootType(): SourceRootTypeId =
     if (tags.contains("test")) JAVA_TEST_RESOURCE_ROOT_TYPE else JAVA_RESOURCE_ROOT_TYPE
-
-  companion object {
-    private val JAVA_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-resource")
-    private val JAVA_TEST_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-test-resource")
-  }
 }
