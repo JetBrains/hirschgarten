@@ -19,7 +19,7 @@ import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.minutes
 
 object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
-  private val testClient = createBazelClient()
+  private val testClient = createTestkitClient()
   private val bazelBinResolved = testClient.transformJson(bazelBinDirectory)
 
   private val javaLibraryJar = URI.create("$bazelBinResolved/src/libjava-lib.jar").toPath()
