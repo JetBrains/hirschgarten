@@ -87,8 +87,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       JavacOptionsItem(
         targetId,
         listOf("opt1", "opt2", "opt3"),
-        listOf("classpath1", "classpath2", "classpath3"),
-        "class/dir",
       )
 
     val projectDetails =
@@ -151,8 +149,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       JavacOptionsItem(
         target1Id,
         listOf("opt1", "opt2", "opt3"),
-        listOf("classpath1", "classpath2"),
-        "class/dir1",
       )
 
     val target2 =
@@ -201,8 +197,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       JavacOptionsItem(
         target3Id,
         listOf("opt1"),
-        listOf("classpath1", "classpath2", "classpath3"),
-        "class/dir3",
       )
 
     val target4Id = Label.parse("target4")

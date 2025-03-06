@@ -74,9 +74,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
       },
     )
 
-  private fun ModuleDetails.toJvmClassPaths() =
-    (this.javacOptions?.classpath.orEmpty() + this.scalacOptions?.classpath.orEmpty()).distinct()
-
   override fun toGenericModuleInfo(inputEntity: ModuleDetails): GenericModuleInfo {
     val bspModuleDetails =
       BspModuleDetails(
