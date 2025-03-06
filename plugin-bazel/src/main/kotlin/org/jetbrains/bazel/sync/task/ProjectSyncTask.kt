@@ -80,7 +80,6 @@ class ProjectSyncTask(private val project: Project) {
             BspPluginBundle.message("console.task.sync.failed"),
             FailureResultImpl(e),
           )
-          throw e
         } finally {
           if (!syncAlreadyInProgress) {
             postSync()
