@@ -26,3 +26,5 @@ object BspURLEncoder {
  * This helper util accepts a (maybe malformed) URI and returns the corresponding URI object
  */
 fun String.safeCastToURI(): URI = URI.create(BspURLEncoder.encode(this))
+
+fun String.removeTrailingSlash() = this.trimEnd('/')
