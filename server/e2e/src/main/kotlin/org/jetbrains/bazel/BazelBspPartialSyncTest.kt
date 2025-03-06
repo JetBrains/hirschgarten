@@ -20,7 +20,7 @@ import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 
 object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
-  private val testClient = createBazelClient()
+  private val testClient = createTestkitClient()
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-95
   @JvmStatic

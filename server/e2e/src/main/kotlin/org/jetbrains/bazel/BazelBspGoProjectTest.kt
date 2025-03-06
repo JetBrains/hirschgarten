@@ -24,7 +24,7 @@ import kotlin.time.Duration.Companion.seconds
 
 object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
   private val testClient = createTestkitClient()
-  private val bazelTestClient = createBazelClient()
+  private val bazelTestClient = createTestkitClient()
   private val defaultSdkHomePath = URI("file://\$BAZEL_OUTPUT_BASE_PATH/external/go_sdk/")
   private val enabledRules: List<String>
     get() = listOf("io_bazel_rules_go")

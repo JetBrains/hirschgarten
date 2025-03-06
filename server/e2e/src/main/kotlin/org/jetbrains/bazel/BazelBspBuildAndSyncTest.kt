@@ -15,7 +15,7 @@ import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.minutes
 
 object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
-  private val testClient = createBazelClient()
+  private val testClient = createTestkitClient()
   private val bazelBinResolved = testClient.transformJson(bazelBinDirectory)
   private val mainJar = URI.create("$bazelBinResolved/src/libmain.jar").toPath()
   private val genruleShouldNotBeBuilt = URI.create("$bazelBinResolved/src/should_not_be_built.txt").toPath()

@@ -18,7 +18,7 @@ import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.minutes
 
 abstract class BazelBspAndroidProjectTestBase : BazelBspTestBaseScenario() {
-  private val testClient = createBazelClient()
+  private val testClient = createTestkitClient()
 
   protected abstract val enabledRules: List<String>
 

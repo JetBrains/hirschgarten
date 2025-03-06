@@ -32,13 +32,13 @@ import org.jetbrains.bsp.testkit.gsonSealedSupport
 import java.nio.file.Path
 import kotlin.time.Duration
 
-open class BasicTestClient(
+class TestClient(
   val workspacePath: Path,
   val transformJson: (String) -> String,
-  val client: MockClient,
   val featureFlags: FeatureFlags,
 ) {
   val gson = gsonSealedSupport
+  val client = MockClient()
 
   inline fun <reified T> applyJsonTransform(element: T): T {
     val json = gson.toJson(element)
@@ -59,18 +59,7 @@ open class BasicTestClient(
       doTest(session)
     }
   }
-}
 
-class TestClient(
-  workspacePath: Path,
-  transformJson: (String) -> String,
-  featureFlags: FeatureFlags,
-) : BasicTestClient(
-    workspacePath,
-    transformJson,
-    MockClient(),
-    featureFlags,
-  ) {
   fun testJavacOptions(
     timeout: Duration,
     params: JavacOptionsParams,

@@ -956,7 +956,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         ),
       )
 
-    val client = createBazelClient()
+    val client = createTestkitClient()
 
     return BazelBspTestScenarioStep(
       "non module targets",
