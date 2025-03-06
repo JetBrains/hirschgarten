@@ -94,26 +94,10 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
   fun parseFile(): ASTNode {
     val prompt = builder.mark()
 
-    // TODO: Delete query quotes
-//    var queryQuotes: IElementType = BazelqueryTokenTypes.WHITE_SPACE
-
-//    if (atToken(BazelqueryTokenTypes.SINGLE_QUOTE)){
-//      queryQuotes = BazelqueryTokenTypes.SINGLE_QUOTE
-//      advanceLexer()
-//    }
-//    else if (atToken(BazelqueryTokenTypes.DOUBLE_QUOTE)) {
-//      queryQuotes = BazelqueryTokenTypes.DOUBLE_QUOTE
-//      advanceLexer()
-//    }
-
     parseExpr(BazelqueryTokenTypes.WHITE_SPACE)
-//
-//    if(queryQuotes != BazelqueryTokenTypes.WHITE_SPACE)
-//      matchToken(queryQuotes)
-//
+
     while (!eof())
       advanceError("Unexpected token")
-
 
     prompt.done(root)
     return treeBuilt

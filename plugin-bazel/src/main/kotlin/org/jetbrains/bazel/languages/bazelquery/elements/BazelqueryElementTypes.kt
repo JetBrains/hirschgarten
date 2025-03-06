@@ -32,3 +32,26 @@ object BazelqueryElementTypes {
       else -> error("Unknown element type: $type")
     }
 }
+
+object BazelqueryFlagsElementTypes {
+  val PROMPT = BazelqueryFlagsElementType("PROMPT")
+  val COMMAND = BazelqueryFlagsElementType("COMMAND")
+  val WORD = BazelqueryFlagsElementType("WORD")
+  val INTEGER = BazelqueryFlagsElementType("INTEGER")
+  val QUERY_VAL = BazelqueryFlagsElementType("QUERY_VAL")
+  val FLAG = BazelqueryFlagsElementType("FLAG")
+  val FLAG_VAL = BazelqueryFlagsElementType("FLAG_VAL")
+
+  fun createElement(node: ASTNode): PsiElement =
+    when (val type = node.elementType) {
+      PROMPT -> BazelqueryPrompt(node)
+      COMMAND -> BazelqueryCommand(node)
+      WORD -> BazelqueryWord(node)
+      QUERY_VAL -> BazelqueryQueryVal(node)
+      FLAG -> BazelqueryFlag(node)
+      FLAG_VAL -> BazelqueryFlag(node)
+      INTEGER -> BazelqueryWord(node)
+
+      else -> error("Unknown element type: $type")
+    }
+}

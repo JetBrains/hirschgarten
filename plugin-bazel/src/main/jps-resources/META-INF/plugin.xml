@@ -437,6 +437,23 @@
                 implementationClass="org.jetbrains.bazel.languages.bazelquery.completion.BazelqueryCompletionContributor"/>
 
 
+        <fileType
+                name="BazelqueryFlags"
+                implementationClass="org.jetbrains.bazel.languages.bazelquery.BazelqueryFlagsFileType"
+                fieldName="INSTANCE"
+                language="BazelqueryFlags"
+
+                extensions="bazelqueryflags"
+        />
+
+        <lang.parserDefinition
+                language="BazelqueryFlags"
+                implementationClass="org.jetbrains.bazel.languages.bazelquery.parser.BazelqueryFlagsParserDefinition"/>
+
+        <lang.syntaxHighlighterFactory
+                language="BazelqueryFlags"
+                implementationClass="org.jetbrains.bazel.languages.bazelquery.highlighting.BazelquerySyntaxHighlighterFactory"/>
+
 
 
         <fileType

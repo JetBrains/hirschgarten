@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.CollapsiblePanel
 import com.intellij.ui.EditorTextField
+import com.intellij.ui.LanguageTextField
 import com.intellij.ui.RawCommandLineEditor
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
@@ -18,6 +19,8 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextPane
 import org.jetbrains.bazel.languages.bazelquery.BazelqueryFileType
+import org.jetbrains.bazel.languages.bazelquery.BazelqueryLanguage
+import org.jetbrains.bazel.languages.bazelquery.BazelqueryFlagsLanguage
 
 
 class BazelQueryDialogWindow(private val project: Project) : DialogWrapper(true) {
@@ -54,12 +57,16 @@ class BazelQueryDialogWindow(private val project: Project) : DialogWrapper(true)
     fun isSelected() = checkBox.isSelected
   }
 
-  val editorTextField = EditorTextField(
-    EditorFactory.getInstance().createDocument(""),
+  val editorTextField = LanguageTextField(
+    BazelqueryLanguage,
     project,
-    BazelqueryFileType,
-    false,
-    true
+    ""
+  )
+
+  val flagTextField = LanguageTextField(
+    BazelqueryFlagsLanguage,
+    project,
+    ""
   )
 
   private companion object {
@@ -98,6 +105,7 @@ class BazelQueryDialogWindow(private val project: Project) : DialogWrapper(true)
 
   private fun clear() {
     editorTextField.text = ""
+    flagTextField.text = ""
     resultField.text = ""
     flagsPanel.updateUI()
   }
@@ -108,14 +116,15 @@ class BazelQueryDialogWindow(private val project: Project) : DialogWrapper(true)
     val queryPanel = JPanel(BorderLayout())
     val quoteLabelL = JLabel("\"")
     val quoteLabelR = JLabel("\"")
-    queryPanel.add(quoteLabelL, BorderLayout.EAST)
-    queryPanel.add(quoteLabelR, BorderLayout.WEST)
+//    queryPanel.add(quoteLabelL, BorderLayout.EAST)
+//    queryPanel.add(quoteLabelR, BorderLayout.WEST)
     queryPanel.add(editorTextField, BorderLayout.CENTER)
 
 
     dialogPanel.layout = BoxLayout(dialogPanel, BoxLayout.Y_AXIS)
     dialogPanel.add(queryPanel)
     dialogPanel.add(flagsPanelHolder)
+    dialogPanel.add(flagTextField)
     dialogPanel.add(resultField)
 
     return dialogPanel
@@ -147,10 +156,12 @@ class BazelQueryDialogWindow(private val project: Project) : DialogWrapper(true)
   }
 
   private fun evaluate() {
+    //TODO: correct quotes depending on query value
     val resultTextBuilder = StringBuilder("bazel query \"" + editorTextField.text + "\"")
     for (flag in defaultFlags) {
       if (flag.isSelected()) resultTextBuilder.append(" --").append(flag.flag)
     }
+    resultTextBuilder.append(" ").append(flagTextField.text)
     resultField.text = resultTextBuilder.toString()
   }
 }
