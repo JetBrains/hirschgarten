@@ -55,8 +55,12 @@ class EnvironmentCreator(private val projectRootDir: Path) {
     } ?: error("Missing aspects resource")
 
   private fun copyFileTree(source: Path, destination: Path) {
-    Files.walk(source).forEach { copyUsingRelativePath(source, it, destination) }
-    Files.walk(destination).forEach { deleteExtraFileUsingRelativePath(source, it, destination) }
+    Files.walk(source).use { sourceFiles ->
+      sourceFiles.forEach { copyUsingRelativePath(source, it, destination) }
+    }
+    Files.walk(destination).use { destinationFiles ->
+      destinationFiles.forEach { deleteExtraFileUsingRelativePath(source, it, destination) }
+    }
   }
 
   private fun copyUsingRelativePath(

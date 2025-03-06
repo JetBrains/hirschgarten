@@ -25,7 +25,7 @@ object TargetIdToModuleEntitiesMap {
     project: Project,
     nameProvider: TargetNameReformatProvider,
     isAndroidSupportEnabled: Boolean,
-  ): Map<Label, Module> {
+  ): Map<Label, List<Module>> {
     val moduleDetailsToJavaModuleTransformer =
       ModuleDetailsToJavaModuleTransformer(
         targetIdToTargetInfo,
