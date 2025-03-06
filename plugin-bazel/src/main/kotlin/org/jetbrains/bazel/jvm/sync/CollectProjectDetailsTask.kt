@@ -312,7 +312,7 @@ class CollectProjectDetailsTask(
         val compiledSourceCodeInsideJarToExclude =
           bspTracer.spanBuilder("calculate.non.generated.class.files.to.exclude").use {
             if (BazelFeatureFlags.excludeCompiledSourceCodeInsideJars) {
-              ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(modulesToLoad)
+              ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(targetIdToModuleDetails.values)
             } else {
               null
             }

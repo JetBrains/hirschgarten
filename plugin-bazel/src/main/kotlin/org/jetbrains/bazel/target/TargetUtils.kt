@@ -26,6 +26,7 @@ import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.magicmetamodel.orDefault
+import org.jetbrains.bazel.utils.removeTrailingSlash
 import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
@@ -112,10 +113,8 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   private fun ModuleDetails.toPairsUrlToId(): List<Pair<URI, Label>> =
     sources.flatMap { sources ->
-      sources.sources.mapNotNull { it.uri.processUriString().safeCastToURI() }.map { it to target.id }
+      sources.sources.mapNotNull { it.uri.removeTrailingSlash().safeCastToURI() }.map { it to target.id }
     }
-
-  private fun String.processUriString() = this.trimEnd('/')
 
   private suspend fun calculateFileToExecutableTargets(libraryItems: List<LibraryItem>?): Map<URI, List<Label>> =
     withContext(Dispatchers.Default) {
@@ -179,7 +178,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   fun getTargetsForURI(uri: URI): List<Label> = fileToTarget[uri] ?: emptyList()
 
   fun getTargetsForFile(file: VirtualFile): List<Label> =
-    fileToTarget[file.url.processUriString().safeCastToURI()]
+    fileToTarget[file.url.removeTrailingSlash().safeCastToURI()]
       ?: getTargetsFromAncestorsForFile(file)
 
   @ApiStatus.Internal
@@ -187,7 +186,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     val executableDirectTargets =
       getTargetsForFile(file).filter { label -> labelToTargetInfo[label]?.capabilities?.isExecutable() == true }
     if (executableDirectTargets.isEmpty()) {
-      return fileToExecutableTargets.getOrDefault(file.url.processUriString().safeCastToURI(), emptySet()).toList()
+      return fileToExecutableTargets.getOrDefault(file.url.removeTrailingSlash().safeCastToURI(), emptySet()).toList()
     }
     return executableDirectTargets
   }
@@ -197,7 +196,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       val rootDir = project.rootDir
       var iter = file.parent
       while (iter != null && VfsUtil.isAncestor(rootDir, iter, false)) {
-        val key = iter.url.processUriString().safeCastToURI()
+        val key = iter.url.removeTrailingSlash().safeCastToURI()
         if (key in fileToTarget) return fileToTarget[key]!!
         iter = iter.parent
       }
