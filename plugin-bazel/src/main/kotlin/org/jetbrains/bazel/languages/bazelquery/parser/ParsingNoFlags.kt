@@ -224,6 +224,7 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
     var queryQuotes = queryQuotes
 
     val command = mark()
+
     val command_keyword = builder.tokenType
     advanceLexer()
     if (atToken(queryQuotes)) return queryQuotes

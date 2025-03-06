@@ -15,7 +15,6 @@ import org.jetbrains.bazel.languages.bazelquery.BazelqueryLanguage
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenType
 import com.intellij.psi.tree.TokenSet
-import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryQueryVal
 import com.intellij.psi.util.startOffset
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryFile
 

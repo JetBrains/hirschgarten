@@ -10,9 +10,6 @@ import org.jetbrains.bazel.languages.bazelquery.BazelqueryLanguage
 
 class BazelqueryFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, BazelqueryLanguage) {
     override fun getFileType(): FileType = BazelqueryFileType
-
-    val prompts: Array<BazelqueryPrompt>
-        get() = this.findChildrenByClass(BazelqueryPrompt::class.java)
 }
 
 class BazelqueryFlagsFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, BazelqueryFlagsLanguage) {

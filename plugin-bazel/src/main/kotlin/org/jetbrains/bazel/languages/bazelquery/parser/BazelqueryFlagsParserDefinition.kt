@@ -11,10 +11,9 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bazel.languages.bazelquery.BazelqueryFlagsLanguage
-import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryFlagsElementTypes
+import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryElementTypes
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.lexer.BazelqueryLexer
-import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryFile
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryFlagsFile
 
 class BazelqueryFlagsParserDefinition : ParserDefinition {
@@ -35,7 +34,7 @@ class BazelqueryFlagsParserDefinition : ParserDefinition {
 
   override fun getStringLiteralElements(): TokenSet = TokenSet.EMPTY
 
-  override fun createElement(node: ASTNode): PsiElement = BazelqueryFlagsElementTypes.createElement(node)
+  override fun createElement(node: ASTNode): PsiElement = BazelqueryElementTypes.createElement(node)
 
   override fun createFile(viewProvider: FileViewProvider): PsiFile = BazelqueryFlagsFile(viewProvider)
 }

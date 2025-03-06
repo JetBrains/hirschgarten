@@ -7,7 +7,6 @@ import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryElementTypes
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenTypes
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenSets
-import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenType
 
 open class ParsingFlags(private val root: IElementType, val builder: PsiBuilder) : PsiBuilder by builder {
 

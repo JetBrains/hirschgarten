@@ -7,15 +7,7 @@ open class BazelqueryElementVisitor : PsiElementVisitor() {
         visitElement(node)
     }
 
-    fun visitPrompt(node: BazelqueryPrompt) {
-        visitElement(node)
-    }
-
     fun visitWord(node: BazelqueryWord) {
-        visitElement(node)
-    }
-
-    fun visitQueryVal(node: BazelqueryQueryVal) {
         visitElement(node)
     }
 
