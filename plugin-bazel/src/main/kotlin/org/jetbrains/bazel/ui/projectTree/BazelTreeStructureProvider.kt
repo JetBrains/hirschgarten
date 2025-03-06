@@ -13,6 +13,7 @@ import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.projectView.impl.nodes.PsiFileSystemItemFilter
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.components.service
+import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
@@ -27,8 +28,6 @@ import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.isBazelProjectLoaded
-import org.jetbrains.bazel.config.openedTimesSinceLastStartupResync
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
@@ -159,12 +158,12 @@ private class BspDirectoryNode(
     }
 
   /**
-   * the custom nodes should only be created on broken project state;
-   * this function provides a heuristic to guess that the project state is not broken, i.e.,
-   * - when just successfully finish the startup resync, OR
-   * - when the BSP project is successfully loaded
+   * The project view tree relies on the existence of the "fake module".
+   * See https://youtrack.jetbrains.com/issue/IJPL-15946/Platform-solution-for-the-initial-state-of-the-project-model-on-the-first-open
+   * However, we remove the fake module in `CounterPlatformProjectConfigurator`.
+   * So while the project is syncing, we show our custom tree, so that the user can at least see the project files and directories.
    */
-  private fun Project.shouldNotCalculateCustomNodes() = openedTimesSinceLastStartupResync == 1 || isBazelProjectLoaded
+  private fun Project.shouldNotCalculateCustomNodes() = ModuleManager.getInstance(this).modules.isNotEmpty()
 
   override fun getChildrenImpl(): Collection<AbstractTreeNode<*>?>? {
     val virtualFile = virtualFile ?: return null

@@ -4,7 +4,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProjectInitialized
-import org.jetbrains.bazel.config.openedTimesSinceLastStartupResync
 import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
 import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
@@ -72,8 +71,6 @@ class BazelStartupActivity : BazelProjectActivity() {
           buildProject = BazelFeatureFlags.isBuildProjectOnSyncEnabled,
         )
       }
-
-      openedTimesSinceLastStartupResync = 0
     }
   }
 
@@ -81,6 +78,5 @@ class BazelStartupActivity : BazelProjectActivity() {
 
   private fun Project.updateProjectProperties() {
     isBazelProjectInitialized = true
-    openedTimesSinceLastStartupResync += 1
   }
 }
