@@ -19,7 +19,7 @@ object FileUtils {
           OsFamily.MACOS ->
             EnvironmentUtil.getValue("HOME")?.let { "$it/Library/Caches" }
         }
-      } ?: return null
+      }
     val file = File(path, subfolder)
     try {
       file.mkdirs()
