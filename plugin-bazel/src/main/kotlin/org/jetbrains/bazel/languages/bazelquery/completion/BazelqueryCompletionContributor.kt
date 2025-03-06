@@ -17,6 +17,7 @@ import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenType
 import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryQueryVal
 import com.intellij.psi.util.startOffset
+import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryFile
 
 
 class BazelqueryCompletionContributor : CompletionContributor() {
@@ -53,7 +54,7 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
       psiElement()
         .withLanguage(BazelqueryLanguage)
         .and(
-          psiElement().inside(psiElement(BazelqueryQueryVal::class.java))
+          psiElement().inside(psiElement(BazelqueryFile::class.java))
         )
         .andOr(
           psiElement().withElementType(wordsOrCommandsTokens),
