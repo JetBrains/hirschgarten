@@ -10,7 +10,6 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.SourcesResult
@@ -61,7 +60,6 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
     val manualTargetTestJavaFile =
       SourceItem(
         uri = "file://\$WORKSPACE/manual_target/TestJavaFile.java",
-        kind = SourceItemKind.FILE,
         generated = false,
         jvmPackagePrefix = "manual_target",
       )
@@ -74,7 +72,6 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
     val manualTargetTestJavaTest =
       SourceItem(
         uri = "file://\$WORKSPACE/manual_target/JavaTest.java",
-        kind = SourceItemKind.FILE,
         generated = false,
         jvmPackagePrefix = "manual_target",
       )
@@ -87,7 +84,6 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
     val manualTargetTestJavaBinary =
       SourceItem(
         uri = "file://\$WORKSPACE/manual_target/TestJavaBinary.java",
-        kind = SourceItemKind.FILE,
         generated = false,
         jvmPackagePrefix = "manual_target",
       )

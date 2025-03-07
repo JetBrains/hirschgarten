@@ -10,7 +10,6 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.SourcesResult
@@ -52,7 +51,6 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
         val javaTargetsJavaLibraryJava =
           SourceItem(
             "file://\$WORKSPACE/java_targets/JavaLibrary.java",
-            SourceItemKind.FILE,
             false,
             jvmPackagePrefix = "java_targets",
           )
@@ -108,7 +106,6 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
         val javaTargetsJavaBinaryJava =
           SourceItem(
             "file://\$WORKSPACE/java_targets/JavaBinary.java",
-            SourceItemKind.FILE,
             false,
             jvmPackagePrefix = "java_targets",
           )

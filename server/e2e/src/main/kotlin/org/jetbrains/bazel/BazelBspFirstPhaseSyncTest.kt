@@ -6,7 +6,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.SourcesResult
@@ -127,23 +126,23 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
     val srcJavaLibSource =
       SourcesItem(
         Label.parse("//src:java-lib"),
-        listOf(SourceItem("file://\$WORKSPACE/src/Lib.java", SourceItemKind.FILE, false)),
+        listOf(SourceItem("file://\$WORKSPACE/src/Lib.java", false)),
       )
     val srcJavaBinarySource =
       SourcesItem(
         Label.parse("//src:java-binary"),
-        listOf(SourceItem("file://\$WORKSPACE/src/Main.java", SourceItemKind.FILE, false)),
+        listOf(SourceItem("file://\$WORKSPACE/src/Main.java", false)),
       )
     val srcKotlinLibSource =
       SourcesItem(
         Label.parse("//src:kt-lib"),
-        listOf(SourceItem("file://\$WORKSPACE/src/Lib.kt", SourceItemKind.FILE, false)),
+        listOf(SourceItem("file://\$WORKSPACE/src/Lib.kt", false)),
       )
 
     val srcKotlinBinarySource =
       SourcesItem(
         Label.parse("//src:kt-binary"),
-        listOf(SourceItem("file://\$WORKSPACE/src/Main.kt", SourceItemKind.FILE, false)),
+        listOf(SourceItem("file://\$WORKSPACE/src/Main.kt", false)),
       )
 
     return SourcesResult(listOf(srcJavaLibSource, srcJavaBinarySource, srcKotlinLibSource, srcKotlinBinarySource))

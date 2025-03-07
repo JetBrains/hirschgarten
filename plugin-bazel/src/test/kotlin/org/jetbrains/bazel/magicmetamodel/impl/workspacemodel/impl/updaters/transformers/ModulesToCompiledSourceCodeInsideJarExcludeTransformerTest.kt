@@ -6,7 +6,6 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -116,7 +115,6 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
               sourceRoots.map {
                 SourceItem(
                   uri = it.sourcePath.toUri().toString(),
-                  kind = SourceItemKind.FILE,
                   generated = false,
                   jvmPackagePrefix = it.packagePrefix,
                 )

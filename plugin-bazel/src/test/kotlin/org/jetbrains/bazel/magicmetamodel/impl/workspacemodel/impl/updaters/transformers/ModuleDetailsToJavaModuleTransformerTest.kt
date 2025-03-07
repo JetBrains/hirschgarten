@@ -28,7 +28,6 @@ import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.junit.jupiter.api.DisplayName
@@ -89,21 +88,13 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         listOf(
           SourceItem(
             uri = file1APath.toUri().toString(),
-            kind = SourceItemKind.FILE,
             generated = false,
             jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
           ),
           SourceItem(
             uri = file2APath.toUri().toString(),
-            kind = SourceItemKind.FILE,
             generated = false,
             jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
-          ),
-          SourceItem(
-            uri = dir1BPath.toUri().toString(),
-            kind = SourceItemKind.DIRECTORY,
-            generated = false,
-            jvmPackagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
           ),
         ),
       )
@@ -339,34 +330,19 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val file2APath = createTempFile(packageA2Path, "File2", ".java")
     file2APath.toFile().deleteOnExit()
 
-    val packageB1Path = createTempDirectory(module1Root, "packageB1")
-    packageB1Path.toFile().deleteOnExit()
-    val packageB2Path = createTempDirectory(packageB1Path, "packageB2")
-    packageB2Path.toFile().deleteOnExit()
-    val dir1BPath = createTempDirectory(packageB2Path, "dir1")
-    dir1BPath.toFile().deleteOnExit()
-
     val sourcesItem1 =
       SourcesItem(
         buildTargetId1,
         listOf(
           SourceItem(
             uri = file1APath.toUri().toString(),
-            kind = SourceItemKind.FILE,
             generated = false,
             jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
           ),
           SourceItem(
             uri = file2APath.toUri().toString(),
-            kind = SourceItemKind.FILE,
             generated = false,
             jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
-          ),
-          SourceItem(
-            uri = dir1BPath.toUri().toString(),
-            kind = SourceItemKind.DIRECTORY,
-            generated = false,
-            jvmPackagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
           ),
         ),
       )
@@ -428,7 +404,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     packageC1Path.toFile().deleteOnExit()
     val packageC2Path = createTempDirectory(packageC1Path, "packageC2")
     packageC2Path.toFile().deleteOnExit()
-    val dir1CPath = createTempDirectory(packageC2Path, "dir1")
+    val dir1CPath = createTempFile(packageC2Path, "File1", ".java")
     dir1CPath.toFile().deleteOnExit()
 
     val sourcesItem2 =
@@ -437,9 +413,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         listOf(
           SourceItem(
             uri = dir1CPath.toUri().toString(),
-            kind = SourceItemKind.DIRECTORY,
             generated = false,
-            jvmPackagePrefix = "${packageC1Path.name}.${packageC2Path.name}.${dir1CPath.name}",
+            jvmPackagePrefix = "${packageC1Path.name}.${packageC2Path.name}",
           ),
         ),
       )
@@ -550,11 +525,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         path = module2Root,
       )
 
-    val expectedJavaSourceRoot21 =
+    val expectedMergedJavaSourceRoot2 =
       JavaSourceRoot(
-        sourcePath = dir1CPath,
+        sourcePath = module2Root,
         generated = false,
-        packagePrefix = "${packageC1Path.name}.${packageC2Path.name}.${dir1CPath.name}",
+        packagePrefix = "",
         rootType = SourceRootTypeId("java-test"),
       )
 
@@ -568,7 +543,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       JavaModule(
         genericModuleInfo = expectedModule2,
         baseDirContentRoot = expectedBaseDirContentRoot2,
-        sourceRoots = listOf(expectedJavaSourceRoot21),
+        sourceRoots = listOf(expectedMergedJavaSourceRoot2),
         resourceRoots = listOf(expectedResourceRoot21),
         jvmJdkName = null,
         kotlinAddendum = null,
@@ -622,8 +597,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     packageB1Path.toFile().deleteOnExit()
     val packageB2Path = createTempDirectory(packageB1Path, "packageB2")
     packageB2Path.toFile().deleteOnExit()
-    val dir1BPath = createTempDirectory(packageB2Path, "dir1")
-    dir1BPath.toFile().deleteOnExit()
 
     val sourcesItem =
       SourcesItem(
@@ -631,21 +604,13 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         listOf(
           SourceItem(
             uri = file1APath.toUri().toString(),
-            kind = SourceItemKind.FILE,
             generated = false,
             jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
           ),
           SourceItem(
             uri = file2APath.toUri().toString(),
-            kind = SourceItemKind.FILE,
             generated = false,
             jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
-          ),
-          SourceItem(
-            uri = dir1BPath.toUri().toString(),
-            kind = SourceItemKind.DIRECTORY,
-            generated = false,
-            jvmPackagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
           ),
         ),
       )
@@ -724,13 +689,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
         rootType = SourceRootTypeId("java-source"),
       )
-    val expectedJavaSourceRoot3 =
-      JavaSourceRoot(
-        sourcePath = dir1BPath,
-        generated = false,
-        packagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
-        rootType = SourceRootTypeId("java-source"),
-      )
 
     val expectedResourceRoot1 =
       ResourceRoot(
@@ -744,7 +702,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       JavaModule(
         genericModuleInfo = expectedModule,
         baseDirContentRoot = expectedBaseDirContentRoot,
-        sourceRoots = listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2, expectedJavaSourceRoot3),
+        sourceRoots = listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2),
         resourceRoots = listOf(expectedResourceRoot1),
         jvmJdkName = projectBasePath.name.projectNameToJdkName(javaHome),
         kotlinAddendum = null,

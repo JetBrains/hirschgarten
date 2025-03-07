@@ -9,7 +9,6 @@ import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -76,7 +75,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val targetSources =
       SourcesItem(
         targetId,
-        listOf(SourceItem("file:///root/dir/example/package/", SourceItemKind.DIRECTORY, false)),
+        listOf(SourceItem("file:///root/dir/example/package/File1.java", false)),
       )
     val targetResources =
       ResourcesItem(
@@ -138,7 +137,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val target1Sources =
       SourcesItem(
         target1Id,
-        listOf(SourceItem("file:///root/dir1/example/package/", SourceItemKind.DIRECTORY, false)),
+        listOf(SourceItem("file:///root/dir1/example/package/File1.java", false)),
       )
     val target1Resources =
       ResourcesItem(
@@ -163,14 +162,14 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       SourcesItem(
         target2Id,
         listOf(
-          SourceItem("file:///root/dir2/example/package/File1.java", SourceItemKind.FILE, false),
+          SourceItem("file:///root/dir2/example/package/File1.java", false),
         ),
       )
     val target2Sources2 =
       SourcesItem(
         target2Id,
         listOf(
-          SourceItem("file:///root/dir2/example/package/File2.java", SourceItemKind.FILE, false),
+          SourceItem("file:///root/dir2/example/package/File2.java", false),
         ),
       )
     val target2Resources =
@@ -212,7 +211,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       SourcesItem(
         target4Id,
         listOf(
-          SourceItem("file:///root/dir2/example/package/file.py", SourceItemKind.FILE, false),
+          SourceItem("file:///root/dir2/example/package/file.py", false),
         ),
       )
 

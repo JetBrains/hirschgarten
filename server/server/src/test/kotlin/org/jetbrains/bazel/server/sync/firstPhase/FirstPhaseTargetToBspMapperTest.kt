@@ -34,7 +34,6 @@ import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.junit.jupiter.api.BeforeEach
@@ -342,15 +341,15 @@ class FirstPhaseTargetToBspMapperTest {
           SourcesItem(
             Label.parse("//target1"),
             listOf(
-              SourceItem(target1Src1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
-              SourceItem(target1Src2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example.a"),
+              SourceItem(target1Src1.toUri().toString(), false, jvmPackagePrefix = "com.example"),
+              SourceItem(target1Src2.toUri().toString(), false, jvmPackagePrefix = "com.example.a"),
             ),
           ),
           SourcesItem(
             Label.parse("//target2"),
             listOf(
-              SourceItem(target2Src1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
-              SourceItem(target2Src2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
+              SourceItem(target2Src1.toUri().toString(), false, jvmPackagePrefix = "com.example"),
+              SourceItem(target2Src2.toUri().toString(), false, jvmPackagePrefix = "com.example"),
             ),
           ),
         )
@@ -408,10 +407,10 @@ class FirstPhaseTargetToBspMapperTest {
           SourcesItem(
             Label.parse("//target1"),
             listOf(
-              SourceItem(target1Src1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
-              SourceItem(target1Src2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
-              SourceItem(filegroupSrc1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
-              SourceItem(filegroupSrc2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example.a"),
+              SourceItem(target1Src1.toUri().toString(), false, jvmPackagePrefix = "com.example"),
+              SourceItem(target1Src2.toUri().toString(), false, jvmPackagePrefix = "com.example"),
+              SourceItem(filegroupSrc1.toUri().toString(), false, jvmPackagePrefix = "com.example"),
+              SourceItem(filegroupSrc2.toUri().toString(), false, jvmPackagePrefix = "com.example.a"),
             ),
           ),
         )
