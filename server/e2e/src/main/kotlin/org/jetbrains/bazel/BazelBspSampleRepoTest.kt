@@ -124,7 +124,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       SourcesItem(
         Label.parse("$targetPrefix//target_without_jvm_flags:binary"),
         listOf(targetWithoutJvmFlagsExampleScala),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val targetWithoutArgsExampleScala =
@@ -138,7 +137,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       SourcesItem(
         Label.parse("$targetPrefix//target_without_args:binary"),
         listOf(targetWithoutArgsExampleScala),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val targetWithoutMainClassExampleScala =
@@ -152,7 +150,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       SourcesItem(
         Label.parse("$targetPrefix//target_without_main_class:library"),
         listOf(targetWithoutMainClassExampleScala),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val targetWithResourcesJavaBinaryJava =
@@ -166,7 +163,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       SourcesItem(
         Label.parse("$targetPrefix//target_with_resources:java_binary"),
         listOf(targetWithResourcesJavaBinaryJava),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val targetWithDependencyJavaBinaryJava =
@@ -180,7 +176,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       SourcesItem(
         Label.parse("$targetPrefix//target_with_dependency:java_binary"),
         listOf(targetWithDependencyJavaBinaryJava),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val scalaTargetsScalaBinaryScala =
@@ -194,7 +189,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       SourcesItem(
         Label.parse("$targetPrefix//scala_targets:scala_binary"),
         listOf(scalaTargetsScalaBinaryScala),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val scalaTargetsScalaTestScala =
@@ -208,7 +202,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       SourcesItem(
         Label.parse("$targetPrefix//scala_targets:scala_test"),
         listOf(scalaTargetsScalaTestScala),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val javaTargetsJavaBinaryJava =
@@ -222,7 +215,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       SourcesItem(
         Label.parse("$targetPrefix//java_targets:java_binary"),
         listOf(javaTargetsJavaBinaryJava),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val javaTargetsJavaBinaryWithFlagJava =
@@ -236,7 +228,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       SourcesItem(
         Label.parse("$targetPrefix//java_targets:java_binary_with_flag"),
         listOf(javaTargetsJavaBinaryWithFlagJava),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val javaTargetsJavaLibraryJava =
@@ -250,7 +241,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       SourcesItem(
         Label.parse("$targetPrefix//java_targets:java_library"),
         listOf(javaTargetsJavaLibraryJava),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val javaTargetsSubpackageJavaLibraryJava =
@@ -264,14 +254,12 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       SourcesItem(
         Label.parse("$targetPrefix//java_targets/subpackage:java_library"),
         listOf(javaTargetsSubpackageJavaLibraryJava),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val javaTargetsJavaLibraryExportedSources =
       SourcesItem(
         Label.parse("$targetPrefix//java_targets:java_library_exported"),
         emptyList(),
-        roots = emptyList(),
       )
 
     val environmentVariablesJavaBinary =
@@ -285,7 +273,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       SourcesItem(
         Label.parse("$targetPrefix//environment_variables:java_binary"),
         listOf(environmentVariablesJavaBinary),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val environmentVariablesJavaTest =
@@ -299,7 +286,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       SourcesItem(
         Label.parse("$targetPrefix//environment_variables:java_test"),
         listOf(environmentVariablesJavaTest),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val targetWithJavacExportsJavaLibrary =
@@ -313,7 +299,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       SourcesItem(
         Label.parse("$targetPrefix//target_with_javac_exports:java_library"),
         listOf(targetWithJavacExportsJavaLibrary),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val sourcesParams = SourcesParams(expectedTargetIdentifiers())

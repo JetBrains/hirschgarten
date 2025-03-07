@@ -107,15 +107,12 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
           it.first.toUri().toString(),
           SourceItemKind.FILE,
           false,
-          it.second.jvmPackagePrefix,
+          it.second?.jvmPackagePrefix,
         )
       }
     val items = (directItems + itemsForSourcesReferencedViaTarget.flatMap { it.sources }).distinct()
 
-    val directRoots = sourceFilesAndData.map { it.second.sourceRoot }.map { it.toUri().toString() }
-    val roots = (directRoots + itemsForSourcesReferencedViaTarget.flatMap { it.roots }).distinct()
-
-    return SourcesItem(Label.parse(name), sources = items, roots = roots)
+    return SourcesItem(Label.parse(name), sources = items)
   }
 
   fun toResourcesResult(project: FirstPhaseProject, resourcesParams: ResourcesParams): ResourcesResult {

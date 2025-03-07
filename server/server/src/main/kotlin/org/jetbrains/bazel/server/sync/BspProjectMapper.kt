@@ -262,8 +262,7 @@ class BspProjectMapper(
             jvmPackagePrefix = it.jvmPackagePrefix,
           )
         }
-      val sourceRoots = sourceSet.sourceRoots.map(BspMappings::toBspUri)
-      val sourcesItem = SourcesItem((module).label, sourceItems + generatedSourceItems, roots = sourceRoots)
+      val sourcesItem = SourcesItem((module).label, sourceItems + generatedSourceItems)
       return sourcesItem
     }
 

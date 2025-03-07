@@ -61,7 +61,6 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
           SourcesItem(
             Label.parse("$targetPrefix//java_targets:java_library"),
             listOf(javaTargetsJavaLibraryJava),
-            roots = listOf("file://\$WORKSPACE/"),
           )
 
         val sourcesParams = SourcesParams(expectedTargetIdentifiers())
@@ -117,7 +116,6 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
           SourcesItem(
             partialSyncTargetId,
             listOf(javaTargetsJavaBinaryJava),
-            listOf("file://\$WORKSPACE/"),
           )
 
         val partialSyncSourcesParams = SourcesParams(listOf(partialSyncTargetId))

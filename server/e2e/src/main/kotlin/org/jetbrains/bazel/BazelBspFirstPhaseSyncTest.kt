@@ -128,26 +128,22 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
       SourcesItem(
         Label.parse("//src:java-lib"),
         listOf(SourceItem("file://\$WORKSPACE/src/Lib.java", SourceItemKind.FILE, false)),
-        roots = listOf("file://\$WORKSPACE/src/"),
       )
     val srcJavaBinarySource =
       SourcesItem(
         Label.parse("//src:java-binary"),
         listOf(SourceItem("file://\$WORKSPACE/src/Main.java", SourceItemKind.FILE, false)),
-        roots = listOf("file://\$WORKSPACE/src/"),
       )
     val srcKotlinLibSource =
       SourcesItem(
         Label.parse("//src:kt-lib"),
         listOf(SourceItem("file://\$WORKSPACE/src/Lib.kt", SourceItemKind.FILE, false)),
-        roots = listOf("file://\$WORKSPACE/src/"),
       )
 
     val srcKotlinBinarySource =
       SourcesItem(
         Label.parse("//src:kt-binary"),
         listOf(SourceItem("file://\$WORKSPACE/src/Main.kt", SourceItemKind.FILE, false)),
-        roots = listOf("file://\$WORKSPACE/src/"),
       )
 
     return SourcesResult(listOf(srcJavaLibSource, srcJavaBinarySource, srcKotlinLibSource, srcKotlinBinarySource))

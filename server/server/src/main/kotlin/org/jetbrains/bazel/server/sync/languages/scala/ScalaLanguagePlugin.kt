@@ -70,6 +70,6 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
     buildTarget.data = scalaBuildTarget
   }
 
-  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData =
+  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData? =
     JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source, true)
 }
