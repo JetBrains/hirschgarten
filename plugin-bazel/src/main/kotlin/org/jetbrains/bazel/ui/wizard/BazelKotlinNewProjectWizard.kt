@@ -42,7 +42,6 @@ class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
     }
 
     companion object {
-
       private fun moduleBazel(context: WizardContext): String =
         """
         module(
