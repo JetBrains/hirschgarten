@@ -7,5 +7,4 @@ object NewProjectWizardConstants {
   const val JUNIT_VERSION = "4.13.2"
   const val RULES_KOTLIN_VERSION = "2.1.0"
   const val KOTLIN_VERSION = "2.1.0"
-
 }
