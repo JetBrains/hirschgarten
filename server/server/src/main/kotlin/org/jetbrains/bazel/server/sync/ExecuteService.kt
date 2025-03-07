@@ -25,6 +25,7 @@ import org.jetbrains.bazel.server.sync.DebugHelper.generateRunArguments
 import org.jetbrains.bazel.server.sync.DebugHelper.generateRunOptions
 import org.jetbrains.bazel.server.sync.DebugHelper.verifyDebugRequest
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
@@ -122,7 +123,7 @@ class ExecuteService(
       }
     }
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(workspaceContextProvider.readWorkspaceContext()) {
         run(params.target) {
           options.add(BazelFlag.color(true))
           additionalOptions?.let { options.addAll(it) }
@@ -162,15 +163,16 @@ class ExecuteService(
 
   private suspend fun testImpl(params: TestParams, additionalProgramArguments: List<String>?): TestResult {
     val targetsSpec = TargetsSpec(params.targets, emptyList())
+    val workspaceContext = workspaceContextProvider.readWorkspaceContext()
     val command =
       when (params.coverage) {
         true ->
-          bazelRunner.buildBazelCommand { coverage() }.also {
+          bazelRunner.buildBazelCommand(workspaceContext) { coverage() }.also {
             it.options.add(BazelFlag.combinedReportLcov())
             it.options.add(BazelFlag.instrumentationFilterAll())
           }
 
-        else -> bazelRunner.buildBazelCommand { test() }
+        else -> bazelRunner.buildBazelCommand(workspaceContext) { test() }
       }
 
     params.additionalBazelParams?.let { additionalParams ->
@@ -213,7 +215,7 @@ class ExecuteService(
       }
 
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(workspaceContextProvider.readWorkspaceContext()) {
         mobileInstall(params.target) {
           options.add(BazelFlag.device(params.targetDeviceSerialNumber))
           options.add(BazelFlag.start(startType))
@@ -238,7 +240,7 @@ class ExecuteService(
     val allTargets = bspIds + getAdditionalBuildTargets(bspIds)
     return withBepServer(originId) { bepReader ->
       val command =
-        bazelRunner.buildBazelCommand {
+        bazelRunner.buildBazelCommand(workspaceContextProvider.readWorkspaceContext()) {
           build {
             options.addAll(additionalArguments)
             targets.addAll(allTargets)
@@ -262,16 +264,19 @@ class ExecuteService(
     val project = projectProvider.get() as? AspectSyncProject ?: return emptyList()
     val modules = BspMappings.getModules(project, targets)
     val ignoreManualTag = targets.size == 1
-    return modules.filter { isBuildable(it, ignoreManualTag) }
+    return modules.filter { isBuildable(it, ignoreManualTag, project.workspaceContext) }
   }
 
-  private fun isBuildable(m: Module, ignoreManualTag: Boolean = true): Boolean =
-    !m.isSynthetic && !m.tags.contains(Tag.NO_BUILD) && (ignoreManualTag || isBuildableIfManual(m))
+  private fun isBuildable(
+    m: Module,
+    ignoreManualTag: Boolean = true,
+    workspaceContext: WorkspaceContext,
+  ): Boolean = !m.isSynthetic && !m.tags.contains(Tag.NO_BUILD) && (ignoreManualTag || isBuildableIfManual(m, workspaceContext))
 
-  private fun isBuildableIfManual(m: Module): Boolean =
+  private fun isBuildableIfManual(m: Module, workspaceContext: WorkspaceContext): Boolean =
     (
       !m.tags.contains(Tag.MANUAL) ||
-        workspaceContextProvider.currentWorkspaceContext().allowManualTargetsSync.value
+        workspaceContext.allowManualTargetsSync.value
     )
 }
 

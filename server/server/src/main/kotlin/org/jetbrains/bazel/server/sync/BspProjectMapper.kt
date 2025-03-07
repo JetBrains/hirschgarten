@@ -127,8 +127,7 @@ class BspProjectMapper(
   }
 
   fun workspaceDirectories(project: Project): WorkspaceDirectoriesResult {
-    val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
-    val directoriesSection = workspaceContext.directories
+    val directoriesSection = project.workspaceContext.directories
 
     val symlinksToExclude = computeSymlinksToExclude(project.workspaceRoot)
     val additionalDirectoriesToExclude = computeAdditionalDirectoriesToExclude()
@@ -298,7 +297,7 @@ class BspProjectMapper(
       documentUri
         .toPath()
         .relativeToOrNull(project.workspaceRoot.toPath()) ?: throw RuntimeException("File path outside of project root")
-    return InverseSourcesQuery.inverseSourcesQuery(documentRelativePath, bazelRunner, project.bazelRelease)
+    return InverseSourcesQuery.inverseSourcesQuery(documentRelativePath, bazelRunner, project.bazelRelease, project.workspaceContext)
   }
 
   fun dependencySources(project: AspectSyncProject, dependencySourcesParams: DependencySourcesParams): DependencySourcesResult {
@@ -344,7 +343,7 @@ class BspProjectMapper(
 
     return targets.mapNotNull {
       val module = project.findModule(it)
-      val cqueryResult = ClasspathQuery.classPathQuery(it, bspInfo, bazelRunner).runtime_classpath
+      val cqueryResult = ClasspathQuery.classPathQuery(it, bspInfo, bazelRunner, project.workspaceContext).runtime_classpath
       val resolvedClasspath = resolveClasspath(cqueryResult)
       module?.let { extractJvmEnvironmentItem(module, resolvedClasspath) }
     }

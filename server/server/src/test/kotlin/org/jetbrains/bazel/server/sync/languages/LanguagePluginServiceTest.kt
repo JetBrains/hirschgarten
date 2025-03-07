@@ -17,8 +17,6 @@ import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.python.PythonLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
-import org.jetbrains.bazel.workspacecontext.DefaultWorkspaceContextProvider
-import org.jetbrains.bsp.protocol.FeatureFlags
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -53,16 +51,15 @@ class LanguagePluginServiceTest {
         true,
         emptyList(),
       )
-    val provider = DefaultWorkspaceContextProvider(Paths.get(""), projectViewFile, dotBazelBspDirPath, FeatureFlags())
     val bazelPathsResolver = BazelPathsResolver(bazelInfo)
     val jdkResolver = JdkResolver(bazelPathsResolver, JdkVersionResolver())
-    val javaLanguagePlugin = JavaLanguagePlugin(provider, bazelPathsResolver, jdkResolver)
+    val javaLanguagePlugin = JavaLanguagePlugin(bazelPathsResolver, jdkResolver)
     val scalaLanguagePlugin = ScalaLanguagePlugin(javaLanguagePlugin, bazelPathsResolver)
     val cppLanguagePlugin = CppLanguagePlugin(bazelPathsResolver)
     val kotlinLanguagePlugin = KotlinLanguagePlugin(javaLanguagePlugin, bazelPathsResolver)
     val thriftLanguagePlugin = ThriftLanguagePlugin(bazelPathsResolver)
     val pythonLanguagePlugin = PythonLanguagePlugin(bazelPathsResolver)
-    val androidLanguagePlugin = AndroidLanguagePlugin(provider, javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
+    val androidLanguagePlugin = AndroidLanguagePlugin(javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
     val goLanguagePlugin = GoLanguagePlugin(bazelPathsResolver)
     languagePluginsService =
       LanguagePluginsService(

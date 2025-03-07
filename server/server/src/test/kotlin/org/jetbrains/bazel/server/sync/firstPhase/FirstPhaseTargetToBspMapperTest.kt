@@ -27,10 +27,8 @@ import org.jetbrains.bazel.workspacecontext.TargetShardSizeSpec
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.TransitiveCompileTimeJarsTargetKindsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.SourceItem
@@ -49,38 +47,35 @@ import kotlin.io.path.createParentDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
 
-private class MockWorkspaceContextProvider(private val allowManualTargetsSync: Boolean) : WorkspaceContextProvider {
-  override fun currentWorkspaceContext(): WorkspaceContext =
-    WorkspaceContext(
-      targets = TargetsSpec(listOf(Label.parse("//...")), emptyList()),
-      directories = DirectoriesSpec(listOf(Path(".")), emptyList()),
-      buildFlags = BuildFlagsSpec(emptyList()),
-      syncFlags = SyncFlagsSpec(emptyList()),
-      bazelBinary = BazelBinarySpec(Path("bazel")),
-      allowManualTargetsSync = AllowManualTargetsSyncSpec(allowManualTargetsSync),
-      dotBazelBspDirPath = DotBazelBspDirPathSpec(Path(".bazelbsp")),
-      importDepth = ImportDepthSpec(-1),
-      enabledRules = EnabledRulesSpec(emptyList()),
-      ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpec(Path("java_home")),
-      experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJars(false),
-      experimentalTransitiveCompileTimeJarsTargetKinds = TransitiveCompileTimeJarsTargetKindsSpec(emptyList()),
-      experimentalNoPruneTransitiveCompileTimeJarsPatterns = NoPruneTransitiveCompileTimeJarsPatternsSpec(emptyList()),
-      enableNativeAndroidRules = EnableNativeAndroidRules(false),
-      androidMinSdkSpec = AndroidMinSdkSpec(null),
-      shardSync = ShardSyncSpec(false),
-      targetShardSize = TargetShardSizeSpec(DEFAULT_TARGET_SHARD_SIZE),
-      shardingApproachSpec = ShardingApproachSpec(null),
-    )
+private fun createMockWorkspaceContext(allowManualTargetsSync: Boolean): WorkspaceContext =
+  WorkspaceContext(
+    targets = TargetsSpec(listOf(Label.parse("//...")), emptyList()),
+    directories = DirectoriesSpec(listOf(Path(".")), emptyList()),
+    buildFlags = BuildFlagsSpec(emptyList()),
+    syncFlags = SyncFlagsSpec(emptyList()),
+    bazelBinary = BazelBinarySpec(Path("bazel")),
+    allowManualTargetsSync = AllowManualTargetsSyncSpec(allowManualTargetsSync),
+    dotBazelBspDirPath = DotBazelBspDirPathSpec(Path(".bazelbsp")),
+    importDepth = ImportDepthSpec(-1),
+    enabledRules = EnabledRulesSpec(emptyList()),
+    ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpec(Path("java_home")),
+    experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJars(false),
+    experimentalTransitiveCompileTimeJarsTargetKinds = TransitiveCompileTimeJarsTargetKindsSpec(emptyList()),
+    experimentalNoPruneTransitiveCompileTimeJarsPatterns = NoPruneTransitiveCompileTimeJarsPatternsSpec(emptyList()),
+    enableNativeAndroidRules = EnableNativeAndroidRules(false),
+    androidMinSdkSpec = AndroidMinSdkSpec(null),
+    shardSync = ShardSyncSpec(false),
+    targetShardSize = TargetShardSizeSpec(DEFAULT_TARGET_SHARD_SIZE),
+    shardingApproachSpec = ShardingApproachSpec(null),
+  )
 
-  override fun currentFeatureFlags(): FeatureFlags = FeatureFlags()
-}
-
-private fun createMockProject(lightweightModules: List<Build.Target>): FirstPhaseProject =
+private fun createMockProject(lightweightModules: List<Build.Target>, allowManualTargetsSync: Boolean): FirstPhaseProject =
   FirstPhaseProject(
     workspaceRoot = URI.create("file:///path/to/workspace"),
     bazelRelease = BazelRelease(7),
     modules = lightweightModules.associateBy { Label.parse(it.rule.name) },
     repoMapping = RepoMappingDisabled,
+    workspaceContext = createMockWorkspaceContext(allowManualTargetsSync),
   )
 
 class FirstPhaseTargetToBspMapperTest {
@@ -151,10 +146,9 @@ class FirstPhaseTargetToBspMapperTest {
             kind = "unsupported_target",
           ),
         )
-      val project = createMockProject(targets)
+      val project = createMockProject(targets, allowManualTargetsSync = false)
 
-      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
-      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceRoot)
 
       // when
       val result = mapper.toWorkspaceBuildTargetsResult(project)
@@ -271,10 +265,9 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf("manual"),
           ),
         )
-      val project = createMockProject(targets)
+      val project = createMockProject(targets, allowManualTargetsSync = true)
 
-      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = true)
-      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceRoot)
 
       // when
       val result = mapper.toWorkspaceBuildTargetsResult(project)
@@ -321,10 +314,9 @@ class FirstPhaseTargetToBspMapperTest {
             srcs = listOf("//target3:src1.java", "//target3:src2.java"),
           ),
         )
-      val project = createMockProject(targets)
+      val project = createMockProject(targets, allowManualTargetsSync = false)
 
-      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
-      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceRoot)
 
       // when
       val params =
@@ -388,10 +380,9 @@ class FirstPhaseTargetToBspMapperTest {
             srcs = listOf("//target1:src1.kt", "//target1:src2.kt", "//filegroup"),
           ),
         )
-      val project = createMockProject(targets)
+      val project = createMockProject(targets, allowManualTargetsSync = false)
 
-      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
-      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceRoot)
 
       // when
       val params =
@@ -460,10 +451,9 @@ class FirstPhaseTargetToBspMapperTest {
             resources = listOf("//target3:resource1.txt", "//target3:resource2.txt"),
           ),
         )
-      val project = createMockProject(targets)
+      val project = createMockProject(targets, allowManualTargetsSync = false)
 
-      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
-      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceRoot)
 
       // when
       val params = ResourcesParams(listOf(Label.parse("//target1"), Label.parse("//target2")))
@@ -511,10 +501,9 @@ class FirstPhaseTargetToBspMapperTest {
             resources = listOf("//target1:resource1.txt", "//target1:resource2.txt", "//filegroup"),
           ),
         )
-      val project = createMockProject(targets)
+      val project = createMockProject(targets, allowManualTargetsSync = false)
 
-      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
-      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceRoot)
 
       // when
       val params = ResourcesParams(listOf(Label.parse("//target1")))

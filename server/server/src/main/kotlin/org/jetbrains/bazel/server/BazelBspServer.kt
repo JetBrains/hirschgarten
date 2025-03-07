@@ -37,6 +37,7 @@ import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.python.PythonLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 import java.nio.file.Path
 
@@ -73,7 +74,7 @@ class BazelBspServer(
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,
       )
-    val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+    val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper(workspaceRoot)
     val projectSyncService =
       ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, bazelInfo)
     val additionalBuildTargetsProvider = AdditionalAndroidBuildTargetsProvider(projectProvider)
@@ -93,9 +94,9 @@ class BazelBspServer(
     )
   }
 
-  suspend fun createBazelInfo(bazelRunner: BazelRunner): BazelInfo {
+  suspend fun createBazelInfo(bazelRunner: BazelRunner, workspaceContext: WorkspaceContext): BazelInfo {
     val bazelDataResolver = BazelInfoResolver(bazelRunner)
-    return bazelDataResolver.resolveBazelInfo()
+    return bazelDataResolver.resolveBazelInfo(workspaceContext)
   }
 
   private fun createLanguagePluginsService(
@@ -103,14 +104,14 @@ class BazelBspServer(
     bspClientLogger: BspClientLogger,
   ): LanguagePluginsService {
     val jdkResolver = JdkResolver(bazelPathsResolver, JdkVersionResolver())
-    val javaLanguagePlugin = JavaLanguagePlugin(workspaceContextProvider, bazelPathsResolver, jdkResolver)
+    val javaLanguagePlugin = JavaLanguagePlugin(bazelPathsResolver, jdkResolver)
     val scalaLanguagePlugin = ScalaLanguagePlugin(javaLanguagePlugin, bazelPathsResolver)
     val cppLanguagePlugin = CppLanguagePlugin(bazelPathsResolver)
     val kotlinLanguagePlugin = KotlinLanguagePlugin(javaLanguagePlugin, bazelPathsResolver)
     val thriftLanguagePlugin = ThriftLanguagePlugin(bazelPathsResolver)
     val pythonLanguagePlugin = PythonLanguagePlugin(bazelPathsResolver)
     val androidLanguagePlugin =
-      AndroidLanguagePlugin(workspaceContextProvider, javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
+      AndroidLanguagePlugin(javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
     val goLanguagePlugin = GoLanguagePlugin(bazelPathsResolver, bspClientLogger)
 
     return LanguagePluginsService(
@@ -146,15 +147,14 @@ class BazelBspServer(
       BazelBspAspectsManager(
         bazelBspCompilationManager = compilationManager,
         aspectsResolver = aspectsResolver,
-        workspaceContextProvider = workspaceContextProvider,
         bazelRelease = bazelInfo.release,
       )
-    val bazelToolchainManager = BazelToolchainManager(bazelRunner, workspaceContextProvider)
+    val bazelToolchainManager = BazelToolchainManager(bazelRunner)
     val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver)
     val bazelLabelExpander = BazelLabelExpander(bazelRunner)
     val targetTagsResolver = TargetTagsResolver()
     val mavenCoordinatesResolver = MavenCoordinatesResolver()
-    val kotlinAndroidModulesMerger = KotlinAndroidModulesMerger(workspaceContextProvider)
+    val kotlinAndroidModulesMerger = KotlinAndroidModulesMerger()
     val bazelProjectMapper =
       BazelProjectMapper(
         languagePluginsService,
@@ -163,7 +163,6 @@ class BazelBspServer(
         mavenCoordinatesResolver,
         kotlinAndroidModulesMerger,
         bspClientLogger,
-        workspaceContextProvider,
       )
     val targetInfoReader = TargetInfoReader(bspClientLogger)
 
@@ -192,8 +191,8 @@ class BazelBspServer(
     return ProjectProvider(projectResolver, firstPhaseProjectResolver)
   }
 
-  suspend fun verifyBazelVersion(bazelRunner: BazelRunner) {
-    val command = bazelRunner.buildBazelCommand { version {} }
+  suspend fun verifyBazelVersion(bazelRunner: BazelRunner, workspaceContext: WorkspaceContext) {
+    val command = bazelRunner.buildBazelCommand(workspaceContext) { version {} }
     bazelRunner
       .runBazelCommand(command, serverPidFuture = null)
       .waitAndGetResult(true)

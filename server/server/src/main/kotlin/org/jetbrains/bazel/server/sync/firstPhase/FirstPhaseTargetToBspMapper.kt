@@ -5,7 +5,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.model.Language
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.BuildTargetTag
@@ -23,9 +22,9 @@ import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 
-class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: WorkspaceContextProvider, private val workspaceRoot: Path) {
+class FirstPhaseTargetToBspMapper(private val workspaceRoot: Path) {
   fun toWorkspaceBuildTargetsResult(project: FirstPhaseProject): WorkspaceBuildTargetsResult {
-    val shouldSyncManualTargets = workspaceContextProvider.currentWorkspaceContext().allowManualTargetsSync.value
+    val shouldSyncManualTargets = project.workspaceContext.allowManualTargetsSync.value
 
     val targets =
       project.modules

@@ -7,21 +7,18 @@ import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import java.net.URI
 import java.nio.file.Path
 
-class JavaLanguagePlugin(
-  private val workspaceContextProvider: WorkspaceContextProvider,
-  private val bazelPathsResolver: BazelPathsResolver,
-  private val jdkResolver: JdkResolver,
-) : LanguagePlugin<JavaModule>() {
+class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, private val jdkResolver: JdkResolver) :
+  LanguagePlugin<JavaModule>() {
   private var jdk: Jdk? = null
 
-  override fun prepareSync(targets: Sequence<TargetInfo>) {
-    val ideJavaHomeOverride = workspaceContextProvider.currentWorkspaceContext().ideJavaHomeOverrideSpec.value
+  override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
+    val ideJavaHomeOverride = workspaceContext.ideJavaHomeOverrideSpec.value
     jdk = ideJavaHomeOverride?.let { Jdk(version = "ideJavaHomeOverride", javaHome = it.toUri()) } ?: jdkResolver.resolve(targets)
   }
 

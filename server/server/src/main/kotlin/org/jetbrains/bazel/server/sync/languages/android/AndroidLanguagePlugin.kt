@@ -8,7 +8,7 @@ import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinModule
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
 import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -16,15 +16,14 @@ import java.net.URI
 import java.nio.file.Path
 
 class AndroidLanguagePlugin(
-  private val workspaceContextProvider: WorkspaceContextProvider,
   private val javaLanguagePlugin: JavaLanguagePlugin,
   private val kotlinLanguagePlugin: KotlinLanguagePlugin,
   private val bazelPathsResolver: BazelPathsResolver,
 ) : LanguagePlugin<AndroidModule>() {
   private var androidMinSdkOverride: Int? = null
 
-  override fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>) {
-    androidMinSdkOverride = workspaceContextProvider.currentWorkspaceContext().androidMinSdkSpec.value
+  override fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
+    androidMinSdkOverride = workspaceContext.androidMinSdkSpec.value
   }
 
   override fun applyModuleData(moduleData: AndroidModule, buildTarget: BuildTarget) {

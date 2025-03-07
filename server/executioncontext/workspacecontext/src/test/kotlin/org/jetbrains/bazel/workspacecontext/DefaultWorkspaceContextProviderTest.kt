@@ -39,7 +39,7 @@ class DefaultWorkspaceContextProviderTest {
     val provider = DefaultWorkspaceContextProvider(workspaceRoot, projectViewFile, dotBazelBspDirPath, FeatureFlags())
 
     // when
-    val workspaceContext = provider.currentWorkspaceContext()
+    val workspaceContext = provider.readWorkspaceContext()
 
     // then
     workspaceContext.targets shouldBe TargetsSpec(listOf(Label.parse("//a/b/c")), emptyList())
@@ -52,7 +52,7 @@ class DefaultWorkspaceContextProviderTest {
     val provider = DefaultWorkspaceContextProvider(workspaceRoot, projectViewFile, dotBazelBspDirPath, FeatureFlags())
 
     // when
-    val workspaceContext = provider.currentWorkspaceContext()
+    val workspaceContext = provider.readWorkspaceContext()
 
     // then
     workspaceContext.targets shouldBe TargetsSpec(emptyList(), emptyList())

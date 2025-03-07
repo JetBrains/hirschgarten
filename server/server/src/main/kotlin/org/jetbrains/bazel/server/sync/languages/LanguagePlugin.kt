@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.sync.languages
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.model.LanguageData
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.net.URI
 import java.nio.file.Path
@@ -16,7 +17,7 @@ abstract class LanguagePlugin<T : LanguageData> {
 
   open fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<URI> = emptySet()
 
-  open fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>) {}
+  open fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {}
 
   open fun resolveModule(targetInfo: BspTargetInfo.TargetInfo): T? = null
 

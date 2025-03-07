@@ -26,8 +26,6 @@ import org.jetbrains.bazel.workspacecontext.TargetShardSizeSpec
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.TransitiveCompileTimeJarsTargetKindsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
-import org.jetbrains.bsp.protocol.FeatureFlags
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
 import kotlin.io.path.Path
@@ -70,21 +68,14 @@ val mockBazelInfo =
     externalAutoloads = emptyList(),
   )
 
-val contextProvider =
-  object : WorkspaceContextProvider {
-    override fun currentWorkspaceContext(): WorkspaceContext = mockContext
-
-    override fun currentFeatureFlags() = FeatureFlags()
-  }
-
-val bazelRunner = BazelRunner(contextProvider, null, mockBazelInfo.workspaceRoot)
-val bazelRunnerWithBazelInfo = BazelRunner(contextProvider, null, mockBazelInfo.workspaceRoot, mockBazelInfo)
+val bazelRunner = BazelRunner(null, mockBazelInfo.workspaceRoot)
+val bazelRunnerWithBazelInfo = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelInfo)
 
 class BazelRunnerBuilderTest {
   @Test
   fun `most bare bones build without targets (even though it's not correct)`() {
     val command =
-      bazelRunner.buildBazelCommand(inheritProjectviewOptionsOverride = false) {
+      bazelRunner.buildBazelCommand(workspaceContext = mockContext, inheritProjectviewOptionsOverride = false) {
         build()
       }
 
@@ -104,7 +95,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `build with targets from spec without bazel info (legacy flow)`() {
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(mockContext) {
         build {
           addTargetsFromSpec(mockContext.targets)
         }
@@ -132,7 +123,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `build with targets from spec (new flow with target pattern file)`() {
     val command =
-      bazelRunnerWithBazelInfo.buildBazelCommand {
+      bazelRunnerWithBazelInfo.buildBazelCommand(mockContext) {
         build {
           addTargetsFromSpec(mockContext.targets)
         }
@@ -169,7 +160,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `run without program arguments`() {
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(mockContext) {
         run("in1".label())
       }
 
@@ -191,7 +182,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `run with program arguments`() {
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(mockContext) {
         run("in1".label()) {
           programArguments.addAll(listOf("hello", "world"))
         }
@@ -218,7 +209,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `run doesn't set environment using arguments`() {
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(mockContext) {
         run("in1".label()) {
           environment["key"] = "value"
         }
@@ -242,7 +233,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `build sets environment using --action_env`() {
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(mockContext) {
         build {
           targets.add("in1".label())
           environment["key"] = "value"
@@ -269,7 +260,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `test sets environment using --test_env`() {
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(mockContext) {
         test {
           targets.add("in1".label())
           environment["key"] = "value"
@@ -296,7 +287,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `test sets arguments using --test_arg`() {
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(mockContext) {
         test {
           targets.add("in1".label())
           programArguments.addAll(listOf("hello", "world"))
@@ -324,7 +315,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `coverage uses the same way of settings arguments and env as test`() {
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(mockContext) {
         coverage {
           targets.add("in1".label())
           programArguments.addAll(listOf("hello", "world"))
@@ -354,7 +345,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `query does not inherit projectview options`() {
     val command =
-      bazelRunner.buildBazelCommand(inheritProjectviewOptionsOverride = null) {
+      bazelRunner.buildBazelCommand(workspaceContext = mockContext, inheritProjectviewOptionsOverride = null) {
         query {
           targets.add("in1".label())
         }
@@ -376,7 +367,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `query correctly handles excluded values`() {
     val command =
-      bazelRunner.buildBazelCommand(inheritProjectviewOptionsOverride = null) {
+      bazelRunner.buildBazelCommand(workspaceContext = mockContext, inheritProjectviewOptionsOverride = null) {
         query {
           targets.add("in1".label())
           targets.add("in2".label())
@@ -401,7 +392,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `cquery does inherit projectview options`() {
     val command =
-      bazelRunner.buildBazelCommand(inheritProjectviewOptionsOverride = null) {
+      bazelRunner.buildBazelCommand(workspaceContext = mockContext, inheritProjectviewOptionsOverride = null) {
         cquery {
           targets.add("in1".label())
         }
@@ -426,7 +417,7 @@ class BazelRunnerBuilderTest {
   @Test
   fun `bes arguments are handled properly`() {
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(mockContext) {
         build {
           targets.add("in1".label())
           useBes(Path("/dev/null"))

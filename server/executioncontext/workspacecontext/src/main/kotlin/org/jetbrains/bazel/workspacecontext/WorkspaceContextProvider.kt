@@ -8,7 +8,10 @@ import java.nio.file.Path
 import kotlin.io.path.notExists
 
 interface WorkspaceContextProvider {
-  fun currentWorkspaceContext(): WorkspaceContext
+  /**
+   * Prefer to pass [WorkspaceContext] as a parameter where possible instead of calling this method to avoid reparsing the project view.
+   */
+  fun readWorkspaceContext(): WorkspaceContext
 
   fun currentFeatureFlags(): FeatureFlags
 }
@@ -21,7 +24,7 @@ class DefaultWorkspaceContextProvider(
 ) : WorkspaceContextProvider {
   private val workspaceContextConstructor = WorkspaceContextConstructor(workspaceRoot, dotBazelBspDirPath)
 
-  override fun currentWorkspaceContext(): WorkspaceContext {
+  override fun readWorkspaceContext(): WorkspaceContext {
     val projectView = ensureProjectViewExistsAndParse()
 
     return workspaceContextConstructor.construct(projectView)

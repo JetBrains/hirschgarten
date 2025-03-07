@@ -9,6 +9,7 @@ import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import org.jetbrains.bsp.protocol.ScalaPlatform
@@ -20,7 +21,7 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
   var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
   var scalaTestJars: Map<Label, Set<URI>> = emptyMap()
 
-  override fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>) {
+  override fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
     scalaSdks =
       targets
         .associateBy(
