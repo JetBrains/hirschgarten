@@ -162,6 +162,7 @@ intellij_integration_test_suite(
     deps = [
         "//plugin-bazel/src:test_fixtures",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/settings",
+        "//sdkcompat",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
         "@maven//:io_kotest_kotest_assertions_shared_jvm",
