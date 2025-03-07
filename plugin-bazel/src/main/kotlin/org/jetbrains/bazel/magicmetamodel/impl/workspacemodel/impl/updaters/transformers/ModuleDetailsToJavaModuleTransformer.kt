@@ -53,7 +53,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
         scalaAddendum = toScalaAddendum(inputEntity),
         javaAddendum = toJavaAddendum(inputEntity),
         androidAddendum = if (isAndroidSupportEnabled) toAndroidAddendum(inputEntity) else null,
-        workspaceModelEntitiesFolderMarker = inputEntity.workspaceModelEntitiesFolderMarker,
       )
 
     val dummyModulesResult = javaModuleToDummyJavaModulesTransformerHACK.transform(javaModule)
@@ -82,7 +81,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
   }
 
   private fun toJavaSourceRoots(inputEntity: ModuleDetails): List<JavaSourceRoot> =
-    SourcesItemToJavaSourceRootTransformer(inputEntity.workspaceModelEntitiesFolderMarker).transform(
+    SourcesItemToJavaSourceRootTransformer().transform(
       inputEntity.sources.map {
         BuildTargetAndSourceItem(
           buildTarget = inputEntity.target,

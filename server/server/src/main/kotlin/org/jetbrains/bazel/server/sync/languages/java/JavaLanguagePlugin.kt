@@ -44,7 +44,7 @@ class JavaLanguagePlugin(
       )
     }
 
-  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData =
+  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData? =
     JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source)
 
   private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }

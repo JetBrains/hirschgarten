@@ -7,7 +7,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import java.net.URI
 import java.nio.file.Path
 
-data class SourceRootAndData(val sourceRoot: Path, val jvmPackagePrefix: String? = null)
+data class SourceRootAndData(val jvmPackagePrefix: String)
 
 abstract class LanguagePlugin<T : LanguageData> {
   open fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData? = null

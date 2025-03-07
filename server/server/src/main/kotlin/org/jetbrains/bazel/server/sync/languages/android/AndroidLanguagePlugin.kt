@@ -106,7 +106,7 @@ class AndroidLanguagePlugin(
   override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<URI> =
     javaLanguagePlugin.dependencySources(targetInfo, dependencyGraph)
 
-  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData =
+  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData? =
     javaLanguagePlugin.calculateSourceRootAndAdditionalData(source)
 
   override fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<URI> {

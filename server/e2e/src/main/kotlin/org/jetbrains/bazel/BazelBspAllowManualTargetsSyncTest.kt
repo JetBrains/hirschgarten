@@ -69,7 +69,6 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       SourcesItem(
         target = Label.parse("$targetPrefix//manual_target:java_library"),
         sources = listOf(manualTargetTestJavaFile),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val manualTargetTestJavaTest =
@@ -83,7 +82,6 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       SourcesItem(
         target = Label.parse("$targetPrefix//manual_target:java_test"),
         sources = listOf(manualTargetTestJavaTest),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val manualTargetTestJavaBinary =
@@ -97,7 +95,6 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       SourcesItem(
         target = Label.parse("$targetPrefix//manual_target:java_binary"),
         sources = listOf(manualTargetTestJavaBinary),
-        roots = listOf("file://\$WORKSPACE/"),
       )
 
     val sourcesParams = SourcesParams(expectedTargetIdentifiers())

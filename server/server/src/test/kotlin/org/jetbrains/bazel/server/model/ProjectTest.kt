@@ -184,7 +184,7 @@ class ProjectTest {
       languages = emptySet(),
       tags = emptySet(),
       baseDirectory = URI.create("file:///path/to/$this"),
-      sourceSet = SourceSet(emptySet(), emptySet(), emptySet()),
+      sourceSet = SourceSet(emptySet(), emptySet()),
       resources = emptySet(),
       sourceDependencies = emptySet(),
       languageData = null,

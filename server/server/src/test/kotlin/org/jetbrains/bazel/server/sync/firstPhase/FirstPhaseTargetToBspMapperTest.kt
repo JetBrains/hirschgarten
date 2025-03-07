@@ -294,12 +294,9 @@ class FirstPhaseTargetToBspMapperTest {
     @Test
     fun `should map project to source items and filter out not requested targets`() {
       // given
-      val target1Root1 = workspaceRoot.resolve("target1")
-      val target1Root2 = workspaceRoot.resolve("target1/a")
       val target1Src1 = workspaceRoot.createMockSourceFile("target1/src1.java", "com.example")
       val target1Src2 = workspaceRoot.createMockSourceFile("target1/a/src2.java", "com.example.a")
 
-      val target2Root = workspaceRoot.resolve("target2")
       val target2Src1 = workspaceRoot.createMockSourceFile("target2/src1.kt", "com.example")
       val target2Src2 = workspaceRoot.createMockSourceFile("target2/src2.kt", "com.example")
 
@@ -348,7 +345,6 @@ class FirstPhaseTargetToBspMapperTest {
               SourceItem(target1Src1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
               SourceItem(target1Src2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example.a"),
             ),
-            roots = listOf(target1Root1.toUri().toString(), target1Root2.toUri().toString()),
           ),
           SourcesItem(
             Label.parse("//target2"),
@@ -356,7 +352,6 @@ class FirstPhaseTargetToBspMapperTest {
               SourceItem(target2Src1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
               SourceItem(target2Src2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
             ),
-            roots = listOf(target2Root.toUri().toString()),
           ),
         )
       result.items
@@ -373,8 +368,6 @@ class FirstPhaseTargetToBspMapperTest {
     @Test
     fun `should map project to source items including sources referenced via filegroup targets`() {
       // given
-      val filegroupRoot1 = workspaceRoot.resolve("filegroup")
-      val filegroupRoot2 = workspaceRoot.resolve("filegroup/a")
       val filegroupSrc1 = workspaceRoot.createMockSourceFile("filegroup/src1.java", "com.example")
       val filegroupSrc2 = workspaceRoot.createMockSourceFile("filegroup/a/src2.java", "com.example.a")
 
@@ -420,7 +413,6 @@ class FirstPhaseTargetToBspMapperTest {
               SourceItem(filegroupSrc1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
               SourceItem(filegroupSrc2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example.a"),
             ),
-            roots = listOf(target1Root.toUri().toString(), filegroupRoot1.toUri().toString(), filegroupRoot2.toUri().toString()),
           ),
         )
       result.items

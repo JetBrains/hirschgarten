@@ -21,7 +21,6 @@ data class ModuleDetails(
   val moduleDependencies: List<Label>,
   val defaultJdkName: String?,
   val jvmBinaryJars: List<JvmBinaryJarsItem>,
-  val workspaceModelEntitiesFolderMarker: Boolean = false,
 )
 
 interface WorkspaceModelUpdater {

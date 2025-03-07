@@ -1049,7 +1049,6 @@ class BazelProjectMapper(
               jvmPackagePrefix = it.second?.jvmPackagePrefix,
             )
           }.toSet(),
-      sourceRoots = (sourceRootsAndData + generatedRootsAndData).mapNotNull { it.second?.sourceRoot?.toUri() }.toSet(),
     )
   }
 

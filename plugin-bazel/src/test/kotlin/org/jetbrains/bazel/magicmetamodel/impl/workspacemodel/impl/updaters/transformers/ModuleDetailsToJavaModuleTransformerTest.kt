@@ -87,11 +87,25 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       SourcesItem(
         buildTargetId,
         listOf(
-          SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
-          SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
-          SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+          SourceItem(
+            uri = file1APath.toUri().toString(),
+            kind = SourceItemKind.FILE,
+            generated = false,
+            jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+          ),
+          SourceItem(
+            uri = file2APath.toUri().toString(),
+            kind = SourceItemKind.FILE,
+            generated = false,
+            jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+          ),
+          SourceItem(
+            uri = dir1BPath.toUri().toString(),
+            kind = SourceItemKind.DIRECTORY,
+            generated = false,
+            jvmPackagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
+          ),
         ),
-        roots = listOf(projectRoot.toUri().toString()),
       )
 
     val resourceFilePath = createTempFile(projectBasePath, "resource", "File.txt")
@@ -336,11 +350,25 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       SourcesItem(
         buildTargetId1,
         listOf(
-          SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
-          SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
-          SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+          SourceItem(
+            uri = file1APath.toUri().toString(),
+            kind = SourceItemKind.FILE,
+            generated = false,
+            jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+          ),
+          SourceItem(
+            uri = file2APath.toUri().toString(),
+            kind = SourceItemKind.FILE,
+            generated = false,
+            jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+          ),
+          SourceItem(
+            uri = dir1BPath.toUri().toString(),
+            kind = SourceItemKind.DIRECTORY,
+            generated = false,
+            jvmPackagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
+          ),
         ),
-        roots = listOf(module1Root.toUri().toString()),
       )
 
     val resourceFilePath11 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File1.txt")
@@ -407,9 +435,13 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       SourcesItem(
         buildTargetId2,
         listOf(
-          SourceItem(dir1CPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+          SourceItem(
+            uri = dir1CPath.toUri().toString(),
+            kind = SourceItemKind.DIRECTORY,
+            generated = false,
+            jvmPackagePrefix = "${packageC1Path.name}.${packageC2Path.name}.${dir1CPath.name}",
+          ),
         ),
-        roots = listOf(module2Root.toUri().toString()),
       )
 
     val resourceDirPath21 = Files.createTempDirectory(projectBasePath.toAbsolutePath(), "resource")
@@ -597,11 +629,25 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       SourcesItem(
         buildTargetId,
         listOf(
-          SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
-          SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
-          SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+          SourceItem(
+            uri = file1APath.toUri().toString(),
+            kind = SourceItemKind.FILE,
+            generated = false,
+            jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+          ),
+          SourceItem(
+            uri = file2APath.toUri().toString(),
+            kind = SourceItemKind.FILE,
+            generated = false,
+            jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+          ),
+          SourceItem(
+            uri = dir1BPath.toUri().toString(),
+            kind = SourceItemKind.DIRECTORY,
+            generated = false,
+            jvmPackagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
+          ),
         ),
-        roots = listOf(projectRoot.toUri().toString()),
       )
 
     val resourceFilePath = createTempFile(projectBasePath, "resource", "File.txt")
