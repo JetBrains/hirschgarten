@@ -42,8 +42,6 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
     }
 
     companion object {
-
-
       private fun moduleBazel(context: WizardContext): String =
         """
         module(
