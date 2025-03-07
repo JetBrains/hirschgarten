@@ -20,10 +20,7 @@ intellij_plugin_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//plugin-bazel/src:intellij-bazel",
-        "//plugin-bazel/src:intellij-bsp",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jpsCompilation/utils",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
+        "//plugin-bazel/src:plugin-bazel-lib",
         "//protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bazel:bsp_export",
     ],
@@ -38,7 +35,7 @@ stamped_plugin_xml(
 )
 
 java_binary(
-    name = "intellij-bazel_exclude",
+    name = "plugin-bazel_exclude",
     main_class = "DummySourceForExclude",
     tags = ["no-ide"],
     runtime_deps = [
@@ -49,9 +46,9 @@ java_binary(
 )
 
 intellij_plugin(
-    name = "intellij-bazel",
+    name = "plugin-bazel",
     deploy_env = [
-        "intellij-bazel_exclude",
+        ":plugin-bazel_exclude",
     ],
     plugin_deps = [],
     plugin_xml = ":stamped_plugin_xml",
@@ -62,25 +59,25 @@ intellij_plugin(
 )
 
 repackaged_files(
-    name = "intellij-bazel_jar",
+    name = "plugin-bazel_jar",
     srcs = [
-        ":intellij-bazel",
+        ":plugin-bazel",
     ],
-    prefix = "intellij-bazel/lib",
+    prefix = "plugin-bazel/lib",
 )
 
 plugin_deploy_zip(
-    name = "intellij-bazel_zip",
+    name = "plugin-bazel_zip",
     srcs = [
-        ":intellij-bazel_jar",
+        ":plugin-bazel_jar",
     ],
     visibility = ["//visibility:public"],
-    zip_filename = "intellij-bazel.zip",
+    zip_filename = "plugin-bazel.zip",
 )
 
 intellij_plugin_debug_target(
     name = "plugin-bazel-debug",
     deps = [
-        ":intellij-bazel_jar",
+        ":plugin-bazel_jar",
     ],
 )
