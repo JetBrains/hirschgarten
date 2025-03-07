@@ -174,7 +174,6 @@
         <registryKey defaultValue="false" description="Build project on initial project sync"
                      key="bsp.build.project.on.sync"/>
         <registryKey defaultValue="false" description="Python modules support" key="bsp.python.support"/>
-        <registryKey defaultValue="false" description="Enable JPS compilation" key="bsp.jps.compilation.enable"/>
         <registryKey defaultValue="false" description="Android modules support" key="bsp.android.support"/>
         <registryKey defaultValue="false" description="Go modules support" key="bsp.go.support"/>
         <registryKey defaultValue="true"
@@ -249,13 +248,6 @@
         <action id="Bazel.BuildAndResyncAction"
                 class="org.jetbrains.bazel.action.registered.BuildAndResyncAction"
                 icon="/icons/buildAndResync.svg"/>
-        <action id="Bazel.Compile.CompileProjectWithBazelAction"
-                class="org.jetbrains.bazel.action.registered.CompileProjectWithBazelAction"
-                icon="AllIcons.Actions.Compile"/>
-        <action id="Bazel.Compile.CompileProjectWithJpsAction"
-                class="org.jetbrains.bazel.action.registered.CompileProjectWithJpsAction"
-                icon="AllIcons.Actions.Compile"/>
-
         <action id="Bazel.NewBazelPackageAction"
                 class="org.jetbrains.bazel.action.registered.NewBazelPackageAction"
                 text="New Bazel Package">

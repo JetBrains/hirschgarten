@@ -12,8 +12,8 @@ import com.intellij.task.TaskRunnerResults
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.CompileResult
@@ -29,9 +29,7 @@ class BazelProjectTaskRunner : ProjectTaskRunner() {
 
   override fun canRun(projectTask: ProjectTask): Boolean =
     when (projectTask) {
-      is JpsOnlyModuleBuildTask -> false
-      is BspOnlyModuleBuildTask -> true
-      is ModuleBuildTask -> !JpsFeatureFlags.isJpsCompilationEnabled
+      is ModuleBuildTask -> !projectTask.module.project.bazelProjectSettings.enableBuildWithJps
       else -> false
     }
 
