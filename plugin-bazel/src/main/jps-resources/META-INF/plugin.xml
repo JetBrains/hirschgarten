@@ -297,6 +297,8 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
+        <disableCompilationDependenciesResolutionTask
+                implementation="org.jetbrains.bazel.jpsCompilation.utils.DisableCompilationDependenciesResolutionImpl"/>
         <projectService serviceInterface="org.jetbrains.bazel.server.connection.BazelServerService"
                         serviceImplementation="org.jetbrains.bazel.server.connection.BazelServerServiceImpl"/>
 
