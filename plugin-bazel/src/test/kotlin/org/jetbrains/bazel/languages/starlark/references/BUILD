@@ -6,7 +6,7 @@ kt_intellij_junit4_test(
     src = "StarlarkArgumentReferenceTest.kt",
     data = ["//plugin-bazel/src/test/testData/starlark/references"],
     deps = [
-        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
     ],
 )
@@ -16,7 +16,7 @@ kt_intellij_junit4_test(
     src = "StarlarkAssignmentReferenceTest.kt",
     data = ["//plugin-bazel/src/test/testData/starlark/references"],
     deps = [
-        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
     ],
 )

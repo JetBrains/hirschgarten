@@ -8,8 +8,7 @@ ONLINE=false
 docker_args=(
 	-u "$(id -u):$(id -g)"
 	-v "$(cd ../.. && pwd):/data/project/"
-	-v "$(pwd)/plugins/intellij-bazel:/opt/idea/custom-plugins/intellij-bazel"
-	-v "$(pwd)/plugins/intellij-bsp:/opt/idea/custom-plugins/intellij-bsp"
+	-v "$(pwd)/plugins/plugin-bazel:/opt/idea/custom-plugins/plugin-bazel"
 	-v "$(pwd)/results/:/data/results"
 	-v "/tmp/.qodana-cache:/root/.cache"
 	--cpus="10"

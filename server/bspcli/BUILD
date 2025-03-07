@@ -6,7 +6,7 @@ kt_jvm_library(
     name = "intellij-bsp",
     neverlink = True,
     exports = [
-        "//plugin-bazel/src:intellij-bsp",
+        "//plugin-bazel/src:plugin-bazel-lib",
     ],
 )
 

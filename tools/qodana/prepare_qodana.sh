@@ -5,13 +5,10 @@ mkdir plugins
 mkdir results
 mkdir /tmp/cache
 
-# build plugins
+# build plugin
 cd ../..
-bazel build //plugin-bazel:intellij-bazel_zip
-bazel build //plugin-bazel:intellij-bazel_zip
+bazel build //plugin-bazel:plugin-bazel_zip
 
-# prepare plugins for qodana
-rm -rf tools/qodana/plugins/intellij-bsp
-unzip bazel-bin/plugin-bsp/intellij-bsp.zip -d tools/qodana/plugins
-rm -rf tools/qodana/plugins/intellij-bazel
-unzip bazel-bin/plugin-bazel/intellij-bazel.zip -d tools/qodana/plugins
+# prepare plugin for qodana
+rm -rf tools/qodana/plugins/plugin-bazel
+unzip bazel-bin/plugin-bazel/plugin-bazel.zip -d tools/qodana/plugins

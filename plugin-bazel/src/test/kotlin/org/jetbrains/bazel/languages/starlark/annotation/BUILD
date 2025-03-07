@@ -8,7 +8,7 @@ kt_intellij_junit4_test(
         "//plugin-bazel/src/test/testData/starlark/annotation:UnresolvedNamedArgumentsAnnotatorTestData.bzl",
     ],
     deps = [
-        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
     ],
 )
@@ -18,7 +18,7 @@ kt_intellij_junit4_test(
     src = "StarlarkStringAnnotatorTest.kt",
     data = ["//plugin-bazel/src/test/testData/starlark/annotation:StringAnnotatorTestData.bzl"],
     deps = [
-        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
     ],
 )
@@ -28,7 +28,7 @@ kt_intellij_junit4_test(
     src = "StarlarkUnusedDeclarationTest.kt",
     data = ["//plugin-bazel/src/test/testData/starlark/annotation:UnusedDeclarationTestData.bzl"],
     deps = [
-        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
     ],
 )
