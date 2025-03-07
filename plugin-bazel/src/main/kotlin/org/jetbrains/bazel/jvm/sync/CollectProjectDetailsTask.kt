@@ -435,7 +435,15 @@ class CollectProjectDetailsTask(
    */
   private suspend fun Project.refreshKotlinHighlighting() =
     writeAction {
-      analysisMessageBus.syncPublisher(KotlinModificationTopics.GLOBAL_MODULE_STATE_MODIFICATION).onModification()
+      try {
+        analysisMessageBus.syncPublisher(KotlinModificationTopics.GLOBAL_MODULE_STATE_MODIFICATION).onModification()
+      } catch (_: NoClassDefFoundError) {
+        // TODO: the above method was removed in 252 master.
+        //  Replace with `project.publishGlobalModuleStateModificationEvent()` once it's available in the next 252 EAP
+        val utilsKt = Class.forName("org.jetbrains.kotlin.analysis.api.platform.modification.UtilsKt")
+        val method = utilsKt.getDeclaredMethod("publishGlobalModuleStateModificationEvent", Project::class.java)
+        method.invoke(utilsKt, project)
+      }
     }
 
   private fun checkOverlappingSources() {
