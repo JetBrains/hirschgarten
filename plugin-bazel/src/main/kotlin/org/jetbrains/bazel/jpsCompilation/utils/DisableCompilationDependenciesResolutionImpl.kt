@@ -1,7 +1,8 @@
-package org.jetbrains.bazel.sdkcompat
+package org.jetbrains.bazel.jpsCompilation.utils
 
-import com.intellij.jarRepository.DisableCompilationDependenciesResolutionTask
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.sdkcompat.DisableCompilationDependenciesResolutionCompat
 
 /**
  * [com.intellij.jarRepository.CompilationDependenciesResolutionTask] is used for resolving Maven repositories before JPS build.
@@ -11,6 +12,6 @@ import com.intellij.openapi.project.Project
  * For now, we need to implement this interface to explicitly skip this task.
  * [Relevant ticket](https://youtrack.jetbrains.com/issue/IDEA-367562)
  */
-class DisableCompilationDependenciesResolutionImpl : DisableCompilationDependenciesResolutionTask {
-  override fun shouldDisable(project: Project): Boolean = true
+class DisableCompilationDependenciesResolutionImpl : DisableCompilationDependenciesResolutionCompat() {
+  override fun shouldDisableCompat(project: Project): Boolean = project.isBazelProject
 }
