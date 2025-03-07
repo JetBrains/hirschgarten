@@ -21,9 +21,9 @@ class FirstPhaseProjectResolver(
 ) {
   fun resolve(originId: String): FirstPhaseProject =
     runBlocking {
-      val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
+      val workspaceContext = workspaceContextProvider.readWorkspaceContext()
       val command =
-        bazelRunner.buildBazelCommand {
+        bazelRunner.buildBazelCommand(workspaceContext) {
           query {
             options.add("--output=streamed_proto")
             options.add(BazelFlag.keepGoing())
@@ -47,6 +47,7 @@ class FirstPhaseProjectResolver(
           bazelRelease = bazelInfo.release,
           modules = modules,
           repoMapping = repoMapping,
+          workspaceContext = workspaceContext,
         )
 
       bazelProcess.waitAndGetResult(true)

@@ -97,7 +97,7 @@ object WildcardTargetExpander {
         excludedValues = excludedTargets,
       )
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(context) {
         // exclude 'manual' targets,
         // which shouldn't be built when expanding wildcard target patterns if `allow_manual_targets_sync` is not specified.
         query(allowManualTargetsSync = context.allowManualTargetsSync.value) {

@@ -27,7 +27,7 @@ import org.jetbrains.bazel.workspacecontext.DEFAULT_TARGET_SHARD_SIZE
 import org.jetbrains.bazel.workspacecontext.ShardingApproach
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bsp.protocol.FeatureFlags
 import kotlin.math.min
 
 /**
@@ -46,9 +46,9 @@ object BazelBuildTargetSharder {
   suspend fun expandAndShardTargets(
     pathResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
-    workspaceContextProvider: WorkspaceContextProvider,
     targets: TargetsSpec,
     context: WorkspaceContext,
+    featureFlags: FeatureFlags,
     bazelRunner: BazelRunner,
     bspClientLogger: BspClientLogger,
     firstPhaseProject: FirstPhaseProject?,
@@ -83,12 +83,12 @@ object BazelBuildTargetSharder {
           expandWildcardTargets(
             pathResolver,
             bazelInfo,
-            workspaceContextProvider,
             includes,
             excludes,
             bazelRunner,
             bspClientLogger,
             context,
+            featureFlags,
           )
         if (expandedTargets.buildResult == BazelStatus.FATAL_ERROR) {
           ShardedTargetsResult(ShardedTargetList(emptyList()), expandedTargets.buildResult)
@@ -115,12 +115,12 @@ object BazelBuildTargetSharder {
   private suspend fun expandWildcardTargets(
     pathsResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
-    workspaceContextProvider: WorkspaceContextProvider,
     includes: List<Label>,
     excludes: List<Label>,
     bazelRunner: BazelRunner,
     bspClientLogger: BspClientLogger,
     context: WorkspaceContext,
+    featureFlags: FeatureFlags,
   ): ExpandedTargetsResult {
     val wildcardIncludes = includes.filter { it.isWildcard }
     if (wildcardIncludes.isEmpty()) {
@@ -130,7 +130,7 @@ object BazelBuildTargetSharder {
       WildcardTargetExpander.expandToNonRecursiveWildcardTargets(
         pathsResolver,
         bazelInfo,
-        workspaceContextProvider.currentFeatureFlags(),
+        featureFlags,
         wildcardIncludes,
       )
 

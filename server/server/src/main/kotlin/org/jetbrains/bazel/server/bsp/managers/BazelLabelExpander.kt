@@ -3,11 +3,12 @@ package org.jetbrains.bazel.server.bsp.managers
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 class BazelLabelExpander(private val bazelRunner: BazelRunner) {
-  suspend fun getAllPossibleTargets(targets: TargetsSpec): List<Label> {
+  suspend fun getAllPossibleTargets(targets: TargetsSpec, workspaceContext: WorkspaceContext): List<Label> {
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(workspaceContext) {
         query {
           addTargetsFromSpec(targets)
           options.addAll(listOf("--output=label", "--keep_going"))

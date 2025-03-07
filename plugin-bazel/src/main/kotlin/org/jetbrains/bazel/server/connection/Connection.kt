@@ -29,12 +29,12 @@ suspend fun startServer(
     )
   // Run it here to force the workspace context to be initialized
   // It should download bazelisk if bazel is missing
-  workspaceContextProvider.currentWorkspaceContext()
+  val workspaceContext = workspaceContextProvider.readWorkspaceContext()
   val bspServer = BazelBspServer(bspInfo, workspaceContextProvider, workspaceRoot)
   val bspClientLogger = BspClientLogger(client)
-  val bazelRunner = BazelRunner(bspServer.workspaceContextProvider, bspClientLogger, bspServer.workspaceRoot)
-  bspServer.verifyBazelVersion(bazelRunner)
-  val bazelInfo = bspServer.createBazelInfo(bazelRunner)
+  val bazelRunner = BazelRunner(bspClientLogger, bspServer.workspaceRoot)
+  bspServer.verifyBazelVersion(bazelRunner, workspaceContext)
+  val bazelInfo = bspServer.createBazelInfo(bazelRunner, workspaceContext)
   bazelRunner.bazelInfo = bazelInfo
   val bazelPathsResolver = BazelPathsResolver(bazelInfo)
   val compilationManager =

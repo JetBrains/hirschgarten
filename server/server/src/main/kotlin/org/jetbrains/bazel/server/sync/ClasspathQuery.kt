@@ -5,16 +5,18 @@ import com.google.gson.JsonSyntaxException
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bsp.info.BspInfo
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 object ClasspathQuery {
   suspend fun classPathQuery(
     target: Label,
     bspInfo: BspInfo,
     bazelRunner: BazelRunner,
+    workspaceContext: WorkspaceContext,
   ): JvmClasspath {
     val queryFile = bspInfo.bazelBspDir().resolve("aspects/runtime_classpath_query.bzl")
     val command =
-      bazelRunner.buildBazelCommand(inheritProjectviewOptionsOverride = true) {
+      bazelRunner.buildBazelCommand(workspaceContext = workspaceContext, inheritProjectviewOptionsOverride = true) {
         cquery {
           targets.add(target)
           options.addAll(listOf("--starlark:file=$queryFile", "--output=starlark"))

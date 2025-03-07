@@ -63,7 +63,7 @@ suspend fun calculateRepoMapping(
   if (!bazelInfo.isBzlModEnabled) {
     return RepoMappingDisabled
   }
-  val moduleResolver = ModuleResolver(bazelRunner, ModuleOutputParser())
+  val moduleResolver = ModuleResolver(bazelRunner, ModuleOutputParser(), workspaceContext)
   val moduleCanonicalNameToLocalPath = mutableMapOf<String, Path>()
   val moduleApparentNameToCanonicalName =
     try {

@@ -36,7 +36,7 @@ import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bsp.protocol.FeatureFlags
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
@@ -58,7 +58,6 @@ class BazelProjectMapper(
   private val mavenCoordinatesResolver: MavenCoordinatesResolver,
   private val kotlinAndroidModulesMerger: KotlinAndroidModulesMerger,
   private val bspClientLogger: BspClientLogger,
-  private val workspaceContextProvider: WorkspaceContextProvider,
 ) {
   private suspend fun <T> measure(description: String, body: suspend () -> T): T =
     bspTracer.spanBuilder(description).useWithScope { body() }
@@ -79,10 +78,11 @@ class BazelProjectMapper(
     targets: Map<Label, TargetInfo>,
     rootTargets: Set<Label>,
     workspaceContext: WorkspaceContext,
+    featureFlags: FeatureFlags,
     bazelInfo: BazelInfo,
     repoMapping: RepoMapping,
   ): AspectSyncProject {
-    languagePluginsService.prepareSync(targets.values.asSequence())
+    languagePluginsService.prepareSync(targets.values.asSequence(), workspaceContext)
     val dependencyGraph =
       measure("Build dependency tree") {
         DependencyGraph(rootTargets, targets)
@@ -90,7 +90,14 @@ class BazelProjectMapper(
     val transitiveCompileTimeJarsTargetKinds = workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toSet()
     val targetsToImport =
       measure("Select targets") {
-        selectTargetsToImport(workspaceContext, rootTargets, dependencyGraph, repoMapping, transitiveCompileTimeJarsTargetKinds)
+        selectTargetsToImport(
+          workspaceContext,
+          rootTargets,
+          dependencyGraph,
+          repoMapping,
+          transitiveCompileTimeJarsTargetKinds,
+          featureFlags,
+        )
       }
     val interfacesAndBinariesFromTargetsToImport =
       measure("Collect interfaces and classes from targets to import") {
@@ -187,7 +194,7 @@ class BazelProjectMapper(
       }
     val mergedModulesFromBazel =
       measure("Merge Kotlin Android modules") {
-        kotlinAndroidModulesMerger.mergeKotlinAndroidModules(modulesFromBazel)
+        kotlinAndroidModulesMerger.mergeKotlinAndroidModules(modulesFromBazel, featureFlags)
       }
     val librariesToImport =
       measure("Merge all libraries") {
@@ -198,7 +205,7 @@ class BazelProjectMapper(
     val goLibrariesToImport =
       measureIf(
         description = "Merge all Go libraries",
-        predicate = { workspaceContextProvider.currentFeatureFlags().isGoSupportEnabled },
+        predicate = { featureFlags.isGoSupportEnabled },
         ifFalse = emptyMap(),
       ) {
         goLibrariesMapper.values
@@ -232,6 +239,7 @@ class BazelProjectMapper(
       invalidTargets = invalidTargets,
       nonModuleTargets = nonModuleTargets,
       repoMapping = repoMapping,
+      workspaceContext = workspaceContext,
     )
   }
 
@@ -861,12 +869,13 @@ class BazelProjectMapper(
     graph: DependencyGraph,
     repoMapping: RepoMapping,
     transitiveCompileTimeJarsTargetKinds: Set<String>,
+    featureFlags: FeatureFlags,
   ): Sequence<TargetInfo> =
     graph
       .allTargetsAtDepth(
         workspaceContext.importDepth.value,
         rootTargets,
-      ).filter { isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds) }
+      ).filter { isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags) }
       .asSequence()
 
   private fun collectInterfacesAndClasses(targets: Sequence<TargetInfo>) =
@@ -909,16 +918,17 @@ class BazelProjectMapper(
     target: TargetInfo,
     repoMapping: RepoMapping,
     transitiveCompileTimeJarsTargetKinds: Set<String>,
+    featureFlags: FeatureFlags,
   ): Boolean =
     isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
       (
         shouldImportTargetKind(target.kind, transitiveCompileTimeJarsTargetKinds) ||
           target.hasJvmTargetInfo() &&
           hasKnownJvmSources(target) ||
-          workspaceContextProvider.currentFeatureFlags().isPythonSupportEnabled &&
+          featureFlags.isPythonSupportEnabled &&
           target.hasPythonTargetInfo() &&
           hasKnownPythonSources(target) ||
-          workspaceContextProvider.currentFeatureFlags().isGoSupportEnabled &&
+          featureFlags.isGoSupportEnabled &&
           target.hasGoTargetInfo() &&
           hasKnownGoSources(target)
       )

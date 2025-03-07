@@ -8,6 +8,7 @@ import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.PythonOptionsItem
@@ -19,7 +20,7 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
   private var defaultInterpreter: URI? = null
   private var defaultVersion: String? = null
 
-  override fun prepareSync(targets: Sequence<TargetInfo>) {
+  override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
     val defaultTargetInfo = calculateDefaultTargetInfo(targets)
     defaultInterpreter =
       defaultTargetInfo
