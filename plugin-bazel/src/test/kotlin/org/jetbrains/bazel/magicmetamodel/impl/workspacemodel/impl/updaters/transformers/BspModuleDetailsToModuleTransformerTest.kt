@@ -6,6 +6,7 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.DefaultNameProvider
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
@@ -14,8 +15,6 @@ import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
-import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -43,11 +42,8 @@ class BspModuleDetailsToModuleTransformerTest {
   @Test
   fun `should return java module with dependencies to other targets and libraries`() {
     // given
-    val dependencySource1 = "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar"
-    val dependencySource2 = "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0-sources.jar"
-
     val targetName = "//target1"
-    val targetId = BuildTargetIdentifier(targetName)
+    val targetId = Label.parse(targetName)
 
     val target =
       BuildTarget(
@@ -55,39 +51,28 @@ class BspModuleDetailsToModuleTransformerTest {
         emptyList(),
         listOf("java"),
         listOf(
-          BuildTargetIdentifier("@maven//:test"),
-          BuildTargetIdentifier("//target2"),
-          BuildTargetIdentifier("//target3"),
+          Label.parse("@maven//:test"),
+          Label.parse("//target2"),
+          Label.parse("//target3"),
         ),
         BuildTargetCapabilities(),
       )
 
-    val dependencySourceItem1 =
-      DependencySourcesItem(
-        targetId,
-        listOf(dependencySource1, dependencySource2),
-      )
     val javacOptions =
       JavacOptionsItem(
         targetId,
         emptyList(),
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-          "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
-        ),
-        "file:///compiler/output.jar",
       )
 
     val bspModuleDetails =
       BspModuleDetails(
         target = target,
-        dependencySources = listOf(dependencySourceItem1),
         javacOptions = javacOptions,
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("//target2"),
-            BuildTargetIdentifier("//target3"),
+            Label.parse("//target2"),
+            Label.parse("//target3"),
           ),
         libraryDependencies = null,
         scalacOptions = null,
@@ -118,17 +103,7 @@ class BspModuleDetailsToModuleTransformerTest {
               moduleName = "//target3",
             ),
           ),
-        librariesDependencies =
-          listOf(
-            IntermediateLibraryDependency(
-              libraryName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-              false,
-            ),
-            IntermediateLibraryDependency(
-              libraryName = "BSP: file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
-              false,
-            ),
-          ),
+        librariesDependencies = emptyList(),
       )
 
     shouldBeIgnoringDependenciesOrder(module, expectedModule)
@@ -138,38 +113,37 @@ class BspModuleDetailsToModuleTransformerTest {
   fun `should return module with associates when specified in BspModuleDetails`() {
     // given
     val targetName = "//target1"
-    val targetId = BuildTargetIdentifier(targetName)
+    val targetId = Label.parse(targetName)
     val target =
       BuildTarget(
         targetId,
         emptyList(),
         emptyList(),
         listOf(
-          BuildTargetIdentifier("@maven//:test"),
-          BuildTargetIdentifier("//target2"),
-          BuildTargetIdentifier("//target3"),
+          Label.parse("@maven//:test"),
+          Label.parse("//target2"),
+          Label.parse("//target3"),
         ),
         BuildTargetCapabilities(),
       )
     val bspModuleDetails =
       BspModuleDetails(
         target = target,
-        dependencySources = listOf(),
         type = ModuleTypeId("JAVA_MODULE"),
         javacOptions = null,
         associates =
           listOf(
-            BuildTargetIdentifier("//target4"),
-            BuildTargetIdentifier("//target5"),
+            Label.parse("//target4"),
+            Label.parse("//target5"),
           ),
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("//target2"),
-            BuildTargetIdentifier("//target3"),
+            Label.parse("//target2"),
+            Label.parse("//target3"),
           ),
         libraryDependencies =
           listOf(
-            BuildTargetIdentifier("@maven//:test"),
+            Label.parse("@maven//:test"),
           ),
         scalacOptions = null,
       )
@@ -220,11 +194,8 @@ class BspModuleDetailsToModuleTransformerTest {
   @Test
   fun `should return multiple java modules with dependencies to other targets and libraries`() {
     // given
-    val dependencySource1 = "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar"
-    val dependencySource2 = "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0-sources.jar"
-
     val target1Name = "//target1"
-    val target1Id = BuildTargetIdentifier(target1Name)
+    val target1Id = Label.parse(target1Name)
 
     val target1 =
       BuildTarget(
@@ -232,46 +203,35 @@ class BspModuleDetailsToModuleTransformerTest {
         emptyList(),
         listOf("java"),
         listOf(
-          BuildTargetIdentifier("@maven//:test"),
-          BuildTargetIdentifier("//target2"),
-          BuildTargetIdentifier("//target3"),
+          Label.parse("@maven//:test"),
+          Label.parse("//target2"),
+          Label.parse("//target3"),
         ),
         BuildTargetCapabilities(),
       )
 
-    val dependencySourceItem1 =
-      DependencySourcesItem(
-        target1Id,
-        listOf(dependencySource1, dependencySource2),
-      )
     val javacOptionsItem1 =
       JavacOptionsItem(
         target1Id,
         emptyList(),
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-          "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
-        ),
-        "file:///compiler/output1.jar",
       )
 
     val bspModuleDetails1 =
       BspModuleDetails(
         target = target1,
-        dependencySources = listOf(dependencySourceItem1),
         javacOptions = javacOptionsItem1,
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("//target2"),
-            BuildTargetIdentifier("//target3"),
+            Label.parse("//target2"),
+            Label.parse("//target3"),
           ),
         libraryDependencies = null,
         scalacOptions = null,
       )
 
     val target2Name = "//target2"
-    val target2Id = BuildTargetIdentifier(target2Name)
+    val target2Id = Label.parse(target2Name)
 
     val target2 =
       BuildTarget(
@@ -279,35 +239,25 @@ class BspModuleDetailsToModuleTransformerTest {
         emptyList(),
         listOf("java"),
         listOf(
-          BuildTargetIdentifier("@maven//:test"),
-          BuildTargetIdentifier("//target3"),
+          Label.parse("@maven//:test"),
+          Label.parse("//target3"),
         ),
         BuildTargetCapabilities(),
       )
 
-    val dependencySourceItem2 =
-      DependencySourcesItem(
-        target2Id,
-        listOf(dependencySource1),
-      )
     val javacOptionsItem2 =
       JavacOptionsItem(
         target2Id,
         emptyList(),
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-        ),
-        "file:///compiler/output2.jar",
       )
     val bspModuleDetails2 =
       BspModuleDetails(
         target = target2,
-        dependencySources = listOf(dependencySourceItem2),
         javacOptions = javacOptionsItem2,
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
-            BuildTargetIdentifier("//target3"),
+            Label.parse("//target3"),
           ),
         libraryDependencies = null,
         scalacOptions = null,
@@ -339,15 +289,7 @@ class BspModuleDetailsToModuleTransformerTest {
               moduleName = "//target3",
             ),
           ),
-        librariesDependencies =
-          listOf(
-            IntermediateLibraryDependency(
-              libraryName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-            ),
-            IntermediateLibraryDependency(
-              libraryName = "BSP: file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
-            ),
-          ),
+        librariesDependencies = emptyList(),
       )
 
     val expectedModule2 =
@@ -360,12 +302,7 @@ class BspModuleDetailsToModuleTransformerTest {
               moduleName = "//target3",
             ),
           ),
-        librariesDependencies =
-          listOf(
-            IntermediateLibraryDependency(
-              libraryName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-            ),
-          ),
+        librariesDependencies = emptyList(),
       )
 
     modules shouldContainExactlyInAnyOrder (
@@ -380,7 +317,7 @@ class BspModuleDetailsToModuleTransformerTest {
   fun `should rename module using the given provider`() {
     // given
     val targetName = "//target1"
-    val targetId = BuildTargetIdentifier(targetName)
+    val targetId = Label.parse(targetName)
 
     val target =
       BuildTarget(
@@ -395,17 +332,11 @@ class BspModuleDetailsToModuleTransformerTest {
       JavacOptionsItem(
         targetId,
         emptyList(),
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-          "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
-        ),
-        "file:///compiler/output.jar",
       )
 
     val bspModuleDetails =
       BspModuleDetails(
         target = target,
-        dependencySources = emptyList(),
         javacOptions = javacOptions,
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies = emptyList(),
@@ -416,7 +347,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val targetsMap = listOf("//target1").toDefaultTargetsMap()
 
     // when
-    val nameProvider: TargetNameReformatProvider = { "${it.id.uri}${it.id.uri}" }
+    val nameProvider: TargetNameReformatProvider = { "${it.id.toShortString()}${it.id.toShortString()}" }
     val transformer =
       BspModuleDetailsToModuleTransformer(
         targetsMap,

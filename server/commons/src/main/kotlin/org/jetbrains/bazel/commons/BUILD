@@ -7,8 +7,8 @@ kt_jvm_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/utils",
         "//protocol",
+        "//rules_intellij/intellij_platform_sdk:plugin_api",
         "@maven//:com_google_guava_guava",
         "@maven//:org_apache_logging_log4j_log4j_api",
-        "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

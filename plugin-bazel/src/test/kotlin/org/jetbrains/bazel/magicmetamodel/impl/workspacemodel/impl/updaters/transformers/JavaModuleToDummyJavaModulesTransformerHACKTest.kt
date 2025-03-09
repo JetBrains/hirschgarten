@@ -16,30 +16,16 @@ import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.io.path.name
 
 class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest() {
   @Test
-  fun `should return no dummy java modules for no module details`() {
-    // given
-    val emptyModulesDetails = listOf<JavaModule>()
-
-    // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(emptyModulesDetails)
-
-    // then
-    javaModules shouldBe emptyList()
-  }
-
-  @Test
-  fun `should return single dummy java module for module with sources in common root`() {
+  fun `should merge sources of module with sources in common root`() {
     // given
     val projectRoot = createTempDirectory(projectBasePath, "module1")
     projectRoot.toFile().deleteOnExit()
@@ -66,7 +52,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     file1APath.toFile().deleteOnExit()
     val file2APath = createTempFile(packageA2Path, "File2", ".java")
     file2APath.toFile().deleteOnExit()
-    val packagePrefix = "${packageA1Path.fileName}.${packageA2Path.fileName}"
+    val packagePrefix = packageA2Path.name
 
     val givenJavaModule =
       JavaModule(
@@ -78,56 +64,36 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
               sourcePath = file1APath.toAbsolutePath(),
               generated = false,
               packagePrefix = packagePrefix,
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
             JavaSourceRoot(
               sourcePath = file2APath.toAbsolutePath(),
               generated = false,
               packagePrefix = packagePrefix,
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
           ),
         resourceRoots = listOf(),
-        moduleLevelLibraries = listOf(Library(displayName = "lib1")),
         jvmJdkName = javaVersion,
         kotlinAddendum = null,
       )
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(givenJavaModule)
+    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(givenJavaModule)
 
     // then
-    val expectedModule =
-      GenericModuleInfo(
-        name = projectRootName.addIntelliJDummyPrefix(),
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = listOf(),
-        librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
-        languageIds = listOf("java", "kotlin", "scala"),
+    val expectedMergedSourceRoots =
+      listOf(
+        JavaSourceRoot(
+          sourcePath = packageA1Path.toAbsolutePath(),
+          generated = false,
+          packagePrefix = "",
+          rootType = JAVA_SOURCE_ROOT_TYPE,
+        ),
       )
 
-    val expectedJavaModule =
-      JavaModule(
-        genericModuleInfo = expectedModule,
-        baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
-        sourceRoots =
-          listOf(
-            JavaSourceRoot(
-              sourcePath = projectRoot.toAbsolutePath(),
-              generated = false,
-              packagePrefix = "",
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
-            ),
-          ),
-        resourceRoots = listOf(),
-        moduleLevelLibraries = emptyList(),
-        jvmJdkName = givenJavaModule.jvmJdkName,
-        kotlinAddendum = givenJavaModule.kotlinAddendum,
-      )
-
-    javaModules shouldContainExactlyInAnyOrder (
-      listOf(expectedJavaModule) to { actual, expected -> validateJavaModule(actual, expected) }
-    )
+    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedSourceRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+      expectedMergedSourceRoots
   }
 
   private fun createTempDirectoryAndDeleteItOnExit(path: Path, prefix: String) =
@@ -136,7 +102,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     }
 
   @Test
-  fun `should return dummy module with sources and with resources in common path`() {
+  fun `should merge sources with sources and with resources in common path`() {
     // given
     val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "hirschgarten")
     val projectRootName = projectRoot.name
@@ -175,29 +141,28 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
               sourcePath = file1APath.toAbsolutePath(),
               generated = false,
               packagePrefix = packagePrefix,
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
             JavaSourceRoot(
               sourcePath = file2APath.toAbsolutePath(),
               generated = false,
               packagePrefix = packagePrefix,
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
           ),
         resourceRoots =
           listOf(
             ResourceRoot(
               resourcePath = resourceFilePath.toAbsolutePath(),
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_RESOURCE_ROOT_TYPE,
             ),
           ),
-        moduleLevelLibraries = listOf(Library(displayName = "lib1")),
         jvmJdkName = javaVersion,
         kotlinAddendum = null,
       )
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(givenJavaModule)
+    val javaModules = transformIntoDummyModules(givenJavaModule)
 
     // then
     val expectedModule =
@@ -219,17 +184,16 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
               sourcePath = javaPath.toAbsolutePath(),
               generated = false,
               packagePrefix = "",
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
           ),
         resourceRoots =
           listOf(
             ResourceRoot(
               resourcePath = resourcesPath.toAbsolutePath(),
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_RESOURCE_ROOT_TYPE,
             ),
           ),
-        moduleLevelLibraries = emptyList(),
         jvmJdkName = givenJavaModule.jvmJdkName,
         kotlinAddendum = givenJavaModule.kotlinAddendum,
       )
@@ -271,16 +235,15 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
           listOf(
             ResourceRoot(
               resourcePath = resourceFilePath.toAbsolutePath(),
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_RESOURCE_ROOT_TYPE,
             ),
           ),
-        moduleLevelLibraries = listOf(Library(displayName = "lib1")),
         jvmJdkName = javaVersion,
         kotlinAddendum = null,
       )
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(givenJavaModule)
+    val javaModules = transformIntoDummyModules(givenJavaModule)
 
     // then
     val expectedModule =
@@ -302,10 +265,9 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
           listOf(
             ResourceRoot(
               resourcePath = messagesPath.toAbsolutePath(),
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_RESOURCE_ROOT_TYPE,
             ),
           ),
-        moduleLevelLibraries = emptyList(),
         jvmJdkName = givenJavaModule.jvmJdkName,
         kotlinAddendum = givenJavaModule.kotlinAddendum,
       )
@@ -347,16 +309,15 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
           listOf(
             ResourceRoot(
               resourcePath = resourceFilePath.toAbsolutePath(),
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_RESOURCE_ROOT_TYPE,
             ),
           ),
-        moduleLevelLibraries = listOf(Library(displayName = "lib1")),
         jvmJdkName = javaVersion,
         kotlinAddendum = null,
       )
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(givenJavaModule)
+    val javaModules = transformIntoDummyModules(givenJavaModule)
 
     // then
     val expectedModule =
@@ -378,10 +339,9 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
           listOf(
             ResourceRoot(
               resourcePath = resourcesPath.toAbsolutePath(),
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_RESOURCE_ROOT_TYPE,
             ),
           ),
-        moduleLevelLibraries = emptyList(),
         jvmJdkName = givenJavaModule.jvmJdkName,
         kotlinAddendum = givenJavaModule.kotlinAddendum,
       )
@@ -392,7 +352,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
   }
 
   @Test
-  fun `should return dummy module with sources and with no resources outside project root`() {
+  fun `should return dummy module with out-of-project sources`() {
     // given
     val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "module1")
     val projectRootName = projectRoot.name
@@ -414,6 +374,10 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     file1APath.toFile().deleteOnExit()
     val file2APath = createTempFile(packageA2Path, "File2", ".java")
     file2APath.toFile().deleteOnExit()
+
+    val outOfProjectSource = createTempFile(packageA2Path, "File3", ".java")
+    outOfProjectSource.toFile().deleteOnExit()
+
     val resourceFilePath = createTempFile(projectBasePath.toAbsolutePath().parent, "Resources", ".properties")
     resourceFilePath.toFile().deleteOnExit()
     val packagePrefix = "${packageA1Path.fileName}.${packageA2Path.fileName}"
@@ -428,29 +392,28 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
               sourcePath = file1APath.toAbsolutePath(),
               generated = false,
               packagePrefix = packagePrefix,
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
             JavaSourceRoot(
               sourcePath = file2APath.toAbsolutePath(),
               generated = false,
               packagePrefix = packagePrefix,
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
           ),
         resourceRoots =
           listOf(
             ResourceRoot(
               resourcePath = resourceFilePath.toAbsolutePath(),
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_RESOURCE_ROOT_TYPE,
             ),
           ),
-        moduleLevelLibraries = listOf(Library(displayName = "lib1")),
         jvmJdkName = javaVersion,
         kotlinAddendum = null,
       )
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(givenJavaModule)
+    val javaModules = transformIntoDummyModules(givenJavaModule)
 
     // then
     val expectedModule =
@@ -472,11 +435,10 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
               sourcePath = javaPath.toAbsolutePath(),
               generated = false,
               packagePrefix = "",
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
           ),
         resourceRoots = emptyList(),
-        moduleLevelLibraries = emptyList(),
         jvmJdkName = givenJavaModule.jvmJdkName,
         kotlinAddendum = givenJavaModule.kotlinAddendum,
       )
@@ -487,133 +449,204 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
   }
 
   @Test
-  fun `should return multiple dummy java modules for multiple modules`() {
+  fun `should merge sources for module with sources and with no resources outside project root`() {
     // given
-    val projectRoot1 = createTempDirectory(projectBasePath, "module1")
-    projectRoot1.toFile().deleteOnExit()
-    val projectRoot1Name = projectRoot1.name
+    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "module1")
+    val projectRootName = projectRoot.name
+    val javaVersion = "11"
 
-    val projectRoot2 = createTempDirectory(projectBasePath, "module2")
-    projectRoot2.toFile().deleteOnExit()
-    val projectRoot2Name = projectRoot2.name
-
-    val file1Path = createTempFile(projectRoot1, "File1", ".java")
-    file1Path.toFile().deleteOnExit()
-    val file2Path = createTempFile(projectRoot2, "File2", ".java")
-    file2Path.toFile().deleteOnExit()
-
-    val givenModule1 =
+    val givenModule =
       GenericModuleInfo(
-        name = projectRoot1Name,
+        name = projectRootName,
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = listOf(),
-        librariesDependencies = listOf(),
+        modulesDependencies = emptyList(),
+        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
       )
+    val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
+    val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
+    val javaPath = createTempDirectoryAndDeleteItOnExit(mainPath, "java")
+    val packageA1Path = createTempDirectoryAndDeleteItOnExit(javaPath, "packageA1")
+    val packageA2Path = createTempDirectoryAndDeleteItOnExit(javaPath, "packageA2")
+    val file1APath = createTempFile(packageA1Path, "File1", ".java")
+    file1APath.toFile().deleteOnExit()
+    val file2APath = createTempFile(packageA2Path, "File2", ".java")
+    file2APath.toFile().deleteOnExit()
 
-    val givenJavaModule1 =
+    val outOfProjectNonSourceFile = createTempFile(packageA2Path, "File3", ".java.non.source")
+    outOfProjectNonSourceFile.toFile().deleteOnExit()
+
+    val resourceFilePath = createTempFile(projectBasePath.toAbsolutePath().parent, "Resources", ".properties")
+    resourceFilePath.toFile().deleteOnExit()
+
+    val givenJavaModule =
       JavaModule(
-        genericModuleInfo = givenModule1,
-        baseDirContentRoot = ContentRoot(path = projectRoot1.toAbsolutePath()),
+        genericModuleInfo = givenModule,
+        baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
         sourceRoots =
           listOf(
             JavaSourceRoot(
-              sourcePath = file1Path.toAbsolutePath(),
+              sourcePath = file1APath.toAbsolutePath(),
               generated = false,
               packagePrefix = "",
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
-          ),
-        resourceRoots = listOf(),
-        moduleLevelLibraries = listOf(),
-        jvmJdkName = null,
-        kotlinAddendum = null,
-      )
-
-    val givenModule2 =
-      GenericModuleInfo(
-        name = projectRoot2Name,
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = listOf(),
-        librariesDependencies = listOf(),
-      )
-
-    val givenJavaModule2 =
-      JavaModule(
-        genericModuleInfo = givenModule2,
-        baseDirContentRoot = ContentRoot(path = projectRoot2.toAbsolutePath()),
-        sourceRoots =
-          listOf(
             JavaSourceRoot(
-              sourcePath = file2Path.toAbsolutePath(),
+              sourcePath = file2APath.toAbsolutePath(),
               generated = false,
               packagePrefix = "",
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
           ),
-        resourceRoots = listOf(),
-        moduleLevelLibraries = listOf(),
-        jvmJdkName = null,
+        resourceRoots =
+          listOf(
+            ResourceRoot(
+              resourcePath = resourceFilePath.toAbsolutePath(),
+              rootType = JAVA_RESOURCE_ROOT_TYPE,
+            ),
+          ),
+        jvmJdkName = javaVersion,
         kotlinAddendum = null,
       )
-
-    val modulesList = listOf(givenJavaModule1, givenJavaModule2)
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(modulesList)
+    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(givenJavaModule)
+
+    // then
+    val expectedMergedSourceRoots =
+      listOf(
+        JavaSourceRoot(
+          sourcePath = packageA1Path.toAbsolutePath(),
+          generated = false,
+          packagePrefix = "",
+          rootType = JAVA_SOURCE_ROOT_TYPE,
+        ),
+        JavaSourceRoot(
+          sourcePath = packageA2Path.toAbsolutePath(),
+          generated = false,
+          packagePrefix = "",
+          rootType = JAVA_SOURCE_ROOT_TYPE,
+        ),
+      )
+
+    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedSourceRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+      expectedMergedSourceRoots
+  }
+
+  @Test
+  fun `should not merge sources for module with nested source roots`() {
+    // given
+    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "module1")
+    val projectRootName = projectRoot.name
+    val javaVersion = "11"
+
+    val givenModule =
+      GenericModuleInfo(
+        name = projectRootName,
+        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        modulesDependencies = emptyList(),
+        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+      )
+    val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
+    val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
+    val javaPath = createTempDirectoryAndDeleteItOnExit(mainPath, "java")
+    val packageA1Path = createTempDirectoryAndDeleteItOnExit(javaPath, "packageA1")
+    val packageA2Path = createTempDirectoryAndDeleteItOnExit(packageA1Path, "packageA2")
+    val file1APath = createTempFile(packageA1Path, "File1", ".java")
+    file1APath.toFile().deleteOnExit()
+    val file2APath = createTempFile(packageA2Path, "File2", ".java")
+    file2APath.toFile().deleteOnExit()
+
+    val resourceFilePath = createTempFile(projectBasePath.toAbsolutePath().parent, "Resources", ".properties")
+    resourceFilePath.toFile().deleteOnExit()
+
+    val givenJavaModule =
+      JavaModule(
+        genericModuleInfo = givenModule,
+        baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
+        sourceRoots =
+          listOf(
+            JavaSourceRoot(
+              sourcePath = file1APath.toAbsolutePath(),
+              generated = false,
+              packagePrefix = "",
+              rootType = JAVA_SOURCE_ROOT_TYPE,
+            ),
+            JavaSourceRoot(
+              sourcePath = file2APath.toAbsolutePath(),
+              generated = false,
+              packagePrefix = "",
+              rootType = JAVA_SOURCE_ROOT_TYPE,
+            ),
+          ),
+        resourceRoots =
+          listOf(
+            ResourceRoot(
+              resourcePath = resourceFilePath.toAbsolutePath(),
+              rootType = JAVA_RESOURCE_ROOT_TYPE,
+            ),
+          ),
+        jvmJdkName = javaVersion,
+        kotlinAddendum = null,
+      )
+
+    // when
+    val javaModules = transformIntoDummyModules(givenJavaModule)
 
     // then
     val expectedModule1 =
       GenericModuleInfo(
-        name = projectRoot1Name.addIntelliJDummyPrefix(),
+        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${javaPath.name}.${packageA1Path.name}".addIntelliJDummyPrefix(),
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
-        librariesDependencies = listOf(),
+        librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
+        languageIds = listOf("java", "scala", "kotlin"),
       )
 
     val expectedJavaModule1 =
       JavaModule(
         genericModuleInfo = expectedModule1,
-        baseDirContentRoot = ContentRoot(path = projectRoot1.toAbsolutePath()),
+        baseDirContentRoot = ContentRoot(path = packageA1Path.toAbsolutePath()),
         sourceRoots =
           listOf(
             JavaSourceRoot(
-              sourcePath = projectRoot1.toAbsolutePath(),
+              sourcePath = packageA1Path.toAbsolutePath(),
               generated = false,
               packagePrefix = "",
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
           ),
-        resourceRoots = listOf(),
-        moduleLevelLibraries = emptyList(),
-        jvmJdkName = null,
-        kotlinAddendum = null,
+        resourceRoots = emptyList(),
+        jvmJdkName = givenJavaModule.jvmJdkName,
+        kotlinAddendum = givenJavaModule.kotlinAddendum,
       )
 
     val expectedModule2 =
       GenericModuleInfo(
-        name = projectRoot2Name.addIntelliJDummyPrefix(),
+        name =
+          "$projectRootName.${srcPath.name}.${mainPath.name}.${javaPath.name}.${packageA1Path.name}.${packageA2Path.name}"
+            .addIntelliJDummyPrefix(),
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
-        librariesDependencies = listOf(),
+        librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
+        languageIds = listOf("java", "scala", "kotlin"),
       )
 
     val expectedJavaModule2 =
       JavaModule(
         genericModuleInfo = expectedModule2,
-        baseDirContentRoot = ContentRoot(path = projectRoot2.toAbsolutePath()),
+        baseDirContentRoot = ContentRoot(path = packageA2Path.toAbsolutePath()),
         sourceRoots =
           listOf(
             JavaSourceRoot(
-              sourcePath = projectRoot2.toAbsolutePath(),
+              sourcePath = packageA2Path.toAbsolutePath(),
               generated = false,
               packagePrefix = "",
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
           ),
-        resourceRoots = listOf(),
-        moduleLevelLibraries = emptyList(),
-        jvmJdkName = null,
-        kotlinAddendum = null,
+        resourceRoots = emptyList(),
+        jvmJdkName = givenJavaModule.jvmJdkName,
+        kotlinAddendum = givenJavaModule.kotlinAddendum,
       )
 
     javaModules shouldContainExactlyInAnyOrder
@@ -649,11 +682,10 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
               sourcePath = projectRoot1.toAbsolutePath(),
               generated = false,
               packagePrefix = "",
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
           ),
         resourceRoots = listOf(),
-        moduleLevelLibraries = listOf(),
         jvmJdkName = null,
         kotlinAddendum = null,
       )
@@ -676,11 +708,10 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
               sourcePath = projectRoot2.toAbsolutePath(),
               generated = false,
               packagePrefix = "",
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
           ),
         resourceRoots = listOf(),
-        moduleLevelLibraries = listOf(),
         jvmJdkName = null,
         kotlinAddendum = null,
       )
@@ -688,7 +719,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val modulesList = listOf(givenJavaModule1, givenJavaModule2)
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(modulesList)
+    val javaModules = transformIntoDummyModules(modulesList)
 
     // then
     javaModules shouldBe emptyList()
@@ -722,11 +753,10 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
               sourcePath = filePath.toAbsolutePath(),
               generated = true,
               packagePrefix = "",
-              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
           ),
         resourceRoots = listOf(),
-        moduleLevelLibraries = listOf(),
         jvmJdkName = null,
         kotlinAddendum = null,
       )
@@ -734,11 +764,186 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val modulesList = listOf(givenJavaModule)
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(modulesList)
+    val javaModules = transformIntoDummyModules(modulesList)
 
     // then
     javaModules shouldBe emptyList()
   }
+
+  @Test
+  fun `should merge sources of module with test sources in common root`() {
+    // given
+    val projectRoot = createTempDirectory(projectBasePath, "module1")
+    projectRoot.toFile().deleteOnExit()
+    val projectRootName = projectRoot.name
+    val javaVersion = "11"
+
+    val givenModule =
+      GenericModuleInfo(
+        name = projectRootName,
+        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        modulesDependencies =
+          listOf(
+            IntermediateModuleDependency("module2"),
+            IntermediateModuleDependency("module3"),
+          ),
+        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+      )
+
+    val packageA1Path = createTempDirectory(projectRoot, "packageA1")
+    packageA1Path.toFile().deleteOnExit()
+    val packageA2Path = createTempDirectory(packageA1Path, "packageA2")
+    packageA2Path.toFile().deleteOnExit()
+    val file1APath = createTempFile(packageA2Path, "File1", ".java")
+    file1APath.toFile().deleteOnExit()
+    val file2APath = createTempFile(packageA2Path, "File2", ".java")
+    file2APath.toFile().deleteOnExit()
+    val packagePrefix = packageA2Path.name
+
+    val givenJavaModule =
+      JavaModule(
+        genericModuleInfo = givenModule,
+        baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
+        sourceRoots =
+          listOf(
+            JavaSourceRoot(
+              sourcePath = file1APath.toAbsolutePath(),
+              generated = false,
+              packagePrefix = packagePrefix,
+              rootType = JAVA_TEST_SOURCE_ROOT_TYPE,
+            ),
+            JavaSourceRoot(
+              sourcePath = file2APath.toAbsolutePath(),
+              generated = false,
+              packagePrefix = packagePrefix,
+              rootType = JAVA_TEST_SOURCE_ROOT_TYPE,
+            ),
+          ),
+        resourceRoots = listOf(),
+        jvmJdkName = javaVersion,
+        kotlinAddendum = null,
+      )
+
+    // when
+    val mergedSourceRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(givenJavaModule)
+
+    // then
+    val expectedMergedSourceRoots =
+      listOf(
+        JavaSourceRoot(
+          sourcePath = packageA1Path.toAbsolutePath(),
+          generated = false,
+          packagePrefix = "",
+          rootType = JAVA_TEST_SOURCE_ROOT_TYPE,
+        ),
+      )
+
+    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedSourceRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+      expectedMergedSourceRoots
+  }
+
+  @Test
+  fun `should return dummy module if test and production sources are together`() {
+    // given
+    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "module1")
+    val projectRootName = projectRoot.name
+    val javaVersion = "11"
+
+    val givenModule =
+      GenericModuleInfo(
+        name = projectRootName,
+        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        modulesDependencies = emptyList(),
+        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+      )
+    val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
+    val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
+    val javaPath = createTempDirectoryAndDeleteItOnExit(mainPath, "java")
+    val packageA1Path = createTempDirectoryAndDeleteItOnExit(javaPath, "packageA1")
+    val packageA2Path = createTempDirectoryAndDeleteItOnExit(packageA1Path, "packageA2")
+    val file1APath = createTempFile(packageA2Path, "File1", ".java")
+    file1APath.toFile().deleteOnExit()
+    val file2APath = createTempFile(packageA2Path, "File2", ".java")
+    file2APath.toFile().deleteOnExit()
+
+    val resourceFilePath = createTempFile(projectBasePath.toAbsolutePath().parent, "Resources", ".properties")
+    resourceFilePath.toFile().deleteOnExit()
+    val packagePrefix = "${packageA1Path.fileName}.${packageA2Path.fileName}"
+
+    val givenJavaModule =
+      JavaModule(
+        genericModuleInfo = givenModule,
+        baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
+        sourceRoots =
+          listOf(
+            JavaSourceRoot(
+              sourcePath = file1APath.toAbsolutePath(),
+              generated = false,
+              packagePrefix = packagePrefix,
+              rootType = JAVA_TEST_SOURCE_ROOT_TYPE,
+            ),
+            JavaSourceRoot(
+              sourcePath = file2APath.toAbsolutePath(),
+              generated = false,
+              packagePrefix = packagePrefix,
+              rootType = JAVA_SOURCE_ROOT_TYPE,
+            ),
+          ),
+        resourceRoots =
+          listOf(
+            ResourceRoot(
+              resourcePath = resourceFilePath.toAbsolutePath(),
+              rootType = JAVA_RESOURCE_ROOT_TYPE,
+            ),
+          ),
+        jvmJdkName = javaVersion,
+        kotlinAddendum = null,
+      )
+
+    // when
+    val javaModules = transformIntoDummyModules(givenJavaModule)
+
+    // then
+    val expectedModule =
+      GenericModuleInfo(
+        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${javaPath.name}".addIntelliJDummyPrefix(),
+        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        modulesDependencies = listOf(),
+        librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
+        languageIds = listOf("java", "scala", "kotlin"),
+      )
+
+    val expectedJavaModule =
+      JavaModule(
+        genericModuleInfo = expectedModule,
+        baseDirContentRoot = ContentRoot(path = javaPath.toAbsolutePath()),
+        sourceRoots =
+          listOf(
+            JavaSourceRoot(
+              sourcePath = javaPath.toAbsolutePath(),
+              generated = false,
+              packagePrefix = "",
+              rootType = JAVA_SOURCE_ROOT_TYPE,
+            ),
+          ),
+        resourceRoots = emptyList(),
+        jvmJdkName = givenJavaModule.jvmJdkName,
+        kotlinAddendum = givenJavaModule.kotlinAddendum,
+      )
+
+    javaModules shouldContainExactlyInAnyOrder (
+      listOf(expectedJavaModule) to { actual, expected -> validateJavaModule(actual, expected) }
+    )
+  }
+
+  private fun transformIntoDummyModules(module: JavaModule): List<JavaModule> = transformIntoDummyModules(listOf(module))
+
+  private fun transformIntoDummyModules(modules: List<JavaModule>): List<JavaModule> =
+    modules
+      .flatMap { module ->
+        val result = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(module)
+        (result as JavaModuleToDummyJavaModulesTransformerHACK.DummyModulesToAdd).dummyModules
+      }.distinctBy { it.getModuleName() }
 
   private infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(
     expectedWithAssertion: Pair<Collection<E>, (T, E) -> Unit>,
@@ -757,7 +962,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     actual.baseDirContentRoot shouldBe expected.baseDirContentRoot
     actual.sourceRoots shouldContainExactlyInAnyOrder expected.sourceRoots
     actual.resourceRoots shouldContainExactlyInAnyOrder expected.resourceRoots
-    actual.moduleLevelLibraries shouldContainExactlyInAnyOrder expected.moduleLevelLibraries
   }
 
   private fun validateModule(actual: GenericModuleInfo, expected: GenericModuleInfo) {

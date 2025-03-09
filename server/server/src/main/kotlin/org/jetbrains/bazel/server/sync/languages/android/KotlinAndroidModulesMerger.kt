@@ -19,8 +19,8 @@ import org.jetbrains.bsp.protocol.FeatureFlags
  * Therefore, we just merge them all into a single target.
  * Also see [Android Kotlin rules implementation](https://github.com/bazelbuild/rules_kotlin/blob/a675511fdbee743c09d537c2dddfb349981ae70b/kotlin/internal/jvm/android.bzl).
  */
-class KotlinAndroidModulesMerger(private val featureFlags: FeatureFlags) {
-  fun mergeKotlinAndroidModules(modules: List<Module>): List<Module> =
+class KotlinAndroidModulesMerger {
+  fun mergeKotlinAndroidModules(modules: List<Module>, featureFlags: FeatureFlags): List<Module> =
     if (featureFlags.isAndroidSupportEnabled) doMergeKotlinAndroidModules(modules) else modules
 
   private fun doMergeKotlinAndroidModules(modules: List<Module>): List<Module> {
@@ -88,7 +88,6 @@ class KotlinAndroidModulesMerger(private val featureFlags: FeatureFlags) {
         baseDirectory = parentModule.baseDirectory,
         sourceSet = kotlinModule.sourceSet,
         resources = androidModule.resources + parentModule.resources,
-        outputs = kotlinModule.outputs + androidModule.outputs,
         sourceDependencies = kotlinModule.sourceDependencies + androidModule.sourceDependencies,
         languageData = kotlinAndroidLanguageData,
         environmentVariables = kotlinModule.environmentVariables + androidModule.environmentVariables,

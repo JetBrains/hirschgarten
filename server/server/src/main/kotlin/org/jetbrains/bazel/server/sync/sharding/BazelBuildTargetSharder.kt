@@ -46,9 +46,9 @@ object BazelBuildTargetSharder {
   suspend fun expandAndShardTargets(
     pathResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
-    featureFlags: FeatureFlags,
     targets: TargetsSpec,
     context: WorkspaceContext,
+    featureFlags: FeatureFlags,
     bazelRunner: BazelRunner,
     bspClientLogger: BspClientLogger,
     firstPhaseProject: FirstPhaseProject?,
@@ -83,12 +83,12 @@ object BazelBuildTargetSharder {
           expandWildcardTargets(
             pathResolver,
             bazelInfo,
-            featureFlags,
             includes,
             excludes,
             bazelRunner,
             bspClientLogger,
             context,
+            featureFlags,
           )
         if (expandedTargets.buildResult == BazelStatus.FATAL_ERROR) {
           ShardedTargetsResult(ShardedTargetList(emptyList()), expandedTargets.buildResult)
@@ -115,12 +115,12 @@ object BazelBuildTargetSharder {
   private suspend fun expandWildcardTargets(
     pathsResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
-    featureFlags: FeatureFlags,
     includes: List<Label>,
     excludes: List<Label>,
     bazelRunner: BazelRunner,
     bspClientLogger: BspClientLogger,
     context: WorkspaceContext,
+    featureFlags: FeatureFlags,
   ): ExpandedTargetsResult {
     val wildcardIncludes = includes.filter { it.isWildcard }
     if (wildcardIncludes.isEmpty()) {

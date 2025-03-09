@@ -2,7 +2,7 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
 import org.jetbrains.bsp.protocol.StatusCode
@@ -38,10 +38,10 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
       "deprecated warning",
     ) {
       val currentTime = System.currentTimeMillis()
-      val targetUri = "@//:deprecated_warning"
+      val targetUri = Label.parse("@//:deprecated_warning")
       val params =
         CompileParams(
-          listOf(BuildTargetIdentifier(targetUri)),
+          listOf(targetUri),
           originId = "some-id",
           arguments = listOf("--action_env=FORCE_REBUILD=$currentTime"),
         )
@@ -52,7 +52,6 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         session.client.clearDiagnostics()
         val result = session.server.buildTargetCompile(transformedParams)
         assertEquals(StatusCode.OK, result.statusCode)
-        assertEquals(params.originId, result.originId)
         println(session.client.publishDiagnosticsNotifications)
         assertEquals(1, session.client.publishDiagnosticsNotifications.size)
         val deprecatedWarning =
@@ -84,7 +83,7 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         )
         assertEquals(true, deprecatedWarning.reset)
         assertEquals(params.originId, deprecatedWarning.originId)
-        assertEquals(targetUri, deprecatedWarning.buildTarget.uri)
+        assertEquals(targetUri, deprecatedWarning.buildTarget)
         assertEquals(DiagnosticSeverity.WARNING, deprecatedWarning.diagnostics[0].severity)
         assertNull(deprecatedWarning.diagnostics[0].code)
         assertNull(deprecatedWarning.diagnostics[0].codeDescription)
@@ -99,13 +98,13 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
       "no such method error",
     ) {
       val currentTime = System.currentTimeMillis()
-      val noSuchMethodTargetUri = "@//:no_such_method_error"
-      val warningAndErrorTargetUri = "@//:warning_and_error"
+      val noSuchMethodTargetUri = Label.parse("@//:no_such_method_error")
+      val warningAndErrorTargetUri = Label.parse("@//:warning_and_error")
       val params =
         CompileParams(
           listOf(
-            BuildTargetIdentifier(noSuchMethodTargetUri),
-            BuildTargetIdentifier(warningAndErrorTargetUri),
+            noSuchMethodTargetUri,
+            warningAndErrorTargetUri,
           ),
           originId = "some-id",
           arguments = listOf("--action_env=FORCE_REBUILD=$currentTime", "--keep_going"),
@@ -120,7 +119,6 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         val result = session.server.buildTargetCompile(transformedParams)
         println(session.client.logMessageNotifications)
         assertEquals(StatusCode.ERROR, result.statusCode)
-        assertEquals(params.originId, result.originId)
         assertEquals(2, session.client.publishDiagnosticsNotifications.size)
         val noSuchMethodError =
           session.client.publishDiagnosticsNotifications.find {
@@ -161,7 +159,7 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         )
         assertEquals(true, noSuchMethodError.reset)
         assertEquals(params.originId, noSuchMethodError.originId)
-        assertEquals(noSuchMethodTargetUri, noSuchMethodError.buildTarget.uri)
+        assertEquals(noSuchMethodTargetUri, noSuchMethodError.buildTarget)
         assertEquals(DiagnosticSeverity.ERROR, noSuchMethodError.diagnostics[0].severity)
         assertNull(noSuchMethodError.diagnostics[0].code)
         assertNull(noSuchMethodError.diagnostics[0].codeDescription)

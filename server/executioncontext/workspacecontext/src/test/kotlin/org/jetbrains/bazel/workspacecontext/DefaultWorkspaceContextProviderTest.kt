@@ -2,6 +2,7 @@ package org.jetbrains.bazel.workspacecontext
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -35,10 +36,10 @@ class DefaultWorkspaceContextProviderTest {
       """.trimMargin(),
     )
 
-    val provider = DefaultWorkspaceContextProvider(workspaceRoot, projectViewFile, dotBazelBspDirPath)
+    val provider = DefaultWorkspaceContextProvider(workspaceRoot, projectViewFile, dotBazelBspDirPath, FeatureFlags())
 
     // when
-    val workspaceContext = provider.currentWorkspaceContext()
+    val workspaceContext = provider.readWorkspaceContext()
 
     // then
     workspaceContext.targets shouldBe TargetsSpec(listOf(Label.parse("//a/b/c")), emptyList())
@@ -48,10 +49,10 @@ class DefaultWorkspaceContextProviderTest {
   fun `should generate an empty project view file if the file doesn't exist`() {
     // given
     projectViewFile.deleteIfExists()
-    val provider = DefaultWorkspaceContextProvider(workspaceRoot, projectViewFile, dotBazelBspDirPath)
+    val provider = DefaultWorkspaceContextProvider(workspaceRoot, projectViewFile, dotBazelBspDirPath, FeatureFlags())
 
     // when
-    val workspaceContext = provider.currentWorkspaceContext()
+    val workspaceContext = provider.readWorkspaceContext()
 
     // then
     workspaceContext.targets shouldBe TargetsSpec(emptyList(), emptyList())

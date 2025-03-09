@@ -14,10 +14,10 @@ object FileUtils {
             EnvironmentUtil.getValue("LOCALAPPDATA") ?: EnvironmentUtil.getValue("APPDATA")
 
           OsFamily.LINUX ->
-            EnvironmentUtil.getValue("HOME") + "/.cache"
+            EnvironmentUtil.getValue("HOME")?.let { "$it/.cache" }
 
           OsFamily.MACOS ->
-            EnvironmentUtil.getValue("HOME") + "/Library/Caches"
+            EnvironmentUtil.getValue("HOME")?.let { "$it/Library/Caches" }
         }
       }
     val file = File(path, subfolder)

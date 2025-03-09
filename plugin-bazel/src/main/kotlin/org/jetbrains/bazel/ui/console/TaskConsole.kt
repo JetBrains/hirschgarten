@@ -23,6 +23,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.action.SuspendableAction
+import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.BspPluginIcons
 import org.jetbrains.bazel.sync.status.SyncStatusListener
@@ -40,7 +41,6 @@ private val log = logger<TaskConsole>()
 abstract class TaskConsole(
   private val taskView: BuildProgressListener,
   private val basePath: String,
-  private val buildToolName: String,
   private val project: Project,
 ) {
   protected val tasksInProgress: MutableList<Any> = mutableListOf()
@@ -69,7 +69,7 @@ abstract class TaskConsole(
       tasksInProgress.add(taskId)
       doStartTask(
         taskId,
-        BspPluginBundle.message("console.tasks.title", buildToolName, title),
+        BspPluginBundle.message("console.tasks.title", BazelPluginConstants.BAZEL_DISPLAY_NAME, title),
         message,
         cancelAction,
         redoAction,
@@ -392,9 +392,8 @@ abstract class TaskConsole(
 class SyncTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
-  buildToolName: String,
   project: Project,
-) : TaskConsole(taskView, basePath, buildToolName, project) {
+) : TaskConsole(taskView, basePath, project) {
   override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
     object : SuspendableAction({ BspPluginBundle.message("resync.action.text") }, BspPluginIcons.reload) {
       override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
@@ -410,9 +409,8 @@ class SyncTaskConsole(
 class BuildTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
-  buildToolName: String,
   project: Project,
-) : TaskConsole(taskView, basePath, buildToolName, project) {
+) : TaskConsole(taskView, basePath, project) {
   override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
     object : SuspendableAction({ BspPluginBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
       override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
@@ -429,4 +427,4 @@ class BuildTaskConsole(
 
 fun Project.isBuildInProgress() =
   CompilerManager.getInstance(this).isCompilationActive ||
-    BspConsoleService.getInstance(this).bspBuildConsole.hasTasksInProgress()
+    ConsoleService.getInstance(this).buildConsole.hasTasksInProgress()

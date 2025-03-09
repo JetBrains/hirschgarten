@@ -3,10 +3,12 @@
 package org.jetbrains.bazel.workspace
 
 import com.intellij.ide.impl.isTrusted
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectLocator
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent
@@ -32,20 +34,20 @@ import com.intellij.workspaceModel.ide.toPath
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.isBspProject
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.status.BspSyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
+import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.isSourceFile
 import org.jetbrains.bazel.utils.safeCastToURI
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bazel.workspacemodel.entities.BspDummyEntitySource
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
@@ -77,7 +79,7 @@ class AssignFileToModuleListener : BulkFileListener {
         return
       } ?: pendingEvents.put(this, mutableListOf(event))
     }
-    BspCoroutineService.getInstance(this).start {
+    BazelCoroutineService.getInstance(this).start {
       delay(PROCESSING_DELAY)
       synchronized(pendingEvents) { pendingEvents.remove(this)?.singleOrNull() }?.process(this)
     }
@@ -119,7 +121,7 @@ private fun VirtualFile.getRelatedProjects(): List<Project> {
   }
 }
 
-private fun Project.doWeCareAboutIt(): Boolean = this.isBspProject && this.isTrusted()
+private fun Project.doWeCareAboutIt(): Boolean = this.isBazelProject && this.isTrusted()
 
 private fun VFileEvent.process(project: Project) {
   val workspaceModel = WorkspaceModel.getInstance(project)
@@ -158,7 +160,7 @@ private fun VFileEvent.process(project: Project) {
 }
 
 private fun runInBackgroundWithProgress(project: Project, action: suspend () -> Unit): Job =
-  BspCoroutineService.getInstance(project).start {
+  BazelCoroutineService.getInstance(project).start {
     withBackgroundProgress(project, BazelPluginBundle.message("file.change.processing.title")) {
       action()
     }
@@ -172,10 +174,12 @@ private suspend fun processFileCreated(
   storage: ImmutableEntityStorage,
   moduleNameProvider: TargetNameReformatProvider,
 ) {
+  val existingModule = readAction { ProjectFileIndex.getInstance(project).getModuleForFile(newFile) }
+  if (existingModule != null && existingModule.moduleEntity?.entitySource != BspDummyEntitySource) return
+
   val url = newFile.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   val uri = url.toPath().toUri()
   queryTargetsForFile(project, url)
-    ?.map { it.label() }
     ?.let { targets ->
       val modules = targets.mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
       modules.forEach { url.addToModule(workspaceModel, it, newFile.extension) }
@@ -206,7 +210,7 @@ private suspend fun processFileRemoved(
   project.targetUtils.removeFileToTargetIdEntry(oldUri)
 }
 
-private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<BuildTargetIdentifier>? =
+private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<Label>? =
   if (!BspSyncStatusService.getInstance(project).isSyncInProgress) {
     try {
       askForInverseSources(project, fileUrl)

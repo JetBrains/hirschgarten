@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class CppOptionsParams(val targets: List<BuildTargetIdentifier>)
+import org.jetbrains.bazel.label.Label
+
+data class CppOptionsParams(val targets: List<Label>)

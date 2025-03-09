@@ -5,17 +5,19 @@ import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.util.io.findOrCreateFile
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.util.io.delete
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingService
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
+import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
 
 private const val TEST_LINE_PREFIX = "There are 39 characters in this string "
@@ -30,6 +32,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     val virtualFileManager = VirtualFileManager.getInstance()
     project.rootDir = virtualFileManager.findFileByNioPath(Path(project.basePath!!))!!
     filter = BazelBuildTargetConsoleFilter(project)
+    BazelRepoMappingService.getInstance(project).canonicalRepoNameToPath = mapOf("" to project.rootDir.toNioPath())
   }
 
   @Test
@@ -84,24 +87,56 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   }
 
   @Test
-  fun `should not match an external target with @`() {
+  fun `should match an external target with @@`() {
     // given
-    createBazelFileInProject("plugin-bazel/src")
-    val bazelTarget = "@external//plugin-bazel/src:test_fixtures"
+    val externalRootDir = createTempDirectory("externalRepo")
+    val path = createBazelFile(externalRootDir, "plugin-bazel/src")
+    val bazelTarget = "@@externalRepo//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
+    BazelRepoMappingService.getInstance(project).canonicalRepoNameToPath =
+      mapOf("externalRepo" to externalRootDir, "" to project.rootDir.toNioPath())
 
     // when
     val result = filter.applyFilter(line, line.length + 100)
 
     // then
-    result!!.resultItems.size shouldBe 0
+    result!!.resultItems.size shouldBe 1
+    (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile?.toNioPath().toString() shouldContain path.toString()
+    result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
+    result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
+
+    externalRootDir.delete(true)
   }
 
   @Test
-  fun `should not match an external target with @@`() {
+  fun `should match an external target with @`() {
+    // given
+    val externalRootDir = createTempDirectory("externalRepo2")
+    val path = createBazelFile(externalRootDir, "plugin-bazel/src")
+    val bazelTarget = "@externalRepo2//plugin-bazel/src:test_fixtures"
+    val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
+
+    BazelRepoMappingService.getInstance(project).canonicalRepoNameToPath =
+      mapOf("externalRepo2+" to externalRootDir, "" to project.rootDir.toNioPath())
+    BazelRepoMappingService.getInstance(project).apparentRepoNameToCanonicalName = mapOf("externalRepo2" to "externalRepo2+")
+
+    // when
+    val result = filter.applyFilter(line, line.length + 100)
+
+    // then
+    result!!.resultItems.size shouldBe 1
+    (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo).virtualFile?.toNioPath().toString() shouldContain path.toString()
+    result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
+    result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
+
+    externalRootDir.delete(true)
+  }
+
+  @Test
+  fun `should not match an external target which does not exist `() {
     // given
     createBazelFileInProject("plugin-bazel/src")
-    val bazelTarget = "@@external//plugin-bazel/src:test_fixtures"
+    val bazelTarget = "@@externalRepo3//plugin-bazel/src:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
@@ -129,7 +164,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   fun `should match top level build files`() {
     // given
     createBazelFileInProject(".")
-    val bazelTarget = "//:format"
+    val bazelTarget = "//:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
@@ -164,7 +199,7 @@ class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
     // given
     createBazelFileInProject(".", "BUILD.bazel")
     createBazelFileInProject(".", "BUILD")
-    val bazelTarget = "//:format"
+    val bazelTarget = "//:test_fixtures"
     val line = "$TEST_LINE_PREFIX$bazelTarget$TEST_LINE_SUFFIX"
 
     // when
@@ -198,7 +233,7 @@ proto_library(
     result!!.resultItems.size shouldBe 1
     val hyperLink = (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo)
     hyperLink.virtualFile?.toNioPath().toString() shouldContain "plugin-bazel"
-    hyperLink.descriptor?.offset shouldBe 16
+    hyperLink.descriptor?.offset shouldBe 1
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
   }
@@ -217,10 +252,13 @@ proto_library(
     result!!.resultItems.size shouldBe 0
   }
 
-  private fun createBazelFileInProject(relativePath: String, buildFileName: String = "BUILD"): Path =
+  private fun createBazelFile(
+    rootDir: Path,
+    relativePath: String,
+    buildFileName: String = "BUILD",
+  ): Path =
     runWriteAction {
-      project.rootDir
-        .toNioPath()
+      rootDir
         .resolve(relativePath)
         .createDirectories()
         .resolve(buildFileName)
@@ -229,4 +267,7 @@ proto_library(
           it.writeText(testBazelFileContent)
         }.also { LocalFileSystem.getInstance().refreshAndFindFileByNioFile(it) }
     }
+
+  private fun createBazelFileInProject(relativePath: String, buildFileName: String = "BUILD"): Path =
+    createBazelFile(project.rootDir.toNioPath(), relativePath, buildFileName)
 }

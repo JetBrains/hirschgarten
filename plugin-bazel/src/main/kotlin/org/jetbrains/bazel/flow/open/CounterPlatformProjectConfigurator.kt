@@ -9,8 +9,8 @@ import com.intellij.platform.DirectoryProjectConfigurator
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.impl.WorkspaceModelInternal
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
-import org.jetbrains.bazel.config.isBspProject
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 
 /**
  * Clean up any modules showing up due to the platform hack
@@ -25,13 +25,13 @@ class CounterPlatformProjectConfigurator : DirectoryProjectConfigurator {
   ) = configureProject(project)
 
   fun configureProject(project: Project) {
-    if (!project.isBspProject) return
+    if (!project.isBazelProject) return
 
     val workspaceModel = WorkspaceModel.getInstance(project) as WorkspaceModelInternal
     val fakeModules =
       workspaceModel.entityStorage.current.entities(ModuleEntity::class.java)
 
-    BspCoroutineService.getInstance(project).start {
+    BazelCoroutineService.getInstance(project).start {
       writeAction {
         workspaceModel.updateProjectModel("Counter platform fake modules") {
           fakeModules.forEach { fakeModule -> it.removeEntity(fakeModule) }

@@ -7,6 +7,8 @@ import io.kotest.matchers.string.shouldEndWith
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.install.Install
+import org.jetbrains.bazel.install.cli.CliOptions
+import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -17,22 +19,20 @@ import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.seconds
 
 object NestedModulesTest : BazelBspTestBaseScenario() {
-  private val testClient = createBazelClient()
+  private val testClient = createTestkitClient()
 
   @JvmStatic
   fun main(args: Array<String>) = executeScenario()
 
   override fun installServer() {
-    Install.main(
-      arrayOf(
-        "-d",
-        workspaceDir,
-        "-b",
-        bazelBinary,
-        "-t",
-        "@//...",
-        "-t",
-        "@inner//...",
+    Install.runInstall(
+      CliOptions(
+        workspaceDir = Path(workspaceDir),
+        projectViewCliOptions =
+          ProjectViewCliOptions(
+            bazelBinary = Path(bazelBinary),
+            targets = listOf("@//...", "@inner//..."),
+          ),
       ),
     )
   }
@@ -55,7 +55,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
         val targetsResult = session.server.workspaceBuildTargets()
 
         targetsResult.targets.size shouldBe 4
-        targetsResult.targets.map { Label.parse(it.id.uri) } shouldContainExactlyInAnyOrder
+        targetsResult.targets.map { it.id } shouldContainExactlyInAnyOrder
           listOf(
             Label.parse("@@inner+//:lib_inner"),
             Label.parse("@@inner+//:bin_inner"),

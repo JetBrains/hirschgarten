@@ -2,23 +2,23 @@ package org.jetbrains.bazel.workspacemodel.entities
 
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import java.nio.file.Path
 
 data class BuildTargetInfo(
-  val id: BuildTargetIdentifier,
+  val id: Label,
   val displayName: String? = null,
-  val dependencies: List<BuildTargetIdentifier> = emptyList(),
+  val dependencies: List<Label> = emptyList(),
   val capabilities: ModuleCapabilities = ModuleCapabilities(),
   val tags: List<String> = emptyList(),
   val languageIds: LanguageIds = emptyList(),
   val baseDirectory: String? = null,
 ) {
-  val buildTargetName: String = this.displayName ?: this.id.uri
+  val buildTargetName: String = this.displayName ?: this.id.toShortString()
 }
 
 fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
@@ -34,17 +34,13 @@ fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
 
 abstract class WorkspaceModelEntity
 
-data class ContentRoot(val path: Path, val excludedPaths: List<Path> = ArrayList()) : WorkspaceModelEntity()
+data class ContentRoot(val path: Path) : WorkspaceModelEntity()
 
 interface ResourceRootEntity
 
 interface EntityDependency
 
-data class GenericSourceRoot(
-  val sourcePath: Path,
-  val rootType: SourceRootTypeId,
-  val excludedPaths: List<Path> = ArrayList(),
-) : WorkspaceModelEntity()
+data class GenericSourceRoot(val sourcePath: Path, val rootType: SourceRootTypeId) : WorkspaceModelEntity()
 
 data class ResourceRoot(val resourcePath: Path, val rootType: SourceRootTypeId) :
   WorkspaceModelEntity(),

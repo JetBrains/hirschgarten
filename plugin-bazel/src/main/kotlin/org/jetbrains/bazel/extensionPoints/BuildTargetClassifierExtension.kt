@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.extensionPoints
 
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
@@ -55,17 +54,16 @@ object DefaultBuildTargetClassifierExtension : BuildTargetClassifierExtension {
 
   override fun calculateBuildTargetPath(buildTargetInfo: BuildTargetInfo): List<String> = emptyList()
 
-  override fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String = buildTargetInfo.id.uri
+  override fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String = buildTargetInfo.id.toShortString()
 }
 
 object BazelBuildTargetClassifier : BuildTargetClassifierExtension {
   override val separator: String = "/"
 
   override fun calculateBuildTargetPath(buildTargetInfo: BuildTargetInfo): List<String> =
-    Label
-      .parse(buildTargetInfo.id.uri)
+    buildTargetInfo.id
       .let { listOf((it as? ResolvedLabel)?.repoName.orEmpty()) + it.packagePath.pathSegments }
       .filter { pathSegment -> pathSegment.isNotEmpty() }
 
-  override fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String = Label.parse(buildTargetInfo.id.uri).targetName
+  override fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String = buildTargetInfo.id.targetName
 }

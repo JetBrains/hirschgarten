@@ -2,9 +2,9 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -15,7 +15,7 @@ import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.minutes
 
 object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
-  private val testClient = createBazelClient()
+  private val testClient = createTestkitClient()
   private val bazelBinResolved = testClient.transformJson(bazelBinDirectory)
   private val mainJar = URI.create("$bazelBinResolved/src/libmain.jar").toPath()
   private val genruleShouldNotBeBuilt = URI.create("$bazelBinResolved/src/should_not_be_built.txt").toPath()
@@ -66,7 +66,7 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
 
     val srcMainBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//src:main"),
+        Label.parse("$targetPrefix//src:main"),
         listOf("library"),
         listOf("java"),
         emptyList(),
@@ -76,7 +76,7 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
           canRun = false,
           canDebug = false,
         ),
-        displayName = "$targetPrefix//src:main",
+        displayName = "//src:main",
         baseDirectory = "file://\$WORKSPACE/src/",
         data = exampleExampleJvmBuildTarget,
       )

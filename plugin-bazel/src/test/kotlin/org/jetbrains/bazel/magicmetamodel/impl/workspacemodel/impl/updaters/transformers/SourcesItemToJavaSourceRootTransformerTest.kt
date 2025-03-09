@@ -3,10 +3,10 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
@@ -44,14 +44,14 @@ class SourcesItemToJavaSourceRootTransformerTest {
         "$rootDir/example/package/File.java",
         SourceItemKind.FILE,
         false,
+        jvmPackagePrefix = "example.package",
       )
-    val sourceRoots = listOf(rootDir)
 
     val buildTargetAndSourceItem =
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -59,9 +59,8 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem),
-            roots = sourceRoots,
           ),
       )
 
@@ -89,14 +88,14 @@ class SourcesItemToJavaSourceRootTransformerTest {
         "$rootDir/example/package/File.java",
         SourceItemKind.FILE,
         false,
+        jvmPackagePrefix = "example.package",
       )
-    val sourceRoots = listOf(rootDir)
 
     val buildTargetAndSourceItem =
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("test"),
             listOf("java"),
             emptyList(),
@@ -104,9 +103,8 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem),
-            roots = sourceRoots,
           ),
       )
 
@@ -134,14 +132,14 @@ class SourcesItemToJavaSourceRootTransformerTest {
         "$rootDir/example/package/",
         SourceItemKind.DIRECTORY,
         false,
+        jvmPackagePrefix = "example.package",
       )
-    val sourceRoots = listOf(rootDir)
 
     val buildTargetAndSourceItem =
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -149,9 +147,8 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem),
-            roots = sourceRoots,
           ),
       )
 
@@ -181,30 +178,28 @@ class SourcesItemToJavaSourceRootTransformerTest {
         "$rootDir/example/package/File1.java",
         SourceItemKind.FILE,
         false,
+        jvmPackagePrefix = "example.package",
       )
     val sourceItem2 =
       SourceItem(
         "$rootDir/example/package/File2.java",
         SourceItemKind.FILE,
         false,
+        jvmPackagePrefix = "example.package",
       )
     val sourceItem3 =
       SourceItem(
         "$anotherRootDir/another/example/package/",
         SourceItemKind.DIRECTORY,
         false,
-      )
-    val sourceRoots =
-      listOf(
-        rootDir,
-        anotherRootDir,
+        jvmPackagePrefix = "another.example.package",
       )
 
     val buildTargetAndSourceItem =
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -212,9 +207,8 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem1, sourceItem2, sourceItem3),
-            roots = sourceRoots,
           ),
       )
 
@@ -257,30 +251,28 @@ class SourcesItemToJavaSourceRootTransformerTest {
         "$rootDir/example/package/File1.java",
         SourceItemKind.FILE,
         false,
+        jvmPackagePrefix = "example.package",
       )
     val sourceItem2 =
       SourceItem(
         "$rootDir/example/package/File2.java",
         SourceItemKind.FILE,
         false,
+        jvmPackagePrefix = "example.package",
       )
     val sourceItem3 =
       SourceItem(
         "$anotherRootDir/another/example/package/",
         SourceItemKind.DIRECTORY,
         false,
-      )
-    val sourceRoots =
-      listOf(
-        rootDir,
-        anotherRootDir,
+        jvmPackagePrefix = "another.example.package",
       )
 
     val buildTargetAndSourceItem1 =
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -288,16 +280,15 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem1),
-            roots = sourceRoots,
           ),
       )
     val buildTargetAndSourceItem2 =
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -305,9 +296,8 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem2, sourceItem3),
-            roots = sourceRoots,
           ),
       )
 
@@ -352,30 +342,28 @@ class SourcesItemToJavaSourceRootTransformerTest {
         "$rootDir/example/package/File1.java",
         SourceItemKind.FILE,
         false,
+        jvmPackagePrefix = "example.package",
       )
     val sourceItem2 =
       SourceItem(
         "$anotherRootDir/example/package/File2.java",
         SourceItemKind.FILE,
         false,
+        jvmPackagePrefix = "example.package",
       )
     val sourceItem3 =
       SourceItem(
         "$rootDir/another/example/package/",
         SourceItemKind.DIRECTORY,
         false,
-      )
-    val sourceRoots =
-      listOf(
-        rootDir,
-        anotherRootDir,
+        jvmPackagePrefix = "another.example.package",
       )
 
     val buildTargetAndSourceItem1 =
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -383,16 +371,15 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem1),
-            roots = sourceRoots,
           ),
       )
     val buildTargetAndSourceItem2 =
       BuildTargetAndSourceItem(
         buildTarget =
           BuildTarget(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf("library"),
             listOf("java"),
             emptyList(),
@@ -400,9 +387,8 @@ class SourcesItemToJavaSourceRootTransformerTest {
           ),
         sourcesItem =
           SourcesItem(
-            BuildTargetIdentifier("target"),
+            Label.parse("target"),
             listOf(sourceItem2, sourceItem3),
-            roots = sourceRoots,
           ),
       )
 

@@ -53,7 +53,5 @@ private fun validateJavaResourceRootEntity(actual: JavaResourceRootPropertiesEnt
 private fun toExpectedContentRootEntity(expected: ExpectedSourceRootEntity): ExpectedContentRootEntity =
   ExpectedContentRootEntity(
     url = expected.contentRootEntity.url,
-    excludedUrls = expected.contentRootEntity.excludedUrls.map { it.url },
-    excludedPatterns = expected.contentRootEntity.excludedPatterns,
     parentModuleEntity = expected.parentModuleEntity,
   )

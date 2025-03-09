@@ -1,7 +1,7 @@
 load("//:versions.bzl", "BENCHMARK_BUILD_NUMBER")
 load("//rules/testing:junit5.bzl", "kt_junit5_test")
 
-INTELLIJ_BAZEL_PLUGIN_ZIP = "plugin-bazel/intellij-bazel.zip"
+INTELLIJ_BAZEL_PLUGIN_ZIP = "plugin-bazel/plugin-bazel.zip"
 
 IDE_STARTER_DEPS = [
     "@maven//:com_jetbrains_intellij_tools_ide_metrics_collector",
@@ -20,7 +20,7 @@ def ide_starter_test(deps = [], jvm_flags = [], resources = [], **kwargs):
             "-Dbazel.ide.starter.test.bazel.plugin.zip=%s" % INTELLIJ_BAZEL_PLUGIN_ZIP,
         ],
         resources = resources + [
-            "//plugin-bazel:intellij-bazel_zip",
+            "//plugin-bazel:plugin-bazel_zip",
         ],
         **kwargs
     )

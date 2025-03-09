@@ -17,24 +17,21 @@ import com.jetbrains.python.run.PythonCommandLineState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.label
-import org.jetbrains.bazel.label.toBspIdentifier
-import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import java.net.ServerSocket
-import kotlin.String
 
 class PythonBspDebugRunner : PyDebugRunner() {
   override fun getRunnerId(): String = RUNNER_ID
 
   override fun canRun(executorId: String, profile: RunProfile): Boolean =
     executorId == DefaultDebugExecutor.EXECUTOR_ID &&
-      profile is BspRunConfiguration &&
-      profile.handler is PythonBspRunHandler &&
+      profile is BazelRunConfiguration &&
+      profile.handler is PythonBazelRunHandler &&
       profile.targets.size == 1 &&
       profile.project.basePath != null
 
@@ -56,8 +53,8 @@ class PythonBspDebugRunner : PyDebugRunner() {
     targetId: Label,
     onBuildComplete: () -> Unit,
   ) {
-    BspCoroutineService.getInstance(project).start {
-      runBuildTargetTask(listOf(targetId.toBspIdentifier()), project)
+    BazelCoroutineService.getInstance(project).start {
+      runBuildTargetTask(listOf(targetId), project)
       withContext(Dispatchers.EDT) {
         onBuildComplete()
       }
@@ -79,8 +76,8 @@ class PythonBspDebugRunner : PyDebugRunner() {
 
   private fun PyDebugProcess.withPositionConverter(): PyDebugProcess =
     also {
-      val targetId = (session.runProfile as BspRunConfiguration).targets.single() // canRun(...) checks that, should never fail
-      it.positionConverter = BazelPyDebugPositionConverter(session.project, targetId.label())
+      val targetId = (session.runProfile as BazelRunConfiguration).targets.single() // canRun(...) checks that, should never fail
+      it.positionConverter = BazelPyDebugPositionConverter(session.project, targetId)
     }
 
   companion object {

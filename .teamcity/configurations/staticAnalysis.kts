@@ -53,8 +53,7 @@ open class Analyze(
                 rm -rf %system.agent.persistent.cache%/plugins 
                 mkdir %system.agent.persistent.cache%/plugins
                 
-                unzip %system.teamcity.build.checkoutDir%/tc-artifacts/intellij-bazel-$platform.zip -d %system.agent.persistent.cache%/plugins
-                # unzip %system.teamcity.build.checkoutDir%/tc-artifacts/intellij-bsp-$platform.zip -d %system.agent.persistent.cache%/plugins
+                unzip %system.teamcity.build.checkoutDir%/tc-artifacts/plugin-bazel-$platform.zip -d %system.agent.persistent.cache%/plugins
             """.trimIndent()
         }
         if (repo != null) {
@@ -102,8 +101,7 @@ open class Analyze(
                 image = "$linterImage:$platformDot-nightly"
             }
             additionalDockerArguments = """
-                -v %system.agent.persistent.cache%/plugins/intellij-bazel:/opt/idea/custom-plugins/intellij-bazel
-                -v %system.agent.persistent.cache%/plugins/intellij-bsp:/opt/idea/custom-plugins/intellij-bsp
+                -v %system.agent.persistent.cache%/plugins/plugin-bazel:/opt/idea/custom-plugins/plugin-bazel
                 -v %system.agent.persistent.cache%/.netrc:/root/.netrc
                 ${if (repo != null) {"-v %system.agent.persistent.cache%/$repo/qodana.yaml:%system.agent.persistent.cache%/$repo/qodana.yaml"} else {""}}
                 ${if (repo != null) {"-e QODANA_REMOTE_URL=\"%env.GIT_REPO_URL%\""} else {""}}

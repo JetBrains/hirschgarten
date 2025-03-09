@@ -89,6 +89,10 @@ abstract class IdeStarterBaseProjectTest {
 
   fun configureProjectBeforeUse(context: IDETestContext) {
     runBazelClean(context)
+    configureProjectBeforeUseWithoutBazelClean(context)
+  }
+
+  fun configureProjectBeforeUseWithoutBazelClean(context: IDETestContext) {
     (context.resolvedProjectHome / ".idea").deleteRecursively()
     (context.resolvedProjectHome / ".bazelbsp").deleteRecursively()
     (context.resolvedProjectHome / "build.gradle").deleteIfExists()

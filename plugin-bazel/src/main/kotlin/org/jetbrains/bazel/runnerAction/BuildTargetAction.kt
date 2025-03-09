@@ -5,11 +5,11 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 
-class BuildTargetAction(private val targetId: BuildTargetIdentifier) :
+class BuildTargetAction(private val targetId: Label) :
   SuspendableAction(
     text = { BspPluginBundle.message("widget.build.target.popup.message") },
     icon = AllIcons.Toolwindows.ToolWindowBuild,
@@ -19,8 +19,8 @@ class BuildTargetAction(private val targetId: BuildTargetIdentifier) :
   }
 
   companion object {
-    fun buildTarget(project: Project, targetId: BuildTargetIdentifier) {
-      BspCoroutineService.getInstance(project).start {
+    fun buildTarget(project: Project, targetId: Label) {
+      BazelCoroutineService.getInstance(project).start {
         runBuildTargetTask(listOf(targetId), project)
       }
     }

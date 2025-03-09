@@ -13,6 +13,7 @@ kt_jvm_library(
     ],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/utils",
+        "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/bazelrunner:params",
         "//server/executioncontext/api",
         "//server/executioncontext/projectview:generator",
@@ -21,6 +22,5 @@ kt_jvm_library(
         "@maven//:commons_io_commons_io",
         "@maven//:org_apache_logging_log4j_log4j_api",
         "@maven//:org_apache_logging_log4j_log4j_core",
-        "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

@@ -41,7 +41,6 @@ class ProjectResolver(
   private val bazelRunner: BazelRunner,
   private val bazelPathsResolver: BazelPathsResolver,
   private val bspClientLogger: BspClientLogger,
-  private val featureFlags: FeatureFlags,
 ) {
   private suspend fun <T> measured(description: String, f: suspend () -> T): T = bspTracer.spanBuilder(description).useWithScope { f() }
 
@@ -54,16 +53,17 @@ class ProjectResolver(
       val workspaceContext =
         measured(
           "Reading project view and creating workspace context",
-          workspaceContextProvider::currentWorkspaceContext,
+          workspaceContextProvider::readWorkspaceContext,
         )
+      val featureFlags = workspaceContextProvider.currentFeatureFlags()
 
       val bazelExternalRulesetsQuery =
         BazelExternalRulesetsQueryImpl(
           bazelRunner,
           bazelInfo.isBzlModEnabled,
           bazelInfo.isWorkspaceEnabled,
-          workspaceContext.enabledRules,
           bspClientLogger,
+          workspaceContext,
         )
 
       val externalRulesetNames =
@@ -74,12 +74,19 @@ class ProjectResolver(
       val ruleLanguages =
         measured(
           "Mapping rule names to languages",
-        ) { bazelBspAspectsManager.calculateRulesetLanguages(externalRulesetNames, bazelInfo.externalAutoloads) }
+        ) {
+          bazelBspAspectsManager.calculateRulesetLanguages(
+            externalRulesetNames,
+            bazelInfo.externalAutoloads,
+            workspaceContext,
+            featureFlags,
+          )
+        }
 
       val toolchains =
         measured(
           "Mapping languages to toolchains",
-        ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it) } }
+        ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it, workspaceContext, featureFlags) } }
 
       val repoMapping =
         measured("Calculating external repository mapping") {
@@ -87,7 +94,14 @@ class ProjectResolver(
         }
 
       measured("Realizing language aspect files from templates") {
-        bazelBspAspectsManager.generateAspectsFromTemplates(ruleLanguages, workspaceContext, toolchains, bazelInfo.release, repoMapping)
+        bazelBspAspectsManager.generateAspectsFromTemplates(
+          ruleLanguages,
+          workspaceContext,
+          toolchains,
+          bazelInfo.release,
+          repoMapping,
+          featureFlags,
+        )
       }
 
       measured("Generating language extensions file") {
@@ -101,7 +115,7 @@ class ProjectResolver(
       val buildAspectResult =
         measured(
           "Building project with aspect",
-        ) { buildProjectWithAspect(workspaceContext, build, targetsToSync, featureFlags, firstPhaseProject) }
+        ) { buildProjectWithAspect(workspaceContext, featureFlags, build, targetsToSync, firstPhaseProject) }
 
       val aspectOutputs =
         measured(
@@ -142,19 +156,20 @@ class ProjectResolver(
           bazelLabelExpander
             .getAllPossibleTargets(
               targetsToSync,
+              workspaceContext,
             ).map { it.assumeResolved().canonicalize(repoMapping) }
             .toSet()
         }
       return@useWithScope measured(
         "Mapping to internal model",
-      ) { bazelProjectMapper.createProject(targets, rootTargets, workspaceContext, bazelInfo, repoMapping) }
+      ) { bazelProjectMapper.createProject(targets, rootTargets, workspaceContext, featureFlags, bazelInfo, repoMapping) }
     }
 
   private suspend fun buildProjectWithAspect(
     workspaceContext: WorkspaceContext,
+    featureFlags: FeatureFlags,
     build: Boolean,
     targetsToSync: TargetsSpec,
-    featureFlags: FeatureFlags,
     firstPhaseProject: FirstPhaseProject?,
   ): BazelBspAspectsManagerResult =
     coroutineScope {
@@ -169,9 +184,8 @@ class ProjectResolver(
               targetsSpec = targetsToSync,
               aspect = ASPECT_NAME,
               outputGroups = outputGroups,
-              shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
-              isRustEnabled = featureFlags.isRustSupportEnabled,
               shouldLogInvocation = false,
+              workspaceContext = workspaceContext,
             ).also {
               if (it.status == BazelStatus.OOM_ERROR) {
                 bspClientLogger.warn(
@@ -188,9 +202,9 @@ class ProjectResolver(
             BazelBuildTargetSharder.expandAndShardTargets(
               bazelPathsResolver,
               bazelInfo,
-              featureFlags,
               targetsToSync,
               workspaceContext,
+              featureFlags,
               bazelRunner,
               bspClientLogger,
               firstPhaseProject,
@@ -205,7 +219,7 @@ class ProjectResolver(
               // Prevent memory leak by forcing Bazel to shut down before it builds a shard
               // This may cause the build to become slower, but it is necessary, at least before this issue is solved
               // https://github.com/bazelbuild/bazel/issues/19412
-              runBazelShutDown()
+              runBazelShutDown(workspaceContext)
             }
             val shardedTargetsSpec = remainingShardedTargetsSpecs.removeFirst()
             val shardName = "shard $shardNumber of ${shardNumber + remainingShardedTargetsSpecs.size}"
@@ -217,9 +231,8 @@ class ProjectResolver(
                   targetsSpec = shardedTargetsSpec,
                   aspect = ASPECT_NAME,
                   outputGroups = outputGroups,
-                  shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
-                  isRustEnabled = featureFlags.isRustSupportEnabled,
                   shouldLogInvocation = false,
+                  workspaceContext = workspaceContext,
                 )
             if (result.isFailure) {
               bspClientLogger.warn("Failed to build $shardName")
@@ -260,10 +273,10 @@ class ProjectResolver(
       return@coroutineScope res
     }
 
-  private suspend fun runBazelShutDown() {
+  private suspend fun runBazelShutDown(workspaceContext: WorkspaceContext) {
     bazelRunner.run {
       val command =
-        buildBazelCommand {
+        buildBazelCommand(workspaceContext) {
           shutDown()
         }
       runBazelCommand(command, serverPidFuture = null)

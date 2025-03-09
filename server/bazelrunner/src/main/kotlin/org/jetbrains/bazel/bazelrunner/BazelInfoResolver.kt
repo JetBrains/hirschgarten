@@ -3,6 +3,7 @@ package org.jetbrains.bazel.bazelrunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.bazelrunner.utils.orLatestSupported
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import java.nio.file.Paths
 
 private const val RELEASE = "release"
@@ -13,11 +14,9 @@ private const val BAZEL_BIN = "bazel-bin"
 private const val STARLARK_SEMANTICS = "starlark-semantics"
 
 class BazelInfoResolver(private val bazelRunner: BazelRunner) {
-  suspend fun resolveBazelInfo(): BazelInfo = bazelInfoFromBazel()
-
-  private suspend fun bazelInfoFromBazel(): BazelInfo {
+  suspend fun resolveBazelInfo(workspaceContext: WorkspaceContext): BazelInfo {
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(workspaceContext) {
         info {
           options.addAll(listOf(RELEASE, EXECUTION_ROOT, OUTPUT_BASE, WORKSPACE, BAZEL_BIN, STARLARK_SEMANTICS))
         }

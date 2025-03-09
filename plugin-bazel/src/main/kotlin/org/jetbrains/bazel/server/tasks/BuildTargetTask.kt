@@ -15,13 +15,13 @@ import kotlinx.coroutines.coroutineScope
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.coroutines.BspCoroutineService
-import org.jetbrains.bazel.taskEvents.BspTaskEventsService
-import org.jetbrains.bazel.taskEvents.BspTaskListener
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
-import org.jetbrains.bazel.ui.console.BspConsoleService
+import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileReport
 import org.jetbrains.bsp.protocol.CompileResult
@@ -33,13 +33,13 @@ import java.util.UUID
 public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<CompileResult>("build targets", project) {
   private val log = logger<BuildTargetTask>()
 
-  protected override suspend fun executeWithServer(server: JoinedBuildServer, targetsIds: List<BuildTargetIdentifier>): CompileResult =
+  protected override suspend fun executeWithServer(server: JoinedBuildServer, targetsIds: List<Label>): CompileResult =
     coroutineScope {
-      val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
+      val bspBuildConsole = ConsoleService.getInstance(project).buildConsole
       val originId = "build-" + UUID.randomUUID().toString()
 
       val taskListener =
-        object : BspTaskListener {
+        object : BazelTaskListener {
           override fun onTaskStart(
             taskId: TaskId,
             parentId: TaskId?,
@@ -85,7 +85,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
 
           override fun onDiagnostic(
             textDocument: String,
-            buildTarget: String,
+            buildTarget: Label,
             line: Int,
             character: Int,
             severity: MessageEvent.Kind,
@@ -106,7 +106,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
           }
         }
 
-      BspTaskEventsService.getInstance(project).saveListener(originId, taskListener)
+      BazelTaskEventsService.getInstance(project).saveListener(originId, taskListener)
 
       startBuildConsoleTask(targetsIds, bspBuildConsole, originId, this)
       val compileParams = createCompileParams(targetsIds, originId)
@@ -115,12 +115,12 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
         val buildDeferred = async { server.buildTargetCompile(compileParams) }
         return@coroutineScope BspTaskStatusLogger(buildDeferred, bspBuildConsole, originId) { statusCode }.getResult()
       } finally {
-        BspTaskEventsService.getInstance(project).removeListener(originId)
+        BazelTaskEventsService.getInstance(project).removeListener(originId)
       }
     }
 
   private fun startBuildConsoleTask(
-    targetIds: List<BuildTargetIdentifier>,
+    targetIds: List<Label>,
     bspBuildConsole: TaskConsole,
     originId: String,
     cs: CoroutineScope,
@@ -132,22 +132,22 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
       title = BspPluginBundle.message("console.task.build.title"),
       message = startBuildMessage,
       cancelAction = { cs.cancel() },
-      redoAction = { BspCoroutineService.getInstance(project).start { runBuildTargetTask(targetIds, project) } },
+      redoAction = { BazelCoroutineService.getInstance(project).start { runBuildTargetTask(targetIds, project) } },
     )
   }
 
-  private fun calculateStartBuildMessage(targetIds: List<BuildTargetIdentifier>): String =
+  private fun calculateStartBuildMessage(targetIds: List<Label>): String =
     when (targetIds.size) {
       0 -> BspPluginBundle.message("console.task.build.no.targets")
-      1 -> BspPluginBundle.message("console.task.build.in.progress.one", targetIds.first().uri)
+      1 -> BspPluginBundle.message("console.task.build.in.progress.one", targetIds.first().toShortString())
       else -> BspPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
     }
 
-  private fun createCompileParams(targetIds: List<BuildTargetIdentifier>, originId: String) =
+  private fun createCompileParams(targetIds: List<Label>, originId: String) =
     CompileParams(targetIds, originId = originId, arguments = listOf("--keep_going"))
 }
 
-public suspend fun runBuildTargetTask(targetIds: List<BuildTargetIdentifier>, project: Project): CompileResult? {
+public suspend fun runBuildTargetTask(targetIds: List<Label>, project: Project): CompileResult? {
   saveAllFiles()
   return withBackgroundProgress(project, "Building target(s)...") {
     BuildTargetTask(project).connectAndExecute(targetIds)

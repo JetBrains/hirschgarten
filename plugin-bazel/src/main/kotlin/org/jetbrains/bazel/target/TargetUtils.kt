@@ -22,16 +22,15 @@ import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.magicmetamodel.orDefault
+import org.jetbrains.bazel.utils.removeTrailingSlash
 import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.LibraryItem
 import java.net.URI
@@ -84,22 +83,22 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   @ApiStatus.Internal
   suspend fun saveTargets(
-    targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>,
-    targetIdToModuleEntity: Map<BuildTargetIdentifier, Module>,
-    targetIdToModuleDetails: Map<BuildTargetIdentifier, ModuleDetails>,
+    targetIdToTargetInfo: Map<Label, BuildTargetInfo>,
+    targetIdToModuleEntity: Map<Label, List<Module>>,
+    targetIdToModuleDetails: Map<Label, ModuleDetails>,
     libraryItems: List<LibraryItem>?,
     libraryModules: List<JavaModule>,
     nameProvider: TargetNameReformatProvider,
   ) {
-    this.labelToTargetInfo = targetIdToTargetInfo.mapKeys { it.key.label() }
+    this.labelToTargetInfo = targetIdToTargetInfo.mapKeys { it.key }
     moduleIdToTarget =
-      targetIdToModuleEntity.entries.associate { (targetId, module) ->
-        module.getModuleName() to targetId.label()
+      targetIdToModuleEntity.entries.associate { (targetId, modules) ->
+        modules.first().getModuleName() to targetId
       }
     libraryIdToTarget =
       libraryItems
         ?.associate { library ->
-          nameProvider.invoke(BuildTargetInfo(id = library.id)) to library.id.label()
+          nameProvider.invoke(BuildTargetInfo(id = library.id)) to library.id
         }.orEmpty()
 
     fileToTarget =
@@ -114,10 +113,8 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   private fun ModuleDetails.toPairsUrlToId(): List<Pair<URI, Label>> =
     sources.flatMap { sources ->
-      sources.sources.mapNotNull { it.uri.processUriString().safeCastToURI() }.map { it to target.id.label() }
+      sources.sources.mapNotNull { it.uri.removeTrailingSlash().safeCastToURI() }.map { it to target.id }
     }
-
-  private fun String.processUriString() = this.trimEnd('/')
 
   private suspend fun calculateFileToExecutableTargets(libraryItems: List<LibraryItem>?): Map<URI, List<Label>> =
     withContext(Dispatchers.Default) {
@@ -181,7 +178,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   fun getTargetsForURI(uri: URI): List<Label> = fileToTarget[uri] ?: emptyList()
 
   fun getTargetsForFile(file: VirtualFile): List<Label> =
-    fileToTarget[file.url.processUriString().safeCastToURI()]
+    fileToTarget[file.url.removeTrailingSlash().safeCastToURI()]
       ?: getTargetsFromAncestorsForFile(file)
 
   @ApiStatus.Internal
@@ -189,7 +186,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     val executableDirectTargets =
       getTargetsForFile(file).filter { label -> labelToTargetInfo[label]?.capabilities?.isExecutable() == true }
     if (executableDirectTargets.isEmpty()) {
-      return fileToExecutableTargets.getOrDefault(file.url.processUriString().safeCastToURI(), emptySet()).toList()
+      return fileToExecutableTargets.getOrDefault(file.url.removeTrailingSlash().safeCastToURI(), emptySet()).toList()
     }
     return executableDirectTargets
   }
@@ -199,7 +196,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       val rootDir = project.rootDir
       var iter = file.parent
       while (iter != null && VfsUtil.isAncestor(rootDir, iter, false)) {
-        val key = iter.url.processUriString().safeCastToURI()
+        val key = iter.url.removeTrailingSlash().safeCastToURI()
         if (key in fileToTarget) return fileToTarget[key]!!
         iter = iter.parent
       }

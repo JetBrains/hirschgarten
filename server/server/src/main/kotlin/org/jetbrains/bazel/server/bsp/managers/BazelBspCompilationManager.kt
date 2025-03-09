@@ -8,6 +8,7 @@ import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import java.nio.file.Path
 
@@ -25,6 +26,7 @@ class BazelBspCompilationManager(
     originId: String? = null,
     environment: List<Pair<String, String>> = emptyList(),
     shouldLogInvocation: Boolean,
+    workspaceContext: WorkspaceContext,
   ): BepBuildResult {
     val diagnosticsService = DiagnosticsService(workspaceRoot)
     val bepServer = BepServer(client, diagnosticsService, originId, bazelPathsResolver)
@@ -36,7 +38,7 @@ class BazelBspCompilationManager(
             bepReader.start()
           }
         val command =
-          bazelRunner.buildBazelCommand {
+          bazelRunner.buildBazelCommand(workspaceContext) {
             build {
               options.addAll(extraFlags)
               addTargetsFromSpec(targetsSpec)

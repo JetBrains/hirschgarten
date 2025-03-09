@@ -44,7 +44,10 @@ def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
     if not kotlinc_opts_dict.get("jvm_target") and getattr(kotlin_toolchain, "jvm_target", ""):
         kotlinc_opts_dict["jvm_target"] = getattr(kotlin_toolchain, "jvm_target")
 
-    stdlibs_files = kotlin_toolchain.jvm_stdlibs.compile_jars.to_list()
+    stdlibs_files = []
+    if hasattr(kotlin_toolchain, "jvm_stdlibs"):
+        stdlibs_files = kotlin_toolchain.jvm_stdlibs.compile_jars.to_list()
+
     stdlibs = map(file_location, stdlibs_files)
 
     # accumulate Kotlin compiler plugin info

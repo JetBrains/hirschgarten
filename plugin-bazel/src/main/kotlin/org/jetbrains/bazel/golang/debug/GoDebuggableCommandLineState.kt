@@ -13,12 +13,12 @@ import com.intellij.openapi.application.EDT
 import com.intellij.openapi.module.Module
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.coroutines.BspCoroutineService
-import org.jetbrains.bazel.run.BspProcessHandler
-import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.run.BazelProcessHandler
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.server.connection.connection
-import org.jetbrains.bazel.taskEvents.BspTaskEventsService
-import org.jetbrains.bazel.taskEvents.BspTaskListener
+import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
+import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 
@@ -41,19 +41,19 @@ abstract class GoDebuggableCommandLineState(
 
   override fun createBuildExecutor(): GoExecutor? = null
 
-  protected abstract fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener
+  protected abstract fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener
 
-  final override fun startProcess(): BspProcessHandler {
-    val configuration = environment.runProfile as BspRunConfiguration
+  final override fun startProcess(): BazelProcessHandler {
+    val configuration = environment.runProfile as BazelRunConfiguration
     val project = configuration.project
 
-    val bspCoroutineService = BspCoroutineService.getInstance(project)
+    val bazelCoroutineService = BazelCoroutineService.getInstance(project)
 
-    lateinit var handler: BspProcessHandler
+    lateinit var handler: BazelProcessHandler
     // We have to start runDeferred later, because we need to register the listener first
     // Otherwise, we might miss some events
     val runDeferred =
-      bspCoroutineService.startAsync(lazy = true) {
+      bazelCoroutineService.startAsync(lazy = true) {
         project.connection.runWithServer { server: JoinedBuildServer ->
           withContext(Dispatchers.EDT) {
             RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
@@ -62,7 +62,7 @@ abstract class GoDebuggableCommandLineState(
         }
       }
 
-    handler = BspProcessHandler(project, runDeferred)
+    handler = BazelProcessHandler(project, runDeferred)
 
     handler.addProcessListener(runtimeErrorsListener)
 
@@ -76,7 +76,7 @@ abstract class GoDebuggableCommandLineState(
 
     val runListener = createAndAddTaskListener(handler)
 
-    with(BspTaskEventsService.getInstance(project)) {
+    with(BazelTaskEventsService.getInstance(project)) {
       saveListener(originId, runListener)
       runDeferred.invokeOnCompletion {
         removeListener(originId)

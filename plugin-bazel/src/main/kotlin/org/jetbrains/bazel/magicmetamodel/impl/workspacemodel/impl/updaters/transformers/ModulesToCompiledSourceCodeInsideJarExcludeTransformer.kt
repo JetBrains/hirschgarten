@@ -1,24 +1,23 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.bazel.utils.removeTrailingSlash
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.Module
 import java.util.Locale
-import kotlin.io.path.name
 
 // https://youtrack.jetbrains.com/issue/BAZEL-1672
 class ModulesToCompiledSourceCodeInsideJarExcludeTransformer {
-  fun transform(modules: List<Module>): CompiledSourceCodeInsideJarExclude =
-    CompiledSourceCodeInsideJarExclude(calculateRelativePathsInsideJarToExclude(modules))
+  fun transform(moduleDetails: Collection<ModuleDetails>): CompiledSourceCodeInsideJarExclude =
+    CompiledSourceCodeInsideJarExclude(calculateRelativePathsInsideJarToExclude(moduleDetails))
 
-  private fun calculateRelativePathsInsideJarToExclude(modules: List<Module>): Set<String> =
-    modules
+  private fun calculateRelativePathsInsideJarToExclude(moduleDetails: Collection<ModuleDetails>): Set<String> =
+    moduleDetails
       .asSequence()
-      .filterIsInstance<JavaModule>()
-      .flatMap { javaModule -> javaModule.sourceRoots }
+      .flatMap { moduleDetails -> moduleDetails.sources }
+      .flatMap { sourcesItem -> sourcesItem.sources }
       .filterNot { sourceRoot -> sourceRoot.generated }
       .flatMap { sourceRoot ->
-        val sourceName = sourceRoot.sourcePath.name
+        val sourceName = sourceRoot.uri.removeTrailingSlash().substringAfterLast('/')
 
         val classNames =
           if (sourceName.endsWith(".java")) {
@@ -32,7 +31,7 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformer {
             return@flatMap emptyList<String>()
           }
 
-        val packagePrefix = sourceRoot.packagePrefix.replace(".", "/")
+        val packagePrefix = sourceRoot.jvmPackagePrefix?.replace(".", "/") ?: ""
 
         classNames.map { className ->
           if (packagePrefix.isNotEmpty()) "$packagePrefix/$className" else className

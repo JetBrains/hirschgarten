@@ -48,13 +48,12 @@ object GitHub : Project({
     sequential {
       // 1. Run formatter first
       buildType(ProjectFormat.GitHub)
-      // 2. Run build second
-      buildType(ProjectBuild.GitHub)
-      // 3. Run everything else in parallel
+      // 2. Run everything else in parallel
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
         onDependencyCancel = FailureAction.CANCEL
       }) {
+        buildType(ProjectBuild.GitHub)
         buildType(ProjectUnitTests.GitHub)
         buildType(PluginBenchmark.BenchmarkDefaultGitHub)
         buildType(PluginBenchmark.BenchmarkWithVersionGitHub)
@@ -159,13 +158,12 @@ object Space : Project({
     sequential {
       // 1. Run formatter first
       buildType(ProjectFormat.Space)
-      // 2. Run build second
-      buildType(ProjectBuild.Space)
-      // 3. Run everything else in parallel
+      // 2. Run everything else in parallel
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
         onDependencyCancel = FailureAction.CANCEL
       }) {
+        buildType(ProjectBuild.Space)
         buildType(ProjectUnitTests.Space)
         buildType(PluginBenchmark.SpaceBenchmarkDefault)
         buildType(PluginBenchmark.SpaceBenchmarkWithVersion)

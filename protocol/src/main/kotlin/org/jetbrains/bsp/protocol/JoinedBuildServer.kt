@@ -1,14 +1,6 @@
 package org.jetbrains.bsp.protocol
 
 interface JoinedBuildServer {
-  suspend fun buildInitialize(params: InitializeBuildParams)
-
-  suspend fun onBuildInitialized()
-
-  suspend fun buildShutdown()
-
-  suspend fun onBuildExit()
-
   suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult
 
   suspend fun buildTargetSources(params: SourcesParams): SourcesResult
@@ -17,19 +9,13 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetDependencySources(params: DependencySourcesParams): DependencySourcesResult
 
-  suspend fun buildTargetDependencyModules(params: DependencyModulesParams): DependencyModulesResult
-
   suspend fun buildTargetResources(params: ResourcesParams): ResourcesResult
-
-  suspend fun buildTargetOutputPaths(params: OutputPathsParams): OutputPathsResult
 
   suspend fun buildTargetCompile(params: CompileParams): CompileResult
 
   suspend fun buildTargetRun(params: RunParams): RunResult
 
   suspend fun buildTargetTest(params: TestParams): TestResult
-
-  suspend fun buildTargetCleanCache(params: CleanCacheParams): CleanCacheResult
 
   suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult
 
@@ -39,23 +25,13 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetJvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult
 
-  suspend fun buildTargetJvmCompileClasspath(params: JvmCompileClasspathParams): JvmCompileClasspathResult
-
   suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult
-
-  @Deprecated("")
-  suspend fun buildTargetScalaTestClasses(params: ScalaTestClassesParams): ScalaTestClassesResult
-
-  @Deprecated("")
-  suspend fun buildTargetScalaMainClasses(params: ScalaMainClassesParams): ScalaMainClassesResult
 
   suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult
 
   suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult
 
   suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult
-
-  suspend fun rustWorkspace(params: RustWorkspaceParams): RustWorkspaceResult
 
   suspend fun workspaceLibraries(): WorkspaceLibrariesResult
 

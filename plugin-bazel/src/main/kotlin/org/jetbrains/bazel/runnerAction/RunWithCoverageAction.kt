@@ -3,7 +3,7 @@ package org.jetbrains.bazel.runnerAction
 import com.intellij.execution.RunnerAndConfigurationSettings
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasTestFilter
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
@@ -12,7 +12,7 @@ class RunWithCoverageAction(
   text: ((includeTargetNameInText: Boolean) -> String)? = null,
   includeTargetNameInText: Boolean = false,
   private val singleTestFilter: String? = null,
-) : BspRunnerAction(
+) : BazelRunnerAction(
     targetInfos = targetInfos,
     text = { includeTargetNameInTextParam ->
       if (text != null) {
@@ -29,6 +29,6 @@ class RunWithCoverageAction(
     isCoverageAction = true,
   ) {
   override fun RunnerAndConfigurationSettings.customizeRunConfiguration() {
-    (configuration as BspRunConfiguration).handler?.apply { (state as? HasTestFilter)?.testFilter = singleTestFilter }
+    (configuration as BazelRunConfiguration).handler?.apply { (state as? HasTestFilter)?.testFilter = singleTestFilter }
   }
 }

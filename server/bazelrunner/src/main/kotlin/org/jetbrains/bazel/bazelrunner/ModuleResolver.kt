@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.bazelrunner
 
 import com.google.gson.Gson
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 sealed interface ShowRepoResult {
   val name: String
@@ -55,13 +56,17 @@ class ModuleOutputParser {
   }
 }
 
-class ModuleResolver(private val bazelRunner: BazelRunner, private val moduleOutputParser: ModuleOutputParser) {
+class ModuleResolver(
+  private val bazelRunner: BazelRunner,
+  private val moduleOutputParser: ModuleOutputParser,
+  private val workspaceContext: WorkspaceContext,
+) {
   /**
    * The name can be @@repo, @repo or repo. It will be resolved in the context of the main workspace.
    */
   suspend fun resolveModule(moduleName: String): ShowRepoResult {
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(workspaceContext) {
         showRepo {
           options.add(moduleName)
         }
@@ -87,7 +92,7 @@ class ModuleResolver(private val bazelRunner: BazelRunner, private val moduleOut
     }
 
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(workspaceContext) {
         dumpRepoMapping {
           options.add(canonicalRepoName)
         }
