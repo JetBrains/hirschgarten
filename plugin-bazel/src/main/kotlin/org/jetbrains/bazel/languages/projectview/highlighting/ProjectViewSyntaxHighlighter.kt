@@ -18,7 +18,7 @@ object ProjectViewSyntaxHighlighter : SyntaxHighlighterBase() {
       ProjectViewTokenType.COMMENT to ProjectViewHighlightingColors.COMMENT,
       ProjectViewTokenType.IDENTIFIER to ProjectViewHighlightingColors.IDENTIFIER,
       ProjectViewTokenType.SECTION_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
-      ProjectViewTokenType.STATEMENT_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
+      ProjectViewTokenType.IMPORT_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
     )
 
   override fun getHighlightingLexer(): Lexer = ProjectViewLexer()

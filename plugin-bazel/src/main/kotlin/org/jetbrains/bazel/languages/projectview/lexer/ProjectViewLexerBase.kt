@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.languages.projectview.lexer
 
+import org.jetbrains.bazel.languages.projectview.language.ProjectViewImport
 import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewStatement
 
 /**
  * A base class responsible for tokenizing a given [input] project view into a list of tokens.
@@ -99,8 +99,8 @@ class ProjectViewLexerBase(input: CharSequence) {
     return when {
       ProjectViewSection.KEYWORD_MAP.containsKey(identifier)
       -> ProjectViewTokenType.SECTION_KEYWORD
-      ProjectViewStatement.KEYWORD_SET.contains(identifier)
-      -> ProjectViewTokenType.STATEMENT_KEYWORD
+      ProjectViewImport.KEYWORD_SET.contains(identifier)
+      -> ProjectViewTokenType.IMPORT_KEYWORD
       else -> ProjectViewTokenType.IDENTIFIER
     }
   }
