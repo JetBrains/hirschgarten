@@ -7,5 +7,5 @@ object ProjectViewHighlightingColors {
   val COLON = createTextAttributesKey("PROJECTVIEW_COLON", DefaultLanguageHighlighterColors.SEMICOLON)
   val IDENTIFIER = createTextAttributesKey("PROJECTVIEW_IDENTIFIER", DefaultLanguageHighlighterColors.IDENTIFIER)
   val KEYWORD = createTextAttributesKey("PROJECTVIEW_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD)
-  val LINE_COMMENT = createTextAttributesKey("PROJECTVIEW_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
+  val COMMENT = createTextAttributesKey("PROJECTVIEW_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
 }

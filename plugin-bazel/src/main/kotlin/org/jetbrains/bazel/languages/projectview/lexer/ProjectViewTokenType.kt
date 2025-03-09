@@ -31,6 +31,9 @@ class ProjectViewTokenType private constructor(debugName: String) : IElementType
     /** An identifier that is a section keyword. */
     val SECTION_KEYWORD = ProjectViewTokenType("section_keyword")
 
+    /** An identifier that is a statement keyword. */
+    val STATEMENT_KEYWORD = ProjectViewTokenType("statement_keyword")
+
     /** The character '\n'. */
     val NEWLINE = ProjectViewTokenType("newline")
 
