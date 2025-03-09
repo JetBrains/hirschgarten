@@ -28,14 +28,11 @@ class ProjectViewTokenType private constructor(debugName: String) : IElementType
     /** A series of whitespaces at the beginning of a line NOT followed by a comment or '\n'. */
     val INDENT = ProjectViewTokenType("indent")
 
-    /** An identifier that is a section keyword followed by a list of identifier. */
-    val LIST_KEYWORD = ProjectViewTokenType("list_keyword")
+    /** An identifier that is a section keyword. */
+    val SECTION_KEYWORD = ProjectViewTokenType("section_keyword")
 
     /** The character '\n'. */
     val NEWLINE = ProjectViewTokenType("newline")
-
-    /** An identifier that is a section keyword followed by a single identifier. */
-    val SCALAR_KEYWORD = ProjectViewTokenType("scalar_keyword")
 
     /** A consecutive sequence of characters from the set { ' ', '\r', '\t' }. */
     val WHITESPACE = ProjectViewTokenType("whitespace")
