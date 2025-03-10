@@ -1,13 +1,16 @@
 package org.jetbrains.bazel.ui.dialogs
 
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.fileChooser.FileChooser
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.util.SystemInfo
+import com.intellij.openapi.vfs.VfsUtilCore
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.CollapsiblePanel
-import com.intellij.ui.EditorTextField
 import com.intellij.ui.LanguageTextField
-import com.intellij.ui.RawCommandLineEditor
+import com.intellij.ui.components.JBTextField
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -18,9 +21,10 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextPane
-import org.jetbrains.bazel.languages.bazelquery.BazelqueryFileType
 import org.jetbrains.bazel.languages.bazelquery.BazelqueryLanguage
 import org.jetbrains.bazel.languages.bazelquery.BazelqueryFlagsLanguage
+import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
+import javax.swing.JButton
 
 
 class BazelQueryDialogWindow(private val project: Project) : DialogWrapper(true) {
@@ -75,9 +79,9 @@ class BazelQueryDialogWindow(private val project: Project) : DialogWrapper(true)
       QueryFlagField("flag2"),
       QueryFlagField("flag3"),
     )
-
-    val commandField = RawCommandLineEditor()
     val resultField = JTextPane()
+    private val directoryField: JBTextField = JBTextField()
+    private val directoryButton = JButton("Select")
 
     var selectedFlagCount = 0
     val flagsPanel = JPanel()
@@ -100,8 +104,25 @@ class BazelQueryDialogWindow(private val project: Project) : DialogWrapper(true)
   init {
     title = "Bazel Query"
     flagsPanelHolder.collapse()
+    setupDirectorySelection()
     init()
   }
+
+  private fun setupDirectorySelection() {
+    directoryButton.addActionListener {
+      val descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor()
+      descriptor.title = "Select Directory"
+      descriptor.description = "Choose a directory within the project."
+
+      val chosenDir: VirtualFile? = FileChooser.chooseFile(descriptor, project, null)
+      if (chosenDir != null) {
+        val relativePath = VfsUtilCore.getRelativePath(chosenDir, project.baseDir ?: chosenDir, if (SystemInfo.isWindows) '\\' else '/')
+        directoryField.text = relativePath
+        BazelWorkingDirectoryManager.setWorkingDirectory(chosenDir.path)
+      }
+    }
+  }
+
 
   private fun clear() {
     editorTextField.text = ""
@@ -113,15 +134,16 @@ class BazelQueryDialogWindow(private val project: Project) : DialogWrapper(true)
   override fun createCenterPanel(): JComponent? {
     val dialogPanel = JPanel()
 
+    val directorySelectionPanel = JPanel(BorderLayout())
+    directorySelectionPanel.add(JLabel("Selected Directory: "), BorderLayout.WEST)
+    directorySelectionPanel.add(directoryField, BorderLayout.CENTER)
+    directorySelectionPanel.add(directoryButton, BorderLayout.EAST)
+
     val queryPanel = JPanel(BorderLayout())
-    val quoteLabelL = JLabel("\"")
-    val quoteLabelR = JLabel("\"")
-//    queryPanel.add(quoteLabelL, BorderLayout.EAST)
-//    queryPanel.add(quoteLabelR, BorderLayout.WEST)
     queryPanel.add(editorTextField, BorderLayout.CENTER)
 
-
     dialogPanel.layout = BoxLayout(dialogPanel, BoxLayout.Y_AXIS)
+    dialogPanel.add(directorySelectionPanel)
     dialogPanel.add(queryPanel)
     dialogPanel.add(flagsPanelHolder)
     dialogPanel.add(flagTextField)
