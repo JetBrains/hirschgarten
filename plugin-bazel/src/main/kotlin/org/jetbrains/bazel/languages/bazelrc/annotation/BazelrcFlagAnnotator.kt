@@ -8,6 +8,7 @@ import com.intellij.model.psi.PsiSymbolReferenceService
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.parentOfType
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
 import org.jetbrains.bazel.languages.bazelrc.flags.BazelFlagSymbol
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
@@ -18,6 +19,7 @@ import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
 import org.jetbrains.bazel.languages.bazelrc.quickfix.DeleteFlagUseFix
 import org.jetbrains.bazel.languages.bazelrc.quickfix.RenameFlagNameFix
+import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 import kotlin.text.Regex
 
 val flagTokenPattern =
@@ -91,6 +93,16 @@ class BazelrcFlagAnnotator : Annotator {
           .withFix(RenameFlagNameFix(element, flag))
           .create()
 
+      isNotApplicable(flag, element) ->
+        holder
+          .newAnnotation(
+            HighlightSeverity.INFORMATION,
+            "Flag: '${element.text}' is not applicable to command '${element.parentOfType<BazelrcLine>(false)!!.command}'",
+          ).range(element.textRange)
+          .textAttributes(BazelrcHighlightingColors.DEPRECATED_FLAG)
+          .needsUpdateOnTyping()
+          .create()
+
       else -> {}
     }
   }
@@ -123,4 +135,12 @@ class BazelrcFlagAnnotator : Annotator {
 
       else -> "--${flag.option.oldName}" == name
     }
+
+  private fun isNotApplicable(flag: Flag, element: PsiElement) =
+    element
+      .getParentOfType<BazelrcLine>(
+        true,
+        BazelrcLine::class.java,
+      )?.command
+      ?.let { command -> command != "common" && !flag.option.commands.contains(command) } ?: false
 }
