@@ -106,56 +106,60 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
 
     {HYP}                             { yybegin(FLAG);  yypushback(1); }
 
-    {SQ}                              { yybegin(EXPR_SQ); return BazelqueryTokenTypes.SINGLE_QUOTE; }
-    {DQ}                              { yybegin(EXPR_DQ); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
-    [A-Za-z0-9/@._:$~\[\]]            { yybegin(EXPR); yypushback(1); }
+//    {SQ}                              { yybegin(EXPR_SQ); return BazelqueryTokenTypes.SINGLE_QUOTE; }
+//    {DQ}                              { yybegin(EXPR_DQ); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
+
+    ([A-Za-z0-9/@._:$~\[\]] | {SQ} | {DQ})           { yybegin(EXPR); yypushback(1); }
     [^]                               { yybegin(FLAG);  yypushback(1); }
 }
 
 
 
-<EXPR_DQ> {
-    ({SOFT_NL} | [{SPACE}{NL}])+      { return TokenType.WHITE_SPACE; }
-    {DQ}                              { yybegin(YYINITIAL); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
-    //{SQ}                              { yybegin(WORD_SQ); yypushback(1); return BazelqueryTokenTypes.SINGLE_QUOTE; }
-    // {SQ} ([{QUOTED_WORD}{ESQ}{EDQ}])+ {SQ}       { return BazelqueryTokenTypes.SQ_WORD; }
-    {SQ}                              { yybegin(WORD_SQ); yypushback(1); }
-    //{SQ_WORD}                         { return BazelqueryTokenTypes.SQ_WORD; }
-   //  [^]                              {}
-}
+//<EXPR_DQ> {
+//    ({SOFT_NL} | [{SPACE}{NL}])+      { return TokenType.WHITE_SPACE; }
+//    {DQ}                              { yybegin(YYINITIAL); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
+//    //{SQ}                              { yybegin(WORD_SQ); yypushback(1); return BazelqueryTokenTypes.SINGLE_QUOTE; }
+//    // {SQ} ([{QUOTED_WORD}{ESQ}{EDQ}])+ {SQ}       { return BazelqueryTokenTypes.SQ_WORD; }
+//    {SQ}                              { yybegin(WORD_SQ); yypushback(1); }
+//    //{SQ_WORD}                         { return BazelqueryTokenTypes.SQ_WORD; }
+//   //  [^]                              {}
+//}
 
 <WORD_SQ> {
-     {SQ}{SQ}                          { yybegin(EXPR_DQ); return BazelqueryTokenTypes.SQ_EMPTY; }
-     {SQ_WORD}                         { yybegin(EXPR_DQ); return BazelqueryTokenTypes.SQ_WORD; }
+     {SQ}{SQ}                          { yybegin(EXPR); return BazelqueryTokenTypes.SQ_EMPTY; }
+     {SQ_WORD}                         { yybegin(EXPR); return BazelqueryTokenTypes.SQ_WORD; }
      {SQ}{QUOTED_WORD}                 { return BazelqueryTokenTypes.SQ_UNFINISHED; }
      {SQ}                              { return BazelqueryTokenTypes.SQ_UNFINISHED; }
-     [^]                               { yybegin(EXPR_DQ); yypushback(1); }
+     [^]                               { yybegin(EXPR); yypushback(1); }
  }
 
 
 
-<EXPR_SQ> {
-    ({SOFT_NL} | [{SPACE}{NL}])+      { return TokenType.WHITE_SPACE; }
-    {SQ}                              { yybegin(YYINITIAL); return BazelqueryTokenTypes.SINGLE_QUOTE; }
-    //{DQ}                              { yybegin(WORD_DQ); yypushback(1); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
-    // {DQ} ({QUOTED_WORD} | {ESQ} | {EDQ})+ {DQ}        { return BazelqueryTokenTypes.DQ_WORD; }
-    {DQ}                              { yybegin(WORD_DQ); yypushback(1); }
-   // {DQ_WORD}                         { return BazelqueryTokenTypes.DQ_WORD; }
- //   [^]                                {}
-}
+//<EXPR_SQ> {
+//    ({SOFT_NL} | [{SPACE}{NL}])+      { return TokenType.WHITE_SPACE; }
+//    {SQ}                              { yybegin(YYINITIAL); return BazelqueryTokenTypes.SINGLE_QUOTE; }
+//    //{DQ}                              { yybegin(WORD_DQ); yypushback(1); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
+//    // {DQ} ({QUOTED_WORD} | {ESQ} | {EDQ})+ {DQ}        { return BazelqueryTokenTypes.DQ_WORD; }
+//    {DQ}                              { yybegin(WORD_DQ); yypushback(1); }
+//   // {DQ_WORD}                         { return BazelqueryTokenTypes.DQ_WORD; }
+// //   [^]                                {}
+//}
 
 <WORD_DQ> {
-      {DQ}{DQ}                          { yybegin(EXPR_SQ); return BazelqueryTokenTypes.DQ_EMPTY; }
-      {DQ_WORD}                         { yybegin(EXPR_SQ); return BazelqueryTokenTypes.DQ_WORD; }
+      {DQ}{DQ}                          { yybegin(EXPR); return BazelqueryTokenTypes.DQ_EMPTY; }
+      {DQ_WORD}                         { yybegin(EXPR); return BazelqueryTokenTypes.DQ_WORD; }
       {DQ}{QUOTED_WORD}                 { return BazelqueryTokenTypes.DQ_UNFINISHED; }
       {DQ}                              { return BazelqueryTokenTypes.DQ_UNFINISHED; }
-      [^]                               { yybegin(EXPR_SQ); yypushback(1); }
+      [^]                               { yybegin(EXPR); yypushback(1); }
   }
 
 
 
 <EXPR> {
-    ({SOFT_NL} | [{SPACE}{NL}])      { yybegin(YYINITIAL); return BazelqueryTokenTypes.WHITE_SPACE; }
+    ({SOFT_NL} | [{SPACE}{NL}])+      { return TokenType.WHITE_SPACE; }
+    {DQ}                              { yybegin(WORD_DQ); yypushback(1); }
+    {SQ}                              { yybegin(WORD_SQ); yypushback(1); }
+    //({SOFT_NL} | [{SPACE}{NL}])      { yybegin(YYINITIAL); return BazelqueryTokenTypes.WHITE_SPACE; }
 }
 
 
