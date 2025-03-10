@@ -6,8 +6,8 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 
-public class BazelAndroidProjectSystemProvider : AndroidProjectSystemProvider {
-  override val id: String = "org.jetbrains.bazel.android.BspAndroidProjectSystemProvider"
+class BazelAndroidProjectSystemProvider : AndroidProjectSystemProvider {
+  override val id: String = "org.jetbrains.bazel.android.BazelAndroidProjectSystemProvider"
 
   override fun isApplicable(project: Project): Boolean = BazelFeatureFlags.isAndroidSupportEnabled && project.isBazelProject
 
