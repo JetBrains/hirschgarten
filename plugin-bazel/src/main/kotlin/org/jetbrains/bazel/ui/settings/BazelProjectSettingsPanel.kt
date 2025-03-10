@@ -27,6 +27,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
 
   // experimental features
   private val enableLocalJvmActionsCheckBox: JBCheckBox
+  private val enableBuildWithJpsCheckBox: JBCheckBox
 
   private var currentProjectSettings = project.bazelProjectSettings
 
@@ -36,14 +37,23 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
 
     // experimental features
-    enableLocalJvmActionsCheckBox = initEnableLocalJvmActionsCheckbox()
+    enableLocalJvmActionsCheckBox = initEnableLocalJvmActionsCheckBox()
+    enableBuildWithJpsCheckBox = initEnableBuildWithJpsCheckBox()
   }
 
-  private fun initEnableLocalJvmActionsCheckbox(): JBCheckBox =
+  private fun initEnableLocalJvmActionsCheckBox(): JBCheckBox =
     JBCheckBox(BazelPluginBundle.message("project.settings.plugin.enable.local.jvm.actions.checkbox.text")).apply {
       isSelected = currentProjectSettings.enableLocalJvmActions
       addItemListener {
         currentProjectSettings = currentProjectSettings.copy(enableLocalJvmActions = isSelected)
+      }
+    }
+
+  private fun initEnableBuildWithJpsCheckBox(): JBCheckBox =
+    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.enable.build.with.jps.checkbox.text")).apply {
+      isSelected = currentProjectSettings.enableBuildWithJps
+      addItemListener {
+        currentProjectSettings = currentProjectSettings.copy(enableBuildWithJps = isSelected)
       }
     }
 
@@ -90,6 +100,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
       }
       group(BazelPluginBundle.message("project.settings.experimental.settings")) {
         row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
+        row { cell(enableBuildWithJpsCheckBox).align(Align.FILL) }
       }
     }
 
@@ -97,12 +108,13 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
 
   override fun apply() {
     val isProjectViewPathChanged = currentProjectSettings.projectViewPath != project.bazelProjectSettings.projectViewPath
+    val isEnableBuildWithJpsChanged = currentProjectSettings.enableBuildWithJps != project.bazelProjectSettings.enableBuildWithJps
     val showExcludedDirectoriesAsSeparateNodeChanged =
       currentProjectSettings.showExcludedDirectoriesAsSeparateNode != project.bazelProjectSettings.showExcludedDirectoriesAsSeparateNode
 
     project.bazelProjectSettings = currentProjectSettings
 
-    if (isProjectViewPathChanged) {
+    if (isProjectViewPathChanged || isEnableBuildWithJpsChanged) {
       BazelCoroutineService.getInstance(project).start {
         ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
       }
