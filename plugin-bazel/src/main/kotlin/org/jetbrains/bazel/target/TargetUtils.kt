@@ -35,6 +35,7 @@ import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.LibraryItem
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.to
 
 private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
@@ -85,7 +86,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   suspend fun saveTargets(
     targetIdToTargetInfo: Map<Label, BuildTargetInfo>,
     targetIdToModuleEntity: Map<Label, List<Module>>,
-    targetIdToModuleDetails: Map<Label, ModuleDetails>,
+    fileToTarget: Map<URI, List<Label>>,
     libraryItems: List<LibraryItem>?,
     libraryModules: List<JavaModule>,
     nameProvider: TargetNameReformatProvider,
@@ -101,20 +102,11 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
           nameProvider.invoke(BuildTargetInfo(id = library.id)) to library.id
         }.orEmpty()
 
-    fileToTarget =
-      targetIdToModuleDetails.values
-        .flatMap { it.toPairsUrlToId() }
-        .groupBy { it.first }
-        .mapValues { it.value.map { pair -> pair.second } }
+    this.fileToTarget = fileToTarget
     fileToExecutableTargets = calculateFileToExecutableTargets(libraryItems)
 
     this.libraryModulesLookupTable = createLibraryModulesLookupTable(libraryModules)
   }
-
-  private fun ModuleDetails.toPairsUrlToId(): List<Pair<URI, Label>> =
-    sources.flatMap { sources ->
-      sources.sources.mapNotNull { it.uri.removeTrailingSlash().safeCastToURI() }.map { it to target.id }
-    }
 
   private suspend fun calculateFileToExecutableTargets(libraryItems: List<LibraryItem>?): Map<URI, List<Label>> =
     withContext(Dispatchers.Default) {
@@ -281,3 +273,15 @@ fun BuildTargetInfo.getModule(project: Project): com.intellij.openapi.module.Mod
   val moduleName = moduleNameProvider(this)
   return ModuleManager.getInstance(project).findModuleByName(moduleName)
 }
+
+@ApiStatus.Internal
+fun calculateFileToTarget(targetIdToModuleDetails: Map<Label, ModuleDetails>): Map<URI, List<Label>> =
+  targetIdToModuleDetails.values
+    .flatMap { it.toPairsUrlToId() }
+    .groupBy { it.first }
+    .mapValues { it.value.map { pair -> pair.second } }
+
+private fun ModuleDetails.toPairsUrlToId(): List<Pair<URI, Label>> =
+  sources.flatMap { sources ->
+    sources.sources.map { it.uri.removeTrailingSlash().safeCastToURI() }.map { it to target.id }
+  }

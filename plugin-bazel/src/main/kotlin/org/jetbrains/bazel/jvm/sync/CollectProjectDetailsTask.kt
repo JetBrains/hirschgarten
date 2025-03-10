@@ -48,6 +48,7 @@ import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.task.asyncQueryIf
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.task.queryIf
+import org.jetbrains.bazel.target.calculateFileToTarget
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
@@ -265,6 +266,8 @@ class CollectProjectDetailsTask(
             projectDetails.targetIds.associateWith { transformer.moduleDetailsForTargetId(it) }
           }
 
+        val fileToTarget: Map<URI, List<Label>> = calculateFileToTarget(targetIdToModuleDetails)
+
         val targetIdToModuleEntitiesMap =
           bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
             // Filter out non-module targets which cannot be run, as they are just cluttering the ui
@@ -288,6 +291,7 @@ class CollectProjectDetailsTask(
                 projectDetails = projectDetails,
                 targetIdToModuleDetails = targetIdToModuleDetails,
                 targetIdToTargetInfo = targetIdToTargetInfo,
+                fileToTarget = fileToTarget,
                 projectBasePath = projectBasePath,
                 project = project,
                 nameProvider = nameProvider,
@@ -298,7 +302,7 @@ class CollectProjectDetailsTask(
               project.targetUtils.saveTargets(
                 targetIdToTargetInfo,
                 targetIdToModuleEntityMap,
-                targetIdToModuleDetails,
+                fileToTarget,
                 projectDetails.libraries,
                 libraryModules,
                 nameProvider,

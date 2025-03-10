@@ -13,6 +13,7 @@ data class JavaSourceRoot(
 
 data class JavaModule(
   val genericModuleInfo: GenericModuleInfo,
+  // TODO: rename to buildFileDirectory
   val baseDirContentRoot: ContentRoot?,
   val sourceRoots: List<JavaSourceRoot>,
   val resourceRoots: List<ResourceRoot>,
