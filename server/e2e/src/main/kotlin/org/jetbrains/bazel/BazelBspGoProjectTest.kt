@@ -11,7 +11,6 @@ import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.GoLibraryItem
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.SourcesResult
@@ -74,7 +73,6 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     val targetHello =
       SourceItem(
         "file://\$WORKSPACE/example/hello.go",
-        SourceItemKind.FILE,
         false,
       )
     val targetHelloSources =
@@ -86,7 +84,6 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     val targetGoDefaultLibrary =
       SourceItem(
         "file://\$WORKSPACE/lib/example_lib.go",
-        SourceItemKind.FILE,
         false,
       )
     val targetGoDefaultLibrarySources =
@@ -98,7 +95,6 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     val targetGoDefaultTest =
       SourceItem(
         "file://\$WORKSPACE/lib/example_test.go",
-        SourceItemKind.FILE,
         false,
       )
     val targetGoDefaultTestSources =
