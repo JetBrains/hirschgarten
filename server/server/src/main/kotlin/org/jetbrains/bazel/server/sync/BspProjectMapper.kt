@@ -58,7 +58,6 @@ import org.jetbrains.bsp.protocol.ScalacOptionsItem
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.SourcesResult
@@ -247,7 +246,6 @@ class BspProjectMapper(
         sourceSet.sources.map {
           SourceItem(
             uri = it.source.toString(),
-            kind = SourceItemKind.FILE,
             generated = false,
             jvmPackagePrefix = it.jvmPackagePrefix,
           )
@@ -256,7 +254,6 @@ class BspProjectMapper(
         sourceSet.generatedSources.map {
           SourceItem(
             uri = it.source.toString(),
-            kind = SourceItemKind.FILE,
             generated = true,
             jvmPackagePrefix = it.jvmPackagePrefix,
           )

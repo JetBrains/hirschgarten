@@ -12,7 +12,6 @@ import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.SourcesResult
@@ -104,7 +103,6 @@ class FirstPhaseTargetToBspMapper(private val workspaceRoot: Path) {
       sourceFilesAndData.map {
         SourceItem(
           it.first.toUri().toString(),
-          SourceItemKind.FILE,
           false,
           it.second?.jvmPackagePrefix,
         )

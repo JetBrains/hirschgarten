@@ -29,7 +29,6 @@ import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.junit.jupiter.api.BeforeEach
@@ -209,7 +208,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
       )
 
     val sources =
-      listOf(SourcesItem(info.targetId, listOf(SourceItem("file:///root/${info.importPath}", SourceItemKind.FILE, false))))
+      listOf(SourcesItem(info.targetId, listOf(SourceItem("file:///root/${info.importPath}", false))))
     val resources = info.resourcesItems.map { ResourcesItem(info.targetId, listOf(it)) }
     return BaseTargetInfo(target, sources, resources)
   }

@@ -38,7 +38,6 @@ import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -190,8 +189,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         SourcesItem(
           pythonBinary.targetId,
           listOf(
-            SourceItem("file:///SomeSourceItemFile", SourceItemKind.FILE, true),
-            SourceItem("file:///SomeSourceItemDirectory", SourceItemKind.DIRECTORY, true),
+            SourceItem("file:///SomeSourceItemFile", true),
           ),
         ),
       )
