@@ -5,7 +5,7 @@
         <androidFacetEntityUpdaterExtension
                 implementation="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtensionImpl"/>
         <runHandlerProvider
-                implementation="org.jetbrains.bazel.android.run.AndroidBspRunHandler$AndroidBspRunHandlerProvider"/>
+                implementation="org.jetbrains.bazel.android.run.AndroidBazelRunHandler$Provider"/>
         <jvmBinaryJarsExtension implementation="org.jetbrains.bazel.android.AndroidJvmBinaryJarsExtension"/>
     </extensions>
     <extensions defaultExtensionNs="com.android.project">
