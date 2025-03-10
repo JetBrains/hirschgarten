@@ -10,7 +10,7 @@
     </extensions>
     <extensions defaultExtensionNs="com.android.project">
         <!-- order = first, because GradleProjectSystemProvider returns true if there's a build.gradle file (even if imported with BSP) -->
-        <projectsystem implementation="org.jetbrains.bazel.android.BspAndroidProjectSystemProvider" order="first"/>
+        <projectsystem implementation="org.jetbrains.bazel.android.BazelAndroidProjectSystemProvider" order="first"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <stepsBeforeRunProvider implementation="org.jetbrains.bazel.android.run.AndroidBeforeRunTaskProvider"/>
