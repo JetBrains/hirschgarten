@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.BazelJavaSourceRootEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
@@ -15,11 +16,13 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import java.io.File
+import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
+import kotlin.io.path.name
 import kotlin.io.path.notExists
 import kotlin.io.path.pathString
 
@@ -27,7 +30,11 @@ import kotlin.io.path.pathString
  * This is a HACK for letting single source Java files to be resolved normally
  * Should remove soon and replace with a more robust solution
  */
-internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBasePath: Path, private val project: Project) {
+internal class JavaModuleToDummyJavaModulesTransformerHACK(
+  private val projectBasePath: Path,
+  private val fileToTarget: Map<URI, List<Label>>,
+  private val project: Project,
+) {
   sealed interface Result
 
   class DummyModulesToAdd(val dummyModules: List<JavaModule>) : Result
@@ -37,17 +44,19 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
   fun transform(inputEntity: JavaModule): Result {
     if (!BazelFeatureFlags.addDummyModules && !BazelFeatureFlags.mergeSourceRoots) return DummyModulesToAdd(emptyList())
 
-    val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity.sourceRoots)
-    val dummyJavaModuleNames = calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath)
-    val dummyJavaResourcePath = calculateDummyResourceRootPath(inputEntity, dummyJavaModuleSourceRoots, projectBasePath, project)
+    val buildFileDirectory = inputEntity.baseDirContentRoot?.path
+    val mergedSourceRoots =
+      calculateSourceRootsForParentDirs(inputEntity.sourceRoots)
+        .restoreSourceRootFromPackagePrefix(limit = buildFileDirectory)
+    val dummyJavaResourcePath = calculateDummyResourceRootPath(inputEntity, mergedSourceRoots, projectBasePath, project)
 
     return if (BazelFeatureFlags.mergeSourceRoots &&
-      canMergeSources(inputEntity.sourceRoots, dummyJavaModuleSourceRoots, dummyJavaResourcePath)
+      canMergeSources(inputEntity.sourceRoots, mergedSourceRoots, dummyJavaResourcePath)
     ) {
-      MergedSourceRoots(dummyJavaModuleSourceRoots)
+      MergedSourceRoots(mergedSourceRoots)
     } else if (!BazelFeatureFlags.addDummyModules) {
       DummyModulesToAdd(emptyList())
-    } else if (dummyJavaModuleNames.isEmpty() && dummyJavaResourcePath != null) {
+    } else if (mergedSourceRoots.isEmpty() && dummyJavaResourcePath != null) {
       val dummyModuleName = calculateDummyJavaModuleName(dummyJavaResourcePath, projectBasePath)
       DummyModulesToAdd(
         calculateDummyJavaSourceModuleWithOnlyResources(
@@ -57,9 +66,15 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
         )?.let { listOf(it) } ?: emptyList(),
       )
     } else {
+      val dummySourceRoots =
+        if (buildFileDirectory == null) {
+          mergedSourceRoots
+        } else {
+          mergedSourceRoots.restoreSourceRootFromPackagePrefix(limit = null)
+        }
       DummyModulesToAdd(
-        dummyJavaModuleSourceRoots
-          .zip(dummyJavaModuleNames)
+        dummySourceRoots
+          .zip(calculateDummyJavaModuleNames(dummySourceRoots, projectBasePath))
           .mapNotNull {
             calculateDummyJavaSourceModule(
               name = it.second,
@@ -88,6 +103,7 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
 
     val originalSourceRoots: Set<Path> = sourceRoots.map { it.sourcePath }.toSet()
     if (originalSourceRoots.any { !it.isUnder(mergedSourceRoots) }) return false
+    if (originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }) return false
 
     for (mergedSourceRoot in mergedSourceRoots) {
       Files.walk(mergedSourceRoot).use { children ->
@@ -103,6 +119,12 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
 
     return true
   }
+
+  /**
+   * We don't really support shared sources anyway, but adding whole directories if some of the source files
+   * are contained in several targets can cause red code on https://github.com/bazelbuild/bazel
+   */
+  private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTarget[this.toUri()]?.size ?: 0) > 1
 
   private fun Set<Path>.isOnePathParentOfAnother(): Boolean = any { it.parent.isUnder(this) }
 
@@ -240,33 +262,41 @@ private fun calculateDummyResourceRootPath(
   }
 }
 
-private fun calculateDummyJavaSourceRoots(sourceRoots: List<JavaSourceRoot>): List<JavaSourceRoot> =
+private fun calculateSourceRootsForParentDirs(sourceRoots: List<JavaSourceRoot>): List<JavaSourceRoot> =
   sourceRoots
     .asSequence()
     .filter { !BazelJavaSourceRootEntityUpdater.shouldAddBazelJavaSourceRootEntity(it) }
     .mapNotNull {
-      restoreSourceRootFromPackagePrefix(it)
+      sourceRootForParentDir(it)
     }.distinct()
     .toList()
 
-private fun restoreSourceRootFromPackagePrefix(sourceRoot: JavaSourceRoot): JavaSourceRoot? {
+private fun sourceRootForParentDir(sourceRoot: JavaSourceRoot): JavaSourceRoot? {
   if (sourceRoot.sourcePath.notExists() || sourceRoot.sourcePath.isDirectory()) return null
-  val packagePrefixPath = sourceRoot.packagePrefix.replace('.', File.separatorChar)
   val sourceParent = sourceRoot.sourcePath.parent.pathString
-  val sourceRootString = sourceParent.removeSuffix(packagePrefixPath)
-  val sourceRootPath = Path(sourceRootString)
-  val packagePrefix =
-    if (sourceParent == sourceRootString) {
-      sourceRoot.packagePrefix
-    } else {
-      ""
-    }
+  val sourceRootPath = Path(sourceParent)
+  val packagePrefix = sourceRoot.packagePrefix
   return JavaSourceRoot(
     sourcePath = sourceRootPath,
     generated = false,
     packagePrefix = packagePrefix,
     rootType = sourceRoot.rootType,
   )
+}
+
+private fun List<JavaSourceRoot>.restoreSourceRootFromPackagePrefix(limit: Path?): List<JavaSourceRoot> =
+  map {
+    it.restoreSourceRootFromPackagePrefix(limit)
+  }.distinct()
+
+private fun JavaSourceRoot.restoreSourceRootFromPackagePrefix(limit: Path?): JavaSourceRoot {
+  val segments = this.packagePrefix.split('.').toMutableList()
+  var sourcePath: Path = this.sourcePath
+  while (sourcePath != limit && segments.lastOrNull() == sourcePath.name) {
+    sourcePath = sourcePath.parent ?: break
+    segments.removeLast()
+  }
+  return copy(sourcePath = sourcePath, packagePrefix = segments.joinToString("."))
 }
 
 private fun calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots: List<JavaSourceRoot>, projectBasePath: Path): List<String> =

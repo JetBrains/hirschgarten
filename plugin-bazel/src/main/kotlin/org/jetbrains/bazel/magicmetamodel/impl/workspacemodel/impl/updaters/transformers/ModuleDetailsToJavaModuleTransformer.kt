@@ -24,11 +24,13 @@ import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
+import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.toPath
 
 internal class ModuleDetailsToJavaModuleTransformer(
   targetsMap: Map<Label, BuildTargetInfo>,
+  fileToTarget: Map<URI, List<Label>>,
   nameProvider: TargetNameReformatProvider,
   projectBasePath: Path,
   private val project: Project,
@@ -37,7 +39,8 @@ internal class ModuleDetailsToJavaModuleTransformer(
   private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(targetsMap, nameProvider)
   private val type = ModuleTypeId("JAVA_MODULE")
   private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer()
-  private val javaModuleToDummyJavaModulesTransformerHACK = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project)
+  private val javaModuleToDummyJavaModulesTransformerHACK =
+    JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, fileToTarget, project)
 
   fun transform(inputEntity: ModuleDetails): List<JavaModule> {
     val javaModule =

@@ -14,6 +14,7 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tran
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bazel.workspacemodel.entities.isJvmOrAndroidTarget
+import java.net.URI
 import java.nio.file.Path
 
 object TargetIdToModuleEntitiesMap {
@@ -21,6 +22,7 @@ object TargetIdToModuleEntitiesMap {
     projectDetails: ProjectDetails,
     targetIdToModuleDetails: Map<Label, ModuleDetails>,
     targetIdToTargetInfo: Map<Label, BuildTargetInfo>,
+    fileToTarget: Map<URI, List<Label>>,
     projectBasePath: Path,
     project: Project,
     nameProvider: TargetNameReformatProvider,
@@ -29,6 +31,7 @@ object TargetIdToModuleEntitiesMap {
     val moduleDetailsToJavaModuleTransformer =
       ModuleDetailsToJavaModuleTransformer(
         targetIdToTargetInfo,
+        fileToTarget,
         nameProvider,
         projectBasePath,
         project,

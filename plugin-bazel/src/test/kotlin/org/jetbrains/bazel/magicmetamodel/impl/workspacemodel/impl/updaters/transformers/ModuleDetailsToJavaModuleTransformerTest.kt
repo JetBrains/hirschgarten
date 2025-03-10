@@ -135,6 +135,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val javaModule =
       ModuleDetailsToJavaModuleTransformer(
         targetsMap,
+        emptyMap(),
         DefaultNameProvider,
         projectBasePath,
         project,
@@ -254,6 +255,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val javaModule =
       ModuleDetailsToJavaModuleTransformer(
         targetsMap,
+        emptyMap(),
         DefaultNameProvider,
         projectBasePath,
         project,
@@ -456,6 +458,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       modulesDetails.map { entity ->
         ModuleDetailsToJavaModuleTransformer(
           targetsMap,
+          emptyMap(),
           DefaultNameProvider,
           projectBasePath,
           project,
@@ -651,6 +654,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val javaModules =
       ModuleDetailsToJavaModuleTransformer(
         targetsMap,
+        emptyMap(),
         DefaultNameProvider,
         projectBasePath,
         project,
