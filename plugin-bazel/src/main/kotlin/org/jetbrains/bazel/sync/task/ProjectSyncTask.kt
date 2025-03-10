@@ -33,7 +33,6 @@ import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectPostSyncHooks
 import org.jetbrains.bazel.sync.projectPreSyncHooks
-import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectSyncHooks
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
@@ -119,14 +118,12 @@ class ProjectSyncTask(private val project: Project) {
       withBackgroundProgress(project, "Syncing project...", true) {
         reportSequentialProgress {
           executePreSyncHooks(it)
-          val syncHookResult = executeSyncHooks(it, syncScope, buildProject)
+          val syncResult = executeSyncHooks(it, syncScope, buildProject)
           executePostSyncHooks(it)
-          if (syncHookResult.hasError) {
-            if (syncHookResult.diff.isEmpty()) {
-              throw SyncFatalFailureException("Workspace Model is empty, Fatal error happened in sync task")
-            } else {
-              throw SyncPartialFailureException("Part of the sync process is failed")
-            }
+          when (syncResult) {
+            SyncResultStatus.FAILURE -> throw SyncFatalFailureException("Workspace Model is empty, Fatal error happened in sync task")
+            SyncResultStatus.PARTIAL_SUCCESS -> throw SyncPartialFailureException("Part of the sync process is failed")
+            else -> Unit
           }
         }
       }
@@ -162,7 +159,7 @@ class ProjectSyncTask(private val project: Project) {
     progressReporter: SequentialProgressReporter,
     syncScope: ProjectSyncScope,
     buildProject: Boolean,
-  ): SyncHookResults {
+  ): SyncResultStatus {
     val diff = AllProjectStructuresProvider(project).newDiff()
     val hasError =
       project.connection.runWithServer { server ->
@@ -188,7 +185,15 @@ class ProjectSyncTask(private val project: Project) {
       }
 
     diff.applyAll(syncScope, PROJECT_SYNC_TASK_ID)
-    return SyncHookResults(diff, hasError)
+    if (diff.isInvalid() && hasError) {
+      return SyncResultStatus.FAILURE
+    } else if (!diff.isInvalid() && hasError) {
+      diff.applyAll(syncScope, PROJECT_SYNC_TASK_ID)
+      return SyncResultStatus.PARTIAL_SUCCESS
+    } else {
+      diff.applyAll(syncScope, PROJECT_SYNC_TASK_ID)
+      return SyncResultStatus.SUCCESS
+    }
   }
 
   private suspend fun executePostSyncHooks(progressReporter: SequentialProgressReporter) {
@@ -238,4 +243,8 @@ suspend fun <Result> query(queryName: String, doQuery: suspend () -> Result): Re
     throw e
   }
 
-data class SyncHookResults(val diff: AllProjectStructuresDiff, val hasError: Boolean)
+enum class SyncResultStatus {
+  SUCCESS,
+  PARTIAL_SUCCESS,
+  FAILURE,
+}

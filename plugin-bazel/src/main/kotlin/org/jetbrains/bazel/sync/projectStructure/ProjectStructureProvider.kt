@@ -22,6 +22,8 @@ interface ProjectStructureDiff {
     syncScope: ProjectSyncScope,
     taskId: String,
   )
+
+  fun isInvalid(): Boolean
 }
 
 /**
@@ -39,7 +41,7 @@ class AllProjectStructuresDiff(private val project: Project, diffs: List<Project
     diffs.values.forEach { it.apply(project, syncScope, taskId) }
   }
 
-  fun isEmpty(): Boolean = diffs.isEmpty()
+  fun isInvalid(): Boolean = diffs.isEmpty()
 }
 
 /**
