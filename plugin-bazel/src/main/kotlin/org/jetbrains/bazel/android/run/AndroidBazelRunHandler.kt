@@ -33,7 +33,7 @@ class AndroidBazelRunHandler(private val configuration: BazelRunConfiguration) :
 
   override val state: AndroidBazelRunConfigurationState = AndroidBazelRunConfigurationState
 
-  override val name: String = "Android BSP Run Handler"
+  override val name: String = "Android Bazel Run Handler"
 
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     val deployTargetContext = DeployTargetContext()
@@ -54,8 +54,8 @@ class AndroidBazelRunHandler(private val configuration: BazelRunConfiguration) :
     return AndroidConfigurationExecutorRunProfileState(androidConfigurationExecutor)
   }
 
-  class AndroidBspRunHandlerProvider : RunHandlerProvider {
-    override val id: String = "AndroidBspRunHandlerProvider"
+  class Provider : RunHandlerProvider {
+    override val id: String = "AndroidBazelRunHandlerProvider"
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = AndroidBazelRunHandler(configuration)
 
