@@ -362,6 +362,9 @@ abstract class TaskConsole(
 
   private inner class CancelAction(private val doCancelAction: () -> Unit, private val taskId: Any) :
     DumbAwareAction({ "Stop" }, BspPluginIcons.disconnect) {
+    @Volatile
+    private var cancelActionActivated = false
+
     init {
       project.messageBus.connect().subscribe(
         SyncStatusListener.TOPIC,
@@ -378,11 +381,12 @@ abstract class TaskConsole(
     }
 
     override fun actionPerformed(e: AnActionEvent) {
+      cancelActionActivated = true
       doCancelAction()
     }
 
     override fun update(e: AnActionEvent) {
-      e.presentation.isEnabled = tasksInProgress.contains(taskId)
+      e.presentation.isEnabled = !cancelActionActivated && tasksInProgress.contains(taskId)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
@@ -396,12 +400,16 @@ class SyncTaskConsole(
 ) : TaskConsole(taskView, basePath, project) {
   override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
     object : SuspendableAction({ BspPluginBundle.message("resync.action.text") }, BspPluginIcons.reload) {
+      @Volatile
+      private var redoActionActivated = false
+
       override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
+        redoActionActivated = true
         redoAction?.invoke()
       }
 
       override fun update(project: Project, e: AnActionEvent) {
-        e.presentation.isEnabled = redoAction != null && !project.isSyncInProgress() && !project.isBuildInProgress()
+        e.presentation.isEnabled = !redoActionActivated && redoAction != null && !project.isSyncInProgress() && !project.isBuildInProgress()
       }
     }
 }
@@ -413,12 +421,16 @@ class BuildTaskConsole(
 ) : TaskConsole(taskView, basePath, project) {
   override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
     object : SuspendableAction({ BspPluginBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
+      @Volatile
+      private var redoActionActivated = false
+
       override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
+        redoActionActivated = true
         redoAction?.invoke()
       }
 
       override fun update(project: Project, e: AnActionEvent) {
-        e.presentation.isEnabled = redoAction != null && tasksInProgress.isEmpty()
+        e.presentation.isEnabled = !redoActionActivated && redoAction != null && tasksInProgress.isEmpty()
       }
 
       override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
