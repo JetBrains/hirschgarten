@@ -10,6 +10,7 @@ import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.FileMessageEventImpl
 import com.intellij.build.events.impl.FinishBuildEventImpl
 import com.intellij.build.events.impl.FinishEventImpl
+import com.intellij.build.events.impl.MessageEventImpl
 import com.intellij.build.events.impl.OutputBuildEventImpl
 import com.intellij.build.events.impl.ProgressBuildEventImpl
 import com.intellij.build.events.impl.StartBuildEventImpl
@@ -288,6 +289,24 @@ abstract class TaskConsole(
     val entry = subtaskParentMap.entries.lastOrNull()
     val taskId = tasksInProgress.lastOrNull()
     entry?.let { addMessage(it.key, message) } ?: taskId?.let { addMessage(taskId, message) }
+  }
+
+  @Synchronized
+  fun addWarnMessage(taskId: Any?, message: String) {
+    val taskIdOrDefault = taskId ?: getDefaultTaskId() ?: return
+    maybeGetRootTask(taskIdOrDefault)?.let {
+      doIfTaskInProgress(it) {
+        val event =
+          MessageEventImpl(
+            PROJECT_SYNC_TASK_ID,
+            MessageEvent.Kind.WARNING,
+            "",
+            message,
+            "",
+          )
+        taskView.onEvent(it, event)
+      }
+    }
   }
 
   /**

@@ -38,6 +38,8 @@ class AllProjectStructuresDiff(private val project: Project, diffs: List<Project
   suspend fun applyAll(syncScope: ProjectSyncScope, taskId: String) {
     diffs.values.forEach { it.apply(project, syncScope, taskId) }
   }
+
+  fun isEmpty(): Boolean = diffs.isEmpty()
 }
 
 /**

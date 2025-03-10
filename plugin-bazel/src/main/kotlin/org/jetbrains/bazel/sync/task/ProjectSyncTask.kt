@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.task
 
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
+import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.ide.impl.isTrusted
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.application.EDT
@@ -32,11 +33,14 @@ import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectPostSyncHooks
 import org.jetbrains.bazel.sync.projectPreSyncHooks
+import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectSyncHooks
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.status.BspSyncStatusService
 import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
+import org.jetbrains.bazel.sync.status.SyncFatalFailureException
+import org.jetbrains.bazel.sync.status.SyncPartialFailureException
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bazel.ui.console.syncConsole
 import java.util.concurrent.CancellationException
@@ -74,6 +78,16 @@ class ProjectSyncTask(private val project: Project) {
           throw e
         } catch (_: SyncAlreadyInProgressException) {
           syncAlreadyInProgress = true
+        } catch (e: SyncPartialFailureException) {
+          project.syncConsole.addWarnMessage(
+            PROJECT_SYNC_TASK_ID,
+            BspPluginBundle.message("console.task.sync.partialsuccess"),
+          )
+          project.syncConsole.finishTask(
+            PROJECT_SYNC_TASK_ID,
+            BspPluginBundle.message("console.task.sync.partialsuccess"),
+            SuccessResultImpl(true),
+          )
         } catch (e: Exception) {
           project.syncConsole.finishTask(
             PROJECT_SYNC_TASK_ID,
@@ -105,10 +119,14 @@ class ProjectSyncTask(private val project: Project) {
       withBackgroundProgress(project, "Syncing project...", true) {
         reportSequentialProgress {
           executePreSyncHooks(it)
-          val hasError = executeSyncHooks(it, syncScope, buildProject)
+          val syncHookResult = executeSyncHooks(it, syncScope, buildProject)
           executePostSyncHooks(it)
-          if (hasError) {
-            throw Exception("Part of the sync failed")
+          if (syncHookResult.hasError) {
+            if (syncHookResult.diff.isEmpty()) {
+              throw SyncFatalFailureException("Workspace Model is empty, Fatal error happened in sync task")
+            } else {
+              throw SyncPartialFailureException("Part of the sync process is failed")
+            }
           }
         }
       }
@@ -144,7 +162,7 @@ class ProjectSyncTask(private val project: Project) {
     progressReporter: SequentialProgressReporter,
     syncScope: ProjectSyncScope,
     buildProject: Boolean,
-  ): Boolean {
+  ): SyncHookResults {
     val diff = AllProjectStructuresProvider(project).newDiff()
     val hasError =
       project.connection.runWithServer { server ->
@@ -170,7 +188,7 @@ class ProjectSyncTask(private val project: Project) {
       }
 
     diff.applyAll(syncScope, PROJECT_SYNC_TASK_ID)
-    return hasError
+    return SyncHookResults(diff, hasError)
   }
 
   private suspend fun executePostSyncHooks(progressReporter: SequentialProgressReporter) {
@@ -219,3 +237,5 @@ suspend fun <Result> query(queryName: String, doQuery: suspend () -> Result): Re
     }
     throw e
   }
+
+data class SyncHookResults(val diff: AllProjectStructuresDiff, val hasError: Boolean)
