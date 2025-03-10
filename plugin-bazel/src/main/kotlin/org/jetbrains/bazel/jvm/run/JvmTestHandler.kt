@@ -73,6 +73,7 @@ class JvmTestWithDebugCommandLineState(
         arguments = transformProgramArguments(settings.programArguments),
         environmentVariables = settings.env.envs,
         debug = RemoteDebugData("jdwp", getConnectionPort()),
+        testFilter = settings.testFilter,
       )
 
     server.buildTargetTest(testParams)
