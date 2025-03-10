@@ -35,12 +35,18 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
   class MergedSourceRoots(val mergedSourceRoots: List<JavaSourceRoot>) : Result
 
   fun transform(inputEntity: JavaModule): Result {
+    if (!BazelFeatureFlags.addDummyModules && !BazelFeatureFlags.mergeSourceRoots) return DummyModulesToAdd(emptyList())
+
     val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity.sourceRoots)
     val dummyJavaModuleNames = calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath)
     val dummyJavaResourcePath = calculateDummyResourceRootPath(inputEntity, dummyJavaModuleSourceRoots, projectBasePath, project)
 
-    return if (canMergeSources(inputEntity.sourceRoots, dummyJavaModuleSourceRoots, dummyJavaResourcePath)) {
+    return if (BazelFeatureFlags.mergeSourceRoots &&
+      canMergeSources(inputEntity.sourceRoots, dummyJavaModuleSourceRoots, dummyJavaResourcePath)
+    ) {
       MergedSourceRoots(dummyJavaModuleSourceRoots)
+    } else if (!BazelFeatureFlags.addDummyModules) {
+      DummyModulesToAdd(emptyList())
     } else if (dummyJavaModuleNames.isEmpty() && dummyJavaResourcePath != null) {
       val dummyModuleName = calculateDummyJavaModuleName(dummyJavaResourcePath, projectBasePath)
       DummyModulesToAdd(
@@ -71,8 +77,6 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
     dummyJavaModuleSourceRoots: List<JavaSourceRoot>,
     dummyJavaResourcePath: Path?,
   ): Boolean {
-    if (!BazelFeatureFlags.mergeSourceRoots) return false
-
     if (dummyJavaResourcePath != null) return false
 
     val mergedSourceRoots: Set<Path> = dummyJavaModuleSourceRoots.map { it.sourcePath }.toSet()
