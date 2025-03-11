@@ -1,7 +1,8 @@
-package org.jetbrains.bazel.workspacecontext
+package org.jetbrains.bazel.workspacecontext.provider
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

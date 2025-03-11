@@ -5,6 +5,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
@@ -47,6 +49,7 @@ class ProjectSyncService(
   private val firstPhaseTargetToBspMapper: FirstPhaseTargetToBspMapper,
   private val projectProvider: ProjectProvider,
   private val bazelInfo: BazelInfo,
+  private val workspaceContextProvider: WorkspaceContextProvider,
 ) {
   suspend fun workspaceBuildTargets(build: Boolean): WorkspaceBuildTargetsResult {
     val project = projectProvider.refreshAndGet(build = build)
@@ -61,7 +64,7 @@ class ProjectSyncService(
     return bspMapper.workspaceTargets(project)
   }
 
-  fun workspaceBuildFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult {
+  suspend fun workspaceBuildFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult {
     val project = projectProvider.bazelQueryRefreshAndGet(params.originId)
     return firstPhaseTargetToBspMapper.toWorkspaceBuildTargetsResult(project)
   }
@@ -166,4 +169,7 @@ class ProjectSyncService(
 
   fun resolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult =
     bspMapper.resolveRemoteToLocal(params)
+
+  fun workspaceContext(): WorkspaceContext =
+    projectProvider.getIfLoaded()?.workspaceContext ?: workspaceContextProvider.readWorkspaceContext()
 }

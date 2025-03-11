@@ -2,7 +2,8 @@ package org.jetbrains.bazel.server.bsp
 
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectSyncService
-import org.jetbrains.bazel.workspacecontext.DefaultWorkspaceContextProvider
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bazel.workspacecontext.provider.DefaultWorkspaceContextProvider
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
@@ -135,4 +136,6 @@ class BspServerApi(
 
   override suspend fun bazelResolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult =
     projectSyncService.resolveRemoteToLocal(params)
+
+  override suspend fun workspaceContext(): WorkspaceContext = projectSyncService.workspaceContext()
 }

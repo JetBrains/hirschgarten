@@ -8,7 +8,7 @@ import org.jetbrains.bazel.server.bsp.BspServerApi
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
-import org.jetbrains.bazel.workspacecontext.DefaultWorkspaceContextProvider
+import org.jetbrains.bazel.workspacecontext.provider.DefaultWorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import java.nio.file.Path

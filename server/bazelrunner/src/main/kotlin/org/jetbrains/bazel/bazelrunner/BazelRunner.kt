@@ -2,6 +2,7 @@ package org.jetbrains.bazel.bazelrunner
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.enableWorkspace
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.overrideRepository
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
@@ -9,7 +10,6 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.extraFlags
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import kotlin.io.path.pathString
@@ -129,6 +129,17 @@ class BazelRunner(
 
     return command
   }
+
+  private val WorkspaceContext.extraFlags: List<String>
+    get() =
+      if (enableNativeAndroidRules.value) {
+        listOf(
+          BazelFlag.experimentalGoogleLegacyApi(),
+          BazelFlag.experimentalEnableAndroidMigrationApis(),
+        )
+      } else {
+        emptyList()
+      }
 
   fun runBazelCommand(
     command: BazelCommand,
