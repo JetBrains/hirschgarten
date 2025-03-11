@@ -5,6 +5,10 @@ import com.intellij.openapi.project.Project
 
 class SyncAlreadyInProgressException : IllegalStateException()
 
+class SyncFatalFailureException : IllegalStateException()
+
+class SyncPartialFailureException : IllegalStateException()
+
 @Service(Service.Level.PROJECT)
 class BspSyncStatusService(private val project: Project) {
   private var isCanceled = false
