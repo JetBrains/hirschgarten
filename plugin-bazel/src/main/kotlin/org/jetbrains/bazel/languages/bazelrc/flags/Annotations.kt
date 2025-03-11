@@ -24,6 +24,7 @@ enum class OptionMetadataTag {
   EXPERIMENTAL,
   INCOMPATIBLE_CHANGE,
   DEPRECATED,
+  IMMUTABLE,
   HIDDEN,
 }
 
@@ -100,4 +101,8 @@ annotation class Option(
    * that the old name is deprecated and the new name should be used.
    */
   val oldName: String = "",
+  /**
+   * The list of commands this option applies to
+   */
+  val commands: Array<String> = [],
 )
