@@ -12,6 +12,8 @@ register_toolchains(
     "//:kotlin_toolchain",
 )
 
+bazel_dep(name = "apple_support", version = "1.18.1")
+
 # Required by rules_jvm_external since version 6.3
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_java", version = "8.9.0")
@@ -191,6 +193,9 @@ use_repo(
     "build_bazel_bazel_7_4_0",
     "build_bazel_bazel_8_0_0",
 )
+
+apple_cc_configure = use_extension("@apple_support//crosstoll:setup.bzl", "apple_cc_configure_extension")
+use_repo(apple_cc_configure, "local_config_apple_cc")
 
 # IJ SDK
 
