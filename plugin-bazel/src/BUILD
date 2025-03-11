@@ -118,6 +118,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console/filter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console/ids",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/gutters",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/notifications",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/projectTree",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/projectTree/action",

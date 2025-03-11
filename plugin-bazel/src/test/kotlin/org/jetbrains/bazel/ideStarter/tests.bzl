@@ -6,6 +6,7 @@ INTELLIJ_BAZEL_PLUGIN_ZIP = "plugin-bazel/plugin-bazel.zip"
 IDE_STARTER_DEPS = [
     "@maven//:com_jetbrains_intellij_tools_ide_metrics_collector",
     "@maven//:com_jetbrains_intellij_tools_ide_metrics_collector_starter",
+    "@maven//:com_jetbrains_intellij_tools_ide_starter_driver",
     "@maven//:com_jetbrains_intellij_tools_ide_starter_junit5",
     "@maven//:com_jetbrains_intellij_tools_ide_starter_squashed",
     "@maven//:org_apache_httpcomponents_httpclient",

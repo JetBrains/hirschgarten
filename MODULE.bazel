@@ -27,6 +27,7 @@ maven.install(
         "com.google.guava:guava:31.0.1-jre",
         "com.jetbrains.intellij.tools:ide-metrics-collector-starter:251.23774.16-EAP-SNAPSHOT",
         "com.jetbrains.intellij.tools:ide-metrics-collector:251.23774.16-EAP-SNAPSHOT",
+        "com.jetbrains.intellij.tools:ide-starter-driver:251.23774.16-EAP-SNAPSHOT",
         "com.jetbrains.intellij.tools:ide-starter-junit5:251.23774.16-EAP-SNAPSHOT",
         "com.jetbrains.intellij.tools:ide-starter-squashed:251.23774.16-EAP-SNAPSHOT",
         "commons-io:commons-io:jar:2.18.0",

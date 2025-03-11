@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.hotswap.ideStarter
+package org.jetbrains.bazel.performanceImpl.baseCommand
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.playback.PlaybackContext
