@@ -138,7 +138,7 @@ class BspJVMRunLineMarkerContributorTest : BasePlatformTestCase() {
   }
 
   @Test
-  fun `should return single test filter for Java test class`() {
+  fun `should return FQN test filter for Java test class`() {
     // given
     val testFile = myFixture.getJavaTestFile()
     val psiElement =
@@ -154,7 +154,7 @@ class BspJVMRunLineMarkerContributorTest : BasePlatformTestCase() {
     val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
 
     // then
-    val expectedSingleTestFilter = "BspJVMRunLineMarkerContributorTestData"
+    val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData"
     result shouldBe expectedSingleTestFilter
   }
 }
