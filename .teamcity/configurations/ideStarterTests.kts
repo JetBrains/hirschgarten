@@ -134,3 +134,19 @@ object BazelCoverageTestGitHub : BazelCoverageTest(
 object BazelCoverageTestSpace : BazelCoverageTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )
+
+sealed class TestResultsTreeTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Test Results Tree test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testResultsTree"
+)
+
+object TestResultsTreeTestGitHub : TestResultsTreeTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object TestResultsTreeTestSpace : TestResultsTreeTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
