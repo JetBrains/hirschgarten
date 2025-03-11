@@ -1,4 +1,5 @@
 load("//aspects:utils/utils.bzl", "create_file_location", "create_struct", "file_location")
+load("@rules_android//providers:providers.bzl", "AndroidIdeInfo", "AndroidManifestInfo", AndroidResourcesInfo = "StarlarkAndroidResourcesInfo")
 
 ANDROID_SDK_TOOLCHAIN_TYPE = ${toolchainType}
 
