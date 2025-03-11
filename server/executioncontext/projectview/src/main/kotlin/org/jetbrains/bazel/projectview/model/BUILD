@@ -12,7 +12,6 @@ kt_jvm_library(
         "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/model/sections",
     ],
     deps = [
-        "//server/commons",
         "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/model/sections",
         "@maven//:org_apache_logging_log4j_log4j_api",
         "@maven//:org_apache_logging_log4j_log4j_core",

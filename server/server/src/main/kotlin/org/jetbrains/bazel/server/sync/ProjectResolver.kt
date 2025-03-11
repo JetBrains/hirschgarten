@@ -25,7 +25,7 @@ import org.jetbrains.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bazel.workspacecontext.IllegalTargetsSizeException
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 
 /** Responsible for querying bazel and constructing Project instance  */

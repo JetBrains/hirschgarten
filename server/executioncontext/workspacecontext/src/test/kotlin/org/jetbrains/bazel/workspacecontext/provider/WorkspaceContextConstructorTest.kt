@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.workspacecontext
+package org.jetbrains.bazel.workspacecontext.provider
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
@@ -11,6 +11,15 @@ import org.jetbrains.bazel.projectview.model.sections.ProjectViewEnabledRulesSec
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewImportDepthSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewTargetsSection
+import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
+import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
+import org.jetbrains.bazel.workspacecontext.BuildFlagsSpec
+import org.jetbrains.bazel.workspacecontext.DirectoriesSpec
+import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
+import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
+import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
+import org.jetbrains.bazel.workspacecontext.SyncFlagsSpec
+import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

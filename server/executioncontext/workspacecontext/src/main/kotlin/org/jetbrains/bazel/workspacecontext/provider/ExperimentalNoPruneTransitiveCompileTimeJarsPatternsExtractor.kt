@@ -1,10 +1,8 @@
-package org.jetbrains.bazel.workspacecontext
+package org.jetbrains.bazel.workspacecontext.provider
 
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
-import org.jetbrains.bazel.executioncontext.api.ExecutionContextListEntity
 import org.jetbrains.bazel.projectview.model.ProjectView
-
-data class NoPruneTransitiveCompileTimeJarsPatternsSpec(override val values: List<String>) : ExecutionContextListEntity<String>()
+import org.jetbrains.bazel.workspacecontext.NoPruneTransitiveCompileTimeJarsPatternsSpec
 
 internal object ExperimentalNoPruneTransitiveCompileTimeJarsPatternsExtractor :
   ExecutionContextEntityExtractor<NoPruneTransitiveCompileTimeJarsPatternsSpec> {

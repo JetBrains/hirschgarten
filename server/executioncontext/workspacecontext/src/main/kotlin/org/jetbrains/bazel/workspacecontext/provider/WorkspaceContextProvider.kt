@@ -1,15 +1,16 @@
-package org.jetbrains.bazel.workspacecontext
+package org.jetbrains.bazel.workspacecontext.provider
 
 import org.jetbrains.bazel.projectview.generator.DefaultProjectViewGenerator
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.parser.DefaultProjectViewParser
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
 import kotlin.io.path.notExists
 
 interface WorkspaceContextProvider {
   /**
-   * Prefer to pass [WorkspaceContext] as a parameter where possible instead of calling this method to avoid reparsing the project view.
+   * Prefer to pass [org.jetbrains.bazel.workspacecontext.WorkspaceContext] as a parameter where possible instead of calling this method to avoid reparsing the project view.
    */
   fun readWorkspaceContext(): WorkspaceContext
 

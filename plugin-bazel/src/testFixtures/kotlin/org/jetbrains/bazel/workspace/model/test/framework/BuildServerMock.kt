@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.workspace.model.test.framework
 
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
@@ -79,6 +80,7 @@ class BuildServerMock(
   private val bazelResolveLocalToRemote: BazelResolveLocalToRemoteResult? = null,
   private val bazelResolveRemoteToLocal: BazelResolveRemoteToLocalResult? = null,
   private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = null,
+  private val workspaceContextResult: WorkspaceContext? = null,
 ) : JoinedBuildServer {
   override suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult = wrapInFuture(workspaceBuildTargetsResult)
 
@@ -149,6 +151,8 @@ class BuildServerMock(
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = wrapInFuture(workspaceBazelRepoMappingResult)
 
   override suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = WorkspaceBazelBinPathResult("/path/to/bazel-bin")
+
+  override suspend fun workspaceContext(): WorkspaceContext = wrapInFuture(workspaceContextResult)
 
   private fun <T> wrapInFuture(value: T?): T = value ?: error("mock value is null")
 }

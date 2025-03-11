@@ -1,5 +1,7 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+
 interface JoinedBuildServer {
   suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult
 
@@ -64,4 +66,6 @@ interface JoinedBuildServer {
   suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult
 
   suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult
+
+  suspend fun workspaceContext(): WorkspaceContext
 }

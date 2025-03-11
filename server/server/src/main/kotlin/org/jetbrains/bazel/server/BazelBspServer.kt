@@ -38,7 +38,7 @@ import org.jetbrains.bazel.server.sync.languages.python.PythonLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import java.nio.file.Path
 
 class BazelBspServer(
@@ -76,7 +76,7 @@ class BazelBspServer(
       )
     val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper(workspaceRoot)
     val projectSyncService =
-      ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, bazelInfo)
+      ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, bazelInfo, workspaceContextProvider)
     val additionalBuildTargetsProvider = AdditionalAndroidBuildTargetsProvider(projectProvider)
     val executeService =
       ExecuteService(

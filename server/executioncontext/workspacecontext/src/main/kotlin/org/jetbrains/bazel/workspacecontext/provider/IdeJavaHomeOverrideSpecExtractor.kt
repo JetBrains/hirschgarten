@@ -1,11 +1,8 @@
-package org.jetbrains.bazel.workspacecontext
+package org.jetbrains.bazel.workspacecontext.provider
 
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
-import org.jetbrains.bazel.executioncontext.api.ExecutionContextSingletonEntity
 import org.jetbrains.bazel.projectview.model.ProjectView
-import java.nio.file.Path
-
-data class IdeJavaHomeOverrideSpec(override val value: Path?) : ExecutionContextSingletonEntity<Path?>()
+import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 
 internal object IdeJavaHomeOverrideSpecExtractor : ExecutionContextEntityExtractor<IdeJavaHomeOverrideSpec> {
   override fun fromProjectView(projectView: ProjectView): IdeJavaHomeOverrideSpec =

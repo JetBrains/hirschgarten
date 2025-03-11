@@ -1,10 +1,11 @@
-package org.jetbrains.bazel.workspacecontext
+package org.jetbrains.bazel.workspacecontext.provider
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractorException
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
+import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
