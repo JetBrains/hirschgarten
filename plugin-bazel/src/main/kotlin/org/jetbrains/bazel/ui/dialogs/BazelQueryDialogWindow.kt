@@ -178,8 +178,8 @@ class BazelQueryDialogWindow(private val project: Project) : DialogWrapper(true)
   }
 
   private fun evaluate() {
-    //TODO: correct quotes depending on query value
-    val resultTextBuilder = StringBuilder("bazel query \"" + editorTextField.text + "\"")
+    val queryQuotes = if (editorTextField.text.contains("\"")) "'" else "\""
+    val resultTextBuilder = StringBuilder("bazel query $queryQuotes${editorTextField.text}$queryQuotes")
     for (flag in defaultFlags) {
       if (flag.isSelected()) resultTextBuilder.append(" --").append(flag.flag)
     }
