@@ -12,6 +12,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/base",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/highlighting",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/language",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/task",
