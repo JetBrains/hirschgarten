@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.bazel.ogRun
+package org.jetbrains.bazel.ogRun.state
 
-import org.jetbrains.bazel.label.Label
+import javax.swing.JComponent
 
-/** Marker interface for all run configurations  */
-interface BlazeRunConfiguration {
-  /**
-   * Returns a list of target expressions this configuration should run, empty if its targets aren't
-   * known or valid.
-   *
-   *
-   * Will be calculated synchronously, and in edge cases may involve significant work, so
-   * shouldn't be called on the EDT.
+/** Provides support for editing [RunConfigurationState]s.  */
+interface RunConfigurationStateEditor {
+  /** Reset the editor based on the given state.  */
+  fun resetEditorFrom(state: RunConfigurationState?)
+
+  /** Update the given state based on the editor.  */
+  fun applyEditorTo(state: RunConfigurationState?)
+
+  /** @return A component to display for the editor.
    */
-  val targets: List<Label>
+  fun createComponent(): JComponent?
 
-  /** Keep in sync with source XML  */
-  var keepInSync: Boolean?
+  fun setComponentEnabled(enabled: Boolean)
 }
