@@ -15,85 +15,66 @@
  */
 package org.jetbrains.bazel.ogRun.confighandler
 
-import com.google.common.collect.ImmutableList
-import com.google.common.collect.Iterables
-import com.google.idea.blaze.base.model.primitives.Kind
 import com.intellij.openapi.extensions.ExtensionPointName
 
 /**
  * Provides a [BlazeCommandRunConfigurationHandler] corresponding to a given [ ].
  */
 interface BlazeCommandRunConfigurationHandlerProvider {
-    val displayLabel: String?
+  val displayLabel: String?
 
-    /** The target state of a blaze run configuration.  */
-    enum class TargetState {
-        KNOWN,
-        PENDING
-    }
+  /** The target state of a blaze run configuration.  */
+  enum class TargetState {
+    KNOWN,
+    PENDING,
+  }
 
-    /** Whether this extension is applicable to the kind.  */
-    fun canHandleKind(state: TargetState?, kind: Kind?): Boolean
+  /** Whether this extension is applicable to the kind.  */
+  fun canHandleKind(state: TargetState?, kind: Kind?): Boolean
 
-    /** Returns the corresponding [BlazeCommandRunConfigurationHandler].  */
-    fun createHandler(configuration: BlazeCommandRunConfiguration?): BlazeCommandRunConfigurationHandler?
+  /** Returns the corresponding [BlazeCommandRunConfigurationHandler].  */
+  fun createHandler(configuration: BlazeCommandRunConfiguration?): BlazeCommandRunConfigurationHandler?
+
+  /**
+   * Returns the unique ID of this [BlazeCommandRunConfigurationHandlerProvider]. The ID is
+   * used to store configuration settings and must not change between plugin versions.
+   */
+  val id: String?
+
+  companion object {
+    /**
+     * Find a BlazeCommandRunConfigurationHandlerProvider applicable to the given kind. If no provider
+     * is more relevant, [BlazeCommandGenericRunConfigurationHandlerProvider] is returned.
+     */
+    fun findHandlerProvider(state: TargetState?, kind: Kind?): BlazeCommandRunConfigurationHandlerProvider =
+      findHandlerProviders(state, kind).firstOrNull()
+        ?: throw RuntimeException(
+          "No BlazeCommandRunConfigurationHandlerProvider found for Kind $kind",
+        )
 
     /**
-     * Returns the unique ID of this [BlazeCommandRunConfigurationHandlerProvider]. The ID is
-     * used to store configuration settings and must not change between plugin versions.
+     * Find BlazeCommandRunConfigurationHandlerProviders applicable to the given kind.
      */
-    val id: String?
+    fun findHandlerProviders(state: TargetState?, kind: Kind?): List<BlazeCommandRunConfigurationHandlerProvider> =
+      EP_NAME.extensionList
+        .filter { it.canHandleKind(state, kind) }
 
-    companion object {
-        /**
-         * Find a BlazeCommandRunConfigurationHandlerProvider applicable to the given kind. If no provider
-         * is more relevant, [BlazeCommandGenericRunConfigurationHandlerProvider] is returned.
-         */
-        fun findHandlerProvider(
-            state: TargetState?, kind: Kind?
-        ): BlazeCommandRunConfigurationHandlerProvider {
-            val result = Iterables.getFirst<BlazeCommandRunConfigurationHandlerProvider?>(
-                findHandlerProviders(state, kind),
-                null
-            )
-            if (result != null) {
-                return result
-            }
-            throw RuntimeException(
-                "No BlazeCommandRunConfigurationHandlerProvider found for Kind " + kind
-            )
+    fun findHandlerProviders(): List<BlazeCommandRunConfigurationHandlerProvider> = EP_NAME.extensionList
+
+    /** Get the BlazeCommandRunConfigurationHandlerProvider with the given ID, if one exists.  */
+    fun getHandlerProvider(id: String?): BlazeCommandRunConfigurationHandlerProvider? {
+      for (handlerProvider in EP_NAME.extensions) {
+        if (handlerProvider.id == id) {
+          return handlerProvider
         }
-
-        /**
-         * Find BlazeCommandRunConfigurationHandlerProviders applicable to the given kind.
-         */
-        fun findHandlerProviders(
-            state: TargetState?, kind: Kind?
-        ): MutableCollection<BlazeCommandRunConfigurationHandlerProvider?>? {
-            return EP_NAME.extensionList.stream()
-                .filter { it: BlazeCommandRunConfigurationHandlerProvider? -> it!!.canHandleKind(state, kind) }.collect(
-                    ImmutableList.toImmutableList<BlazeCommandRunConfigurationHandlerProvider?>()
-                )
-        }
-
-        fun findHandlerProviders(): MutableCollection<BlazeCommandRunConfigurationHandlerProvider?> {
-            return EP_NAME.extensionList
-        }
-
-        /** Get the BlazeCommandRunConfigurationHandlerProvider with the given ID, if one exists.  */
-        fun getHandlerProvider(id: String?): BlazeCommandRunConfigurationHandlerProvider? {
-            for (handlerProvider in EP_NAME.extensions) {
-                if (handlerProvider.id == id) {
-                    return handlerProvider
-                }
-            }
-            return null
-        }
-
-        @JvmField
-        val EP_NAME: ExtensionPointName<BlazeCommandRunConfigurationHandlerProvider> =
-            create.create<BlazeCommandRunConfigurationHandlerProvider?>(
-                "com.google.idea.blaze.BlazeCommandRunConfigurationHandlerProvider"
-            )
+      }
+      return null
     }
+
+    @JvmField
+    val EP_NAME: ExtensionPointName<BlazeCommandRunConfigurationHandlerProvider> =
+      ExtensionPointName.create<BlazeCommandRunConfigurationHandlerProvider>(
+        "com.google.idea.blaze.BlazeCommandRunConfigurationHandlerProvider",
+      )
+  }
 }

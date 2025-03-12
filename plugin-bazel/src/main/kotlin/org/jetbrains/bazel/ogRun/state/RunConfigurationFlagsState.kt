@@ -36,15 +36,16 @@ class RunConfigurationFlagsState(private val tag: String?, private val fieldLabe
     /** Flags ready to be used directly as args for external processes.  */
     get() {
       val processedFlags =
-        flags.stream()
+        flags
+          .stream()
           .map<String?> { s: String? ->
-            ParametersListUtil.parse(
-              s!!,
-              false,
-              true,
-            ).get(0)
-          }
-          .collect(Collectors.toList())
+            ParametersListUtil
+              .parse(
+                s!!,
+                false,
+                true,
+              ).get(0)
+          }.collect(Collectors.toList())
       return BlazeFlags.expandBuildFlags(processedFlags)
     }
 
@@ -81,13 +82,10 @@ class RunConfigurationFlagsState(private val tag: String?, private val fieldLabe
     }
   }
 
-  override fun getEditor(project: Project?): RunConfigurationStateEditor {
-    return RunConfigurationFlagsStateEditor(fieldLabel)
-  }
+  override fun getEditor(project: Project?): RunConfigurationStateEditor = RunConfigurationFlagsStateEditor(fieldLabel)
 
   /** Editor component for flags list  */
-  protected class RunConfigurationFlagsStateEditor internal constructor(private val fieldLabel: String?) :
-    RunConfigurationStateEditor {
+  protected class RunConfigurationFlagsStateEditor internal constructor(private val fieldLabel: String?) : RunConfigurationStateEditor {
     private val flagsField: JTextArea
 
     init {
@@ -98,9 +96,9 @@ class RunConfigurationFlagsState(private val tag: String?, private val fieldLabe
       val field: JTextArea =
         object : JTextArea() {
           val minimumSize: Dimension
-            get() =// Jetbrains' DefaultScrollBarUI will automatically hide the scrollbar knob
-            // if the viewport height is less than twice the scrollbar's width.
-            // In the default font, 2 rows is slightly taller than this, guaranteeing
+            get() = // Jetbrains' DefaultScrollBarUI will automatically hide the scrollbar knob
+              // if the viewport height is less than twice the scrollbar's width.
+              // In the default font, 2 rows is slightly taller than this, guaranteeing
               // that the scrollbar knob is visible when the field is scrollable.
               Dimension(getColumnWidth(), 2 * getRowHeight())
         }
@@ -134,13 +132,9 @@ class RunConfigurationFlagsState(private val tag: String?, private val fieldLabe
       viewport.setView(field)
       viewport.setLayout(
         object : ViewportLayout() {
-          override fun preferredLayoutSize(parent: Container?): Dimension? {
-            return field.getPreferredSize()
-          }
+          override fun preferredLayoutSize(parent: Container?): Dimension? = field.getPreferredSize()
 
-          override fun minimumLayoutSize(parent: Container?): Dimension? {
-            return field.getMinimumSize()
-          }
+          override fun minimumLayoutSize(parent: Container?): Dimension? = field.getMinimumSize()
         },
       )
 
@@ -153,9 +147,7 @@ class RunConfigurationFlagsState(private val tag: String?, private val fieldLabe
       return scrollPane
     }
 
-    override fun createComponent(): JComponent {
-      return UiUtil.createBox(JLabel(fieldLabel), createScrollPane(flagsField))
-    }
+    override fun createComponent(): JComponent = UiUtil.createBox(JLabel(fieldLabel), createScrollPane(flagsField))
 
     @get:VisibleForTesting
     val internalComponent: JComponent

@@ -39,7 +39,9 @@ class BlazeTargetFilter : Filter {
     val results: MutableList<Filter.ResultItem?> = ArrayList<Filter.ResultItem?>()
     while (matcher.find()) {
       val prefixLength =
-        Optional.ofNullable<String?>(matcher.group(1)).map<Int?>(Function { obj: String? -> obj!!.length })
+        Optional
+          .ofNullable<String?>(matcher.group(1))
+          .map<Int?>(Function { obj: String? -> obj!!.length })
           .orElse(0)
 
       val labelString = matcher.group().substring(prefixLength)
@@ -48,7 +50,8 @@ class BlazeTargetFilter : Filter {
         NonProblemHyperlinkInfo { project ->
           val label: Label? = LabelUtils.createLabelFromString( /* blazePackage= */null, labelString)
           if (label == null) {
-            Logger.getInstance(this.javaClass)
+            Logger
+              .getInstance(this.javaClass)
               .error(IllegalStateException("Parsing returned illegal label: " + labelString))
           }
           val psi: PsiElement? = BuildReferenceManager.getInstance(project).resolveLabel(label)
@@ -59,8 +62,8 @@ class BlazeTargetFilter : Filter {
       val offset = entireLength - line.length
       results.add(
         Filter.ResultItem(
-          /* highlightStartOffset= */
-          matcher.start() + offset + prefixLength,  /* highlightEndOffset= */
+          // highlightStartOffset=
+          matcher.start() + offset + prefixLength, // highlightEndOffset=
           matcher.end() + offset,
           link,
           this.highlightAttributes,
@@ -71,9 +74,9 @@ class BlazeTargetFilter : Filter {
   }
 
   private val highlightAttributes: TextAttributes
-    get() =// Avoid a sea of blue in the console: just add a grey underline to navigable targets.
+    get() = // Avoid a sea of blue in the console: just add a grey underline to navigable targets.
       TextAttributes(
-        UIUtil.getActiveTextColor(),  /* backgroundColor= */
+        UIUtil.getActiveTextColor(), // backgroundColor=
         null,
         UIUtil.getInactiveTextColor(),
         EffectType.LINE_UNDERSCORE,
@@ -82,9 +85,8 @@ class BlazeTargetFilter : Filter {
 
   /** Provider for [BlazeTargetFilter]  */
   internal class Provider : ConsoleFilterProvider {
-    override fun getDefaultFilters(project: Project?): Array<Filter?> {
-      return if (Blaze.isBlazeProject(project)) arrayOf<Filter>(BlazeTargetFilter()) else arrayOfNulls<Filter>(0)
-    }
+    override fun getDefaultFilters(project: Project?): Array<Filter?> =
+      if (Blaze.isBlazeProject(project)) arrayOf<Filter>(BlazeTargetFilter()) else arrayOfNulls<Filter>(0)
   }
 
   companion object {
@@ -94,10 +96,13 @@ class BlazeTargetFilter : Filter {
 
     // ignore '//' preceded by text (e.g. https://...)
     // format: ([@external_workspace]//package:rule)
-    private val TARGET_REGEX: String? = String.format(
-      "(^|[ '\"=])(@[%s]*)?//[%s]+(:[%s]+)?",
-      PACKAGE_NAME_CHARS, PACKAGE_NAME_CHARS, TARGET_CHARS,
-    )
+    private val TARGET_REGEX: String? =
+      String.format(
+        "(^|[ '\"=])(@[%s]*)?//[%s]+(:[%s]+)?",
+        PACKAGE_NAME_CHARS,
+        PACKAGE_NAME_CHARS,
+        TARGET_CHARS,
+      )
 
     @VisibleForTesting
     val TARGET_PATTERN: Pattern = Pattern.compile(TARGET_REGEX)

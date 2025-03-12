@@ -31,28 +31,27 @@ interface FileResolver {
      * Iterates through all available [FileResolver]s, returning the first successful result.
      */
     @JvmStatic
-    fun resolveToVirtualFile(project: Project?, fileString: String?): VirtualFile? {
-      return Arrays.stream<FileResolver?>(EP_NAME.extensions)
+    fun resolveToVirtualFile(project: Project?, fileString: String?): VirtualFile? =
+      Arrays
+        .stream<FileResolver?>(EP_NAME.extensions)
         .map<File?> { r: FileResolver? -> r!!.resolve(project, fileString) }
         .filter { obj: File? -> Objects.nonNull(obj) }
         .map<Any?> { f: File? ->
           VirtualFileSystemProvider.getInstance().getSystem().findFileByPath(f!!.getPath())
-        }
-        .filter { obj: Any? -> Objects.nonNull(obj) }
+        }.filter { obj: Any? -> Objects.nonNull(obj) }
         .findFirst()
         .orElse(null)
-    }
 
     /**
      * Iterates through all available [FileResolver]s, returning the first successful result.
      */
-    fun resolveToFile(project: Project?, fileString: String?): File? {
-      return Arrays.stream<FileResolver?>(EP_NAME.extensions)
+    fun resolveToFile(project: Project?, fileString: String?): File? =
+      Arrays
+        .stream<FileResolver?>(EP_NAME.extensions)
         .map<File?> { r: FileResolver? -> r!!.resolve(project, fileString) }
         .filter { obj: File? -> Objects.nonNull(obj) }
         .findFirst()
         .orElse(null)
-    }
 
     val EP_NAME: ExtensionPointName<FileResolver?> =
       create.create<FileResolver?>("com.google.idea.blaze.FileStringParser")

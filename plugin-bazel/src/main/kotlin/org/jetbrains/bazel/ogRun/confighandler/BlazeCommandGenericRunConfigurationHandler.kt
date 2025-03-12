@@ -15,50 +15,45 @@
  */
 package org.jetbrains.bazel.ogRun.confighandler
 
-import com.google.idea.blaze.base.command.BlazeCommandName
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RuntimeConfigurationException
 import com.intellij.execution.runners.ExecutionEnvironment
+import org.jetbrains.bazel.ogRun.other.BlazeCommandName
 
 /**
  * Generic handler for [BlazeCommandRunConfiguration]s, used as a fallback in the case where
  * no other handlers are more relevant.
  */
 class BlazeCommandGenericRunConfigurationHandler
-    (configuration: BlazeCommandRunConfiguration) : BlazeCommandRunConfigurationHandler {
-    private val buildSystemName: BuildSystemName
-    private val state: BlazeCommandRunConfigurationCommonState
+(configuration: BlazeCommandRunConfiguration) : BlazeCommandRunConfigurationHandler {
+  private val buildSystemName: BuildSystemName
+  private val state: BlazeCommandRunConfigurationCommonState
 
-    init {
-        this.buildSystemName = Blaze.getBuildSystemName(configuration.getProject())
-        this.state = BlazeCommandRunConfigurationCommonState(buildSystemName)
+  init {
+    this.buildSystemName = Blaze.getBuildSystemName(configuration.getProject())
+    this.state = BlazeCommandRunConfigurationCommonState(buildSystemName)
+  }
+
+  public override fun getState(): BlazeCommandRunConfigurationCommonState = state
+
+  override fun createRunner(executor: Executor?, environment: ExecutionEnvironment?): BlazeCommandRunConfigurationRunner =
+    BlazeCommandGenericRunConfigurationRunner()
+
+  @Throws(RuntimeConfigurationException::class)
+  override fun checkConfiguration() {
+    state.validate(buildSystemName)
+  }
+
+  public override fun suggestedName(configuration: BlazeCommandRunConfiguration): String? {
+    if (configuration.targets.isEmpty()) {
+      return null
     }
+    return BlazeConfigurationNameBuilder(configuration).build()
+  }
 
-    public override fun getState(): BlazeCommandRunConfigurationCommonState {
-        return state
-    }
+  val commandName: BlazeCommandName?
+    get() = state.commandState.getCommand()
 
-    override fun createRunner(
-        executor: Executor?, environment: ExecutionEnvironment?
-    ): BlazeCommandRunConfigurationRunner {
-        return BlazeCommandGenericRunConfigurationRunner()
-    }
-
-    @Throws(RuntimeConfigurationException::class)
-    override fun checkConfiguration() {
-        state.validate(buildSystemName)
-    }
-
-    public override fun suggestedName(configuration: BlazeCommandRunConfiguration): String? {
-        if (configuration.targets.isEmpty()) {
-            return null
-        }
-        return BlazeConfigurationNameBuilder(configuration).build()
-    }
-
-    val commandName: BlazeCommandName?
-        get() = state.commandState.getCommand()
-
-    val handlerName: String
-        get() = "Generic Handler"
+  val handlerName: String
+    get() = "Generic Handler"
 }

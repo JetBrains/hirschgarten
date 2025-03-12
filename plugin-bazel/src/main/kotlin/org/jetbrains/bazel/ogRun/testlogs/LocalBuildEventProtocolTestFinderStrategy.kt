@@ -25,21 +25,21 @@ import java.util.*
  * Parses the output BEP proto written by blaze to locate the test XML files.
  */
 class LocalBuildEventProtocolTestFinderStrategy
-    (buildResultHelper: BuildResultHelper) : BlazeTestResultFinderStrategy {
-    private val buildResultHelper: BuildResultHelper
+(buildResultHelper: BuildResultHelper) : BlazeTestResultFinderStrategy {
+  private val buildResultHelper: BuildResultHelper
 
-    init {
-        this.buildResultHelper = buildResultHelper
-    }
+  init {
+    this.buildResultHelper = buildResultHelper
+  }
 
-    @Throws(GetArtifactsException::class)
-    override fun findTestResults(): BlazeTestResults {
-        buildResultHelper.getBepStream(Optional.empty<T?>()).use { bepStream ->
-            return BuildResultParser.getTestResults(bepStream)
-        }
+  @Throws(GetArtifactsException::class)
+  override fun findTestResults(): BlazeTestResults {
+    buildResultHelper.getBepStream(Optional.empty<T?>()).use { bepStream ->
+      return BuildResultParser.getTestResults(bepStream)
     }
+  }
 
-    override fun deleteTemporaryOutputFiles() {
-        buildResultHelper.deleteTemporaryOutputFiles()
-    }
+  override fun deleteTemporaryOutputFiles() {
+    buildResultHelper.deleteTemporaryOutputFiles()
+  }
 }

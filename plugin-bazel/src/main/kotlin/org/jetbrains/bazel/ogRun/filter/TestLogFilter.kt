@@ -46,18 +46,18 @@ internal class TestLogFilter(private val project: Project) : Filter {
     return Filter.Result(
       matcher.start(1) + offset,
       matcher.end(1) + offset,
-      OpenFileHyperlinkInfo(project, file,  /* line= */0),
+      OpenFileHyperlinkInfo(project, file, /* line= */0),
     )
   }
 
   /** Provider for traceback filter  */
   internal class Provider : ConsoleFilterProvider {
-    override fun getDefaultFilters(project: Project): Array<Filter?> {
-      return if (Blaze.isBlazeProject(project))
+    override fun getDefaultFilters(project: Project): Array<Filter?> =
+      if (Blaze.isBlazeProject(project)) {
         arrayOf<Filter>(TestLogFilter(project))
-      else
+      } else {
         arrayOfNulls<Filter>(0)
-    }
+      }
   }
 
   companion object {

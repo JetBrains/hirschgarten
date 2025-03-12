@@ -27,54 +27,60 @@ import java.util.function.Predicate
 
 /** Utilities operating on futures.  */
 object FuturesUtil {
-    private val logger = Logger.getInstance(FuturesUtil::class.java)
+  private val logger = Logger.getInstance(FuturesUtil::class.java)
 
-    /**
-     * Blocks while calling get on the future. Use with care: logs a warning for [ ], and otherwise returns null on error or interrupt.
-     */
-    fun <T> getIgnoringErrors(future: Future<T?>): T? {
-        try {
-            return future.get()
-        } catch (e: InterruptedException) {
-            Thread.currentThread().interrupt()
-        } catch (e: ExecutionException) {
-            logger.warn(e)
-        }
-        return null
+  /**
+   * Blocks while calling get on the future. Use with care: logs a warning for [ ], and otherwise returns null on error or interrupt.
+   */
+  fun <T> getIgnoringErrors(future: Future<T?>): T? {
+    try {
+      return future.get()
+    } catch (e: InterruptedException) {
+      Thread.currentThread().interrupt()
+    } catch (e: ExecutionException) {
+      logger.warn(e)
     }
+    return null
+  }
 
-    /**
-     * Iterates through the futures, returning the first future satisfying the predicate. Future
-     * returns null if there are no results matching the predicate.
-     *
-     *
-     * Prioritizes immediately available results.
-     */
-    fun <T> getFirstFutureSatisfyingPredicate(
-        iterable: Iterable<Future<T?>>, predicate: Predicate<T?>
-    ): ListenableFuture<T?> {
-        val futures: MutableList<ListenableFuture<T?>?> = ArrayList<ListenableFuture<T?>?>()
-        for (future in iterable) {
-            if (future.isDone()) {
-                val result = getIgnoringErrors<T?>(future)
-                if (predicate.test(result)) {
-                    return Futures.immediateFuture<T?>(result)
-                }
-            } else {
-                // we can't return ListenableFuture directly, because implementations are using different
-                // versions of that class...
-                futures.add(JdkFutureAdapters.listenInPoolThread<T?>(future))
-            }
+  /**
+   * Iterates through the futures, returning the first future satisfying the predicate. Future
+   * returns null if there are no results matching the predicate.
+   *
+   *
+   * Prioritizes immediately available results.
+   */
+  fun <T> getFirstFutureSatisfyingPredicate(iterable: Iterable<Future<T?>>, predicate: Predicate<T?>): ListenableFuture<T?> {
+    val futures: MutableList<ListenableFuture<T?>?> = ArrayList<ListenableFuture<T?>?>()
+    for (future in iterable) {
+      if (future.isDone()) {
+        val result = getIgnoringErrors<T?>(future)
+        if (predicate.test(result)) {
+          return Futures.immediateFuture<T?>(result)
         }
-        if (futures.isEmpty()) {
-            return Futures.immediateFuture<T?>(null)
-        }
-        return Futures.transform<MutableList<T?>?, T?>(
-            Futures.allAsList<T?>(futures),
-            Function { list: MutableList<T?>? ->
-                if (list == null) null else list.stream().filter(predicate).findFirst().orElse(null)
-            },
-            MoreExecutors.directExecutor()
-        )
+      } else {
+        // we can't return ListenableFuture directly, because implementations are using different
+        // versions of that class...
+        futures.add(JdkFutureAdapters.listenInPoolThread<T?>(future))
+      }
     }
+    if (futures.isEmpty()) {
+      return Futures.immediateFuture<T?>(null)
+    }
+    return Futures.transform<MutableList<T?>?, T?>(
+      Futures.allAsList<T?>(futures),
+      Function { list: MutableList<T?>? ->
+        if (list == null) {
+          null
+        } else {
+          list
+            .stream()
+            .filter(predicate)
+            .findFirst()
+            .orElse(null)
+        }
+      },
+      MoreExecutors.directExecutor(),
+    )
+  }
 }

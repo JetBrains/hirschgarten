@@ -28,69 +28,77 @@ import java.util.*
  * underlying [BlazeTestEventsHandler].
  */
 class BlazeWebTestEventsHandler : BlazeTestEventsHandler {
-    override fun handlesKind(kind: Kind?): Boolean {
-        return kind === RuleTypes.WEB_TEST.getKind()
-    }
+  override fun handlesKind(kind: Kind?): Boolean = kind === RuleTypes.WEB_TEST.getKind()
 
-    val testLocator: SMTestLocator?
-        get() = BlazeWebTestLocator.INSTANCE
+  val testLocator: SMTestLocator?
+    get() = BlazeWebTestLocator.INSTANCE
 
-    /** Uses the [BlazeTestEventsHandler] that handles the language of the test location.  */
-    override fun getTestFilter(project: Project?, testLocations: MutableList<Location<*>?>): String? {
-        return testLocations.stream()
-            .map<VirtualFile?> { obj: Location<*>? -> obj!!.getVirtualFile() }
-            .filter { obj: VirtualFile? -> Objects.nonNull(obj) }
-            .map<String?> { obj: VirtualFile? -> obj!!.getExtension() }
-            .filter { obj: String? -> Objects.nonNull(obj) }
-            .map<Any?>(LanguageClass::fromExtension)
-            .filter { obj: Any? -> Objects.nonNull(obj) }
-            .map<Any?>(Kind::getKindsForLanguage)
-            .flatMap<Any?> { obj: Any? -> obj.stream() }
-            .filter { kind: Any? -> kind.getRuleType() === RuleType.TEST }
-            .map<Any?>(BlazeTestEventsHandler::getHandlerForTargetKind)
-            .filter { obj: Any? -> obj.isPresent() }
-            .map<Any?> { obj: Any? -> obj.get() }
-            .filter { handler: Any? -> handler !is BlazeWebTestEventsHandler }
-            .map<Any?> { handler: Any? -> handler.getTestFilter(project, testLocations) }
-            .filter { obj: Any? -> Objects.nonNull(obj) }
-            .filter { filter: Any? -> !filter.isEmpty() }
-            .findFirst()
-            .orElse(null)
-    }
+  /** Uses the [BlazeTestEventsHandler] that handles the language of the test location.  */
+  override fun getTestFilter(project: Project?, testLocations: MutableList<Location<*>?>): String? =
+    testLocations
+      .stream()
+      .map<VirtualFile?> { obj: Location<*>? -> obj!!.getVirtualFile() }
+      .filter { obj: VirtualFile? -> Objects.nonNull(obj) }
+      .map<String?> { obj: VirtualFile? -> obj!!.getExtension() }
+      .filter { obj: String? -> Objects.nonNull(obj) }
+      .map<Any?>(LanguageClass::fromExtension)
+      .filter { obj: Any? -> Objects.nonNull(obj) }
+      .map<Any?>(Kind::getKindsForLanguage)
+      .flatMap<Any?> { obj: Any? -> obj.stream() }
+      .filter { kind: Any? -> kind.getRuleType() === RuleType.TEST }
+      .map<Any?>(BlazeTestEventsHandler::getHandlerForTargetKind)
+      .filter { obj: Any? -> obj.isPresent() }
+      .map<Any?> { obj: Any? -> obj.get() }
+      .filter { handler: Any? -> handler !is BlazeWebTestEventsHandler }
+      .map<Any?> { handler: Any? -> handler.getTestFilter(project, testLocations) }
+      .filter { obj: Any? -> Objects.nonNull(obj) }
+      .filter { filter: Any? -> !filter.isEmpty() }
+      .findFirst()
+      .orElse(null)
 
-    override fun testLocationUrl(
-        label: Label?,
-        kind: Kind?,
-        parentSuite: String?,
-        name: String?,
-        className: String?
-    ): String? {
-        return (WEB_TEST_PROTOCOL
-                + URLUtil.SCHEME_SEPARATOR
-                + label
-                + SmRunnerUtils.TEST_NAME_PARTS_SPLITTER
-                + parentSuite
-                + SmRunnerUtils.TEST_NAME_PARTS_SPLITTER
-                + name
-                + SmRunnerUtils.TEST_NAME_PARTS_SPLITTER
-                + Strings.nullToEmpty(className))
-    }
+  override fun testLocationUrl(
+    label: Label?,
+    kind: Kind?,
+    parentSuite: String?,
+    name: String?,
+    className: String?,
+  ): String? =
+    (
+      WEB_TEST_PROTOCOL +
+        URLUtil.SCHEME_SEPARATOR +
+        label +
+        SmRunnerUtils.TEST_NAME_PARTS_SPLITTER +
+        parentSuite +
+        SmRunnerUtils.TEST_NAME_PARTS_SPLITTER +
+        name +
+        SmRunnerUtils.TEST_NAME_PARTS_SPLITTER +
+        Strings.nullToEmpty(className)
+    )
 
-    override fun suiteLocationUrl(label: Label?, kind: Kind?, name: String?): String? {
-        return (WEB_TEST_PROTOCOL
-                + URLUtil.SCHEME_SEPARATOR
-                + label
-                + SmRunnerUtils.TEST_NAME_PARTS_SPLITTER
-                + name)
-    }
+  override fun suiteLocationUrl(
+    label: Label?,
+    kind: Kind?,
+    name: String?,
+  ): String? =
+    (
+      WEB_TEST_PROTOCOL +
+        URLUtil.SCHEME_SEPARATOR +
+        label +
+        SmRunnerUtils.TEST_NAME_PARTS_SPLITTER +
+        name
+    )
 
-    override fun ignoreSuite(label: Label, kind: Kind?, suite: BlazeXmlSchema.TestSuite): Boolean {
-        return super.ignoreSuite(label, kind, suite)
-                && suite.testCases.stream()
-            .allMatch { test: BlazeXmlSchema.TestCase? -> BlazeXmlToTestEventsConverter.isIgnored(test) }
-    }
+  override fun ignoreSuite(
+    label: Label,
+    kind: Kind?,
+    suite: BlazeXmlSchema.TestSuite,
+  ): Boolean =
+    super.ignoreSuite(label, kind, suite) &&
+      suite.testCases
+        .stream()
+        .allMatch { test: BlazeXmlSchema.TestCase? -> BlazeXmlToTestEventsConverter.isIgnored(test) }
 
-    companion object {
-        const val WEB_TEST_PROTOCOL: String = "blaze:web:test"
-    }
+  companion object {
+    const val WEB_TEST_PROTOCOL: String = "blaze:web:test"
+  }
 }

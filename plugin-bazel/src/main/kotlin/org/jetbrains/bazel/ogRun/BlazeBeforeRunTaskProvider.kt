@@ -15,95 +15,88 @@
  */
 package org.jetbrains.bazel.ogRun
 
-import com.google.idea.blaze.base.settings.Blaze
+import com.intellij.execution.BeforeRunTask
+import com.intellij.execution.BeforeRunTaskProvider
+import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.execution.configurations.WrappingRunConfiguration
+import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.util.Key
+import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.ogRun.confighandler.BlazeCommandRunConfigurationRunner
 import javax.swing.Icon
 
 /**
  * Provides a before run task provider that immediately transfers control to [ ]
  */
-internal class BlazeBeforeRunTaskProvider
-
-    : com.intellij.execution.BeforeRunTaskProvider<BlazeBeforeRunTaskProvider.Task>() {
-    internal class Task private constructor() : com.intellij.execution.BeforeRunTask<Task>(ID) {
-        init {
-            setEnabled(true)
-        }
+internal class BlazeBeforeRunTaskProvider : BeforeRunTaskProvider<BlazeBeforeRunTaskProvider.Task>() {
+  internal class Task : BeforeRunTask<Task>(ID) {
+    init {
+      isEnabled = true
     }
+  }
 
-    val id: com.intellij.openapi.util.Key<Task?>
-        get() = ID
+  override fun getId(): Key<Task> = ID
 
-    val icon: Icon?
-        get() = BlazeIcons.Logo
+  val icon: Icon = BazelPluginIcons.bazel
 
-    override fun getTaskIcon(task: Task?): Icon? {
-        return BlazeIcons.Logo
+  override fun getTaskIcon(task: Task): Icon = icon
+
+  override fun getName(): String = "Bazel before-run task"
+
+  override fun getDescription(task: Task): String = name
+
+  override fun isConfigurable(): Boolean = false
+
+  override fun createTask(config: RunConfiguration): Task? {
+    if (config is BlazeCommandRunConfiguration) {
+      return Task()
     }
+    return null
+  }
 
-    val name: String = "Bazel before-run task"
-
-    override fun getDescription(task: Task?): String = name
-
-    val isConfigurable: Boolean
-        get() = false
-
-    override fun createTask(config: com.intellij.execution.configurations.RunConfiguration?): Task? {
-        if (config is BlazeCommandRunConfiguration) {
-            return BlazeBeforeRunTaskProvider.Task()
-        }
-        return null
+  override fun canExecuteTask(configuration: RunConfiguration, task: Task): Boolean {
+    var configuration: RunConfiguration? = configuration
+    if (configuration is WrappingRunConfiguration<*>) {
+      configuration =
+        (configuration as WrappingRunConfiguration<*>).getPeer()
     }
+    return configuration is BlazeCommandRunConfiguration
+  }
 
-    override fun configureTask(
-        runConfiguration: com.intellij.execution.configurations.RunConfiguration?,
-        task: Task?
-    ): Boolean {
-        return false
+  override fun executeTask(
+    dataContext: DataContext,
+    configuration: RunConfiguration,
+    env: ExecutionEnvironment,
+    task: Task,
+  ): Boolean {
+    if (!canExecuteTask(configuration, task)) {
+      return false
     }
-
-    override fun canExecuteTask(
-        configuration: com.intellij.execution.configurations.RunConfiguration?,
-        task: Task?
-    ): Boolean {
-        var configuration: com.intellij.execution.configurations.RunConfiguration? = configuration
-        if (configuration is com.intellij.execution.configurations.WrappingRunConfiguration<*>) {
-            configuration =
-                (configuration as com.intellij.execution.configurations.WrappingRunConfiguration<*>).getPeer()
-        }
-        return configuration is BlazeCommandRunConfiguration
+    val runner: BlazeCommandRunConfigurationRunner =
+      env.getCopyableUserData<BlazeCommandRunConfigurationRunner>(BlazeCommandRunConfigurationRunner.RUNNER_KEY)
+    try {
+      return runner.executeBeforeRunTask(env)
+    } catch (e: RuntimeException) {
+      // An uncaught exception here means IntelliJ never cleans up and the configuration is always
+      // considered to be already running, so you can't start it ever again.
+      logger.warn("Uncaught exception in Blaze before run task", e)
+      com.intellij.execution.runners.ExecutionUtil.handleExecutionError(
+        env,
+        com.intellij.execution.ExecutionException(e),
+      )
+      return false
     }
+  }
 
-    override fun executeTask(
-        dataContext: com.intellij.openapi.actionSystem.DataContext?,
-        configuration: com.intellij.execution.configurations.RunConfiguration?,
-        env: com.intellij.execution.runners.ExecutionEnvironment,
-        task: Task?
-    ): Boolean {
-        if (!canExecuteTask(configuration, task)) {
-            return false
-        }
-        val runner: BlazeCommandRunConfigurationRunner =
-            env.getCopyableUserData<BlazeCommandRunConfigurationRunner>(BlazeCommandRunConfigurationRunner.RUNNER_KEY)
-        try {
-            return runner.executeBeforeRunTask(env)
-        } catch (e: RuntimeException) {
-            // An uncaught exception here means IntelliJ never cleans up and the configuration is always
-            // considered to be already running, so you can't start it ever again.
-            logger.warn("Uncaught exception in Blaze before run task", e)
-            com.intellij.execution.runners.ExecutionUtil.handleExecutionError(
-                env,
-                com.intellij.execution.ExecutionException(e)
-            )
-            return false
-        }
-    }
+  companion object {
+    private val logger: Logger =
+      Logger
+        .getInstance(BlazeBeforeRunTaskProvider::class.java)
 
-    companion object {
-        private val logger: com.intellij.openapi.diagnostic.Logger =
-            com.intellij.openapi.diagnostic.Logger.getInstance(BlazeBeforeRunTaskProvider::class.java)
-
-        @JvmField
-        val ID: com.intellij.openapi.util.Key<Task?> =
-            com.intellij.openapi.util.Key.create<Task?>("Blaze.BeforeRunTask")
-    }
+    @JvmField
+    val ID: Key<Task> =
+      Key.create<Task>("Blaze.BeforeRunTask")
+  }
 }

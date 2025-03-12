@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.smrunner
 
-import com.google.idea.blaze.base.command.BlazeCommandName
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.Location
@@ -24,80 +23,80 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComponentContainer
 import com.intellij.psi.search.GlobalSearchScope
+import org.jetbrains.bazel.ogRun.other.BlazeCommandName
 import java.util.*
 import java.util.stream.Collectors
 
 /** Re-run failed tests.  */
 class BlazeRerunFailedTestsAction internal constructor(
-    private val eventsHandler: BlazeTestEventsHandler,
-    componentContainer: ComponentContainer
+  private val eventsHandler: BlazeTestEventsHandler,
+  componentContainer: ComponentContainer,
 ) : AbstractRerunFailedTestsAction(componentContainer) {
-    override fun getRunProfile(environment: ExecutionEnvironment?): AbstractRerunFailedTestsAction.MyRunProfile? {
-        val model: TestFrameworkRunningModel? = getModel()
-        if (model == null) {
-            return null
-        }
-        val config: BlazeCommandRunConfiguration =
-            model.getProperties().getConfiguration() as BlazeCommandRunConfiguration
-        return BlazeRerunTestRunProfile(config.clone())
+  override fun getRunProfile(environment: ExecutionEnvironment?): AbstractRerunFailedTestsAction.MyRunProfile? {
+    val model: TestFrameworkRunningModel? = getModel()
+    if (model == null) {
+      return null
+    }
+    val config: BlazeCommandRunConfiguration =
+      model.getProperties().getConfiguration() as BlazeCommandRunConfiguration
+    return BlazeRerunTestRunProfile(config.clone())
+  }
+
+  internal inner class BlazeRerunTestRunProfile(configuration: BlazeCommandRunConfiguration) :
+    AbstractRerunFailedTestsAction.MyRunProfile(configuration) {
+    private val configuration: BlazeCommandRunConfiguration
+
+    init {
+      this.configuration = configuration
     }
 
-    internal inner class BlazeRerunTestRunProfile(configuration: BlazeCommandRunConfiguration) :
-        AbstractRerunFailedTestsAction.MyRunProfile(configuration) {
-        private val configuration: BlazeCommandRunConfiguration
+    val modules: Array<Module?>
+      get() = com.intellij.openapi.module.Module.EMPTY_ARRAY
 
-        init {
-            this.configuration = configuration
-        }
-
-        val modules: Array<Module?>
-            get() = com.intellij.openapi.module.Module.EMPTY_ARRAY
-
-        @Throws(ExecutionException::class)
-        override fun getState(executor: Executor?, environment: ExecutionEnvironment): RunProfileState? {
-            val handlerState: BlazeCommandRunConfigurationCommonState? =
-                configuration.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
-                    BlazeCommandRunConfigurationCommonState::class.java
-                )
-            if (handlerState == null
-                || !BlazeCommandName.TEST.equals(handlerState.commandState.getCommand())
-            ) {
-                return null
-            }
-            val project = getProject()
-            val locations =
-                getFailedTests(project)
-                    .stream()
-                    .filter { obj: AbstractTestProxy? -> obj.isLeaf() }
-                    .map { test: AbstractTestProxy? -> toLocation(project, test) }
-                    .filter { obj: Location<Any?>? -> Objects.nonNull(obj) }
-                    .collect(Collectors.toList())
-            val testFilter = eventsHandler.getTestFilter(getProject(), locations)
-            if (testFilter == null) {
-                return null
-            }
-            val blazeFlags =
-                setTestFilter(handlerState.blazeFlagsState.rawFlags, testFilter)
-            handlerState.blazeFlagsState.rawFlags = blazeFlags
-            return configuration.getState(executor, environment)
-        }
-
-        private fun toLocation(project: Project, test: AbstractTestProxy): Location<*>? {
-            return test.getLocation(project, GlobalSearchScope.allScope(project))
-        }
-
-        /** Replaces existing test_filter flag, or appends if none exists.  */
-        private fun setTestFilter(flags: MutableList<String?>, testFilter: String?): MutableList<String> {
-            val copy: MutableList<String> = ArrayList<String>(flags)
-            for (i in copy.indices) {
-                val flag = copy.get(i)
-                if (flag.startsWith(BlazeFlags.TEST_FILTER)) {
-                    copy.set(i, testFilter!!)
-                    return copy
-                }
-            }
-            copy.add(testFilter!!)
-            return copy
-        }
+    @Throws(ExecutionException::class)
+    override fun getState(executor: Executor?, environment: ExecutionEnvironment): RunProfileState? {
+      val handlerState: BlazeCommandRunConfigurationCommonState? =
+        configuration.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
+          BlazeCommandRunConfigurationCommonState::class.java,
+        )
+      if (handlerState == null ||
+        !BlazeCommandName.TEST.equals(handlerState.commandState.getCommand())
+      ) {
+        return null
+      }
+      val project = getProject()
+      val locations =
+        getFailedTests(project)
+          .stream()
+          .filter { obj: AbstractTestProxy? -> obj.isLeaf() }
+          .map { test: AbstractTestProxy? -> toLocation(project, test) }
+          .filter { obj: Location<Any?>? -> Objects.nonNull(obj) }
+          .collect(Collectors.toList())
+      val testFilter = eventsHandler.getTestFilter(getProject(), locations)
+      if (testFilter == null) {
+        return null
+      }
+      val blazeFlags =
+        setTestFilter(handlerState.blazeFlagsState.rawFlags, testFilter)
+      handlerState.blazeFlagsState.rawFlags = blazeFlags
+      return configuration.getState(executor, environment)
     }
+
+    private fun toLocation(project: Project, test: AbstractTestProxy): Location<*>? =
+      test.getLocation(project, GlobalSearchScope.allScope(project))
+
+    /** Replaces existing test_filter flag, or appends if none exists.  */
+    private fun setTestFilter(flags: MutableList<String?>, testFilter: String?): MutableList<String> {
+      val copy: MutableList<String> = ArrayList<String>(flags)
+      for (i in copy.indices) {
+        val flag = copy.get(i)
+        if (flag.startsWith(BlazeFlags.TEST_FILTER)) {
+          copy.set(i, testFilter!!)
+          return copy
+        }
+      }
+      copy.add(testFilter!!)
+      return copy
+    }
+  }
 }

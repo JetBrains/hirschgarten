@@ -23,18 +23,18 @@ import com.intellij.openapi.extensions.ExtensionPointName
  * configuration producers.
  */
 interface TestContextProvider {
-    /**
-     * Returns the [RunConfigurationContext] corresponding to the given [ ], if relevant and recognized by this provider.
-     *
-     *
-     * This is called frequently on the EDT, via the [RunConfigurationProducer] API, so must
-     * be efficient.
-     */
-    fun getTestContext(context: ConfigurationContext?): RunConfigurationContext?
+  /**
+   * Returns the [RunConfigurationContext] corresponding to the given [ ], if relevant and recognized by this provider.
+   *
+   *
+   * This is called frequently on the EDT, via the [RunConfigurationProducer] API, so must
+   * be efficient.
+   */
+  fun getTestContext(context: ConfigurationContext?): RunConfigurationContext?
 
-    companion object {
-        @JvmField
-        val EP_NAME: ExtensionPointName<TestContextProvider?> =
-            create.create<TestContextProvider?>("com.google.idea.blaze.TestContextProvider")
-    }
+  companion object {
+    @JvmField
+    val EP_NAME: ExtensionPointName<TestContextProvider?> =
+      create.create<TestContextProvider?>("com.google.idea.blaze.TestContextProvider")
+  }
 }

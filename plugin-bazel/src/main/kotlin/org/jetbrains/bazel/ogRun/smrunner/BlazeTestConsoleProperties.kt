@@ -25,42 +25,49 @@ import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import com.intellij.execution.ui.ConsoleView
 import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
-import java.util.*
+import java.util.Arrays
+import java.util.Objects
 import java.util.function.Function
 import java.util.stream.Collectors
 
 /** Integrates blaze test results with the SM-runner test UI.  */
 class BlazeTestConsoleProperties(
-    private val runConfiguration: BlazeCommandRunConfiguration,
-    executor: Executor,
-    private val testUiSession: BlazeTestUiSession
-) : SMTRunnerConsoleProperties(runConfiguration, SmRunnerUtils.BLAZE_FRAMEWORK, executor), SMCustomMessagesParsing {
-    override fun createTestEventsConverter(
-        framework: String?, consoleProperties: TestConsoleProperties?
-    ): OutputToGeneralTestEventsConverter {
-        return BlazeXmlToTestEventsConverter(
-            framework, consoleProperties, testUiSession.testResultFinderStrategy
-        )
-    }
+  private val runConfiguration: BlazeCommandRunConfiguration,
+  executor: Executor,
+  private val testUiSession: BlazeTestUiSession,
+) : SMTRunnerConsoleProperties(runConfiguration, SmRunnerUtils.BLAZE_FRAMEWORK, executor),
+  SMCustomMessagesParsing {
+  override fun createTestEventsConverter(
+    framework: String?,
+    consoleProperties: TestConsoleProperties?,
+  ): OutputToGeneralTestEventsConverter =
+    BlazeXmlToTestEventsConverter(
+      framework,
+      consoleProperties,
+      testUiSession.testResultFinderStrategy,
+    )
 
-    override fun getTestLocator(): SMTestLocator? {
-        return CompositeSMTestLocator(
-            ImmutableList.copyOf<SMTestLocator?>(
-                Arrays.stream<BlazeTestEventsHandler?>(BlazeTestEventsHandler.EP_NAME.extensions)
-                    .map<SMTestLocator?> { obj: BlazeTestEventsHandler? -> obj!!.testLocator }
-                    .filter { obj: SMTestLocator? -> Objects.nonNull(obj) }
-                    .collect(Collectors.toList())))
-    }
+  override fun getTestLocator(): SMTestLocator? =
+    CompositeSMTestLocator(
+      ImmutableList.copyOf<SMTestLocator?>(
+        Arrays
+          .stream<BlazeTestEventsHandler?>(BlazeTestEventsHandler.EP_NAME.extensions)
+          .map<SMTestLocator?> { obj: BlazeTestEventsHandler? -> obj!!.testLocator }
+          .filter { obj: SMTestLocator? -> Objects.nonNull(obj) }
+          .collect(Collectors.toList()),
+      ),
+    )
 
-    override fun createRerunFailedTestsAction(consoleView: ConsoleView?): AbstractRerunFailedTestsAction? {
-        return BlazeTestEventsHandler.getHandlerForTargets(
-            runConfiguration.getProject(), runConfiguration.targets
-        )
-            .map<AbstractRerunFailedTestsAction?>(Function { handler: BlazeTestEventsHandler? ->
-                handler!!.createRerunFailedTestsAction(
-                    consoleView
-                )
-            })
-            .orElse(null)
-    }
+  override fun createRerunFailedTestsAction(consoleView: ConsoleView?): AbstractRerunFailedTestsAction? =
+    BlazeTestEventsHandler
+      .getHandlerForTargets(
+        runConfiguration.getProject(),
+        runConfiguration.targets,
+      ).map<AbstractRerunFailedTestsAction?>(
+        Function { handler: BlazeTestEventsHandler? ->
+          handler!!.createRerunFailedTestsAction(
+            consoleView,
+          )
+        },
+      ).orElse(null)
 }

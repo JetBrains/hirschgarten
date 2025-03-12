@@ -23,13 +23,14 @@ import com.intellij.openapi.project.Project
 /**
  * Export selected run configurations to file, so they can be checked in and shared between users.
  */
-class ExportRunConfigurationAction : BlazeProjectAction(), DumbAware {
-  protected override fun querySyncSupport(): QuerySyncStatus {
-    return QuerySyncStatus.SUPPORTED
-  }
+class ExportRunConfigurationAction :
+  BlazeProjectAction(),
+  DumbAware {
+  protected override fun querySyncSupport(): QuerySyncStatus = QuerySyncStatus.SUPPORTED
 
   protected override fun updateForBlazeProject(project: Project, e: AnActionEvent?) {
-    ActionPresentationHelper.of(e)
+    ActionPresentationHelper
+      .of(e)
       .disableIf(getInstance.getInstance(project).allConfigurationsList.isEmpty())
       .commit()
   }

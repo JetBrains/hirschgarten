@@ -15,8 +15,8 @@
  */
 package org.jetbrains.bazel.ogRun.coverage
 
-import com.google.idea.blaze.base.command.BlazeCommandName
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.ogRun.other.BlazeCommandName
 
 internal class CoverageBuildFlagsProvider : BuildFlagsProvider {
   public override fun addBuildFlags(
@@ -24,10 +24,10 @@ internal class CoverageBuildFlagsProvider : BuildFlagsProvider {
     projectViewSet: ProjectViewSet?,
     command: BlazeCommandName?,
     context: BlazeInvocationContext,
-    flags: MutableList<String?>
+    flags: MutableList<String?>,
   ) {
-    if (context is RunConfigurationContext
-      && (context as RunConfigurationContext).executorType === ExecutorType.COVERAGE
+    if (context is RunConfigurationContext &&
+      (context as RunConfigurationContext).executorType === ExecutorType.COVERAGE
     ) {
       flags.addAll(CoverageUtils.getBlazeFlags())
     }

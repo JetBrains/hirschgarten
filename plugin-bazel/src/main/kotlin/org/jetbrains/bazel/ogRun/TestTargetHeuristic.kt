@@ -25,6 +25,8 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import org.jetbrains.bazel.ogRun.other.TestSize
+import org.jetbrains.bazel.ogRun.targetfinder.FuturesUtil
 import org.jetbrains.ide.PooledThreadExecutor
 import java.io.File
 import java.util.*
@@ -32,147 +34,115 @@ import java.util.stream.Collectors
 
 /** Heuristic to match test targets to source files.  */
 interface TestTargetHeuristic {
-    /** Returns true if the rule and source file match, according to this heuristic.  */
-    fun matchesSource(
-        project: Project?,
-        target: TargetInfo?,
-        sourcePsiFile: PsiFile?,
-        sourceFile: File?,
-        testSize: TestSize?
-    ): Boolean
+  /** Returns true if the rule and source file match, according to this heuristic.  */
+  fun matchesSource(
+    project: Project,
+    target: TargetInfo,
+    sourcePsiFile: PsiFile?,
+    sourceFile: File?,
+    testSize: TestSize?,
+  ): Boolean
 
-    companion object {
-        /**
-         * Synchronously finds a test rule associated with a given [PsiElement]. This can involve
-         * expensive PSI operations, so shouldn't be called on the EDT. Must be called from within a read
-         * action.
-         *
-         */
-        @Deprecated(
-            """this can run whole-project target queries under a read lock. Use {@link
-   *     #targetFutureForPsiElement instead}."""
-        )
-        fun testTargetForPsiElement(
-            element: PsiElement?, testSize: TestSize?
-        ): TargetInfo? {
-            if (element == null) {
-                return null
-            }
-            val psiFile = element.getContainingFile()
-            if (psiFile == null) {
-                return null
-            }
-            val vf = psiFile.getVirtualFile()
-            val file = if (vf != null) File(vf.getPath()) else null
-            if (file == null) {
-                return null
-            }
-            val project = element.getProject()
-            val targets: MutableCollection<TargetInfo?>? =
-                SourceToTargetFinder.findTargetsForSourceFile(project, file, Optional.of<T?>(RuleType.TEST))
-            return if (targets == null)
-                null
-            else
-                chooseTestTargetForSourceFile(
-                    project, psiFile, file, targets, testSize
-                )
+  companion object {
+    /**
+     * Finds a test rule associated with a given [PsiElement]. Must be called from within a read
+     * action.
+     */
+    fun targetFutureForPsiElement(element: PsiElement?, testSize: TestSize?): ListenableFuture<TargetInfo?>? {
+      if (element == null) {
+        return null
+      }
+      val psiFile = element.getContainingFile()
+      if (psiFile == null) {
+        return null
+      }
+      val vf = psiFile.getVirtualFile()
+      val file = if (vf != null) File(vf.getPath()) else null
+      if (file == null) {
+        return null
+      }
+      val project = element.project
+      val targets: ListenableFuture<MutableCollection<TargetInfo?>?> =
+        SourceToTargetFinder.findTargetInfoFuture(project, file, RuleType.TEST)
+      if (targets.isDone && FuturesUtil.getIgnoringErrors(targets) == null) {
+        return null
+      }
+      val executor =
+        if (ApplicationManager.getApplication().isUnitTestMode()) {
+          MoreExecutors.directExecutor()
+        } else {
+          PooledThreadExecutor.INSTANCE
         }
-
-        /**
-         * Finds a test rule associated with a given [PsiElement]. Must be called from within a read
-         * action.
-         */
-        fun targetFutureForPsiElement(
-            element: PsiElement?, testSize: TestSize?
-        ): ListenableFuture<TargetInfo?>? {
-            if (element == null) {
-                return null
-            }
-            val psiFile = element.getContainingFile()
-            if (psiFile == null) {
-                return null
-            }
-            val vf = psiFile.getVirtualFile()
-            val file = if (vf != null) File(vf.getPath()) else null
-            if (file == null) {
-                return null
-            }
-            val project = element.getProject()
-            val targets: ListenableFuture<MutableCollection<TargetInfo?>?> =
-                SourceToTargetFinder.findTargetInfoFuture(project, file, Optional.of<T?>(RuleType.TEST))
-            if (targets.isDone() && FuturesUtil.getIgnoringErrors<MutableCollection<TargetInfo?>?>(targets) == null) {
-                return null
-            }
-            val executor =
-                if (ApplicationManager.getApplication().isUnitTestMode())
-                    MoreExecutors.directExecutor()
-                else
-                    PooledThreadExecutor.INSTANCE
-            return Futures.transform<MutableCollection<TargetInfo?>?, TargetInfo?>(
-                targets,
-                Function { list: MutableCollection<TargetInfo?>? ->
-                    if (list == null)
-                        null
-                    else
-                        chooseTestTargetForSourceFile(
-                            project, psiFile, file, list, testSize
-                        )
-                },
-                executor
+      return Futures.transform(
+        targets,
+        Function { list ->
+          if (list == null) {
+            null
+          } else {
+            chooseTestTargetForSourceFile(
+              project,
+              psiFile,
+              file,
+              list,
+              testSize,
             )
-        }
-
-        /**
-         * Given a source file and all test rules reachable from that file, chooses a test rule based on
-         * available filters, falling back to choosing the first one if there is no match.
-         */
-        fun chooseTestTargetForSourceFile(
-            project: Project?,
-            sourcePsiFile: PsiFile?,
-            sourceFile: File?,
-            targets: MutableCollection<TargetInfo?>,
-            testSize: TestSize?
-        ): TargetInfo? {
-            if (targets.isEmpty()) {
-                return null
-            }
-            var filteredTargets: MutableList<TargetInfo?> = ArrayList<TargetInfo?>(targets)
-            for (filter in EP_NAME.extensions) {
-                val matches: MutableList<TargetInfo?> =
-                    filteredTargets
-                        .stream()
-                        .filter { target: TargetInfo? ->
-                            filter.matchesSource(
-                                project,
-                                target,
-                                sourcePsiFile,
-                                sourceFile,
-                                testSize
-                            )
-                        }
-                        .collect(Collectors.toList())
-                if (matches.size == 1) {
-                    return matches.get(0)
-                }
-                if (!matches.isEmpty()) {
-                    // A higher-priority filter found more than one match -- subsequent filters will only
-                    // consider these matches.
-                    filteredTargets = matches
-                }
-            }
-            // finally order by syncTime (if available), returning the most recently synced
-            return filteredTargets.stream()
-                .max(
-                    Comparator.comparing<TargetInfo?, T?>(
-                        java.util.function.Function { t: TargetInfo? -> t.syncTime }, Comparator.nullsFirst<T?>(
-                            Comparator.naturalOrder<T?>()
-                        )
-                    )
-                )
-                .orElse(null)
-        }
-
-        val EP_NAME: ExtensionPointName<TestTargetHeuristic> =
-            create.create<TestTargetHeuristic?>("com.google.idea.blaze.TestTargetHeuristic")
+          }
+        },
+        executor,
+      )
     }
+
+    /**
+     * Given a source file and all test rules reachable from that file, chooses a test rule based on
+     * available filters, falling back to choosing the first one if there is no match.
+     */
+    fun chooseTestTargetForSourceFile(
+      project: Project?,
+      sourcePsiFile: PsiFile?,
+      sourceFile: File?,
+      targets: MutableCollection<TargetInfo?>,
+      testSize: TestSize?,
+    ): TargetInfo? {
+      if (targets.isEmpty()) {
+        return null
+      }
+      var filteredTargets: MutableList<TargetInfo?> = ArrayList<TargetInfo?>(targets)
+      for (filter in EP_NAME.extensions) {
+        val matches: MutableList<TargetInfo?> =
+          filteredTargets
+            .stream()
+            .filter { target: TargetInfo? ->
+              filter.matchesSource(
+                project,
+                target,
+                sourcePsiFile,
+                sourceFile,
+                testSize,
+              )
+            }.collect(Collectors.toList())
+        if (matches.size == 1) {
+          return matches.get(0)
+        }
+        if (!matches.isEmpty()) {
+          // A higher-priority filter found more than one match -- subsequent filters will only
+          // consider these matches.
+          filteredTargets = matches
+        }
+      }
+      // finally order by syncTime (if available), returning the most recently synced
+      return filteredTargets
+        .stream()
+        .max(
+          Comparator.comparing<TargetInfo?, T?>(
+            java.util.function.Function { t: TargetInfo? -> t.syncTime },
+            Comparator.nullsFirst<T?>(
+              Comparator.naturalOrder<T?>(),
+            ),
+          ),
+        ).orElse(null)
+    }
+
+    val EP_NAME: ExtensionPointName<TestTargetHeuristic> =
+      ExtensionPointName.create("com.google.idea.blaze.TestTargetHeuristic")
+  }
 }

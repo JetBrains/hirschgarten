@@ -27,21 +27,21 @@ import com.intellij.openapi.extensions.ExtensionPointName
  * for files outside the project).
  */
 interface HeuristicTestIdentifier {
-    /**
-     * Returns the [ExecutorType]s relevant for this file path, or an empty set if the file path
-     * doesn't appear to be runnable.
-     *
-     *
-     * A best effort, rough heuristic based on the file name + path.
-     *
-     *
-     * This method is run frequently on the EDT, so must be fast.
-     */
-    fun supportedExecutors(path: WorkspacePath?): ImmutableSet<ExecutorType?>?
+  /**
+   * Returns the [ExecutorType]s relevant for this file path, or an empty set if the file path
+   * doesn't appear to be runnable.
+   *
+   *
+   * A best effort, rough heuristic based on the file name + path.
+   *
+   *
+   * This method is run frequently on the EDT, so must be fast.
+   */
+  fun supportedExecutors(path: WorkspacePath?): ImmutableSet<ExecutorType?>?
 
-    companion object {
-        @JvmField
-        val EP_NAME: ExtensionPointName<HeuristicTestIdentifier?> =
-            create.create<HeuristicTestIdentifier?>("com.google.idea.blaze.HeuristicTestIdentifier")
-    }
+  companion object {
+    @JvmField
+    val EP_NAME: ExtensionPointName<HeuristicTestIdentifier?> =
+      create.create<HeuristicTestIdentifier?>("com.google.idea.blaze.HeuristicTestIdentifier")
+  }
 }

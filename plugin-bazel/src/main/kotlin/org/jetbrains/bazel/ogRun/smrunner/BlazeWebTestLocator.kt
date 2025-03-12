@@ -29,86 +29,99 @@ import java.util.stream.Stream
  * [BlazeTestEventsHandler], then locates the test elements using the corresponding [ ].
  */
 internal class BlazeWebTestLocator : SMTestLocator {
-    override fun getLocation(
-        protocol: String?, path: String, project: Project, scope: GlobalSearchScope
+  override fun getLocation(
+    protocol: String?,
+    path: String,
+    project: Project,
+    scope: GlobalSearchScope,
+  ): MutableList<Location<*>?> {
+    if (protocol != BlazeWebTestEventsHandler.WEB_TEST_PROTOCOL) {
+      return ImmutableList.of<Location<*>?>()
+    }
+    val projectData: BlazeProjectData? =
+      BlazeProjectDataManager.getInstance(project).getBlazeProjectData()
+    if (projectData == null) {
+      return ImmutableList.of<Location<*>?>()
+    }
+    val components = Splitter.on(SmRunnerUtils.TEST_NAME_PARTS_SPLITTER).splitToList(path)
+    if (components.isEmpty()) {
+      return ImmutableList.of<Location<*>?>()
+    }
+    val wrapperLabel: Label? = Label.createIfValid(components.get(0))
+    if (wrapperLabel == null) {
+      return ImmutableList.of<Location<*>?>()
+    }
+    val wrapperTarget: TargetIdeInfo? =
+      projectData.getTargetMap().get(TargetKey.forPlainTarget(wrapperLabel))
+    if (wrapperTarget == null) {
+      return ImmutableList.of<Location<*>?>()
+    }
+    val builder = ImmutableList.builder<Location<*>?>()
+    for (dependency in wrapperTarget.getDependencies()) {
+      val targetKey: TargetKey = dependency.getTargetKey()
+      val target: TargetIdeInfo? = projectData.getTargetMap().get(targetKey)
+      if (target == null) {
+        continue
+      }
+      val kind: Kind = target.getKind()
+      val label: Label = targetKey.getLabel()
+      if (Stream.of<String?>("_wrapped_test", "_debug").noneMatch(label.targetName().toString()::endsWith)) {
+        continue
+      }
+      val handler =
+        BlazeTestEventsHandler.getHandlerForTargetKind(kind).orElse(null)
+      if (handler == null || handler.testLocator == null) {
+        continue
+      }
+      val url: String? = recreateUrl(handler, label, kind, components)
+      if (url == null) {
+        continue
+      }
+      builder.addAll(locate(handler.testLocator, url, project, scope))
+    }
+    return builder.build()
+  }
+
+  companion object {
+    val INSTANCE: BlazeWebTestLocator = BlazeWebTestLocator()
+
+    private fun recreateUrl(
+      handler: BlazeTestEventsHandler,
+      label: Label,
+      kind: Kind,
+      components: MutableList<String?>,
+    ): String? {
+      when (components.size) {
+        2 -> return handler.suiteLocationUrl(label, kind, /* name = */components.get(1))
+        4 -> return handler.testLocationUrl(
+          label,
+          kind, // parentSuite =
+          components.get(1), // name =
+          components.get(2), // className =
+          Strings.emptyToNull(components.get(3)),
+        )
+
+        else -> return null
+      }
+    }
+
+    private fun locate(
+      locator: SMTestLocator,
+      url: String,
+      project: Project,
+      scope: GlobalSearchScope,
     ): MutableList<Location<*>?> {
-        if (protocol != BlazeWebTestEventsHandler.WEB_TEST_PROTOCOL) {
-            return ImmutableList.of<Location<*>?>()
-        }
-        val projectData: BlazeProjectData? =
-            BlazeProjectDataManager.getInstance(project).getBlazeProjectData()
-        if (projectData == null) {
-            return ImmutableList.of<Location<*>?>()
-        }
-        val components = Splitter.on(SmRunnerUtils.TEST_NAME_PARTS_SPLITTER).splitToList(path)
-        if (components.isEmpty()) {
-            return ImmutableList.of<Location<*>?>()
-        }
-        val wrapperLabel: Label? = Label.createIfValid(components.get(0))
-        if (wrapperLabel == null) {
-            return ImmutableList.of<Location<*>?>()
-        }
-        val wrapperTarget: TargetIdeInfo? =
-            projectData.getTargetMap().get(TargetKey.forPlainTarget(wrapperLabel))
-        if (wrapperTarget == null) {
-            return ImmutableList.of<Location<*>?>()
-        }
-        val builder = ImmutableList.builder<Location<*>?>()
-        for (dependency in wrapperTarget.getDependencies()) {
-            val targetKey: TargetKey = dependency.getTargetKey()
-            val target: TargetIdeInfo? = projectData.getTargetMap().get(targetKey)
-            if (target == null) {
-                continue
-            }
-            val kind: Kind = target.getKind()
-            val label: Label = targetKey.getLabel()
-            if (Stream.of<String?>("_wrapped_test", "_debug").noneMatch(label.targetName().toString()::endsWith)) {
-                continue
-            }
-            val handler =
-                BlazeTestEventsHandler.getHandlerForTargetKind(kind).orElse(null)
-            if (handler == null || handler.testLocator == null) {
-                continue
-            }
-            val url: String? = recreateUrl(handler, label, kind, components)
-            if (url == null) {
-                continue
-            }
-            builder.addAll(locate(handler.testLocator, url, project, scope))
-        }
-        return builder.build()
+      val components = Splitter.on(URLUtil.SCHEME_SEPARATOR).limit(2).splitToList(url)
+      if (components.size != 2) {
+        return ImmutableList.of<Location<*>?>()
+      }
+      return locator.getLocation(
+        // protocol =
+        components.get(0), // path =
+        components.get(1),
+        project,
+        scope,
+      )
     }
-
-    companion object {
-        val INSTANCE: BlazeWebTestLocator = BlazeWebTestLocator()
-
-        private fun recreateUrl(
-            handler: BlazeTestEventsHandler, label: Label, kind: Kind, components: MutableList<String?>
-        ): String? {
-            when (components.size) {
-                2 -> return handler.suiteLocationUrl(label, kind,  /* name = */components.get(1))
-                4 -> return handler.testLocationUrl(
-                    label,
-                    kind,  /* parentSuite = */
-                    components.get(1),  /* name = */
-                    components.get(2),  /* className = */
-                    Strings.emptyToNull(components.get(3))
-                )
-
-                else -> return null
-            }
-        }
-
-        private fun locate(
-            locator: SMTestLocator, url: String, project: Project, scope: GlobalSearchScope
-        ): MutableList<Location<*>?> {
-            val components = Splitter.on(URLUtil.SCHEME_SEPARATOR).limit(2).splitToList(url)
-            if (components.size != 2) {
-                return ImmutableList.of<Location<*>?>()
-            }
-            return locator.getLocation( /* protocol = */
-                components.get(0),  /* path = */components.get(1), project, scope
-            )
-        }
-    }
+  }
 }

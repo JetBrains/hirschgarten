@@ -20,16 +20,16 @@ package org.jetbrains.bazel.ogRun.testlogs
  * responsible for displaying the results of the test.
  */
 class BlazeTestResultHolder : BlazeTestResultFinderStrategy {
-    private var results: BlazeTestResults? = null
+  private var results: BlazeTestResults? = null
 
-    fun setTestResults(results: BlazeTestResults) {
-        this.results = results
-    }
+  fun setTestResults(results: BlazeTestResults) {
+    this.results = results
+  }
 
-    override fun findTestResults(): BlazeTestResults {
-        checkNotNull(results) { "Cannot obtain test results before they are available" }
-        return results!!
-    }
+  override fun findTestResults(): BlazeTestResults {
+    checkNotNull(results) { "Cannot obtain test results before they are available" }
+    return results!!
+  }
 
-    override fun deleteTemporaryOutputFiles() {}
+  override fun deleteTemporaryOutputFiles() {}
 }

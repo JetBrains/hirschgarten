@@ -23,20 +23,20 @@ import java.nio.charset.StandardCharsets
 
 /** Writes output from a process to a stream  */
 class LineProcessingProcessAdapter(outputStream: LineProcessingOutputStream) : ProcessAdapter() {
-    private val myOutputStream: LineProcessingOutputStream
+  private val myOutputStream: LineProcessingOutputStream
 
-    init {
-        myOutputStream = outputStream
-    }
+  init {
+    myOutputStream = outputStream
+  }
 
-    override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>?) {
-        val text = event.getText()
-        if (text != null) {
-            try {
-                myOutputStream.write(text.toByteArray(StandardCharsets.UTF_8))
-            } catch (e: IOException) {
-                // Ignore -- cannot happen
-            }
-        }
+  override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>?) {
+    val text = event.getText()
+    if (text != null) {
+      try {
+        myOutputStream.write(text.toByteArray(StandardCharsets.UTF_8))
+      } catch (e: IOException) {
+        // Ignore -- cannot happen
+      }
     }
+  }
 }

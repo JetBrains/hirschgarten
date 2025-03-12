@@ -25,142 +25,147 @@ import com.google.idea.blaze.base.async.executor.ProgressiveTaskWithProgressIndi
  * user-specified flags.
  */
 object BlazeBeforeRunCommandHelper {
-    private const val TASK_TITLE = "Blaze before run task"
+  private const val TASK_TITLE = "Blaze before run task"
 
-    // A vm option overriding the directory used for the Bazel run script.
-    private const val BAZEL_RUN_SCRIPT_VM_OVERRIDE = "bazel.run.script.path"
+  // A vm option overriding the directory used for the Bazel run script.
+  private const val BAZEL_RUN_SCRIPT_VM_OVERRIDE = "bazel.run.script.path"
 
-    /**
-     * Kicks off the blaze task, returning a corresponding [ListenableFuture].
-     *
-     *
-     * Runs the blaze command on the targets specified in the given `configuration`.
-     */
-    fun runBlazeCommand(
-        commandName: BlazeCommandName?,
-        configuration: BlazeCommandRunConfiguration,
-        buildResultHelper: BuildResultHelper,
-        requiredExtraBlazeFlags: MutableList<String?>?,
-        overridableExtraBlazeFlags: MutableList<String?>?,
-        invocationContext: BlazeInvocationContext,
-        progressMessage: String?
-    ): com.google.common.util.concurrent.ListenableFuture<BuildResult?> {
-        return runBlazeCommand(
-            commandName,
-            configuration,
-            buildResultHelper,
-            requiredExtraBlazeFlags,
-            overridableExtraBlazeFlags,
-            invocationContext,
-            progressMessage,
-            configuration.targets
-        )
+  /**
+   * Kicks off the blaze task, returning a corresponding [ListenableFuture].
+   *
+   *
+   * Runs the blaze command on the targets specified in the given `configuration`.
+   */
+  fun runBlazeCommand(
+    commandName: BlazeCommandName?,
+    configuration: BlazeCommandRunConfiguration,
+    buildResultHelper: BuildResultHelper,
+    requiredExtraBlazeFlags: MutableList<String?>?,
+    overridableExtraBlazeFlags: MutableList<String?>?,
+    invocationContext: BlazeInvocationContext,
+    progressMessage: String?,
+  ): com.google.common.util.concurrent.ListenableFuture<BuildResult?> =
+    runBlazeCommand(
+      commandName,
+      configuration,
+      buildResultHelper,
+      requiredExtraBlazeFlags,
+      overridableExtraBlazeFlags,
+      invocationContext,
+      progressMessage,
+      configuration.targets,
+    )
+
+  /**
+   * Runs the given blaze command on the given list of `targets` instead of retrieving the
+   * targets from the run `configuration`.
+   */
+  fun runBlazeCommand(
+    commandName: BlazeCommandName?,
+    configuration: BlazeCommandRunConfiguration,
+    buildResultHelper: BuildResultHelper,
+    requiredExtraBlazeFlags: MutableList<String?>?,
+    overridableExtraBlazeFlags: MutableList<String?>?,
+    invocationContext: BlazeInvocationContext,
+    progressMessage: String?,
+    targets: com.google.common.collect.ImmutableList<Label?>?,
+  ): com.google.common.util.concurrent.ListenableFuture<BuildResult?> {
+    val project: com.intellij.openapi.project.Project = configuration.getProject()
+    val handlerState: BlazeCommandRunConfigurationCommonState =
+      configuration.getHandler().state as BlazeCommandRunConfigurationCommonState
+    val workspaceRoot: WorkspaceRoot? = WorkspaceRoot.fromProject(project)
+    val projectViewSet: ProjectViewSet? = ProjectViewManager.getInstance(project).getProjectViewSet()
+
+    val binaryPath: String? =
+      if (handlerState.getBlazeBinaryState().getBlazeBinary() != null) {
+        handlerState.getBlazeBinaryState().getBlazeBinary()
+      } else {
+        Blaze.getBuildSystemProvider(project).getBinaryPath(project)
+      }
+
+    return ProgressiveTaskWithProgressIndicator
+      .builder(project, TASK_TITLE)
+      .submitTaskWithResult(
+        object : ScopedTask<BuildResult?>() {
+          protected override fun execute(context: BlazeContext): BuildResult {
+            context
+              .push(
+                Builder(
+                  project,
+                  Task(project, TASK_TITLE, Task.Type.BEFORE_LAUNCH),
+                ).setPopupBehavior(
+                  BlazeUserSettings.getInstance().getShowBlazeConsoleOnRun(),
+                ).setIssueParsers(
+                  BlazeIssueParser.defaultIssueParsers(
+                    project,
+                    workspaceRoot,
+                    invocationContext.type(),
+                  ),
+                ).build(),
+              ).push(
+                ProblemsViewScope(
+                  project,
+                  BlazeUserSettings.getInstance().getShowProblemsViewOnRun(),
+                ),
+              )
+
+            context.output(StatusOutput(progressMessage))
+
+            val command: BlazeCommand.Builder =
+              BlazeCommand
+                .builder(binaryPath, commandName, project)
+                .addTargets(targets)
+                .addBlazeFlags(overridableExtraBlazeFlags)
+                .addBlazeFlags(
+                  BlazeFlags.blazeFlags(
+                    project,
+                    projectViewSet,
+                    BlazeCommandName.BUILD,
+                    context,
+                    invocationContext,
+                  ),
+                ).addBlazeFlags(
+                  handlerState.getBlazeFlagsState().getFlagsForExternalProcesses(),
+                ).addBlazeFlags(requiredExtraBlazeFlags)
+                .addBlazeFlags(buildResultHelper.getBuildFlags())
+
+            val exitCode: Int =
+              ExternalTask
+                .builder(workspaceRoot)
+                .addBlazeCommand(command.build())
+                .context(context)
+                .stderr(
+                  LineProcessingOutputStream.of(
+                    BlazeConsoleLineProcessorProvider.getAllStderrLineProcessors(
+                      context,
+                    ),
+                  ),
+                ).build()
+                .run()
+            return BuildResult.fromExitCode(exitCode)
+          }
+        },
+      )
+  }
+
+  /** Creates a temporary output file to write the shell script to.  */
+  @kotlin.Throws(IOException::class)
+  fun createScriptPathFile(): java.nio.file.Path {
+    val tempDir: java.nio.file.Path?
+    val dirPath: String? = java.lang.System.getProperty(BAZEL_RUN_SCRIPT_VM_OVERRIDE)
+    if (com.google.common.base.Strings
+        .isNullOrEmpty(dirPath)
+    ) {
+      tempDir = TempDirectoryProvider.getInstance().getTempDirectory()
+    } else {
+      tempDir =
+        java.nio.file.Paths
+          .get(dirPath)
     }
 
-    /**
-     * Runs the given blaze command on the given list of `targets` instead of retrieving the
-     * targets from the run `configuration`.
-     */
-    fun runBlazeCommand(
-        commandName: BlazeCommandName?,
-        configuration: BlazeCommandRunConfiguration,
-        buildResultHelper: BuildResultHelper,
-        requiredExtraBlazeFlags: MutableList<String?>?,
-        overridableExtraBlazeFlags: MutableList<String?>?,
-        invocationContext: BlazeInvocationContext,
-        progressMessage: String?,
-        targets: com.google.common.collect.ImmutableList<TargetExpression?>?
-    ): com.google.common.util.concurrent.ListenableFuture<BuildResult?> {
-        val project: com.intellij.openapi.project.Project = configuration.getProject()
-        val handlerState: BlazeCommandRunConfigurationCommonState =
-            configuration.getHandler().state as BlazeCommandRunConfigurationCommonState
-        val workspaceRoot: WorkspaceRoot? = WorkspaceRoot.fromProject(project)
-        val projectViewSet: ProjectViewSet? = ProjectViewManager.getInstance(project).getProjectViewSet()
-
-        val binaryPath: String? =
-            if (handlerState.getBlazeBinaryState().getBlazeBinary() != null)
-                handlerState.getBlazeBinaryState().getBlazeBinary()
-            else
-                Blaze.getBuildSystemProvider(project).getBinaryPath(project)
-
-        return ProgressiveTaskWithProgressIndicator.builder(project, TASK_TITLE)
-            .submitTaskWithResult(
-                object : ScopedTask<BuildResult?>() {
-                    protected override fun execute(context: BlazeContext): BuildResult {
-                        context
-                            .push(
-                                Builder(
-                                    project, Task(project, TASK_TITLE, Task.Type.BEFORE_LAUNCH)
-                                )
-                                    .setPopupBehavior(
-                                        BlazeUserSettings.getInstance().getShowBlazeConsoleOnRun()
-                                    )
-                                    .setIssueParsers(
-                                        BlazeIssueParser.defaultIssueParsers(
-                                            project, workspaceRoot, invocationContext.type()
-                                        )
-                                    )
-                                    .build()
-                            )
-                            .push(
-                                ProblemsViewScope(
-                                    project, BlazeUserSettings.getInstance().getShowProblemsViewOnRun()
-                                )
-                            )
-
-                        context.output(StatusOutput(progressMessage))
-
-                        val command: BlazeCommand.Builder =
-                            BlazeCommand.builder(binaryPath, commandName, project)
-                                .addTargets(targets)
-                                .addBlazeFlags(overridableExtraBlazeFlags)
-                                .addBlazeFlags(
-                                    BlazeFlags.blazeFlags(
-                                        project,
-                                        projectViewSet,
-                                        BlazeCommandName.BUILD,
-                                        context,
-                                        invocationContext
-                                    )
-                                )
-                                .addBlazeFlags(
-                                    handlerState.getBlazeFlagsState().getFlagsForExternalProcesses()
-                                )
-                                .addBlazeFlags(requiredExtraBlazeFlags)
-                                .addBlazeFlags(buildResultHelper.getBuildFlags())
-
-                        val exitCode: Int =
-                            ExternalTask.builder(workspaceRoot)
-                                .addBlazeCommand(command.build())
-                                .context(context)
-                                .stderr(
-                                    LineProcessingOutputStream.of(
-                                        BlazeConsoleLineProcessorProvider.getAllStderrLineProcessors(
-                                            context
-                                        )
-                                    )
-                                )
-                                .build()
-                                .run()
-                        return BuildResult.fromExitCode(exitCode)
-                    }
-                })
-    }
-
-    /** Creates a temporary output file to write the shell script to.  */
-    @kotlin.Throws(IOException::class)
-    fun createScriptPathFile(): java.nio.file.Path {
-        val tempDir: java.nio.file.Path?
-        val dirPath: String? = java.lang.System.getProperty(BAZEL_RUN_SCRIPT_VM_OVERRIDE)
-        if (com.google.common.base.Strings.isNullOrEmpty(dirPath)) {
-            tempDir = TempDirectoryProvider.getInstance().getTempDirectory()
-        } else {
-            tempDir = java.nio.file.Paths.get(dirPath)
-        }
-
-        val tempFile: java.nio.file.Path =
-            FileOperationProvider.getInstance().createTempFile(tempDir, "blaze-script-", "")
-        tempFile.toFile().deleteOnExit()
-        return tempFile
-    }
+    val tempFile: java.nio.file.Path =
+      FileOperationProvider.getInstance().createTempFile(tempDir, "blaze-script-", "")
+    tempFile.toFile().deleteOnExit()
+    return tempFile
+  }
 }

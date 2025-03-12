@@ -16,7 +16,6 @@
 package org.jetbrains.bazel.ogRun.confighandler
 
 import com.google.common.base.Preconditions
-import com.google.idea.blaze.base.command.BlazeCommandName
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfile
@@ -24,6 +23,7 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.configurations.WrappingRunConfiguration
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
+import org.jetbrains.bazel.ogRun.other.BlazeCommandName
 
 /**
  * Supports the execution of [BlazeCommandRunConfiguration]s.
@@ -32,54 +32,55 @@ import com.intellij.openapi.util.Key
  * Provides rule-specific RunProfileState and before-run-tasks.
  */
 interface BlazeCommandRunConfigurationRunner {
-    /** @return the RunProfileState corresponding to the given environment.
-     */
-    @Throws(ExecutionException::class)
-    fun getRunProfileState(executor: Executor?, environment: ExecutionEnvironment?): RunProfileState?
+  /** @return the RunProfileState corresponding to the given environment.
+   */
+  @Throws(ExecutionException::class)
+  fun getRunProfileState(executor: Executor?, environment: ExecutionEnvironment?): RunProfileState?
 
-    /**
-     * Executes any required before run tasks.
-     *
-     * @return true if no task exists or the task was successfully completed. Otherwise returns false
-     * if the task either failed or was cancelled.
-     */
-    fun executeBeforeRunTask(environment: ExecutionEnvironment?): Boolean
+  /**
+   * Executes any required before run tasks.
+   *
+   * @return true if no task exists or the task was successfully completed. Otherwise returns false
+   * if the task either failed or was cancelled.
+   */
+  fun executeBeforeRunTask(environment: ExecutionEnvironment?): Boolean
 
-    companion object {
-        fun isDebugging(environment: ExecutionEnvironment): Boolean {
-            val executor = environment.getExecutor()
-            return executor is DefaultDebugExecutor
-        }
-
-        @JvmStatic
-        fun getConfiguration(environment: ExecutionEnvironment): BlazeCommandRunConfiguration {
-            val runProfile = environment.getRunProfile()
-            return Preconditions.checkNotNull<BlazeCommandRunConfiguration>(getBlazeConfig(runProfile))
-        }
-
-        @JvmStatic
-        fun getBlazeConfig(runProfile: RunProfile?): BlazeCommandRunConfiguration? {
-            var runProfile = runProfile
-            if (runProfile is WrappingRunConfiguration<*>) {
-                runProfile = (runProfile as WrappingRunConfiguration<*>).getPeer()
-            }
-            return if (runProfile is BlazeCommandRunConfiguration)
-                runProfile as BlazeCommandRunConfiguration
-            else
-                null
-        }
-
-        fun getBlazeCommand(environment: ExecutionEnvironment): BlazeCommandName? {
-            val config: BlazeCommandRunConfiguration = getConfiguration(environment)
-            val commonState: BlazeCommandRunConfigurationCommonState? =
-                config.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
-                    BlazeCommandRunConfigurationCommonState::class.java
-                )
-            return if (commonState == null) null else commonState.commandState.getCommand()
-        }
-
-        /** Used to store a runner to an [ExecutionEnvironment].  */
-        val RUNNER_KEY: Key<BlazeCommandRunConfigurationRunner?> =
-            Key.create<BlazeCommandRunConfigurationRunner?>("blaze.run.config.runner")
+  companion object {
+    fun isDebugging(environment: ExecutionEnvironment): Boolean {
+      val executor = environment.getExecutor()
+      return executor is DefaultDebugExecutor
     }
+
+    @JvmStatic
+    fun getConfiguration(environment: ExecutionEnvironment): BlazeCommandRunConfiguration {
+      val runProfile = environment.getRunProfile()
+      return Preconditions.checkNotNull<BlazeCommandRunConfiguration>(getBlazeConfig(runProfile))
+    }
+
+    @JvmStatic
+    fun getBlazeConfig(runProfile: RunProfile?): BlazeCommandRunConfiguration? {
+      var runProfile = runProfile
+      if (runProfile is WrappingRunConfiguration<*>) {
+        runProfile = (runProfile as WrappingRunConfiguration<*>).getPeer()
+      }
+      return if (runProfile is BlazeCommandRunConfiguration) {
+        runProfile as BlazeCommandRunConfiguration
+      } else {
+        null
+      }
+    }
+
+    fun getBlazeCommand(environment: ExecutionEnvironment): BlazeCommandName? {
+      val config: BlazeCommandRunConfiguration = getConfiguration(environment)
+      val commonState: BlazeCommandRunConfigurationCommonState? =
+        config.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
+          BlazeCommandRunConfigurationCommonState::class.java,
+        )
+      return if (commonState == null) null else commonState.commandState.getCommand()
+    }
+
+    /** Used to store a runner to an [ExecutionEnvironment].  */
+    val RUNNER_KEY: Key<BlazeCommandRunConfigurationRunner?> =
+      Key.create<BlazeCommandRunConfigurationRunner?>("blaze.run.config.runner")
+  }
 }

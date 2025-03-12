@@ -26,17 +26,17 @@ import javax.swing.event.HyperlinkListener
  * An [ExecutionException] containing a clickable browser hyperlink. It attempts to navigate
  * to a URL formed from the hyperlink description verbatim.
  */
-class WithBrowserHyperlinkExecutionException(string: String?) : ExecutionException(string), HyperlinkListener,
-    NotificationListener {
-    override fun hyperlinkUpdate(e: HyperlinkEvent) {
-        if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-            BrowserHyperlinkListener.INSTANCE.hyperlinkUpdate(e)
-        }
+class WithBrowserHyperlinkExecutionException(string: String?) :
+  ExecutionException(string),
+  HyperlinkListener,
+  NotificationListener {
+  override fun hyperlinkUpdate(e: HyperlinkEvent) {
+    if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+      BrowserHyperlinkListener.INSTANCE.hyperlinkUpdate(e)
     }
+  }
 
-    override fun hyperlinkUpdate(
-        notification: Notification, event: HyperlinkEvent
-    ) {
-        hyperlinkUpdate(event)
-    }
+  override fun hyperlinkUpdate(notification: Notification, event: HyperlinkEvent) {
+    hyperlinkUpdate(event)
+  }
 }

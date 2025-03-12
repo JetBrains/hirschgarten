@@ -27,7 +27,7 @@ class FilteredTargetMap(
   private val project: Project?,
   decoder: ArtifactLocationDecoder,
   targetMap: TargetMap,
-  filter: Predicate<TargetIdeInfo?>
+  filter: Predicate<TargetIdeInfo?>,
 ) {
   private val rootsMap: Multimap<File?, TargetKey?>
   private val targetMap: TargetMap
@@ -39,9 +39,7 @@ class FilteredTargetMap(
     this.filter = filter
   }
 
-  fun targetsForSourceFile(sourceFile: File): ImmutableSet<TargetIdeInfo?> {
-    return targetsForSourceFiles(ImmutableList.of<File?>(sourceFile))
-  }
+  fun targetsForSourceFile(sourceFile: File): ImmutableSet<TargetIdeInfo?> = targetsForSourceFiles(ImmutableList.of<File?>(sourceFile))
 
   fun targetsForSourceFiles(sourceFiles: MutableCollection<File?>): ImmutableSet<TargetIdeInfo?> {
     val blazeProjectData: BlazeProjectData? =
@@ -53,11 +51,13 @@ class FilteredTargetMap(
   }
 
   private fun targetsForSourceFilesImpl(
-    rdepsMap: ImmutableMultimap<TargetKey?, TargetKey?>, sourceFiles: MutableCollection<File?>
+    rdepsMap: ImmutableMultimap<TargetKey?, TargetKey?>,
+    sourceFiles: MutableCollection<File?>,
   ): ImmutableSet<TargetIdeInfo?> {
     val result: ImmutableSet.Builder<TargetIdeInfo?> = ImmutableSet.builder<TargetIdeInfo?>()
     val roots: MutableSet<TargetKey?>? =
-      sourceFiles.stream()
+      sourceFiles
+        .stream()
         .flatMap<TargetKey?> { f: File? -> rootsMap.get(f).stream() }
         .collect(ImmutableSet.toImmutableSet<TargetKey?>())
 
@@ -80,12 +80,12 @@ class FilteredTargetMap(
   }
 
   companion object {
-    private fun createRootsMap(
-      decoder: ArtifactLocationDecoder, targets: MutableCollection<TargetIdeInfo>
-    ): Multimap<File?, TargetKey?> {
+    private fun createRootsMap(decoder: ArtifactLocationDecoder, targets: MutableCollection<TargetIdeInfo>): Multimap<File?, TargetKey?> {
       val result: Multimap<File?, TargetKey?> = ArrayListMultimap.create<File?, TargetKey?>()
       for (target in targets) {
-        target.getSources().stream()
+        target
+          .getSources()
+          .stream()
           .map(decoder::resolveSource)
           .filter({ obj: Any? -> Objects.nonNull(obj) })
           .forEach({ f -> result.put(f, target.getKey()) })

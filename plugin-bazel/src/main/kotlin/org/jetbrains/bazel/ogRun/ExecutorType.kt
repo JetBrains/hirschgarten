@@ -15,75 +15,74 @@
  */
 package org.jetbrains.bazel.ogRun
 
-import com.google.common.collect.ImmutableSet
 import com.intellij.execution.Executor
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.executors.DefaultRunExecutor
 
 /** Run configuration executor type  */
 enum class ExecutorType {
-    RUN,
-    FAST_BUILD_RUN,
-    DEBUG,
-    FAST_BUILD_DEBUG,
-    COVERAGE,
-    DEBUG_STARLARK,
-    UNKNOWN;
+  RUN,
+  FAST_BUILD_RUN,
+  DEBUG,
+  FAST_BUILD_DEBUG,
+  COVERAGE,
+  DEBUG_STARLARK,
+  UNKNOWN,
+  ;
 
-    val isDebugType: Boolean
-        get() = this == ExecutorType.DEBUG || this == ExecutorType.FAST_BUILD_DEBUG
+  val isDebugType: Boolean
+    get() = this == DEBUG || this == FAST_BUILD_DEBUG
 
-    val isFastBuildType: Boolean
-        get() = this == ExecutorType.FAST_BUILD_RUN || this == ExecutorType.FAST_BUILD_DEBUG
+  val isFastBuildType: Boolean
+    get() = this == FAST_BUILD_RUN || this == FAST_BUILD_DEBUG
 
-    companion object {
-        @JvmStatic
-        fun fromExecutor(executor: Executor): ExecutorType {
-            return fromExecutorId(executor.getId())
-        }
+  companion object {
+    @JvmStatic
+    fun fromExecutor(executor: Executor): ExecutorType = fromExecutorId(executor.id)
 
-        @JvmStatic
-        fun fromExecutorId(executorId: String): ExecutorType {
-            if (executorId == DefaultRunExecutor.EXECUTOR_ID) {
-                return ExecutorType.RUN
-            }
-            // hard-code string because this class doesn't exist in the CLion plugin
-            if (executorId == "BlazeFastRun") {
-                return ExecutorType.FAST_BUILD_RUN
-            }
-            if (executorId == DefaultDebugExecutor.EXECUTOR_ID) {
-                return ExecutorType.DEBUG
-            }
-            // hard-code string because this class doesn't exist in the CLion plugin
-            if (executorId == "BlazeFastDebug") {
-                return ExecutorType.FAST_BUILD_DEBUG
-            }
-            // hard-code string to avoid plugin dependency (coverage plugin not yet available in CLion)
-            if (executorId == "Coverage") {
-                return ExecutorType.COVERAGE
-            }
+    @JvmStatic
+    fun fromExecutorId(executorId: String): ExecutorType {
+      if (executorId == DefaultRunExecutor.EXECUTOR_ID) {
+        return RUN
+      }
+      // hard-code string because this class doesn't exist in the CLion plugin
+      if (executorId == "BlazeFastRun") {
+        return FAST_BUILD_RUN
+      }
+      if (executorId == DefaultDebugExecutor.EXECUTOR_ID) {
+        return DEBUG
+      }
+      // hard-code string because this class doesn't exist in the CLion plugin
+      if (executorId == "BlazeFastDebug") {
+        return FAST_BUILD_DEBUG
+      }
+      // hard-code string to avoid plugin dependency (coverage plugin not yet available in CLion)
+      if (executorId == "Coverage") {
+        return COVERAGE
+      }
 
-            if (executorId == "SkylarkDebugExecutor") {
-                return ExecutorType.DEBUG_STARLARK
-            }
-            return ExecutorType.UNKNOWN
-        }
-
-        /** Executor types supported for debuggable targets.  */
-        val DEBUG_SUPPORTED_TYPES: ImmutableSet<ExecutorType?> =
-            ImmutableSet.of<ExecutorType?>(ExecutorType.RUN, ExecutorType.DEBUG, ExecutorType.COVERAGE)
-
-        /** Executor types supported for non-debuggable targets.  */
-        val DEBUG_UNSUPPORTED_TYPES: ImmutableSet<ExecutorType?> =
-            ImmutableSet.of<ExecutorType?>(ExecutorType.RUN, ExecutorType.COVERAGE)
-
-        /** Executor types supported for targets supporting fast run/debug.  */
-        val FAST_DEBUG_SUPPORTED_TYPES: ImmutableSet<ExecutorType?> = ImmutableSet.of<ExecutorType?>(
-            ExecutorType.RUN,
-            ExecutorType.FAST_BUILD_RUN,
-            ExecutorType.DEBUG,
-            ExecutorType.FAST_BUILD_DEBUG,
-            ExecutorType.COVERAGE
-        )
+      if (executorId == "SkylarkDebugExecutor") {
+        return DEBUG_STARLARK
+      }
+      return UNKNOWN
     }
+
+    /** Executor types supported for debuggable targets.  */
+    val DEBUG_SUPPORTED_TYPES =
+      setOf<ExecutorType?>(RUN, DEBUG, COVERAGE)
+
+    /** Executor types supported for non-debuggable targets.  */
+    val DEBUG_UNSUPPORTED_TYPES =
+      setOf<ExecutorType>(RUN, COVERAGE)
+
+    /** Executor types supported for targets supporting fast run/debug.  */
+    val FAST_DEBUG_SUPPORTED_TYPE =
+      setOf(
+        RUN,
+        FAST_BUILD_RUN,
+        DEBUG,
+        FAST_BUILD_DEBUG,
+        COVERAGE,
+      )
+  }
 }

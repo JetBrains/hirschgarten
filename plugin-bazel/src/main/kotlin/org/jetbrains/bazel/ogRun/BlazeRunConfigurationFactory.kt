@@ -26,35 +26,37 @@ import org.jetbrains.bazel.label.Label
 
 /** A factory creating run configurations based on Blaze targets.  */
 abstract class BlazeRunConfigurationFactory {
-    /** Returns whether this factory can handle a target.  */
-    abstract fun handlesTarget(
-        project: Project?, blazeProjectData: BlazeProjectData?, label: Label?
-    ): Boolean
+  /** Returns whether this factory can handle a target.  */
+  abstract fun handlesTarget(
+    project: Project,
+    blazeProjectData: BlazeProjectData?,
+    label: Label,
+  ): Boolean
 
-    /** Returns whether this factory is compatible with the given run configuration type.  */
-    fun handlesConfiguration(configuration: RunConfiguration): Boolean {
-        return this.configurationFactory.getType() == configuration.getType()
-    }
+  /** Returns whether this factory is compatible with the given run configuration type.  */
+  fun handlesConfiguration(configuration: RunConfiguration): Boolean = this.configurationFactory.type == configuration.getType()
 
-    /** Constructs and initializes [RunnerAndConfigurationSettings] for the given rule.  */
-    fun createForTarget(
-        project: Project, runManager: RunManager, target: Label?
-    ): RunnerAndConfigurationSettings {
-        val factory = this.configurationFactory
-        val configuration = factory.createTemplateConfiguration(project, runManager)
-        setupConfiguration(configuration, target)
-        return runManager.createConfiguration(configuration, factory)
-    }
+  /** Constructs and initializes [RunnerAndConfigurationSettings] for the given rule.  */
+  fun createForTarget(
+    project: Project,
+    runManager: RunManager,
+    target: Label,
+  ): RunnerAndConfigurationSettings {
+    val factory = this.configurationFactory
+    val configuration = factory.createTemplateConfiguration(project, runManager)
+    setupConfiguration(configuration, target)
+    return runManager.createConfiguration(configuration, factory)
+  }
 
-    /** The factory used to create configurations.  */
-    protected abstract val configurationFactory: ConfigurationFactory
+  /** The factory used to create configurations.  */
+  protected abstract val configurationFactory: ConfigurationFactory
 
-    /** Initialize the configuration for the given target.  */
-    abstract fun setupConfiguration(configuration: RunConfiguration?, target: Label?)
+  /** Initialize the configuration for the given target.  */
+  abstract fun setupConfiguration(configuration: RunConfiguration, target: Label)
 
-    companion object {
-        @JvmField
-        val EP_NAME: ExtensionPointName<BlazeRunConfigurationFactory> =
-          ExtensionPointName.create<BlazeRunConfigurationFactory>("com.google.idea.blaze.RunConfigurationFactory")
-    }
+  companion object {
+    @JvmField
+    val EP_NAME: ExtensionPointName<BlazeRunConfigurationFactory> =
+      ExtensionPointName.create<BlazeRunConfigurationFactory>("com.google.idea.blaze.RunConfigurationFactory")
+  }
 }

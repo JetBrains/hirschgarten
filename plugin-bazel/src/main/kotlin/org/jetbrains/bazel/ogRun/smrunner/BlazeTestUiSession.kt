@@ -28,20 +28,17 @@ import com.google.common.collect.ImmutableList
  */
 @AutoValue
 abstract class BlazeTestUiSession {
-    /**
-     * Blaze flags required for test UI.<br></br>
-     * Forces local test execution, without retries.
-     */
-    abstract val blazeFlags: ImmutableList<String?>?
+  /**
+   * Blaze flags required for test UI.<br></br>
+   * Forces local test execution, without retries.
+   */
+  abstract val blazeFlags: ImmutableList<String?>?
 
-    /** Returns a [BlazeTestResultFinderStrategy] for this blaze test invocation.  */
-    abstract val testResultFinderStrategy: BlazeTestResultFinderStrategy?
+  /** Returns a [BlazeTestResultFinderStrategy] for this blaze test invocation.  */
+  abstract val testResultFinderStrategy: BlazeTestResultFinderStrategy?
 
-    companion object {
-        fun create(
-            blazeFlags: ImmutableList<String?>?, testResultFinderStrategy: BlazeTestResultFinderStrategy?
-        ): BlazeTestUiSession {
-            return AutoValue_BlazeTestUiSession(blazeFlags, testResultFinderStrategy)
-        }
-    }
+  companion object {
+    fun create(blazeFlags: ImmutableList<String?>?, testResultFinderStrategy: BlazeTestResultFinderStrategy?): BlazeTestUiSession =
+      AutoValue_BlazeTestUiSession(blazeFlags, testResultFinderStrategy)
+  }
 }

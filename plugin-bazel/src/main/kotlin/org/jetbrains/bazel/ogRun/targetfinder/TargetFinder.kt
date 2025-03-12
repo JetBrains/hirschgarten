@@ -27,37 +27,39 @@ import java.util.function.Predicate
 
 /** Finds information about targets matching a given label.  */
 interface TargetFinder {
-    /** Returns a future for a [TargetInfo] corresponding to the given blaze label.  */
-    fun findTarget(project: Project?, label: Label?): Future<TargetInfo?>?
+  /** Returns a future for a [TargetInfo] corresponding to the given blaze label.  */
+  fun findTarget(project: Project?, label: Label?): Future<TargetInfo?>?
 
-    companion object {
-        /**
-         * Iterates through all [TargetFinder]s, returning a [Future] representing the first
-         * non-null result, prioritizing any which are immediately available.
-         *
-         *
-         * Future returns null if this no non-null result was found.
-         */
-        fun findTargetInfoFuture(project: Project?, label: Label?): ListenableFuture<TargetInfo?> {
-            val futures: Iterable<Future<TargetInfo?>?> =
-                Iterables.transform<TargetFinder?, Future<TargetInfo?>?>(
-                    Arrays.asList<TargetFinder?>(*EP_NAME.extensions),
-                    Function { f: TargetFinder? -> f!!.findTarget(project, label) })
-            return FuturesUtil.getFirstFutureSatisfyingPredicate<TargetInfo?>(
-                futures,
-                Predicate { obj: TargetInfo? -> Objects.nonNull(obj) })
-        }
-
-        /**
-         * Iterates through all [TargetFinder]s, returning the first immediately available, non-null
-         * result.
-         */
-        fun findTargetInfo(project: Project?, label: Label?): TargetInfo? {
-            val future: ListenableFuture<TargetInfo?> = findTargetInfoFuture(project, label)
-            return if (future.isDone()) FuturesUtil.getIgnoringErrors<TargetInfo?>(future) else null
-        }
-
-        val EP_NAME: ExtensionPointName<TargetFinder?> =
-            create.create<TargetFinder?>("com.google.idea.blaze.TargetFinder")
+  companion object {
+    /**
+     * Iterates through all [TargetFinder]s, returning a [Future] representing the first
+     * non-null result, prioritizing any which are immediately available.
+     *
+     *
+     * Future returns null if this no non-null result was found.
+     */
+    fun findTargetInfoFuture(project: Project?, label: Label?): ListenableFuture<TargetInfo?> {
+      val futures: Iterable<Future<TargetInfo?>?> =
+        Iterables.transform<TargetFinder?, Future<TargetInfo?>?>(
+          Arrays.asList<TargetFinder?>(*EP_NAME.extensions),
+          Function { f: TargetFinder? -> f!!.findTarget(project, label) },
+        )
+      return FuturesUtil.getFirstFutureSatisfyingPredicate<TargetInfo?>(
+        futures,
+        Predicate { obj: TargetInfo? -> Objects.nonNull(obj) },
+      )
     }
+
+    /**
+     * Iterates through all [TargetFinder]s, returning the first immediately available, non-null
+     * result.
+     */
+    fun findTargetInfo(project: Project?, label: Label?): TargetInfo? {
+      val future: ListenableFuture<TargetInfo?> = findTargetInfoFuture(project, label)
+      return if (future.isDone()) FuturesUtil.getIgnoringErrors<TargetInfo?>(future) else null
+    }
+
+    val EP_NAME: ExtensionPointName<TargetFinder?> =
+      create.create<TargetFinder?>("com.google.idea.blaze.TargetFinder")
+  }
 }

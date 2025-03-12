@@ -22,14 +22,14 @@ import java.util.concurrent.Future
 
 /** Uses the project's [TargetMap] to locate targets matching a given label.  */
 internal class ProjectTargetFinder : TargetFinder {
-    override fun findTarget(project: Project?, label: Label?): Future<TargetInfo?> {
-        val projectData: BlazeProjectData? =
-            BlazeProjectDataManager.getInstance(project).getBlazeProjectData()
-        var ret: TargetInfo? = null
-        if (projectData != null) {
-            val buildTarget: BuildTarget? = projectData.getBuildTarget(label)
-            ret = if (buildTarget != null) TargetInfo.builder(label, buildTarget.kind()).build() else null
-        }
-        return Futures.immediateFuture<TargetInfo?>(ret)
+  override fun findTarget(project: Project?, label: Label?): Future<TargetInfo?> {
+    val projectData: BlazeProjectData? =
+      BlazeProjectDataManager.getInstance(project).getBlazeProjectData()
+    var ret: TargetInfo? = null
+    if (projectData != null) {
+      val buildTarget: BuildTarget? = projectData.getBuildTarget(label)
+      ret = if (buildTarget != null) TargetInfo.builder(label, buildTarget.kind()).build() else null
     }
+    return Futures.immediateFuture<TargetInfo?>(ret)
+  }
 }

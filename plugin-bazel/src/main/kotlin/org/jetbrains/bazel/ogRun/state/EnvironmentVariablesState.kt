@@ -29,7 +29,7 @@ import org.jetbrains.annotations.VisibleForTesting
 /** State for user-defined environment variables.  */
 class EnvironmentVariablesState : RunConfigurationState {
   var data: EnvironmentVariablesData =
-    EnvironmentVariablesData.create(ImmutableMap.of<String?, String?>(),  /* passParentEnvs= */true)
+    EnvironmentVariablesData.create(ImmutableMap.of<String?, String?>(), /* passParentEnvs= */true)
     private set
 
   fun asBlazeTestEnvFlags(): ImmutableList<String?> {
@@ -56,9 +56,7 @@ class EnvironmentVariablesState : RunConfigurationState {
     element.addContent(child)
   }
 
-  override fun getEditor(project: Project?): RunConfigurationStateEditor {
-    return Editor()
-  }
+  override fun getEditor(project: Project?): RunConfigurationStateEditor = Editor()
 
   @VisibleForTesting
   fun setEnvVars(vars: MutableMap<String?, String?>) {
@@ -84,9 +82,7 @@ class EnvironmentVariablesState : RunConfigurationState {
         EnvironmentVariablesData.create(component.getEnvs(), component.isPassParentEnvs())
     }
 
-    override fun createComponent(): JComponent {
-      return component
-    }
+    override fun createComponent(): JComponent = component
 
     override fun setComponentEnabled(enabled: Boolean) {
       component.setEnabled(enabled)

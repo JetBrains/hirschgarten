@@ -15,11 +15,11 @@
  */
 package org.jetbrains.bazel.ogRun.confighandler
 
-import com.google.idea.blaze.base.command.BlazeCommandName
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RuntimeConfigurationException
 import com.intellij.execution.runners.ExecutionEnvironment
+import org.jetbrains.bazel.ogRun.other.BlazeCommandName
 
 /**
  * Supports the run configuration flow for [BlazeCommandRunConfiguration]s.
@@ -28,37 +28,35 @@ import com.intellij.execution.runners.ExecutionEnvironment
  * Provides rule-specific configuration state, validation, presentation, and runner.
  */
 interface BlazeCommandRunConfigurationHandler {
-    @JvmField
-    val state: RunConfigurationState?
+  @JvmField
+  val state: RunConfigurationState?
 
-    /** @return A [BlazeCommandRunConfigurationRunner] for running the configuration.
-     */
-    @Throws(ExecutionException::class)
-    fun createRunner(
-        executor: Executor?, environment: ExecutionEnvironment?
-    ): BlazeCommandRunConfigurationRunner?
+  /** @return A [BlazeCommandRunConfigurationRunner] for running the configuration.
+   */
+  @Throws(ExecutionException::class)
+  fun createRunner(executor: Executor?, environment: ExecutionEnvironment?): BlazeCommandRunConfigurationRunner?
 
-    /**
-     * Checks whether the handler settings are valid.
-     *
-     * @throws RuntimeConfigurationException for configuration errors the user should be warned about.
-     */
-    @Throws(RuntimeConfigurationException::class)
-    fun checkConfiguration()
+  /**
+   * Checks whether the handler settings are valid.
+   *
+   * @throws RuntimeConfigurationException for configuration errors the user should be warned about.
+   */
+  @Throws(RuntimeConfigurationException::class)
+  fun checkConfiguration()
 
-    /**
-     * @return The default name of the run configuration based on its settings and this handler's
-     * state.
-     */
-    fun suggestedName(configuration: BlazeCommandRunConfiguration?): String?
+  /**
+   * @return The default name of the run configuration based on its settings and this handler's
+   * state.
+   */
+  fun suggestedName(configuration: BlazeCommandRunConfiguration?): String?
 
-    /**
-     * @return The [BlazeCommandName] associated with this state. May be null if no command is
-     * set.
-     */
-    val commandName: BlazeCommandName?
+  /**
+   * @return The [BlazeCommandName] associated with this state. May be null if no command is
+   * set.
+   */
+  val commandName: BlazeCommandName?
 
-    /** @return The name of this handler. Shown in the UI.
-     */
-    val handlerName: String?
+  /** @return The name of this handler. Shown in the UI.
+   */
+  val handlerName: String?
 }

@@ -23,41 +23,42 @@ import java.io.File
 
 /** Looks for a test rule in the same blaze package as the source file.  */
 internal class BlazePackageHeuristic : TestTargetHeuristic {
-    override fun matchesSource(
-        project: Project?,
-        target: TargetInfo,
-        sourcePsiFile: PsiFile?,
-        sourceFile: File?,
-        testSize: TestSize?
-    ): Boolean {
-        val vf =
-            if (sourcePsiFile != null)
-                sourcePsiFile.getVirtualFile()
-            else
-                VfsUtils.resolveVirtualFile(sourceFile,  /* refreshIfNeeded= */true)
-        val sourcePackage: WorkspacePath? = findBlazePackage(project, vf)
-        if (sourcePackage == null) {
-            return false
-        }
-        val targetPackage: WorkspacePath? = target.label.blazePackage()
-        return sourcePackage.equals(targetPackage)
+  override fun matchesSource(
+    project: Project?,
+    target: TargetInfo,
+    sourcePsiFile: PsiFile?,
+    sourceFile: File?,
+    testSize: TestSize?,
+  ): Boolean {
+    val vf =
+      if (sourcePsiFile != null) {
+        sourcePsiFile.getVirtualFile()
+      } else {
+        VfsUtils.resolveVirtualFile(sourceFile, /* refreshIfNeeded= */true)
+      }
+    val sourcePackage: WorkspacePath? = findBlazePackage(project, vf)
+    if (sourcePackage == null) {
+      return false
     }
+    val targetPackage: WorkspacePath? = target.label.blazePackage()
+    return sourcePackage.equals(targetPackage)
+  }
 
-    companion object {
-        private fun findBlazePackage(project: Project?, vf: VirtualFile?): WorkspacePath? {
-            var vf = vf
-            val provider: BuildSystemProvider = Blaze.getBuildSystemProvider(project)
-            val root: WorkspaceRoot? = WorkspaceRoot.fromProjectSafe(project)
-            if (root == null) {
-                return null
-            }
-            while (vf != null) {
-                if (vf.isDirectory() && provider.findBuildFileInDirectory(vf) != null) {
-                    return root.workspacePathForSafe(File(vf.getPath()))
-                }
-                vf = vf.getParent()
-            }
-            return null
+  companion object {
+    private fun findBlazePackage(project: Project?, vf: VirtualFile?): WorkspacePath? {
+      var vf = vf
+      val provider: BuildSystemProvider = Blaze.getBuildSystemProvider(project)
+      val root: WorkspaceRoot? = WorkspaceRoot.fromProjectSafe(project)
+      if (root == null) {
+        return null
+      }
+      while (vf != null) {
+        if (vf.isDirectory() && provider.findBuildFileInDirectory(vf) != null) {
+          return root.workspacePathForSafe(File(vf.getPath()))
         }
+        vf = vf.getParent()
+      }
+      return null
     }
+  }
 }

@@ -16,21 +16,18 @@
 package org.jetbrains.bazel.ogRun.coverage
 
 import com.google.common.collect.ImmutableList
-import com.google.idea.blaze.base.command.BlazeCommandName
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.runners.ExecutionEnvironment
+import org.jetbrains.bazel.ogRun.other.BlazeCommandName
 import java.io.File
 
 /** Helper methods for coverage integration.  */
 object CoverageUtils {
-  fun coverageEnabled(env: ExecutionEnvironment): Boolean {
-    return coverageEnabled(env.getExecutor().getId(), env.getRunProfile())
-  }
+  fun coverageEnabled(env: ExecutionEnvironment): Boolean = coverageEnabled(env.getExecutor().getId(), env.getRunProfile())
 
-  fun coverageEnabled(executorId: String, profile: RunProfile?): Boolean {
-    return ExecutorType.fromExecutorId(executorId) == ExecutorType.COVERAGE
-      && isApplicableTo(profile)
-  }
+  fun coverageEnabled(executorId: String, profile: RunProfile?): Boolean =
+    ExecutorType.fromExecutorId(executorId) == ExecutorType.COVERAGE &&
+      isApplicableTo(profile)
 
   fun isApplicableTo(runProfile: RunProfile?): Boolean {
     val config: BlazeCommandRunConfiguration? = toBlazeConfig(runProfile)
@@ -48,9 +45,8 @@ object CoverageUtils {
     return BlazeCommandName.TEST.equals(command) || BlazeCommandName.COVERAGE.equals(command)
   }
 
-  private fun toBlazeConfig(profile: RunProfile?): BlazeCommandRunConfiguration? {
-    return BlazeCommandRunConfigurationRunner.getBlazeConfig(profile)
-  }
+  private fun toBlazeConfig(profile: RunProfile?): BlazeCommandRunConfiguration? =
+    BlazeCommandRunConfigurationRunner.getBlazeConfig(profile)
 
   val blazeFlags: ImmutableList<String?> = ImmutableList.of<String?>("--combined_report=lcov")
 

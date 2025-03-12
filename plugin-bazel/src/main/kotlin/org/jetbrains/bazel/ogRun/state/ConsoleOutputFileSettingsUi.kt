@@ -31,9 +31,8 @@ import kotlin.concurrent.Volatile
  * Optionally save console output to a file. All the state / serialization code is handled upstream,
  * this class just displays the UI elements.
  */
-class ConsoleOutputFileSettingsUi<T : RunConfigurationBase<*>?>
-  : SettingsEditor<T?>() {
-  private val saveToFile = JBCheckBox("Save console output to file:",  /* selected= */false)
+class ConsoleOutputFileSettingsUi<T : RunConfigurationBase<*>?> : SettingsEditor<T?>() {
+  private val saveToFile = JBCheckBox("Save console output to file:", /* selected= */false)
   private val outputFile = TextFieldWithBrowseButton()
 
   @Volatile
@@ -42,7 +41,7 @@ class ConsoleOutputFileSettingsUi<T : RunConfigurationBase<*>?>
   init {
     outputFile.addBrowseFolderListener(
       "Choose File to Save Console Output",
-      "Console output would be saved to the specified file",  /* project= */
+      "Console output would be saved to the specified file", // project=
       null,
       FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor(),
       TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT,
@@ -66,9 +65,7 @@ class ConsoleOutputFileSettingsUi<T : RunConfigurationBase<*>?>
     config.setSaveOutputToFile(saveToFile.isSelected())
   }
 
-  override fun createEditor(): JComponent {
-    return UiUtil.createHorizontalBox( /* gap= */5, saveToFile, outputFile)
-  }
+  override fun createEditor(): JComponent = UiUtil.createHorizontalBox( /* gap= */5, saveToFile, outputFile)
 
   fun setComponentEnabled(componentEnabled: Boolean) {
     uiEnabled = componentEnabled

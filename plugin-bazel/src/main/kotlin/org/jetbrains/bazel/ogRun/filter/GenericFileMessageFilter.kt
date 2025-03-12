@@ -53,12 +53,12 @@ internal class GenericFileMessageFilter(private val project: Project) : Filter {
 
   /** Provider for traceback filter  */
   internal class Provider : ConsoleFilterProvider {
-    override fun getDefaultFilters(project: Project): Array<Filter?> {
-      return if (Blaze.isBlazeProject(project))
+    override fun getDefaultFilters(project: Project): Array<Filter?> =
+      if (Blaze.isBlazeProject(project)) {
         arrayOf<Filter>(GenericFileMessageFilter(project))
-      else
+      } else {
         arrayOfNulls<Filter>(0)
-    }
+      }
   }
 
   /**
@@ -71,13 +71,13 @@ internal class GenericFileMessageFilter(private val project: Project) : Filter {
     project: Project,
     val vf: VirtualFile,
     val line: Int,
-    val column: Int
+    val column: Int,
   ) : OpenFileHyperlinkInfo(
-    project,
-    vf,
-    line,
-    column,
-  )
+      project,
+      vf,
+      line,
+      column,
+    )
 
   companion object {
     private val FILE_LINE_COLUMN: Pattern = Pattern.compile("^([^:\\s]+):([0-9]+):([0-9]+): ")

@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableList
 import com.google.idea.blaze.base.dependencies.TargetInfo
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import org.jetbrains.bazel.ogRun.other.TestSize
 import java.io.File
 import java.util.*
 
@@ -27,29 +28,29 @@ import java.util.*
  * list. Only looks for exact matches.
  */
 class TestTargetSourcesHeuristic : TestTargetHeuristic {
-    override fun matchesSource(
-        project: Project?,
-        target: TargetInfo,
-        sourcePsiFile: PsiFile?,
-        sourceFile: File?,
-        testSize: TestSize?
-    ): Boolean {
-        val sources: Optional<ImmutableList<ArtifactLocation?>?> = target.getSources()
-        if (!sources.isPresent()) {
-            return false
-        }
-        val projectData: BlazeProjectData? =
-            BlazeProjectDataManager.getInstance(project).getBlazeProjectData()
-        if (projectData == null) {
-            return false
-        }
-
-        val decoder: ArtifactLocationDecoder = projectData.getArtifactLocationDecoder()
-        for (src in sources.get()) {
-            if (decoder.resolveSource(src) == sourceFile) {
-                return true
-            }
-        }
-        return false
+  override fun matchesSource(
+    project: Project?,
+    target: TargetInfo,
+    sourcePsiFile: PsiFile?,
+    sourceFile: File?,
+    testSize: TestSize?,
+  ): Boolean {
+    val sources: Optional<ImmutableList<ArtifactLocation?>?> = target.getSources()
+    if (!sources.isPresent()) {
+      return false
     }
+    val projectData: BlazeProjectData? =
+      BlazeProjectDataManager.getInstance(project).getBlazeProjectData()
+    if (projectData == null) {
+      return false
+    }
+
+    val decoder: ArtifactLocationDecoder = projectData.getArtifactLocationDecoder()
+    for (src in sources.get()) {
+      if (decoder.resolveSource(src) == sourceFile) {
+        return true
+      }
+    }
+    return false
+  }
 }

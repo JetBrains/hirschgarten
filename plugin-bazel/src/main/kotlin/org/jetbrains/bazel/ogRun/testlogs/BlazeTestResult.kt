@@ -21,48 +21,47 @@ import com.google.common.collect.ImmutableSet
 /** The result of a single blaze test action.  */
 @AutoValue
 abstract class BlazeTestResult {
-    /** Status for a single blaze test action.  */
-    enum class TestStatus {
-        NO_STATUS,
-        PASSED,
-        FLAKY,
-        TIMEOUT,
-        FAILED,
-        INCOMPLETE,
-        REMOTE_FAILURE,
-        FAILED_TO_BUILD,
-        TOOL_HALTED_BEFORE_TESTING,
-    }
+  /** Status for a single blaze test action.  */
+  enum class TestStatus {
+    NO_STATUS,
+    PASSED,
+    FLAKY,
+    TIMEOUT,
+    FAILED,
+    INCOMPLETE,
+    REMOTE_FAILURE,
+    FAILED_TO_BUILD,
+    TOOL_HALTED_BEFORE_TESTING,
+  }
 
+  @JvmField
+  abstract val label: Label?
+
+  @JvmField
+  abstract val targetKind: Kind?
+
+  @JvmField
+  abstract val testStatus: TestStatus?
+
+  @JvmField
+  abstract val outputXmlFiles: ImmutableSet<out BlazeArtifact>?
+
+  companion object {
+    /** The set of statuses for which no useful output XML is written.  */
     @JvmField
-    abstract val label: Label?
+    val NO_USEFUL_OUTPUT: ImmutableSet<TestStatus?> =
+      ImmutableSet.of<TestStatus?>(
+        TestStatus.TIMEOUT,
+        TestStatus.REMOTE_FAILURE,
+        TestStatus.FAILED_TO_BUILD,
+        TestStatus.TOOL_HALTED_BEFORE_TESTING,
+      )
 
-    @JvmField
-    abstract val targetKind: Kind?
-
-    @JvmField
-    abstract val testStatus: TestStatus?
-
-    @JvmField
-    abstract val outputXmlFiles: ImmutableSet<out BlazeArtifact>?
-
-    companion object {
-        /** The set of statuses for which no useful output XML is written.  */
-        @JvmField
-        val NO_USEFUL_OUTPUT: ImmutableSet<TestStatus?> = ImmutableSet.of<TestStatus?>(
-            TestStatus.TIMEOUT,
-            TestStatus.REMOTE_FAILURE,
-            TestStatus.FAILED_TO_BUILD,
-            TestStatus.TOOL_HALTED_BEFORE_TESTING
-        )
-
-        fun create(
-            label: Label?,
-            targetKind: Kind?,
-            testStatus: TestStatus?,
-            outputXmlFiles: ImmutableSet<out BlazeArtifact?>?
-        ): BlazeTestResult {
-            return AutoValue_BlazeTestResult(label, targetKind, testStatus, outputXmlFiles)
-        }
-    }
+    fun create(
+      label: Label?,
+      targetKind: Kind?,
+      testStatus: TestStatus?,
+      outputXmlFiles: ImmutableSet<out BlazeArtifact?>?,
+    ): BlazeTestResult = AutoValue_BlazeTestResult(label, targetKind, testStatus, outputXmlFiles)
+  }
 }

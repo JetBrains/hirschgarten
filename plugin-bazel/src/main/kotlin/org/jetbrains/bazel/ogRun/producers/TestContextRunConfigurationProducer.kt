@@ -16,7 +16,6 @@
 package org.jetbrains.bazel.ogRun.producers
 
 import com.google.common.annotations.VisibleForTesting
-import com.google.idea.blaze.base.command.BlazeCommandName
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.Ref
@@ -25,88 +24,85 @@ import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
+import org.jetbrains.bazel.ogRun.other.BlazeCommandName
 import java.util.*
 
 /** Produces run configurations via [TestContextProvider].  */
-class TestContextRunConfigurationProducer
+class TestContextRunConfigurationProducer :
+  BlazeRunConfigurationProducer<BlazeCommandRunConfiguration?>(BlazeCommandRunConfigurationType.getInstance()) {
+  private val cacheKey =
+    Key.create<CachedValue<RunConfigurationContext?>?>(TestContextRunConfigurationProducer::class.java.getName() + "@" + this.hashCode())
 
-    : BlazeRunConfigurationProducer<BlazeCommandRunConfiguration?>(BlazeCommandRunConfigurationType.getInstance()) {
-    private val cacheKey =
-        Key.create<CachedValue<RunConfigurationContext?>?>(TestContextRunConfigurationProducer::class.java.getName() + "@" + this.hashCode())
+  /** Implements [.equals] so that cached value stability checker passes.  */
+  private class ContextWrapper(val context: ConfigurationContext) {
+    override fun equals(obj: Any?): Boolean =
+      obj is ContextWrapper &&
+        context.getPsiLocation() == obj.context.getPsiLocation()
 
-    /** Implements [.equals] so that cached value stability checker passes.  */
-    private class ContextWrapper(val context: ConfigurationContext) {
-        override fun equals(obj: Any?): Boolean {
-            return obj is ContextWrapper
-                    && context.getPsiLocation() == obj.context.getPsiLocation()
-        }
+    override fun hashCode(): Int = Objects.hash(this.javaClass, context.getPsiLocation())
+  }
 
-        override fun hashCode(): Int {
-            return Objects.hash(this.javaClass, context.getPsiLocation())
-        }
+  private fun findTestContext(context: ConfigurationContext): RunConfigurationContext? {
+    if (!SmRunnerUtils.getSelectedSmRunnerTreeElements(context).isEmpty()) {
+      // handled by a different producer
+      return null
     }
-
-    private fun findTestContext(context: ConfigurationContext): RunConfigurationContext? {
-        if (!SmRunnerUtils.getSelectedSmRunnerTreeElements(context).isEmpty()) {
-            // handled by a different producer
-            return null
-        }
-        val wrapper = ContextWrapper(context)
-        val psi = context.getPsiLocation()
-        return if (psi == null)
-            null
-        else
-            CachedValuesManager.getCachedValue<T?>(
-                psi,
-                cacheKey,
-                CachedValueProvider {
-                    CachedValueProvider.Result.create<T?>(
-                        doFindTestContext(wrapper.context),
-                        PsiModificationTracker.MODIFICATION_COUNT,
-                        BlazeSyncModificationTracker.getInstance(wrapper.context.getProject())
-                    )
-                })
+    val wrapper = ContextWrapper(context)
+    val psi = context.getPsiLocation()
+    return if (psi == null) {
+      null
+    } else {
+      CachedValuesManager.getCachedValue<T?>(
+        psi,
+        cacheKey,
+        CachedValueProvider {
+          CachedValueProvider.Result.create<T?>(
+            doFindTestContext(wrapper.context),
+            PsiModificationTracker.MODIFICATION_COUNT,
+            BlazeSyncModificationTracker.getInstance(wrapper.context.getProject()),
+          )
+        },
+      )
     }
+  }
 
-    private fun doFindTestContext(context: ConfigurationContext?): RunConfigurationContext? {
-        return Arrays.stream<TestContextProvider?>(TestContextProvider.EP_NAME.extensions)
-            .map<RunConfigurationContext?> { p: TestContextProvider? -> p!!.getTestContext(context) }
-            .filter { obj: RunConfigurationContext? -> Objects.nonNull(obj) }
-            .findFirst()
-            .orElse(null)
-    }
+  private fun doFindTestContext(context: ConfigurationContext?): RunConfigurationContext? =
+    Arrays
+      .stream<TestContextProvider?>(TestContextProvider.EP_NAME.extensions)
+      .map<RunConfigurationContext?> { p: TestContextProvider? -> p!!.getTestContext(context) }
+      .filter { obj: RunConfigurationContext? -> Objects.nonNull(obj) }
+      .findFirst()
+      .orElse(null)
 
-    override fun doSetupConfigFromContext(
-        configuration: BlazeCommandRunConfiguration,
-        context: ConfigurationContext,
-        sourceElement: Ref<PsiElement?>
-    ): Boolean {
-        val testContext = findTestContext(context)
-        if (testContext == null) {
-            return false
-        }
-        if (!testContext.setupRunConfiguration(configuration)) {
-            return false
-        }
-        sourceElement.set(testContext.sourceElement)
-        return true
+  override fun doSetupConfigFromContext(
+    configuration: BlazeCommandRunConfiguration,
+    context: ConfigurationContext,
+    sourceElement: Ref<PsiElement?>,
+  ): Boolean {
+    val testContext = findTestContext(context)
+    if (testContext == null) {
+      return false
     }
+    if (!testContext.setupRunConfiguration(configuration)) {
+      return false
+    }
+    sourceElement.set(testContext.sourceElement)
+    return true
+  }
 
-    @VisibleForTesting
-    public override fun doIsConfigFromContext(
-        configuration: BlazeCommandRunConfiguration, context: ConfigurationContext
-    ): Boolean {
-        val commonState: BlazeCommandRunConfigurationCommonState? =
-            configuration.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
-                BlazeCommandRunConfigurationCommonState::class.java
-            )
-        if (commonState == null) {
-            return false
-        }
-        if (commonState.commandState.getCommand() != BlazeCommandName.TEST) {
-            return false
-        }
-        val testContext = findTestContext(context)
-        return testContext != null && testContext.matchesRunConfiguration(configuration)
+  @VisibleForTesting
+  public override fun doIsConfigFromContext(configuration: BlazeCommandRunConfiguration, context: ConfigurationContext): Boolean {
+    val commonState: BlazeCommandRunConfigurationCommonState? =
+      configuration.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
+        BlazeCommandRunConfigurationCommonState::class.java,
+      )
+    if (commonState == null) {
+      return false
     }
+    if (commonState.commandState.getCommand() != BlazeCommandName.TEST) {
+      return false
+    }
+    val testContext = findTestContext(context)
+    return testContext != null && testContext.matchesRunConfiguration(configuration)
+  }
 }

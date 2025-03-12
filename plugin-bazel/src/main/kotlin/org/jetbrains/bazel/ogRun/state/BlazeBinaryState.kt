@@ -38,9 +38,7 @@ class BlazeBinaryState : RunConfigurationState {
     }
   }
 
-  override fun getEditor(project: Project?): RunConfigurationStateEditor {
-    return BlazeBinaryStateEditor(project)
-  }
+  override fun getEditor(project: Project?): RunConfigurationStateEditor = BlazeBinaryStateEditor(project)
 
   private class BlazeBinaryStateEditor(project: Project?) : RunConfigurationStateEditor {
     private val buildSystemName: String?
@@ -66,9 +64,7 @@ class BlazeBinaryState : RunConfigurationState {
       state.blazeBinary = Strings.emptyToNull(blazeBinaryField.getText())
     }
 
-    override fun createComponent(): JComponent {
-      return UiUtil.createBox(JLabel(buildSystemName + " binary:"), blazeBinaryField)
-    }
+    override fun createComponent(): JComponent = UiUtil.createBox(JLabel(buildSystemName + " binary:"), blazeBinaryField)
   }
 
   companion object {

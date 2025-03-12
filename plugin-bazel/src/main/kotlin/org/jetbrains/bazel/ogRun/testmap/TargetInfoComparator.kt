@@ -16,7 +16,7 @@
 package org.jetbrains.bazel.ogRun.testmap
 
 import com.google.idea.blaze.base.dependencies.TargetInfo
-import com.google.idea.blaze.base.model.primitives.Kind
+import org.jetbrains.bazel.ogRun.other.Kind
 
 class TargetInfoComparator : Comparator<TargetInfo?> {
   /**

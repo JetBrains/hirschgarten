@@ -27,64 +27,61 @@ import com.intellij.psi.PsiElement
 
 /** Base class for Blaze run configuration producers.  */
 abstract class BlazeRunConfigurationProducer<T : RunConfiguration?>
-protected constructor(configurationType: ConfigurationType) : RunConfigurationProducer<T?>(configurationType) {
-    override fun isPreferredConfiguration(
-        self: ConfigurationFromContext, other: ConfigurationFromContext?
-    ): Boolean {
-        return Blaze.isBlazeProject(self.getConfiguration().getProject())
-    }
+  protected constructor(configurationType: ConfigurationType) :
+  RunConfigurationProducer<T?>(configurationType) {
+    override fun isPreferredConfiguration(self: ConfigurationFromContext, other: ConfigurationFromContext?): Boolean =
+      Blaze.isBlazeProject(self.getConfiguration().getProject())
 
-    override fun shouldReplace(self: ConfigurationFromContext, other: ConfigurationFromContext): Boolean {
-        return Blaze.isBlazeProject(self.getConfiguration().getProject())
-                && !other.isProducedBy(BlazeRunConfigurationProducer::class.java)
-    }
+    override fun shouldReplace(self: ConfigurationFromContext, other: ConfigurationFromContext): Boolean =
+      Blaze.isBlazeProject(self.getConfiguration().getProject()) &&
+        !other.isProducedBy(BlazeRunConfigurationProducer::class.java)
 
     override fun setupConfigurationFromContext(
-        configuration: T?, context: ConfigurationContext, sourceElement: Ref<PsiElement?>?
+      configuration: T?,
+      context: ConfigurationContext,
+      sourceElement: Ref<PsiElement?>?,
     ): Boolean {
-        if (NullUtils.hasNull(configuration, context, sourceElement)) {
-            return false
-        }
-        if (!validContext(context)) {
-            return false
-        }
-        return doSetupConfigFromContext(configuration, context, sourceElement)
+      if (NullUtils.hasNull(configuration, context, sourceElement)) {
+        return false
+      }
+      if (!validContext(context)) {
+        return false
+      }
+      return doSetupConfigFromContext(configuration, context, sourceElement)
     }
 
     protected abstract fun doSetupConfigFromContext(
-        configuration: T?, context: ConfigurationContext?, sourceElement: Ref<PsiElement?>?
+      configuration: T?,
+      context: ConfigurationContext?,
+      sourceElement: Ref<PsiElement?>?,
     ): Boolean
 
     override fun isConfigurationFromContext(configuration: T?, context: ConfigurationContext): Boolean {
-        if (NullUtils.hasNull(configuration, context)) {
-            return false
-        }
-        if (!validContext(context)) {
-            return false
-        }
-        return doIsConfigFromContext(configuration, context)
+      if (NullUtils.hasNull(configuration, context)) {
+        return false
+      }
+      if (!validContext(context)) {
+        return false
+      }
+      return doIsConfigFromContext(configuration, context)
     }
 
     protected abstract fun doIsConfigFromContext(configuration: T?, context: ConfigurationContext?): Boolean
 
     /** Returns true if the producer should ignore contexts outside the project. Defaults to false.  */
-    protected fun restrictedToProjectFiles(): Boolean {
-        return false
-    }
+    protected fun restrictedToProjectFiles(): Boolean = false
 
     private fun validContext(context: ConfigurationContext): Boolean {
-        if (restrictedToProjectFiles() && context.getModule() == null) {
-            return false
-        }
-        if (!isBlazeContext(context)) {
-            return false
-        }
-        return true
+      if (restrictedToProjectFiles() && context.getModule() == null) {
+        return false
+      }
+      if (!isBlazeContext(context)) {
+        return false
+      }
+      return true
     }
 
     companion object {
-        private fun isBlazeContext(context: ConfigurationContext): Boolean {
-            return Blaze.isBlazeProject(context.getProject())
-        }
+      private fun isBlazeContext(context: ConfigurationContext): Boolean = Blaze.isBlazeProject(context.getProject())
     }
-}
+  }

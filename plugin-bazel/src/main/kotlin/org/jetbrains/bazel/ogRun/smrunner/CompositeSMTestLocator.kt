@@ -23,16 +23,19 @@ import com.intellij.psi.search.GlobalSearchScope
 
 /** Combines multiple language-specific [SMTestLocator]s.  */
 class CompositeSMTestLocator protected constructor(private val locators: ImmutableList<SMTestLocator>) : SMTestLocator {
-    // Super method uses raw Location. Check super method again after #api212.
-    override fun getLocation(
-        protocol: String, path: String, project: Project, scope: GlobalSearchScope
-    ): MutableList<Location<*>?> {
-        for (locator in locators) {
-            val result = locator.getLocation(protocol, path, project, scope)
-            if (!result.isEmpty()) {
-                return result
-            }
-        }
-        return ImmutableList.of<Location<*>?>()
+  // Super method uses raw Location. Check super method again after #api212.
+  override fun getLocation(
+    protocol: String,
+    path: String,
+    project: Project,
+    scope: GlobalSearchScope,
+  ): MutableList<Location<*>?> {
+    for (locator in locators) {
+      val result = locator.getLocation(protocol, path, project, scope)
+      if (!result.isEmpty()) {
+        return result
+      }
     }
+    return ImmutableList.of<Location<*>?>()
+  }
 }

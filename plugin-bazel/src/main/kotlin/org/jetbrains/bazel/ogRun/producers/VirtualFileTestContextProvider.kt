@@ -45,84 +45,93 @@ import java.util.concurrent.Callable
  * then does everything else asynchronously.
  */
 internal class VirtualFileTestContextProvider : TestContextProvider {
-    override fun getTestContext(context: ConfigurationContext): RunConfigurationContext? {
-        val psi = context.getPsiLocation()
-        if (psi !is PsiFileSystemItem || psi !is FakePsiElement) {
-            return null
-        }
-        val vf = (psi as PsiFileSystemItem).getVirtualFile()
-        if (vf == null) {
-            return null
-        }
-        val path: WorkspacePath? = getWorkspacePath(context.getProject(), vf)
-        if (path == null) {
-            return null
-        }
-        return CachedValuesManager.getCachedValue<T?>(
-            psi,
-            CachedValueProvider {
-                CachedValueProvider.Result.create<T?>(
-                    doFindTestContext(context, vf, psi, path),
-                    PsiModificationTracker.MODIFICATION_COUNT,
-                    BlazeSyncModificationTracker.getInstance(context.getProject())
-                )
-            })
+  override fun getTestContext(context: ConfigurationContext): RunConfigurationContext? {
+    val psi = context.getPsiLocation()
+    if (psi !is PsiFileSystemItem || psi !is FakePsiElement) {
+      return null
+    }
+    val vf = (psi as PsiFileSystemItem).getVirtualFile()
+    if (vf == null) {
+      return null
+    }
+    val path: WorkspacePath? = getWorkspacePath(context.getProject(), vf)
+    if (path == null) {
+      return null
+    }
+    return CachedValuesManager.getCachedValue<T?>(
+      psi,
+      CachedValueProvider {
+        CachedValueProvider.Result.create<T?>(
+          doFindTestContext(context, vf, psi, path),
+          PsiModificationTracker.MODIFICATION_COUNT,
+          BlazeSyncModificationTracker.getInstance(context.getProject()),
+        )
+      },
+    )
+  }
+
+  private fun doFindTestContext(
+    context: ConfigurationContext,
+    vf: VirtualFile,
+    psi: PsiElement?,
+    path: WorkspacePath,
+  ): RunConfigurationContext? {
+    val relevantExecutors: ImmutableSet<ExecutorType?> =
+      Arrays
+        .stream<HeuristicTestIdentifier?>(HeuristicTestIdentifier.EP_NAME.extensions)
+        .map<ImmutableSet<ExecutorType>?> { h: HeuristicTestIdentifier? -> h!!.supportedExecutors(path) }
+        .flatMap<ExecutorType> { obj: ImmutableSet<ExecutorType?>? -> obj!!.stream() }
+        .collect(ImmutableSet.toImmutableSet<Any?>())
+    if (relevantExecutors.isEmpty()) {
+      return null
     }
 
-    private fun doFindTestContext(
-        context: ConfigurationContext, vf: VirtualFile, psi: PsiElement?, path: WorkspacePath
-    ): RunConfigurationContext? {
-        val relevantExecutors: ImmutableSet<ExecutorType?> =
-            Arrays.stream<HeuristicTestIdentifier?>(HeuristicTestIdentifier.EP_NAME.extensions)
-                .map<ImmutableSet<ExecutorType>?> { h: HeuristicTestIdentifier? -> h!!.supportedExecutors(path) }
-                .flatMap<ExecutorType> { obj: ImmutableSet<ExecutorType?>? -> obj!!.stream() }
-                .collect(ImmutableSet.toImmutableSet<Any?>())
-        if (relevantExecutors.isEmpty()) {
-            return null
-        }
+    val future: ListenableFuture<RunConfigurationContext?> =
+      EXECUTOR.submit<RunConfigurationContext?>(Callable { findContextAsync(resolveContext(context, vf)) })
+    return TestContext
+      .builder(psi, relevantExecutors)
+      .setContextFuture(future)
+      .setDescription(vf.getNameWithoutExtension())
+      .build()
+  }
 
-        val future: ListenableFuture<RunConfigurationContext?> =
-            EXECUTOR.submit<RunConfigurationContext?>(Callable { findContextAsync(resolveContext(context, vf)) })
-        return TestContext.builder(psi, relevantExecutors)
-            .setContextFuture(future)
-            .setDescription(vf.getNameWithoutExtension())
-            .build()
+  companion object {
+    private val EXECUTOR: ListeningExecutorService = MoreExecutors.listeningDecorator(PooledThreadExecutor.INSTANCE)
+
+    private fun findContextAsync(context: ConfigurationContext?): RunConfigurationContext? =
+      Arrays
+        .stream<TestContextProvider?>(TestContextProvider.EP_NAME.extensions)
+        .filter { p: TestContextProvider? -> p !is VirtualFileTestContextProvider }
+        .map<RunConfigurationContext?> { p: TestContextProvider? ->
+          ReadAction.compute<RunConfigurationContext?, RuntimeException?>(
+            ThrowableComputable { p!!.getTestContext(context) },
+          )
+        }.filter { obj: RunConfigurationContext? -> Objects.nonNull(obj) }
+        .findFirst()
+        .orElse(null)
+
+    private fun resolveContext(context: ConfigurationContext, vf: VirtualFile): ConfigurationContext {
+      val psi =
+        ReadAction.compute<PsiFile?, RuntimeException?>(
+          ThrowableComputable {
+            PsiManager.getInstance(context.getProject()).findFile(vf)
+          },
+        )
+      val location = PsiLocation.fromPsiElement<PsiFile?>(psi, context.getModule())
+      return if (location == null) {
+        context
+      } else {
+        ConfigurationContext.createEmptyContextForLocation(location)
+      }
     }
 
-    companion object {
-        private val EXECUTOR: ListeningExecutorService = MoreExecutors.listeningDecorator(PooledThreadExecutor.INSTANCE)
-
-        private fun findContextAsync(context: ConfigurationContext?): RunConfigurationContext? {
-            return Arrays.stream<TestContextProvider?>(TestContextProvider.EP_NAME.extensions)
-                .filter { p: TestContextProvider? -> p !is VirtualFileTestContextProvider }
-                .map<RunConfigurationContext?> { p: TestContextProvider? ->
-                    ReadAction.compute<RunConfigurationContext?, RuntimeException?>(
-                        ThrowableComputable { p!!.getTestContext(context) })
-                }
-                .filter { obj: RunConfigurationContext? -> Objects.nonNull(obj) }
-                .findFirst()
-                .orElse(null)
-        }
-
-        private fun resolveContext(context: ConfigurationContext, vf: VirtualFile): ConfigurationContext {
-            val psi =
-                ReadAction.compute<PsiFile?, RuntimeException?>(ThrowableComputable {
-                    PsiManager.getInstance(context.getProject()).findFile(vf)
-                })
-            val location = PsiLocation.fromPsiElement<PsiFile?>(psi, context.getModule())
-            return if (location == null)
-                context
-            else
-                ConfigurationContext.createEmptyContextForLocation(location)
-        }
-
-        private fun getWorkspacePath(project: Project?, vf: VirtualFile): WorkspacePath? {
-            val resolver: WorkspacePathResolver? =
-                WorkspacePathResolverProvider.getInstance(project).getPathResolver()
-            if (resolver == null) {
-                return null
-            }
-            return resolver.getWorkspacePath(File(vf.getPath()))
-        }
+    private fun getWorkspacePath(project: Project?, vf: VirtualFile): WorkspacePath? {
+      val resolver: WorkspacePathResolver? =
+        WorkspacePathResolverProvider.getInstance(project).getPathResolver()
+      if (resolver == null) {
+        return null
+      }
+      return resolver.getWorkspacePath(File(vf.getPath()))
     }
+  }
 }

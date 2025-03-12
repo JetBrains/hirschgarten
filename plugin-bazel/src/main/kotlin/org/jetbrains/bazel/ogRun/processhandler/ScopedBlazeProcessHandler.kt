@@ -34,88 +34,91 @@ import java.io.File
  * A context is created during construction and is ended when the process is terminated.
  */
 class ScopedBlazeProcessHandler(
-    project: Project?,
-    command: GeneralCommandLine,
-    workspaceRoot: WorkspaceRoot,
-    private val scopedProcessHandlerDelegate: ScopedProcessHandlerDelegate
+  project: Project?,
+  command: GeneralCommandLine,
+  workspaceRoot: WorkspaceRoot,
+  private val scopedProcessHandlerDelegate: ScopedProcessHandlerDelegate,
 ) : KillableColoredProcessHandler(
     ProcessGroupUtil.newProcessGroupFor(
-        CommandLineWithRemappedPath(command)
-            .withWorkDirectory(workspaceRoot.directory().getPath())
-            .withRedirectErrorStream(true)
-    )
-) {
+      CommandLineWithRemappedPath(command)
+        .withWorkDirectory(workspaceRoot.directory().getPath())
+        .withRedirectErrorStream(true),
+    ),
+  ) {
+  /**
+   * Methods to give the caller of [ScopedBlazeProcessHandler] hooks after the context is
+   * created.
+   */
+  interface ScopedProcessHandlerDelegate {
     /**
-     * Methods to give the caller of [ScopedBlazeProcessHandler] hooks after the context is
-     * created.
+     * This method is called when the process starts. Any context setup (like pushing scopes on the
+     * context) should be done here.
      */
-    interface ScopedProcessHandlerDelegate {
-        /**
-         * This method is called when the process starts. Any context setup (like pushing scopes on the
-         * context) should be done here.
-         */
-        fun onBlazeContextStart(context: BlazeContext?)
+    fun onBlazeContextStart(context: BlazeContext?)
 
-        /** Get a list of process listeners to add to the process.  */
-        fun createProcessListeners(context: BlazeContext?): ImmutableList<ProcessListener>?
+    /** Get a list of process listeners to add to the process.  */
+    fun createProcessListeners(context: BlazeContext?): ImmutableList<ProcessListener>?
+  }
+
+  private val context: BlazeContext
+
+  /**
+   * Construct a process handler and a context to be used for the life of the process.
+   *
+   * @param command the blaze command to run
+   * @param workspaceRoot workspace root
+   * @param scopedProcessHandlerDelegate delegate methods that will be run with the process's
+   * context.
+   * @throws ExecutionException
+   */
+  init {
+    this.context = BlazeContext.create()
+    // The context is released in the ScopedProcessHandlerListener.
+    this.context.hold()
+
+    for (processListener in scopedProcessHandlerDelegate.createProcessListeners(context)!!) {
+      addProcessListener(processListener)
+    }
+    addProcessListener(ScopedProcessHandlerListener(project))
+  }
+
+  /**
+   * Handle the [BlazeContext] held in a [ScopedBlazeProcessHandler]. This class will
+   * take care of calling methods when the process starts and freeing the context when the process
+   * terminates.
+   */
+  private inner class ScopedProcessHandlerListener(private val project: Project?) : ProcessAdapter() {
+    override fun startNotified(event: ProcessEvent?) {
+      scopedProcessHandlerDelegate.onBlazeContextStart(context)
     }
 
-    private val context: BlazeContext
-
-    /**
-     * Construct a process handler and a context to be used for the life of the process.
-     *
-     * @param command the blaze command to run
-     * @param workspaceRoot workspace root
-     * @param scopedProcessHandlerDelegate delegate methods that will be run with the process's
-     * context.
-     * @throws ExecutionException
-     */
-    init {
-        this.context = BlazeContext.create()
-        // The context is released in the ScopedProcessHandlerListener.
-        this.context.hold()
-
-        for (processListener in scopedProcessHandlerDelegate.createProcessListeners(context)!!) {
-            addProcessListener(processListener)
-        }
-        addProcessListener(ScopedProcessHandlerListener(project))
+    override fun processWillTerminate(event: ProcessEvent, willBeDestroyed: Boolean) {
+      val unusedFuture: ListenableFuture<Void?>? =
+        FileCaches.refresh(
+          project,
+          context,
+          BlazeBuildOutputs.noOutputs(BuildResult.fromExitCode(event.getExitCode())),
+        )
+      context.release()
     }
+  }
 
-    /**
-     * Handle the [BlazeContext] held in a [ScopedBlazeProcessHandler]. This class will
-     * take care of calling methods when the process starts and freeing the context when the process
-     * terminates.
-     */
-    private inner class ScopedProcessHandlerListener(private val project: Project?) : ProcessAdapter() {
-        override fun startNotified(event: ProcessEvent?) {
-            scopedProcessHandlerDelegate.onBlazeContextStart(context)
-        }
-
-        override fun processWillTerminate(event: ProcessEvent, willBeDestroyed: Boolean) {
-            val unusedFuture: ListenableFuture<Void?>? =
-                FileCaches.refresh(
-                    project,
-                    context,
-                    BlazeBuildOutputs.noOutputs(BuildResult.fromExitCode(event.getExitCode()))
-                )
-            context.release()
-        }
+  private class CommandLineWithRemappedPath(command: GeneralCommandLine) : GeneralCommandLine(command) {
+    override fun prepareCommandLine(
+      command: String?,
+      parameters: MutableList<String?>,
+      platform: Platform,
+    ): MutableList<String?> {
+      val remapped: String = remapBinaryPath(command)
+      return super.prepareCommandLine(remapped, parameters, platform)
     }
+  }
 
-    private class CommandLineWithRemappedPath(command: GeneralCommandLine) : GeneralCommandLine(command) {
-        override fun prepareCommandLine(
-            command: String?, parameters: MutableList<String?>, platform: Platform
-        ): MutableList<String?> {
-            val remapped: String = remapBinaryPath(command)
-            return super.prepareCommandLine(remapped, parameters, platform)
-        }
-    }
-
-    companion object {
-        fun remapBinaryPath(command: String?): String {
-            return BinaryPathRemapper.remapBinary(command).map({ obj: File? -> obj!!.getAbsolutePath() })
-                .orElse(command)
-        }
-    }
+  companion object {
+    fun remapBinaryPath(command: String?): String =
+      BinaryPathRemapper
+        .remapBinary(command)
+        .map({ obj: File? -> obj!!.getAbsolutePath() })
+        .orElse(command)
+  }
 }

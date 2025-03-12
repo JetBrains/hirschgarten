@@ -49,7 +49,7 @@ object SmRunnerUtils {
     project: Project,
     configuration: BlazeCommandRunConfiguration,
     executor: Executor,
-    testUiSession: BlazeTestUiSession
+    testUiSession: BlazeTestUiSession,
   ): SMTRunnerConsoleView {
     val properties: SMTRunnerConsoleProperties =
       BlazeTestConsoleProperties(configuration, executor, testUiSession)
@@ -64,9 +64,7 @@ object SmRunnerUtils {
     return console
   }
 
-  fun createRerunFailedTestsAction(
-    result: DefaultExecutionResult
-  ): AbstractRerunFailedTestsAction? {
+  fun createRerunFailedTestsAction(result: DefaultExecutionResult): AbstractRerunFailedTestsAction? {
     val console = result.getExecutionConsole()
     if (console !is SMTRunnerConsoleView) {
       return null
@@ -98,7 +96,8 @@ object SmRunnerUtils {
   fun getSelectedSmRunnerTreeElements(context: ConfigurationContext): MutableList<Location<*>?> {
     val project = context.getProject()
     val tests = getSelectedTestProxies(context)
-    return tests.stream()
+    return tests
+      .stream()
       .map { test: SMTestProxy? -> test!!.getLocation(project, GlobalSearchScope.allScope(project)) }
       .filter { obj: Location<Any?>? -> Objects.nonNull(obj) }
       .collect(Collectors.toList())
@@ -125,7 +124,8 @@ object SmRunnerUtils {
     if (paths == null || paths.size == 0) {
       return ImmutableList.of<SMTestProxy?>()
     }
-    return Arrays.stream<TreePath?>(paths)
+    return Arrays
+      .stream<TreePath?>(paths)
       .map<SMTestProxy?> { path: TreePath? -> SmRunnerUtils.toTestProxy(treeView, path!!) }
       .filter { obj: SMTestProxy? -> Objects.nonNull(obj) }
       .collect(Collectors.toList())

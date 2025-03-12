@@ -19,27 +19,27 @@ import com.intellij.openapi.extensions.ExtensionPointName
 
 /** Parses test case failure messages to give actual/expected text comparisons.  */
 interface TestComparisonFailureParser {
-    fun tryParse(message: String?): BlazeComparisonFailureData?
+  fun tryParse(message: String?): BlazeComparisonFailureData?
 
-    /** Data class for actual/expected text.  */
-    class BlazeComparisonFailureData(val actual: String?, val expected: String?) {
-        companion object {
-            val NONE: BlazeComparisonFailureData = BlazeComparisonFailureData(null, null)
-        }
-    }
-
+  /** Data class for actual/expected text.  */
+  class BlazeComparisonFailureData(val actual: String?, val expected: String?) {
     companion object {
-        fun parse(message: String?): BlazeComparisonFailureData {
-            for (parser in EP_NAME.extensions) {
-                val data = parser.tryParse(message)
-                if (data != null) {
-                    return data
-                }
-            }
-            return BlazeComparisonFailureData.Companion.NONE
-        }
-
-        val EP_NAME: ExtensionPointName<TestComparisonFailureParser> =
-            create.create<TestComparisonFailureParser?>("com.google.idea.blaze.TestComparisonFailureParser")
+      val NONE: BlazeComparisonFailureData = BlazeComparisonFailureData(null, null)
     }
+  }
+
+  companion object {
+    fun parse(message: String?): BlazeComparisonFailureData {
+      for (parser in EP_NAME.extensions) {
+        val data = parser.tryParse(message)
+        if (data != null) {
+          return data
+        }
+      }
+      return BlazeComparisonFailureData.Companion.NONE
+    }
+
+    val EP_NAME: ExtensionPointName<TestComparisonFailureParser> =
+      create.create<TestComparisonFailureParser?>("com.google.idea.blaze.TestComparisonFailureParser")
+  }
 }

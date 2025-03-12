@@ -15,38 +15,37 @@
  */
 package org.jetbrains.bazel.ogRun.producers
 
-import com.google.idea.blaze.base.command.BlazeCommandName
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDirectory
+import org.jetbrains.bazel.ogRun.other.BlazeCommandName
 import java.io.File
 
 /** Runs all tests in a selected directory recursively.  */
 internal class AllInDirectoryRecursiveTestContextProvider : TestContextProvider {
-    override fun getTestContext(context: ConfigurationContext): RunConfigurationContext? {
-        val location = context.getPsiLocation()
-        if (location !is PsiDirectory) {
-            return null
-        }
-        val root: WorkspaceRoot = WorkspaceRoot.fromProject(context.getProject())
-        return fromDirectoryRecursive(root, location)
+  override fun getTestContext(context: ConfigurationContext): RunConfigurationContext? {
+    val location = context.getPsiLocation()
+    if (location !is PsiDirectory) {
+      return null
+    }
+    val root: WorkspaceRoot = WorkspaceRoot.fromProject(context.getProject())
+    return fromDirectoryRecursive(root, location)
+  }
+
+  companion object {
+    private fun fromDirectoryRecursive(root: WorkspaceRoot, dir: PsiDirectory): RunConfigurationContext? {
+      val packagePath: WorkspacePath? = getWorkspaceRelativePath(root, dir.getVirtualFile())
+      if (packagePath == null) {
+        return null
+      }
+      return RunConfigurationContext.fromKnownTarget(
+        Label.allFromPackageRecursive(packagePath),
+        BlazeCommandName.TEST,
+        dir,
+      )
     }
 
-    companion object {
-        private fun fromDirectoryRecursive(
-            root: WorkspaceRoot, dir: PsiDirectory
-        ): RunConfigurationContext? {
-            val packagePath: WorkspacePath? = getWorkspaceRelativePath(root, dir.getVirtualFile())
-            if (packagePath == null) {
-                return null
-            }
-            return RunConfigurationContext.fromKnownTarget(
-                TargetExpression.allFromPackageRecursive(packagePath), BlazeCommandName.TEST, dir
-            )
-        }
-
-        private fun getWorkspaceRelativePath(root: WorkspaceRoot, vf: VirtualFile): WorkspacePath? {
-            return root.workspacePathForSafe(File(vf.getPath()))
-        }
-    }
+    private fun getWorkspaceRelativePath(root: WorkspaceRoot, vf: VirtualFile): WorkspacePath? =
+      root.workspacePathForSafe(File(vf.getPath()))
+  }
 }

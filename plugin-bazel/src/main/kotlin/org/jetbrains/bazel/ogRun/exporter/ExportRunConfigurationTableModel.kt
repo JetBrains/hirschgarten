@@ -42,25 +42,15 @@ internal class ExportRunConfigurationTableModel(configurations: MutableList<RunC
     }
   }
 
-  override fun getColumnCount(): Int {
-    return 3
-  }
+  override fun getColumnCount(): Int = 3
 
-  override fun getColumnClass(columnIndex: Int): Class<*>? {
-    return COLUMN_CLASSES.get(columnIndex)
-  }
+  override fun getColumnClass(columnIndex: Int): Class<*>? = COLUMN_CLASSES.get(columnIndex)
 
-  override fun getColumnName(column: Int): String? {
-    return COLUMN_NAMES.get(column)
-  }
+  override fun getColumnName(column: Int): String? = COLUMN_NAMES.get(column)
 
-  override fun getRowCount(): Int {
-    return enabled.size
-  }
+  override fun getRowCount(): Int = enabled.size
 
-  override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
-    return columnIndex != 1
-  }
+  override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = columnIndex != 1
 
   override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? {
     when (columnIndex) {
@@ -71,7 +61,11 @@ internal class ExportRunConfigurationTableModel(configurations: MutableList<RunC
     }
   }
 
-  override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) {
+  override fun setValueAt(
+    aValue: Any?,
+    rowIndex: Int,
+    columnIndex: Int,
+  ) {
     when (columnIndex) {
       0 -> {
         enabled[rowIndex] = aValue as Boolean?

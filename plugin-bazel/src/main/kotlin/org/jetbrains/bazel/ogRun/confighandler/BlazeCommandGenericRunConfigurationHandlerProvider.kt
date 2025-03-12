@@ -15,33 +15,30 @@
  */
 package org.jetbrains.bazel.ogRun.confighandler
 
-import com.google.idea.blaze.base.model.primitives.Kind
+import org.jetbrains.bazel.ogRun.other.Kind
 
 /**
  * Generic handler provider for [BlazeCommandRunConfiguration]s, used as a fallback in the
  * case where no other handler providers are more relevant.
  */
-class BlazeCommandGenericRunConfigurationHandlerProvider
+class BlazeCommandGenericRunConfigurationHandlerProvider : BlazeCommandRunConfigurationHandlerProvider {
+  val displayLabel: String?
+    get() = "Generic Command"
 
-    : BlazeCommandRunConfigurationHandlerProvider {
-    val displayLabel: String?
-        get() = "Generic Command"
+  override fun canHandleKind(state: BlazeCommandRunConfigurationHandlerProvider.TargetState, kind: Kind?): Boolean =
+    state != BlazeCommandRunConfigurationHandlerProvider.TargetState.PENDING
 
-    override fun canHandleKind(state: BlazeCommandRunConfigurationHandlerProvider.TargetState, kind: Kind?): Boolean {
-        return state != BlazeCommandRunConfigurationHandlerProvider.TargetState.PENDING
-    }
+  public override fun createHandler(config: BlazeCommandRunConfiguration): BlazeCommandRunConfigurationHandler =
+    BlazeCommandGenericRunConfigurationHandler(config)
 
-    public override fun createHandler(config: BlazeCommandRunConfiguration): BlazeCommandRunConfigurationHandler {
-        return BlazeCommandGenericRunConfigurationHandler(config)
-    }
+  val id: String?
+    get() = "BlazeCommandGenericRunConfigurationHandlerProvider"
 
-    val id: String?
-        get() = "BlazeCommandGenericRunConfigurationHandlerProvider"
-
-    companion object {
-        val instance: BlazeCommandGenericRunConfigurationHandlerProvider?
-            get() = BlazeCommandRunConfigurationHandlerProvider.EP_NAME.findExtension<BlazeCommandGenericRunConfigurationHandlerProvider?>(
-                BlazeCommandGenericRunConfigurationHandlerProvider::class.java
-            )
-    }
+  companion object {
+    val instance: BlazeCommandGenericRunConfigurationHandlerProvider?
+      get() =
+        BlazeCommandRunConfigurationHandlerProvider.EP_NAME.findExtension<BlazeCommandGenericRunConfigurationHandlerProvider?>(
+          BlazeCommandGenericRunConfigurationHandlerProvider::class.java,
+        )
+  }
 }

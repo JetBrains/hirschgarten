@@ -49,7 +49,8 @@ class ExportRunConfigurationDialog internal constructor(project: Project) : Dial
   init {
     configurations =
       ImmutableList.copyOf<RunConfiguration?>(
-        getInstance.getInstance(project)
+        getInstance
+          .getInstance(project)
           .allConfigurationsList
           .stream()
           .sorted(COMPARATOR)
@@ -75,7 +76,12 @@ class ExportRunConfigurationDialog internal constructor(project: Project) : Dial
     nameColumn.setCellRenderer(
       object : ColoredTableCellRenderer() {
         override fun customizeCellRenderer(
-          table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, col: Int
+          table: JTable?,
+          value: Any?,
+          isSelected: Boolean,
+          hasFocus: Boolean,
+          row: Int,
+          col: Int,
         ) {
           val config = configurations.get(row)
           setIcon(config.getType().getIcon())
@@ -105,7 +111,8 @@ class ExportRunConfigurationDialog internal constructor(project: Project) : Dial
 
   private fun chooseDirectory() {
     val descriptor =
-      FileChooserDescriptorFactory.createSingleFolderDescriptor()
+      FileChooserDescriptorFactory
+        .createSingleFolderDescriptor()
         .withTitle("Export Directory Location")
         .withDescription("Choose directory to export run configurations to")
         .withHideIgnored(false)
@@ -163,15 +170,15 @@ class ExportRunConfigurationDialog internal constructor(project: Project) : Dial
     super.doOKAction()
   }
 
-  override fun createNorthPanel(): JComponent {
-    return outputDirectoryPanel
-  }
+  override fun createNorthPanel(): JComponent = outputDirectoryPanel
 
   override fun createCenterPanel(): JComponent {
     val panel: JPanel = JPanel(BorderLayout())
     panel.setBorder(IdeBorderFactory.createTitledBorder("Run Configurations", false))
     panel.add(
-      ToolbarDecorator.createDecorator(table).addExtraAction(ExportRunConfigurationDialog.SelectAllButton())
+      ToolbarDecorator
+        .createDecorator(table)
+        .addExtraAction(ExportRunConfigurationDialog.SelectAllButton())
         .createPanel(),
       BorderLayout.CENTER,
     )
@@ -201,19 +208,18 @@ class ExportRunConfigurationDialog internal constructor(project: Project) : Dial
       table.repaint()
     }
 
-    override fun getActionUpdateThread(): ActionUpdateThread {
-      return ActionUpdateThread.EDT
-    }
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
   }
 
   companion object {
     // show blaze run configurations first, otherwise sort by name
-    private val COMPARATOR = Comparator { o1: RunConfiguration?, o2: RunConfiguration? ->
-      if (o1 is BlazeRunConfiguration != o2 is BlazeRunConfiguration) {
-        return@Comparator if (o1 is BlazeRunConfiguration) -1 else 1
+    private val COMPARATOR =
+      Comparator { o1: RunConfiguration?, o2: RunConfiguration? ->
+        if (o1 is BlazeRunConfiguration != o2 is BlazeRunConfiguration) {
+          return@Comparator if (o1 is BlazeRunConfiguration) -1 else 1
+        }
+        o1!!.getName().compareTo(o2!!.getName())
       }
-      o1!!.getName().compareTo(o2!!.getName())
-    }
 
     /** Try to find a checked-in project view file. Otherwise, fall back to the workspace root.  */
     private fun defaultExportDirectory(project: Project?): File? {

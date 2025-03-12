@@ -16,18 +16,16 @@
 package org.jetbrains.bazel.ogRun.state
 
 import com.google.common.base.Strings
-import com.google.idea.blaze.base.command.BlazeCommandName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import org.jdom.Element
+import org.jetbrains.bazel.ogRun.other.BlazeCommandName
 
 /** State for a [BlazeCommandName].  */
 class BlazeCommandState : RunConfigurationState {
   private var command: BlazeCommandName? = null
 
-  fun getCommand(): BlazeCommandName? {
-    return command
-  }
+  fun getCommand(): BlazeCommandName? = command
 
   fun setCommand(command: BlazeCommandName?) {
     this.command = command
@@ -47,9 +45,7 @@ class BlazeCommandState : RunConfigurationState {
     }
   }
 
-  override fun getEditor(project: Project?): RunConfigurationStateEditor {
-    return BlazeCommandStateEditor(project)
-  }
+  override fun getEditor(project: Project?): RunConfigurationStateEditor = BlazeCommandStateEditor(project)
 
   private class BlazeCommandStateEditor(project: Project?) : RunConfigurationStateEditor {
     private val buildSystemName: String?
@@ -80,17 +76,16 @@ class BlazeCommandState : RunConfigurationState {
         state.setCommand(selectedCommand as BlazeCommandName?)
       } else {
         state.setCommand(
-          if (Strings.isNullOrEmpty(selectedCommand as String?))
+          if (Strings.isNullOrEmpty(selectedCommand as String?)) {
             null
-          else
-            BlazeCommandName.fromString(selectedCommand.toString()),
+          } else {
+            BlazeCommandName.fromString(selectedCommand.toString())
+          },
         )
       }
     }
 
-    override fun createComponent(): JComponent {
-      return UiUtil.createBox(JLabel(buildSystemName + " command:"), commandCombo)
-    }
+    override fun createComponent(): JComponent = UiUtil.createBox(JLabel(buildSystemName + " command:"), commandCombo)
   }
 
   companion object {

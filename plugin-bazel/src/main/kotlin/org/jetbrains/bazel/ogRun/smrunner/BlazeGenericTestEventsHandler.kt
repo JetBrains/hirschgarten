@@ -15,10 +15,10 @@
  */
 package org.jetbrains.bazel.ogRun.smrunner
 
-import com.google.idea.blaze.base.model.primitives.Kind
 import com.intellij.execution.Location
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.ogRun.other.Kind
 
 /**
  * Fallback handler for otherwise unsupported targets. Normally it's undesirable to have a test UI
@@ -26,22 +26,18 @@ import com.intellij.openapi.project.Project
  * them in a best-effort way.
  */
 class BlazeGenericTestEventsHandler : BlazeTestEventsHandler {
-    override fun handlesKind(kind: Kind?): Boolean {
-        // Generic handler specifically exists to handle test-suites and multi-target blaze
-        // invocations, so must handle any targets without a (known) kind.
-        return kind == null || kind.getKindString().equals("test_suite")
-    }
+  override fun handlesKind(kind: Kind?): Boolean {
+    // Generic handler specifically exists to handle test-suites and multi-target blaze
+    // invocations, so must handle any targets without a (known) kind.
+    return kind == null || kind.getKindString().equals("test_suite")
+  }
 
-    override fun getTestLocator(): SMTestLocator? {
-        return null
-    }
+  override fun getTestLocator(): SMTestLocator? = null
 
-    override fun getTestFilter(project: Project?, testLocations: MutableList<Location<*>?>?): String? {
-        // Test filters are language-specific, and don't work properly for multi-target invocations.
-        return null
-    }
+  override fun getTestFilter(project: Project?, testLocations: MutableList<Location<*>?>?): String? {
+    // Test filters are language-specific, and don't work properly for multi-target invocations.
+    return null
+  }
 
-    override fun createRerunFailedTestsAction(consoleView: ConsoleView?): AbstractRerunFailedTestsAction? {
-        return null
-    }
+  override fun createRerunFailedTestsAction(consoleView: ConsoleView?): AbstractRerunFailedTestsAction? = null
 }

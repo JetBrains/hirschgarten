@@ -25,35 +25,34 @@ import com.intellij.psi.PsiElement
  * configuration producers.
  */
 interface BinaryContextProvider {
-    /** A context related to a blaze binary target, used to configure a run configuration.  */
-    @AutoValue
-    class BinaryRunContext {
-        @JvmField
-        abstract val sourceElement: PsiElement?
+  /** A context related to a blaze binary target, used to configure a run configuration.  */
+  @AutoValue
+  class BinaryRunContext {
+    @JvmField
+    abstract val sourceElement: PsiElement?
 
-        @JvmField
-        abstract val target: TargetInfo?
-
-        companion object {
-            fun create(sourceElement: PsiElement?, target: TargetInfo?): BinaryRunContext {
-                return AutoValue_BinaryContextProvider_BinaryRunContext(sourceElement, target)
-            }
-        }
-    }
-
-    /**
-     * Returns the [BinaryRunContext] corresponding to the given [ConfigurationContext],
-     * if relevant and recognized by this provider.
-     *
-     *
-     * This is called frequently on the EDT, via the [RunConfigurationProducer] API, so must
-     * be efficient.
-     */
-    fun getRunContext(context: ConfigurationContext?): BinaryRunContext?
+    @JvmField
+    abstract val target: TargetInfo?
 
     companion object {
-        @JvmField
-        val EP_NAME: ExtensionPointName<BinaryContextProvider?> =
-            create.create<BinaryContextProvider?>("com.google.idea.blaze.BinaryContextProvider")
+      fun create(sourceElement: PsiElement?, target: TargetInfo?): BinaryRunContext =
+        AutoValue_BinaryContextProvider_BinaryRunContext(sourceElement, target)
     }
+  }
+
+  /**
+   * Returns the [BinaryRunContext] corresponding to the given [ConfigurationContext],
+   * if relevant and recognized by this provider.
+   *
+   *
+   * This is called frequently on the EDT, via the [RunConfigurationProducer] API, so must
+   * be efficient.
+   */
+  fun getRunContext(context: ConfigurationContext?): BinaryRunContext?
+
+  companion object {
+    @JvmField
+    val EP_NAME: ExtensionPointName<BinaryContextProvider?> =
+      create.create<BinaryContextProvider?>("com.google.idea.blaze.BinaryContextProvider")
+  }
 }

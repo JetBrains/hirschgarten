@@ -16,31 +16,30 @@
 package org.jetbrains.bazel.ogRun.testlogs
 
 import com.google.common.collect.ImmutableMultimap
-import com.google.idea.blaze.base.model.primitives.Label
 import org.jetbrains.bazel.label.Label
 import java.util.function.Consumer
 
 /** Results from a 'blaze test' invocation.  */
 class BlazeTestResults private constructor(perTargetResults: ImmutableMultimap<Label?, BlazeTestResult?>?) {
+  @JvmField
+  val perTargetResults: ImmutableMultimap<Label?, BlazeTestResult?>?
+
+  init {
+    this.perTargetResults = perTargetResults
+  }
+
+  companion object {
     @JvmField
-    val perTargetResults: ImmutableMultimap<Label?, BlazeTestResult?>?
+    val NO_RESULTS: BlazeTestResults = BlazeTestResults(ImmutableMultimap.of<Label?, BlazeTestResult?>())
 
-    init {
-        this.perTargetResults = perTargetResults
+    fun fromFlatList(results: MutableCollection<BlazeTestResult?>): BlazeTestResults? {
+      if (results.isEmpty()) {
+        return NO_RESULTS
+      }
+      val map: ImmutableMultimap.Builder<Label?, BlazeTestResult?> =
+        ImmutableMultimap.builder<Label?, BlazeTestResult?>()
+      results.forEach(Consumer { result: BlazeTestResult? -> map.put(result!!.label, result) })
+      return BlazeTestResults(map.build())
     }
-
-    companion object {
-        @JvmField
-        val NO_RESULTS: BlazeTestResults = BlazeTestResults(ImmutableMultimap.of<Label?, BlazeTestResult?>())
-
-        fun fromFlatList(results: MutableCollection<BlazeTestResult?>): BlazeTestResults? {
-            if (results.isEmpty()) {
-                return NO_RESULTS
-            }
-            val map: ImmutableMultimap.Builder<Label?, BlazeTestResult?> =
-                ImmutableMultimap.builder<Label?, BlazeTestResult?>()
-            results.forEach(Consumer { result: BlazeTestResult? -> map.put(result!!.label, result) })
-            return BlazeTestResults(map.build())
-        }
-    }
+  }
 }

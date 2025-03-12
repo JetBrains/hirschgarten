@@ -15,14 +15,13 @@
  */
 package org.jetbrains.bazel.ogRun
 
-import com.google.common.base.Function
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
-import com.google.common.collect.Iterables
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.idea.blaze.base.dependencies.TargetInfo
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import org.apache.commons.codec.language.bm.RuleType
 import java.io.File
 import java.util.*
 import java.util.concurrent.Future
@@ -33,77 +32,82 @@ import java.util.function.Predicate
  * source file.
  */
 interface SourceToTargetFinder {
+  /**
+   * Finds all rules of the given type 'reachable' from source file (i.e. with source included in
+   * srcs, deps or runtime_deps).
+   */
+  fun targetsForSourceFile(
+    project: Project?,
+    sourceFile: File,
+    ruleType: RuleType?,
+  ): Future<Collection<TargetInfo>> = targetsForSourceFiles(project, ImmutableSet.of<File?>(sourceFile), ruleType)
+
+  /**
+   * Finds all rules of the given type 'reachable' from the given source files (i.e. with one of the
+   * sources included in srcs, deps or runtime_deps).
+   */
+  fun targetsForSourceFiles(
+    project: Project,
+    sourceFiles: Set<File>,
+    ruleType: RuleType?,
+  ): Future<Collection<TargetInfo>>
+
+  companion object {
     /**
-     * Finds all rules of the given type 'reachable' from source file (i.e. with source included in
-     * srcs, deps or runtime_deps).
+     * Iterates through the all [SourceToTargetFinder]'s, returning a [Future]
+     * representing the first non-empty result, prioritizing any which are immediately available.
+     *
+     *
+     * Future returns null if there was no non-empty result found.
      */
-    fun targetsForSourceFile(
-        project: Project?, sourceFile: File, ruleType: Optional<RuleType?>?
-    ): Future<MutableCollection<TargetInfo?>?>? {
-        return targetsForSourceFiles(project, ImmutableSet.of<File?>(sourceFile), ruleType)
+    fun findTargetInfoFuture(
+      project: Project,
+      sourceFile: File,
+      ruleType: RuleType?,
+    ): ListenableFuture<Collection<TargetInfo>?> = findTargetInfoFuture(project, ImmutableSet.of<File?>(sourceFile), ruleType)
+
+    /**
+     * Iterates through the all [SourceToTargetFinder]'s, returning a [Future]
+     * representing the first non-empty result, prioritizing any which are immediately available.
+     *
+     *
+     * Future returns null if there was no non-empty result found.
+     */
+    fun findTargetInfoFuture(
+      project: Project,
+      sourceFiles: Set<File>,
+      ruleType: RuleType?,
+    ): ListenableFuture<Collection<TargetInfo>?> {
+      val futures =
+        EP_NAME.extensionList.map { it.targetsForSourceFiles(project, sourceFiles, ruleType) }
+      return FuturesUtil.getFirstFutureSatisfyingPredicate(
+        futures,
+        Predicate { t: MutableCollection<TargetInfo?>? -> t != null && !t.isEmpty() },
+      )
     }
 
     /**
-     * Finds all rules of the given type 'reachable' from the given source files (i.e. with one of the
-     * sources included in srcs, deps or runtime_deps).
+     * Iterates through all [SourceToTargetFinder]s, returning the first immediately available,
+     * non-empty result.
      */
-    fun targetsForSourceFiles(
-        project: Project?, sourceFiles: MutableSet<File?>?, ruleType: Optional<RuleType?>?
-    ): Future<MutableCollection<TargetInfo?>?>?
-
-    companion object {
-        /**
-         * Iterates through the all [SourceToTargetFinder]'s, returning a [Future]
-         * representing the first non-empty result, prioritizing any which are immediately available.
-         *
-         *
-         * Future returns null if there was no non-empty result found.
-         */
-        fun findTargetInfoFuture(
-            project: Project?, sourceFile: File, ruleType: Optional<RuleType?>?
-        ): ListenableFuture<MutableCollection<TargetInfo?>?> {
-            return findTargetInfoFuture(project, ImmutableSet.of<File?>(sourceFile), ruleType)
+    fun findTargetsForSourceFile(
+      project: Project?,
+      sourceFile: File,
+      ruleType: Optional<RuleType?>?,
+    ): MutableCollection<TargetInfo?> {
+      val future: ListenableFuture<MutableCollection<TargetInfo?>?> =
+        findTargetInfoFuture(project, sourceFile, ruleType)
+      if (future.isDone()) {
+        val targets: MutableCollection<TargetInfo?>? =
+          FuturesUtil.getIgnoringErrors<MutableCollection<TargetInfo?>?>(future)
+        if (targets != null && !targets.isEmpty()) {
+          return targets
         }
-
-        /**
-         * Iterates through the all [SourceToTargetFinder]'s, returning a [Future]
-         * representing the first non-empty result, prioritizing any which are immediately available.
-         *
-         *
-         * Future returns null if there was no non-empty result found.
-         */
-        fun findTargetInfoFuture(
-            project: Project?, sourceFiles: MutableSet<File?>?, ruleType: Optional<RuleType?>?
-        ): ListenableFuture<MutableCollection<TargetInfo?>?> {
-            val futures: Iterable<Future<MutableCollection<TargetInfo?>?>?> =
-                Iterables.transform<SourceToTargetFinder?, Future<MutableCollection<TargetInfo?>?>?>(
-                    Arrays.asList<SourceToTargetFinder?>(*EP_NAME.extensions),
-                    Function { f: SourceToTargetFinder? -> f!!.targetsForSourceFiles(project, sourceFiles, ruleType) })
-            return FuturesUtil.getFirstFutureSatisfyingPredicate<MutableCollection<TargetInfo?>?>(
-                futures,
-                Predicate { t: MutableCollection<TargetInfo?>? -> t != null && !t.isEmpty() })
-        }
-
-        /**
-         * Iterates through all [SourceToTargetFinder]s, returning the first immediately available,
-         * non-empty result.
-         */
-        fun findTargetsForSourceFile(
-            project: Project?, sourceFile: File, ruleType: Optional<RuleType?>?
-        ): MutableCollection<TargetInfo?> {
-            val future: ListenableFuture<MutableCollection<TargetInfo?>?> =
-                findTargetInfoFuture(project, sourceFile, ruleType)
-            if (future.isDone()) {
-                val targets: MutableCollection<TargetInfo?>? =
-                    FuturesUtil.getIgnoringErrors<MutableCollection<TargetInfo?>?>(future)
-                if (targets != null && !targets.isEmpty()) {
-                    return targets
-                }
-            }
-            return ImmutableList.of<TargetInfo?>()
-        }
-
-        val EP_NAME: ExtensionPointName<SourceToTargetFinder?> =
-            create.create<SourceToTargetFinder?>("com.google.idea.blaze.SourceToTargetFinder")
+      }
+      return ImmutableList.of<TargetInfo?>()
     }
+
+    val EP_NAME: ExtensionPointName<SourceToTargetFinder> =
+      ExtensionPointName.create<SourceToTargetFinder>("com.google.idea.blaze.SourceToTargetFinder")
+  }
 }

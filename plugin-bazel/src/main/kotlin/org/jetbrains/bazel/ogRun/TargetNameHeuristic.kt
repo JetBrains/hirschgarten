@@ -23,23 +23,23 @@ import java.io.File
 
 /** Looks for a test rule with rule name matching the source file.  */
 class TargetNameHeuristic : TestTargetHeuristic {
-    override fun matchesSource(
-        project: Project?,
-        target: TargetInfo,
-        sourcePsiFile: PsiFile?,
-        sourceFile: File,
-        testSize: TestSize?
-    ): Boolean {
-        val filePathWithoutExtension = FileUtil.getNameWithoutExtension(sourceFile.getPath())
-        val targetName: String? = target.label.targetName().toString()
-        if (!filePathWithoutExtension.endsWith(targetName!!)) {
-            return false
-        }
-        val i = filePathWithoutExtension.length - targetName.length - 1
-        if (i < 0) {
-            // Equal length
-            return true
-        }
-        return filePathWithoutExtension.get(i) == '/'
+  override fun matchesSource(
+    project: Project?,
+    target: TargetInfo,
+    sourcePsiFile: PsiFile?,
+    sourceFile: File,
+    testSize: TestSize?,
+  ): Boolean {
+    val filePathWithoutExtension = FileUtil.getNameWithoutExtension(sourceFile.getPath())
+    val targetName: String? = target.label.targetName().toString()
+    if (!filePathWithoutExtension.endsWith(targetName!!)) {
+      return false
     }
+    val i = filePathWithoutExtension.length - targetName.length - 1
+    if (i < 0) {
+      // Equal length
+      return true
+    }
+    return filePathWithoutExtension.get(i) == '/'
+  }
 }

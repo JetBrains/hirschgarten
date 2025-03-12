@@ -19,14 +19,14 @@ import com.google.idea.blaze.base.command.buildresult.BuildResultHelper.GetArtif
 
 /** A strategy for locating results from 'blaze test' invocation (e.g. output XML files).  */
 interface BlazeTestResultFinderStrategy {
-    /**
-     * Attempt to find test results corresponding to the most recent blaze invocation. Called after
-     * the 'blaze test' process completes. Returns BlazeTestResults.NO_RESULTS if it cannot find test
-     * results
-     */
-    @Throws(GetArtifactsException::class)
-    fun findTestResults(): BlazeTestResults?
+  /**
+   * Attempt to find test results corresponding to the most recent blaze invocation. Called after
+   * the 'blaze test' process completes. Returns BlazeTestResults.NO_RESULTS if it cannot find test
+   * results
+   */
+  @Throws(GetArtifactsException::class)
+  fun findTestResults(): BlazeTestResults?
 
-    /** Remove any temporary files used by this result finder.  */
-    fun deleteTemporaryOutputFiles()
+  /** Remove any temporary files used by this result finder.  */
+  fun deleteTemporaryOutputFiles()
 }

@@ -31,67 +31,73 @@ import com.intellij.util.containers.ContainerUtil
 
 /** Generates run/debug gutter icons for BUILD files.  */
 class BuildFileRunLineMarkerContributor : RunLineMarkerContributor() {
-    override fun producesAllPossibleConfigurations(file: PsiFile?): Boolean {
-        return false
-    }
+  override fun producesAllPossibleConfigurations(file: PsiFile?): Boolean = false
 
-    override fun getInfo(element: PsiElement): Info? {
-        if (!enabled.getValue() || !isRunContext(element)) {
-            return null
-        }
-        val actions: Array<AnAction?> = getActions.getActions()
-        return Info(
-            AllIcons.RunConfigurations.TestState.Run,
+  override fun getInfo(element: PsiElement): Info? {
+    if (!enabled.getValue() || !isRunContext(element)) {
+      return null
+    }
+    val actions: Array<AnAction?> = getActions.getActions()
+    return Info(
+      AllIcons.RunConfigurations.TestState.Run,
+      actions,
+      java.util.function.Function { psiElement: PsiElement? ->
+        StringUtil.join(
+          ContainerUtil.mapNotNull<AnAction?, String?>(
             actions,
-            java.util.function.Function { psiElement: PsiElement? ->
-                StringUtil.join(
-                    ContainerUtil.mapNotNull<AnAction?, String?>(actions, Function { action: AnAction? ->
-                        RunLineMarkerContributor.getText(
-                            action!!, psiElement!!
-                        )
-                    }), "\n"
-                )
-            })
+            Function { action: AnAction? ->
+              RunLineMarkerContributor.getText(
+                action!!,
+                psiElement!!,
+              )
+            },
+          ),
+          "\n",
+        )
+      },
+    )
+  }
+
+  companion object {
+    private val enabled: BoolExperiment = BoolExperiment("build.run.line.markers", true)
+
+    private val HANDLED_RULE_TYPES: ImmutableSet<RuleType?> =
+      ImmutableSet.of<RuleType?>(RuleType.TEST, RuleType.BINARY)
+
+    private fun isRunContext(element: PsiElement): Boolean {
+      val rule: FuncallExpression? = getRuleFuncallExpression(element)
+      if (rule == null) {
+        return false
+      }
+      val data = BlazeBuildFileRunConfigurationProducer.getBuildTarget(rule)
+      if (data == null) {
+        return false
+      }
+      return true // We want to put a gutter icon next to each target to provide a starlark debugger action
     }
 
-    companion object {
-        private val enabled: BoolExperiment = BoolExperiment("build.run.line.markers", true)
-
-        private val HANDLED_RULE_TYPES: ImmutableSet<RuleType?> =
-            ImmutableSet.of<RuleType?>(RuleType.TEST, RuleType.BINARY)
-
-        private fun isRunContext(element: PsiElement): Boolean {
-            val rule: FuncallExpression? = getRuleFuncallExpression(element)
-            if (rule == null) {
-                return false
-            }
-            val data = BlazeBuildFileRunConfigurationProducer.getBuildTarget(rule)
-            if (data == null) {
-                return false
-            }
-            return true // We want to put a gutter icon next to each target to provide a starlark debugger action
-        }
-
-        private fun getRuleFuncallExpression(element: PsiElement): FuncallExpression? {
-            val parentFile = element.getContainingFile()
-            if (parentFile !is BuildFile || (parentFile as BuildFile).getBlazeFileType() !== BlazeFileType.BuildPackage) {
-                return null
-            }
-            if ((element !is LeafElement) || element is PsiWhiteSpace
-                || element is PsiComment
-            ) {
-                return null
-            }
-            if (element.getParent() !is ReferenceExpression) {
-                return null
-            }
-            val grandParent = element.getParent().getParent()
-            return if (grandParent is FuncallExpression
-                && (grandParent as FuncallExpression).isTopLevel()
-            )
-                grandParent as FuncallExpression
-            else
-                null
-        }
+    private fun getRuleFuncallExpression(element: PsiElement): FuncallExpression? {
+      val parentFile = element.getContainingFile()
+      if (parentFile !is BuildFile || (parentFile as BuildFile).getBlazeFileType() !== BlazeFileType.BuildPackage) {
+        return null
+      }
+      if ((element !is LeafElement) ||
+        element is PsiWhiteSpace ||
+        element is PsiComment
+      ) {
+        return null
+      }
+      if (element.getParent() !is ReferenceExpression) {
+        return null
+      }
+      val grandParent = element.getParent().getParent()
+      return if (grandParent is FuncallExpression &&
+        (grandParent as FuncallExpression).isTopLevel()
+      ) {
+        grandParent as FuncallExpression
+      } else {
+        null
+      }
     }
+  }
 }

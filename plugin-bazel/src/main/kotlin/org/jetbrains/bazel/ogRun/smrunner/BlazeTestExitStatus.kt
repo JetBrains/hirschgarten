@@ -16,42 +16,52 @@
 package org.jetbrains.bazel.ogRun.smrunner
 
 /** Utilities for interpreting "blaze test" exit codes and associated errors.  */
-enum class BlazeTestExitStatus(title: String, message: String, exitCode: Int) {
-    // Exit codes taken from
-    // https://docs.bazel.build/versions/master/guide.html#what-exit-code-will-i-get
-    ALL_TESTS_PASSED("All Tests Passed", "All tests passed.", 0),
-    BUILD_FAILED("Build Failed", "Build failed. No tests were run.", 1),
-    SOME_TESTS_FAILED("Some Tests Failed", "Build succeeded but some tests failed.", 3),
-    NO_TESTS_FOUND("No Test Found", "Build succeeded but no tests were found.", 4),
-    TEST_INTERRUPTED("Test Interrupted", "Test interrupted.", 8),
-    KNOWN_ERROR_TEST_PROCESS_RECEIVED_SIGQUIT(
-        "Runtime Error", "Test runtime terminated unexpectedly. Please try re-running the test", 131
-    ),
-    INTERNAL_BLAZE_ERROR(
-        "Unhandled Exception / Internal Bazel Error", "Internal Bazel error. No tests were run.", 37
-    );
+enum class BlazeTestExitStatus(
+  title: String,
+  message: String,
+  exitCode: Int,
+) {
+  // Exit codes taken from
+  // https://docs.bazel.build/versions/master/guide.html#what-exit-code-will-i-get
+  ALL_TESTS_PASSED("All Tests Passed", "All tests passed.", 0),
+  BUILD_FAILED("Build Failed", "Build failed. No tests were run.", 1),
+  SOME_TESTS_FAILED("Some Tests Failed", "Build succeeded but some tests failed.", 3),
+  NO_TESTS_FOUND("No Test Found", "Build succeeded but no tests were found.", 4),
+  TEST_INTERRUPTED("Test Interrupted", "Test interrupted.", 8),
+  KNOWN_ERROR_TEST_PROCESS_RECEIVED_SIGQUIT(
+    "Runtime Error",
+    "Test runtime terminated unexpectedly. Please try re-running the test",
+    131,
+  ),
+  INTERNAL_BLAZE_ERROR(
+    "Unhandled Exception / Internal Bazel Error",
+    "Internal Bazel error. No tests were run.",
+    37,
+  ),
+  ;
 
-    @JvmField
-    val title: String?
-    @JvmField
-    val message: String?
-    val exitCode: Int
+  @JvmField
+  val title: String?
 
-    init {
-        this.title = title
-        this.message = message
-        this.exitCode = exitCode
-    }
+  @JvmField
+  val message: String?
+  val exitCode: Int
 
-    companion object {
-        @JvmStatic
-        fun forExitCode(exitCode: Int): BlazeTestExitStatus? {
-            for (exitStatus in BlazeTestExitStatus.entries) {
-                if (exitCode == exitStatus.exitCode) {
-                    return exitStatus
-                }
-            }
-            return null
+  init {
+    this.title = title
+    this.message = message
+    this.exitCode = exitCode
+  }
+
+  companion object {
+    @JvmStatic
+    fun forExitCode(exitCode: Int): BlazeTestExitStatus? {
+      for (exitStatus in BlazeTestExitStatus.entries) {
+        if (exitCode == exitStatus.exitCode) {
+          return exitStatus
         }
+      }
+      return null
     }
+  }
 }

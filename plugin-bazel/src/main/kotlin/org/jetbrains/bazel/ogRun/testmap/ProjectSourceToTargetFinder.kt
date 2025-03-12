@@ -33,7 +33,9 @@ import java.util.function.Predicate
  */
 class ProjectSourceToTargetFinder : SourceToTargetFinder {
   override fun targetsForSourceFiles(
-    project: Project?, sourceFiles: MutableSet<File?>, ruleType: Optional<RuleType?>
+    project: Project?,
+    sourceFiles: MutableSet<File?>,
+    ruleType: Optional<RuleType?>,
   ): Future<MutableCollection<TargetInfo?>?>? {
     if (Blaze.getProjectType(project).equals(ProjectType.QUERY_SYNC)) {
       val projectData: QuerySyncProjectData? =
@@ -42,7 +44,8 @@ class ProjectSourceToTargetFinder : SourceToTargetFinder {
         return Futures.immediateFuture<MutableCollection<TargetInfo?>?>(ImmutableList.of<TargetInfo?>())
       }
       val targets: ImmutableSortedSet<TargetInfo?>? =
-        sourceFiles.stream()
+        sourceFiles
+          .stream()
           .map<Any?> { file: File? -> projectData.getWorkspacePathResolver().getWorkspacePath(file) }
           .filter { obj: Any? -> Objects.nonNull(obj) }
           .flatMap<Any?> { path: Any? -> projectData.getReverseDeps(path.asPath()).stream() }
@@ -56,19 +59,21 @@ class ProjectSourceToTargetFinder : SourceToTargetFinder {
               return@filter false
             }
             kind.getRuleType().equals(ruleType.get())
-          }
-          .map<Any?>(TargetInfo::fromBuildTarget)
+          }.map<Any?>(TargetInfo::fromBuildTarget)
           .collect(ImmutableSortedSet.toImmutableSortedSet<TargetInfo>(TargetInfoComparator()))
       return Futures.immediateFuture<MutableCollection<TargetInfo?>?>(targets)
     }
     val targetMap: FilteredTargetMap? =
-      SyncCache.getInstance(project)
+      SyncCache
+        .getInstance(project)
         .get(ProjectSourceToTargetFinder::class.java, ProjectSourceToTargetFinder::computeTargetMap)
     if (targetMap == null) {
       return Futures.immediateFuture<MutableCollection<TargetInfo?>?>(ImmutableList.of<TargetInfo?>())
     }
     val targets: ImmutableSortedSet<TargetInfo?>? =
-      targetMap.targetsForSourceFiles(sourceFiles).stream()
+      targetMap
+        .targetsForSourceFiles(sourceFiles)
+        .stream()
         .map<Any?>(TargetIdeInfo::toTargetInfo)
         .filter { target: Any? -> ruleType.isEmpty() || target.getRuleType().equals(ruleType.get()) }
         .distinct()
@@ -78,16 +83,17 @@ class ProjectSourceToTargetFinder : SourceToTargetFinder {
   }
 
   companion object {
-    private fun computeTargetMap(project: Project?, projectData: BlazeProjectData): FilteredTargetMap {
-      return computeTargetMap(
-        project, projectData.getArtifactLocationDecoder(), projectData.getTargetMap(),
+    private fun computeTargetMap(project: Project?, projectData: BlazeProjectData): FilteredTargetMap =
+      computeTargetMap(
+        project,
+        projectData.getArtifactLocationDecoder(),
+        projectData.getTargetMap(),
       )
-    }
 
     private fun computeTargetMap(
-      project: Project?, decoder: ArtifactLocationDecoder?, targetMap: TargetMap
-    ): FilteredTargetMap {
-      return FilteredTargetMap(project, decoder, targetMap, Predicate { t: TargetIdeInfo? -> true })
-    }
+      project: Project?,
+      decoder: ArtifactLocationDecoder?,
+      targetMap: TargetMap,
+    ): FilteredTargetMap = FilteredTargetMap(project, decoder, targetMap, Predicate { t: TargetIdeInfo? -> true })
   }
 }

@@ -60,22 +60,20 @@ abstract class RunConfigurationCompositeState : RunConfigurationState {
 
   /** @return A [RunConfigurationStateEditor] for this state.
    */
-  override fun getEditor(project: Project?): RunConfigurationStateEditor {
-    return RunConfigurationCompositeStateEditor(project, this.states!!)
-  }
+  override fun getEditor(project: Project?): RunConfigurationStateEditor = RunConfigurationCompositeStateEditor(project, this.states!!)
 
-  internal class RunConfigurationCompositeStateEditor(
-    project: Project?,
-    states: MutableList<RunConfigurationState?>
-  ) : RunConfigurationStateEditor {
+  internal class RunConfigurationCompositeStateEditor(project: Project?, states: MutableList<RunConfigurationState?>) :
+    RunConfigurationStateEditor {
     var editors: MutableList<RunConfigurationStateEditor?>
 
     init {
-      editors = states.stream()
-        .map<RunConfigurationStateEditor?> { state: RunConfigurationState? -> state!!.getEditor(project) }
-        .collect(
-          Collectors.toList(),
-        )
+      editors =
+        states
+          .stream()
+          .map<RunConfigurationStateEditor?> { state: RunConfigurationState? -> state!!.getEditor(project) }
+          .collect(
+            Collectors.toList(),
+          )
     }
 
     override fun resetEditorFrom(genericState: RunConfigurationState?) {
@@ -92,14 +90,13 @@ abstract class RunConfigurationCompositeState : RunConfigurationState {
       }
     }
 
-    override fun createComponent(): JComponent {
-      return UiUtil.createBox(
+    override fun createComponent(): JComponent =
+      UiUtil.createBox(
         editors
           .stream()
           .map<JComponent?> { obj: RunConfigurationStateEditor? -> obj!!.createComponent() }
           .collect(Collectors.toList()),
       )
-    }
 
     override fun setComponentEnabled(enabled: Boolean) {
       editors.forEach(Consumer { editor: RunConfigurationStateEditor? -> editor!!.setComponentEnabled(enabled) })

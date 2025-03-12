@@ -31,7 +31,7 @@ import java.util.stream.Collectors
 import javax.swing.AbstractAction
 import kotlin.concurrent.Volatile
 
-/** UI component for a list of [TargetExpression]s with autocomplete.  */
+/** UI component for a list of [Label]s with autocomplete.  */
 class TargetExpressionListUi(private val project: Project?) : JPanel() {
   private val listModel: ListTableModel<TargetItem?>
   private val tableView: TableView<TargetItem?>
@@ -44,7 +44,8 @@ class TargetExpressionListUi(private val project: Project?) : JPanel() {
 
     setLayout(BorderLayout())
     add(
-      ToolbarDecorator.createDecorator(tableView)
+      ToolbarDecorator
+        .createDecorator(tableView)
         .setAddAction(AnActionButtonRunnable { button: AnActionButton? -> addTarget() })
         .setRemoveAction(AnActionButtonRunnable { button: AnActionButton? -> removeTarget() })
         .disableUpDownActions()
@@ -55,13 +56,17 @@ class TargetExpressionListUi(private val project: Project?) : JPanel() {
 
   var targetExpressions: ImmutableList<String?>?
     /** Returns the non-empty target patterns presented in the UI component.  */
-    get() = listModel.getItems().stream()
-      .map<String?> { t: TargetItem? -> t.expression.trim { it <= ' ' } }
-      .filter { s: String? -> !s!!.isEmpty() }
-      .collect(ImmutableList.toImmutableList<String?>())
+    get() =
+      listModel
+        .getItems()
+        .stream()
+        .map<String?> { t: TargetItem? -> t.expression.trim { it <= ' ' } }
+        .filter { s: String? -> !s!!.isEmpty() }
+        .collect(ImmutableList.toImmutableList<String?>())
     set(targets) {
       listModel.setItems(
-        targets.stream()
+        targets
+          .stream()
           .filter { s: String? -> s != null && !s.isEmpty() }
           .map<TargetItem?> { expression: String? -> TargetItem(expression!!) }
           .collect(Collectors.toList()),
@@ -81,9 +86,9 @@ class TargetExpressionListUi(private val project: Project?) : JPanel() {
     val index = listModel.getRowCount() - 1
     tableView.getSelectionModel().setSelectionInterval(index, index)
     tableView.scrollRectToVisible(
-      tableView.getCellRect(index,  /* column= */0,  /* includeSpacing= */true),
+      tableView.getCellRect(index, /* column= */0, /* includeSpacing= */true),
     )
-    TableUtil.editCellAt(tableView, index,  /* column= */0)
+    TableUtil.editCellAt(tableView, index, /* column= */0)
   }
 
   private fun removeTarget() {
@@ -91,37 +96,37 @@ class TargetExpressionListUi(private val project: Project?) : JPanel() {
   }
 
   private inner class TargetColumn : ColumnInfo<TargetItem?, String?>( /* name= */"") {
-    override fun valueOf(targetItem: TargetItem): String {
-      return targetItem.expression
-    }
+    override fun valueOf(targetItem: TargetItem): String = targetItem.expression
 
     override fun setValue(targetItem: TargetItem, value: String) {
       targetItem.expression = value
     }
 
-    override fun getEditor(targetItem: TargetItem?): TableCellEditor {
-      return TargetListCellEditor(project)
-    }
+    override fun getEditor(targetItem: TargetItem?): TableCellEditor = TargetListCellEditor(project)
 
-    override fun isCellEditable(targetItem: TargetItem?): Boolean {
-      return true
-    }
+    override fun isCellEditable(targetItem: TargetItem?): Boolean = true
   }
 
   private class TargetItem(private var expression: String)
 
-  private class TargetListCellEditor(private val project: Project?) : AbstractCellEditor(), TableCellEditor {
+  private class TargetListCellEditor(private val project: Project?) :
+    AbstractCellEditor(),
+    TableCellEditor {
     @Volatile
     private var textField: TextFieldWithAutoCompletion<String?>? = null
 
     override fun getTableCellEditorComponent(
-      table: JTable?, value: Any?, isSelected: Boolean, row: Int, column: Int
+      table: JTable?,
+      value: Any?,
+      isSelected: Boolean,
+      row: Int,
+      column: Int,
     ): Component? {
       textField =
         TextFieldWithAutoCompletion<String?>(
           project,
-          TargetCompletionProvider(project),  /* showCompletionHint= */
-          true,  /* text= */
+          TargetCompletionProvider(project), // showCompletionHint=
+          true, // text=
           value as String?,
         )
       textField!!.addSettingsProvider(
@@ -130,7 +135,8 @@ class TargetExpressionListUi(private val project: Project?) : JPanel() {
           // committing changes... fix copied from upstream PsiClassTableCellEditor
           val c: JComponent = editorEx!!.getContentComponent()
           c.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "ENTER")
-          c.getActionMap()
+          c
+            .getActionMap()
             .put(
               "ENTER",
               object : AbstractAction() {
@@ -159,9 +165,11 @@ class TargetExpressionListUi(private val project: Project?) : JPanel() {
       }
   }
 
-  private class TargetCompletionProvider(project: Project?) : TextFieldWithAutoCompletion.StringsCompletionProvider(
-    getTargets(project), null,
-  ) {
+  private class TargetCompletionProvider(project: Project?) :
+    TextFieldWithAutoCompletion.StringsCompletionProvider(
+      getTargets(project),
+      null,
+    ) {
     companion object {
       private fun getTargets(project: Project?): MutableCollection<String?>? {
         val projectData: BlazeProjectData? =
@@ -173,26 +181,32 @@ class TargetExpressionListUi(private val project: Project?) : JPanel() {
           return ImmutableList.of<String?>()
         }
         val importRoots: ImportRoots =
-          ImportRoots.builder(
-            WorkspaceRoot.fromImportSettings(importSettings), importSettings.getBuildSystem(),
-          )
-            .add(projectViewSet)
+          ImportRoots
+            .builder(
+              WorkspaceRoot.fromImportSettings(importSettings),
+              importSettings.getBuildSystem(),
+            ).add(projectViewSet)
             .build()
 
         if (Blaze.getProjectType(project) === ProjectType.QUERY_SYNC) {
-          return projectData.targets().stream()
+          return projectData
+            .targets()
+            .stream()
             .map(TargetInfo::getLabel)
             .filter(importRoots::importAsSource)
-            .map(TargetExpression::toString)
+            .map(Label::toString)
             .collect(ImmutableList.toImmutableList<E?>())
         }
 
-        return projectData.getTargetMap().targets().stream()
+        return projectData
+          .getTargetMap()
+          .targets()
+          .stream()
           .filter(TargetIdeInfo::isPlainTarget)
           .map(TargetIdeInfo::getKey)
           .map(TargetKey::getLabel)
           .filter(importRoots::importAsSource)
-          .map(TargetExpression::toString)
+          .map(Label::toString)
           .collect(ImmutableList.toImmutableList<E?>())
       }
     }

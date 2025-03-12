@@ -18,20 +18,21 @@ package org.jetbrains.bazel.ogRun
 import com.google.idea.blaze.base.dependencies.TargetInfo
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import org.jetbrains.bazel.ogRun.other.TestSize
 import java.io.File
 
 /** Matches source files to test rules based on size annotations/tags.  */
 class TestSizeHeuristic : TestTargetHeuristic {
-    override fun matchesSource(
-        project: Project?,
-        target: TargetInfo,
-        sourcePsiFile: PsiFile?,
-        sourceFile: File?,
-        testSize: TestSize?
-    ): Boolean {
-        // If testSize == null then prefer small
-        // Some test runners will assume no size annotation == small and filter on that, others will not
-        val size: TestSize? = if (testSize != null) testSize else TestSize.DEFAULT_NON_ANNOTATED_TEST_SIZE
-        return target.testSize === size
-    }
+  override fun matchesSource(
+    project: Project?,
+    target: TargetInfo,
+    sourcePsiFile: PsiFile?,
+    sourceFile: File?,
+    testSize: TestSize?,
+  ): Boolean {
+    // If testSize == null then prefer small
+    // Some test runners will assume no size annotation == small and filter on that, others will not
+    val size: TestSize? = if (testSize != null) testSize else TestSize.DEFAULT_NON_ANNOTATED_TEST_SIZE
+    return target.testSize === size
+  }
 }

@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableMap
 import com.google.idea.blaze.base.dependencies.TargetInfo
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import org.jetbrains.bazel.ogRun.other.TestSize
 import java.io.File
 import java.util.Map
 
@@ -28,40 +29,50 @@ import java.util.Map
  * precise heuristics.
  */
 class TestSizeFromRoughTargetNameHeuristic : TestTargetHeuristic {
-    override fun matchesSource(
-        project: Project?,
-        target: TargetInfo,
-        sourcePsiFile: PsiFile?,
-        sourceFile: File?,
-        testSize: TestSize?
-    ): Boolean {
-        var testSize: TestSize? = testSize
-        if (target.testSize != null) {
-            return false // no need to guess, we already know the target's size attribute
-        }
-        // if no size annotation is present, treat as small tests (b/33503928).
-        if (testSize == null) {
-            testSize = TestSize.SMALL
-        }
-        return testSize === guessTargetTestSize(target)
+  override fun matchesSource(
+    project: Project?,
+    target: TargetInfo,
+    sourcePsiFile: PsiFile?,
+    sourceFile: File?,
+    testSize: TestSize?,
+  ): Boolean {
+    var testSize: TestSize? = testSize
+    if (target.testSize != null) {
+      return false // no need to guess, we already know the target's size attribute
     }
-
-    companion object {
-        private val TARGET_NAME_TO_TEST_SIZE: ImmutableMap<String?, TestSize?> = ImmutableMap.of<String?, TestSize?>(
-            "small", TestSize.SMALL,
-            "medium", TestSize.MEDIUM,
-            "large", TestSize.LARGE,
-            "enormous", TestSize.ENORMOUS
-        )
-
-        /** Looks for an substring match between the rule name and the test size annotation class name.  */
-        private fun guessTargetTestSize(target: TargetInfo): TestSize? {
-            val ruleName = target.label.targetName().toString().toLowerCase()
-            return TARGET_NAME_TO_TEST_SIZE.entries.stream()
-                .filter { entry: MutableMap.MutableEntry<String?, TestSize?>? -> ruleName.contains(entry!!.key!!) }
-                .map<TestSize?> { Map.Entry.value }
-                .findFirst()
-                .orElse(null)
-        }
+    // if no size annotation is present, treat as small tests (b/33503928).
+    if (testSize == null) {
+      testSize = TestSize.SMALL
     }
+    return testSize === guessTargetTestSize(target)
+  }
+
+  companion object {
+    private val TARGET_NAME_TO_TEST_SIZE: ImmutableMap<String?, TestSize?> =
+      ImmutableMap.of<String?, TestSize?>(
+        "small",
+        TestSize.SMALL,
+        "medium",
+        TestSize.MEDIUM,
+        "large",
+        TestSize.LARGE,
+        "enormous",
+        TestSize.ENORMOUS,
+      )
+
+    /** Looks for an substring match between the rule name and the test size annotation class name.  */
+    private fun guessTargetTestSize(target: TargetInfo): TestSize? {
+      val ruleName =
+        target.label
+          .targetName()
+          .toString()
+          .toLowerCase()
+      return TARGET_NAME_TO_TEST_SIZE.entries
+        .stream()
+        .filter { entry: MutableMap.MutableEntry<String?, TestSize?>? -> ruleName.contains(entry!!.key!!) }
+        .map<TestSize?> { Map.Entry.value }
+        .findFirst()
+        .orElse(null)
+    }
+  }
 }
