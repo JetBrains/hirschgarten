@@ -30,7 +30,6 @@ import org.jetbrains.bazel.ui.widgets.tool.window.filter.FilterActionGroup
 import org.jetbrains.bazel.ui.widgets.tool.window.filter.TargetFilter
 import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
-import java.awt.EventQueue
 import java.nio.file.Path
 import javax.swing.JTabbedPane
 import javax.swing.SwingConstants
@@ -59,8 +58,6 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
         add(BspToolWindowSettingsAction(BazelPluginBundle.message("project.settings.display.name")))
         addSeparator()
         add(BspToolWindowConfigFileOpenAction())
-//        addSeparator()
-//        add(BazelQueryDialogWindowAction())
       }
 
     val actionToolbar =
@@ -144,13 +141,4 @@ private fun Path.getPsiFile(project: Project): PsiFile? {
   val virtualFile =
     virtualFileManager.findFileByNioPath(this) ?: return null
   return PsiManager.getInstance(project).findFile(virtualFile)
-}
-
-private class BazelQueryDialogWindowAction() :
-  SuspendableAction({ "Open Bazel Query window" }, AllIcons.Actions.Search) {
-  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    EventQueue.invokeLater {
-      BazelQueryDialogWindow(project).show()
-    }
-  }
 }
