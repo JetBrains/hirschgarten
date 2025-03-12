@@ -9,7 +9,6 @@ import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
-import org.jetbrains.bazel.server.bsp.managers.BazelLabelExpander
 import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
@@ -151,7 +150,6 @@ class BazelBspServer(
       )
     val bazelToolchainManager = BazelToolchainManager(bazelRunner)
     val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver)
-    val bazelLabelExpander = BazelLabelExpander(bazelRunner)
     val targetTagsResolver = TargetTagsResolver()
     val mavenCoordinatesResolver = MavenCoordinatesResolver()
     val kotlinAndroidModulesMerger = KotlinAndroidModulesMerger()
@@ -171,7 +169,6 @@ class BazelBspServer(
         bazelBspAspectsManager = bazelBspAspectsManager,
         bazelToolchainManager = bazelToolchainManager,
         bazelBspLanguageExtensionsGenerator = bazelBspLanguageExtensionsGenerator,
-        bazelLabelExpander = bazelLabelExpander,
         workspaceContextProvider = workspaceContextProvider,
         bazelProjectMapper = bazelProjectMapper,
         targetInfoReader = targetInfoReader,
