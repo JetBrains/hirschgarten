@@ -1,0 +1,1 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <title>BSP Plugin 2024.3.8</title> </head> <body> <h1>2024.3.8</h1> <p> This is the final release for the Build Server Protocol plugin intended to decouple it from Bazel plugin, which will be our main priority going forward.</p> <p>We are discontinuing Build Server Protocol development and support.</p> </body> </html>
