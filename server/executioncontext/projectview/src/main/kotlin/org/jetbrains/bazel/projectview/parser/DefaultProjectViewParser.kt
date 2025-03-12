@@ -8,6 +8,7 @@ import org.jetbrains.bazel.projectview.parser.sections.EnableNativeAndroidRulesP
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalAddTransitiveCompileTimeJarsParser
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSectionParser
+import org.jetbrains.bazel.projectview.parser.sections.ImportRunConfigurationsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewAllowManualTargetsSyncSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewBazelBinarySectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewBuildFlagsSectionParser
@@ -61,6 +62,7 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         shardSync = ShardSyncParser.parse(rawSections),
         targetShardSize = TargetShardSizeParser.parse(rawSections),
         shardingApproach = ShardingApproachParser.parse(rawSections),
+        importRunConfigurations = ImportRunConfigurationsSectionParser.parse(rawSections),
       ).build()
   }
 
