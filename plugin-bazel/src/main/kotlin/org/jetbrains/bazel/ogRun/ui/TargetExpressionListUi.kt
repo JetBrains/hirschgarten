@@ -16,60 +16,66 @@
 package org.jetbrains.bazel.ogRun.ui
 
 import com.google.common.collect.ImmutableList
-import com.google.idea.blaze.base.dependencies.TargetInfo
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.ui.*
 import com.intellij.ui.table.TableView
 import com.intellij.util.ui.ColumnInfo
 import com.intellij.util.ui.ListTableModel
+import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
+import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
-import java.util.stream.Collectors
+import java.util.EventObject
 import javax.swing.AbstractAction
+import javax.swing.AbstractCellEditor
+import javax.swing.BorderFactory
+import javax.swing.JComponent
+import javax.swing.JPanel
+import javax.swing.JTable
+import javax.swing.KeyStroke
+import javax.swing.table.TableCellEditor
 import kotlin.concurrent.Volatile
 
+// TODO: use JBPanel instead of JPanel
+
 /** UI component for a list of [Label]s with autocomplete.  */
-class TargetExpressionListUi(private val project: Project?) : JPanel() {
+class TargetExpressionListUi(private val project: Project) : JPanel() {
   private val listModel: ListTableModel<TargetItem?>
   private val tableView: TableView<TargetItem?>
 
   init {
     listModel = ListTableModel<TargetItem?>(TargetColumn())
     tableView = TableView<TargetItem?>(listModel)
-    tableView.getEmptyText().setText("Choose some targets")
-    tableView.setPreferredScrollableViewportSize(Dimension(200, tableView.getRowHeight() * 4))
+    tableView.emptyText.text = "Choose some targets"
+    tableView.preferredScrollableViewportSize = Dimension(200, tableView.getRowHeight() * 4)
 
     setLayout(BorderLayout())
     add(
       ToolbarDecorator
         .createDecorator(tableView)
-        .setAddAction(AnActionButtonRunnable { button: AnActionButton? -> addTarget() })
-        .setRemoveAction(AnActionButtonRunnable { button: AnActionButton? -> removeTarget() })
+        .setAddAction { addTarget() }
+        .setRemoveAction { removeTarget() }
         .disableUpDownActions()
         .createPanel(),
       BorderLayout.CENTER,
     )
   }
 
-  var targetExpressions: ImmutableList<String?>?
+  var targetExpressions: List<String>
     /** Returns the non-empty target patterns presented in the UI component.  */
     get() =
       listModel
-        .getItems()
-        .stream()
-        .map<String?> { t: TargetItem? -> t.expression.trim { it <= ' ' } }
-        .filter { s: String? -> !s!!.isEmpty() }
-        .collect(ImmutableList.toImmutableList<String?>())
+        .items
+        .mapNotNull { it?.expression?.trim { it <= ' ' } }
+        .filter { it.isNotEmpty() }
     set(targets) {
       listModel.setItems(
         targets
-          .stream()
-          .filter { s: String? -> s != null && !s.isEmpty() }
-          .map<TargetItem?> { expression: String? -> TargetItem(expression!!) }
-          .collect(Collectors.toList()),
+          .filter { it.isNotBlank() }
+          .map { TargetItem(it) },
       )
     }
 
@@ -83,7 +89,7 @@ class TargetExpressionListUi(private val project: Project?) : JPanel() {
     TableUtil.stopEditing(tableView) // save any partially-filled state
 
     listModel.addRow(TargetItem(""))
-    val index = listModel.getRowCount() - 1
+    val index = listModel.rowCount - 1
     tableView.getSelectionModel().setSelectionInterval(index, index)
     tableView.scrollRectToVisible(
       tableView.getCellRect(index, /* column= */0, /* includeSpacing= */true),
@@ -95,7 +101,7 @@ class TargetExpressionListUi(private val project: Project?) : JPanel() {
     TableUtil.removeSelectedItems(tableView)
   }
 
-  private inner class TargetColumn : ColumnInfo<TargetItem?, String?>( /* name= */"") {
+  private inner class TargetColumn : ColumnInfo<TargetItem, String>( /* name= */"") {
     override fun valueOf(targetItem: TargetItem): String = targetItem.expression
 
     override fun setValue(targetItem: TargetItem, value: String) {
@@ -107,13 +113,13 @@ class TargetExpressionListUi(private val project: Project?) : JPanel() {
     override fun isCellEditable(targetItem: TargetItem?): Boolean = true
   }
 
-  private class TargetItem(private var expression: String)
+  private class TargetItem(internal var expression: String)
 
-  private class TargetListCellEditor(private val project: Project?) :
+  private class TargetListCellEditor(private val project: Project) :
     AbstractCellEditor(),
     TableCellEditor {
     @Volatile
-    private var textField: TextFieldWithAutoCompletion<String?>? = null
+    private var textField: TextFieldWithAutoCompletion<String>? = null
 
     override fun getTableCellEditorComponent(
       table: JTable?,
@@ -122,32 +128,31 @@ class TargetExpressionListUi(private val project: Project?) : JPanel() {
       row: Int,
       column: Int,
     ): Component? {
-      textField =
-        TextFieldWithAutoCompletion<String?>(
+      val textField =
+        TextFieldWithAutoCompletion(
           project,
           TargetCompletionProvider(project), // showCompletionHint=
           true, // text=
           value as String?,
         )
-      textField!!.addSettingsProvider(
-        EditorSettingsProvider { editorEx: EditorEx? ->
-          // base class ignores 'enter' keypress events, causing entire dialog to close without
-          // committing changes... fix copied from upstream PsiClassTableCellEditor
-          val c: JComponent = editorEx!!.getContentComponent()
-          c.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "ENTER")
-          c
-            .getActionMap()
-            .put(
-              "ENTER",
-              object : AbstractAction() {
-                override fun actionPerformed(e: ActionEvent?) {
-                  stopCellEditing()
-                }
-              },
-            )
-        },
-      )
-      textField!!.setBorder(BorderFactory.createLineBorder(JBColor.BLACK))
+      textField.addSettingsProvider { editorEx: EditorEx ->
+        // base class ignores 'enter' keypress events, causing entire dialog to close without
+        // committing changes... fix copied from upstream PsiClassTableCellEditor
+        val c: JComponent = editorEx.contentComponent
+        c.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "ENTER")
+        c
+          .actionMap
+          .put(
+            "ENTER",
+            object : AbstractAction() {
+              override fun actionPerformed(e: ActionEvent) {
+                stopCellEditing()
+              }
+            },
+          )
+      }
+      textField.setBorder(BorderFactory.createLineBorder(JBColor.BLACK))
+      this.textField = textField
       return textField
     }
 
@@ -158,11 +163,7 @@ class TargetExpressionListUi(private val project: Project?) : JPanel() {
       return e.getClickCount() >= 2
     }
 
-    val cellEditorValue: String
-      get() {
-        val field = textField
-        return if (field != null) field.getText() else ""
-      }
+    override fun getCellEditorValue(): String = textField?.getText() ?: ""
   }
 
   private class TargetCompletionProvider(project: Project?) :
@@ -187,16 +188,6 @@ class TargetExpressionListUi(private val project: Project?) : JPanel() {
               importSettings.getBuildSystem(),
             ).add(projectViewSet)
             .build()
-
-        if (Blaze.getProjectType(project) === ProjectType.QUERY_SYNC) {
-          return projectData
-            .targets()
-            .stream()
-            .map(TargetInfo::getLabel)
-            .filter(importRoots::importAsSource)
-            .map(Label::toString)
-            .collect(ImmutableList.toImmutableList<E?>())
-        }
 
         return projectData
           .getTargetMap()

@@ -20,16 +20,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import org.jdom.Element
 import org.jetbrains.bazel.ogRun.other.BlazeCommandName
+import org.jetbrains.bazel.ogRun.other.UiUtil
+import javax.swing.DefaultComboBoxModel
+import javax.swing.JComponent
+import javax.swing.JLabel
 
 /** State for a [BlazeCommandName].  */
 class BlazeCommandState : RunConfigurationState {
   private var command: BlazeCommandName? = null
-
-  fun getCommand(): BlazeCommandName? = command
-
-  fun setCommand(command: BlazeCommandName?) {
-    this.command = command
-  }
 
   override fun readExternal(element: Element) {
     val commandString = element.getAttributeValue(COMMAND_ATTR)
@@ -45,17 +43,12 @@ class BlazeCommandState : RunConfigurationState {
     }
   }
 
-  override fun getEditor(project: Project?): RunConfigurationStateEditor = BlazeCommandStateEditor(project)
+  override fun getEditor(project: Project): RunConfigurationStateEditor = BlazeCommandStateEditor(project)
 
   private class BlazeCommandStateEditor(project: Project?) : RunConfigurationStateEditor {
-    private val buildSystemName: String?
-
-    private val commandCombo: ComboBox<*>
+    private val commandCombo = ComboBox(DefaultComboBoxModel(BlazeCommandName.knownCommands.toTypedArray()))
 
     init {
-      buildSystemName = Blaze.buildSystemName(project)
-      commandCombo =
-        ComboBox<Any?>(DefaultComboBoxModel<Any?>(BlazeCommandName.knownCommands().toArray()))
       // Allow the user to manually specify an unlisted command.
       commandCombo.setEditable(true)
     }
@@ -64,28 +57,27 @@ class BlazeCommandState : RunConfigurationState {
       commandCombo.setEnabled(enabled)
     }
 
-    override fun resetEditorFrom(genericState: RunConfigurationState?) {
+    override fun resetEditorFrom(genericState: RunConfigurationState) {
       val state = genericState as BlazeCommandState
-      commandCombo.setSelectedItem(state.getCommand())
+      commandCombo.setSelectedItem(state.command)
     }
 
-    override fun applyEditorTo(genericState: RunConfigurationState?) {
+    override fun applyEditorTo(genericState: RunConfigurationState) {
       val state = genericState as BlazeCommandState
-      val selectedCommand = commandCombo.getSelectedItem()
+      val selectedCommand = commandCombo.selectedItem
       if (selectedCommand is BlazeCommandName) {
-        state.setCommand(selectedCommand as BlazeCommandName?)
+        state.command = selectedCommand
       } else {
-        state.setCommand(
+        state.command =
           if (Strings.isNullOrEmpty(selectedCommand as String?)) {
             null
           } else {
             BlazeCommandName.fromString(selectedCommand.toString())
-          },
-        )
+          }
       }
     }
 
-    override fun createComponent(): JComponent = UiUtil.createBox(JLabel(buildSystemName + " command:"), commandCombo)
+    override fun createComponent(): JComponent = UiUtil.createBox(JLabel("Bazel command:"), commandCombo)
   }
 
   companion object {

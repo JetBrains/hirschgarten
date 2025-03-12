@@ -24,14 +24,16 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.ui.components.JBCheckBox
-import java.awt.event.ActionListener
+import org.jetbrains.bazel.ogRun.other.UiUtil
+import java.awt.event.ActionEvent
+import javax.swing.JComponent
 import kotlin.concurrent.Volatile
 
 /**
  * Optionally save console output to a file. All the state / serialization code is handled upstream,
  * this class just displays the UI elements.
  */
-class ConsoleOutputFileSettingsUi<T : RunConfigurationBase<*>?> : SettingsEditor<T?>() {
+class ConsoleOutputFileSettingsUi<T : RunConfigurationBase<*>> : SettingsEditor<T>() {
   private val saveToFile = JBCheckBox("Save console output to file:", /* selected= */false)
   private val outputFile = TextFieldWithBrowseButton()
 
@@ -46,18 +48,18 @@ class ConsoleOutputFileSettingsUi<T : RunConfigurationBase<*>?> : SettingsEditor
       FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor(),
       TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT,
     )
-    saveToFile.addActionListener(ActionListener { e: ActionEvent? -> outputFile.setEnabled(uiEnabled && saveToFile.isSelected()) })
+    saveToFile.addActionListener { e: ActionEvent? -> outputFile.setEnabled(uiEnabled && saveToFile.isSelected) }
   }
 
-  public override fun resetEditorFrom(config: T?) {
-    saveToFile.setSelected(config!!.isSaveOutputToFile())
-    val fileOutputPath = config.getOutputFilePath()
+  public override fun resetEditorFrom(config: T) {
+    saveToFile.setSelected(config.isSaveOutputToFile)
+    val fileOutputPath = config.outputFilePath
     outputFile.setText(
       if (fileOutputPath == null) "" else FileUtil.toSystemDependentName(fileOutputPath),
     )
   }
 
-  public override fun applyEditorTo(config: T?) {
+  public override fun applyEditorTo(config: T) {
     val text = outputFile.getText()
     config!!.setFileOutputPath(
       if (StringUtil.isEmpty(text)) null else FileUtil.toSystemIndependentName(text),
@@ -75,12 +77,12 @@ class ConsoleOutputFileSettingsUi<T : RunConfigurationBase<*>?> : SettingsEditor
   private fun updateVisibleAndEnabled() {
     if (!enabled.getValue()) {
       saveToFile.setSelected(false)
-      saveToFile.setVisible(false)
-      outputFile.setVisible(false)
+      saveToFile.isVisible = false
+      outputFile.isVisible = false
       return
     }
     saveToFile.setEnabled(uiEnabled)
-    outputFile.setEnabled(uiEnabled && saveToFile.isSelected())
+    outputFile.setEnabled(uiEnabled && saveToFile.isSelected)
   }
 
   companion object {

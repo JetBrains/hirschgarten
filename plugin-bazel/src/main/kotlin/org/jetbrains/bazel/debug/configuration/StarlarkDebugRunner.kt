@@ -156,11 +156,11 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
     }
 
   class Settings : RunnerSettings {
-    override fun readExternal(element: Element?) {
+    override fun readExternal(element: Element) {
       // empty settings, don't do anything
     }
 
-    override fun writeExternal(element: Element?) {
+    override fun writeExternal(element: Element) {
       // empty settings, don't do anything
     }
   }

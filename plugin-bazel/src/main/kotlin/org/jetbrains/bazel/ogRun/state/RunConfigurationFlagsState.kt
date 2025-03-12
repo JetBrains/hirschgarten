@@ -23,9 +23,16 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.execution.ParametersListUtil
 import org.jdom.Element
+import org.jetbrains.bazel.ogRun.other.UiUtil
 import java.awt.Container
 import java.awt.Dimension
 import java.util.stream.Collectors
+import javax.swing.JComponent
+import javax.swing.JLabel
+import javax.swing.JTextArea
+import javax.swing.JViewport
+import javax.swing.ScrollPaneConstants
+import javax.swing.ViewportLayout
 
 /** State for a list of user-defined flags.  */
 class RunConfigurationFlagsState(private val tag: String?, private val fieldLabel: String?) : RunConfigurationState {
@@ -38,13 +45,13 @@ class RunConfigurationFlagsState(private val tag: String?, private val fieldLabe
       val processedFlags =
         flags
           .stream()
-          .map<String?> { s: String? ->
+          .map { s: String? ->
             ParametersListUtil
               .parse(
                 s!!,
                 false,
                 true,
-              ).get(0)
+              ).first()
           }.collect(Collectors.toList())
       return BlazeFlags.expandBuildFlags(processedFlags)
     }
@@ -65,7 +72,7 @@ class RunConfigurationFlagsState(private val tag: String?, private val fieldLabe
   override fun readExternal(element: Element) {
     val flagsBuilder = ImmutableList.builder<String?>()
     for (e in element.getChildren(tag)) {
-      val flag = e.getTextTrim()
+      val flag = e.textTrim
       if (flag != null && !flag.isEmpty()) {
         flagsBuilder.add(flag)
       }
@@ -82,7 +89,7 @@ class RunConfigurationFlagsState(private val tag: String?, private val fieldLabe
     }
   }
 
-  override fun getEditor(project: Project?): RunConfigurationStateEditor = RunConfigurationFlagsStateEditor(fieldLabel)
+  override fun getEditor(project: Project): RunConfigurationStateEditor = RunConfigurationFlagsStateEditor(fieldLabel)
 
   /** Editor component for flags list  */
   protected class RunConfigurationFlagsStateEditor internal constructor(private val fieldLabel: String?) : RunConfigurationStateEditor {
@@ -114,13 +121,13 @@ class RunConfigurationFlagsState(private val tag: String?, private val fieldLabe
       flagsField.setEnabled(enabled)
     }
 
-    override fun resetEditorFrom(genericState: RunConfigurationState?) {
+    override fun resetEditorFrom(genericState: RunConfigurationState) {
       val state = genericState as RunConfigurationFlagsState
       // join on newline chars only, otherwise leave unchanged
       flagsField.setText(Joiner.on('\n').join(state.rawFlags))
     }
 
-    override fun applyEditorTo(genericState: RunConfigurationState?) {
+    override fun applyEditorTo(genericState: RunConfigurationState) {
       val state = genericState as RunConfigurationFlagsState
       // split on unescaped whitespace and newlines only. Otherwise leave unchanged.
       val list: MutableList<String?> = BlazeParametersListUtil.splitParameters(flagsField.getText())

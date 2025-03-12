@@ -25,6 +25,7 @@ import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element
 import org.jetbrains.annotations.VisibleForTesting
+import javax.swing.JComponent
 
 /** State for user-defined environment variables.  */
 class EnvironmentVariablesState : RunConfigurationState {
@@ -56,7 +57,7 @@ class EnvironmentVariablesState : RunConfigurationState {
     element.addContent(child)
   }
 
-  override fun getEditor(project: Project?): RunConfigurationStateEditor = Editor()
+  override fun getEditor(project: Project): RunConfigurationStateEditor = Editor()
 
   @VisibleForTesting
   fun setEnvVars(vars: MutableMap<String?, String?>) {
@@ -70,16 +71,16 @@ class EnvironmentVariablesState : RunConfigurationState {
       component.setText("&Environment variables")
     }
 
-    override fun resetEditorFrom(genericState: RunConfigurationState?) {
+    override fun resetEditorFrom(genericState: RunConfigurationState) {
       val state = genericState as EnvironmentVariablesState
-      component.setEnvs(state.data.getEnvs())
-      component.setPassParentEnvs(state.data.isPassParentEnvs())
+      component.envs = state.data.envs
+      component.isPassParentEnvs = state.data.isPassParentEnvs
     }
 
-    override fun applyEditorTo(genericState: RunConfigurationState?) {
+    override fun applyEditorTo(genericState: RunConfigurationState) {
       val state = genericState as EnvironmentVariablesState
       state.data =
-        EnvironmentVariablesData.create(component.getEnvs(), component.isPassParentEnvs())
+        EnvironmentVariablesData.create(component.envs, component.isPassParentEnvs)
     }
 
     override fun createComponent(): JComponent = component

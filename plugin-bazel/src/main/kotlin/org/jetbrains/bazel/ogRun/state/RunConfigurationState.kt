@@ -24,13 +24,13 @@ import org.jdom.Element
 interface RunConfigurationState {
   /** Loads this handler's state from the external data.  */
   @Throws(InvalidDataException::class)
-  fun readExternal(element: Element?)
+  fun readExternal(element: Element)
 
   /** Updates the element with the handler's state.  */
   @Throws(WriteExternalException::class)
-  fun writeExternal(element: Element?)
+  fun writeExternal(element: Element)
 
   /** @return A [RunConfigurationStateEditor] for this state.
    */
-  fun getEditor(project: Project?): RunConfigurationStateEditor?
+  fun getEditor(project: Project): RunConfigurationStateEditor
 }

@@ -20,10 +20,15 @@ import com.intellij.execution.Executor
 import com.intellij.execution.Location
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.testframework.AbstractTestProxy
+import com.intellij.execution.testframework.TestFrameworkRunningModel
+import com.intellij.execution.testframework.actions.AbstractRerunFailedTestsAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComponentContainer
 import com.intellij.psi.search.GlobalSearchScope
+import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
 import org.jetbrains.bazel.ogRun.other.BlazeCommandName
+import org.jetbrains.bazel.ogRun.state.BlazeCommandRunConfigurationCommonState
 import java.util.*
 import java.util.stream.Collectors
 
@@ -38,11 +43,11 @@ class BlazeRerunFailedTestsAction internal constructor(
       return null
     }
     val config: BlazeCommandRunConfiguration =
-      model.getProperties().getConfiguration() as BlazeCommandRunConfiguration
+      model.properties.configuration as BlazeCommandRunConfiguration
     return BlazeRerunTestRunProfile(config.clone())
   }
 
-  internal inner class BlazeRerunTestRunProfile(configuration: BlazeCommandRunConfiguration) :
+  private inner class BlazeRerunTestRunProfile(configuration: BlazeCommandRunConfiguration) :
     AbstractRerunFailedTestsAction.MyRunProfile(configuration) {
     private val configuration: BlazeCommandRunConfiguration
 
@@ -50,13 +55,10 @@ class BlazeRerunFailedTestsAction internal constructor(
       this.configuration = configuration
     }
 
-    val modules: Array<Module?>
-      get() = com.intellij.openapi.module.Module.EMPTY_ARRAY
-
     @Throws(ExecutionException::class)
     override fun getState(executor: Executor?, environment: ExecutionEnvironment): RunProfileState? {
       val handlerState: BlazeCommandRunConfigurationCommonState? =
-        configuration.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
+        configuration.getHandlerStateIfType(
           BlazeCommandRunConfigurationCommonState::class.java,
         )
       if (handlerState == null ||

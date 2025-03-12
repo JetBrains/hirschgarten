@@ -151,8 +151,8 @@ class BlazeCommandRunConfiguration(
    * Gets the configuration's handler's [RunConfigurationState] if it is an instance of the
    * given class; otherwise returns null.
    */
-  fun <T : RunConfigurationState?> getHandlerStateIfType(type: Class<T>): T? {
-    val handlerState: RunConfigurationState? = handler.state
+  fun <T : RunConfigurationState> getHandlerStateIfType(type: Class<T>): T? {
+    val handlerState: RunConfigurationState = handler.state
     return if (type.isInstance(handlerState)) {
       type.cast(handlerState)
     } else {

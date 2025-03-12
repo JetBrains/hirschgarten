@@ -16,10 +16,12 @@
 package org.jetbrains.bazel.ogRun.state
 
 import com.google.common.base.Strings
-import com.google.idea.blaze.base.settings.Blaze
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBTextField
 import org.jdom.Element
+import org.jetbrains.bazel.ogRun.other.UiUtil
+import javax.swing.JComponent
+import javax.swing.JLabel
 
 /** State for a Blaze binary to run configurations with.  */
 class BlazeBinaryState : RunConfigurationState {
@@ -38,33 +40,30 @@ class BlazeBinaryState : RunConfigurationState {
     }
   }
 
-  override fun getEditor(project: Project?): RunConfigurationStateEditor = BlazeBinaryStateEditor(project)
+  override fun getEditor(project: Project): RunConfigurationStateEditor = BlazeBinaryStateEditor(project)
 
-  private class BlazeBinaryStateEditor(project: Project?) : RunConfigurationStateEditor {
-    private val buildSystemName: String?
-
+  private class BlazeBinaryStateEditor(project: Project) : RunConfigurationStateEditor {
     private val blazeBinaryField = JBTextField(1)
 
     init {
-      buildSystemName = Blaze.buildSystemName(project)
-      blazeBinaryField.getEmptyText().setText("(Use global)")
+      blazeBinaryField.emptyText.text = "(Use global)"
     }
 
     override fun setComponentEnabled(enabled: Boolean) {
       blazeBinaryField.setEnabled(enabled)
     }
 
-    override fun resetEditorFrom(genericState: RunConfigurationState?) {
+    override fun resetEditorFrom(genericState: RunConfigurationState) {
       val state = genericState as BlazeBinaryState
       blazeBinaryField.setText(Strings.nullToEmpty(state.blazeBinary))
     }
 
-    override fun applyEditorTo(genericState: RunConfigurationState?) {
+    override fun applyEditorTo(genericState: RunConfigurationState) {
       val state = genericState as BlazeBinaryState
       state.blazeBinary = Strings.emptyToNull(blazeBinaryField.getText())
     }
 
-    override fun createComponent(): JComponent = UiUtil.createBox(JLabel(buildSystemName + " binary:"), blazeBinaryField)
+    override fun createComponent(): JComponent = UiUtil.createBox(JLabel("Bazel" + " binary:"), blazeBinaryField)
   }
 
   companion object {

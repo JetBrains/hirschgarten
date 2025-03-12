@@ -29,7 +29,7 @@ import org.jetbrains.bazel.ogRun.other.BlazeCommandName
  */
 interface BlazeCommandRunConfigurationHandler {
   @JvmField
-  val state: RunConfigurationState?
+  val state: RunConfigurationState
 
   /** @return A [BlazeCommandRunConfigurationRunner] for running the configuration.
    */

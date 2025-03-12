@@ -20,14 +20,14 @@ import javax.swing.JComponent
 /** Provides support for editing [RunConfigurationState]s.  */
 interface RunConfigurationStateEditor {
   /** Reset the editor based on the given state.  */
-  fun resetEditorFrom(state: RunConfigurationState?)
+  fun resetEditorFrom(state: RunConfigurationState)
 
   /** Update the given state based on the editor.  */
-  fun applyEditorTo(state: RunConfigurationState?)
+  fun applyEditorTo(state: RunConfigurationState)
 
   /** @return A component to display for the editor.
    */
-  fun createComponent(): JComponent?
+  fun createComponent(): JComponent
 
   fun setComponentEnabled(enabled: Boolean)
 }

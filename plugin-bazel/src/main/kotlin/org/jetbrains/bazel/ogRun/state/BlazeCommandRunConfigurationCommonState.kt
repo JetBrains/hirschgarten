@@ -26,7 +26,7 @@ import java.io.File
 /**
  * Shared state common to several [ ] types.
  */
-class BlazeCommandRunConfigurationCommonState(buildSystemName: BuildSystemName?) : RunConfigurationCompositeState() {
+class BlazeCommandRunConfigurationCommonState : RunConfigurationCompositeState() {
   val commandState: BlazeCommandState
 
   /** @return The list of blaze flags that the user specified manually.
@@ -119,7 +119,7 @@ class BlazeCommandRunConfigurationCommonState(buildSystemName: BuildSystemName?)
     }
   }
 
-  override fun getEditor(project: Project?): RunConfigurationStateEditor = RunConfigurationCompositeStateEditor(project, getStates())
+  override fun getEditor(project: Project): RunConfigurationStateEditor = RunConfigurationCompositeStateEditor(project, getStates())
 
   companion object {
     private const val USER_BLAZE_FLAG_TAG = "blaze-user-flag"

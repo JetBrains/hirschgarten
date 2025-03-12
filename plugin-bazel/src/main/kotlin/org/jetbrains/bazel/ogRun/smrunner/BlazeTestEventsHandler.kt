@@ -19,22 +19,23 @@ import com.google.common.base.Strings
 import com.google.common.collect.ImmutableList
 import com.google.idea.blaze.base.dependencies.TargetInfo
 import com.intellij.execution.Location
+import com.intellij.execution.testframework.actions.AbstractRerunFailedTestsAction
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.util.io.URLUtil
+import org.jetbrains.bazel.label.Label
 import java.util.*
 
 /** Stateless language-specific handling of SM runner test protocol  */
 interface BlazeTestEventsHandler {
-  fun handlesKind(kind: Kind?): Boolean
+  fun handlesKind(kind: Kind): Boolean
 
   /**
    * A [SMTestLocator] to convert location URLs provided by this event handler to project PSI
    * elements. Returns `null` if no such conversion is available.
    */
-  @JvmField
-  val testLocator: SMTestLocator?
+  val testLocator: SMTestLocator
 
   /**
    * The --test_filter flag passed to blaze to rerun the given tests.
@@ -49,28 +50,28 @@ interface BlazeTestEventsHandler {
 
   /** Converts the testsuite name in the blaze test XML to a user-friendly format.  */
   fun suiteDisplayName(
-    label: Label?,
+    label: Label,
     kind: Kind?,
     rawName: String?,
   ): String? = rawName
 
   /** Converts the testcase name in the blaze test XML to a user-friendly format.  */
   fun testDisplayName(
-    label: Label?,
+    label: Label,
     kind: Kind?,
     rawName: String?,
   ): String? = rawName
 
   /** Converts the suite name to a parsable location URL.  */
   fun suiteLocationUrl(
-    label: Label?,
+    label: Label,
     kind: Kind?,
     name: String?,
   ): String? = SmRunnerUtils.GENERIC_SUITE_PROTOCOL + URLUtil.SCHEME_SEPARATOR + name
 
   /** Converts the test case and suite names to a parsable location URL.  */
   fun testLocationUrl(
-    label: Label?,
+    label: Label,
     kind: Kind?,
     parentSuite: String?,
     name: String?,
@@ -85,7 +86,7 @@ interface BlazeTestEventsHandler {
 
   /** Whether to skip logging a [TestSuite].  */
   fun ignoreSuite(
-    label: Label?,
+    label: Label,
     kind: Kind?,
     suite: BlazeXmlSchema.TestSuite,
   ): Boolean {
@@ -101,7 +102,7 @@ interface BlazeTestEventsHandler {
      * Test results will still be displayed for unhandled kinds if they're included in a test_suite
      * or multi-target Blaze invocation, where we don't know up front the languages involved.
      */
-    fun targetsSupported(project: Project?, targets: ImmutableList<Label?>): Boolean {
+    fun targetsSupported(project: Project, targets: List<Label>): Boolean {
       val kind: Kind? = getKindForTargets(project, targets)
       return Arrays
         .stream<BlazeTestEventsHandler?>(EP_NAME.extensions)
@@ -141,7 +142,7 @@ interface BlazeTestEventsHandler {
         .findFirst()
 
     /** Returns the single Kind shared by all targets or null if they have different kinds.  */
-    fun getKindForTargets(project: Project?, targets: MutableList<Label?>): Kind? {
+    fun getKindForTargets(project: Project, targets: List<Label>): Kind? {
       // TODO(brendandouglas): extend BlazeTestEventsHandler API to handle multiple targets with
       // *known* kinds
       var singleKind: Kind? = null
@@ -163,7 +164,7 @@ interface BlazeTestEventsHandler {
       return if (targetInfo != null) targetInfo.getKind() else null
     }
 
-    val EP_NAME: ExtensionPointName<BlazeTestEventsHandler?> =
-      create.create<BlazeTestEventsHandler?>("com.google.idea.blaze.BlazeTestEventsHandler")
+    val EP_NAME: ExtensionPointName<BlazeTestEventsHandler> =
+      ExtensionPointName.create("com.google.idea.blaze.BlazeTestEventsHandler")
   }
 }

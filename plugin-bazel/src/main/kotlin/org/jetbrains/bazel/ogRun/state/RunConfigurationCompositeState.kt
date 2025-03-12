@@ -16,13 +16,13 @@
 package org.jetbrains.bazel.ogRun.state
 
 import com.google.common.collect.ImmutableList
-import com.google.idea.blaze.base.ui.UiUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element
+import org.jetbrains.bazel.ogRun.other.UiUtil
 import java.util.function.Consumer
-import java.util.stream.Collectors
+import javax.swing.JComponent
 
 /** Helper class for managing composite state.  */
 abstract class RunConfigurationCompositeState : RunConfigurationState {
@@ -44,7 +44,7 @@ abstract class RunConfigurationCompositeState : RunConfigurationState {
   protected abstract fun initializeStates(): ImmutableList<RunConfigurationState>?
 
   @Throws(InvalidDataException::class)
-  override fun readExternal(element: Element?) {
+  override fun readExternal(element: Element) {
     for (state in this.states!!) {
       state.readExternal(element)
     }
@@ -52,7 +52,7 @@ abstract class RunConfigurationCompositeState : RunConfigurationState {
 
   /** Updates the element with the handler's state.  */
   @Throws(WriteExternalException::class)
-  override fun writeExternal(element: Element?) {
+  override fun writeExternal(element: Element) {
     for (state in this.states!!) {
       state.writeExternal(element)
     }
@@ -60,42 +60,32 @@ abstract class RunConfigurationCompositeState : RunConfigurationState {
 
   /** @return A [RunConfigurationStateEditor] for this state.
    */
-  override fun getEditor(project: Project?): RunConfigurationStateEditor = RunConfigurationCompositeStateEditor(project, this.states!!)
+  override fun getEditor(project: Project): RunConfigurationStateEditor = RunConfigurationCompositeStateEditor(project, this.states!!)
 
-  internal class RunConfigurationCompositeStateEditor(project: Project?, states: MutableList<RunConfigurationState?>) :
+  internal class RunConfigurationCompositeStateEditor(project: Project, states: List<RunConfigurationState>) :
     RunConfigurationStateEditor {
-    var editors: MutableList<RunConfigurationStateEditor?>
+    val editors: List<RunConfigurationStateEditor> =
+      states
+        .map { it.getEditor(project) }
 
-    init {
-      editors =
-        states
-          .stream()
-          .map<RunConfigurationStateEditor?> { state: RunConfigurationState? -> state!!.getEditor(project) }
-          .collect(
-            Collectors.toList(),
-          )
-    }
-
-    override fun resetEditorFrom(genericState: RunConfigurationState?) {
+    override fun resetEditorFrom(genericState: RunConfigurationState) {
       val state = genericState as RunConfigurationCompositeState
       for (i in editors.indices) {
-        editors.get(i)!!.resetEditorFrom(state.states!!.get(i))
+        editors[i].resetEditorFrom(state.states!![i])
       }
     }
 
-    override fun applyEditorTo(genericState: RunConfigurationState?) {
+    override fun applyEditorTo(genericState: RunConfigurationState) {
       val state = genericState as RunConfigurationCompositeState
       for (i in editors.indices) {
-        editors.get(i)!!.applyEditorTo(state.states!!.get(i))
+        editors[i].applyEditorTo(state.states!![i])
       }
     }
 
     override fun createComponent(): JComponent =
       UiUtil.createBox(
         editors
-          .stream()
-          .map<JComponent?> { obj: RunConfigurationStateEditor? -> obj!!.createComponent() }
-          .collect(Collectors.toList()),
+          .map { it.createComponent() },
       )
 
     override fun setComponentEnabled(enabled: Boolean) {
