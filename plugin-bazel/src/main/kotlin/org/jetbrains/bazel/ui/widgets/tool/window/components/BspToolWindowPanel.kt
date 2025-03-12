@@ -32,12 +32,16 @@ import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
 import java.awt.EventQueue
 import java.nio.file.Path
+import javax.swing.JTabbedPane
 import javax.swing.SwingConstants
 
 class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, true) {
   private val targetFilter = TargetFilter { rerenderComponents() }
   private val searchBarPanel = SearchBarPanel()
   private var loadedTargetsPanel: BspPanelComponent
+  // Dodajemy panel Bazel Query jako zakładkę
+  private val bazelQueryDialogWindow = BazelQueryDialogWindow(project)
+
 
   init {
     val actionManager = ActionManager.getInstance()
@@ -55,8 +59,8 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
         add(BspToolWindowSettingsAction(BazelPluginBundle.message("project.settings.display.name")))
         addSeparator()
         add(BspToolWindowConfigFileOpenAction())
-        addSeparator()
-        add(BazelQueryDialogWindowAction())
+//        addSeparator()
+//        add(BazelQueryDialogWindowAction())
       }
 
     val actionToolbar =
@@ -66,7 +70,14 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
       }
 
     this.toolbar = actionToolbar.component
-    setContent(loadedTargetsPanel.withScrollAndSearch())
+
+    val tabbedPane = JTabbedPane().apply {
+      addTab("Loaded Targets", loadedTargetsPanel.withScrollAndSearch())
+      addTab("Bazel Query", bazelQueryDialogWindow)
+    }
+    setContent(tabbedPane)
+
+    //setContent(loadedTargetsPanel.withScrollAndSearch())
 
     targetUtils.registerSyncListener { targetListChanged ->
       if (targetListChanged) {
