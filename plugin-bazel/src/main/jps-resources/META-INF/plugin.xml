@@ -497,7 +497,6 @@
         <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
 
         <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.wizard.BazelJavaNewProjectWizard"/>
-        <newProjectWizard.kotlin.buildSystem implementation="org.jetbrains.bazel.ui.wizard.BazelKotlinNewProjectWizard"/>
     </extensions>
 
     <actions>
