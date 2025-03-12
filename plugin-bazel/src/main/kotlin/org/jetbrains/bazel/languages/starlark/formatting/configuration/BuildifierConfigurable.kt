@@ -16,10 +16,8 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.text.nullize
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.starlark.formatting.BuildifierUtil
-import java.io.File
 
 class BuildifierConfigurable(val project: Project) : BoundSearchableConfigurable(BazelPluginBundle.message(DISPLAY_NAME_KEY), ID) {
-  private var detectedBuildifierExecutable: File? = null
   private var storedState = BuildifierConfiguration.getBuildifierConfiguration(project)
 
   private lateinit var pathToBinaryRow: Row
@@ -50,10 +48,6 @@ class BuildifierConfigurable(val project: Project) : BoundSearchableConfigurable
           bottomGap(BottomGap.SMALL)
         }
     }
-
-  init {
-    detectedBuildifierExecutable = BuildifierUtil.detectBuildifierExecutable()
-  }
 
   private fun updateUiState() {
     pathToBinaryRow.visible(true)
