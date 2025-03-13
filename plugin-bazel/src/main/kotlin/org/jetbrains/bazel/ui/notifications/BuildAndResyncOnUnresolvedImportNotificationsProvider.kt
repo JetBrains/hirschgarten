@@ -12,10 +12,10 @@ import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.EditorNotifications
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.config.isBspProject
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
@@ -31,10 +31,10 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotification
   private val disableNotificationForFile = mutableSetOf<VirtualFile>()
 
   override fun collectNotificationData(project: Project, file: VirtualFile): Function<in FileEditor, out JComponent?>? {
-    if (!project.isBspProject) return null
+    if (!project.isBazelProject) return null
     if (file in disableNotificationForFile) return null
     if (project.isSyncInProgress()) return null
-    if (BspFeatureFlags.isBuildProjectOnSyncEnabled) return null
+    if (BazelFeatureFlags.isBuildProjectOnSyncEnabled) return null
     if (!project.service<IncompleteDependenciesService>().getState().isComplete) return null
 
     if (!hasUnresolvedImport(project, file)) return null
@@ -82,7 +82,7 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotification
       text = BspPluginBundle.message("notification.unresolved.imports")
 
       createActionLabel(BspPluginBundle.message("build.and.resync.action.text")) {
-        BspCoroutineService.getInstance(project).start {
+        BazelCoroutineService.getInstance(project).start {
           ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = true)
         }
       }

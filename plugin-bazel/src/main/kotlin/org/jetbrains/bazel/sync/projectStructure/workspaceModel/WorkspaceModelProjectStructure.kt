@@ -9,8 +9,10 @@ import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.workspace.jps.JpsFileDependentEntitySource
 import com.intellij.platform.workspace.jps.JpsFileEntitySource
 import com.intellij.platform.workspace.jps.JpsGlobalFileEntitySource
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.entities
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.orDefault
@@ -65,6 +67,8 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
 
     postApplyActions.forEach { it() }
   }
+
+  override fun isInvalid(): Boolean = mutableEntityStorage.entities<ModuleEntity>().none()
 
   private fun EntitySource.isBspRelevant(project: Project, syncScope: ProjectSyncScope): Boolean =
     when (syncScope) {

@@ -2,7 +2,7 @@
 # This file is based on Bazel plugin for IntelliJ by The Bazel Authors, licensed under Apache-2.0;
 # It was modified by JetBrains s.r.o. and contributors
 #
-load("//intellij_platform_sdk:build_defs.bzl", "select_for_plugin_api")
+load("//rules_intellij/intellij_platform_sdk:build_defs.bzl", "select_for_plugin_api")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -33,8 +33,8 @@ java_library(
     exports = [
         ":python_internal",
         # Python plugin has several non-optional plugin dependencies
-        "//third_party/json:json_for_tests",
-        "//third_party/toml:toml_for_tests",
+        "//rules_intellij/third_party/json:json_for_tests",
+        "//rules_intellij/third_party/toml:toml_for_tests",
     ],
 )
 

@@ -48,13 +48,12 @@ object GitHub : Project({
     sequential {
       // 1. Run formatter first
       buildType(ProjectFormat.GitHub)
-      // 2. Run build second
-      buildType(ProjectBuild.GitHub)
-      // 3. Run everything else in parallel
+      // 2. Run everything else in parallel
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
         onDependencyCancel = FailureAction.CANCEL
       }) {
+        buildType(ProjectBuild.GitHub)
         buildType(ProjectUnitTests.GitHub)
         buildType(PluginBenchmark.BenchmarkDefaultGitHub)
         buildType(PluginBenchmark.BenchmarkWithVersionGitHub)
@@ -62,6 +61,8 @@ object GitHub : Project({
         buildType(IdeStarterTests.ExternalRepoResolveTestGitHub)
         buildType(IdeStarterTests.JarSourceExcludeTestGitHub)
         buildType(IdeStarterTests.BazelProjectModelModifierTestGitHub)
+        buildType(IdeStarterTests.BazelCoverageTestGitHub)
+        buildType(IdeStarterTests.TestResultsTreeTestGitHub)
         buildType(ServerE2eTests.SampleRepoGitHub)
         buildType(ServerE2eTests.LocalJdkGitHub)
         buildType(ServerE2eTests.RemoteJdkGitHub)
@@ -76,6 +77,7 @@ object GitHub : Project({
         buildType(ServerE2eTests.BuildSyncGitHub)
         buildType(ServerE2eTests.FirstPhaseSyncGitHub)
         buildType(ServerE2eTests.PartialSyncGitHub)
+        buildType(ServerE2eTests.ExternalAutoloadsGitHub)
         buildType(ServerE2eTests.NestedModulesGitHub)
         buildType(StaticAnalysis.HirschgartenGitHub)
 //        buildType(StaticAnalysis.AndroidBazelRulesGitHub)
@@ -121,6 +123,8 @@ object GitHub : Project({
       IdeStarterTests.ExternalRepoResolveTestGitHub,
       IdeStarterTests.JarSourceExcludeTestGitHub,
       IdeStarterTests.BazelProjectModelModifierTestGitHub,
+      IdeStarterTests.BazelCoverageTestGitHub,
+      IdeStarterTests.TestResultsTreeTestGitHub,
       ServerE2eTests.SampleRepoGitHub,
       ServerE2eTests.LocalJdkGitHub,
       ServerE2eTests.RemoteJdkGitHub,
@@ -136,6 +140,7 @@ object GitHub : Project({
       ServerE2eTests.FirstPhaseSyncGitHub,
       ServerE2eTests.PartialSyncGitHub,
       ServerE2eTests.NestedModulesGitHub,
+      ServerE2eTests.ExternalAutoloadsGitHub,
       StaticAnalysis.HirschgartenGitHub,
 //      StaticAnalysis.AndroidBazelRulesGitHub,
 //      StaticAnalysis.AndroidTestdpcGitHub,
@@ -155,13 +160,12 @@ object Space : Project({
     sequential {
       // 1. Run formatter first
       buildType(ProjectFormat.Space)
-      // 2. Run build second
-      buildType(ProjectBuild.Space)
-      // 3. Run everything else in parallel
+      // 2. Run everything else in parallel
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
         onDependencyCancel = FailureAction.CANCEL
       }) {
+        buildType(ProjectBuild.Space)
         buildType(ProjectUnitTests.Space)
         buildType(PluginBenchmark.SpaceBenchmarkDefault)
         buildType(PluginBenchmark.SpaceBenchmarkWithVersion)
@@ -169,6 +173,8 @@ object Space : Project({
         buildType(IdeStarterTests.ExternalRepoResolveTestSpace)
         buildType(IdeStarterTests.JarSourceExcludeTestSpace)
         buildType(IdeStarterTests.BazelProjectModelModifierTestSpace)
+        buildType(IdeStarterTests.BazelCoverageTestSpace)
+        buildType(IdeStarterTests.TestResultsTreeTestSpace)
         buildType(ServerE2eTests.SampleRepoSpace)
         buildType(ServerE2eTests.LocalJdkSpace)
         buildType(ServerE2eTests.RemoteJdkSpace)
@@ -184,6 +190,7 @@ object Space : Project({
         buildType(ServerE2eTests.FirstPhaseSyncSpace)
         buildType(ServerE2eTests.PartialSyncSpace)
         buildType(ServerE2eTests.NestedModulesSpace)
+        buildType(ServerE2eTests.ExternalAutoloadsSpace)
         buildType(StaticAnalysis.HirschgartenSpace)
 //        buildType(StaticAnalysis.AndroidBazelRulesSpace)
 //        buildType(StaticAnalysis.AndroidTestdpcSpace)
@@ -228,6 +235,8 @@ object Space : Project({
       IdeStarterTests.ExternalRepoResolveTestSpace,
       IdeStarterTests.JarSourceExcludeTestSpace,
       IdeStarterTests.BazelProjectModelModifierTestSpace,
+      IdeStarterTests.BazelCoverageTestSpace,
+      IdeStarterTests.TestResultsTreeTestSpace,
       ServerE2eTests.SampleRepoSpace,
       ServerE2eTests.LocalJdkSpace,
       ServerE2eTests.RemoteJdkSpace,
@@ -243,6 +252,7 @@ object Space : Project({
       ServerE2eTests.FirstPhaseSyncSpace,
       ServerE2eTests.PartialSyncSpace,
       ServerE2eTests.NestedModulesSpace,
+      ServerE2eTests.ExternalAutoloadsSpace,
       StaticAnalysis.HirschgartenSpace,
 //      StaticAnalysis.AndroidBazelRulesSpace,
 //      StaticAnalysis.AndroidTestdpcSpace,

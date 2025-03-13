@@ -1,95 +1,71 @@
 package org.jetbrains.bsp.protocol
 
-import java.util.concurrent.CompletableFuture
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 interface JoinedBuildServer {
-  fun buildInitialize(params: InitializeBuildParams): CompletableFuture<Any>
+  suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult
 
-  fun onBuildInitialized()
+  suspend fun buildTargetSources(params: SourcesParams): SourcesResult
 
-  fun buildShutdown(): CompletableFuture<Any>
+  suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult
 
-  fun onBuildExit()
+  suspend fun buildTargetDependencySources(params: DependencySourcesParams): DependencySourcesResult
 
-  fun workspaceBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult>
+  suspend fun buildTargetResources(params: ResourcesParams): ResourcesResult
 
-  fun workspaceReload(): CompletableFuture<Any>
+  suspend fun buildTargetCompile(params: CompileParams): CompileResult
 
-  fun buildTargetSources(params: SourcesParams): CompletableFuture<SourcesResult>
+  suspend fun buildTargetRun(params: RunParams): RunResult
 
-  fun buildTargetInverseSources(params: InverseSourcesParams): CompletableFuture<InverseSourcesResult>
+  suspend fun buildTargetTest(params: TestParams): TestResult
 
-  fun buildTargetDependencySources(params: DependencySourcesParams): CompletableFuture<DependencySourcesResult>
+  suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult
 
-  fun buildTargetDependencyModules(params: DependencyModulesParams): CompletableFuture<DependencyModulesResult>
+  suspend fun bazelResolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult
 
-  fun buildTargetResources(params: ResourcesParams): CompletableFuture<ResourcesResult>
+  suspend fun buildTargetJvmTestEnvironment(params: JvmTestEnvironmentParams): JvmTestEnvironmentResult
 
-  fun buildTargetOutputPaths(params: OutputPathsParams): CompletableFuture<OutputPathsResult>
+  suspend fun buildTargetJvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult
 
-  fun buildTargetCompile(params: CompileParams): CompletableFuture<CompileResult>
+  suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult
 
-  fun buildTargetRun(params: RunParams): CompletableFuture<RunResult>
+  suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult
 
-  fun buildTargetTest(params: TestParams): CompletableFuture<TestResult>
+  suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult
 
-  fun buildTargetCleanCache(params: CleanCacheParams): CompletableFuture<CleanCacheResult>
+  suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult
 
-  fun onRunReadStdin(params: ReadParams)
+  suspend fun workspaceLibraries(): WorkspaceLibrariesResult
 
-  fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): CompletableFuture<BazelResolveLocalToRemoteResult>
-
-  fun bazelResolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): CompletableFuture<BazelResolveRemoteToLocalResult>
-
-  fun buildTargetJvmTestEnvironment(params: JvmTestEnvironmentParams): CompletableFuture<JvmTestEnvironmentResult>
-
-  fun buildTargetJvmRunEnvironment(params: JvmRunEnvironmentParams): CompletableFuture<JvmRunEnvironmentResult>
-
-  fun buildTargetJvmCompileClasspath(params: JvmCompileClasspathParams): CompletableFuture<JvmCompileClasspathResult>
-
-  fun buildTargetScalacOptions(params: ScalacOptionsParams): CompletableFuture<ScalacOptionsResult>
-
-  @Deprecated("")
-  fun buildTargetScalaTestClasses(params: ScalaTestClassesParams): CompletableFuture<ScalaTestClassesResult>
-
-  @Deprecated("")
-  fun buildTargetScalaMainClasses(params: ScalaMainClassesParams): CompletableFuture<ScalaMainClassesResult>
-
-  fun buildTargetJavacOptions(params: JavacOptionsParams): CompletableFuture<JavacOptionsResult>
-
-  fun buildTargetCppOptions(params: CppOptionsParams): CompletableFuture<CppOptionsResult>
-
-  fun buildTargetPythonOptions(params: PythonOptionsParams): CompletableFuture<PythonOptionsResult>
-
-  fun rustWorkspace(params: RustWorkspaceParams): CompletableFuture<RustWorkspaceResult>
-
-  fun workspaceLibraries(): CompletableFuture<WorkspaceLibrariesResult>
-
-  fun workspaceGoLibraries(): CompletableFuture<WorkspaceGoLibrariesResult>
+  suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult
 
   /**
    * Returns the list of all targets in the workspace that are neither modules nor libraries, but should be displayed in the UI.
    */
 
-  fun workspaceNonModuleTargets(): CompletableFuture<NonModuleTargetsResult>
+  suspend fun workspaceNonModuleTargets(): NonModuleTargetsResult
 
-  fun workspaceDirectories(): CompletableFuture<WorkspaceDirectoriesResult>
+  suspend fun workspaceDirectories(): WorkspaceDirectoriesResult
 
-  fun workspaceInvalidTargets(): CompletableFuture<WorkspaceInvalidTargetsResult>
+  suspend fun workspaceInvalidTargets(): WorkspaceInvalidTargetsResult
 
-  fun buildTargetAnalysisDebug(params: AnalysisDebugParams): CompletableFuture<AnalysisDebugResult>
+  suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult
 
-  fun buildTargetRunWithDebug(params: RunWithDebugParams): CompletableFuture<RunResult>
+  suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult
 
-  fun buildTargetMobileInstall(params: MobileInstallParams): CompletableFuture<MobileInstallResult>
+  suspend fun buildTargetMobileInstall(params: MobileInstallParams): MobileInstallResult
 
-  fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): CompletableFuture<JvmBinaryJarsResult>
+  suspend fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult
 
-  fun workspaceBuildAndGetBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult>
+  suspend fun workspaceBuildAndGetBuildTargets(): WorkspaceBuildTargetsResult
 
-  fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): CompletableFuture<WorkspaceBuildTargetsResult>
+  suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult
 
-  fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): CompletableFuture<WorkspaceBuildTargetsResult>
+  suspend fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult
 
-  fun workspaceBazelRepoMapping(): CompletableFuture<WorkspaceBazelRepoMappingResult>
+  suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult
+
+  suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult
+
+  suspend fun workspaceContext(): WorkspaceContext
 }

@@ -55,7 +55,20 @@ sealed class Flag {
           .toPersistentMap()
     }
 
+    private val KnownFlags.allCommands by object : LazyExtension<Set<String>, KnownFlags>() {
+      override fun initValue(o: KnownFlags): Set<String> =
+        KnownFlags.allFlags
+          .flatMap { x ->
+            x.value.option.commands
+              .asIterable()
+          }.toSet()
+    }
+
+    fun commands() = KnownFlags.allCommands
+
     fun byName(name: String) = KnownFlags.allFlags[name]
+
+    fun all() = KnownFlags.allFlags
   }
 }
 

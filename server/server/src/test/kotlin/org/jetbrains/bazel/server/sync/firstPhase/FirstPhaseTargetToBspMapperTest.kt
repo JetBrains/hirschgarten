@@ -11,7 +11,6 @@ import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
 import org.jetbrains.bazel.workspacecontext.BuildFlagsSpec
-import org.jetbrains.bazel.workspacecontext.DEFAULT_TARGET_SHARD_SIZE
 import org.jetbrains.bazel.workspacecontext.DirectoriesSpec
 import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bazel.workspacecontext.EnableNativeAndroidRules
@@ -19,6 +18,7 @@ import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bazel.workspacecontext.ExperimentalAddTransitiveCompileTimeJars
 import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
+import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
 import org.jetbrains.bazel.workspacecontext.NoPruneTransitiveCompileTimeJarsPatternsSpec
 import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
 import org.jetbrains.bazel.workspacecontext.ShardingApproachSpec
@@ -27,14 +27,11 @@ import org.jetbrains.bazel.workspacecontext.TargetShardSizeSpec
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.TransitiveCompileTimeJarsTargetKindsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.junit.jupiter.api.BeforeEach
@@ -49,36 +46,36 @@ import kotlin.io.path.createParentDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
 
-private class MockWorkspaceContextProvider(private val allowManualTargetsSync: Boolean) : WorkspaceContextProvider {
-  override fun currentWorkspaceContext(): WorkspaceContext =
-    WorkspaceContext(
-      targets = TargetsSpec(listOf(Label.parse("//...")), emptyList()),
-      directories = DirectoriesSpec(listOf(Path(".")), emptyList()),
-      buildFlags = BuildFlagsSpec(emptyList()),
-      syncFlags = SyncFlagsSpec(emptyList()),
-      bazelBinary = BazelBinarySpec(Path("bazel")),
-      allowManualTargetsSync = AllowManualTargetsSyncSpec(allowManualTargetsSync),
-      dotBazelBspDirPath = DotBazelBspDirPathSpec(Path(".bazelbsp")),
-      importDepth = ImportDepthSpec(-1),
-      enabledRules = EnabledRulesSpec(emptyList()),
-      ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpec(Path("java_home")),
-      experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJars(false),
-      experimentalTransitiveCompileTimeJarsTargetKinds = TransitiveCompileTimeJarsTargetKindsSpec(emptyList()),
-      experimentalNoPruneTransitiveCompileTimeJarsPatterns = NoPruneTransitiveCompileTimeJarsPatternsSpec(emptyList()),
-      enableNativeAndroidRules = EnableNativeAndroidRules(false),
-      androidMinSdkSpec = AndroidMinSdkSpec(null),
-      shardSync = ShardSyncSpec(false),
-      targetShardSize = TargetShardSizeSpec(DEFAULT_TARGET_SHARD_SIZE),
-      shardingApproachSpec = ShardingApproachSpec(null),
-    )
-}
+private fun createMockWorkspaceContext(allowManualTargetsSync: Boolean): WorkspaceContext =
+  WorkspaceContext(
+    targets = TargetsSpec(listOf(Label.parse("//...")), emptyList()),
+    directories = DirectoriesSpec(listOf(Path(".")), emptyList()),
+    buildFlags = BuildFlagsSpec(emptyList()),
+    syncFlags = SyncFlagsSpec(emptyList()),
+    bazelBinary = BazelBinarySpec(Path("bazel")),
+    allowManualTargetsSync = AllowManualTargetsSyncSpec(allowManualTargetsSync),
+    dotBazelBspDirPath = DotBazelBspDirPathSpec(Path(".bazelbsp")),
+    importDepth = ImportDepthSpec(-1),
+    enabledRules = EnabledRulesSpec(emptyList()),
+    ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpec(Path("java_home")),
+    experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJars(false),
+    experimentalTransitiveCompileTimeJarsTargetKinds = TransitiveCompileTimeJarsTargetKindsSpec(emptyList()),
+    experimentalNoPruneTransitiveCompileTimeJarsPatterns = NoPruneTransitiveCompileTimeJarsPatternsSpec(emptyList()),
+    enableNativeAndroidRules = EnableNativeAndroidRules(false),
+    androidMinSdkSpec = AndroidMinSdkSpec(null),
+    shardSync = ShardSyncSpec(false),
+    targetShardSize = TargetShardSizeSpec(1000),
+    shardingApproachSpec = ShardingApproachSpec(null),
+    importRunConfigurations = ImportRunConfigurationsSpec(emptyList()),
+  )
 
-private fun createMockProject(lightweightModules: List<Build.Target>): FirstPhaseProject =
+private fun createMockProject(lightweightModules: List<Build.Target>, allowManualTargetsSync: Boolean): FirstPhaseProject =
   FirstPhaseProject(
     workspaceRoot = URI.create("file:///path/to/workspace"),
     bazelRelease = BazelRelease(7),
     modules = lightweightModules.associateBy { Label.parse(it.rule.name) },
     repoMapping = RepoMappingDisabled,
+    workspaceContext = createMockWorkspaceContext(allowManualTargetsSync),
   )
 
 class FirstPhaseTargetToBspMapperTest {
@@ -149,10 +146,9 @@ class FirstPhaseTargetToBspMapperTest {
             kind = "unsupported_target",
           ),
         )
-      val project = createMockProject(targets)
+      val project = createMockProject(targets, allowManualTargetsSync = false)
 
-      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
-      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceRoot)
 
       // when
       val result = mapper.toWorkspaceBuildTargetsResult(project)
@@ -161,10 +157,10 @@ class FirstPhaseTargetToBspMapperTest {
       result.targets shouldContainExactlyInAnyOrder
         listOf(
           BuildTarget(
-            BuildTargetIdentifier("//target1"),
+            Label.parse("//target1"),
             tags = listOf("library"),
             languageIds = listOf("java"),
-            dependencies = listOf(BuildTargetIdentifier("//dep/target1"), BuildTargetIdentifier("//dep/target2")),
+            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             capabilities =
               BuildTargetCapabilities(
                 canCompile = true,
@@ -174,10 +170,10 @@ class FirstPhaseTargetToBspMapperTest {
               ),
           ),
           BuildTarget(
-            BuildTargetIdentifier("//target2"),
+            Label.parse("//target2"),
             tags = listOf("application"),
             languageIds = listOf("java"),
-            dependencies = listOf(BuildTargetIdentifier("//dep/target1"), BuildTargetIdentifier("//dep/target2")),
+            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             capabilities =
               BuildTargetCapabilities(
                 canCompile = true,
@@ -187,10 +183,10 @@ class FirstPhaseTargetToBspMapperTest {
               ),
           ),
           BuildTarget(
-            BuildTargetIdentifier("//target3"),
+            Label.parse("//target3"),
             tags = listOf("test"),
             languageIds = listOf("java"),
-            dependencies = listOf(BuildTargetIdentifier("//dep/target1"), BuildTargetIdentifier("//dep/target2")),
+            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             capabilities =
               BuildTargetCapabilities(
                 canCompile = true,
@@ -200,10 +196,10 @@ class FirstPhaseTargetToBspMapperTest {
               ),
           ),
           BuildTarget(
-            BuildTargetIdentifier("//target4"),
+            Label.parse("//target4"),
             tags = listOf("library"),
             languageIds = listOf("kotlin"),
-            dependencies = listOf(BuildTargetIdentifier("//dep/target1"), BuildTargetIdentifier("//dep/target2")),
+            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             capabilities =
               BuildTargetCapabilities(
                 canCompile = true,
@@ -213,10 +209,10 @@ class FirstPhaseTargetToBspMapperTest {
               ),
           ),
           BuildTarget(
-            BuildTargetIdentifier("//target5"),
+            Label.parse("//target5"),
             tags = listOf("application"),
             languageIds = listOf("kotlin"),
-            dependencies = listOf(BuildTargetIdentifier("//dep/target1"), BuildTargetIdentifier("//dep/target2")),
+            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             capabilities =
               BuildTargetCapabilities(
                 canCompile = true,
@@ -226,10 +222,10 @@ class FirstPhaseTargetToBspMapperTest {
               ),
           ),
           BuildTarget(
-            BuildTargetIdentifier("//target6"),
+            Label.parse("//target6"),
             tags = listOf("test"),
             languageIds = listOf("kotlin"),
-            dependencies = listOf(BuildTargetIdentifier("//dep/target1"), BuildTargetIdentifier("//dep/target2")),
+            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             capabilities =
               BuildTargetCapabilities(
                 canCompile = true,
@@ -239,7 +235,7 @@ class FirstPhaseTargetToBspMapperTest {
               ),
           ),
           BuildTarget(
-            BuildTargetIdentifier("//target7"),
+            Label.parse("//target7"),
             tags = listOf("library"),
             languageIds = listOf("java"),
             dependencies = emptyList(),
@@ -269,16 +265,15 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf("manual"),
           ),
         )
-      val project = createMockProject(targets)
+      val project = createMockProject(targets, allowManualTargetsSync = true)
 
-      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = true)
-      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceRoot)
 
       // when
       val result = mapper.toWorkspaceBuildTargetsResult(project)
 
       // then
-      result.targets.map { it.id.uri } shouldContainExactlyInAnyOrder
+      result.targets.map { it.id.toShortString() } shouldContainExactlyInAnyOrder
         listOf(
           "//target1",
           "//manual_target",
@@ -292,12 +287,9 @@ class FirstPhaseTargetToBspMapperTest {
     @Test
     fun `should map project to source items and filter out not requested targets`() {
       // given
-      val target1Root1 = workspaceRoot.resolve("target1")
-      val target1Root2 = workspaceRoot.resolve("target1/a")
       val target1Src1 = workspaceRoot.createMockSourceFile("target1/src1.java", "com.example")
       val target1Src2 = workspaceRoot.createMockSourceFile("target1/a/src2.java", "com.example.a")
 
-      val target2Root = workspaceRoot.resolve("target2")
       val target2Src1 = workspaceRoot.createMockSourceFile("target2/src1.kt", "com.example")
       val target2Src2 = workspaceRoot.createMockSourceFile("target2/src2.kt", "com.example")
 
@@ -322,17 +314,16 @@ class FirstPhaseTargetToBspMapperTest {
             srcs = listOf("//target3:src1.java", "//target3:src2.java"),
           ),
         )
-      val project = createMockProject(targets)
+      val project = createMockProject(targets, allowManualTargetsSync = false)
 
-      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
-      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceRoot)
 
       // when
       val params =
         SourcesParams(
           listOf(
-            BuildTargetIdentifier("//target1"),
-            BuildTargetIdentifier("//target2"),
+            Label.parse("//target1"),
+            Label.parse("//target2"),
           ),
         )
       val result = mapper.toSourcesResult(project, params)
@@ -341,20 +332,18 @@ class FirstPhaseTargetToBspMapperTest {
       result.items shouldContainExactlyInAnyOrder
         listOf(
           SourcesItem(
-            BuildTargetIdentifier("//target1"),
+            Label.parse("//target1"),
             listOf(
-              SourceItem(target1Src1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
-              SourceItem(target1Src2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example.a"),
+              SourceItem(target1Src1.toUri().toString(), false, jvmPackagePrefix = "com.example"),
+              SourceItem(target1Src2.toUri().toString(), false, jvmPackagePrefix = "com.example.a"),
             ),
-            roots = listOf(target1Root1.toUri().toString(), target1Root2.toUri().toString()),
           ),
           SourcesItem(
-            BuildTargetIdentifier("//target2"),
+            Label.parse("//target2"),
             listOf(
-              SourceItem(target2Src1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
-              SourceItem(target2Src2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
+              SourceItem(target2Src1.toUri().toString(), false, jvmPackagePrefix = "com.example"),
+              SourceItem(target2Src2.toUri().toString(), false, jvmPackagePrefix = "com.example"),
             ),
-            roots = listOf(target2Root.toUri().toString()),
           ),
         )
       result.items
@@ -371,8 +360,6 @@ class FirstPhaseTargetToBspMapperTest {
     @Test
     fun `should map project to source items including sources referenced via filegroup targets`() {
       // given
-      val filegroupRoot1 = workspaceRoot.resolve("filegroup")
-      val filegroupRoot2 = workspaceRoot.resolve("filegroup/a")
       val filegroupSrc1 = workspaceRoot.createMockSourceFile("filegroup/src1.java", "com.example")
       val filegroupSrc2 = workspaceRoot.createMockSourceFile("filegroup/a/src2.java", "com.example.a")
 
@@ -393,16 +380,15 @@ class FirstPhaseTargetToBspMapperTest {
             srcs = listOf("//target1:src1.kt", "//target1:src2.kt", "//filegroup"),
           ),
         )
-      val project = createMockProject(targets)
+      val project = createMockProject(targets, allowManualTargetsSync = false)
 
-      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
-      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceRoot)
 
       // when
       val params =
         SourcesParams(
           listOf(
-            BuildTargetIdentifier("//target1"),
+            Label.parse("//target1"),
           ),
         )
       val result = mapper.toSourcesResult(project, params)
@@ -411,14 +397,13 @@ class FirstPhaseTargetToBspMapperTest {
       result.items shouldContainExactlyInAnyOrder
         listOf(
           SourcesItem(
-            BuildTargetIdentifier("//target1"),
+            Label.parse("//target1"),
             listOf(
-              SourceItem(target1Src1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
-              SourceItem(target1Src2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
-              SourceItem(filegroupSrc1.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example"),
-              SourceItem(filegroupSrc2.toUri().toString(), SourceItemKind.FILE, false, jvmPackagePrefix = "com.example.a"),
+              SourceItem(target1Src1.toUri().toString(), false, jvmPackagePrefix = "com.example"),
+              SourceItem(target1Src2.toUri().toString(), false, jvmPackagePrefix = "com.example"),
+              SourceItem(filegroupSrc1.toUri().toString(), false, jvmPackagePrefix = "com.example"),
+              SourceItem(filegroupSrc2.toUri().toString(), false, jvmPackagePrefix = "com.example.a"),
             ),
-            roots = listOf(target1Root.toUri().toString(), filegroupRoot1.toUri().toString(), filegroupRoot2.toUri().toString()),
           ),
         )
       result.items
@@ -466,27 +451,26 @@ class FirstPhaseTargetToBspMapperTest {
             resources = listOf("//target3:resource1.txt", "//target3:resource2.txt"),
           ),
         )
-      val project = createMockProject(targets)
+      val project = createMockProject(targets, allowManualTargetsSync = false)
 
-      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
-      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceRoot)
 
       // when
-      val params = ResourcesParams(listOf(BuildTargetIdentifier("//target1"), BuildTargetIdentifier("//target2")))
+      val params = ResourcesParams(listOf(Label.parse("//target1"), Label.parse("//target2")))
       val result = mapper.toResourcesResult(project, params)
 
       // then
       result.items shouldContainExactlyInAnyOrder
         listOf(
           ResourcesItem(
-            BuildTargetIdentifier("//target1"),
+            Label.parse("//target1"),
             listOf(
               target1Resource1.toUri().toString(),
               target1Resource2.toUri().toString(),
             ),
           ),
           ResourcesItem(
-            BuildTargetIdentifier("//target2"),
+            Label.parse("//target2"),
             listOf(
               target2Resource1.toUri().toString(),
               target2Resource2.toUri().toString(),
@@ -517,20 +501,19 @@ class FirstPhaseTargetToBspMapperTest {
             resources = listOf("//target1:resource1.txt", "//target1:resource2.txt", "//filegroup"),
           ),
         )
-      val project = createMockProject(targets)
+      val project = createMockProject(targets, allowManualTargetsSync = false)
 
-      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
-      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceRoot)
 
       // when
-      val params = ResourcesParams(listOf(BuildTargetIdentifier("//target1")))
+      val params = ResourcesParams(listOf(Label.parse("//target1")))
       val result = mapper.toResourcesResult(project, params)
 
       // then
       result.items shouldContainExactlyInAnyOrder
         listOf(
           ResourcesItem(
-            BuildTargetIdentifier("//target1"),
+            Label.parse("//target1"),
             listOf(
               target1Resource1.toUri().toString(),
               target1Resource2.toUri().toString(),

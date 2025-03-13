@@ -16,8 +16,8 @@ import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.util.SlowOperations
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.run.BspRunHandler
-import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.run.BazelRunHandler
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.idea.devkit.DevKitBundle
 import org.jetbrains.idea.devkit.projectRoots.IdeaJdk
 import org.jetbrains.idea.devkit.projectRoots.Sandbox
@@ -31,7 +31,7 @@ import kotlin.io.path.exists
 
 internal val INTELLIJ_PLUGIN_SANDBOX_KEY: Key<Path> = Key.create("INTELLIJ_PLUGIN_SANDBOX_KEY")
 
-class IntellijPluginRunHandler(private val configuration: BspRunConfiguration) : BspRunHandler {
+class IntellijPluginRunHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
   init {
     configuration.beforeRunTasks =
       listOfNotNull(

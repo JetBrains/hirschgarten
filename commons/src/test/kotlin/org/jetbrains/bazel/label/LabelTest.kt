@@ -324,4 +324,11 @@ class LabelTest {
     val label = Label.parse("@//path/to/target")
     label.assumeResolved().toShortString() shouldBe "//path/to/target"
   }
+
+  @Test
+  fun `three dots can only be used with wildcard targets`() {
+    shouldThrow<IllegalArgumentException> {
+      Label.parse("@//path/to/...:target")
+    }
+  }
 }

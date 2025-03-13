@@ -8,6 +8,7 @@ kt_jvm_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/utils",
         "//protocol",
+        "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/outputs",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/params",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/utils",
@@ -21,7 +22,5 @@ kt_jvm_library(
         "@maven//:com_google_code_gson_gson",
         "@maven//:org_apache_logging_log4j_log4j_api",
         "@maven//:org_apache_logging_log4j_log4j_core",
-        "@maven//:org_eclipse_lsp4j_org_eclipse_lsp4j_jsonrpc",
-        "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

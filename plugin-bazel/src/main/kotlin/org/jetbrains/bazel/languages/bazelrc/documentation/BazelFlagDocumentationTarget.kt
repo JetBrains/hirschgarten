@@ -26,9 +26,7 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
 
   override fun computePresentation(): TargetPresentation =
     symbolPtr.dereference().run {
-      TargetPresentation
-        .builder(flag.title())
-        .presentation()
+      TargetPresentation.builder(flag.title()).presentation()
     }
 
   override fun computeDocumentation(): DocumentationResult? =
@@ -52,6 +50,8 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
           |${flag.effects()}
           |
           |${flag.metadataTags()}
+          |
+          |${flag.commands()}
           """.trimMargin()
 
         val body = raw(DocMarkdownToHtmlConverter.convert(project, markdownText))
@@ -110,6 +110,7 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
       option
         .defaultValue
         .takeUnless(String::isEmpty)
+        ?.let { it.replace("\n+", "") }
         ?.let { """**default**${"\n"}: `$it`""" }
         ?: ""
 
@@ -131,7 +132,7 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
       option
         .effectTags
         .takeUnless { it.isEmpty() }
-        ?.let { it.joinToString(", ") { """_${it.name.lowercase()}_""" } }
+        ?.let { tags -> tags.joinToString(", ") { """_${it.name.lowercase()}_""" } }
         ?.let { """**Effects**: $it""" }
         ?: ""
 
@@ -139,8 +140,14 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
       option
         .metadataTags
         .takeUnless { it.isEmpty() }
-        ?.let { it.joinToString(", ") { """_${it.name.lowercase()}_""" } }
-        ?.let { """**Metadata tags**: $it""" }
-        ?: ""
+        ?.let { tags -> tags.joinToString(", ") { """_${it.name.lowercase()}_""" } }
+        ?.let { """**Metadata tags**: $it""" } ?: ""
+
+    fun Flag.commands(): String =
+      option
+        .commands
+        .takeUnless { it.isEmpty() }
+        ?.let { commands -> commands.joinToString(", ") { it.lowercase() } }
+        ?.let { """**Commands**: `$it`""" } ?: ""
   }
 }

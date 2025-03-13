@@ -14,11 +14,13 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileTypes.FileTypeRegistry
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiEditorUtil
 import com.intellij.ui.LightweightHint
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.formatting.configuration.BuildifierConfiguration
 
@@ -30,23 +32,21 @@ class StarlarkFormattingService : AsyncDocumentFormattingService() {
 
   override fun canFormat(file: PsiFile): Boolean {
     val virtualFile = file.virtualFile ?: return false
-    val buildifierConfiguration = BuildifierConfiguration.getBuildifierConfiguration(file.project)
-    if (buildifierConfiguration.pathToExecutable.isNullOrEmpty()) return false
-    return FileTypeRegistry.getInstance().isFileOfType(virtualFile, StarlarkFileType)
+    if (!FileTypeRegistry.getInstance().isFileOfType(virtualFile, StarlarkFileType)) return false
+    return BuildifierConfiguration.getBuildifierPath(file.project) != null
   }
 
   override fun createFormattingTask(request: AsyncFormattingRequest): FormattingTask? {
     val formattingContext = request.context
     val project = formattingContext.project
-    val buildifierConfiguration = BuildifierConfiguration.getBuildifierConfiguration(project)
-    if (buildifierConfiguration.pathToExecutable.isNullOrEmpty()) return null
+    val buildifierPath = BuildifierConfiguration.getBuildifierPath(project) ?: return null
 
     if (!checkDocumentExists(request)) {
       LOG.warn("Document for file ${request.context.containingFile.name} is null")
       return null
     }
 
-    val handler = createProcessHandler(request, buildifierConfiguration) ?: return null
+    val handler = createProcessHandler(request, buildifierPath) ?: return null
 
     return object : FormattingTask {
       override fun run() {
@@ -76,18 +76,15 @@ class StarlarkFormattingService : AsyncDocumentFormattingService() {
     return document != null
   }
 
-  private fun createProcessHandler(
-    request: AsyncFormattingRequest,
-    buildifierConfiguration: BuildifierConfiguration,
-  ): CapturingProcessHandler? {
+  private fun createProcessHandler(request: AsyncFormattingRequest, buildifierPath: String): CapturingProcessHandler? {
     val ioFile = request.ioFile ?: return null
-    val executablePath = buildifierConfiguration.pathToExecutable ?: return null
     val commandLine =
       GeneralCommandLine()
         .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
-        .withExePath(executablePath)
+        .withExePath(buildifierPath)
         .withInput(ioFile)
-        .withWorkDirectory(ioFile.parent)
+        // Set the work directory to workspace root so that Buildifier can read .buildifier-tables.json
+        .withWorkDirectory(VfsUtil.virtualToIoFile(request.context.project.rootDir))
 
     return CapturingProcessHandler(commandLine)
   }

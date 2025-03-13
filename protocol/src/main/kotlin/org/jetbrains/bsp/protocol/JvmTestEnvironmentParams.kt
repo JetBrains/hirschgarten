@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class JvmTestEnvironmentParams(val targets: List<BuildTargetIdentifier>, val originId: String? = null)
+import org.jetbrains.bazel.label.Label
+
+data class JvmTestEnvironmentParams(val targets: List<Label>, val originId: String? = null)

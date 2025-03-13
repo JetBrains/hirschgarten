@@ -4,10 +4,11 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.paths.shouldExist
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldEndWith
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.install.Install
+import org.jetbrains.bazel.install.cli.CliOptions
+import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -18,22 +19,20 @@ import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.seconds
 
 object NestedModulesTest : BazelBspTestBaseScenario() {
-  private val testClient = createBazelClient()
+  private val testClient = createTestkitClient()
 
   @JvmStatic
   fun main(args: Array<String>) = executeScenario()
 
   override fun installServer() {
-    Install.main(
-      arrayOf(
-        "-d",
-        workspaceDir,
-        "-b",
-        bazelBinary,
-        "-t",
-        "@//...",
-        "-t",
-        "@inner//...",
+    Install.runInstall(
+      CliOptions(
+        workspaceDir = Path(workspaceDir),
+        projectViewCliOptions =
+          ProjectViewCliOptions(
+            bazelBinary = Path(bazelBinary),
+            targets = listOf("@//...", "@inner//..."),
+          ),
       ),
     )
   }
@@ -53,10 +52,10 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
       "compare workspace targets results",
     ) {
       testClient.test(60.seconds) { session ->
-        val targetsResult = session.server.workspaceBuildTargets().await()
+        val targetsResult = session.server.workspaceBuildTargets()
 
         targetsResult.targets.size shouldBe 4
-        targetsResult.targets.map { Label.parse(it.id.uri) } shouldContainExactlyInAnyOrder
+        targetsResult.targets.map { it.id } shouldContainExactlyInAnyOrder
           listOf(
             Label.parse("@@inner+//:lib_inner"),
             Label.parse("@@inner+//:bin_inner"),
@@ -68,7 +67,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
           session.server
             .buildTargetSources(
               SourcesParams(targetsResult.targets.map { it.id }),
-            ).await()
+            )
 
         sourcesResult.items.size shouldBe 4
 
@@ -90,7 +89,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
       "compare workspace repo mapping results",
     ) {
       testClient.test(60.seconds) { session ->
-        val repoMapping = session.server.workspaceBazelRepoMapping().await()
+        val repoMapping = session.server.workspaceBazelRepoMapping()
 
         repoMapping.apparentRepoNameToCanonicalName shouldBe
           mapOf(

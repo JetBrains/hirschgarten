@@ -1,4 +1,4 @@
-common:bad <info descr="'--experimental_action_cache_store_output_metadata' is deprecated. use '--action_cache_store_output_metadata' instead.">--experimental_action_cache_store_output_metadata</info>
-common:bad <info descr="'--noexperimental_action_cache_store_output_metadata' is deprecated. use '--noaction_cache_store_output_metadata' instead.">--noexperimental_action_cache_store_output_metadata</info>
-common:good --action_cache_store_output_metadata
-common:good --noaction_cache_store_output_metadata
+common:bad <info descr="'--experimental_allow_unresolved_symlinks' is deprecated. use '--allow_unresolved_symlinks' instead.">--experimental_allow_unresolved_symlinks</info>
+common:bad <info descr="'--noexperimental_allow_unresolved_symlinks' is deprecated. use '--noallow_unresolved_symlinks' instead.">--noexperimental_allow_unresolved_symlinks</info>
+common:good --allow_analysis_cache_discard
+common:good --noallow_analysis_cache_discard

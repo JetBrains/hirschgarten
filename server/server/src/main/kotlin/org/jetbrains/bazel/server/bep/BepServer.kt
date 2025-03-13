@@ -14,7 +14,6 @@ import org.apache.logging.log4j.Logger
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.toBspIdentifier
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
@@ -215,7 +214,7 @@ class BepServer(
 
     if (event.started.command == Constants.BAZEL_BUILD_COMMAND) { // todo: why only build?
       if (target != null) {
-        val task = CompileTask(target.toBspIdentifier())
+        val task = CompileTask(target)
         startParams.data = task
       }
       bspClient.onBuildTaskStart(startParams)
@@ -268,7 +267,7 @@ class BepServer(
     val statusCode = BazelStatus.fromExitCode(event.finished.exitCode.code).toBspStatusCode()
     val isSuccess = statusCode.value == 1
     val errors = if (isSuccess) 0 else 1
-    val report = CompileReport(target.toBspIdentifier(), errors, 0)
+    val report = CompileReport(target, errors, 0)
     val finishParams =
       TaskFinishParams(taskId, status = statusCode, eventTime = event.finished.finishTimeMillis, originId = originId, data = report)
     bspClient.onBuildTaskFinish(finishParams)

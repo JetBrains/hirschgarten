@@ -8,7 +8,7 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.config.isBspProject
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtNamedFunction
@@ -26,7 +26,7 @@ class BspJVMRunLineMarkerContributorTest : BasePlatformTestCase() {
   }
 
   private fun CodeInsightTestFixture.setBuildTool() {
-    project.isBspProject = true
+    project.isBazelProject = true
   }
 
   private fun CodeInsightTestFixture.getKotlinTestFile(): PsiFile =
@@ -138,7 +138,7 @@ class BspJVMRunLineMarkerContributorTest : BasePlatformTestCase() {
   }
 
   @Test
-  fun `should return single test filter for Java test class`() {
+  fun `should return FQN test filter for Java test class`() {
     // given
     val testFile = myFixture.getJavaTestFile()
     val psiElement =
@@ -154,7 +154,7 @@ class BspJVMRunLineMarkerContributorTest : BasePlatformTestCase() {
     val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
 
     // then
-    val expectedSingleTestFilter = "BspJVMRunLineMarkerContributorTestData"
+    val expectedSingleTestFilter = "org.jetbrains.bazel.ui.gutters.BspJVMRunLineMarkerContributorTestData"
     result shouldBe expectedSingleTestFilter
   }
 }

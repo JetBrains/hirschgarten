@@ -12,7 +12,7 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
@@ -25,13 +25,37 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
   private val hotswapEnabledCheckBox: JBCheckBox
   private val showExcludedDirectoriesAsSeparateNodeCheckBox: JBCheckBox
 
+  // experimental features
+  private val enableLocalJvmActionsCheckBox: JBCheckBox
+  private val enableBuildWithJpsCheckBox: JBCheckBox
+
   private var currentProjectSettings = project.bazelProjectSettings
 
   init {
     projectViewPathField = initProjectViewFileField()
     hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
     showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
+
+    // experimental features
+    enableLocalJvmActionsCheckBox = initEnableLocalJvmActionsCheckBox()
+    enableBuildWithJpsCheckBox = initEnableBuildWithJpsCheckBox()
   }
+
+  private fun initEnableLocalJvmActionsCheckBox(): JBCheckBox =
+    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.enable.local.jvm.actions.checkbox.text")).apply {
+      isSelected = currentProjectSettings.enableLocalJvmActions
+      addItemListener {
+        currentProjectSettings = currentProjectSettings.copy(enableLocalJvmActions = isSelected)
+      }
+    }
+
+  private fun initEnableBuildWithJpsCheckBox(): JBCheckBox =
+    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.enable.build.with.jps.checkbox.text")).apply {
+      isSelected = currentProjectSettings.enableBuildWithJps
+      addItemListener {
+        currentProjectSettings = currentProjectSettings.copy(enableBuildWithJps = isSelected)
+      }
+    }
 
   private fun initProjectViewFileField(): TextFieldWithBrowseButton =
     TextFieldWithBrowseButton().also { textField ->
@@ -69,22 +93,29 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
 
   override fun createComponent(): JComponent =
     panel {
-      row(BazelPluginBundle.message("project.settings.project.view.label")) { cell(projectViewPathField).align(Align.FILL) }
-      row { cell(hotswapEnabledCheckBox).align(Align.FILL) }
-      row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
+      group(BazelPluginBundle.message("project.settings.general.settings")) {
+        row(BazelPluginBundle.message("project.settings.project.view.label")) { cell(projectViewPathField).align(Align.FILL) }
+        row { cell(hotswapEnabledCheckBox).align(Align.FILL) }
+        row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
+      }
+      group(BazelPluginBundle.message("project.settings.experimental.settings")) {
+        row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
+        row { cell(enableBuildWithJpsCheckBox).align(Align.FILL) }
+      }
     }
 
   override fun isModified(): Boolean = currentProjectSettings != project.bazelProjectSettings
 
   override fun apply() {
     val isProjectViewPathChanged = currentProjectSettings.projectViewPath != project.bazelProjectSettings.projectViewPath
+    val isEnableBuildWithJpsChanged = currentProjectSettings.enableBuildWithJps != project.bazelProjectSettings.enableBuildWithJps
     val showExcludedDirectoriesAsSeparateNodeChanged =
       currentProjectSettings.showExcludedDirectoriesAsSeparateNode != project.bazelProjectSettings.showExcludedDirectoriesAsSeparateNode
 
     project.bazelProjectSettings = currentProjectSettings
 
-    if (isProjectViewPathChanged) {
-      BspCoroutineService.getInstance(project).start {
+    if (isProjectViewPathChanged || isEnableBuildWithJpsChanged) {
+      BazelCoroutineService.getInstance(project).start {
         ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
       }
     }
@@ -124,10 +155,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
   object SearchIndex { // the companion object of a Configurable is not allowed to have non-const members
     val keys =
       listOf(
-        "project.settings.server.title",
-        "project.settings.project.view.label",
-        "project.settings.server.jdk.label",
-        "project.settings.server.jvm.options.label",
+        "project.settings.plugin.enable.local.jvm.actions.checkbox.text",
         "project.settings.plugin.title",
         "project.settings.plugin.hotswap.enabled.checkbox.text",
         "project.settings.plugin.show.excluded.directories.as.separate.node.checkbox.text",

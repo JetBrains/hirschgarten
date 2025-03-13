@@ -52,7 +52,6 @@ bazel_integration_test_all_versions(
 bazel_integration_test_all_versions(
     name = "kotlin_project_test",
     bzlmod_project_path = "test-projects/bzlmod/kotlin-project",
-    exclude_bazel_5 = True,  # bazel 5 will be deprecated soon, project fails to build with bazel 5 so let's just skip it
     project_path = "test-projects/workspace/kotlin-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspKotlinProjectTest",
 )
@@ -60,7 +59,6 @@ bazel_integration_test_all_versions(
 bazel_integration_test_all_versions(
     name = "kotlin_project_with_enabled_rules_test",
     bzlmod_project_path = "test-projects/bzlmod/kotlin-project",
-    exclude_bazel_5 = True,  # bazel 5 will be deprecated soon, project fails to build with bazel 5 so let's just skip it
     project_path = "test-projects/workspace/kotlin-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspKotlinProjectWithEnabledRulesTest",
 )
@@ -80,12 +78,6 @@ bazel_integration_test(
     },
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:ServerDownloadsBazeliskTest",
     workspace_path = "test-projects/workspace/sample-repo",
-)
-
-bazel_integration_test_all_versions(
-    name = "rust_project_test",
-    project_path = "test-projects/workspace/rust-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspRustProjectTest",
 )
 
 bazel_integration_test_current_version(
@@ -144,6 +136,13 @@ bazel_integration_test_all_versions(
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:NestedModulesTest",
 )
 
+bazel_integration_test_all_versions(
+    name = "external_autoloads_test",
+    bzlmod_project_path = "test-projects/bzlmod/external-autoloads-project",
+    exclude_bazel_7 = True,
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:ExternalAutoloadsTest",
+)
+
 test_suite(
     name = "all_tests",
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
@@ -154,6 +153,7 @@ test_suite(
         ":android_project_test",
         ":build_and_sync_test",
         ":enabled_rules_test",
+        ":external_autoloads_test",
         ":first_phase_sync_test",
         ":go_project_test",
         ":java_diagnostics_test",
@@ -164,7 +164,6 @@ test_suite(
         ":partial_sync_test",
         ":python_project_test",
         ":remote_jdk_test",
-        ":rust_project_test",
         ":sample_repo_test",
         ":server_downloads_bazelisk_test",
     ],

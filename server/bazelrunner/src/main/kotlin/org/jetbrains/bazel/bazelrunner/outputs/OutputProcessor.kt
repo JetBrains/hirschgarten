@@ -1,6 +1,10 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import com.intellij.util.io.awaitExit
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.bazel.logger.BspClientLogger
 import java.io.BufferedReader
 import java.io.IOException
@@ -57,28 +61,27 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
     executorService.submit(runnable).also { runningProcessors.add(it) }
   }
 
-  fun waitForExit(
-    cancelChecker: CancelChecker,
-    serverPidFuture: CompletableFuture<Long>?,
-    logger: BspClientLogger?,
-  ): Int {
-    var isFinished = false
-    while (!isFinished) {
-      isFinished = process.waitFor(500, TimeUnit.MILLISECONDS)
-      if (cancelChecker.isCanceled) {
-        process.destroy()
-        serverPidFuture
-          ?.getOrNull() // we don't want to wait forever if server never gave us its PID
-          ?.let { Runtime.getRuntime().exec("kill -SIGINT $it").waitFor() }
-          ?: logger?.error("Could not cancel the task. Bazel server needs to be interrupted manually.")
+  suspend fun waitForExit(serverPidFuture: CompletableFuture<Long>?, logger: BspClientLogger?): Int =
+    coroutineScope {
+      var isFinished = false
+      while (!isFinished) {
+        isFinished = process.waitFor(500, TimeUnit.MILLISECONDS)
+        if (!isActive) {
+          process.destroy()
+          withTimeoutOrNull(2000) {
+            serverPidFuture
+              ?.await() // we don't want to wait forever if server never gave us its PID
+              ?.let { Runtime.getRuntime().exec("kill -SIGINT $it").awaitExit() }
+              ?: logger?.error("Could not cancel the task. Bazel server needs to be interrupted manually.")
+          }
+        }
       }
+      // Return values of waitFor() and waitFor(long, TimeUnit) differ
+      // so we can't just return value from waitFor(long, TimeUnit) here
+      val exitCode = process.awaitExit()
+      shutdown()
+      return@coroutineScope exitCode
     }
-    // Return values of waitFor() and waitFor(long, TimeUnit) differ
-    // so we can't just return value from waitFor(long, TimeUnit) here
-    val exitCode = process.waitFor()
-    shutdown()
-    return exitCode
-  }
 
   private fun CompletableFuture<Long>.getOrNull(): Long? =
     try {

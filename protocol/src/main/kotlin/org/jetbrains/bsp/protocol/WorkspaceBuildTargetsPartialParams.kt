@@ -1,5 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
+import org.jetbrains.bazel.label.Label
 
-data class WorkspaceBuildTargetsPartialParams(val targets: List<BuildTargetIdentifier>)
+data class WorkspaceBuildTargetsPartialParams(val targets: List<Label>)

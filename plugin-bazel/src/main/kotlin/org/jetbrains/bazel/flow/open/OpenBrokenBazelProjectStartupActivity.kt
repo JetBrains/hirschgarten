@@ -9,6 +9,6 @@ import org.jetbrains.bazel.config.rootDir
 class OpenBrokenBazelProjectStartupActivity : ProjectActivity {
   override suspend fun execute(project: Project) {
     if (!project.isBrokenBspProject) return
-    performOpenBazelProjectViaBspPlugin(project, project.rootDir)
+    performOpenBazelProject(project, project.rootDir)
   }
 }

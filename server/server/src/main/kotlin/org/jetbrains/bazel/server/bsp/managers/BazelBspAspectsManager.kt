@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.bsp.managers
 
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.aspect
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.buildManualTests
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.buildTagFilters
@@ -19,7 +18,6 @@ import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Paths
 
@@ -40,43 +38,64 @@ data class RulesetLanguage(val rulesetName: String?, val language: Language)
 class BazelBspAspectsManager(
   private val bazelBspCompilationManager: BazelBspCompilationManager,
   private val aspectsResolver: InternalAspectsResolver,
-  private val workspaceContextProvider: WorkspaceContextProvider,
-  private val featureFlags: FeatureFlags,
   private val bazelRelease: BazelRelease,
 ) {
   private val aspectsPath = Paths.get(aspectsResolver.bazelBspRoot, Constants.ASPECTS_ROOT)
   private val templateWriter = TemplateWriter(aspectsPath)
 
-  fun calculateRulesetLanguages(externalRulesetNames: List<String>): List<RulesetLanguage> =
+  fun calculateRulesetLanguages(
+    externalRulesetNames: List<String>,
+    externalAutoloads: List<String>,
+    workspaceContext: WorkspaceContext,
+    featureFlags: FeatureFlags,
+  ): List<RulesetLanguage> =
     Language
       .entries
       .mapNotNull { language ->
-        if (language.isBundled && bazelRelease.major < 8) return@mapNotNull RulesetLanguage(null, language) // bundled in Bazel version < 8
-        val rulesetName = language.rulesetNames.firstOrNull { externalRulesetNames.contains(it) }
-        rulesetName?.let { RulesetLanguage(it, language) }
-      }.removeDisabledLanguages()
-      .addNativeAndroidLanguageIfNeeded()
-      .addExternalPythonLanguageIfNeeded(externalRulesetNames)
+        val rulesetName = language.rulesetNames.firstOrNull { it in externalRulesetNames }
+        rulesetName?.let {
+          return@mapNotNull RulesetLanguage(it, language)
+        }
+        if (language.isBundled(externalAutoloads)) {
+          return@mapNotNull RulesetLanguage(null, language)
+        }
+        null
+      }.removeDisabledLanguages(featureFlags)
+      .addNativeAndroidLanguageIfNeeded(workspaceContext, featureFlags)
+      .addExternalPythonLanguageIfNeeded(externalRulesetNames, featureFlags)
 
-  private fun List<RulesetLanguage>.removeDisabledLanguages(): List<RulesetLanguage> {
+  private fun Language.isBundled(externalAutoloads: List<String>): Boolean {
+    if (!isBundled) return false
+    // Bundled in Bazel version < 8
+    if (bazelRelease.major < 8) return true
+    // If a language is autoloaded in Bazel version >= 8, it effectively restores the old "bundled" behavior.
+    return (rulesetNames + autoloadHints).any { it in externalAutoloads }
+  }
+
+  private fun List<RulesetLanguage>.removeDisabledLanguages(featureFlags: FeatureFlags): List<RulesetLanguage> {
     val disabledLanguages =
       buildSet {
         if (!featureFlags.isAndroidSupportEnabled) add(Language.Android)
         if (!featureFlags.isGoSupportEnabled) add(Language.Go)
-        if (!featureFlags.isRustSupportEnabled) add(Language.Rust)
         if (!featureFlags.isCppSupportEnabled) add(Language.Cpp)
         if (!featureFlags.isPythonSupportEnabled) add(Language.Python)
       }
     return filterNot { it.language in disabledLanguages }
   }
 
-  private fun List<RulesetLanguage>.addNativeAndroidLanguageIfNeeded(): List<RulesetLanguage> {
+  private fun List<RulesetLanguage>.addNativeAndroidLanguageIfNeeded(
+    workspaceContext: WorkspaceContext,
+    featureFlags: FeatureFlags,
+  ): List<RulesetLanguage> {
     if (!featureFlags.isAndroidSupportEnabled) return this
-    if (!workspaceContextProvider.currentWorkspaceContext().enableNativeAndroidRules.value) return this
+    if (!workspaceContext.enableNativeAndroidRules.value) return this
     return this.filterNot { it.language == Language.Android } + RulesetLanguage(null, Language.Android)
   }
 
-  private fun List<RulesetLanguage>.addExternalPythonLanguageIfNeeded(externalRulesetNames: List<String>): List<RulesetLanguage> {
+  private fun List<RulesetLanguage>.addExternalPythonLanguageIfNeeded(
+    externalRulesetNames: List<String>,
+    featureFlags: FeatureFlags,
+  ): List<RulesetLanguage> {
     if (!featureFlags.isPythonSupportEnabled) return this
     val pythonRulesetName = Language.Python.rulesetNames.firstOrNull { externalRulesetNames.contains(it) } ?: return this
     return this.filterNot { it.language == Language.Python } + RulesetLanguage(pythonRulesetName, Language.Python)
@@ -88,6 +107,7 @@ class BazelBspAspectsManager(
     toolchains: Map<RulesetLanguage, Label?>,
     bazelRelease: BazelRelease,
     repoMapping: RepoMapping,
+    featureFlags: FeatureFlags,
   ) {
     val languageRuleMap = rulesetLanguages.associateBy { it.language }
     val activeLanguages = rulesetLanguages.map { it.language }.toSet()
@@ -103,7 +123,7 @@ class BazelBspAspectsManager(
       val templateFilePath = it.toAspectTemplateRelativePath()
       val variableMap =
         mapOf(
-          "rulesetName" to ruleLanguage?.calculateCanonicalName(repoMapping),
+          "rulesetName" to ruleLanguage?.calculateCanonicalName(repoMapping).orEmpty(),
           "addTransitiveCompileTimeJars" to
             workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
           "transitiveCompileTimeJarsTargetKinds" to
@@ -121,7 +141,8 @@ class BazelBspAspectsManager(
       Constants.CORE_BZL + Constants.TEMPLATE_EXTENSION,
       aspectsPath.resolve(Constants.CORE_BZL),
       mapOf(
-        "isPropagateExportsFromDepsEnabled" to featureFlags.isPropagateExportsFromDepsEnabled.toStarlarkString(),
+        "isPropagateExportsFromDepsEnabled" to
+          featureFlags.isPropagateExportsFromDepsEnabled.toStarlarkString(),
       ),
     )
 
@@ -164,13 +185,11 @@ class BazelBspAspectsManager(
   private fun List<String>.toStarlarkString(): String = joinToString(prefix = "[", postfix = "]", separator = ", ") { "\"$it\"" }
 
   suspend fun fetchFilesFromOutputGroups(
-    cancelChecker: CancelChecker,
     targetsSpec: TargetsSpec,
     aspect: String,
     outputGroups: List<String>,
-    shouldSyncManualFlags: Boolean,
-    isRustEnabled: Boolean,
     shouldLogInvocation: Boolean,
+    workspaceContext: WorkspaceContext,
   ): BazelBspAspectsManagerResult {
     if (targetsSpec.values.isEmpty()) return BazelBspAspectsManagerResult(BepOutput(), BazelStatus.SUCCESS)
     val defaultFlags =
@@ -182,27 +201,19 @@ class BazelBspAspectsManager(
         curses(false),
         buildTagFilters(listOf("-no-ide")),
       )
-    val allowManualTargetsSyncFlags = if (shouldSyncManualFlags) listOf(buildManualTests()) else emptyList()
-    val syncFlags = workspaceContextProvider.currentWorkspaceContext().syncFlags.values
+    val allowManualTargetsSyncFlags = if (workspaceContext.allowManualTargetsSync.value) listOf(buildManualTests()) else emptyList()
+    val syncFlags = workspaceContext.syncFlags.values
 
     val flagsToUse = defaultFlags + allowManualTargetsSyncFlags + syncFlags
 
     return bazelBspCompilationManager
       .buildTargetsWithBep(
-        cancelChecker = cancelChecker,
         targetsSpec = targetsSpec,
         extraFlags = flagsToUse,
         originId = null,
-        // Setting `CARGO_BAZEL_REPIN=1` updates `cargo_lockfile`
-        // (`Cargo.lock` file) based on dependencies specified in `manifest`
-        // (`Cargo.toml` file) and syncs `lockfile` (`Cargo.bazel.lock` file) with `cargo_lockfile`.
-        // Ensures that both Bazel and Cargo are using the same versions of dependencies.
-        // Mentioned `cargo_lockfile`, `lockfile` and `manifest` are defined in
-        // `crates_repository` from `rules_rust`,
-        // see: https://bazelbuild.github.io/rules_rust/crate_universe.html#crates_repository.
-        // In our server used only with `bazel build` command.
-        environment = if (isRustEnabled) listOf(Pair("CARGO_BAZEL_REPIN", "1")) else emptyList(),
+        environment = emptyList(),
         shouldLogInvocation = shouldLogInvocation,
+        workspaceContext = workspaceContext,
       ).let { BazelBspAspectsManagerResult(it.bepOutput, it.processResult.bazelStatus) }
   }
 }

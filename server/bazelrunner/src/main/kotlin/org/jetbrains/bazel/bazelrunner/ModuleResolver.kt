@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.bazelrunner
 
 import com.google.gson.Gson
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 sealed interface ShowRepoResult {
   val name: String
@@ -56,13 +56,17 @@ class ModuleOutputParser {
   }
 }
 
-class ModuleResolver(private val bazelRunner: BazelRunner, private val moduleOutputParser: ModuleOutputParser) {
+class ModuleResolver(
+  private val bazelRunner: BazelRunner,
+  private val moduleOutputParser: ModuleOutputParser,
+  private val workspaceContext: WorkspaceContext,
+) {
   /**
    * The name can be @@repo, @repo or repo. It will be resolved in the context of the main workspace.
    */
-  fun resolveModule(moduleName: String, cancelChecker: CancelChecker): ShowRepoResult {
+  suspend fun resolveModule(moduleName: String): ShowRepoResult {
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(workspaceContext) {
         showRepo {
           options.add(moduleName)
         }
@@ -70,7 +74,7 @@ class ModuleResolver(private val bazelRunner: BazelRunner, private val moduleOut
     val processResult =
       bazelRunner
         .runBazelCommand(command, serverPidFuture = null)
-        .waitAndGetResult(cancelChecker, true)
+        .waitAndGetResult(true)
     return moduleOutputParser.parseShowRepoResult(processResult)
   }
 
@@ -82,13 +86,13 @@ class ModuleResolver(private val bazelRunner: BazelRunner, private val moduleOut
    * <canonicalRepoName> is a canonical repo name without any leading @ characters.
    * The canonical repo name of the root module repository is the empty string.
    */
-  fun getRepoMapping(canonicalRepoName: String, cancelChecker: CancelChecker): Map<String, String> {
+  suspend fun getRepoMapping(canonicalRepoName: String): Map<String, String> {
     if (canonicalRepoName.startsWith('@')) {
       error("Canonical repo name cannot contain '@' characters: $canonicalRepoName")
     }
 
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(workspaceContext) {
         dumpRepoMapping {
           options.add(canonicalRepoName)
         }
@@ -96,7 +100,7 @@ class ModuleResolver(private val bazelRunner: BazelRunner, private val moduleOut
     val processResult =
       bazelRunner
         .runBazelCommand(command, serverPidFuture = null)
-        .waitAndGetResult(cancelChecker, true)
+        .waitAndGetResult(true)
 
     if (processResult.isNotSuccess) {
       // dumpRepoMapping was added in Bazel 7.1.0, so it's going to fail with 7.0.0: https://github.com/bazelbuild/bazel/issues/20972

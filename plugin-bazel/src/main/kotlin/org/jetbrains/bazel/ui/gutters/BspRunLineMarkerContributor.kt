@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import org.jetbrains.bazel.config.isBspProject
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
@@ -19,7 +19,7 @@ abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
   override fun getInfo(element: PsiElement): Info? = getSlowInfo(element)
 
   override fun getSlowInfo(element: PsiElement): Info? =
-    if (element.project.isBspProject && element.shouldAddMarker()) {
+    if (element.project.isBazelProject && element.shouldAddMarker()) {
       element.calculateLineMarkerInfo()
     } else {
       null

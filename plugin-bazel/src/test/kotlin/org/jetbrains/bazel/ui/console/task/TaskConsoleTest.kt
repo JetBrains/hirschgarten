@@ -95,7 +95,7 @@ class TestTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
   project: Project,
-) : TaskConsole(taskView, basePath, "build tool", project) {
+) : TaskConsole(taskView, basePath, project) {
   override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
     object : SuspendableAction({ "test" }) {
       override suspend fun actionPerformed(project: Project, e: AnActionEvent) {}

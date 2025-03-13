@@ -14,10 +14,10 @@ import kotlin.io.path.name
 import kotlin.io.path.notExists
 import kotlin.io.path.readText
 
-abstract class EnvironmentCreator(private val projectRootDir: Path) {
-  abstract fun create()
+class EnvironmentCreator(private val projectRootDir: Path) {
+  fun create() = createDotBazelBsp()
 
-  protected fun createDotBazelBsp(): Path {
+  private fun createDotBazelBsp(): Path {
     val bazelBspDir = createDir(projectRootDir, Constants.DOT_BAZELBSP_DIR_NAME)
     createDotBazelBspFiles(bazelBspDir)
     return bazelBspDir
@@ -55,8 +55,12 @@ abstract class EnvironmentCreator(private val projectRootDir: Path) {
     } ?: error("Missing aspects resource")
 
   private fun copyFileTree(source: Path, destination: Path) {
-    Files.walk(source).forEach { copyUsingRelativePath(source, it, destination) }
-    Files.walk(destination).forEach { deleteExtraFileUsingRelativePath(source, it, destination) }
+    Files.walk(source).use { sourceFiles ->
+      sourceFiles.forEach { copyUsingRelativePath(source, it, destination) }
+    }
+    Files.walk(destination).use { destinationFiles ->
+      destinationFiles.forEach { deleteExtraFileUsingRelativePath(source, it, destination) }
+    }
   }
 
   private fun copyUsingRelativePath(

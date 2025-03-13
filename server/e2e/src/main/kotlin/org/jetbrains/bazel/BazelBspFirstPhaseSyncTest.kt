@@ -1,13 +1,11 @@
 package org.jetbrains.bazel
 
-import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.SourcesResult
@@ -20,7 +18,7 @@ import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.minutes
 
 object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
-  private val testClient = createBazelClient()
+  private val testClient = createTestkitClient()
   private val bazelBinResolved = testClient.transformJson(bazelBinDirectory)
 
   private val javaLibraryJar = URI.create("$bazelBinResolved/src/libjava-lib.jar").toPath()
@@ -47,7 +45,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
           session.server
             .workspaceBuildTargetsFirstPhase(
               WorkspaceBuildTargetsFirstPhaseParams("test origin id"),
-            ).await()
+            )
         testClient.assertJsonEquals(expectedWorkspaceBuildTargetsResult(), firstPhaseResult)
 
         assertFalse(javaLibraryJar.exists())
@@ -55,7 +53,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
         assertFalse(kotlinLibraryJar.exists())
         assertFalse(kotlinBinaryJar.exists())
 
-        val sourcesResult = session.server.buildTargetSources(SourcesParams(expectedTargetIdentifiers())).await()
+        val sourcesResult = session.server.buildTargetSources(SourcesParams(expectedTargetIdentifiers()))
         testClient.assertJsonEquals(expectedSourcesResult(), sourcesResult)
       }
     }
@@ -63,7 +61,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val srcJavaLibTarget =
       BuildTarget(
-        BuildTargetIdentifier("//src:java-lib"),
+        Label.parse("//src:java-lib"),
         tags = listOf("library"),
         languageIds = listOf("java"),
         dependencies = emptyList(),
@@ -78,10 +76,10 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
 
     val srcJavaBinaryTarget =
       BuildTarget(
-        BuildTargetIdentifier("//src:java-binary"),
+        Label.parse("//src:java-binary"),
         tags = listOf("application"),
         languageIds = listOf("java"),
-        dependencies = listOf(BuildTargetIdentifier("//src:java-lib")),
+        dependencies = listOf(Label.parse("//src:java-lib")),
         capabilities =
           BuildTargetCapabilities(
             canCompile = true,
@@ -93,7 +91,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
 
     val srcKotlinLibTarget =
       BuildTarget(
-        BuildTargetIdentifier("//src:kt-lib"),
+        Label.parse("//src:kt-lib"),
         tags = listOf("library"),
         languageIds = listOf("kotlin"),
         dependencies = emptyList(),
@@ -108,10 +106,10 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
 
     val srcKotlinBinaryTarget =
       BuildTarget(
-        BuildTargetIdentifier("//src:kt-binary"),
+        Label.parse("//src:kt-binary"),
         tags = listOf("application"),
         languageIds = listOf("kotlin"),
-        dependencies = listOf(BuildTargetIdentifier("//src:kt-lib")),
+        dependencies = listOf(Label.parse("//src:kt-lib")),
         capabilities =
           BuildTargetCapabilities(
             canCompile = true,
@@ -127,28 +125,24 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
   fun expectedSourcesResult(): SourcesResult {
     val srcJavaLibSource =
       SourcesItem(
-        BuildTargetIdentifier("//src:java-lib"),
-        listOf(SourceItem("file://\$WORKSPACE/src/Lib.java", SourceItemKind.FILE, false)),
-        roots = listOf("file://\$WORKSPACE/src/"),
+        Label.parse("//src:java-lib"),
+        listOf(SourceItem("file://\$WORKSPACE/src/Lib.java", false)),
       )
     val srcJavaBinarySource =
       SourcesItem(
-        BuildTargetIdentifier("//src:java-binary"),
-        listOf(SourceItem("file://\$WORKSPACE/src/Main.java", SourceItemKind.FILE, false)),
-        roots = listOf("file://\$WORKSPACE/src/"),
+        Label.parse("//src:java-binary"),
+        listOf(SourceItem("file://\$WORKSPACE/src/Main.java", false)),
       )
     val srcKotlinLibSource =
       SourcesItem(
-        BuildTargetIdentifier("//src:kt-lib"),
-        listOf(SourceItem("file://\$WORKSPACE/src/Lib.kt", SourceItemKind.FILE, false)),
-        roots = listOf("file://\$WORKSPACE/src/"),
+        Label.parse("//src:kt-lib"),
+        listOf(SourceItem("file://\$WORKSPACE/src/Lib.kt", false)),
       )
 
     val srcKotlinBinarySource =
       SourcesItem(
-        BuildTargetIdentifier("//src:kt-binary"),
-        listOf(SourceItem("file://\$WORKSPACE/src/Main.kt", SourceItemKind.FILE, false)),
-        roots = listOf("file://\$WORKSPACE/src/"),
+        Label.parse("//src:kt-binary"),
+        listOf(SourceItem("file://\$WORKSPACE/src/Main.kt", false)),
       )
 
     return SourcesResult(listOf(srcJavaLibSource, srcJavaBinarySource, srcKotlinLibSource, srcKotlinBinarySource))

@@ -4,7 +4,7 @@ kt_intellij_junit4_test(
     name = "BazelrcLexerTest",
     src = "BazelrcLexerTest.kt",
     deps = [
-        "//plugin-bazel/src:intellij-bazel",
+        "//plugin-bazel/src:plugin-bazel-lib",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/fixtures",
     ],
 )
@@ -13,7 +13,7 @@ kt_intellij_junit4_test(
     name = "BazelrcQuotingLexerTest",
     src = "BazelrcQuotingLexerTest.kt",
     deps = [
-        "//plugin-bazel/src:intellij-bazel",
+        "//plugin-bazel/src:plugin-bazel-lib",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/fixtures",
     ],
 )

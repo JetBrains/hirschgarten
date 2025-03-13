@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.server.sync.sharding
 
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.commons.BazelStatus
@@ -24,7 +23,6 @@ import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
-import org.jetbrains.bazel.workspacecontext.DEFAULT_TARGET_SHARD_SIZE
 import org.jetbrains.bazel.workspacecontext.ShardingApproach
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -44,14 +42,13 @@ const val PACKAGE_SHARD_SIZE = 500
 /** Utility methods for sharding Bazel build invocations.  */
 object BazelBuildTargetSharder {
   /** Expand wildcard target patterns and partition the resulting target list.  */
-  fun expandAndShardTargets(
+  suspend fun expandAndShardTargets(
     pathResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
-    featureFlags: FeatureFlags,
     targets: TargetsSpec,
     context: WorkspaceContext,
+    featureFlags: FeatureFlags,
     bazelRunner: BazelRunner,
-    cancelChecker: CancelChecker,
     bspClientLogger: BspClientLogger,
     firstPhaseProject: FirstPhaseProject?,
   ): ShardedTargetsResult {
@@ -73,7 +70,7 @@ object BazelBuildTargetSharder {
 
       ShardingApproach.QUERY_AND_SHARD -> {
         val singleTargets =
-          WildcardTargetExpander.queryIndividualTargets(includes, excludes, bazelRunner, cancelChecker, context)
+          WildcardTargetExpander.queryIndividualTargets(includes, excludes, bazelRunner, context)
         ShardedTargetsResult(
           shardTargetsToBatches(singleTargets.singleTargets, emptyList(), getTargetShardSize(context)),
           singleTargets.buildResult,
@@ -85,13 +82,12 @@ object BazelBuildTargetSharder {
           expandWildcardTargets(
             pathResolver,
             bazelInfo,
-            featureFlags,
             includes,
             excludes,
             bazelRunner,
-            cancelChecker,
             bspClientLogger,
             context,
+            featureFlags,
           )
         if (expandedTargets.buildResult == BazelStatus.FATAL_ERROR) {
           ShardedTargetsResult(ShardedTargetList(emptyList()), expandedTargets.buildResult)
@@ -109,22 +105,20 @@ object BazelBuildTargetSharder {
     context.shardingApproachSpec.value ?: ShardingApproach.QUERY_AND_SHARD
 
   /** Number of individual targets per blaze build shard.  */
-  private fun getTargetShardSize(context: WorkspaceContext): Int =
-    min(context.targetShardSize.value ?: DEFAULT_TARGET_SHARD_SIZE, MAX_TARGET_SHARD_SIZE)
+  private fun getTargetShardSize(context: WorkspaceContext): Int = min(context.targetShardSize.value, MAX_TARGET_SHARD_SIZE)
 
   /**
    *  Expand wildcard target patterns into individual bazel targets.
    */
-  private fun expandWildcardTargets(
+  private suspend fun expandWildcardTargets(
     pathsResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
-    featureFlags: FeatureFlags,
     includes: List<Label>,
     excludes: List<Label>,
     bazelRunner: BazelRunner,
-    cancelChecker: CancelChecker,
     bspClientLogger: BspClientLogger,
     context: WorkspaceContext,
+    featureFlags: FeatureFlags,
   ): ExpandedTargetsResult {
     val wildcardIncludes = includes.filter { it.isWildcard }
     if (wildcardIncludes.isEmpty()) {
@@ -155,7 +149,6 @@ object BazelBuildTargetSharder {
           fullList,
           excludes,
           bazelRunner,
-          cancelChecker,
           bspClientLogger,
           context,
         ).orEmpty()

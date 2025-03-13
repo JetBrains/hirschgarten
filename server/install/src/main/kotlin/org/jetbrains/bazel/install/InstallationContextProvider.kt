@@ -17,7 +17,7 @@ object InstallationContextProvider {
   }
 
   private fun calculateGeneratedProjectViewPath(cliOptions: CliOptions): Path =
-    cliOptions.projectViewFilePath ?: cliOptions.workspaceRootDir.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
+    cliOptions.projectViewFilePath ?: cliOptions.workspaceDir.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
 
   private fun Path.isFileExisted() = this.exists() && this.isRegularFile()
 }

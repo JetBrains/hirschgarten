@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.server.sync
 
-import kotlinx.coroutines.runBlocking
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.FirstPhaseProject
@@ -9,32 +9,35 @@ import org.jetbrains.bazel.server.model.Project
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 
 class ProjectProvider(private val projectResolver: ProjectResolver, private val firstPhaseProjectResolver: FirstPhaseProjectResolver) {
+  @Volatile
   private var project: Project? = null
+  private val projectMutex = Mutex()
 
-  @Synchronized
-  fun refreshAndGet(cancelChecker: CancelChecker, build: Boolean): AspectSyncProject =
-    loadFromBazel(cancelChecker, build = build, null).also { project = it }
+  suspend fun refreshAndGet(build: Boolean): AspectSyncProject =
+    projectMutex.withLock {
+      loadFromBazel(build = build, null).also { project = it }
+    }
 
-  @Synchronized
-  fun updateAndGet(cancelChecker: CancelChecker, targetsToSync: List<Label>): AspectSyncProject =
-    loadFromBazel(cancelChecker, build = false, targetsToSync).also { project = (project as? AspectSyncProject)?.plus(it) }
+  suspend fun updateAndGet(targetsToSync: List<Label>): AspectSyncProject =
+    projectMutex.withLock {
+      loadFromBazel(build = false, targetsToSync).also { project = (project as? AspectSyncProject)?.plus(it) }
+    }
 
-  @Synchronized
-  fun get(cancelChecker: CancelChecker): Project = project ?: loadFromBazel(cancelChecker, false, null).also { project = it }
+  suspend fun get(): Project =
+    projectMutex.withLock {
+      project ?: loadFromBazel(false, null).also { project = it }
+    }
 
-  @Synchronized
-  fun bazelQueryRefreshAndGet(cancelChecker: CancelChecker, originId: String): FirstPhaseProject =
-    firstPhaseProjectResolver.resolve(originId, cancelChecker).also { project = it }
+  suspend fun bazelQueryRefreshAndGet(originId: String): FirstPhaseProject =
+    projectMutex.withLock {
+      firstPhaseProjectResolver.resolve(originId).also { project = it }
+    }
 
-  @Synchronized
-  private fun loadFromBazel(
-    cancelChecker: CancelChecker,
-    build: Boolean,
-    targetsToSync: List<Label>?,
-  ): AspectSyncProject =
-    runBlocking {
-      projectResolver.resolve(cancelChecker, build = build, targetsToSync, project as? FirstPhaseProject).also {
-        projectResolver.releaseMemory()
-      }
+  // No mutex needed because project is volatile
+  fun getIfLoaded(): Project? = project
+
+  private suspend fun loadFromBazel(build: Boolean, targetsToSync: List<Label>?): AspectSyncProject =
+    projectResolver.resolve(build = build, targetsToSync, project as? FirstPhaseProject).also {
+      projectResolver.releaseMemory()
     }
 }

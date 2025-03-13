@@ -24,7 +24,14 @@ class BspJVMRunLineMarkerContributor : BspRunLineMarkerContributor() {
   override fun getSingleTestFilter(element: PsiElement): String? =
     element.getStrictParentOfType<PsiNameIdentifierOwner>()?.getFunctionName()
 
-  private fun PsiNameIdentifierOwner.getFunctionName(): String? = if (this.isClassOrMethod()) this.name else null
+  private fun PsiNameIdentifierOwner.getFunctionName(): String? = if (this.isClassOrMethod()) tryGetFQN() else null
+
+  private fun PsiNameIdentifierOwner.tryGetFQN(): String? =
+    if (this is PsiClass) {
+      qualifiedName
+    } else {
+      name
+    }
 
   private fun PsiNameIdentifierOwner.isClassOrMethod(): Boolean =
     this is KtClassOrObject || this is KtNamedFunction || this is PsiClass || this is PsiMethod

@@ -11,11 +11,17 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.endOffset
+import com.intellij.psi.util.findParentOfType
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.languages.bazelrc.BazelrcLanguage
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
+import org.jetbrains.bazel.languages.bazelrc.flags.BazelFlagSymbol
+import org.jetbrains.bazel.languages.bazelrc.flags.Flag
+import org.jetbrains.bazel.languages.bazelrc.flags.OptionEffectTag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFile
+import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
 
 class BazelrcCompletionContributor : CompletionContributor() {
@@ -23,6 +29,11 @@ class BazelrcCompletionContributor : CompletionContributor() {
     extend(CompletionType.BASIC, BazelCommandCompletionProvider.psiPattern, BazelCommandCompletionProvider())
     extend(CompletionType.BASIC, BazelImportCompletionProvider.psiPattern, BazelImportCompletionProvider())
     extend(CompletionType.BASIC, BazelConfigCompletionProvider.psiPattern, BazelConfigCompletionProvider())
+    extend(CompletionType.BASIC, BazelFlagCompletionProvider.psiPattern, BazelFlagCompletionProvider())
+  }
+
+  override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
+    super.fillCompletionVariants(parameters, result)
   }
 }
 
@@ -89,12 +100,10 @@ class BazelCommandCompletionProvider : CompletionProvider<CompletionParameters>(
 private class BazelConfigCompletionProvider : CompletionProvider<CompletionParameters>() {
   companion object {
     val psiPattern =
-      psiElement()
-        .withLanguage(BazelrcLanguage)
-        .andOr(
-          psiElement(BazelrcTokenTypes.CONFIG),
-          psiElement().beforeLeaf(psiElement(BazelrcTokenTypes.CONFIG)),
-        )
+      psiElement().withLanguage(BazelrcLanguage).andOr(
+        psiElement(BazelrcTokenTypes.CONFIG),
+        psiElement().beforeLeaf(psiElement(BazelrcTokenTypes.CONFIG)),
+      )
   }
 
   override fun addCompletions(
@@ -110,10 +119,7 @@ private class BazelConfigCompletionProvider : CompletionProvider<CompletionParam
   }
 
   private fun functionLookupElement(name: String): LookupElement =
-    LookupElementBuilder
-      .create(name)
-      .withBoldness(true)
-      .withIcon(BazelPluginIcons.bazel)
+    LookupElementBuilder.create(name).withBoldness(true).withIcon(BazelPluginIcons.bazel)
 }
 
 class BazelImportCompletionProvider : CompletionProvider<CompletionParameters>() {
@@ -149,3 +155,69 @@ class BazelImportCompletionProvider : CompletionProvider<CompletionParameters>()
     }
   }
 }
+
+class BazelFlagCompletionProvider : CompletionProvider<CompletionParameters>() {
+  override fun addCompletions(
+    parameters: CompletionParameters,
+    context: ProcessingContext,
+    result: CompletionResultSet,
+  ) {
+    parameters.position
+      .findParentOfType<BazelrcLine>()
+      ?.command
+      ?.let { command ->
+        Flag
+          .all()
+          .filterNot {
+            // filter out old flag names
+            it.value.option.oldName
+              .isNotEmpty() &&
+              it.key.endsWith(it.value.option.oldName)
+          }.filterNot {
+            // filter out NO_OP flags
+            it.value.option.effectTags
+              .contains(OptionEffectTag.NO_OP)
+          }.filterValues {
+            // filter out values that don't apply to the current command line+
+            command == "common" || it.option.commands.contains(command)
+          }
+      }?.let { flagsMap ->
+        val pos = parameters.position
+        result.run {
+          addAllElements(
+            flagsMap.entries.map { it -> Pair(it.key, BazelFlagSymbol(it.value, pos.project)) }.map { (k, flagSymbol) ->
+              LookupElementBuilder
+                .create(flagSymbol, k)
+                .withLookupString("${k}_xxx")
+                .withTypeText(" ${flagSymbol.flag.option.valueHelp}")
+                .withPresentableText(k)
+                .withInsertHandler { ctx, _ ->
+                  ctx.file.findElementAt(ctx.startOffset)?.let { psiElement ->
+                    if (psiElement.text != k) {
+                      ctx.editor.document.replaceString(psiElement.textOffset, psiElement.endOffset, k)
+                    }
+                  }
+                }
+            },
+          )
+        }
+      }
+  }
+
+  companion object {
+    val psiPattern =
+      psiElement()
+        .withElementType(TokenSet.create(BazelrcTokenTypes.VALUE, BazelrcTokenTypes.FLAG))
+        .atStartOf(psiElement(BazelrcFlag::class.java))
+        .withTreeParent(
+          psiElement(BazelrcFlag::class.java),
+        )
+  }
+}
+
+inline fun <T> T.letIf(predicate: Boolean, block: (T) -> T): T =
+  if (predicate) {
+    block(this)
+  } else {
+    this
+  }

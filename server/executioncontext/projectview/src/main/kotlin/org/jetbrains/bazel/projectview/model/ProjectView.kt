@@ -6,6 +6,7 @@ import org.jetbrains.bazel.projectview.model.sections.EnableNativeAndroidRulesSe
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSection
+import org.jetbrains.bazel.projectview.model.sections.ImportRunConfigurationsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
@@ -65,6 +66,8 @@ data class ProjectView(
   val targetShardSize: TargetShardSizeSection? = null,
   /** sharding approach */
   val shardingApproach: ShardingApproachSection? = null,
+  /** See https://ij.bazel.build/docs/project-views.html#import_run_configurations */
+  val importRunConfigurations: ImportRunConfigurationsSection? = null,
 ) {
   data class Builder(
     private val imports: List<ProjectView> = emptyList(),
@@ -86,6 +89,7 @@ data class ProjectView(
     private val shardSync: ShardSyncSection? = null,
     private val targetShardSize: TargetShardSizeSection? = null,
     private val shardingApproach: ShardingApproachSection? = null,
+    private val importRunConfigurations: ImportRunConfigurationsSection? = null,
   ) {
     fun build(): ProjectView {
       log.debug("Building project view for: {}", this)
@@ -112,6 +116,7 @@ data class ProjectView(
       val shardSyncSection = combineShardSyncSection(importedProjectViews)
       val targetShardSizeSection = combineTargetShardSizeSection(importedProjectViews)
       val shardingApproachSection = combineShardingApproachSection(importedProjectViews)
+      val importRunConfigurationsSection = combineImportRunConfigurationsSection(importedProjectViews)
 
       log.debug(
         "Building project view with combined" +
@@ -134,6 +139,7 @@ data class ProjectView(
           " shardSync: {}," +
           " targetShardSize: {}," +
           " shardingApproach: {}," +
+          " importRunConfigurationsSection: {}," +
           "", // preserve Git blame
         targets,
         bazelBinary,
@@ -153,6 +159,7 @@ data class ProjectView(
         shardSyncSection,
         targetShardSizeSection,
         shardingApproachSection,
+        importRunConfigurationsSection,
       )
       return ProjectView(
         targets,
@@ -173,6 +180,7 @@ data class ProjectView(
         shardSyncSection,
         targetShardSizeSection,
         shardingApproachSection,
+        importRunConfigurationsSection,
       )
     }
 
@@ -239,6 +247,17 @@ data class ProjectView(
         importedProjectViews,
         ProjectView::shardingApproach,
       )
+
+    private fun combineImportRunConfigurationsSection(importedProjectViews: List<ProjectView>): ImportRunConfigurationsSection? {
+      val importRunConfigurations =
+        combineListValuesWithImported(
+          importedProjectViews,
+          importRunConfigurations,
+          ProjectView::importRunConfigurations,
+          ImportRunConfigurationsSection::values,
+        )
+      return createInstanceOfListSectionOrNull(importRunConfigurations, ::ImportRunConfigurationsSection)
+    }
 
     private fun combineTargetsSection(importedProjectViews: List<ProjectView>): ProjectViewTargetsSection? {
       val includedTargets =

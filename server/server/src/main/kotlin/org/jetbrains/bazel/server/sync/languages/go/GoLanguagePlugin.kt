@@ -4,8 +4,6 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
-import org.jetbrains.bazel.server.sync.languages.jvm.SourceRootGuesser
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
@@ -13,7 +11,6 @@ import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import java.net.URI
-import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.toPath
 
@@ -31,9 +28,6 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, priva
 
     buildTarget.data = goBuildTarget
   }
-
-  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData =
-    SourceRootAndData(SourceRootGuesser.getSourcesRoot(source))
 
   override fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): List<BspTargetInfo.FileLocation> {
     if (!targetInfo.hasGoTargetInfo()) return listOf()

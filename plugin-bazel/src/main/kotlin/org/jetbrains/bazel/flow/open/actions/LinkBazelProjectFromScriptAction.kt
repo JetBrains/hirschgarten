@@ -8,10 +8,10 @@ import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.isBspProject
-import org.jetbrains.bazel.coroutines.BspCoroutineService
-import org.jetbrains.bazel.flow.open.BazelBspOpenProjectProvider
-import org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessor
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.flow.open.BazelOpenProjectProvider
+import org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor
 
 internal class LinkBazelProjectFromScriptAction :
   DumbAwareAction(
@@ -20,22 +20,22 @@ internal class LinkBazelProjectFromScriptAction :
   ) {
   override fun actionPerformed(e: AnActionEvent) {
     val virtualFile = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
-    val projectFile = BazelBspProjectOpenProcessor().calculateProjectFolderToOpen(virtualFile)
+    val projectFile = BazelProjectOpenProcessor().calculateProjectFolderToOpen(virtualFile)
     val project = e.project ?: return
 
-    BspCoroutineService.getInstance(project).start {
-      BazelBspOpenProjectProvider().linkToExistingProjectAsync(projectFile, project)
+    BazelCoroutineService.getInstance(project).start {
+      BazelOpenProjectProvider().linkToExistingProjectAsync(projectFile, project)
     }
   }
 
   override fun update(e: AnActionEvent) {
     val virtualFile = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
     val project = e.project ?: return
-    e.presentation.isEnabledAndVisible = virtualFile.isFileSupported() && !project.isBspProject
+    e.presentation.isEnabledAndVisible = virtualFile.isFileSupported() && !project.isBazelProject
   }
 
   private fun VirtualFile.isFileSupported() =
-    BazelBspOpenProjectProvider().isProjectFile(this) ||
+    BazelOpenProjectProvider().isProjectFile(this) ||
       extension == BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION
 
   override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT

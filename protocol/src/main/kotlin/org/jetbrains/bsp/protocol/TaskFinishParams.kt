@@ -1,5 +1,7 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.bazel.label.Label
+
 data class TaskFinishParams(
   val taskId: TaskId,
   val originId: String,
@@ -12,7 +14,7 @@ data class TaskFinishParams(
 sealed interface TaskFinishData
 
 data class CompileReport(
-  val target: BuildTargetIdentifier,
+  val target: Label,
   val errors: Int,
   val warnings: Int,
   val time: Long? = null,
@@ -44,7 +46,7 @@ public data class JUnitStyleTestSuiteData(
 ) : TestFinishData
 
 data class TestReport(
-  val target: BuildTargetIdentifier,
+  val target: Label,
   val passed: Int,
   val failed: Int,
   val ignored: Int,

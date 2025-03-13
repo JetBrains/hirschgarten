@@ -10,6 +10,7 @@ import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.FileMessageEventImpl
 import com.intellij.build.events.impl.FinishBuildEventImpl
 import com.intellij.build.events.impl.FinishEventImpl
+import com.intellij.build.events.impl.MessageEventImpl
 import com.intellij.build.events.impl.OutputBuildEventImpl
 import com.intellij.build.events.impl.ProgressBuildEventImpl
 import com.intellij.build.events.impl.StartBuildEventImpl
@@ -23,6 +24,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.action.SuspendableAction
+import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.config.BspPluginIcons
 import org.jetbrains.bazel.sync.status.SyncStatusListener
@@ -40,7 +42,6 @@ private val log = logger<TaskConsole>()
 abstract class TaskConsole(
   private val taskView: BuildProgressListener,
   private val basePath: String,
-  private val buildToolName: String,
   private val project: Project,
 ) {
   protected val tasksInProgress: MutableList<Any> = mutableListOf()
@@ -69,7 +70,7 @@ abstract class TaskConsole(
       tasksInProgress.add(taskId)
       doStartTask(
         taskId,
-        BspPluginBundle.message("console.tasks.title", buildToolName, title),
+        BspPluginBundle.message("console.tasks.title", BazelPluginConstants.BAZEL_DISPLAY_NAME, title),
         message,
         cancelAction,
         redoAction,
@@ -290,6 +291,24 @@ abstract class TaskConsole(
     entry?.let { addMessage(it.key, message) } ?: taskId?.let { addMessage(taskId, message) }
   }
 
+  @Synchronized
+  fun addWarnMessage(taskId: Any?, message: String) {
+    val taskIdOrDefault = taskId ?: getDefaultTaskId() ?: return
+    maybeGetRootTask(taskIdOrDefault)?.let {
+      doIfTaskInProgress(it) {
+        val event =
+          MessageEventImpl(
+            PROJECT_SYNC_TASK_ID,
+            MessageEvent.Kind.WARNING,
+            "",
+            message,
+            "",
+          )
+        taskView.onEvent(it, event)
+      }
+    }
+  }
+
   /**
    * Adds a message to a particular task in this console. If the message is added to a subtask, it will also be
    * added to the subtask's parent task.
@@ -362,6 +381,9 @@ abstract class TaskConsole(
 
   private inner class CancelAction(private val doCancelAction: () -> Unit, private val taskId: Any) :
     DumbAwareAction({ "Stop" }, BspPluginIcons.disconnect) {
+    @Volatile
+    private var cancelActionActivated = false
+
     init {
       project.messageBus.connect().subscribe(
         SyncStatusListener.TOPIC,
@@ -378,11 +400,12 @@ abstract class TaskConsole(
     }
 
     override fun actionPerformed(e: AnActionEvent) {
+      cancelActionActivated = true
       doCancelAction()
     }
 
     override fun update(e: AnActionEvent) {
-      e.presentation.isEnabled = tasksInProgress.contains(taskId)
+      e.presentation.isEnabled = !cancelActionActivated && tasksInProgress.contains(taskId)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
@@ -392,17 +415,20 @@ abstract class TaskConsole(
 class SyncTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
-  buildToolName: String,
   project: Project,
-) : TaskConsole(taskView, basePath, buildToolName, project) {
+) : TaskConsole(taskView, basePath, project) {
   override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
     object : SuspendableAction({ BspPluginBundle.message("resync.action.text") }, BspPluginIcons.reload) {
+      @Volatile
+      private var redoActionActivated = false
+
       override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
+        redoActionActivated = true
         redoAction?.invoke()
       }
 
       override fun update(project: Project, e: AnActionEvent) {
-        e.presentation.isEnabled = redoAction != null && !project.isSyncInProgress() && !project.isBuildInProgress()
+        e.presentation.isEnabled = !redoActionActivated && redoAction != null && !project.isSyncInProgress() && !project.isBuildInProgress()
       }
     }
 }
@@ -410,17 +436,20 @@ class SyncTaskConsole(
 class BuildTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
-  buildToolName: String,
   project: Project,
-) : TaskConsole(taskView, basePath, buildToolName, project) {
+) : TaskConsole(taskView, basePath, project) {
   override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
     object : SuspendableAction({ BspPluginBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
+      @Volatile
+      private var redoActionActivated = false
+
       override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
+        redoActionActivated = true
         redoAction?.invoke()
       }
 
       override fun update(project: Project, e: AnActionEvent) {
-        e.presentation.isEnabled = redoAction != null && tasksInProgress.isEmpty()
+        e.presentation.isEnabled = !redoActionActivated && redoAction != null && tasksInProgress.isEmpty()
       }
 
       override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
@@ -429,4 +458,4 @@ class BuildTaskConsole(
 
 fun Project.isBuildInProgress() =
   CompilerManager.getInstance(this).isCompilationActive ||
-    BspConsoleService.getInstance(this).bspBuildConsole.hasTasksInProgress()
+    ConsoleService.getInstance(this).buildConsole.hasTasksInProgress()

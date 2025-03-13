@@ -23,7 +23,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
@@ -120,7 +119,7 @@ class BspDlvPositionConverter(
         BazelResolveLocalToRemoteParams(
           localPaths = localPaths,
         )
-      val result = server.bazelResolveLocalToRemote(params).await()
+      val result = server.bazelResolveLocalToRemote(params)
       result.resolvedPaths
     }
 
@@ -131,7 +130,7 @@ class BspDlvPositionConverter(
           remotePaths = remotePaths,
           goRoot = goRoot,
         )
-      val result = server.bazelResolveRemoteToLocal(params).await()
+      val result = server.bazelResolveRemoteToLocal(params)
       result.resolvedPaths
     }
 }

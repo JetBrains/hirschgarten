@@ -2,20 +2,16 @@ package org.jetbrains.bazel.server.sync.firstPhase
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.model.BspMappings
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.model.Language
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.ResourcesParams
 import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.SourcesResult
@@ -25,9 +21,9 @@ import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 
-class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: WorkspaceContextProvider, private val workspaceRoot: Path) {
+class FirstPhaseTargetToBspMapper(private val workspaceRoot: Path) {
   fun toWorkspaceBuildTargetsResult(project: FirstPhaseProject): WorkspaceBuildTargetsResult {
-    val shouldSyncManualTargets = workspaceContextProvider.currentWorkspaceContext().allowManualTargetsSync.value
+    val shouldSyncManualTargets = project.workspaceContext.allowManualTargetsSync.value
 
     val targets =
       project.modules
@@ -44,10 +40,10 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
 
   private fun Target.toBspBuildTarget(): BuildTarget =
     BuildTarget(
-      id = BuildTargetIdentifier(name),
+      id = Label.parse(name),
       tags = inferTags(),
       languageIds = inferLanguages().map { it.id }.toList(),
-      dependencies = interestingDeps.map { BuildTargetIdentifier(it) },
+      dependencies = interestingDeps.map { Label.parse(it) },
       capabilities = inferCapabilities(),
     )
 
@@ -107,17 +103,13 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
       sourceFilesAndData.map {
         SourceItem(
           it.first.toUri().toString(),
-          SourceItemKind.FILE,
           false,
-          it.second.jvmPackagePrefix,
+          it.second?.jvmPackagePrefix,
         )
       }
     val items = (directItems + itemsForSourcesReferencedViaTarget.flatMap { it.sources }).distinct()
 
-    val directRoots = sourceFilesAndData.map { it.second.sourceRoot }.map { it.toUri().toString() }
-    val roots = (directRoots + itemsForSourcesReferencedViaTarget.flatMap { it.roots }).distinct()
-
-    return SourcesItem(BuildTargetIdentifier(name), sources = items, roots = roots)
+    return SourcesItem(Label.parse(name), sources = items)
   }
 
   fun toResourcesResult(project: FirstPhaseProject, resourcesParams: ResourcesParams): ResourcesResult {
@@ -138,7 +130,7 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
         .flatMap { it.resources }
 
     val items = (directResources + resourcesReferencedViaTarget).distinct()
-    return ResourcesItem(BuildTargetIdentifier(name), items)
+    return ResourcesItem(Label.parse(name), items)
   }
 
   private fun List<String>.calculateModuleDependencies(project: FirstPhaseProject): List<Target> =
@@ -155,8 +147,5 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
     return workspaceRoot.resolve(relativePath)
   }
 
-  private fun FirstPhaseProject.lightweightModulesForTargets(targets: List<BuildTargetIdentifier>): List<Target> =
-    BspMappings
-      .toLabels(targets)
-      .mapNotNull { modules[it] }
+  private fun FirstPhaseProject.lightweightModulesForTargets(targets: List<Label>): List<Target> = targets.mapNotNull { modules[it] }
 }

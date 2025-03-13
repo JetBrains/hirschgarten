@@ -14,9 +14,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
-import org.jetbrains.bsp.protocol.BuildTargetIdentifier
 import org.jetbrains.bsp.protocol.MobileInstallStartType
 import org.jetbrains.bsp.protocol.StatusCode
 
@@ -32,7 +32,7 @@ class AndroidBeforeRunTaskProvider : BeforeRunTaskProvider<AndroidBeforeRunTaskP
   override fun getName(): String = BspPluginBundle.message("console.task.build.title")
 
   override fun createTask(configuration: RunConfiguration): Task? =
-    if (configuration is BspRunConfiguration) {
+    if (configuration is BazelRunConfiguration) {
       Task()
     } else {
       null
@@ -44,9 +44,9 @@ class AndroidBeforeRunTaskProvider : BeforeRunTaskProvider<AndroidBeforeRunTaskP
     environment: ExecutionEnvironment,
     task: Task,
   ): Boolean {
-    val runConfiguration = environment.runProfile as? BspRunConfiguration ?: return false
+    val runConfiguration = environment.runProfile as? BazelRunConfiguration ?: return false
     val handler = runConfiguration.handler
-    if (handler !is AndroidBspRunHandler) return false
+    if (handler !is AndroidBazelRunHandler) return false
 
     val targetId = runConfiguration.targets.singleOrNull() ?: return false
     val deviceFuture = environment.getCopyableUserData(DEVICE_FUTURE_KEY) ?: return false
@@ -62,7 +62,7 @@ class AndroidBeforeRunTaskProvider : BeforeRunTaskProvider<AndroidBeforeRunTaskP
 
   private fun runMobileInstall(
     environment: ExecutionEnvironment,
-    targetId: BuildTargetIdentifier,
+    targetId: Label,
     deviceFuture: ListenableFuture<IDevice>,
   ): Boolean {
     val startType =
@@ -79,10 +79,10 @@ class AndroidBeforeRunTaskProvider : BeforeRunTaskProvider<AndroidBeforeRunTaskP
     return mobileInstallResult?.statusCode == StatusCode.OK
   }
 
-  private fun buildApkWithoutInstall(project: Project, targetId: BuildTargetIdentifier): Boolean {
+  private fun buildApkWithoutInstall(project: Project, targetId: Label): Boolean {
     val buildResult =
       runBlocking {
-        runBuildTargetTask(listOf(targetId), project, log)
+        runBuildTargetTask(listOf(targetId), project)
       }
     return buildResult?.statusCode == StatusCode.OK
   }

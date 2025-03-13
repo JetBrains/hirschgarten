@@ -52,16 +52,9 @@ fun Label.canonicalize(repoMapping: RepoMapping): Label =
     }
   }
 
-fun Label.canonicalizeOrNull(repoMapping: RepoMapping): Label? =
-  try {
-    canonicalize(repoMapping)
-  } catch (_: Exception) {
-    null
-  }
-
 val rootRulesToNeededTransitiveRules = mapOf("rules_kotlin" to listOf("rules_java"))
 
-fun calculateRepoMapping(
+suspend fun calculateRepoMapping(
   workspaceContext: WorkspaceContext,
   bazelRunner: BazelRunner,
   bazelInfo: BazelInfo,
@@ -70,12 +63,12 @@ fun calculateRepoMapping(
   if (!bazelInfo.isBzlModEnabled) {
     return RepoMappingDisabled
   }
-  val moduleResolver = ModuleResolver(bazelRunner, ModuleOutputParser())
+  val moduleResolver = ModuleResolver(bazelRunner, ModuleOutputParser(), workspaceContext)
   val moduleCanonicalNameToLocalPath = mutableMapOf<String, Path>()
   val moduleApparentNameToCanonicalName =
     try {
       // empty string is the name of the root module
-      moduleResolver.getRepoMapping("") { }
+      moduleResolver.getRepoMapping("")
     } catch (e: Exception) {
       bspClientLogger.error(e.toString())
       return RepoMappingDisabled
@@ -84,13 +77,13 @@ fun calculateRepoMapping(
   val moduleApparentNameToCanonicalNameForNeededTransitiveRules =
     rootRulesToNeededTransitiveRules.keys
       .mapNotNull { moduleApparentNameToCanonicalName[it] }
-      .map { moduleResolver.getRepoMapping(it) {} }
+      .map { moduleResolver.getRepoMapping(it) }
       .reduceOrNull { acc, map -> acc + map }
       .orEmpty()
 
   for (externalRepo in workspaceContext.externalRepositoriesTreatedAsInternal) {
     try {
-      val showRepoResult = moduleResolver.resolveModule(externalRepo) {}
+      val showRepoResult = moduleResolver.resolveModule(externalRepo)
       when (showRepoResult) {
         is ShowRepoResult.LocalRepository -> moduleCanonicalNameToLocalPath[showRepoResult.name] = Path(showRepoResult.path)
         else -> {

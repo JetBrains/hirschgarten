@@ -5,7 +5,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.IncompleteDependenciesService
 import com.intellij.openapi.project.IncompleteDependenciesService.IncompleteDependenciesAccessToken
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.config.BspFeatureFlags
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.sync.scope.FirstPhaseSync
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 
@@ -19,11 +19,11 @@ class PhasedSync(private val project: Project) {
           project.service<IncompleteDependenciesService>().enterIncompleteState(this)
         }
 
-      if (BspFeatureFlags.executeSecondPhaseOnSync) {
+      if (BazelFeatureFlags.executeSecondPhaseOnSync) {
         ProjectSyncTask(project).sync(SecondPhaseSync, true)
       }
     } finally {
-      if (incompleteState != null && BspFeatureFlags.executeSecondPhaseOnSync) {
+      if (incompleteState != null && BazelFeatureFlags.executeSecondPhaseOnSync) {
         writeAction { incompleteState.finish() }
       }
     }

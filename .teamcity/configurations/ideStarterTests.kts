@@ -87,6 +87,14 @@ sealed class BazelProjectModelModifierTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/flow/modify:BazelProjectModelModifierTest"
 )
 
+sealed class BazelCoverageTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Bazel Coverage test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/run/coverage:BazelCoverageTest"
+)
+
 object HotswapTestGitHub : HotswapTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
@@ -116,5 +124,29 @@ object BazelProjectModelModifierTestGitHub : BazelProjectModelModifierTest(
 )
 
 object BazelProjectModelModifierTestSpace : BazelProjectModelModifierTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object BazelCoverageTestGitHub : BazelCoverageTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object BazelCoverageTestSpace : BazelCoverageTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+sealed class TestResultsTreeTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Test Results Tree test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testResultsTree"
+)
+
+object TestResultsTreeTestGitHub : TestResultsTreeTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object TestResultsTreeTestSpace : TestResultsTreeTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )
