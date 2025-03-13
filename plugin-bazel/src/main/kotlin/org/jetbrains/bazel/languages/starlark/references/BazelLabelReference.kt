@@ -45,9 +45,6 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     return parent is StarlarkNamedArgumentExpression && parent.isNameArgument()
   }
 
-  override fun getVariants(): Array<String> {
-    return arrayOf("test", "test2")
-  }
   private sealed interface BuildFileOrSourceFile
 
   private class BuildFilePsi(val file: StarlarkFile) : BuildFileOrSourceFile
