@@ -177,13 +177,13 @@ object BazelNativeRules {
       ),
     )
 
-  private fun ruleSetToMap(rules: Set<BazelNativeRule>): Map<String, BazelNativeRule> =
-    rules.associateBy(
+  private fun ruleSetsToMap(rules: List<Set<BazelNativeRule>>): Map<String, BazelNativeRule> =
+    rules.flatten().associateBy(
       keySelector = { it.name },
       valueTransform = { it },
     )
 
-  val NATIVE_RULES_MAP = ruleSetToMap(rulesJava)
+  val NATIVE_RULES_MAP = ruleSetsToMap(RULES)
 
   val ruleNames = NATIVE_RULES_MAP.keys
 

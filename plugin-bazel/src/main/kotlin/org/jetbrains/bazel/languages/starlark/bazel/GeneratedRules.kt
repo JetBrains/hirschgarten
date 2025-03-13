@@ -1,5 +1,343 @@
 package org.jetbrains.bazel.languages.starlark.bazel
-val rulesJava = setOf(BazelNativeRule("java_binary","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("srcs","""[]""",false,"""The list of source files that are processed to create the target.
+val RULES = listOf(setOf(BazelNativeRule("cc_tool","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("src","""None""",false,"""The underlying binary that this tool represents.
+
+Usually just a single prebuilt (eg. @toolchain//:bin/clang), but may be any
+executable label."""),BazelNativeRuleArgument("data","""[]""",false,"""Additional files that are required for this tool to run.
+
+Frequently, clang and gcc require additional files to execute as they often shell out to
+other binaries (e.g. <code>cc1</code>)."""),BazelNativeRuleArgument("allowlist_include_directories","""[]""",false,"""Include paths implied by using this tool.
+
+Compilers may include a set of built-in headers that are implicitly available
+unless flags like <code>-nostdinc</code> are provided. Bazel checks that all included
+headers are properly provided by a dependency or allowlisted through this
+mechanism.
+
+As a rule of thumb, only use this if Bazel is complaining about absolute paths in your
+toolchain and you've ensured that the toolchain is compiling with the <code>-no-canonical-prefixes</code>
+and/or <code>-fno-canonical-system-headers</code> arguments.
+
+This can help work around errors like:
+<code>the source file 'main.c' includes the following non-builtin files with absolute paths
+(if these are builtin files, make sure these paths are in your toolchain)</code>."""),BazelNativeRuleArgument("capabilities","""[]""",false,"""Declares that a tool is capable of doing something.
+
+For example, <code>@rules_cc//cc/toolchains/capabilities:supports_pic</code>."""),),"""Declares a tool for use by toolchain actions.
+
+<code>cc_tool</code> rules are used in a <code>cc_tool_map</code> rule to ensure all files and
+metadata required to run a tool are available when constructing a <code>cc_toolchain</code>.
+
+In general, include all files that are always required to run a tool (e.g. libexec/** and
+cross-referenced tools in bin/*) in the data attribute. If some files are only
+required when certain flags are passed to the tool, consider using a <code>cc_args</code> rule to
+bind the files to the flags that require them. This reduces the overhead required to properly
+enumerate a sandbox with all the files required to run a tool, and ensures that there isn't
+unintentional leakage across configurations and actions.
+
+Example:
+<code>
+load("//cc/toolchains:tool.bzl", "cc_tool")
+
+cc_tool(
+    name = "clang_tool",
+    src = "@llvm_toolchain//:bin/clang",
+    # Suppose clang needs libc to run.
+    data = ["@llvm_toolchain//:lib/x86_64-linux-gnu/libc.so.6"]
+    tags = ["requires-network"],
+    capabilities = ["//cc/toolchains/capabilities:supports_pic"],
+)
+</code>"""),BazelNativeRule("cc_tool_capability","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("feature_name","""""""",false,"""The name of the feature to generate for this capability"""),),"""A capability is an optional feature that a tool supports.
+
+For example, not all compilers support PIC, so to handle this, we write:
+
+<code>
+cc_tool(
+    name = "clang",
+    src = "@host_tools/bin/clang",
+    capabilities = [
+        "//cc/toolchains/capabilities:supports_pic",
+    ],
+)
+
+cc_args(
+    name = "pic",
+    requires = [
+        "//cc/toolchains/capabilities:supports_pic"
+    ],
+    args = ["-fPIC"],
+)
+</code>
+
+This ensures that <code>-fPIC</code> is added to the command-line only when we are using a
+tool that supports PIC."""),BazelNativeRule("cc_args_list","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("args","""[]""",false,"""(ordered) cc_args to include in this list."""),),"""An ordered list of cc_args.
+
+This is a convenience rule to allow you to group a set of multiple <code>cc_args</code> into a
+single list. This particularly useful for toolchain behaviors that require different flags for
+different actions.
+
+Note: The order of the arguments in <code>args</code> is preserved to support order-sensitive flags.
+
+Example usage:
+<code>
+load("//cc/toolchains:cc_args.bzl", "cc_args")
+load("//cc/toolchains:args_list.bzl", "cc_args_list")
+
+cc_args(
+    name = "gc_sections",
+    actions = [
+        "//cc/toolchains/actions:link_actions",
+    ],
+    args = ["-Wl,--gc-sections"],
+)
+
+cc_args(
+    name = "function_sections",
+    actions = [
+        "//cc/toolchains/actions:compile_actions",
+        "//cc/toolchains/actions:link_actions",
+    ],
+    args = ["-ffunction-sections"],
+)
+
+cc_args_list(
+    name = "gc_functions",
+    args = [
+        ":function_sections",
+        ":gc_sections",
+    ],
+)
+</code>"""),BazelNativeRule("cc_action_type","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("action_name","""""""",true,""""""),),"""A type of action (eg. c_compile, assemble, strip).
+
+<code>cc_action_type</code> rules are used to associate arguments and tools together to
+perform a specific action. Bazel prescribes a set of known action types that are used to drive
+typical C/C++/ObjC actions like compiling, linking, and archiving. The set of well-known action
+types can be found in @rules_cc//cc/toolchains/actions:BUILD.
+
+It's possible to create project-specific action types for use in toolchains. Be careful when
+doing this, because every toolchain that encounters the action will need to be configured to
+support the custom action type. If your project is a library, avoid creating new action types as
+it will reduce compatibility with existing toolchains and increase setup complexity for users.
+
+Example:
+<code>
+load("//cc:action_names.bzl", "ACTION_NAMES")
+load("//cc/toolchains:actions.bzl", "cc_action_type")
+
+cc_action_type(
+    name = "cpp_compile",
+    action_name =  = ACTION_NAMES.cpp_compile,
+)
+</code>"""),BazelNativeRule("cc_action_type_set","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("actions","""""""",true,"""A list of cc_action_type or cc_action_type_set"""),BazelNativeRuleArgument("allow_empty","""False""",false,""""""),),"""Represents a set of actions.
+
+This is a convenience rule to allow for more compact representation of a group of action types.
+Use this anywhere a <code>cc_action_type</code> is accepted.
+
+Example:
+<code>
+load("//cc/toolchains:actions.bzl", "cc_action_type_set")
+
+cc_action_type_set(
+    name = "link_executable_actions",
+    actions = [
+        "//cc/toolchains/actions:cpp_link_executable",
+        "//cc/toolchains/actions:lto_index_for_executable",
+    ],
+)
+</code>"""),BazelNativeRule("cc_feature","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("feature_name","""""""",false,"""The name of the feature that this rule implements.
+
+The feature name is a string that will be used in the <code>features</code> attribute of
+rules to enable them (eg. <code>cc_binary(..., features = ["opt"])</code>.
+
+While two features with the same <code>feature_name</code> may not be bound to the same
+toolchain, they can happily live alongside each other in the same BUILD file.
+
+Example:
+<code>
+cc_feature(
+    name = "sysroot_macos",
+    feature_name = "sysroot",
+    ...
+)
+
+cc_feature(
+    name = "sysroot_linux",
+    feature_name = "sysroot",
+    ...
+)
+</code>"""),BazelNativeRuleArgument("args","""[]""",false,"""A list of <code>cc_args</code> or <code>cc_args_list</code> labels that are expanded when this feature is enabled."""),BazelNativeRuleArgument("requires_any_of","""[]""",false,"""A list of feature sets that define toolchain compatibility.
+
+If *at least one* of the listed <code>cc_feature_set</code>s are fully satisfied (all
+features exist in the toolchain AND are currently enabled), this feature is
+deemed compatible and may be enabled.
+
+Note: Even if <code>cc_feature.requires_any_of</code> is satisfied, a feature is not
+enabled unless another mechanism (e.g. command-line flags, <code>cc_feature.implies</code>,
+<code>cc_toolchain_config.enabled_features</code>) signals that the feature should actually
+be enabled."""),BazelNativeRuleArgument("implies","""[]""",false,"""List of features enabled along with this feature.
+
+Warning: If any of the features cannot be enabled, this feature is
+silently disabled."""),BazelNativeRuleArgument("mutually_exclusive","""[]""",false,"""A list of things that this feature is mutually exclusive with.
+
+It can be either:
+* A feature, in which case the two features are mutually exclusive.
+* A <code>cc_mutually_exclusive_category</code>, in which case all features that write
+    <code>mutually_exclusive = [":category"]</code> are mutually exclusive with each other.
+
+If this feature has a side-effect of implementing another feature, it can be
+useful to list that feature here to ensure they aren't enabled at the same time."""),BazelNativeRuleArgument("overrides","""None""",false,"""A declaration that this feature overrides a known feature.
+
+In the example below, if you missed the "overrides" attribute, it would complain
+that the feature "opt" was defined twice.
+
+Example:
+<code>
+load("//cc/toolchains:feature.bzl", "cc_feature")
+
+cc_feature(
+    name = "opt",
+    feature_name = "opt",
+    args = [":size_optimized"],
+    overrides = "//cc/toolchains/features:opt",
+)
+</code>"""),),"""A dynamic set of toolchain flags that create a singular feature definition.
+
+A feature is basically a dynamically toggleable <code>cc_args_list</code>. There are a variety of
+dependencies and compatibility requirements that must be satisfied to enable a
+<code>cc_feature</code>. Once those conditions are met, the arguments in <code>cc_feature.args</code>
+are expanded and added to the command-line.
+
+A feature may be enabled or disabled through the following mechanisms:
+* Via command-line flags, or a <code>.bazelrc</code> file via the
+  <code>--features</code> flag
+* Through inter-feature relationships (via <code>cc_feature.implies</code>) where one
+  feature may implicitly enable another.
+* Individual rules (e.g. <code>cc_library</code>) or <code>package</code> definitions may elect to manually enable or
+  disable features through the
+  <code>features</code> attribute.
+
+Note that a feature may alternate between enabled and disabled dynamically over the course of a
+build. Because of their toggleable nature, it's generally best to avoid adding arguments to a
+<code>cc_toolchain</code> as a <code>cc_feature</code> unless strictly necessary. Instead, prefer to express arguments
+via <code>cc_toolchain.args</code> whenever possible.
+
+You should use a <code>cc_feature</code> when any of the following apply:
+* You need the flags to be dynamically toggled over the course of a build.
+* You want build files to be able to configure the flags in question. For example, a
+  binary might specify <code>features = ["optimize_for_size"]</code> to create a small
+  binary instead of optimizing for performance.
+* You need to carry forward Starlark toolchain behaviors. If you're migrating a
+  complex Starlark-based toolchain definition to these rules, many of the
+  workflows and flags were likely based on features.
+
+If you only need to configure flags via the Bazel command-line, instead
+consider adding a
+<code>bool_flag</code>
+paired with a <code>config_setting</code>
+and then make your <code>cc_args</code> rule <code>select</code> on the <code>config_setting</code>.
+
+For more details about how Bazel handles features, see the official Bazel
+documentation at
+https://bazel.build/docs/cc-toolchain-config-reference#features.
+
+Example:
+<code>
+load("//cc/toolchains:feature.bzl", "cc_feature")
+
+# A feature that enables LTO, which may be incompatible when doing interop with various
+# languages (e.g. rust, go), or may need to be disabled for particular <code>cc_binary</code> rules
+# for various reasons.
+cc_feature(
+    name = "lto",
+    feature_name = "lto",
+    args = [":lto_args"],
+)
+</code>"""),BazelNativeRule("cc_feature_constraint","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("all_of","""[]""",false,""""""),BazelNativeRuleArgument("none_of","""[]""",false,""""""),),"""Defines a compound relationship between features.
+
+This rule can be used with <code>cc_args.require_any_of</code> to specify that a set
+of arguments are only enabled when a constraint is met. Both <code>all_of</code> and <code>none_of</code> must be
+satisfied simultaneously.
+
+This is basically a <code>cc_feature_set</code> that supports <code>none_of</code> expressions. This extra flexibility
+is why this rule may only be used by <code>cc_args.require_any_of</code>.
+
+Example:
+<code>
+load("//cc/toolchains:feature_constraint.bzl", "cc_feature_constraint")
+
+# A constraint that requires a <code>linker_supports_thinlto</code> feature to be enabled,
+# AND a <code>no_optimization</code> to be disabled.
+cc_feature_constraint(
+    name = "thinlto_constraint",
+    all_of = [":linker_supports_thinlto"],
+    none_of = [":no_optimization"],
+)
+</code>"""),BazelNativeRule("cc_feature_set","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("all_of","""[]""",false,"""A set of features"""),),"""Defines a set of features.
+
+This may be used by both <code>cc_feature</code> and <code>cc_args</code> rules, and is effectively a way to express
+a logical <code>AND</code> operation across multiple required features.
+
+Example:
+<code>
+load("//cc/toolchains:feature_set.bzl", "cc_feature_set")
+
+cc_feature_set(
+    name = "thin_lto_requirements",
+    all_of = [
+        ":thin_lto",
+        ":opt",
+    ],
+)
+</code>"""),BazelNativeRule("cc_mutually_exclusive_category","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),),"""A rule used to categorize <code>cc_feature</code> definitions for which only one can be enabled.
+
+This is used by <code>cc_feature.mutually_exclusive</code> to express groups
+of <code>cc_feature</code> definitions that are inherently incompatible with each other and must be treated as
+mutually exclusive.
+
+Warning: These groups are keyed by name, so two <code>cc_mutually_exclusive_category</code> definitions of the
+same name in different packages will resolve to the same logical group.
+
+Example:
+<code>
+load("//cc/toolchains:feature.bzl", "cc_feature")
+load("//cc/toolchains:mutually_exclusive_category.bzl", "cc_mutually_exclusive_category")
+
+cc_mutually_exclusive_category(
+    name = "opt_level",
+)
+
+cc_feature(
+    name = "speed_optimized",
+    mutually_exclusive = [":opt_level"],
+)
+
+cc_feature(
+    name = "size_optimized",
+    mutually_exclusive = [":opt_level"],
+)
+
+cc_feature(
+    name = "unoptimized",
+    mutually_exclusive = [":opt_level"],
+)
+</code>"""),BazelNativeRule("cc_external_feature","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("feature_name","""""""",true,"""The name of the feature"""),BazelNativeRuleArgument("overridable","""""""",true,"""Whether the feature can be overridden"""),),"""A declaration that a feature with this name is defined elsewhere.
+
+This rule communicates that a feature has been defined externally to make it possible to reference
+features that live outside the rule-based cc toolchain ecosystem. This allows various toolchain
+rules to reference the external feature without accidentally re-defining said feature.
+
+This rule is currently considered a private API of the toolchain rules to encourage the Bazel
+ecosystem to migrate to properly defining their features as rules.
+
+Example:
+<code>
+load("//cc/toolchains:external_feature.bzl", "cc_external_feature")
+
+# rules_rust defines a feature that is disabled whenever rust artifacts are being linked using
+# the cc toolchain to signal that incompatible flags should be disabled as well.
+cc_external_feature(
+    name = "rules_rust_unsupported_feature",
+    feature_name = "rules_rust_unsupported_feature",
+    overridable = False,
+)
+</code>"""),),setOf(BazelNativeRule("java_binary","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("srcs","""[]""",false,"""The list of source files that are processed to create the target.
 This attribute is almost always required; see exceptions below.
 <p>
 Source files of type <code>.java</code> are compiled. In case of generated
@@ -22,12 +360,12 @@ files.
 
 <p>
 This argument is almost always required, except if a
-<a href="#java_binary.main_class"><code>main_class</code></a> attribute specifies a
+<code>main_class</code> attribute specifies a
 class on the runtime classpath or you specify the <code>runtime_deps</code> argument.
 </p>"""),BazelNativeRuleArgument("deps","""[]""",false,"""The list of other libraries to be linked in to the target.
 See general comments about <code>deps</code> at
-<a href="common-definitions.html#typical-attributes">Typical attributes defined by
-most build rules</a>."""),BazelNativeRuleArgument("resources","""[]""",false,"""A list of data files to include in a Java jar.
+Typical attributes defined by
+most build rules."""),BazelNativeRuleArgument("resources","""[]""",false,"""A list of data files to include in a Java jar.
 
 <p>
 Resources may be source files or generated files.
@@ -37,7 +375,7 @@ Resources may be source files or generated files.
 If resources are specified, they will be bundled in the jar along with the usual
 <code>.class</code> files produced by compilation. The location of the resources inside
 of the jar file is determined by the project structure. Bazel first looks for Maven's
-<a href="https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html">standard directory layout</a>,
+standard directory layout,
 (a "src" directory followed by a "resources" directory grandchild). If that is not
 found, Bazel then looks for the topmost directory named "java" or "javatests" (so, for
 example, if a resource is at <code>&lt;workspace root&gt;/x/java/y/java/z</code>, the
@@ -49,11 +387,11 @@ them, not on the compile-time classpath. Dependencies needed only at runtime sho
 listed here. Dependency-analysis tools should ignore targets that appear in both
 <code>runtime_deps</code> and <code>deps</code>."""),BazelNativeRuleArgument("data","""[]""",false,"""The list of files needed by this library at runtime.
 See general comments about <code>data</code>
-at <a href="">Typical attributes defined by
-most build rules</a>."""),BazelNativeRuleArgument("plugins","""[]""",false,"""Java compiler plugins to run at compile-time.
+at Typical attributes defined by
+most build rules."""),BazelNativeRuleArgument("plugins","""[]""",false,"""Java compiler plugins to run at compile-time.
 Every <code>java_plugin</code> specified in this attribute will be run whenever this rule
 is built. A library may also inherit plugins from dependencies that use
-<code><a href="#java_library.exported_plugins">exported_plugins</a></code>. Resources
+<code>exported_plugins</code>. Resources
 generated by the plugin will be included in the resulting jar of this rule."""),BazelNativeRuleArgument("deploy_env","""[]""",false,"""A list of other <code>java_binary</code> targets which represent the deployment
 environment for this binary.
 Set this attribute when building a plugin which will be loaded by another
@@ -63,13 +401,13 @@ binary and the targets specified in <code>deploy_env</code>."""),BazelNativeRule
 normal <code>bin/java</code> program included with the JDK.
 The target must be a <code>cc_binary</code>. Any <code>cc_binary</code> that
 implements the
-<a href="http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/invocation.html">
-Java Invocation API</a> can be specified as a value for this attribute.
+
+Java Invocation API can be specified as a value for this attribute.
 
 <p>By default, Bazel will use the normal JDK launcher (bin/java or java.exe).</p>
 
-<p>The related <a href=""><code>
---java_launcher</code></a> Bazel flag affects only those
+<p>The related <code>
+--java_launcher</code> Bazel flag affects only those
 <code>java_binary</code> and <code>java_test</code> targets that have
 <i>not</i> specified a <code>launcher</code> attribute.</p>
 
@@ -92,9 +430,9 @@ that <code>cc_library</code> target specifies <code>alwayslink = True</code>.</l
 
 <p>When using any launcher other than the default JDK launcher, the format
 of the <code>*_deploy.jar</code> output changes. See the main
-<a href="#java_binary">java_binary</a> docs for details.</p>"""),BazelNativeRuleArgument("bootclasspath","""None""",false,"""Restricted API, do not use!"""),BazelNativeRuleArgument("neverlink","""False""",false,""""""),BazelNativeRuleArgument("javacopts","""[]""",false,"""Extra compiler options for this binary.
-Subject to <a href="make-variables.html">"Make variable"</a> substitution and
-<a href="common-definitions.html#sh-tokenization">Bourne shell tokenization</a>.
+java_binary docs for details.</p>"""),BazelNativeRuleArgument("bootclasspath","""None""",false,"""Restricted API, do not use!"""),BazelNativeRuleArgument("neverlink","""False""",false,""""""),BazelNativeRuleArgument("javacopts","""[]""",false,"""Extra compiler options for this binary.
+Subject to "Make variable" substitution and
+Bourne shell tokenization.
 <p>These compiler options are passed to javac after the global compiler options.</p>"""),BazelNativeRuleArgument("add_exports","""[]""",false,"""Allow this library to access the given <code>module</code> or <code>package</code>.
 <p>
 This corresponds to the javac and JVM --add-exports= flags."""),BazelNativeRuleArgument("add_opens","""[]""",false,"""Allow this library to reflectively access the given <code>module</code> or
@@ -111,9 +449,9 @@ provided by direct or transitive dependencies (through <code>runtime_deps</code>
 <code>deps</code>). If the class is unavailable, the binary will fail at runtime; there
 is no build-time check.
 </p>"""),BazelNativeRuleArgument("jvm_flags","""[]""",false,"""A list of flags to embed in the wrapper script generated for running this binary.
-Subject to <a href="">$(location)</a> and
-<a href="make-variables.html">"Make variable"</a> substitution, and
-<a href="common-definitions.html#sh-tokenization">Bourne shell tokenization</a>.
+Subject to $(location) and
+"Make variable" substitution, and
+Bourne shell tokenization.
 
 <p>The wrapper script for a Java binary includes a CLASSPATH definition
 (to find all the dependent jars) and invokes the right Java interpreter.
@@ -127,11 +465,11 @@ script before the classname is listed.</p>
 <p>Note that this attribute has <em>no effect</em> on <code>*_deploy.jar</code>
 outputs.</p>"""),BazelNativeRuleArgument("deploy_manifest_lines","""[]""",false,"""A list of lines to add to the <code>META-INF/manifest.mf</code> file generated for the
 <code>*_deploy.jar</code> target. The contents of this attribute are <em>not</em> subject
-to <a href="make-variables.html">"Make variable"</a> substitution."""),BazelNativeRuleArgument("stamp","""-1""",false,"""Whether to encode build information into the binary. Possible values:
+to "Make variable" substitution."""),BazelNativeRuleArgument("stamp","""-1""",false,"""Whether to encode build information into the binary. Possible values:
 <ul>
 <li>
   <code>stamp = 1</code>: Always stamp the build information into the binary, even in
-  <a href=""><code>--nostamp</code></a> builds. <b>This
+  <code>--nostamp</code> builds. <b>This
   setting should be avoided</b>, since it potentially kills remote caching for the
   binary and any downstream actions that depend on it.
 </li>
@@ -141,7 +479,7 @@ to <a href="make-variables.html">"Make variable"</a> substitution."""),BazelNati
 </li>
 <li>
   <code>stamp = -1</code>: Embedding of build information is controlled by the
-  <a href=""><code>--[no]stamp</code></a> flag.
+  <code>--[no]stamp</code> flag.
 </li>
 </ul>
 <p>Stamped binaries are <em>not</em> rebuilt unless their dependencies change.</p>"""),BazelNativeRuleArgument("use_testrunner","""False""",false,"""Use the test runner (by default
@@ -164,8 +502,8 @@ still use the test runner as its main entry point.
 The name of a test runner class can be overridden with <code>main_class</code> attribute."""),BazelNativeRuleArgument("use_launcher","""True""",false,"""Whether the binary should use a custom launcher.
 
 <p>If this attribute is set to false, the
-<a href="">launcher</a> attribute  and the related
-<a href=""><code>--java_launcher</code></a> flag
+launcher attribute  and the related
+<code>--java_launcher</code> flag
 will be ignored for this target."""),BazelNativeRuleArgument("env","""{}""",false,""""""),BazelNativeRuleArgument("classpath_resources","""[]""",false,"""<em class="harmful">DO NOT USE THIS OPTION UNLESS THERE IS NO OTHER WAY)</em>
 <p>
 A list of resources that must be located at the root of the java tree. This attribute's
@@ -205,7 +543,7 @@ logic as the Java package of source files. For example, a source file at
       creates a self-contained jar file with a manifest that allows it to be run with the
       <code>java -jar</code> command or with the wrapper script's <code>--singlejar</code>
       option. Using the wrapper script is preferred to <code>java -jar</code> because it
-      also passes the <a href="#java_binary-jvm_flags">JVM flags</a> and the options
+      also passes the JVM flags and the options
       to load native libraries.
     </p>
     <p>
@@ -214,7 +552,7 @@ logic as the Java package of source files. For example, a source file at
       contains the native libraries needed for dependencies. These are automatically loaded
       into the JVM at runtime.
     </p>
-    <p>If your target specifies a <a href="#java_binary.launcher">launcher</a>
+    <p>If your target specifies a launcher
       attribute, then instead of being a normal JAR file, the _deploy.jar will be a
       native binary. This will contain the launcher plus any native (C++) dependencies of
       your rule, all linked into a static binary. The actual jar file's bytes will be
@@ -235,9 +573,9 @@ application (minus the extension). For example, if your entry point is called
 
 <p>
   A <code>deps</code> attribute is not allowed in a <code>java_binary</code> rule without
-  <a href="#java_binary-srcs"><code>srcs</code></a>; such a rule requires a
-  <a href="#java_binary-main_class"><code>main_class</code></a> provided by
-  <a href="#java_binary-runtime_deps"><code>runtime_deps</code></a>.
+  <code>srcs</code>; such a rule requires a
+  <code>main_class</code> provided by
+  <code>runtime_deps</code>.
 </p>
 
 <p>The following code snippet illustrates a common mistake:</p>
@@ -268,9 +606,9 @@ java_binary(
 )
 </code>
 </pre>"""),BazelNativeRule("java_import","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("data","""[]""",false,"""The list of files needed by this rule at runtime."""),BazelNativeRuleArgument("deps","""[]""",false,"""The list of other libraries to be linked in to the target.
-See <a href="">java_library.deps</a>."""),BazelNativeRuleArgument("exports","""[]""",false,"""Targets to make available to users of this rule.
-See <a href="">java_library.exports</a>."""),BazelNativeRuleArgument("runtime_deps","""[]""",false,"""Libraries to make available to the final binary or test at runtime only.
-See <a href="">java_library.runtime_deps</a>."""),BazelNativeRuleArgument("jars","""""""",true,"""The list of JAR files provided to Java targets that depend on this target."""),BazelNativeRuleArgument("srcjar","""None""",false,"""A JAR file that contains source code for the compiled JAR files."""),BazelNativeRuleArgument("neverlink","""False""",false,"""Only use this library for compilation and not at runtime.
+See java_library.deps."""),BazelNativeRuleArgument("exports","""[]""",false,"""Targets to make available to users of this rule.
+See java_library.exports."""),BazelNativeRuleArgument("runtime_deps","""[]""",false,"""Libraries to make available to the final binary or test at runtime only.
+See java_library.runtime_deps."""),BazelNativeRuleArgument("jars","""""""",true,"""The list of JAR files provided to Java targets that depend on this target."""),BazelNativeRuleArgument("srcjar","""None""",false,"""A JAR file that contains source code for the compiled JAR files."""),BazelNativeRuleArgument("neverlink","""False""",false,"""Only use this library for compilation and not at runtime.
 Useful if the library will be provided by the runtime environment
 during execution. Examples of libraries like this are IDE APIs
 for IDE plug-ins or <code>tools.jar</code> for anything running on
@@ -287,7 +625,7 @@ This corresponds to the javac and JVM --add-exports= flags."""),BazelNativeRuleA
 <p>
 This corresponds to the javac and JVM --add-opens= flags."""),BazelNativeRuleArgument("licenses","""[]""",false,""""""),),"""<p>
   This rule allows the use of precompiled <code>.jar</code> files as
-  libraries for <code><a href="#java_library">java_library</a></code> and
+  libraries for <code>java_library</code> and
   <code>java_binary</code> rules.
 </p>
 
@@ -335,8 +673,8 @@ file type described above. Otherwise an error is raised.</p>
 This argument is almost always required, except if you specify the <code>runtime_deps</code> argument.
 </p>"""),BazelNativeRuleArgument("data","""[]""",false,"""The list of files needed by this library at runtime.
 See general comments about <code>data</code> at
-<a href="">Typical attributes defined by
-most build rules</a>.
+Typical attributes defined by
+most build rules.
 <p>
   When building a <code>java_library</code>, Bazel doesn't put these files anywhere; if the
   <code>data</code> files are generated files then Bazel generates them. When building a
@@ -351,7 +689,7 @@ Resources may be source files or generated files.
 If resources are specified, they will be bundled in the jar along with the usual
 <code>.class</code> files produced by compilation. The location of the resources inside
 of the jar file is determined by the project structure. Bazel first looks for Maven's
-<a href="https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html">standard directory layout</a>,
+standard directory layout,
 (a "src" directory followed by a "resources" directory grandchild). If that is not
 found, Bazel then looks for the topmost directory named "java" or "javatests" (so, for
 example, if a resource is at <code>&lt;workspace root&gt;/x/java/y/java/z</code>, the
@@ -360,11 +698,11 @@ however, the <code>resource_strip_prefix</code> attribute can be used to specify
 specific alternative directory for resource files."""),BazelNativeRuleArgument("plugins","""[]""",false,"""Java compiler plugins to run at compile-time.
 Every <code>java_plugin</code> specified in this attribute will be run whenever this rule
 is built. A library may also inherit plugins from dependencies that use
-<code><a href="#java_library.exported_plugins">exported_plugins</a></code>. Resources
+<code>exported_plugins</code>. Resources
 generated by the plugin will be included in the resulting jar of this rule."""),BazelNativeRuleArgument("deps","""[]""",false,"""The list of libraries to link into this library.
 See general comments about <code>deps</code> at
-<a href="">Typical attributes defined by
-most build rules</a>.
+Typical attributes defined by
+most build rules.
 <p>
   The jars built by <code>java_library</code> rules listed in <code>deps</code> will be on
   the compile-time classpath of this rule. Furthermore the transitive closure of their
@@ -406,15 +744,15 @@ listed here. Dependency-analysis tools should ignore targets that appear in both
   Important: an exported rule is not a regular dependency. Sticking to the previous example,
   if B exports C and wants to also use C, it has to also list it in its own
   <code>deps</code>.
-</p>"""),BazelNativeRuleArgument("exported_plugins","""[]""",false,"""The list of <code><a href="#">java_plugin</a></code>s (e.g. annotation
+</p>"""),BazelNativeRuleArgument("exported_plugins","""[]""",false,"""The list of <code>java_plugin</code>s (e.g. annotation
 processors) to export to libraries that directly depend on this library.
 <p>
   The specified list of <code>java_plugin</code>s will be applied to any library which
   directly depends on this library, just as if that library had explicitly declared these
-  labels in <code><a href="">plugins</a></code>.
+  labels in <code>plugins</code>.
 </p>"""),BazelNativeRuleArgument("bootclasspath","""None""",false,"""Restricted API, do not use!"""),BazelNativeRuleArgument("javabuilder_jvm_flags","""[]""",false,"""Restricted API, do not use!"""),BazelNativeRuleArgument("javacopts","""[]""",false,"""Extra compiler options for this library.
-Subject to <a href="make-variables.html">"Make variable"</a> substitution and
-<a href="common-definitions.html#sh-tokenization">Bourne shell tokenization</a>.
+Subject to "Make variable" substitution and
+Bourne shell tokenization.
 <p>These compiler options are passed to javac after the global compiler options.</p>"""),BazelNativeRuleArgument("neverlink","""False""",false,"""Whether this library should only be used for compilation and not at runtime.
 Useful if the library will be provided by the runtime environment during execution. Examples
 of such libraries are the IDE APIs for IDE plug-ins or <code>tools.jar</code> for anything
@@ -486,8 +824,8 @@ file type described above. Otherwise an error is raised.</p>
 This argument is almost always required, except if you specify the <code>runtime_deps</code> argument.
 </p>"""),BazelNativeRuleArgument("data","""[]""",false,"""The list of files needed by this library at runtime.
 See general comments about <code>data</code> at
-<a href="">Typical attributes defined by
-most build rules</a>.
+Typical attributes defined by
+most build rules.
 <p>
   When building a <code>java_library</code>, Bazel doesn't put these files anywhere; if the
   <code>data</code> files are generated files then Bazel generates them. When building a
@@ -502,7 +840,7 @@ Resources may be source files or generated files.
 If resources are specified, they will be bundled in the jar along with the usual
 <code>.class</code> files produced by compilation. The location of the resources inside
 of the jar file is determined by the project structure. Bazel first looks for Maven's
-<a href="https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html">standard directory layout</a>,
+standard directory layout,
 (a "src" directory followed by a "resources" directory grandchild). If that is not
 found, Bazel then looks for the topmost directory named "java" or "javatests" (so, for
 example, if a resource is at <code>&lt;workspace root&gt;/x/java/y/java/z</code>, the
@@ -511,11 +849,11 @@ however, the <code>resource_strip_prefix</code> attribute can be used to specify
 specific alternative directory for resource files."""),BazelNativeRuleArgument("plugins","""[]""",false,"""Java compiler plugins to run at compile-time.
 Every <code>java_plugin</code> specified in this attribute will be run whenever this rule
 is built. A library may also inherit plugins from dependencies that use
-<code><a href="#java_library.exported_plugins">exported_plugins</a></code>. Resources
+<code>exported_plugins</code>. Resources
 generated by the plugin will be included in the resulting jar of this rule."""),BazelNativeRuleArgument("deps","""[]""",false,"""The list of libraries to link into this library.
 See general comments about <code>deps</code> at
-<a href="">Typical attributes defined by
-most build rules</a>.
+Typical attributes defined by
+most build rules.
 <p>
   The jars built by <code>java_library</code> rules listed in <code>deps</code> will be on
   the compile-time classpath of this rule. Furthermore the transitive closure of their
@@ -526,8 +864,8 @@ most build rules</a>.
   By contrast, targets in the <code>data</code> attribute are included in the runfiles but
   on neither the compile-time nor runtime classpath.
 </p>"""),BazelNativeRuleArgument("bootclasspath","""None""",false,"""Restricted API, do not use!"""),BazelNativeRuleArgument("javabuilder_jvm_flags","""[]""",false,"""Restricted API, do not use!"""),BazelNativeRuleArgument("javacopts","""[]""",false,"""Extra compiler options for this library.
-Subject to <a href="make-variables.html">"Make variable"</a> substitution and
-<a href="common-definitions.html#sh-tokenization">Bourne shell tokenization</a>.
+Subject to "Make variable" substitution and
+Bourne shell tokenization.
 <p>These compiler options are passed to javac after the global compiler options.</p>"""),BazelNativeRuleArgument("neverlink","""False""",false,"""Whether this library should only be used for compilation and not at runtime.
 Useful if the library will be provided by the runtime environment during execution. Examples
 of such libraries are the IDE APIs for IDE plug-ins or <code>tools.jar</code> for anything
@@ -573,16 +911,16 @@ use as entry point to the annotation processor. If not specified, this rule will
 contribute an annotation processor to the Java compiler's annotation processing, but its
 runtime classpath will still be included on the compiler's annotation processor path. (This
 is primarily intended for use by
-<a href="https://errorprone.info/docs/plugins">Error Prone plugins</a>, which are loaded
+Error Prone plugins, which are loaded
 from the annotation processor path using
-<a href="https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html">
-java.util.ServiceLoader</a>.)"""),BazelNativeRuleArgument("output_licenses","""[]""",false,""""""),),"""<p>
+
+java.util.ServiceLoader.)"""),BazelNativeRuleArgument("output_licenses","""[]""",false,""""""),),"""<p>
   <code>java_plugin</code> defines plugins for the Java compiler run by Bazel. The
   only supported kind of plugins are annotation processors. A <code>java_library</code> or
   <code>java_binary</code> rule can run plugins by depending on them via the <code>plugins</code>
   attribute. A <code>java_library</code> can also automatically export plugins to libraries that
   directly depend on it using
-  <code><a href="#java_library-exported_plugins">exported_plugins</a></code>.
+  <code>exported_plugins</code>.
 </p>
 
 <h4 id="java_plugin_implicit_outputs">Implicit output targets</h4>
@@ -591,7 +929,7 @@ java.util.ServiceLoader</a>.)"""),BazelNativeRuleArgument("output_licenses","""[
     </ul>
 
 <p>
-  Arguments are identical to <a href="#java_library"><code>java_library</code></a>, except
+  Arguments are identical to <code>java_library</code>, except
   for the addition of the <code>processor_class</code> argument.
 </p>"""),BazelNativeRule("java_test","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("test_class","""""""",false,"""The Java class to be loaded by the test runner.<br/>
 <p>
@@ -647,12 +985,12 @@ files.
 
 <p>
 This argument is almost always required, except if a
-<a href="#java_binary.main_class"><code>main_class</code></a> attribute specifies a
+<code>main_class</code> attribute specifies a
 class on the runtime classpath or you specify the <code>runtime_deps</code> argument.
 </p>"""),BazelNativeRuleArgument("deps","""[]""",false,"""The list of other libraries to be linked in to the target.
 See general comments about <code>deps</code> at
-<a href="common-definitions.html#typical-attributes">Typical attributes defined by
-most build rules</a>."""),BazelNativeRuleArgument("resources","""[]""",false,"""A list of data files to include in a Java jar.
+Typical attributes defined by
+most build rules."""),BazelNativeRuleArgument("resources","""[]""",false,"""A list of data files to include in a Java jar.
 
 <p>
 Resources may be source files or generated files.
@@ -662,7 +1000,7 @@ Resources may be source files or generated files.
 If resources are specified, they will be bundled in the jar along with the usual
 <code>.class</code> files produced by compilation. The location of the resources inside
 of the jar file is determined by the project structure. Bazel first looks for Maven's
-<a href="https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html">standard directory layout</a>,
+standard directory layout,
 (a "src" directory followed by a "resources" directory grandchild). If that is not
 found, Bazel then looks for the topmost directory named "java" or "javatests" (so, for
 example, if a resource is at <code>&lt;workspace root&gt;/x/java/y/java/z</code>, the
@@ -674,22 +1012,22 @@ them, not on the compile-time classpath. Dependencies needed only at runtime sho
 listed here. Dependency-analysis tools should ignore targets that appear in both
 <code>runtime_deps</code> and <code>deps</code>."""),BazelNativeRuleArgument("data","""[]""",false,"""The list of files needed by this library at runtime.
 See general comments about <code>data</code>
-at <a href="">Typical attributes defined by
-most build rules</a>."""),BazelNativeRuleArgument("plugins","""[]""",false,"""Java compiler plugins to run at compile-time.
+at Typical attributes defined by
+most build rules."""),BazelNativeRuleArgument("plugins","""[]""",false,"""Java compiler plugins to run at compile-time.
 Every <code>java_plugin</code> specified in this attribute will be run whenever this rule
 is built. A library may also inherit plugins from dependencies that use
-<code><a href="#java_library.exported_plugins">exported_plugins</a></code>. Resources
+<code>exported_plugins</code>. Resources
 generated by the plugin will be included in the resulting jar of this rule."""),BazelNativeRuleArgument("launcher","""None""",false,"""Specify a binary that will be used to run your Java program instead of the
 normal <code>bin/java</code> program included with the JDK.
 The target must be a <code>cc_binary</code>. Any <code>cc_binary</code> that
 implements the
-<a href="http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/invocation.html">
-Java Invocation API</a> can be specified as a value for this attribute.
+
+Java Invocation API can be specified as a value for this attribute.
 
 <p>By default, Bazel will use the normal JDK launcher (bin/java or java.exe).</p>
 
-<p>The related <a href=""><code>
---java_launcher</code></a> Bazel flag affects only those
+<p>The related <code>
+--java_launcher</code> Bazel flag affects only those
 <code>java_binary</code> and <code>java_test</code> targets that have
 <i>not</i> specified a <code>launcher</code> attribute.</p>
 
@@ -712,9 +1050,9 @@ that <code>cc_library</code> target specifies <code>alwayslink = True</code>.</l
 
 <p>When using any launcher other than the default JDK launcher, the format
 of the <code>*_deploy.jar</code> output changes. See the main
-<a href="#java_binary">java_binary</a> docs for details.</p>"""),BazelNativeRuleArgument("bootclasspath","""None""",false,"""Restricted API, do not use!"""),BazelNativeRuleArgument("neverlink","""False""",false,""""""),BazelNativeRuleArgument("javacopts","""[]""",false,"""Extra compiler options for this binary.
-Subject to <a href="make-variables.html">"Make variable"</a> substitution and
-<a href="common-definitions.html#sh-tokenization">Bourne shell tokenization</a>.
+java_binary docs for details.</p>"""),BazelNativeRuleArgument("bootclasspath","""None""",false,"""Restricted API, do not use!"""),BazelNativeRuleArgument("neverlink","""False""",false,""""""),BazelNativeRuleArgument("javacopts","""[]""",false,"""Extra compiler options for this binary.
+Subject to "Make variable" substitution and
+Bourne shell tokenization.
 <p>These compiler options are passed to javac after the global compiler options.</p>"""),BazelNativeRuleArgument("add_exports","""[]""",false,"""Allow this library to access the given <code>module</code> or <code>package</code>.
 <p>
 This corresponds to the javac and JVM --add-exports= flags."""),BazelNativeRuleArgument("add_opens","""[]""",false,"""Allow this library to reflectively access the given <code>module</code> or
@@ -731,9 +1069,9 @@ provided by direct or transitive dependencies (through <code>runtime_deps</code>
 <code>deps</code>). If the class is unavailable, the binary will fail at runtime; there
 is no build-time check.
 </p>"""),BazelNativeRuleArgument("jvm_flags","""[]""",false,"""A list of flags to embed in the wrapper script generated for running this binary.
-Subject to <a href="">$(location)</a> and
-<a href="make-variables.html">"Make variable"</a> substitution, and
-<a href="common-definitions.html#sh-tokenization">Bourne shell tokenization</a>.
+Subject to $(location) and
+"Make variable" substitution, and
+Bourne shell tokenization.
 
 <p>The wrapper script for a Java binary includes a CLASSPATH definition
 (to find all the dependent jars) and invokes the right Java interpreter.
@@ -747,11 +1085,11 @@ script before the classname is listed.</p>
 <p>Note that this attribute has <em>no effect</em> on <code>*_deploy.jar</code>
 outputs.</p>"""),BazelNativeRuleArgument("deploy_manifest_lines","""[]""",false,"""A list of lines to add to the <code>META-INF/manifest.mf</code> file generated for the
 <code>*_deploy.jar</code> target. The contents of this attribute are <em>not</em> subject
-to <a href="make-variables.html">"Make variable"</a> substitution."""),BazelNativeRuleArgument("stamp","""0""",false,"""Whether to encode build information into the binary. Possible values:
+to "Make variable" substitution."""),BazelNativeRuleArgument("stamp","""0""",false,"""Whether to encode build information into the binary. Possible values:
 <ul>
 <li>
   <code>stamp = 1</code>: Always stamp the build information into the binary, even in
-  <a href="https://bazel.build/docs/user-manual#stamp"><code>--nostamp</code></a> builds. <b>This
+  <code>--nostamp</code> builds. <b>This
   setting should be avoided</b>, since it potentially kills remote caching for the
   binary and any downstream actions that depend on it.
 </li>
@@ -761,7 +1099,7 @@ to <a href="make-variables.html">"Make variable"</a> substitution."""),BazelNati
 </li>
 <li>
   <code>stamp = -1</code>: Embedding of build information is controlled by the
-  <a href="https://bazel.build/docs/user-manual#stamp"><code>--[no]stamp</code></a> flag.
+  <code>--[no]stamp</code> flag.
 </li>
 </ul>
 <p>Stamped binaries are <em>not</em> rebuilt unless their dependencies change.</p>"""),BazelNativeRuleArgument("use_testrunner","""True""",false,"""Use the test runner (by default
@@ -784,8 +1122,8 @@ still use the test runner as its main entry point.
 The name of a test runner class can be overridden with <code>main_class</code> attribute."""),BazelNativeRuleArgument("use_launcher","""True""",false,"""Whether the binary should use a custom launcher.
 
 <p>If this attribute is set to false, the
-<a href="">launcher</a> attribute  and the related
-<a href=""><code>--java_launcher</code></a> flag
+launcher attribute  and the related
+<code>--java_launcher</code> flag
 will be ignored for this target."""),BazelNativeRuleArgument("env","""{}""",false,""""""),BazelNativeRuleArgument("classpath_resources","""[]""",false,"""<em class="harmful">DO NOT USE THIS OPTION UNLESS THERE IS NO OTHER WAY)</em>
 <p>
 A list of resources that must be located at the root of the java tree. This attribute's
@@ -810,13 +1148,13 @@ test code. The test runner's main method is invoked instead of the main class be
   <li><code><var>name</var>_deploy.jar</code>: A Java archive suitable
     for deployment. (Only built if explicitly requested.) See the description of the
     <code><var>name</var>_deploy.jar</code> output from
-    <a href="#java_binary">java_binary</a> for more details.</li>
+    java_binary for more details.</li>
 </ul>
 
 <p>
 See the section on <code>java_binary()</code> arguments. This rule also
-supports all <a href="https://bazel.build/reference/be/common-definitions#common-attributes-tests">attributes common
-to all test rules (*_test)</a>.
+supports all attributes common
+to all test rules (*_test).
 </p>
 
 <h4 id="java_test_examples">Examples</h4>
@@ -842,11 +1180,11 @@ java_test(
     ],
 )
 </code>
-</pre>"""),BazelNativeRule("java_package_configuration","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("packages","""[]""",false,"""The set of <code><a href="">package_group</a></code>s
+</pre>"""),BazelNativeRule("java_package_configuration","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("packages","""[]""",false,"""The set of <code>package_group</code>s
 the configuration should be applied to."""),BazelNativeRuleArgument("javacopts","""[]""",false,"""Java compiler flags."""),BazelNativeRuleArgument("data","""[]""",false,"""The list of files needed by this configuration at runtime."""),BazelNativeRuleArgument("system","""None""",false,"""Corresponds to javac's --system flag."""),BazelNativeRuleArgument("output_licenses","""[]""",false,""""""),),"""<p>
 Configuration to apply to a set of packages.
 Configurations can be added to
-<code><a href="">java_toolchain.javacopts</a></code>s.
+<code>java_toolchain.javacopts</code>s.
 </p>
 
 <h4 id="java_package_configuration_example">Example:</h4>
@@ -879,7 +1217,7 @@ java_toolchain(
 </pre>"""),BazelNativeRule("java_runtime","",setOf(BazelNativeRuleArgument("name","""""""",true,"""A unique name for this target."""),BazelNativeRuleArgument("default_cds","""None""",false,"""Default CDS archive for hermetic <code>java_runtime</code>. When hermetic
 is enabled for a <code>java_binary</code> target the <code>java_runtime</code>
 default CDS is packaged in the hermetic deploy JAR."""),BazelNativeRuleArgument("hermetic_srcs","""[]""",false,"""Files in the runtime needed for hermetic deployments."""),BazelNativeRuleArgument("hermetic_static_libs","""[]""",false,"""The libraries that are statically linked with the launcher for hermetic deployments"""),BazelNativeRuleArgument("java","""None""",false,"""The path to the java executable."""),BazelNativeRuleArgument("java_home","""""""",false,"""The path to the root of the runtime.
-Subject to <a href="">"Make" variable</a> substitution.
+Subject to "Make" variable substitution.
 If this path is absolute, the rule denotes a non-hermetic Java runtime with a well-known
 path. In that case, the <code>srcs</code> and <code>java</code> attributes must be empty."""),BazelNativeRuleArgument("lib_ct_sym","""None""",false,"""The lib/ct.sym file needed for compilation with <code>--release</code>. If not specified and
 there is exactly one file in <code>srcs</code> whose path ends with
@@ -935,4 +1273,4 @@ java_toolchain(
     javabuilder = ":JavaBuilder_deploy.jar",
 )
 </code>
-</pre>"""),)
+</pre>"""),),)
