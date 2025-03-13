@@ -23,12 +23,15 @@ import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPat
 import org.jetbrains.bazel.languages.starlark.repomapping.repositoryPaths
 import org.jetbrains.bazel.utils.allAncestorsSequence
 import java.nio.file.Path
+import com.intellij.openapi.diagnostic.logger
+import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkNamedLookupElement
 
 public val BUILD_FILE_NAMES = sequenceOf("BUILD.bazel", "BUILD")
 
 // Tested in ExternalRepoResolveTest
 class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolean) :
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), soft) {
+  private val LOG = logger<BazelLabelReference>()
   override fun resolve(): PsiElement? {
     val project = element.project
     if (!project.isBazelProject || isInNameArgument()) return null
@@ -42,6 +45,9 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     return parent is StarlarkNamedArgumentExpression && parent.isNameArgument()
   }
 
+  override fun getVariants(): Array<String> {
+    return arrayOf("test", "test2")
+  }
   private sealed interface BuildFileOrSourceFile
 
   private class BuildFilePsi(val file: StarlarkFile) : BuildFileOrSourceFile
