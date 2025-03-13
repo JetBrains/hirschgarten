@@ -644,14 +644,19 @@ class BazelProjectMapper(
         )
       }
 
-  private fun createLibraries(targets: Map<Label, TargetInfo>): Map<Label, Library> =
-    targets
-      .asSequence()
-      .mapNotNull { (targetId, targetInfo) ->
-        createLibrary(targetId, targetInfo)?.let { library ->
-          targetId to library
-        }
-      }.toMap()
+  private suspend fun createLibraries(targets: Map<Label, TargetInfo>): Map<Label, Library> =
+    withContext(Dispatchers.Default) {
+      targets
+        .map { (targetId, targetInfo) ->
+          async {
+            createLibrary(targetId, targetInfo)?.let { library ->
+              targetId to library
+            }
+          }
+        }.awaitAll()
+        .filterNotNull()
+        .toMap()
+    }
 
   private fun createLibrary(
     label: Label,
