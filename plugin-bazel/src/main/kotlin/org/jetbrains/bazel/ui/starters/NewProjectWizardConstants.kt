@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.ui.wizard
+package org.jetbrains.bazel.ui.starters
 
 object NewProjectWizardConstants {
   const val BAZEL_VERSION = "8.1.1"

@@ -225,7 +225,7 @@
                 order="first"
         />
 
-        <buildSystemProjectImporter implementation="org.jetbrains.bazel.ui.wizard.BazelKotlinNewProjectWizard"/>
+        <buildSystemProjectImporter implementation="org.jetbrains.bazel.ui.starters.BazelKotlinNewProjectWizard"/>
 
         <!--suppress PluginXmlValidity -->
         <supportsKotlinPluginMode supportsK2="true"/>
@@ -496,7 +496,7 @@
                      key="bazel.merge.source.roots"/>
         <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
 
-        <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.wizard.BazelJavaNewProjectWizard"/>
+        <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelJavaNewProjectWizard"/>
     </extensions>
 
     <actions>
