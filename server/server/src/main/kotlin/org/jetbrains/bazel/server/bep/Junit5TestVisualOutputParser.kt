@@ -22,6 +22,8 @@ private class TestResultTreeNode(
 
   fun isLeafNode() = children.isEmpty()
 
+  fun isRootNode() = parent == null
+
   fun notifyClient(bspClientTestNotifier: BspClientTestNotifier) {
     if (isLeafNode()) {
       val fullMessage = generateMessage()
@@ -29,7 +31,7 @@ private class TestResultTreeNode(
       bspClientTestNotifier.finishTest(
         displayName = name,
         taskId = taskId,
-        status = status!!,
+        status = status ?: return,
         message = fullMessage,
         data = createTestCaseData(fullMessage, time),
       )
@@ -39,7 +41,7 @@ private class TestResultTreeNode(
       bspClientTestNotifier.finishTest(
         displayName = name,
         taskId = taskId,
-        status = status!!,
+        status = status ?: return,
         message = message,
       )
     }
@@ -69,8 +71,8 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
       previousNode.indent == indent -> previousNode.parent
       else -> {
         var realParent = previousNode
-        while (realParent.indent >= indent) {
-          realParent = realParent.parent!!
+        while (realParent.parent != null && realParent.indent >= indent) {
+          realParent = realParent.parent
         }
         realParent
       }
@@ -111,17 +113,18 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
         treeRootForCurrentTarget = null
       } else if (testLineMatcher.find()) {
         val indent = testLineMatcher.start("name")
-        val parent = findParentByIndent(previousNode!!, indent)
+        val parent = previousNode?.let { findParentByIndent(it, indent) }
+        val parentId = if (parent?.isRootNode() == true) null else parent?.taskId?.id
         val newNode =
           TestResultTreeNode(
             name = testLineMatcher.group("name"),
-            taskId = TaskId(testUUID(), parents = listOf(parent!!.taskId.id) + parent.taskId.parents),
+            taskId = TaskId(testUUID(), parents = listOfNotNull(parentId)),
             status = testLineMatcher.group("result").toTestStatus(),
             message = testLineMatcher.group("message"),
             indent = indent,
             parent = parent,
           )
-        parent.children.put(newNode.name, newNode)
+        parent?.children?.put(newNode.name, newNode)
         previousNode = newNode
       } else if (isStackTraceStartingLine(cleanLine)) {
         val testNode = findNodeByPath(cleanLine, treeRootForCurrentTarget)
@@ -138,7 +141,7 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
 
   private fun notifyClient(trees: Map<String, TestResultTreeNode>) {
     for ((target, tree) in trees.entries) {
-      bspClientTestNotifier.beginTestTarget(Label.parse(target), tree.taskId)
+      bspClientTestNotifier.beginTestTarget(Label.parse(target), TaskId(testUUID()))
       tree.children.forEach { it.value.notifyClient(bspClientTestNotifier) }
       bspClientTestNotifier.endTestTarget(Label.parse(tree.name), tree.taskId, time = tree.time)
     }
