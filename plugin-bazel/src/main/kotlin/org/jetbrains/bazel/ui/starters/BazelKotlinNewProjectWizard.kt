@@ -20,12 +20,9 @@ class BazelKotlinNewProjectWizard : BuildSystemKotlinNewProjectWizard {
   override val name: @NlsContexts.Label String
     get() = BazelPluginConstants.BAZEL_DISPLAY_NAME
 
-  override fun isEnabled(context: WizardContext): Boolean {
-    return StarterWizardCompat.startersEnabled() && super.isEnabled(context)
-  }
+  override fun isEnabled(context: WizardContext): Boolean = StarterWizardCompat.startersEnabled() && super.isEnabled(context)
 
-
-    override fun createStep(parent: Step): NewProjectWizardStep = AssetsStep(parent)
+  override fun createStep(parent: Step): NewProjectWizardStep = AssetsStep(parent)
 
   private class AssetsStep(parent: Step) : AssetsNewProjectWizardStep(parent) {
     // we could dynamically fetch versions and whatnot,

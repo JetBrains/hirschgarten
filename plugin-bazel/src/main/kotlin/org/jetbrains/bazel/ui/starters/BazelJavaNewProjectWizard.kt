@@ -4,12 +4,12 @@ import com.intellij.ide.projectWizard.generators.AssetsNewProjectWizardStep
 import com.intellij.ide.projectWizard.generators.BuildSystemJavaNewProjectWizard
 import com.intellij.ide.projectWizard.generators.JavaNewProjectWizard.Step
 import com.intellij.ide.starters.local.GeneratorAsset
-import org.jetbrains.bazel.sdkcompat.StarterWizardCompat
 import com.intellij.ide.util.projectWizard.WizardContext
 import com.intellij.ide.wizard.NewProjectWizardStep
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts
 import org.jetbrains.bazel.config.BazelPluginConstants
+import org.jetbrains.bazel.sdkcompat.StarterWizardCompat
 import org.jetbrains.bazel.sdkcompat.StarterWizardCompat.generatorFile
 import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.BAZEL_VERSION
 import org.jetbrains.bazel.ui.starters.NewProjectWizardConstants.JUNIT_VERSION
@@ -20,9 +20,7 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
   override val name: @NlsContexts.Label String
     get() = BazelPluginConstants.BAZEL_DISPLAY_NAME
 
-  override fun isEnabled(context: WizardContext): Boolean {
-    return StarterWizardCompat.startersEnabled() && super.isEnabled(context)
-  }
+  override fun isEnabled(context: WizardContext): Boolean = StarterWizardCompat.startersEnabled() && super.isEnabled(context)
 
   override fun createStep(parent: Step): NewProjectWizardStep = AssetsStep(parent)
 
