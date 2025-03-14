@@ -4,7 +4,11 @@
 FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest
 
 USER root
-RUN apt-get update && apt-get install -y maven
+RUN apt-get update && apt-get install -y maven wget
+
+# Install buildifier
+RUN wget https://github.com/bazelbuild/buildtools/releases/download/v8.0.1/buildifier-linux-amd64 -O /usr/local/bin/buildifier \
+    && chmod +x /usr/local/bin/buildifier
 
 # Create a non-root user with UID/GID 1001
 # 1001 used because it's default user UID/GID on TC agents, and it'll allow to work around permissions for files passed to/from container
