@@ -225,7 +225,7 @@
                 order="first"
         />
 
-        <buildSystemProjectImporter implementation="org.jetbrains.bazel.ui.starters.BazelKotlinNewProjectWizard"/>
+        <newProjectWizard.kotlin.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelKotlinNewProjectWizard"/>
 
         <!--suppress PluginXmlValidity -->
         <supportsKotlinPluginMode supportsK2="true"/>
