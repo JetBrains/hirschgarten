@@ -16,7 +16,7 @@
 package org.jetbrains.bazel.ogRun.state
 
 import com.google.common.base.Preconditions
-import com.google.common.collect.ImmutableList
+
 import com.google.idea.blaze.base.command.BlazeFlags
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.configurations.RuntimeConfigurationException
@@ -50,8 +50,8 @@ class BlazeCommandRunConfigurationCommonState : RunConfigurationCompositeState()
     this.blazeBinaryState = BlazeBinaryState()
   }
 
-  override fun initializeStates(): ImmutableList<RunConfigurationState?> =
-    ImmutableList.of<RunConfigurationState?>(
+  override fun initializeStates(): List<RunConfigurationState?> =
+    listOf<RunConfigurationState?>(
       this.commandState,
       this.blazeFlagsState,
       this.exeFlagsState,
@@ -99,23 +99,23 @@ class BlazeCommandRunConfigurationCommonState : RunConfigurationCompositeState()
       return testFilterFlag.substring(TEST_FILTER_FLAG_PREFIX.length)
     }
 
-  val testArgs: ImmutableList<String?>?
+  val testArgs: List<String?>?
     get() =
       this.blazeFlagsState
         .getRawFlags()
         .stream()
         .filter { f: String? -> f.startsWith(BlazeFlags.TEST_ARG) }
         .map<String?> { f: String? -> f.substring(BlazeFlags.TEST_ARG.length()) }
-        .collect(ImmutableList.toImmutableList<String?>())
+        .collect(List.toImmutableList<String?>())
 
   @Throws(RuntimeConfigurationException::class)
-  fun validate(buildSystemName: BuildSystemName) {
+  fun validate() {
     if (this.commandState.getCommand() == null) {
       throw RuntimeConfigurationError("You must specify a command.")
     }
     val blazeBinaryString = this.blazeBinaryState.blazeBinary
     if (blazeBinaryString != null && !(File(blazeBinaryString).exists())) {
-      throw RuntimeConfigurationError(buildSystemName.getName() + " binary does not exist")
+      throw RuntimeConfigurationError("Bazel binary does not exist")
     }
   }
 

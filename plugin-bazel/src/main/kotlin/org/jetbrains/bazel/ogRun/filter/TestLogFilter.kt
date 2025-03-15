@@ -20,6 +20,7 @@ import com.intellij.execution.filters.ConsoleFilterProvider
 import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.config.isBazelProject
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -52,11 +53,11 @@ internal class TestLogFilter(private val project: Project) : Filter {
 
   /** Provider for traceback filter  */
   internal class Provider : ConsoleFilterProvider {
-    override fun getDefaultFilters(project: Project): Array<Filter?> =
-      if (Blaze.isBlazeProject(project)) {
-        arrayOf<Filter>(TestLogFilter(project))
+    override fun getDefaultFilters(project: Project): Array<Filter> =
+      if (project.isBazelProject) {
+        arrayOf(TestLogFilter(project))
       } else {
-        arrayOfNulls<Filter>(0)
+        emptyArray()
       }
   }
 

@@ -846,8 +846,8 @@ class BlazeCommandRunConfiguration(
      * This is here for backwards compatibility deserializing older-style run configurations
      * without the top-level BLAZE_SETTINGS_TAG element.
      */
-    private val COMMON_SETTINGS: com.google.common.collect.ImmutableSet<String?> =
-      com.google.common.collect.ImmutableSet.of<String?>(
+    private val COMMON_SETTINGS: com.google.common.collect.Set<String?> =
+      com.google.common.collect.setOf<String?>(
         "name",
         "nameIsGenerated",
         "default",

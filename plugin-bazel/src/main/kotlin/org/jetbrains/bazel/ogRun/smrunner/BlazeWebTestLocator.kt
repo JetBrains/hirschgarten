@@ -17,7 +17,7 @@ package org.jetbrains.bazel.ogRun.smrunner
 
 import com.google.common.base.Splitter
 import com.google.common.base.Strings
-import com.google.common.collect.ImmutableList
+
 import com.intellij.execution.Location
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
@@ -36,27 +36,27 @@ internal class BlazeWebTestLocator : SMTestLocator {
     scope: GlobalSearchScope,
   ): MutableList<Location<*>?> {
     if (protocol != BlazeWebTestEventsHandler.WEB_TEST_PROTOCOL) {
-      return ImmutableList.of<Location<*>?>()
+      return listOf<Location<*>?>()
     }
     val projectData: BlazeProjectData? =
       BlazeProjectDataManager.getInstance(project).getBlazeProjectData()
     if (projectData == null) {
-      return ImmutableList.of<Location<*>?>()
+      return listOf<Location<*>?>()
     }
     val components = Splitter.on(SmRunnerUtils.TEST_NAME_PARTS_SPLITTER).splitToList(path)
     if (components.isEmpty()) {
-      return ImmutableList.of<Location<*>?>()
+      return listOf<Location<*>?>()
     }
     val wrapperLabel: Label? = Label.createIfValid(components.get(0))
     if (wrapperLabel == null) {
-      return ImmutableList.of<Location<*>?>()
+      return listOf<Location<*>?>()
     }
     val wrapperTarget: TargetIdeInfo? =
       projectData.getTargetMap().get(TargetKey.forPlainTarget(wrapperLabel))
     if (wrapperTarget == null) {
-      return ImmutableList.of<Location<*>?>()
+      return listOf<Location<*>?>()
     }
-    val builder = ImmutableList.builder<Location<*>?>()
+    val builder = List.builder<Location<*>?>()
     for (dependency in wrapperTarget.getDependencies()) {
       val targetKey: TargetKey = dependency.getTargetKey()
       val target: TargetIdeInfo? = projectData.getTargetMap().get(targetKey)
@@ -113,7 +113,7 @@ internal class BlazeWebTestLocator : SMTestLocator {
     ): MutableList<Location<*>?> {
       val components = Splitter.on(URLUtil.SCHEME_SEPARATOR).limit(2).splitToList(url)
       if (components.size != 2) {
-        return ImmutableList.of<Location<*>?>()
+        return listOf<Location<*>?>()
       }
       return locator.getLocation(
         // protocol =

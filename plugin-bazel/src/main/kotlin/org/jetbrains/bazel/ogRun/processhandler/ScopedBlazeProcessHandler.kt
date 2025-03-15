@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bazel.ogRun.processhandler
 
-import com.google.common.collect.ImmutableList
+
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.idea.blaze.base.async.process.BinaryPathRemapper
 import com.intellij.execution.Platform
@@ -57,7 +57,7 @@ class ScopedBlazeProcessHandler(
     fun onBlazeContextStart(context: BlazeContext?)
 
     /** Get a list of process listeners to add to the process.  */
-    fun createProcessListeners(context: BlazeContext?): ImmutableList<ProcessListener>?
+    fun createProcessListeners(context: BlazeContext?): List<ProcessListener>?
   }
 
   private val context: BlazeContext
@@ -118,7 +118,7 @@ class ScopedBlazeProcessHandler(
     fun remapBinaryPath(command: String?): String =
       BinaryPathRemapper
         .remapBinary(command)
-        .map({ obj: File? -> obj!!.getAbsolutePath() })
+        .map { it.getAbsolutePath() }
         .orElse(command)
   }
 }

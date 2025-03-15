@@ -139,7 +139,7 @@ public class BlazeTestSystemProperties {
       // |-lib/
       // | `-openapi.jar (jarFile)
       // `-plugins/
-      return jarDir.getParent();
+      return jarDir.parent;
     } else if (jarDir.getName().equals("core-api")) {
       // Building against source.
       // tools/idea/ <- we want this
@@ -149,7 +149,7 @@ public class BlazeTestSystemProperties {
       // `-plugins/
       File platformDir = jarDir.getParentFile();
       if (platformDir != null && platformDir.getName().equals("platform")) {
-        return platformDir.getParent();
+        return platformDir.parent;
       }
     }
     return null;

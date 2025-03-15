@@ -15,45 +15,41 @@
  */
 package org.jetbrains.bazel.ogRun.filter
 
-import com.google.idea.blaze.base.io.VirtualFileSystemProvider
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.bazel.ogRun.other.VirtualFileSystemProvider
 import java.io.File
-import java.util.*
 
 /** Parses file strings in blaze/bazel output.  */
 interface FileResolver {
-  fun resolve(project: Project?, fileString: String?): File?
+  fun resolve(project: Project, fileString: String): File?
 
   companion object {
     /**
      * Iterates through all available [FileResolver]s, returning the first successful result.
      */
     @JvmStatic
-    fun resolveToVirtualFile(project: Project?, fileString: String?): VirtualFile? =
-      Arrays
-        .stream<FileResolver?>(EP_NAME.extensions)
-        .map<File?> { r: FileResolver? -> r!!.resolve(project, fileString) }
-        .filter { obj: File? -> Objects.nonNull(obj) }
-        .map<Any?> { f: File? ->
-          VirtualFileSystemProvider.getInstance().getSystem().findFileByPath(f!!.getPath())
-        }.filter { obj: Any? -> Objects.nonNull(obj) }
-        .findFirst()
-        .orElse(null)
+    fun resolveToVirtualFile(project: Project, fileString: String): VirtualFile? =
+      EP_NAME.extensions
+        .asSequence()
+        .mapNotNull { it.resolve(project, fileString) }
+        .mapNotNull { file ->
+          VirtualFileSystemProvider.instance.system.findFileByPath(file.path)
+        }
+        .firstOrNull()
 
     /**
      * Iterates through all available [FileResolver]s, returning the first successful result.
      */
-    fun resolveToFile(project: Project?, fileString: String?): File? =
-      Arrays
-        .stream<FileResolver?>(EP_NAME.extensions)
-        .map<File?> { r: FileResolver? -> r!!.resolve(project, fileString) }
-        .filter { obj: File? -> Objects.nonNull(obj) }
-        .findFirst()
-        .orElse(null)
+    fun resolveToFile(project: Project, fileString: String): File? {
+      return EP_NAME.extensions
+        .asSequence()
+        .mapNotNull { it.resolve(project, fileString) }
+        .firstOrNull()
+    }
 
-    val EP_NAME: ExtensionPointName<FileResolver?> =
-      create.create<FileResolver?>("com.google.idea.blaze.FileStringParser")
+    val EP_NAME: ExtensionPointName<FileResolver> =
+      ExtensionPointName.create("com.google.idea.blaze.FileStringParser")
   }
 }

@@ -37,47 +37,32 @@ class BlazeRerunFailedTestsAction internal constructor(
   private val eventsHandler: BlazeTestEventsHandler,
   componentContainer: ComponentContainer,
 ) : AbstractRerunFailedTestsAction(componentContainer) {
-  override fun getRunProfile(environment: ExecutionEnvironment?): AbstractRerunFailedTestsAction.MyRunProfile? {
-    val model: TestFrameworkRunningModel? = getModel()
-    if (model == null) {
-      return null
-    }
+  override fun getRunProfile(environment: ExecutionEnvironment): MyRunProfile? {
+    val model: TestFrameworkRunningModel = getModel() ?: return null
     val config: BlazeCommandRunConfiguration =
       model.properties.configuration as BlazeCommandRunConfiguration
     return BlazeRerunTestRunProfile(config.clone())
   }
 
-  private inner class BlazeRerunTestRunProfile(configuration: BlazeCommandRunConfiguration) :
-    AbstractRerunFailedTestsAction.MyRunProfile(configuration) {
-    private val configuration: BlazeCommandRunConfiguration
-
-    init {
-      this.configuration = configuration
-    }
+  private inner class BlazeRerunTestRunProfile(private val configuration: BlazeCommandRunConfiguration) :
+    MyRunProfile(configuration) {
 
     @Throws(ExecutionException::class)
-    override fun getState(executor: Executor?, environment: ExecutionEnvironment): RunProfileState? {
+    override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? {
       val handlerState: BlazeCommandRunConfigurationCommonState? =
         configuration.getHandlerStateIfType(
           BlazeCommandRunConfigurationCommonState::class.java,
         )
       if (handlerState == null ||
-        !BlazeCommandName.TEST.equals(handlerState.commandState.getCommand())
+        BlazeCommandName.TEST != handlerState.commandState.getCommand()
       ) {
         return null
       }
-      val project = getProject()
-      val locations =
-        getFailedTests(project)
-          .stream()
-          .filter { obj: AbstractTestProxy? -> obj.isLeaf() }
-          .map { test: AbstractTestProxy? -> toLocation(project, test) }
-          .filter { obj: Location<Any?>? -> Objects.nonNull(obj) }
-          .collect(Collectors.toList())
-      val testFilter = eventsHandler.getTestFilter(getProject(), locations)
-      if (testFilter == null) {
-        return null
-      }
+      val project = project
+      val locations = getFailedTests(project)
+        .filter { it?.isLeaf == true }
+        .mapNotNull { toLocation(project, it!!) }
+      val testFilter = eventsHandler.getTestFilter(project, locations) ?: return null
       val blazeFlags =
         setTestFilter(handlerState.blazeFlagsState.rawFlags, testFilter)
       handlerState.blazeFlagsState.rawFlags = blazeFlags

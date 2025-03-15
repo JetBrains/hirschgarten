@@ -25,27 +25,25 @@ import java.io.File
 /** Runs all tests in a single selected BUILD file.  */
 internal class AllInBuildFileTestContextProvider : TestContextProvider {
   override fun getTestContext(context: ConfigurationContext): RunConfigurationContext? {
-    val location = context.getPsiLocation()
+    val location = context.psiLocation
 
     if (location !is PsiFile) {
       return null
     }
 
-    val file = location
-    if (!isBuildFile(context, file) || file.getParent() == null) {
+    val parent = location.parent
+
+    if (!isBuildFile(context, location) || parent == null) {
       return null
     }
 
-    val root: WorkspaceRoot = WorkspaceRoot.fromProject(context.getProject())
-    return Companion.fromDirectoryNonRecursive(root, file.getParent()!!)
+    val root: WorkspaceRoot = WorkspaceRoot.fromProject(context.project)
+    return fromDirectoryNonRecursive(root, parent)
   }
 
   companion object {
     private fun fromDirectoryNonRecursive(root: WorkspaceRoot, dir: PsiDirectory): RunConfigurationContext? {
-      val packagePath: WorkspacePath? = getWorkspaceRelativePath(root, dir.getVirtualFile())
-      if (packagePath == null) {
-        return null
-      }
+      val packagePath: WorkspacePath? = getWorkspaceRelativePath(root, dir.getVirtualFile()) ?: return null
       return RunConfigurationContext.fromKnownTarget(
         Label.allFromPackageNonRecursive(packagePath),
         BlazeCommandName.TEST,
@@ -54,9 +52,9 @@ internal class AllInBuildFileTestContextProvider : TestContextProvider {
     }
 
     private fun getWorkspaceRelativePath(root: WorkspaceRoot, vf: VirtualFile): WorkspacePath? =
-      root.workspacePathForSafe(File(vf.getPath()))
+      root.workspacePathForSafe(File(vf.path))
 
     private fun isBuildFile(context: ConfigurationContext, file: PsiFile): Boolean =
-      Blaze.getBuildSystemProvider(context.getProject()).isBuildFile(file.getName())
+      Blaze.getBuildSystemProvider(context.project).isBuildFile(file.name)
   }
 }

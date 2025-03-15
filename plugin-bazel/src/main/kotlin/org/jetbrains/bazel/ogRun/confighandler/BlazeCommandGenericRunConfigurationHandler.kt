@@ -18,30 +18,23 @@ package org.jetbrains.bazel.ogRun.confighandler
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RuntimeConfigurationException
 import com.intellij.execution.runners.ExecutionEnvironment
+import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
 import org.jetbrains.bazel.ogRun.other.BlazeCommandName
+import org.jetbrains.bazel.ogRun.state.BlazeCommandRunConfigurationCommonState
 
 /**
  * Generic handler for [BlazeCommandRunConfiguration]s, used as a fallback in the case where
  * no other handlers are more relevant.
  */
-class BlazeCommandGenericRunConfigurationHandler
-(configuration: BlazeCommandRunConfiguration) : BlazeCommandRunConfigurationHandler {
-  private val buildSystemName: BuildSystemName
-  private val state: BlazeCommandRunConfigurationCommonState
-
-  init {
-    this.buildSystemName = Blaze.getBuildSystemName(configuration.getProject())
-    this.state = BlazeCommandRunConfigurationCommonState(buildSystemName)
-  }
-
-  public override fun getState(): BlazeCommandRunConfigurationCommonState = state
+class BlazeCommandGenericRunConfigurationHandler(configuration: BlazeCommandRunConfiguration) : BlazeCommandRunConfigurationHandler {
+  override val state: BlazeCommandRunConfigurationCommonState = BlazeCommandRunConfigurationCommonState()
 
   override fun createRunner(executor: Executor?, environment: ExecutionEnvironment?): BlazeCommandRunConfigurationRunner =
     BlazeCommandGenericRunConfigurationRunner()
 
   @Throws(RuntimeConfigurationException::class)
   override fun checkConfiguration() {
-    state.validate(buildSystemName)
+    state.validate()
   }
 
   public override fun suggestedName(configuration: BlazeCommandRunConfiguration): String? {
@@ -51,9 +44,9 @@ class BlazeCommandGenericRunConfigurationHandler
     return BlazeConfigurationNameBuilder(configuration).build()
   }
 
-  val commandName: BlazeCommandName?
+  override val commandName: BlazeCommandName?
     get() = state.commandState.getCommand()
 
-  val handlerName: String
+  override val handlerName: String
     get() = "Generic Handler"
 }

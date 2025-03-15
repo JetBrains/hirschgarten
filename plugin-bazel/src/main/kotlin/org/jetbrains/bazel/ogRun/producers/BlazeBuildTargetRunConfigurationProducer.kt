@@ -15,38 +15,38 @@
  */
 package org.jetbrains.bazel.ogRun.producers
 
-import com.google.common.collect.ImmutableList
+
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
 import org.jetbrains.bazel.ogRun.other.BlazeCommandName
 import org.jetbrains.bazel.ogRun.producers.BlazeBuildTargetRunConfigurationProducer.Companion.getBuildTarget
+import org.jetbrains.bazel.ogRun.state.BlazeCommandRunConfigurationCommonState
 
 /** Creates run configurations from a BUILD file targets.
  * Based on BlazeBuildFileRunConfigurationProducer.java
  */
 class BlazeBuildTargetRunConfigurationProducer :
-  BlazeRunConfigurationProducer<BlazeCommandRunConfiguration?>(BlazeCommandRunConfigurationType.getInstance()) {
+  BlazeRunConfigurationProducer<BlazeCommandRunConfiguration>(BlazeCommandRunConfigurationType.getInstance()) {
   override fun doSetupConfigFromContext(
     configuration: BlazeCommandRunConfiguration,
     context: ConfigurationContext,
-    sourceElement: Ref<PsiElement?>,
+    sourceElement: Ref<PsiElement>,
   ): Boolean {
-    val project: Project = configuration.getProject()
+    val project: Project = configuration.project
     val blazeProjectData: BlazeProjectData? =
       BlazeProjectDataManager.getInstance(project).getBlazeProjectData()
     // With query sync we don't need a sync to run a configuration
     if (blazeProjectData == null && Blaze.getProjectType(project) !== ProjectType.QUERY_SYNC) {
       return false
     }
-    val target: BuildTarget? = Companion.getBuildTarget(context)
-    if (target == null) {
-      return false
-    }
+    val target: BuildTarget? = getBuildTarget(context) ?: return false
     sourceElement.set(target.rule)
-    setupConfiguration(configuration.getProject(), blazeProjectData, configuration, target)
+    setupConfiguration(configuration.project, blazeProjectData, configuration, target)
     return true
   }
 
@@ -55,7 +55,7 @@ class BlazeBuildTargetRunConfigurationProducer :
     if (target == null) {
       return false
     }
-    return configuration.targets == ImmutableList.of<Any?>(target.label)
+    return configuration.targets == listOf<Any?>(target.label)
   }
 
   companion object {
@@ -89,12 +89,10 @@ class BlazeBuildTargetRunConfigurationProducer :
         configuration.setTarget(target.label)
       }
       val state: BlazeCommandRunConfigurationCommonState? =
-        configuration.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
+        configuration.getHandlerStateIfType(
           BlazeCommandRunConfigurationCommonState::class.java,
         )
-      if (state != null) {
-        state.commandState.setCommand(BlazeCommandName.BUILD)
-      }
+      state?.commandState?.setCommand(BlazeCommandName.BUILD)
       configuration.setGeneratedName()
     }
   }

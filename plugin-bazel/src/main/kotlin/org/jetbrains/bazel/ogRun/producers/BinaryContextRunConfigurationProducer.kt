@@ -16,36 +16,39 @@
 package org.jetbrains.bazel.ogRun.producers
 
 import com.google.common.annotations.VisibleForTesting
-import com.google.common.collect.ImmutableList
+
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.intellij.psi.util.PsiModificationTracker
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
 import org.jetbrains.bazel.ogRun.other.BlazeCommandName
+import org.jetbrains.bazel.ogRun.state.BlazeCommandRunConfigurationCommonState
 import java.util.*
 
 /** Produces run configurations via [BinaryContextProvider].  */
 class BinaryContextRunConfigurationProducer
   internal constructor() :
-  BlazeRunConfigurationProducer<BlazeCommandRunConfiguration?>(BlazeCommandRunConfigurationType.getInstance()) {
+  BlazeRunConfigurationProducer<BlazeCommandRunConfiguration>(BlazeCommandRunConfigurationType.instance) {
     /** Implements [.equals] so that cached value stability checker passes.  */
     private class ContextWrapper(val context: ConfigurationContext) {
       override fun equals(obj: Any?): Boolean =
         obj is ContextWrapper &&
-          context.getPsiLocation() == obj.context.getPsiLocation()
+          context.psiLocation == obj.context.psiLocation
 
-      override fun hashCode(): Int = Objects.hash(this.javaClass, context.getPsiLocation())
+      override fun hashCode(): Int = Objects.hash(this.javaClass, context.psiLocation)
     }
 
-    private fun findRunContext(context: ConfigurationContext): BinaryRunContext? {
+    private fun findRunContext(context: ConfigurationContext): BinaryContextProvider.BinaryRunContext? {
       if (!SmRunnerUtils.getSelectedSmRunnerTreeElements(context).isEmpty()) {
         // not a binary run context
         return null
       }
       val wrapper = ContextWrapper(context)
-      val psi = context.getPsiLocation()
+      val psi = context.psiLocation
       return if (psi == null) {
         null
       } else {
@@ -55,34 +58,29 @@ class BinaryContextRunConfigurationProducer
             CachedValueProvider.Result.create<T?>(
               doFindRunContext(wrapper.context),
               PsiModificationTracker.MODIFICATION_COUNT,
-              BlazeSyncModificationTracker.getInstance(wrapper.context.getProject()),
+              BlazeSyncModificationTracker.getInstance(wrapper.context.project),
             )
           },
         )
       }
     }
 
-    private fun doFindRunContext(context: ConfigurationContext?): BinaryRunContext? =
-      Arrays
-        .stream<BinaryContextProvider?>(BinaryContextProvider.EP_NAME.extensions)
-        .map<BinaryRunContext?> { p: BinaryContextProvider? -> p!!.getRunContext(context) }
-        .filter { obj: BinaryRunContext? -> Objects.nonNull(obj) }
-        .findFirst()
-        .orElse(null)
+    private fun doFindRunContext(context: ConfigurationContext): BinaryContextProvider.BinaryRunContext? =
+      BinaryContextProvider.EP_NAME.extensions
+        .asSequence()
+        .mapNotNull { it.getRunContext(context) }
+        .firstOrNull()
 
     override fun doSetupConfigFromContext(
       configuration: BlazeCommandRunConfiguration,
       context: ConfigurationContext,
-      sourceElement: Ref<PsiElement?>,
+      sourceElement: Ref<PsiElement>,
     ): Boolean {
-      val runContext: BinaryRunContext? = findRunContext(context)
-      if (runContext == null) {
-        return false
-      }
+      val runContext: BinaryContextProvider.BinaryRunContext = findRunContext(context) ?: return false
       sourceElement.set(runContext.sourceElement)
       configuration.setTargetInfo(runContext.target)
       val handlerState: BlazeCommandRunConfigurationCommonState? =
-        configuration.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
+        configuration.getHandlerStateIfType(
           BlazeCommandRunConfigurationCommonState::class.java,
         )
       if (handlerState == null) {
@@ -96,7 +94,7 @@ class BinaryContextRunConfigurationProducer
     @VisibleForTesting
     public override fun doIsConfigFromContext(configuration: BlazeCommandRunConfiguration, context: ConfigurationContext): Boolean {
       val commonState: BlazeCommandRunConfigurationCommonState? =
-        configuration.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
+        configuration.getHandlerStateIfType(
           BlazeCommandRunConfigurationCommonState::class.java,
         )
       if (commonState == null) {
@@ -105,11 +103,8 @@ class BinaryContextRunConfigurationProducer
       if (commonState.commandState.getCommand() != BlazeCommandName.RUN) {
         return false
       }
-      val runContext: BinaryRunContext? = findRunContext(context)
-      if (runContext == null) {
-        return false
-      }
-      val targets: ImmutableList<Label?> = configuration.targets
-      return targets.size == 1 && runContext.target.label.equals(targets.get(0))
+      val runContext: BinaryContextProvider.BinaryRunContext = findRunContext(context) ?: return false
+      val targets: List<Label> = configuration.targets
+      return targets.size == 1 && runContext.target.label.equals(targets[0])
     }
   }

@@ -16,6 +16,8 @@
 package org.jetbrains.bazel.ogRun.smrunner
 
 import com.intellij.execution.Location
+import com.intellij.execution.testframework.actions.AbstractRerunFailedTestsAction
+import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.ogRun.other.Kind
@@ -26,18 +28,18 @@ import org.jetbrains.bazel.ogRun.other.Kind
  * them in a best-effort way.
  */
 class BlazeGenericTestEventsHandler : BlazeTestEventsHandler {
-  override fun handlesKind(kind: Kind?): Boolean {
+  override fun handlesKind(kind: Kind): Boolean {
     // Generic handler specifically exists to handle test-suites and multi-target blaze
     // invocations, so must handle any targets without a (known) kind.
     return kind == null || kind.getKindString().equals("test_suite")
   }
 
-  override fun getTestLocator(): SMTestLocator? = null
+  override val testLocator: SMTestLocator? = null
 
-  override fun getTestFilter(project: Project?, testLocations: MutableList<Location<*>?>?): String? {
+  override fun getTestFilter(project: Project, testLocations: List<Location<*>>): String? {
     // Test filters are language-specific, and don't work properly for multi-target invocations.
     return null
   }
 
-  override fun createRerunFailedTestsAction(consoleView: ConsoleView?): AbstractRerunFailedTestsAction? = null
+  override fun createRerunFailedTestsAction(consoleView: ConsoleView): AbstractRerunFailedTestsAction? = null
 }

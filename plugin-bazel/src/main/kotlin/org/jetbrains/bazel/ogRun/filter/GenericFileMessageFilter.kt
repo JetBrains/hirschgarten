@@ -22,6 +22,7 @@ import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.bazel.config.isBazelProject
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -53,11 +54,11 @@ internal class GenericFileMessageFilter(private val project: Project) : Filter {
 
   /** Provider for traceback filter  */
   internal class Provider : ConsoleFilterProvider {
-    override fun getDefaultFilters(project: Project): Array<Filter?> =
-      if (Blaze.isBlazeProject(project)) {
-        arrayOf<Filter>(GenericFileMessageFilter(project))
+    override fun getDefaultFilters(project: Project): Array<Filter> =
+      if (project.isBazelProject) {
+        arrayOf(GenericFileMessageFilter(project))
       } else {
-        arrayOfNulls<Filter>(0)
+emptyArray()
       }
   }
 
@@ -84,10 +85,10 @@ internal class GenericFileMessageFilter(private val project: Project) : Filter {
 
     /** defaults to -1 if no number can be parsed.  */
     private fun parseNumber(string: String?): Int {
-      try {
-        return if (string != null) string.toInt() else -1
+      return try {
+        string?.toInt() ?: -1
       } catch (e: NumberFormatException) {
-        return -1
+        -1
       }
     }
   }

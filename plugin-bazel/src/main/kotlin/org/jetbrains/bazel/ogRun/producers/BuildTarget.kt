@@ -12,10 +12,7 @@ internal class BuildTarget(
   label: Label?,
 ) {
   fun guessTargetInfo(): TargetInfo? {
-    val ruleName: String? = rule.getFunctionName()
-    if (ruleName == null) {
-      return null
-    }
+    val ruleName: String = rule.getFunctionName() ?: return null
     val kind: Kind? = Kind.fromRuleName(ruleName)
     return if (kind != null) TargetInfo.builder(label, kind.getKindString()).build() else null
   }

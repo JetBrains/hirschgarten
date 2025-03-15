@@ -30,11 +30,11 @@ interface TestContextProvider {
    * This is called frequently on the EDT, via the [RunConfigurationProducer] API, so must
    * be efficient.
    */
-  fun getTestContext(context: ConfigurationContext?): RunConfigurationContext?
+  fun getTestContext(context: ConfigurationContext): RunConfigurationContext?
 
   companion object {
     @JvmField
-    val EP_NAME: ExtensionPointName<TestContextProvider?> =
-      create.create<TestContextProvider?>("com.google.idea.blaze.TestContextProvider")
+    val EP_NAME: ExtensionPointName<TestContextProvider> =
+      ExtensionPointName.create("com.google.idea.blaze.TestContextProvider")
   }
 }

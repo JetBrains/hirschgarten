@@ -16,8 +16,11 @@
 package org.jetbrains.bazel.ogRun.exporter
 
 import com.google.common.base.Strings
-import com.google.common.collect.ImmutableList
+
 import com.google.idea.blaze.base.io.FileOperationProvider
+import com.intellij.execution.RunManager;
+import java.io.FileOutputStream;
+
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -34,80 +37,77 @@ import com.intellij.ui.*
 import com.intellij.ui.table.JBTable
 import org.jdom.output.Format
 import org.jdom.output.XMLOutputter
+import org.jetbrains.bazel.ogRun.BlazeRunConfiguration
 import java.awt.Dimension
 import java.awt.event.ActionListener
 import java.io.File
+import java.io.IOException
 import java.util.stream.Collectors
+import javax.swing.JComponent
+import javax.swing.JPanel
+import javax.swing.JTable
 
 /** UI for exporting run configurations.  */
 class ExportRunConfigurationDialog internal constructor(project: Project) : DialogWrapper(project, true) {
-  private val configurations: ImmutableList<RunConfiguration>
-  private val tableModel: ExportRunConfigurationTableModel
-  private val table: JBTable
+  private val configurations: List<RunConfiguration> =
+    RunManager
+      .getInstance(project)
+      .allConfigurationsList
+      .sortedWith(COMPARATOR)
+      .toMutableList()
+  private val tableModel: ExportRunConfigurationTableModel = ExportRunConfigurationTableModel(configurations)
+  private val table: JBTable = JBTable(tableModel)
   private val outputDirectoryPanel: FieldPanel
 
   init {
-    configurations =
-      ImmutableList.copyOf<RunConfiguration?>(
-        getInstance
-          .getInstance(project)
-          .allConfigurationsList
-          .stream()
-          .sorted(COMPARATOR)
-          .collect(Collectors.toList()),
-      )
-    tableModel = ExportRunConfigurationTableModel(configurations)
-    table = JBTable(tableModel)
-
-    val booleanColumn = table.getColumnModel().getColumn(0)
+    val booleanColumn = table.columnModel.getColumn(0)
     booleanColumn.setCellRenderer(BooleanTableCellRenderer())
     booleanColumn.setCellEditor(BooleanTableCellEditor())
-    val width = table.getFontMetrics(table.getFont()).stringWidth(table.getColumnName(0)) + 10
+    val width = table.getFontMetrics(table.font).stringWidth(table.getColumnName(0)) + 10
     booleanColumn.setPreferredWidth(width)
     booleanColumn.setMinWidth(width)
     booleanColumn.setMaxWidth(width)
 
     table
-      .getColumnModel()
+      .columnModel
       .getColumn(2)
       .setCellEditor(DefaultCellEditor(GuiUtils.createUndoableTextField()))
 
-    val nameColumn = table.getColumnModel().getColumn(1)
+    val nameColumn = table.columnModel.getColumn(1)
     nameColumn.setCellRenderer(
       object : ColoredTableCellRenderer() {
         override fun customizeCellRenderer(
-          table: JTable?,
+          table: JTable,
           value: Any?,
           isSelected: Boolean,
           hasFocus: Boolean,
           row: Int,
           col: Int,
         ) {
-          val config = configurations.get(row)
-          setIcon(config.getType().getIcon())
-          append(config.getName())
+          val config = configurations[row]
+          setIcon(config.getType().icon)
+          append(config.name)
         }
       },
     )
 
-    table.setPreferredSize(Dimension(700, 700))
+    table.preferredSize = Dimension(700, 700)
     table.setShowColumns(true)
 
-    val browseAction = ActionListener { e: ActionEvent? -> chooseDirectory() }
+    val browseAction = ActionListener { chooseDirectory() }
     outputDirectoryPanel =
       FieldPanel("Export configurations to directory:", null, browseAction, null)
     val defaultExportDirectory: File? = defaultExportDirectory(project)
     if (defaultExportDirectory != null) {
-      outputDirectoryPanel.setText(defaultExportDirectory.getPath())
+      outputDirectoryPanel.text = defaultExportDirectory.path
     }
 
-    val buildSystem: String? = Blaze.buildSystemName(project)
-    setTitle(String.format("Export %s Run Configurations", buildSystem))
+    title = "Export Bazel Run Configurations"
     init()
   }
 
   private val outputDirectoryPath: String
-    get() = Strings.nullToEmpty(outputDirectoryPanel.getText()).trim { it <= ' ' }
+    get() = Strings.nullToEmpty(outputDirectoryPanel.text).trim { it <= ' ' }
 
   private fun chooseDirectory() {
     val descriptor =
@@ -123,16 +123,16 @@ class ExportRunConfigurationDialog internal constructor(project: Project) : Dial
     val existingLocation = File(this.outputDirectoryPath)
     if (existingLocation.exists()) {
       val toSelect =
-        LocalFileSystem.getInstance().refreshAndFindFileByPath(existingLocation.getPath())
+        LocalFileSystem.getInstance().refreshAndFindFileByPath(existingLocation.path)
       files = chooser.choose(null, toSelect)
     } else {
       files = chooser.choose(null)
     }
-    if (files.size == 0) {
+    if (files.isEmpty()) {
       return
     }
     val file = files[0]
-    outputDirectoryPanel.setText(file.getPath())
+    outputDirectoryPanel.text = file.path
   }
 
   override fun doValidate(): ValidationInfo? {
@@ -145,7 +145,7 @@ class ExportRunConfigurationDialog internal constructor(project: Project) : Dial
     }
     val names: MutableSet<String?> = HashSet<String?>()
     for (i in configurations.indices) {
-      if (!tableModel.enabled[i]) {
+      if (tableModel.enabled[i] != true) {
         continue
       }
       if (!names.add(tableModel.paths[i])) {
@@ -159,7 +159,7 @@ class ExportRunConfigurationDialog internal constructor(project: Project) : Dial
     val outputDir = File(this.outputDirectoryPath)
     val outputFiles: MutableList<File?> = ArrayList<File?>()
     for (i in configurations.indices) {
-      if (!tableModel.enabled[i]) {
+      if (tableModel.enabled[i] != true) {
         continue
       }
       val outputFile = File(outputDir, tableModel.paths[i])
@@ -195,7 +195,7 @@ class ExportRunConfigurationDialog internal constructor(project: Project) : Dial
         table.setValueAt(newState, i, 0)
       }
       allSelected = newState
-      val presentation = anActionEvent.getPresentation()
+      val presentation = anActionEvent.presentation
       if (allSelected) {
         presentation.setText("Deselect All")
         presentation.setIcon(AllIcons.Actions.Unselectall)
@@ -218,11 +218,11 @@ class ExportRunConfigurationDialog internal constructor(project: Project) : Dial
         if (o1 is BlazeRunConfiguration != o2 is BlazeRunConfiguration) {
           return@Comparator if (o1 is BlazeRunConfiguration) -1 else 1
         }
-        o1!!.getName().compareTo(o2!!.getName())
+        o1!!.name.compareTo(o2!!.name)
       }
 
     /** Try to find a checked-in project view file. Otherwise, fall back to the workspace root.  */
-    private fun defaultExportDirectory(project: Project?): File? {
+    private fun defaultExportDirectory(project: Project): File? {
       val workspaceRoot: WorkspaceRoot? = WorkspaceRoot.fromProjectSafe(project)
       if (workspaceRoot == null) {
         return null
@@ -246,7 +246,7 @@ class ExportRunConfigurationDialog internal constructor(project: Project) : Dial
           xmlOutputter.output(RunConfigurationSerializer.writeToXml(configuration), writer)
         }
       } catch (e: IOException) {
-        throw RuntimeException("Error exporting run configuration to file: " + outputFile)
+        throw RuntimeException("Error exporting run configuration to file: $outputFile")
       }
     }
   }

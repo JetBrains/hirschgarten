@@ -16,8 +16,8 @@
 package org.jetbrains.bazel.ogRun.producers
 
 import com.google.common.annotations.VisibleForTesting
-import com.google.common.collect.ImmutableList
-import com.google.common.collect.ImmutableSet
+
+
 import com.google.idea.blaze.base.dependencies.TargetInfo
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.application.TransactionGuard
@@ -25,6 +25,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.psi.PsiElement
 import com.intellij.util.Consumer
+import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
+import org.jetbrains.bazel.ogRun.ExecutorType
+import org.jetbrains.bazel.ogRun.PendingRunConfigurationContext
 import java.util.*
 import java.util.function.Function
 
@@ -35,25 +38,16 @@ import java.util.function.Function
  * Creates a popup chooser when executed to select the desired web_test to run.
  */
 class PendingWebTestContext private constructor(
-  wrapperTests: ImmutableList<TargetInfo?>,
-  supportedExecutors: ImmutableSet<ExecutorType?>?,
+  val wrapperTests: List<TargetInfo>,
+  override val supportedExecutors: Set<ExecutorType>,
   sourceElement: PsiElement?,
-  blazeFlags: ImmutableList<BlazeFlagsModification?>?,
+  blazeFlags: List<BlazeFlagsModification?>?,
   description: String?,
 ) : TestContext(sourceElement, blazeFlags, description),
   PendingRunConfigurationContext {
-  private val wrapperTests: ImmutableList<TargetInfo?>
-  private val supportedExecutors: ImmutableSet<ExecutorType?>?
 
-  init {
-    this.wrapperTests = wrapperTests
-    this.supportedExecutors = supportedExecutors
-  }
-
-  val isDone: Boolean
+  override val isDone: Boolean
     get() = false
-
-  override fun supportedExecutors(): ImmutableSet<ExecutorType?>? = supportedExecutors
 
   override fun setupTarget(config: BlazeCommandRunConfiguration): Boolean {
     config.setPendingContext(this)
@@ -67,10 +61,7 @@ class PendingWebTestContext private constructor(
     config: BlazeCommandRunConfiguration,
     rerun: Runnable,
   ) {
-    val dataContext = env.getDataContext()
-    if (dataContext == null) {
-      return
-    }
+    val dataContext = env.dataContext ?: return
     val popup =
       JBPopupFactory
         .getInstance()
@@ -85,7 +76,7 @@ class PendingWebTestContext private constructor(
         ).createPopup()
     TransactionGuard
       .getInstance()
-      .submitTransactionAndWait(Runnable { popup.showInBestPositionFor(dataContext) })
+      .submitTransactionAndWait { popup.showInBestPositionFor(dataContext) }
   }
 
   @VisibleForTesting
@@ -120,10 +111,10 @@ class PendingWebTestContext private constructor(
      */
     fun findWebTestContext(
       project: Project?,
-      supportedExecutors: ImmutableSet<ExecutorType?>?,
+      supportedExecutors: Set<ExecutorType?>?,
       target: TargetInfo,
       sourceElement: PsiElement?,
-      blazeFlags: ImmutableList<BlazeFlagsModification?>?,
+      blazeFlags: List<BlazeFlagsModification?>?,
       description: String?,
     ): RunConfigurationContext? {
       if (!findWebTestContext.getValue()) {
@@ -133,7 +124,7 @@ class PendingWebTestContext private constructor(
       if (Blaze.getProjectType(project) !== ProjectType.ASPECT_SYNC) {
         return null
       }
-      val wrapperTests: ImmutableList<TargetInfo?> = getWebTestWrappers(project, target)
+      val wrapperTests: List<TargetInfo?> = getWebTestWrappers(project, target)
       if (wrapperTests.isEmpty()) {
         return null
       } else if (wrapperTests.size == 1) {
@@ -153,11 +144,11 @@ class PendingWebTestContext private constructor(
       )
     }
 
-    private fun getWebTestWrappers(project: Project?, wrappedTest: TargetInfo): ImmutableList<TargetInfo?> {
+    private fun getWebTestWrappers(project: Project?, wrappedTest: TargetInfo): List<TargetInfo?> {
       val projectData: BlazeProjectData? =
         BlazeProjectDataManager.getInstance(project).getBlazeProjectData()
       if (projectData == null) {
-        return ImmutableList.of<TargetInfo?>()
+        return listOf<TargetInfo?>()
       }
       val targetMap: TargetMap = projectData.getTargetMap()
       return ReverseDependencyMap
@@ -169,7 +160,7 @@ class PendingWebTestContext private constructor(
         .filter({ t -> t.getKind().isWebTest() })
         .map(TargetIdeInfo::toTargetInfo)
         .sorted(Comparator.comparing<T?, U?>(Function { t: T? -> t.label }))
-        .collect(ImmutableList.toImmutableList<E?>())
+        .collect(List.toImmutableList<E?>())
     }
   }
 }

@@ -15,14 +15,17 @@
  */
 package org.jetbrains.bazel.ogRun.producers
 
-import com.google.common.collect.ImmutableList
+
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
 import org.jetbrains.bazel.ogRun.other.BlazeCommandName
 import org.jetbrains.bazel.ogRun.producers.BlazeBuildFileRunConfigurationProducer.Companion.getBuildTarget
+import org.jetbrains.bazel.ogRun.state.BlazeCommandRunConfigurationCommonState
 import java.util.*
 import java.util.function.Consumer
 
@@ -32,9 +35,9 @@ class BlazeBuildFileRunConfigurationProducer :
   override fun doSetupConfigFromContext(
     configuration: BlazeCommandRunConfiguration,
     context: ConfigurationContext,
-    sourceElement: Ref<PsiElement?>,
+    sourceElement: Ref<PsiElement>,
   ): Boolean {
-    val project: Project = configuration.getProject()
+    val project = configuration.project
     val blazeProjectData: BlazeProjectData? =
       BlazeProjectDataManager.getInstance(project).getBlazeProjectData()
     // With query sync we don't need a sync to run a configuration
@@ -46,16 +49,13 @@ class BlazeBuildFileRunConfigurationProducer :
       return false
     }
     sourceElement.set(target.rule)
-    setupConfiguration(configuration.getProject(), blazeProjectData, configuration, target)
+    setupConfiguration(configuration.project, blazeProjectData, configuration, target)
     return configuration.getHandler().getCommandName() != null
   }
 
   override fun doIsConfigFromContext(configuration: BlazeCommandRunConfiguration, context: ConfigurationContext): Boolean {
-    val target: BuildTarget? = Companion.getBuildTarget(context)
-    if (target == null) {
-      return false
-    }
-    if (configuration.targets != ImmutableList.of<Any?>(target.label)) {
+    val target: BuildTarget? = getBuildTarget(context) ?: return false
+    if (configuration.targets != listOf(target.label)) {
       return false
     }
 
@@ -71,18 +71,18 @@ class BlazeBuildFileRunConfigurationProducer :
     // to cover what the handler considers important,
     // and ignores changes the user may have made to the name.
     val blazeProjectData: BlazeProjectData? =
-      BlazeProjectDataManager.getInstance(configuration.getProject()).getBlazeProjectData()
+      BlazeProjectDataManager.getInstance(configuration.project).getBlazeProjectData()
     if (blazeProjectData == null) {
       return false
     }
     val generatedConfiguration: BlazeCommandRunConfiguration =
       BlazeCommandRunConfiguration(
-        configuration.getProject(),
+        configuration.project,
         configuration.getFactory(),
-        configuration.getName(),
+        configuration.name,
       )
     setupConfiguration(
-      configuration.getProject(),
+      configuration.project,
       blazeProjectData,
       generatedConfiguration,
       target,
@@ -90,10 +90,10 @@ class BlazeBuildFileRunConfigurationProducer :
 
     // ignore filtered test configs, produced by other configuration producers.
     val handlerState: BlazeCommandRunConfigurationCommonState? =
-      configuration.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
+      configuration.getHandlerStateIfType(
         BlazeCommandRunConfigurationCommonState::class.java,
       )
-    if (handlerState != null && handlerState.testFilterFlag != null) {
+    if (handlerState?.testFilterFlag != null) {
       return false
     }
 
@@ -104,10 +104,10 @@ class BlazeBuildFileRunConfigurationProducer :
   companion object {
     private fun getBuildTarget(context: ConfigurationContext): BuildTarget? =
       getBuildTarget(
-        PsiTreeUtil.getNonStrictParentOfType(context.getPsiLocation(), FuncallExpression::class.java),
+        PsiTreeUtil.getNonStrictParentOfType(context.psiLocation, FuncallExpression::class.java),
       )
 
-    fun getBuildTarget(rule: FuncallExpression?): BuildTarget? {
+    fun getBuildTarget(rule: FuncallExpression): BuildTarget? {
       if (rule == null) {
         return null
       }
@@ -147,11 +147,11 @@ class BlazeBuildFileRunConfigurationProducer :
         config.setTarget(target.label)
       }
       val state: BlazeCommandRunConfigurationCommonState? =
-        config.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
+        config.getHandlerStateIfType(
           BlazeCommandRunConfigurationCommonState::class.java,
         )
       if (state != null) {
-        val blazeCommandName: Optional<BlazeCommandName?> = commandForRuleType(target.ruleType)
+        val blazeCommandName: BlazeCommandName? = commandForRuleType(target.ruleType)
         blazeCommandName.ifPresent(
           Consumer { command: BlazeCommandName? ->
             state.commandState.setCommand(
@@ -163,7 +163,7 @@ class BlazeBuildFileRunConfigurationProducer :
       config.setGeneratedName()
     }
 
-    fun commandForRuleType(ruleType: RuleType): Optional<BlazeCommandName?> {
+    fun commandForRuleType(ruleType: RuleType): BlazeCommandName? {
       when (ruleType) {
         BINARY -> return Optional.of<BlazeCommandName?>(BlazeCommandName.RUN)
         TEST -> return Optional.of<BlazeCommandName?>(BlazeCommandName.TEST)

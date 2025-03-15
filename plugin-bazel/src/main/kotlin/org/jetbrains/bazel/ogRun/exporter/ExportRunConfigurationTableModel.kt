@@ -15,30 +15,27 @@
  */
 package org.jetbrains.bazel.ogRun.exporter
 
-import com.google.common.collect.ImmutableList
+
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.util.text.UniqueNameGenerator
 import javax.swing.table.AbstractTableModel
 
 /** Table model used by the 'export run configurations' UI.  */
-internal class ExportRunConfigurationTableModel(configurations: MutableList<RunConfiguration>) : AbstractTableModel() {
-  val enabled: Array<Boolean?>
-  val names: Array<String?>
-  val paths: Array<String?>
+internal class ExportRunConfigurationTableModel(configurations: List<RunConfiguration>) : AbstractTableModel() {
+  val enabled: Array<Boolean?> = arrayOfNulls<Boolean>(configurations.size)
+  val names: Array<String?> = arrayOfNulls<String>(configurations.size)
+  val paths: Array<String?> = arrayOfNulls<String>(configurations.size)
 
   init {
-    enabled = arrayOfNulls<Boolean>(configurations.size)
-    names = arrayOfNulls<String>(configurations.size)
-    paths = arrayOfNulls<String>(configurations.size)
 
     val nameGenerator = UniqueNameGenerator()
     for (i in configurations.indices) {
-      val config = configurations.get(i)
+      val config = configurations[i]
       enabled[i] = false
-      names[i] = config.getName()
+      names[i] = config.name
       paths[i] =
-        nameGenerator.generateUniqueName(FileUtil.sanitizeFileName(config.getName()), "", ".xml")
+        nameGenerator.generateUniqueName(FileUtil.sanitizeFileName(config.name), "", ".xml")
     }
   }
 
@@ -53,11 +50,11 @@ internal class ExportRunConfigurationTableModel(configurations: MutableList<RunC
   override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = columnIndex != 1
 
   override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? {
-    when (columnIndex) {
-      0 -> return enabled[rowIndex]
-      1 -> return names[rowIndex]
-      2 -> return paths[rowIndex]
-      else -> throw RuntimeException("Invalid column index: " + columnIndex)
+    return when (columnIndex) {
+      0 -> enabled[rowIndex]
+      1 -> names[rowIndex]
+      2 -> paths[rowIndex]
+      else -> throw RuntimeException("Invalid column index: $columnIndex")
     }
   }
 
@@ -82,14 +79,14 @@ internal class ExportRunConfigurationTableModel(configurations: MutableList<RunC
         return
       }
 
-      else -> throw RuntimeException("Invalid column index: " + columnIndex)
+      else -> throw RuntimeException("Invalid column index: $columnIndex")
     }
   }
 
   companion object {
-    private val COLUMN_NAMES: ImmutableList<String?> =
-      ImmutableList.of<String?>("Export", "Name", "Output filename")
-    private val COLUMN_CLASSES: ImmutableList<Class<*>?> =
-      ImmutableList.of<Class<*>?>(Boolean::class.java, String::class.java, String::class.java)
+    private val COLUMN_NAMES: List<String?> =
+      listOf<String?>("Export", "Name", "Output filename")
+    private val COLUMN_CLASSES: List<Class<*>?> =
+      listOf<Class<*>?>(Boolean::class.java, String::class.java, String::class.java)
   }
 }

@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bazel.ogRun.producers
 
-import com.google.common.collect.ImmutableList
+
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.psi.PsiElement
@@ -98,7 +98,7 @@ interface RunConfigurationContext {
             return false
           }
           return handlerState.commandState.getCommand() == command &&
-            config.targets == ImmutableList.of<Any?>(target) &&
+            config.targets == listOf<Any?>(target) &&
             handlerState.testFilterFlag == null
         }
       }

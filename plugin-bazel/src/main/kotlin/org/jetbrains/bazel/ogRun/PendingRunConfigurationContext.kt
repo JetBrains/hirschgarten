@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bazel.ogRun
 
-import com.google.common.collect.ImmutableSet
+
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.psi.PsiElement
@@ -31,7 +31,7 @@ import org.jetbrains.bazel.ogRun.producers.RunConfigurationContext
  */
 interface PendingRunConfigurationContext : RunConfigurationContext {
   /** Used to indicate that a pending run configuration couldn't be successfully set up.  */
-  class NoRunConfigurationFoundException(s: String?) : ExecutionException(s)
+  class NoRunConfigurationFoundException(s: String) : ExecutionException(s)
 
   /**
    * A result from a [PendingRunConfigurationContext], indicating that no run configuration
@@ -48,7 +48,7 @@ interface PendingRunConfigurationContext : RunConfigurationContext {
     override fun matchesRunConfiguration(config: BlazeCommandRunConfiguration): Boolean = false
   }
 
-  fun supportedExecutors(): ImmutableSet<ExecutorType?>?
+  val supportedExecutors: Set<ExecutorType>
 
   /**
    * Returns true if this is an asynchronous [PendingRunConfigurationContext] that had been
@@ -68,8 +68,8 @@ interface PendingRunConfigurationContext : RunConfigurationContext {
    */
   @Throws(ExecutionException::class)
   fun resolve(
-    env: ExecutionEnvironment?,
-    config: BlazeCommandRunConfiguration?,
-    rerun: Runnable?,
+    env: ExecutionEnvironment,
+    config: BlazeCommandRunConfiguration,
+    rerun: Runnable,
   )
 }

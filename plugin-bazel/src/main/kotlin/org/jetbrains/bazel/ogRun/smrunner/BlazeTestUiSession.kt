@@ -15,8 +15,8 @@
  */
 package org.jetbrains.bazel.ogRun.smrunner
 
-import com.google.auto.value.AutoValue
-import com.google.common.collect.ImmutableList
+import org.jetbrains.bazel.ogRun.testlogs.BlazeTestResultFinderStrategy
+
 
 /**
  * Created during a single blaze test invocation, to manage test result finding and UI.
@@ -26,19 +26,12 @@ import com.google.common.collect.ImmutableList
  * between all stages of the test (e.g. an output file path used for both the initial blaze
  * invocation and required when parsing test results).
  */
-@AutoValue
-abstract class BlazeTestUiSession {
+data class BlazeTestUiSession(
   /**
    * Blaze flags required for test UI.<br></br>
    * Forces local test execution, without retries.
    */
-  abstract val blazeFlags: ImmutableList<String?>?
-
+  val blazeFlags: List<String>,
   /** Returns a [BlazeTestResultFinderStrategy] for this blaze test invocation.  */
-  abstract val testResultFinderStrategy: BlazeTestResultFinderStrategy?
-
-  companion object {
-    fun create(blazeFlags: ImmutableList<String?>?, testResultFinderStrategy: BlazeTestResultFinderStrategy?): BlazeTestUiSession =
-      AutoValue_BlazeTestUiSession(blazeFlags, testResultFinderStrategy)
-  }
-}
+  val testResultFinderStrategy: BlazeTestResultFinderStrategy?
+)

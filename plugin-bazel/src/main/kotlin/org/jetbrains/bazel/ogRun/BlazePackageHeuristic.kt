@@ -56,7 +56,7 @@ internal class BlazePackageHeuristic : TestTargetHeuristic {
         if (vf.isDirectory() && provider.findBuildFileInDirectory(vf) != null) {
           return root.workspacePathForSafe(File(vf.getPath()))
         }
-        vf = vf.getParent()
+        vf = vf.parent
       }
       return null
     }

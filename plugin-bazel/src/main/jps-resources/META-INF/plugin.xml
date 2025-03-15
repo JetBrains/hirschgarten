@@ -217,6 +217,9 @@
         <notificationGroup displayType="BALLOON" id="Bazel Plugin"/>
         <editorNotificationProvider
                 implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"/>
+
+        <applicationService serviceImplementation="org.jetbrains.bazel.ogRun.other.VirtualFileSystemProviderImpl"
+                            serviceInterface="org.jetbrains.bazel.ogRun.other.VirtualFileSystemProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">

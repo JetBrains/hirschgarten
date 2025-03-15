@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bazel.ogRun.testmap
 
-import com.google.common.collect.ImmutableList
+
 import com.google.common.collect.ImmutableSortedSet
 import com.google.common.util.concurrent.Futures
 import com.google.idea.blaze.base.dependencies.TargetInfo
@@ -35,13 +35,13 @@ class ProjectSourceToTargetFinder : SourceToTargetFinder {
   override fun targetsForSourceFiles(
     project: Project?,
     sourceFiles: MutableSet<File?>,
-    ruleType: Optional<RuleType?>,
+    ruleType: RuleType?,
   ): Future<MutableCollection<TargetInfo?>?>? {
     if (Blaze.getProjectType(project).equals(ProjectType.QUERY_SYNC)) {
       val projectData: QuerySyncProjectData? =
         BlazeProjectDataManager.getInstance(project).getBlazeProjectData() as QuerySyncProjectData?
       if (projectData == null) {
-        return Futures.immediateFuture<MutableCollection<TargetInfo?>?>(ImmutableList.of<TargetInfo?>())
+        return Futures.immediateFuture<MutableCollection<TargetInfo?>?>(listOf<TargetInfo?>())
       }
       val targets: ImmutableSortedSet<TargetInfo?>? =
         sourceFiles
@@ -68,7 +68,7 @@ class ProjectSourceToTargetFinder : SourceToTargetFinder {
         .getInstance(project)
         .get(ProjectSourceToTargetFinder::class.java, ProjectSourceToTargetFinder::computeTargetMap)
     if (targetMap == null) {
-      return Futures.immediateFuture<MutableCollection<TargetInfo?>?>(ImmutableList.of<TargetInfo?>())
+      return Futures.immediateFuture<MutableCollection<TargetInfo?>?>(listOf<TargetInfo?>())
     }
     val targets: ImmutableSortedSet<TargetInfo?>? =
       targetMap

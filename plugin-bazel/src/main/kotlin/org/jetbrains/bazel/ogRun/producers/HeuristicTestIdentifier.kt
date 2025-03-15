@@ -15,9 +15,10 @@
  */
 package org.jetbrains.bazel.ogRun.producers
 
-import com.google.common.collect.ImmutableSet
+
 import com.google.idea.blaze.base.model.primitives.WorkspacePath
 import com.intellij.openapi.extensions.ExtensionPointName
+import org.jetbrains.bazel.ogRun.ExecutorType
 
 /**
  * A rough heuristic to recognize test files without resolving PSI elements.
@@ -37,11 +38,11 @@ interface HeuristicTestIdentifier {
    *
    * This method is run frequently on the EDT, so must be fast.
    */
-  fun supportedExecutors(path: WorkspacePath?): ImmutableSet<ExecutorType?>?
+  fun supportedExecutors(path: WorkspacePath): Set<ExecutorType>
 
   companion object {
     @JvmField
-    val EP_NAME: ExtensionPointName<HeuristicTestIdentifier?> =
-      create.create<HeuristicTestIdentifier?>("com.google.idea.blaze.HeuristicTestIdentifier")
+    val EP_NAME: ExtensionPointName<HeuristicTestIdentifier> =
+      ExtensionPointName.create("com.google.idea.blaze.HeuristicTestIdentifier")
   }
 }

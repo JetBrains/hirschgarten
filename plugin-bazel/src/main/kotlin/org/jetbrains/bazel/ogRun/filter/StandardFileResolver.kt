@@ -18,12 +18,13 @@ package org.jetbrains.bazel.ogRun.filter
 import com.google.idea.blaze.base.model.BlazeProjectData
 import com.intellij.openapi.project.Project
 import java.io.File
+import java.io.IOException
 
 /** Parses absolute and workspace-relative paths.  */
 class StandardFileResolver : FileResolver {
-  override fun resolve(project: Project?, fileString: String): File? {
+  override fun resolve(project: Project, fileString: String): File? {
     val file = File(fileString)
-    if (file.isAbsolute()) {
+    if (file.isAbsolute) {
       return File(getCanonicalPathSafe(file))
     }
     val projectData: BlazeProjectData? =
@@ -43,7 +44,7 @@ class StandardFileResolver : FileResolver {
       try {
         return file.getCanonicalPath()
       } catch (e: IOException) {
-        return file.getAbsolutePath()
+        return file.absolutePath
       }
     }
   }

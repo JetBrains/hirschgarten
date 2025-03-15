@@ -15,18 +15,19 @@
  */
 package org.jetbrains.bazel.ogRun.confighandler
 
+import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
 import org.jetbrains.bazel.ogRun.other.Kind
 
 class PendingTargetRunConfigurationHandlerProvider : BlazeCommandRunConfigurationHandlerProvider {
-  val displayLabel: String?
+  override val displayLabel: String
     get() = "(select)"
 
   override fun canHandleKind(state: BlazeCommandRunConfigurationHandlerProvider.TargetState, kind: Kind?): Boolean =
     state == BlazeCommandRunConfigurationHandlerProvider.TargetState.PENDING
 
-  public override fun createHandler(config: BlazeCommandRunConfiguration): BlazeCommandRunConfigurationHandler =
-    PendingTargetRunConfigurationHandler(config)
+  override fun createHandler(configuration: BlazeCommandRunConfiguration): BlazeCommandRunConfigurationHandler =
+    PendingTargetRunConfigurationHandler(configuration)
 
-  val id: String?
+  override val id: String
     get() = "PendingTargetHandler"
 }

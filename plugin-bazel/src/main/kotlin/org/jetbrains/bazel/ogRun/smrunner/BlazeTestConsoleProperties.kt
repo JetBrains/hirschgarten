@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bazel.ogRun.smrunner
 
-import com.google.common.collect.ImmutableList
+
 import com.intellij.execution.Executor
 import com.intellij.execution.testframework.TestConsoleProperties
 import com.intellij.execution.testframework.actions.AbstractRerunFailedTestsAction
@@ -38,8 +38,8 @@ class BlazeTestConsoleProperties(
 ) : SMTRunnerConsoleProperties(runConfiguration, SmRunnerUtils.BLAZE_FRAMEWORK, executor),
   SMCustomMessagesParsing {
   override fun createTestEventsConverter(
-    framework: String?,
-    consoleProperties: TestConsoleProperties?,
+    framework: String,
+    consoleProperties: TestConsoleProperties,
   ): OutputToGeneralTestEventsConverter =
     BlazeXmlToTestEventsConverter(
       framework,
@@ -49,7 +49,7 @@ class BlazeTestConsoleProperties(
 
   override fun getTestLocator(): SMTestLocator? =
     CompositeSMTestLocator(
-      ImmutableList.copyOf<SMTestLocator?>(
+      listOf<SMTestLocator?>(
         Arrays
           .stream<BlazeTestEventsHandler?>(BlazeTestEventsHandler.EP_NAME.extensions)
           .map<SMTestLocator?> { obj: BlazeTestEventsHandler? -> obj!!.testLocator }
@@ -61,7 +61,7 @@ class BlazeTestConsoleProperties(
   override fun createRerunFailedTestsAction(consoleView: ConsoleView?): AbstractRerunFailedTestsAction? =
     BlazeTestEventsHandler
       .getHandlerForTargets(
-        runConfiguration.getProject(),
+        runConfiguration.project,
         runConfiguration.targets,
       ).map<AbstractRerunFailedTestsAction?>(
         Function { handler: BlazeTestEventsHandler? ->

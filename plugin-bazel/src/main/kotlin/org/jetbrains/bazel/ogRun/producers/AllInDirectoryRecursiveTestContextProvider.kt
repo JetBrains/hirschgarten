@@ -28,16 +28,13 @@ internal class AllInDirectoryRecursiveTestContextProvider : TestContextProvider 
     if (location !is PsiDirectory) {
       return null
     }
-    val root: WorkspaceRoot = WorkspaceRoot.fromProject(context.getProject())
+    val root: WorkspaceRoot = WorkspaceRoot.fromProject(context.project)
     return fromDirectoryRecursive(root, location)
   }
 
   companion object {
     private fun fromDirectoryRecursive(root: WorkspaceRoot, dir: PsiDirectory): RunConfigurationContext? {
-      val packagePath: WorkspacePath? = getWorkspaceRelativePath(root, dir.getVirtualFile())
-      if (packagePath == null) {
-        return null
-      }
+      val packagePath: WorkspacePath? = getWorkspaceRelativePath(root, dir.virtualFile) ?: return null
       return RunConfigurationContext.fromKnownTarget(
         Label.allFromPackageRecursive(packagePath),
         BlazeCommandName.TEST,
@@ -46,6 +43,6 @@ internal class AllInDirectoryRecursiveTestContextProvider : TestContextProvider 
     }
 
     private fun getWorkspaceRelativePath(root: WorkspaceRoot, vf: VirtualFile): WorkspacePath? =
-      root.workspacePathForSafe(File(vf.getPath()))
+      root.workspacePathForSafe(File(vf.path))
   }
 }

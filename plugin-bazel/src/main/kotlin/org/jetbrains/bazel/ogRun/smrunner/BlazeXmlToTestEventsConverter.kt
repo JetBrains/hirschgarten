@@ -16,17 +16,21 @@
 package org.jetbrains.bazel.ogRun.smrunner
 
 import com.google.common.base.Joiner
-import com.google.common.collect.ImmutableList
+
 import com.google.common.collect.ImmutableMap
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.idea.blaze.base.command.buildresult.BuildResultHelper.GetArtifactsException
 import com.intellij.execution.process.ProcessOutputTypes
+import com.intellij.execution.testframework.TestConsoleProperties
+import com.intellij.execution.testframework.sm.runner.OutputToGeneralTestEventsConverter
 import com.intellij.execution.testframework.sm.runner.events.TestOutputEvent
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.ProjectManager
 import jetbrains.buildServer.messages.serviceMessages.TestSuiteStarted
 import org.jetbrains.bazel.ogRun.testlogs.BlazeTestResult
+import org.jetbrains.bazel.ogRun.testlogs.BlazeTestResultFinderStrategy
+import org.jetbrains.bazel.ogRun.testlogs.BlazeTestResults
 import java.util.*
 import java.util.function.Consumer
 
@@ -123,7 +127,7 @@ class BlazeXmlToTestEventsConverter(
   /** Process all parsed test XML files from a single test target.  */
   private fun processParsedTestResults(parsedResults: ParsedTargetResults) {
     if (noUsefulOutput(parsedResults.results, parsedResults.outputFiles)) {
-      val status: Optional<BlazeTestResult.TestStatus?> =
+      val status: BlazeTestResult.TestStatus? =
         parsedResults.results
           .stream()
           .map<Any?>(BlazeTestResult::getTestStatus)
@@ -385,7 +389,7 @@ class BlazeXmlToTestEventsConverter(
             if (!test.errors.isEmpty()) {
               test.errors
             } else {
-              ImmutableList.of<ErrorOrFailureOrSkipped?>(NO_ERROR)
+              listOf<ErrorOrFailureOrSkipped?>(NO_ERROR)
             }
           }
         val isError = test.failures.isEmpty()

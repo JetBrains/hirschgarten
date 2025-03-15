@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bazel.ogRun.ui
 
-import com.google.common.collect.ImmutableList
+
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.ui.*
@@ -179,7 +179,7 @@ class TargetExpressionListUi(private val project: Project) : JPanel() {
           BlazeImportSettingsManager.getInstance(project).getImportSettings()
         val projectViewSet: ProjectViewSet? = ProjectViewManager.getInstance(project).getProjectViewSet()
         if (projectData == null || importSettings == null || projectViewSet == null) {
-          return ImmutableList.of<String?>()
+          return listOf<String?>()
         }
         val importRoots: ImportRoots =
           ImportRoots
@@ -198,7 +198,7 @@ class TargetExpressionListUi(private val project: Project) : JPanel() {
           .map(TargetKey::getLabel)
           .filter(importRoots::importAsSource)
           .map(Label::toString)
-          .collect(ImmutableList.toImmutableList<E?>())
+          .collect(List.toImmutableList<E?>())
       }
     }
   }

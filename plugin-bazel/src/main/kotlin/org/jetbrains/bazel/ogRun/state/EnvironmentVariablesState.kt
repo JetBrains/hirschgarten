@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bazel.ogRun.state
 
-import com.google.common.collect.ImmutableList
+
 import com.google.common.collect.ImmutableMap
 import com.google.idea.blaze.base.command.BlazeFlags
 import com.intellij.execution.configuration.EnvironmentVariablesComponent
@@ -33,9 +33,9 @@ class EnvironmentVariablesState : RunConfigurationState {
     EnvironmentVariablesData.create(ImmutableMap.of<String?, String?>(), /* passParentEnvs= */true)
     private set
 
-  fun asBlazeTestEnvFlags(): ImmutableList<String?> {
-    val flags = ImmutableList.builder<String?>()
-    for (env in data.getEnvs().entries) {
+  fun asBlazeTestEnvFlags(): List<String?> {
+    val flags = List.builder<String?>()
+    for (env in data.envs.entries) {
       flags.add(BlazeFlags.TEST_ENV, String.format("%s=%s", env.key, env.value))
     }
     return flags.build()

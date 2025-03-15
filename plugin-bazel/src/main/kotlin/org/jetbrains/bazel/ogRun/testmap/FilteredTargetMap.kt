@@ -39,27 +39,27 @@ class FilteredTargetMap(
     this.filter = filter
   }
 
-  fun targetsForSourceFile(sourceFile: File): ImmutableSet<TargetIdeInfo?> = targetsForSourceFiles(ImmutableList.of<File?>(sourceFile))
+  fun targetsForSourceFile(sourceFile: File): Set<TargetIdeInfo?> = targetsForSourceFiles(listOf<File?>(sourceFile))
 
-  fun targetsForSourceFiles(sourceFiles: MutableCollection<File?>): ImmutableSet<TargetIdeInfo?> {
+  fun targetsForSourceFiles(sourceFiles: MutableCollection<File?>): Set<TargetIdeInfo?> {
     val blazeProjectData: BlazeProjectData? =
       BlazeProjectDataManager.getInstance(project).getBlazeProjectData()
     if (blazeProjectData != null) {
       return targetsForSourceFilesImpl(ReverseDependencyMap.get(project), sourceFiles)
     }
-    return ImmutableSet.of<TargetIdeInfo?>()
+    return setOf<TargetIdeInfo?>()
   }
 
   private fun targetsForSourceFilesImpl(
     rdepsMap: ImmutableMultimap<TargetKey?, TargetKey?>,
     sourceFiles: MutableCollection<File?>,
-  ): ImmutableSet<TargetIdeInfo?> {
-    val result: ImmutableSet.Builder<TargetIdeInfo?> = ImmutableSet.builder<TargetIdeInfo?>()
+  ): Set<TargetIdeInfo?> {
+    val result: Set.Builder<TargetIdeInfo?> = Set.builder<TargetIdeInfo?>()
     val roots: MutableSet<TargetKey?>? =
       sourceFiles
         .stream()
         .flatMap<TargetKey?> { f: File? -> rootsMap.get(f).stream() }
-        .collect(ImmutableSet.toImmutableSet<TargetKey?>())
+        .collect(Set.toSet<TargetKey?>())
 
     val todo: Queue<TargetKey> = Queues.newArrayDeque<TargetKey>()
     todo.addAll(roots)

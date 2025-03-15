@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bazel.ogRun
 
-import com.google.common.collect.ImmutableSet
+
 import com.google.common.collect.Sets
 import com.google.idea.blaze.base.model.BlazeProjectData
 import com.intellij.execution.*
@@ -38,7 +38,7 @@ class BlazeRunConfigurationSyncListener : SyncListener {
     context: BlazeContext?,
     importSettings: BlazeImportSettings?,
     projectViewSet: ProjectViewSet,
-    buildIds: ImmutableSet<Int?>?,
+    buildIds: Set<Int?>?,
     blazeProjectData: BlazeProjectData,
     syncMode: SyncMode?,
     syncResult: SyncResult?,
@@ -130,7 +130,7 @@ class BlazeRunConfigurationSyncListener : SyncListener {
     private fun addBlazeBeforeRunTask(config: BlazeCommandRunConfiguration): Boolean {
       val provider: BeforeRunTaskProvider<*>? =
         BlazeBeforeRunTaskProvider.getProvider<BlazeBeforeRunTaskProvider.Task?>(
-          config.getProject(),
+          config.project,
           BlazeBeforeRunTaskProvider.ID,
         )
       if (provider == null) {

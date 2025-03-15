@@ -18,7 +18,7 @@ package org.jetbrains.bazel.ogRun.other
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.ImmutableMultimap
-import com.google.common.collect.ImmutableSet
+
 import com.google.common.collect.Multimap
 import com.google.common.collect.Multimaps
 import com.intellij.openapi.application.ApplicationManager
@@ -49,7 +49,7 @@ abstract class Kind {
    */
   interface Provider {
     /** A set of rule names known at compile time.  */
-    val targetKinds: ImmutableSet<Kind?>?
+    val targetKinds: Set<Kind?>?
 
     val targetKindHeuristics: Function<IntellijIdeInfo.TargetIdeInfo, Kind?>
       /**
@@ -64,13 +64,13 @@ abstract class Kind {
         ruleName: String?,
         languageClass: LanguageClass,
         ruleType: RuleType?,
-      ): Kind = Companion.create(ruleName, ImmutableSet.of<LanguageClass?>(languageClass), ruleType)
+      ): Kind = Companion.create(ruleName, setOf<LanguageClass?>(languageClass), ruleType)
 
       fun create(
         ruleName: String?,
         languageClasses: MutableCollection<LanguageClass?>,
         ruleType: RuleType?,
-      ): Kind = AutoValue_Kind(ruleName, ImmutableSet.copyOf<E?>(languageClasses), ruleType)
+      ): Kind = AutoValue_Kind(ruleName, Set.copyOf<E?>(languageClasses), ruleType)
 
       val EP_NAME: ExtensionPointName<Provider?> = create.create<Provider?>("com.google.idea.blaze.TargetKindProvider")
     }
@@ -96,8 +96,8 @@ abstract class Kind {
       // initialize the global state
       Arrays
         .stream<Provider?>(Provider.Companion.EP_NAME.extensions)
-        .map<ImmutableSet<Kind?>?> { obj: Provider? -> obj!!.targetKinds }
-        .flatMap<Kind?> { obj: ImmutableSet<Kind?>? -> obj!!.stream() }
+        .map<Set<Kind?>?> { obj: Provider? -> obj!!.targetKinds }
+        .flatMap<Kind?> { obj: Set<Kind?>? -> obj!!.stream() }
         .forEach { kind: Kind? -> this.cacheIfNecessary(kind!!) }
     }
 
@@ -119,7 +119,7 @@ abstract class Kind {
 
   abstract val kindString: String?
 
-  abstract val languageClasses: ImmutableSet<LanguageClass>?
+  abstract val languageClasses: Set<LanguageClass>?
 
   abstract val ruleType: RuleType?
 
@@ -189,7 +189,7 @@ abstract class Kind {
         }
       }
 
-    fun getKindsForLanguage(language: LanguageClass): ImmutableSet<Kind?> = ImmutableSet.copyOf<Kind?>(perLanguageKinds.get(language))
+    fun getKindsForLanguage(language: LanguageClass): Set<Kind?> = Set.copyOf<Kind?>(perLanguageKinds.get(language))
 
     /** If rule type isn't recognized, uses a heuristic to guess the rule type.  */
     fun guessRuleType(ruleName: String): RuleType? {

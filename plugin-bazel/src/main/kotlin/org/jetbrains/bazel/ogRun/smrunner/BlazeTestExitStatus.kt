@@ -17,9 +17,9 @@ package org.jetbrains.bazel.ogRun.smrunner
 
 /** Utilities for interpreting "blaze test" exit codes and associated errors.  */
 enum class BlazeTestExitStatus(
-  title: String,
-  message: String,
-  exitCode: Int,
+  val title: String,
+  val message: String,
+  val exitCode: Int,
 ) {
   // Exit codes taken from
   // https://docs.bazel.build/versions/master/guide.html#what-exit-code-will-i-get
@@ -39,19 +39,6 @@ enum class BlazeTestExitStatus(
     37,
   ),
   ;
-
-  @JvmField
-  val title: String?
-
-  @JvmField
-  val message: String?
-  val exitCode: Int
-
-  init {
-    this.title = title
-    this.message = message
-    this.exitCode = exitCode
-  }
 
   companion object {
     @JvmStatic

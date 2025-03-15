@@ -16,6 +16,7 @@
 package org.jetbrains.bazel.ogRun.confighandler
 
 import com.intellij.openapi.extensions.ExtensionPointName
+import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
 
 /**
  * Provides a [BlazeCommandRunConfigurationHandler] corresponding to a given [ ].
@@ -30,16 +31,16 @@ interface BlazeCommandRunConfigurationHandlerProvider {
   }
 
   /** Whether this extension is applicable to the kind.  */
-  fun canHandleKind(state: TargetState?, kind: Kind?): Boolean
+  fun canHandleKind(state: TargetState, kind: Kind): Boolean
 
   /** Returns the corresponding [BlazeCommandRunConfigurationHandler].  */
-  fun createHandler(configuration: BlazeCommandRunConfiguration?): BlazeCommandRunConfigurationHandler?
+  fun createHandler(configuration: BlazeCommandRunConfiguration): BlazeCommandRunConfigurationHandler
 
   /**
    * Returns the unique ID of this [BlazeCommandRunConfigurationHandlerProvider]. The ID is
    * used to store configuration settings and must not change between plugin versions.
    */
-  val id: String?
+  val id: String
 
   companion object {
     /**
@@ -55,14 +56,14 @@ interface BlazeCommandRunConfigurationHandlerProvider {
     /**
      * Find BlazeCommandRunConfigurationHandlerProviders applicable to the given kind.
      */
-    fun findHandlerProviders(state: TargetState?, kind: Kind?): List<BlazeCommandRunConfigurationHandlerProvider> =
+    fun findHandlerProviders(state: TargetState, kind: Kind?): List<BlazeCommandRunConfigurationHandlerProvider> =
       EP_NAME.extensionList
         .filter { it.canHandleKind(state, kind) }
 
     fun findHandlerProviders(): List<BlazeCommandRunConfigurationHandlerProvider> = EP_NAME.extensionList
 
     /** Get the BlazeCommandRunConfigurationHandlerProvider with the given ID, if one exists.  */
-    fun getHandlerProvider(id: String?): BlazeCommandRunConfigurationHandlerProvider? {
+    fun getHandlerProvider(id: String): BlazeCommandRunConfigurationHandlerProvider? {
       for (handlerProvider in EP_NAME.extensions) {
         if (handlerProvider.id == id) {
           return handlerProvider
@@ -73,7 +74,7 @@ interface BlazeCommandRunConfigurationHandlerProvider {
 
     @JvmField
     val EP_NAME: ExtensionPointName<BlazeCommandRunConfigurationHandlerProvider> =
-      ExtensionPointName.create<BlazeCommandRunConfigurationHandlerProvider>(
+      ExtensionPointName.create(
         "com.google.idea.blaze.BlazeCommandRunConfigurationHandlerProvider",
       )
   }

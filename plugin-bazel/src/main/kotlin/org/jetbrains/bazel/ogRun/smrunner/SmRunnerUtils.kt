@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bazel.ogRun.smrunner
 
-import com.google.common.collect.ImmutableList
+
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.Location
@@ -94,7 +94,7 @@ object SmRunnerUtils {
 
   @JvmStatic
   fun getSelectedSmRunnerTreeElements(context: ConfigurationContext): MutableList<Location<*>?> {
-    val project = context.getProject()
+    val project = context.project
     val tests = getSelectedTestProxies(context)
     return tests
       .stream()
@@ -118,11 +118,11 @@ object SmRunnerUtils {
     val treeView =
       SMTRunnerTestTreeView.SM_TEST_RUNNER_VIEW.getData(context.getDataContext())
     if (treeView == null) {
-      return ImmutableList.of<SMTestProxy?>()
+      return listOf<SMTestProxy?>()
     }
     val paths = treeView.getSelectionPaths()
     if (paths == null || paths.size == 0) {
-      return ImmutableList.of<SMTestProxy?>()
+      return listOf<SMTestProxy?>()
     }
     return Arrays
       .stream<TreePath?>(paths)

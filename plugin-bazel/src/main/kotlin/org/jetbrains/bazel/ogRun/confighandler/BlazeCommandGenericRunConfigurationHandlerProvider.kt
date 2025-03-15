@@ -15,6 +15,7 @@
  */
 package org.jetbrains.bazel.ogRun.confighandler
 
+import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
 import org.jetbrains.bazel.ogRun.other.Kind
 
 /**
@@ -22,7 +23,7 @@ import org.jetbrains.bazel.ogRun.other.Kind
  * case where no other handler providers are more relevant.
  */
 class BlazeCommandGenericRunConfigurationHandlerProvider : BlazeCommandRunConfigurationHandlerProvider {
-  val displayLabel: String?
+  override val displayLabel: String
     get() = "Generic Command"
 
   override fun canHandleKind(state: BlazeCommandRunConfigurationHandlerProvider.TargetState, kind: Kind?): Boolean =
@@ -31,7 +32,7 @@ class BlazeCommandGenericRunConfigurationHandlerProvider : BlazeCommandRunConfig
   public override fun createHandler(config: BlazeCommandRunConfiguration): BlazeCommandRunConfigurationHandler =
     BlazeCommandGenericRunConfigurationHandler(config)
 
-  val id: String?
+  override val id: String
     get() = "BlazeCommandGenericRunConfigurationHandlerProvider"
 
   companion object {

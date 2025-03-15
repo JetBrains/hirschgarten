@@ -13681,7 +13681,7 @@
       "kotlinx.collections.immutable.adapters",
       "kotlinx.collections.immutable.implementations.immutableList",
       "kotlinx.collections.immutable.implementations.immutableMap",
-      "kotlinx.collections.immutable.implementations.immutableSet",
+      "kotlinx.collections.immutable.implementations.Set",
       "kotlinx.collections.immutable.implementations.persistentOrderedMap",
       "kotlinx.collections.immutable.implementations.persistentOrderedSet",
       "kotlinx.collections.immutable.internal"

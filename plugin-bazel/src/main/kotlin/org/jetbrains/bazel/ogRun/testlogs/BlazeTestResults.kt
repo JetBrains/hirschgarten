@@ -20,25 +20,18 @@ import org.jetbrains.bazel.label.Label
 import java.util.function.Consumer
 
 /** Results from a 'blaze test' invocation.  */
-class BlazeTestResults private constructor(perTargetResults: ImmutableMultimap<Label?, BlazeTestResult?>?) {
-  @JvmField
-  val perTargetResults: ImmutableMultimap<Label?, BlazeTestResult?>?
-
-  init {
-    this.perTargetResults = perTargetResults
-  }
-
+data class BlazeTestResults(val perTargetResults: ImmutableMultimap<Label, BlazeTestResult>) {
   companion object {
     @JvmField
-    val NO_RESULTS: BlazeTestResults = BlazeTestResults(ImmutableMultimap.of<Label?, BlazeTestResult?>())
+    val NO_RESULTS: BlazeTestResults = BlazeTestResults(ImmutableMultimap.of())
 
-    fun fromFlatList(results: MutableCollection<BlazeTestResult?>): BlazeTestResults? {
+    fun fromFlatList(results: Collection<BlazeTestResult>): BlazeTestResults {
       if (results.isEmpty()) {
         return NO_RESULTS
       }
-      val map: ImmutableMultimap.Builder<Label?, BlazeTestResult?> =
-        ImmutableMultimap.builder<Label?, BlazeTestResult?>()
-      results.forEach(Consumer { result: BlazeTestResult? -> map.put(result!!.label, result) })
+      val map =
+        ImmutableMultimap.builder<Label, BlazeTestResult>()
+      results.forEach { result -> map.put(result.label, result) }
       return BlazeTestResults(map.build())
     }
   }

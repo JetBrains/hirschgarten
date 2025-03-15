@@ -15,40 +15,40 @@
  */
 package org.jetbrains.bazel.ogRun.coverage
 
-import com.google.common.collect.ImmutableList
+
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.runners.ExecutionEnvironment
+import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
+import org.jetbrains.bazel.ogRun.ExecutorType
 import org.jetbrains.bazel.ogRun.other.BlazeCommandName
+import org.jetbrains.bazel.ogRun.state.BlazeCommandRunConfigurationCommonState
 import java.io.File
 
 /** Helper methods for coverage integration.  */
 object CoverageUtils {
-  fun coverageEnabled(env: ExecutionEnvironment): Boolean = coverageEnabled(env.getExecutor().getId(), env.getRunProfile())
+  fun coverageEnabled(env: ExecutionEnvironment): Boolean = coverageEnabled(env.executor.id, env.getRunProfile())
 
-  fun coverageEnabled(executorId: String, profile: RunProfile?): Boolean =
+  fun coverageEnabled(executorId: String, profile: RunProfile): Boolean =
     ExecutorType.fromExecutorId(executorId) == ExecutorType.COVERAGE &&
       isApplicableTo(profile)
 
-  fun isApplicableTo(runProfile: RunProfile?): Boolean {
-    val config: BlazeCommandRunConfiguration? = toBlazeConfig(runProfile)
-    if (config == null) {
-      return false
-    }
+  fun isApplicableTo(runProfile: RunProfile): Boolean {
+    val config: BlazeCommandRunConfiguration = toBlazeConfig(runProfile) ?: return false
     val handlerState: BlazeCommandRunConfigurationCommonState? =
-      config.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
+      config.getHandlerStateIfType(
         BlazeCommandRunConfigurationCommonState::class.java,
       )
     if (handlerState == null) {
       return false
     }
     val command: BlazeCommandName = handlerState.commandState.getCommand()
-    return BlazeCommandName.TEST.equals(command) || BlazeCommandName.COVERAGE.equals(command)
+    return BlazeCommandName.TEST == command || BlazeCommandName.COVERAGE == command
   }
 
-  private fun toBlazeConfig(profile: RunProfile?): BlazeCommandRunConfiguration? =
+  private fun toBlazeConfig(profile: RunProfile): BlazeCommandRunConfiguration? =
     BlazeCommandRunConfigurationRunner.getBlazeConfig(profile)
 
-  val blazeFlags: ImmutableList<String?> = ImmutableList.of<String?>("--combined_report=lcov")
+  val blazeFlags: List<String?> = listOf<String?>("--combined_report=lcov")
 
   fun getOutputFile(blazeInfo: BlazeInfo): File {
     val coverageRoot: File = File(blazeInfo.getOutputPath(), "_coverage")

@@ -16,20 +16,22 @@
 package org.jetbrains.bazel.ogRun.producers
 
 import com.google.common.base.Preconditions
-import com.google.common.collect.ImmutableList
-import com.google.common.collect.ImmutableSet
+
+
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.errorprone.annotations.CanIgnoreReturnValue
 import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.ogRun.ExecutorType
 import org.jetbrains.bazel.ogRun.other.BlazeCommandName
+import org.jetbrains.bazel.ogRun.state.RunConfigurationFlagsState
 import java.util.function.Consumer
 
 /** A context related to a blaze test target, used to configure a run configuration.  */
 abstract class TestContext internal constructor(
   /** The [PsiElement] relevant to this test context (e.g. a method, class, file, etc.).  */
   val sourceElement: PsiElement?,
-  val blazeFlags: ImmutableList<BlazeFlagsModification?>,
+  val blazeFlags: List<BlazeFlagsModification?>,
   val description: String?,
 ) : RunConfigurationContext {
   /** Returns true if the run configuration was successfully configured.  */
@@ -38,7 +40,7 @@ abstract class TestContext internal constructor(
       return false
     }
     val commonState: BlazeCommandRunConfigurationCommonState? =
-      config.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
+      config.getHandlerStateIfType(
         BlazeCommandRunConfigurationCommonState::class.java,
       )
     if (commonState == null) {
@@ -64,7 +66,7 @@ abstract class TestContext internal constructor(
   /** Returns true if the run configuration matches this [TestContext].  */
   public override fun matchesRunConfiguration(config: BlazeCommandRunConfiguration): Boolean {
     val commonState: BlazeCommandRunConfigurationCommonState? =
-      config.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
+      config.getHandlerStateIfType(
         BlazeCommandRunConfigurationCommonState::class.java,
       )
     if (commonState == null) {
@@ -87,7 +89,7 @@ abstract class TestContext internal constructor(
   internal class KnownTargetTestContext(
     target: TargetInfo,
     sourceElement: PsiElement?,
-    blazeFlags: ImmutableList<BlazeFlagsModification?>,
+    blazeFlags: List<BlazeFlagsModification?>,
     description: String?,
   ) : TestContext(sourceElement, blazeFlags, description) {
     val target: TargetInfo
@@ -109,14 +111,14 @@ abstract class TestContext internal constructor(
    * filter.
    */
   interface BlazeFlagsModification {
-    fun modifyFlags(flags: MutableList<String?>?)
+    fun modifyFlags(flags: MutableList<String>)
 
-    fun matchesConfigState(state: RunConfigurationFlagsState?): Boolean
+    fun matchesConfigState(state: RunConfigurationFlagsState): Boolean
 
     companion object {
-      fun addFlagIfNotPresent(flag: String?): BlazeFlagsModification =
+      fun addFlagIfNotPresent(flag: String): BlazeFlagsModification =
         object : BlazeFlagsModification {
-          override fun modifyFlags(flags: MutableList<String?>) {
+          override fun modifyFlags(flags: MutableList<String>) {
             if (!flags.contains(flag)) {
               flags.add(flag)
             }
@@ -127,9 +129,9 @@ abstract class TestContext internal constructor(
 
       fun testFilter(filter: String?): BlazeFlagsModification =
         object : BlazeFlagsModification {
-          override fun modifyFlags(flags: MutableList<String?>) {
+          override fun modifyFlags(flags: MutableList<String>) {
             // remove old test filter flag if present
-            flags.removeIf { flag: String? -> flag.startsWith(BlazeFlags.TEST_FILTER) }
+            flags.removeIf { it.startsWith(BlazeFlags.TEST_FILTER) }
             if (filter != null) {
               flags.add(BlazeFlags.TEST_FILTER + "=" + BlazeParametersListUtil.encodeParam(filter))
             }
@@ -141,12 +143,10 @@ abstract class TestContext internal constructor(
               .contains(BlazeFlags.TEST_FILTER + "=" + BlazeParametersListUtil.encodeParam(filter))
         }
 
-      fun testEnv(testEnv: String?): BlazeFlagsModification =
+      fun testEnv(testEnv: String): BlazeFlagsModification =
         object : BlazeFlagsModification {
-          override fun modifyFlags(flags: MutableList<String?>) {
-            if (testEnv != null) {
-              flags.add(BlazeFlags.TEST_ENV + "=" + BlazeParametersListUtil.encodeParam(testEnv))
-            }
+          override fun modifyFlags(flags: MutableList<String>) {
+            flags.add(BlazeFlags.TEST_ENV + "=" + BlazeParametersListUtil.encodeParam(testEnv))
           }
 
           override fun matchesConfigState(state: RunConfigurationFlagsState): Boolean =
@@ -158,17 +158,12 @@ abstract class TestContext internal constructor(
   }
 
   /** Builder class for [TestContext].  */
-  class Builder private constructor(private val sourceElement: PsiElement?, supportedExecutors: ImmutableSet<ExecutorType?>?) {
-    private val supportedExecutors: ImmutableSet<ExecutorType?>?
+  class Builder private constructor(private val sourceElement: PsiElement?, override val supportedExecutors: Set<ExecutorType>) {
     private var contextFuture: ListenableFuture<RunConfigurationContext?>? = null
     private var targetFuture: ListenableFuture<TargetInfo?>? = null
-    private val blazeFlags: ImmutableList.Builder<BlazeFlagsModification?> =
-      ImmutableList.builder<BlazeFlagsModification?>()
+    private val blazeFlags: List.Builder<BlazeFlagsModification?> =
+      List.builder<BlazeFlagsModification?>()
     private var description: String? = null
-
-    init {
-      this.supportedExecutors = supportedExecutors
-    }
 
     @CanIgnoreReturnValue
     fun setContextFuture(contextFuture: ListenableFuture<RunConfigurationContext?>?): Builder {
@@ -213,7 +208,7 @@ abstract class TestContext internal constructor(
       return this
     }
 
-    fun build(): TestContext? {
+    fun build(): TestContext {
       if (contextFuture != null) {
         Preconditions.checkState(targetFuture == null)
         return PendingAsyncTestContext(
@@ -237,7 +232,7 @@ abstract class TestContext internal constructor(
   }
 
   companion object {
-    fun builder(sourceElement: PsiElement?, supportedExecutors: ImmutableSet<ExecutorType?>?): Builder =
+    fun builder(sourceElement: PsiElement?, supportedExecutors: Set<ExecutorType?>?): Builder =
       TestContext.Builder(sourceElement, supportedExecutors)
   }
 }

@@ -17,7 +17,7 @@ package org.jetbrains.bazel.ogRun.confighandler
 
 import com.google.common.base.Preconditions
 import com.google.common.base.Verify
-import com.google.common.collect.ImmutableList
+
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -42,6 +42,9 @@ import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
+import org.jetbrains.bazel.ogRun.state.BlazeCommandRunConfigurationCommonState
+import org.jetbrains.bazel.ogRun.testlogs.BlazeTestResultFinderStrategy
 import java.io.OutputStream
 
 /**
@@ -49,7 +52,7 @@ import java.io.OutputStream
  * other runners are more relevant.
  */
 class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRunner {
-  override fun getRunProfileState(executor: Executor?, environment: ExecutionEnvironment): RunProfileState =
+  override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     BlazeCommandRunProfileState(environment)
 
   override fun executeBeforeRunTask(environment: ExecutionEnvironment?): Boolean {
@@ -59,25 +62,17 @@ class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRu
 
   /** [RunProfileState] for generic blaze commands.  */
   class BlazeCommandRunProfileState(environment: ExecutionEnvironment) : CommandLineState(environment) {
-    private val configuration: BlazeCommandRunConfiguration
-    private val handlerState: BlazeCommandRunConfigurationCommonState
-    private val consoleFilters: ImmutableList<Filter?>
-
-    init {
-      this.configuration = getConfiguration(environment)
-      this.handlerState =
-        configuration.getHandler().state as BlazeCommandRunConfigurationCommonState
-      val project = environment.getProject()
-      this.consoleFilters =
-        ImmutableList.of<E?>(
-          UrlFilter(),
-          ToolWindowTaskIssueOutputFilter.createWithDefaultParsers(
-            project,
-            WorkspaceRoot.fromProject(project),
-            BlazeInvocationContext.ContextType.RunConfiguration,
-          ),
-        )
-    }
+    private val configuration: BlazeCommandRunConfiguration = getConfiguration(environment)
+    private val handlerState: BlazeCommandRunConfigurationCommonState = configuration.getHandler().state as BlazeCommandRunConfigurationCommonState
+    val project = environment.project
+    private val consoleFilters: List<Filter?> = listOf(
+      UrlFilter(),
+      ToolWindowTaskIssueOutputFilter.createWithDefaultParsers(
+        project,
+        WorkspaceRoot.fromProject(project),
+        BlazeInvocationContext.ContextType.RunConfiguration,
+      ),
+    )
 
     @Throws(ExecutionException::class)
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
@@ -87,7 +82,7 @@ class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRu
 
     @Throws(ExecutionException::class)
     override fun startProcess(): ProcessHandler {
-      val project = configuration.getProject()
+      val project = configuration.project
       val importSettings: BlazeImportSettings =
         checkNotNull(
           BlazeImportSettingsManager.getInstance(project).getImportSettings(),
@@ -98,16 +93,16 @@ class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRu
       val invoker: BuildInvoker =
         Blaze.getBuildSystemProvider(project).getBuildSystem().getBuildInvoker(project, context)
       val workspaceRoot: WorkspaceRoot = WorkspaceRoot.fromImportSettings(importSettings)
-      invoker.createBuildResultHelper().use { buildResultHelper ->
+      return invoker.createBuildResultHelper().use { buildResultHelper ->
         val blazeCommand: BlazeCommand.Builder =
           getBlazeCommand(
             project,
-            ExecutorType.fromExecutor(getEnvironment().getExecutor()),
+            ExecutorType.fromExecutor(environment.executor),
             invoker,
-            ImmutableList.copyOf(buildResultHelper.getBuildFlags()),
+            listOf(buildResultHelper.getBuildFlags()),
             context,
           )
-        return if (this.isTest) {
+        return@use if (this.isTest) {
           getProcessHandlerForTests(
             project,
             invoker,
@@ -155,7 +150,7 @@ class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRu
     ): ProcessHandler {
       val commandLine: GeneralCommandLine = GeneralCommandLine(blazeCommand.toList())
       val envVarState = handlerState.userEnvVarsState.data
-      commandLine.withEnvironment(envVarState.getEnvs())
+      commandLine.withEnvironment(envVarState.envs)
       commandLine.withParentEnvironmentType(
         if (envVarState.isPassParentEnvs()) {
           GeneralCommandLine.ParentEnvironmentType.CONSOLE
@@ -178,12 +173,12 @@ class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRu
               ).push(IdeaLogScope())
           }
 
-          override fun createProcessListeners(context: BlazeContext?): ImmutableList<ProcessListener?>? {
+          override fun createProcessListeners(context: BlazeContext?): List<ProcessListener?>? {
             val outputStream: LineProcessingOutputStream =
               LineProcessingOutputStream.of(
                 BlazeConsoleLineProcessorProvider.getAllStderrLineProcessors(context),
               )
-            return ImmutableList.of<ProcessListener?>(LineProcessingProcessAdapter(outputStream))
+            return listOf<ProcessListener?>(LineProcessingProcessAdapter(outputStream))
           }
         },
       )
@@ -202,16 +197,14 @@ class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRu
         return getScopedProcessHandler(project, blazeCommandBuilder.build(), workspaceRoot)
       }
       val processHandler = this.genericProcessHandler
-      val consoleView = getConsoleBuilder().getConsole()
+      val consoleView = consoleBuilder.console
       context.addOutputSink(PrintOutput::class.java, WritingOutputSink(consoleView))
-      setConsoleBuilder(
-        object : TextConsoleBuilderImpl(project) {
-          override fun createConsole(): ConsoleView = consoleView
-        },
-      )
+      consoleBuilder = object : TextConsoleBuilderImpl(project) {
+        override fun createConsole(): ConsoleView = consoleView
+      }
       addConsoleFilters(*consoleFilters.toTypedArray<Filter?>())
 
-      val envVars = handlerState.userEnvVarsState.data.getEnvs()
+      val envVars = handlerState.userEnvVarsState.data.envs
       val blazeBuildOutputsListenableFuture: ListenableFuture<BlazeBuildOutputs?> =
         BlazeExecutor
           .getInstance()
@@ -234,7 +227,7 @@ class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRu
             processHandler.detachProcess()
           }
         },
-        BlazeExecutor.getInstance().getExecutor(),
+        BlazeExecutor.getInstance().executor,
       )
 
       processHandler.addProcessListener(
@@ -268,9 +261,9 @@ class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRu
       if (BlazeTestEventsHandler.targetsSupported(project, configuration.targets)) {
         testUiSession =
           BlazeTestUiSession.create(
-            ImmutableList
+            List
               .builder<String?>()
-              .addAll(ImmutableList.copyOf(buildResultHelper.getBuildFlags()))
+              .addAll(listOf(buildResultHelper.getBuildFlags()))
               .add("--runs_per_test=1")
               .add("--flaky_test_attempts=1")
               .build(),
@@ -282,18 +275,16 @@ class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRu
           SmRunnerUtils.getConsoleView(
             project,
             configuration,
-            getEnvironment().getExecutor(),
+            environment.executor,
             testUiSession,
           )
-        setConsoleBuilder(
-          object : TextConsoleBuilderImpl(project) {
-            override fun createConsole(): ConsoleView = consoleView
-          },
-        )
+        consoleBuilder = object : TextConsoleBuilderImpl(project) {
+          override fun createConsole(): ConsoleView = consoleView
+        }
         context.addOutputSink(PrintOutput::class.java, WritingOutputSink(consoleView))
       }
       addConsoleFilters(*consoleFilters.toTypedArray<Filter?>())
-      val envVars = handlerState.userEnvVarsState.data.getEnvs()
+      val envVars = handlerState.userEnvVarsState.data.envs
 
       if (invoker.getCommandRunner().canUseCli()) {
         // If we can use the CLI, that means we will run through Bazel (as opposed to a raw process handler)
@@ -324,7 +315,7 @@ class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRu
       context: BlazeContext,
     ): ProcessHandler {
       val processHandler = this.genericProcessHandler
-      val envVars = handlerState.userEnvVarsState.data.getEnvs()
+      val envVars = handlerState.userEnvVarsState.data.envs
       val blazeTestResultsFuture: ListenableFuture<BlazeTestResults?> =
         BlazeExecutor
           .getInstance()
@@ -356,7 +347,7 @@ class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRu
             processHandler.detachProcess()
           }
         },
-        BlazeExecutor.getInstance().getExecutor(),
+        BlazeExecutor.getInstance().executor,
       )
 
       processHandler.addProcessListener(
@@ -378,7 +369,7 @@ class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRu
       project: Project?,
       executorType: ExecutorType?,
       invoker: BuildInvoker?,
-      testHandlerFlags: ImmutableList<String?>,
+      testHandlerFlags: List<String?>,
       context: BlazeContext?,
     ): BlazeCommand.Builder {
       val projectViewSet: ProjectViewSet? =

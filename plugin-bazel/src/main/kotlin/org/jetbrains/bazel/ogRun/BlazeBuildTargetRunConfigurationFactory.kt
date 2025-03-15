@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bazel.ogRun
 
-import com.google.common.collect.ImmutableSet
+
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
@@ -38,7 +38,7 @@ class BlazeBuildTargetRunConfigurationFactory : BlazeRunConfigurationFactory() {
 
   override fun setupConfiguration(configuration: RunConfiguration, label: Label) {
     val blazeConfig = configuration as BlazeCommandRunConfiguration?
-    val target: TargetInfo? = findProjectTarget(configuration.getProject(), label)
+    val target: TargetInfo? = findProjectTarget(configuration.project, label)
     blazeConfig!!.setTargetInfo(target)
     if (target == null) {
       return
@@ -54,8 +54,8 @@ class BlazeBuildTargetRunConfigurationFactory : BlazeRunConfigurationFactory() {
 
   companion object {
     // The rule types we auto-create run configurations for during sync.
-    private val HANDLED_RULE_TYPES: ImmutableSet<RuleType?> =
-      ImmutableSet.of<RuleType?>(RuleType.TEST, RuleType.BINARY)
+    private val HANDLED_RULE_TYPES: Set<RuleType?> =
+      setOf<RuleType?>(RuleType.TEST, RuleType.BINARY)
 
     private fun findProjectTarget(project: Project?, label: Label?): TargetInfo? {
       val targetInfo: TargetInfo? = TargetFinder.findTargetInfo(project, label)

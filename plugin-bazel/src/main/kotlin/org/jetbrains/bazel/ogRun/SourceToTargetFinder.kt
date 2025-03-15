@@ -15,8 +15,8 @@
  */
 package org.jetbrains.bazel.ogRun
 
-import com.google.common.collect.ImmutableList
-import com.google.common.collect.ImmutableSet
+
+
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.idea.blaze.base.dependencies.TargetInfo
 import com.intellij.openapi.extensions.ExtensionPointName
@@ -40,7 +40,7 @@ interface SourceToTargetFinder {
     project: Project?,
     sourceFile: File,
     ruleType: RuleType?,
-  ): Future<Collection<TargetInfo>> = targetsForSourceFiles(project, ImmutableSet.of<File?>(sourceFile), ruleType)
+  ): Future<Collection<TargetInfo>> = targetsForSourceFiles(project, setOf<File?>(sourceFile), ruleType)
 
   /**
    * Finds all rules of the given type 'reachable' from the given source files (i.e. with one of the
@@ -64,7 +64,7 @@ interface SourceToTargetFinder {
       project: Project,
       sourceFile: File,
       ruleType: RuleType?,
-    ): ListenableFuture<Collection<TargetInfo>?> = findTargetInfoFuture(project, ImmutableSet.of<File?>(sourceFile), ruleType)
+    ): ListenableFuture<Collection<TargetInfo>?> = findTargetInfoFuture(project, setOf<File?>(sourceFile), ruleType)
 
     /**
      * Iterates through the all [SourceToTargetFinder]'s, returning a [Future]
@@ -93,7 +93,7 @@ interface SourceToTargetFinder {
     fun findTargetsForSourceFile(
       project: Project?,
       sourceFile: File,
-      ruleType: Optional<RuleType?>?,
+      ruleType: RuleType??,
     ): MutableCollection<TargetInfo?> {
       val future: ListenableFuture<MutableCollection<TargetInfo?>?> =
         findTargetInfoFuture(project, sourceFile, ruleType)
@@ -104,7 +104,7 @@ interface SourceToTargetFinder {
           return targets
         }
       }
-      return ImmutableList.of<TargetInfo?>()
+      return listOf<TargetInfo?>()
     }
 
     val EP_NAME: ExtensionPointName<SourceToTargetFinder> =

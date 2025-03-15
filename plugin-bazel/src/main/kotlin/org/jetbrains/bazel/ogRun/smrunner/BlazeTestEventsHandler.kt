@@ -16,15 +16,17 @@
 package org.jetbrains.bazel.ogRun.smrunner
 
 import com.google.common.base.Strings
-import com.google.common.collect.ImmutableList
+
 import com.google.idea.blaze.base.dependencies.TargetInfo
 import com.intellij.execution.Location
 import com.intellij.execution.testframework.actions.AbstractRerunFailedTestsAction
+import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.util.io.URLUtil
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.ogRun.other.Kind
 import java.util.*
 
 /** Stateless language-specific handling of SM runner test protocol  */
@@ -35,14 +37,14 @@ interface BlazeTestEventsHandler {
    * A [SMTestLocator] to convert location URLs provided by this event handler to project PSI
    * elements. Returns `null` if no such conversion is available.
    */
-  val testLocator: SMTestLocator
+  val testLocator: SMTestLocator?
 
   /**
    * The --test_filter flag passed to blaze to rerun the given tests.
    *
    * @return `null` if no filter can be constructed for these tests
    */
-  fun getTestFilter(project: Project?, testLocations: MutableList<Location<*>?>?): String?
+  fun getTestFilter(project: Project, testLocations: List<Location<*>>): String?
 
   /** Returns `null` if this test events handler doesn't support test filtering.  */
   fun createRerunFailedTestsAction(consoleView: ConsoleView): AbstractRerunFailedTestsAction? =
@@ -91,7 +93,7 @@ interface BlazeTestEventsHandler {
     suite: BlazeXmlSchema.TestSuite,
   ): Boolean {
     // by default only include innermost 'testsuite' elements
-    return !suite.testSuites.isEmpty()
+    return suite.testSuites.isNotEmpty()
   }
 
   companion object {
@@ -104,9 +106,7 @@ interface BlazeTestEventsHandler {
      */
     fun targetsSupported(project: Project, targets: List<Label>): Boolean {
       val kind: Kind? = getKindForTargets(project, targets)
-      return Arrays
-        .stream<BlazeTestEventsHandler?>(EP_NAME.extensions)
-        .anyMatch { handler: BlazeTestEventsHandler? -> handler!!.handlesKind(kind) }
+      return EP_NAME.extensionList.any { it.handlesKind(kind) }
     }
 
     /**
@@ -123,23 +123,21 @@ interface BlazeTestEventsHandler {
     /**
      * Returns a [BlazeTestEventsHandler] applicable to the given target or [ ][Optional.empty] if no such handler can be found.
      */
-    fun getHandlerForTarget(project: Project?, target: Label?): Optional<BlazeTestEventsHandler> =
+    fun getHandlerForTarget(project: Project, target: Label): BlazeTestEventsHandler? =
       getHandlerForTargetKind(getKindForTarget(project, target))
 
     /**
      * Returns a [BlazeTestEventsHandler] applicable to the given targets or [ ][Optional.empty] if no such handler can be found.
      */
-    fun getHandlerForTargets(project: Project?, targets: ImmutableList<Label?>): Optional<BlazeTestEventsHandler> =
+    fun getHandlerForTargets(project: Project, targets: List<Label>): BlazeTestEventsHandler? =
       getHandlerForTargetKind(getKindForTargets(project, targets))
 
     /**
      * Returns a [BlazeTestEventsHandler] applicable to the given target kind, or [ ][Optional.empty] if no such handler can be found.
      */
-    fun getHandlerForTargetKind(kind: Kind?): Optional<BlazeTestEventsHandler> =
-      Arrays
-        .stream<BlazeTestEventsHandler?>(EP_NAME.extensions)
-        .filter { handler: BlazeTestEventsHandler? -> handler!!.handlesKind(kind) }
-        .findFirst()
+    fun getHandlerForTargetKind(kind: Kind?): BlazeTestEventsHandler? =
+      EP_NAME.extensions
+        .firstOrNull { it.handlesKind(kind) }
 
     /** Returns the single Kind shared by all targets or null if they have different kinds.  */
     fun getKindForTargets(project: Project, targets: List<Label>): Kind? {

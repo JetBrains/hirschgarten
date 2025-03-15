@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bazel.ogRun
 
-import com.google.common.collect.ImmutableList
+
 import com.google.idea.blaze.base.dependencies.TargetInfo
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
@@ -35,7 +35,7 @@ class TestTargetSourcesHeuristic : TestTargetHeuristic {
     sourceFile: File?,
     testSize: TestSize?,
   ): Boolean {
-    val sources: Optional<ImmutableList<ArtifactLocation?>?> = target.getSources()
+    val sources: List<ArtifactLocation?> = target.getSources()
     if (!sources.isPresent()) {
       return false
     }

@@ -16,8 +16,8 @@
 package org.jetbrains.bazel.ogRun.producers
 
 import com.google.common.base.Function
-import com.google.common.collect.ImmutableList
-import com.google.common.collect.ImmutableSet
+
+
 import com.google.common.util.concurrent.AsyncFunction
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -35,6 +35,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
 import com.intellij.psi.PsiElement
 import com.intellij.util.ui.UIUtil
+import org.jetbrains.bazel.ogRun.ExecutorType
+import org.jetbrains.bazel.ogRun.PendingRunConfigurationContext
+import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
 
 /**
  * For situations where we appear to be in a recognized test context, but can't efficiently resolve
@@ -45,46 +48,38 @@ import com.intellij.util.ui.UIUtil
  * when the full context is known.
  */
 internal class PendingAsyncTestContext(
-  supportedExecutors: ImmutableSet<ExecutorType?>?,
+  private val supportedExecutors: Set<ExecutorType>,
   future: ListenableFuture<RunConfigurationContext>,
-  progressMessage: String?,
+  private val progressMessage: String,
   sourceElement: PsiElement?,
-  blazeFlags: ImmutableList<BlazeFlagsModification?>?,
+  blazeFlags: List<BlazeFlagsModification?>?,
   description: String?,
 ) : TestContext(sourceElement, blazeFlags, description),
   PendingRunConfigurationContext {
-  private val supportedExecutors: ImmutableSet<ExecutorType?>?
-  private val future: ListenableFuture<RunConfigurationContext>
-  private val progressMessage: String?
+  private val future: ListenableFuture<RunConfigurationContext> = recursivelyResolveContext(future)
 
-  init {
-    this.supportedExecutors = supportedExecutors
-    this.future = recursivelyResolveContext(future)
-    this.progressMessage = progressMessage
-  }
+  override fun supportedExecutors(): Set<ExecutorType> = supportedExecutors
 
-  override fun supportedExecutors(): ImmutableSet<ExecutorType?>? = supportedExecutors
-
-  val isDone: Boolean
-    get() = future.isDone()
+  override val isDone: Boolean
+    get() = future.isDone
 
   @Throws(ExecutionException::class)
   override fun resolve(
     env: ExecutionEnvironment,
-    config: BlazeCommandRunConfiguration?,
+    config: BlazeCommandRunConfiguration,
     rerun: Runnable,
   ) {
-    waitForFutureUnderProgressDialog(env.getProject())
+    waitForFutureUnderProgressDialog(env.project)
     rerun.run()
   }
 
   override fun setupTarget(config: BlazeCommandRunConfiguration): Boolean {
     config.setPendingContext(this)
-    if (future.isDone()) {
+    if (future.isDone) {
       // set it up synchronously, and return the result
       return doSetupPendingContext(config)
     } else {
-      future.addListener(Runnable { doSetupPendingContext(config) }, MoreExecutors.directExecutor())
+      future.addListener({ doSetupPendingContext(config) }, MoreExecutors.directExecutor())
       return true
     }
   }
@@ -103,7 +98,7 @@ internal class PendingAsyncTestContext(
       }
     } catch (e: RunCanceledByUserException) {
       // silently ignore
-    } catch (e: NoRunConfigurationFoundException) {
+    } catch (e: PendingRunConfigurationContext.NoRunConfigurationFoundException) {
     } catch (e: ExecutionException) {
       logger.warn(e)
     }
@@ -111,7 +106,7 @@ internal class PendingAsyncTestContext(
   }
 
   override fun matchesRunConfiguration(config: BlazeCommandRunConfiguration): Boolean {
-    if (!future.isDone()) {
+    if (!future.isDone) {
       return super.matchesRunConfiguration(config)
     }
     try {
@@ -134,12 +129,12 @@ internal class PendingAsyncTestContext(
    */
   @Throws(ExecutionException::class)
   private fun waitForFutureUnderProgressDialog(project: Project?) {
-    if (future.isDone()) {
+    if (future.isDone) {
       this.futureHandlingErrors
     }
     // The progress indicator must be created on the UI thread.
     val indicator: ProgressWindow =
-      UIUtil.invokeAndWaitIfNeeded<BackgroundableProcessIndicator>(
+      UIUtil.invokeAndWaitIfNeeded(
         Computable {
           BackgroundableProcessIndicator(
             project,
@@ -165,7 +160,7 @@ internal class PendingAsyncTestContext(
     try {
       this.futureHandlingErrors
     } finally {
-      if (indicator.isRunning()) {
+      if (indicator.isRunning) {
         indicator.stop()
         indicator.processFinish()
       }
@@ -180,9 +175,9 @@ internal class PendingAsyncTestContext(
         if (result == null) {
           throw NoRunConfigurationFoundException("Run configuration setup failed.")
         }
-        if (result is FailedPendingRunConfiguration) {
+        if (result is PendingRunConfigurationContext.FailedPendingRunConfiguration) {
           throw NoRunConfigurationFoundException(
-            (result as FailedPendingRunConfiguration).errorMessage,
+            result.errorMessage,
           )
         }
         return result
@@ -197,15 +192,14 @@ internal class PendingAsyncTestContext(
     private val logger = Logger.getInstance(PendingAsyncTestContext::class.java)
 
     fun fromTargetFuture(
-      supportedExecutors: ImmutableSet<ExecutorType?>?,
+      supportedExecutors: Set<ExecutorType?>?,
       target: ListenableFuture<TargetInfo?>,
       sourceElement: PsiElement,
-      blazeFlags: ImmutableList<BlazeFlagsModification?>?,
+      blazeFlags: List<BlazeFlagsModification?>?,
       description: String?,
     ): PendingAsyncTestContext {
-      val project = sourceElement.getProject()
-      val buildSystem: String? = Blaze.buildSystemName(project)
-      val progressMessage: String? = String.format("Searching for %s target", buildSystem)
+      val project = sourceElement.project
+      val progressMessage: String = String.format("Searching for Bazel target")
       val future: ListenableFuture<RunConfigurationContext> =
         Futures.transform<TargetInfo?, RunConfigurationContext?>(
           target,

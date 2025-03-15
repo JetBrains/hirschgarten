@@ -15,14 +15,14 @@
  */
 package org.jetbrains.bazel.ogRun.smrunner
 
-import com.google.common.collect.ImmutableList
+
 import com.intellij.execution.Location
 import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
 
 /** Combines multiple language-specific [SMTestLocator]s.  */
-class CompositeSMTestLocator protected constructor(private val locators: ImmutableList<SMTestLocator>) : SMTestLocator {
+class CompositeSMTestLocator protected constructor(private val locators: List<SMTestLocator>) : SMTestLocator {
   // Super method uses raw Location. Check super method again after #api212.
   override fun getLocation(
     protocol: String,
@@ -36,6 +36,6 @@ class CompositeSMTestLocator protected constructor(private val locators: Immutab
         return result
       }
     }
-    return ImmutableList.of<Location<*>?>()
+    return listOf<Location<*>?>()
   }
 }

@@ -17,10 +17,11 @@ package org.jetbrains.bazel.ogRun.coverage
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.ogRun.other.BlazeCommandName
+import org.jetbrains.bazel.ogRun.producers.RunConfigurationContext
 
 internal class CoverageBuildFlagsProvider : BuildFlagsProvider {
   public override fun addBuildFlags(
-    project: Project?,
+    project: Project,
     projectViewSet: ProjectViewSet?,
     command: BlazeCommandName?,
     context: BlazeInvocationContext,

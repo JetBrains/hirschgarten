@@ -68,9 +68,9 @@ object BlazeBeforeRunCommandHelper {
     overridableExtraBlazeFlags: MutableList<String?>?,
     invocationContext: BlazeInvocationContext,
     progressMessage: String?,
-    targets: com.google.common.collect.ImmutableList<Label?>?,
+    targets: com.google.common.collect.List<Label?>?,
   ): com.google.common.util.concurrent.ListenableFuture<BuildResult?> {
-    val project: com.intellij.openapi.project.Project = configuration.getProject()
+    val project: com.intellij.openapi.project.Project = configuration.project
     val handlerState: BlazeCommandRunConfigurationCommonState =
       configuration.getHandler().state as BlazeCommandRunConfigurationCommonState
     val workspaceRoot: WorkspaceRoot? = WorkspaceRoot.fromProject(project)

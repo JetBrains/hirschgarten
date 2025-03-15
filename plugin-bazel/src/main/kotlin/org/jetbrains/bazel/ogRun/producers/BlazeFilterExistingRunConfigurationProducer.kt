@@ -15,12 +15,16 @@
  */
 package org.jetbrains.bazel.ogRun.producers
 
-import com.google.common.collect.ImmutableList
+
 import com.intellij.execution.Location
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
 import org.jetbrains.bazel.ogRun.other.BlazeCommandName
+import org.jetbrains.bazel.ogRun.smrunner.BlazeTestEventsHandler
+import org.jetbrains.bazel.ogRun.state.BlazeCommandRunConfigurationCommonState
 import java.util.*
 import java.util.function.Function
 
@@ -33,22 +37,22 @@ import java.util.function.Function
  * to the existing configuration. Delegates language-specific filter calculation to [ ].
  */
 class BlazeFilterExistingRunConfigurationProducer :
-  BlazeRunConfigurationProducer<BlazeCommandRunConfiguration?>(BlazeCommandRunConfigurationType.getInstance()) {
+  BlazeRunConfigurationProducer<BlazeCommandRunConfiguration>(BlazeCommandRunConfigurationType.getInstance()) {
   override fun doSetupConfigFromContext(
     configuration: BlazeCommandRunConfiguration,
     context: ConfigurationContext,
-    sourceElement: Ref<PsiElement?>?,
+    sourceElement: Ref<PsiElement>,
   ): Boolean {
-    val testFilter: Optional<String?> = getTestFilter(context)
+    val testFilter: String? = getTestFilter(context)
     if (!testFilter.isPresent()) {
       return false
     }
     val handlerState: BlazeCommandRunConfigurationCommonState? =
-      configuration.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
+      configuration.getHandlerStateIfType(
         BlazeCommandRunConfigurationCommonState::class.java,
       )
     if (handlerState == null ||
-      !BlazeCommandName.TEST.equals(handlerState.commandState.getCommand())
+      BlazeCommandName.TEST != handlerState.commandState.getCommand()
     ) {
       return false
     }
@@ -63,18 +67,18 @@ class BlazeFilterExistingRunConfigurationProducer :
       flags.add(BlazeFlags.DISABLE_TEST_SHARDING)
     }
     handlerState.blazeFlagsState.rawFlags = flags
-    configuration.setName(configuration.getName() + " (filtered)")
+    configuration.setName(configuration.name + " (filtered)")
     configuration.setNameChangedByUser(true)
     return true
   }
 
   override fun doIsConfigFromContext(configuration: BlazeCommandRunConfiguration, context: ConfigurationContext): Boolean {
-    val testFilter: Optional<String?> = getTestFilter(context)
+    val testFilter: String? = getTestFilter(context)
     if (!testFilter.isPresent()) {
       return false
     }
     val handlerState: BlazeCommandRunConfigurationCommonState? =
-      configuration.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
+      configuration.getHandlerStateIfType(
         BlazeCommandRunConfigurationCommonState::class.java,
       )
 
@@ -84,26 +88,26 @@ class BlazeFilterExistingRunConfigurationProducer :
   }
 
   companion object {
-    private fun getTestFilter(context: ConfigurationContext): Optional<String?> {
+    private fun getTestFilter(context: ConfigurationContext): String? {
       val base = context.getOriginalConfiguration(null)
       if (base !is BlazeCommandRunConfiguration) {
-        return Optional.empty<String?>()
+        return null
       }
-      val targets: ImmutableList<Label?> =
-        (base as BlazeCommandRunConfiguration).targets
+      val targets: List<Label> =
+        base.targets
       if (targets.isEmpty()) {
-        return Optional.empty<String?>()
+        return null
       }
       val selectedElements: MutableList<Location<*>?> = SmRunnerUtils.getSelectedSmRunnerTreeElements(context)
       if (selectedElements.isEmpty()) {
-        return Optional.empty<String?>()
+        return null
       }
-      val testEventsHandler: Optional<BlazeTestEventsHandler?> =
-        BlazeTestEventsHandler.getHandlerForTargets(context.getProject(), targets)
+      val testEventsHandler: BlazeTestEventsHandler? =
+        BlazeTestEventsHandler.getHandlerForTargets(context.project, targets)
       return testEventsHandler.map<String?>(
         Function { handler: BlazeTestEventsHandler? ->
           handler.getTestFilter(
-            context.getProject(),
+            context.project,
             selectedElements,
           )
         },

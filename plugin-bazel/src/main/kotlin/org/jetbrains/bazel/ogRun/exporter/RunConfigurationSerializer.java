@@ -32,6 +32,7 @@ import java.io.IOException;
 import javax.annotation.Nullable;
 import org.jdom.Element;
 import org.jdom.JDOMException;
+import org.jetbrains.bazel.ogRun.BlazeRunConfiguration;
 
 /** Utility methods for converting run configuration to/from XML. */
 public class RunConfigurationSerializer {
@@ -63,11 +64,11 @@ public class RunConfigurationSerializer {
 
   public static Element writeToXml(RunConfiguration configuration) {
     RunnerAndConfigurationSettings settings =
-        RunManagerImpl.getInstanceImpl(configuration.getProject()).getSettings(configuration);
+        RunManagerImpl.getInstanceImpl(configuration.project).getSettings(configuration);
     Element element = new Element("configuration");
     try {
       runWithPathVariableSet(
-          configuration.getProject(),
+          configuration.project,
           () -> ((RunnerAndConfigurationSettingsImpl) settings).writeExternal(element));
     } catch (WriteExternalException e) {
       logger.warn("Error serializing run configuration to XML", e);

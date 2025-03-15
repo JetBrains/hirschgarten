@@ -27,45 +27,45 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ExecutionUtil
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.application.ApplicationManager
+import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
+import org.jetbrains.bazel.ogRun.ExecutorType
+import org.jetbrains.bazel.ogRun.PendingRunConfigurationContext
 import org.jetbrains.bazel.ogRun.other.BlazeCommandName
+import org.jetbrains.bazel.ogRun.state.BlazeCommandRunConfigurationCommonState
+import com.intellij.execution.RunManager;
+
 
 class PendingTargetRunConfigurationHandler internal constructor(config: BlazeCommandRunConfiguration) :
   BlazeCommandRunConfigurationHandler {
-    private val buildSystemName: BuildSystemName
-    private val state: BlazeCommandRunConfigurationCommonState
+    override val state: BlazeCommandRunConfigurationCommonState
 
     init {
-      this.buildSystemName = Blaze.getBuildSystemName(config.getProject())
+      this.buildSystemName = Blaze.getBuildSystemName(config.project)
       this.state = BlazeCommandRunConfigurationCommonState(buildSystemName)
     }
 
-    public override fun getState(): RunConfigurationState = state
-
-    override fun createRunner(executor: Executor?, environment: ExecutionEnvironment?): BlazeCommandRunConfigurationRunner? =
+    override fun createRunner(executor: Executor, environment: ExecutionEnvironment): BlazeCommandRunConfigurationRunner =
       PendingTargetRunner()
 
     @Throws(RuntimeConfigurationException::class)
     override fun checkConfiguration() {
-      state.validate(buildSystemName)
+      state.validate()
     }
 
-    public override fun suggestedName(configuration: BlazeCommandRunConfiguration?): String? = null
+    public override fun suggestedName(configuration: BlazeCommandRunConfiguration): String? = null
 
-    val commandName: BlazeCommandName?
+    override val commandName: BlazeCommandName
       get() = state.commandState.getCommand()
 
-    val handlerName: String?
+    override val handlerName: String
       get() = "Pending target handler"
 
-    internal class PendingTargetProgramRunner : ProgramRunner<RunnerSettings?> {
+    internal class PendingTargetProgramRunner : ProgramRunner<RunnerSettings> {
       override fun getRunnerId(): String = "PendingTargetProgramRunner"
 
-      override fun canRun(executorId: String, profile: RunProfile?): Boolean {
+      override fun canRun(executorId: String, profile: RunProfile): Boolean {
         val config: BlazeCommandRunConfiguration =
           BlazeCommandRunConfigurationRunner.getBlazeConfig(profile)
-        if (config == null) {
-          return false
-        }
         val type: ExecutorType = ExecutorType.fromExecutorId(executorId)
         val pendingContext: PendingRunConfigurationContext? = config.getPendingContext()
         return pendingContext != null &&
@@ -77,7 +77,7 @@ class PendingTargetRunConfigurationHandler internal constructor(config: BlazeCom
 
       @Throws(ExecutionException::class)
       override fun execute(env: ExecutionEnvironment) {
-        if (env.getState() !is DummyRunProfileState) {
+        if (env.state !is DummyRunProfileState) {
           reRunConfiguration(env)
           return
         }
@@ -99,21 +99,21 @@ class PendingTargetRunConfigurationHandler internal constructor(config: BlazeCom
      * A placeholder [RunProfileState]. This is bypassed entirely by PendingTargetProgramRunner.
      */
     private class DummyRunProfileState : RunProfileState {
-      override fun execute(executor: Executor?, runner: ProgramRunner<*>?): ExecutionResult? =
+      override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult =
         throw RuntimeException("Unexpected code path")
     }
 
     private class PendingTargetRunner : BlazeCommandRunConfigurationRunner {
-      override fun getRunProfileState(executor: Executor?, environment: ExecutionEnvironment?): RunProfileState = DummyRunProfileState()
+      override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState = DummyRunProfileState()
 
-      override fun executeBeforeRunTask(env: ExecutionEnvironment): Boolean {
+      override fun executeBeforeRunTask(environment: ExecutionEnvironment): Boolean {
         // if we got here, a different ProgramRunner has accepted a pending blaze run config, despite
         // PendingTargetProgramRunner being first in the list
         throw RuntimeException(
           String.format(
             "Unexpected code path: program runner %s, executor: %s",
-            env.getRunner().javaClass,
-            env.getExecutor().getId(),
+            environment.runner.javaClass,
+            environment.executor.id,
           ),
         )
       }
@@ -123,37 +123,31 @@ class PendingTargetRunConfigurationHandler internal constructor(config: BlazeCom
       @Throws(ExecutionException::class)
       private fun reRunConfiguration(env: ExecutionEnvironment) {
         val config: BlazeCommandRunConfiguration = BlazeCommandRunConfigurationRunner.getConfiguration(env)
-        val settings: RunnerAndConfigurationSettings? =
-          getInstance.getInstance(config.getProject()).findSettings(config)
-        if (settings == null) {
-          throw ExecutionException(
-            "Can't find runner settings for blaze run configuration " + config.getName(),
-          )
-        }
+        val settings: RunnerAndConfigurationSettings =
+          RunManager.getInstance(config.project).findSettings(config)
+            ?: throw ExecutionException(
+              "Can't find runner settings for blaze run configuration " + config.name,
+            )
         // TODO(brendandouglas): check the executor type and inform the user if it's not applicable to
         // this target
-        getInstance.getInstance(env.getProject()).selectedConfiguration = settings
-        ExecutionUtil.runConfiguration(settings, env.getExecutor())
+        RunManager.getInstance(env.project).selectedConfiguration = settings
+        ExecutionUtil.runConfiguration(settings, env.executor)
       }
 
       @Throws(ExecutionException::class)
       private fun resolveContext(env: ExecutionEnvironment) {
         val config: BlazeCommandRunConfiguration = BlazeCommandRunConfigurationRunner.getConfiguration(env)
-        val pendingContext: PendingRunConfigurationContext? = config.getPendingContext()
-        if (pendingContext == null) {
-          return
-        }
+        val pendingContext: PendingRunConfigurationContext = config.getPendingContext() ?: return
         pendingContext.resolve(
           env,
           config,
-          Runnable {
-            try {
-              reRunConfiguration(env)
-            } catch (e: ExecutionException) {
-              ExecutionUtil.handleExecutionError(env, e)
-            }
-          },
-        )
+        ) {
+          try {
+            reRunConfiguration(env)
+          } catch (e: ExecutionException) {
+            ExecutionUtil.handleExecutionError(env, e)
+          }
+        }
       }
     }
   }

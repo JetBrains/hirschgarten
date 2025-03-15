@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bazel.ogRun.producers
 
-import com.google.common.collect.ImmutableSet
+
 import com.google.idea.blaze.base.lang.buildfile.psi.BuildFile
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.icons.AllIcons
@@ -41,43 +41,35 @@ class BuildFileRunLineMarkerContributor : RunLineMarkerContributor() {
     return Info(
       AllIcons.RunConfigurations.TestState.Run,
       actions,
-      java.util.function.Function { psiElement: PsiElement? ->
-        StringUtil.join(
-          ContainerUtil.mapNotNull<AnAction?, String?>(
-            actions,
-            Function { action: AnAction? ->
-              RunLineMarkerContributor.getText(
-                action!!,
-                psiElement!!,
-              )
-            },
-          ),
-          "\n",
-        )
-      },
-    )
+    ) { psiElement: PsiElement? ->
+      StringUtil.join(
+        ContainerUtil.mapNotNull<AnAction?, String?>(
+          actions,
+        ) { action: AnAction? ->
+          RunLineMarkerContributor.getText(
+            action!!,
+            psiElement!!,
+          )
+        },
+        "\n",
+      )
+    }
   }
 
   companion object {
     private val enabled: BoolExperiment = BoolExperiment("build.run.line.markers", true)
 
-    private val HANDLED_RULE_TYPES: ImmutableSet<RuleType?> =
-      ImmutableSet.of<RuleType?>(RuleType.TEST, RuleType.BINARY)
+    private val HANDLED_RULE_TYPES: Set<RuleType?> =
+      setOf<RuleType?>(RuleType.TEST, RuleType.BINARY)
 
     private fun isRunContext(element: PsiElement): Boolean {
-      val rule: FuncallExpression? = getRuleFuncallExpression(element)
-      if (rule == null) {
-        return false
-      }
-      val data = BlazeBuildFileRunConfigurationProducer.getBuildTarget(rule)
-      if (data == null) {
-        return false
-      }
+      val rule: FuncallExpression? = getRuleFuncallExpression(element) ?: return false
+      val data = BlazeBuildFileRunConfigurationProducer.getBuildTarget(rule) ?: return false
       return true // We want to put a gutter icon next to each target to provide a starlark debugger action
     }
 
     private fun getRuleFuncallExpression(element: PsiElement): FuncallExpression? {
-      val parentFile = element.getContainingFile()
+      val parentFile = element.containingFile
       if (parentFile !is BuildFile || (parentFile as BuildFile).getBlazeFileType() !== BlazeFileType.BuildPackage) {
         return null
       }
@@ -87,10 +79,10 @@ class BuildFileRunLineMarkerContributor : RunLineMarkerContributor() {
       ) {
         return null
       }
-      if (element.getParent() !is ReferenceExpression) {
+      if (element.parent !is ReferenceExpression) {
         return null
       }
-      val grandParent = element.getParent().getParent()
+      val grandParent = element.parent.parent
       return if (grandParent is FuncallExpression &&
         (grandParent as FuncallExpression).isTopLevel()
       ) {

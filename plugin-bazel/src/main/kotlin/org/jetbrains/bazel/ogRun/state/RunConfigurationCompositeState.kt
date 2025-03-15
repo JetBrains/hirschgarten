@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bazel.ogRun.state
 
-import com.google.common.collect.ImmutableList
+
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.WriteExternalException
@@ -26,7 +26,7 @@ import javax.swing.JComponent
 
 /** Helper class for managing composite state.  */
 abstract class RunConfigurationCompositeState : RunConfigurationState {
-  protected var states: ImmutableList<RunConfigurationState>? = null
+  protected var states: List<RunConfigurationState>? = null
     /** The [RunConfigurationState]s comprising this composite state.  */
     get() {
       if (field == null) {
@@ -41,7 +41,7 @@ abstract class RunConfigurationCompositeState : RunConfigurationState {
    * the [RunConfigurationState]s comprising this composite state. The order of the states
    * determines their position in the UI.
    */
-  protected abstract fun initializeStates(): ImmutableList<RunConfigurationState>?
+  protected abstract fun initializeStates(): List<RunConfigurationState>?
 
   @Throws(InvalidDataException::class)
   override fun readExternal(element: Element) {

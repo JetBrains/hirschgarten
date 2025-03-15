@@ -26,6 +26,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiElement
 import com.intellij.util.ui.UIUtil
+import org.jetbrains.bazel.config.isBazelProject
 import java.awt.Font
 import java.util.*
 import java.util.function.Function
@@ -85,8 +86,8 @@ class BlazeTargetFilter : Filter {
 
   /** Provider for [BlazeTargetFilter]  */
   internal class Provider : ConsoleFilterProvider {
-    override fun getDefaultFilters(project: Project?): Array<Filter?> =
-      if (Blaze.isBlazeProject(project)) arrayOf<Filter>(BlazeTargetFilter()) else arrayOfNulls<Filter>(0)
+    override fun getDefaultFilters(project: Project): Array<Filter> =
+      if (project.isBazelProject) arrayOf(BlazeTargetFilter()) else emptyArray()
   }
 
   companion object {

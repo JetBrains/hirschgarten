@@ -17,7 +17,7 @@ package org.jetbrains.bazel.ogRun.state
 
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Joiner
-import com.google.common.collect.ImmutableList
+
 import com.google.idea.blaze.base.command.BlazeFlags
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
@@ -37,7 +37,7 @@ import javax.swing.ViewportLayout
 /** State for a list of user-defined flags.  */
 class RunConfigurationFlagsState(private val tag: String?, private val fieldLabel: String?) : RunConfigurationState {
   /** Unprocessed flags, as the user entered them, tokenised on unquoted whitespace.  */
-  private var flags: ImmutableList<String?> = ImmutableList.of<String?>()
+  private var flags: List<String?> = listOf<String?>()
 
   val flagsForExternalProcesses: MutableList<String?>
     /** Flags ready to be used directly as args for external processes.  */
@@ -60,7 +60,7 @@ class RunConfigurationFlagsState(private val tag: String?, private val fieldLabe
     /** Unprocessed flags that haven't been macro expanded or processed for escaping/quotes.  */
     get() = flags
     set(flags) {
-      this.flags = ImmutableList.copyOf<String?>(flags)
+      this.flags = listOf<String?>(flags)
     }
 
   fun copy(): RunConfigurationFlagsState {
@@ -70,7 +70,7 @@ class RunConfigurationFlagsState(private val tag: String?, private val fieldLabe
   }
 
   override fun readExternal(element: Element) {
-    val flagsBuilder = ImmutableList.builder<String?>()
+    val flagsBuilder = List.builder<String?>()
     for (e in element.getChildren(tag)) {
       val flag = e.textTrim
       if (flag != null && !flag.isEmpty()) {

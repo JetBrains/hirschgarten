@@ -26,19 +26,10 @@ import com.intellij.psi.PsiElement
  */
 interface BinaryContextProvider {
   /** A context related to a blaze binary target, used to configure a run configuration.  */
-  @AutoValue
-  class BinaryRunContext {
-    @JvmField
-    abstract val sourceElement: PsiElement?
-
-    @JvmField
-    abstract val target: TargetInfo?
-
-    companion object {
-      fun create(sourceElement: PsiElement?, target: TargetInfo?): BinaryRunContext =
-        AutoValue_BinaryContextProvider_BinaryRunContext(sourceElement, target)
-    }
-  }
+  data class BinaryRunContext(
+    val sourceElement: PsiElement?,
+    val target: TargetInfo?
+  )
 
   /**
    * Returns the [BinaryRunContext] corresponding to the given [ConfigurationContext],
@@ -48,11 +39,11 @@ interface BinaryContextProvider {
    * This is called frequently on the EDT, via the [RunConfigurationProducer] API, so must
    * be efficient.
    */
-  fun getRunContext(context: ConfigurationContext?): BinaryRunContext?
+  fun getRunContext(context: ConfigurationContext): BinaryRunContext?
 
   companion object {
     @JvmField
-    val EP_NAME: ExtensionPointName<BinaryContextProvider?> =
-      create.create<BinaryContextProvider?>("com.google.idea.blaze.BinaryContextProvider")
+    val EP_NAME: ExtensionPointName<BinaryContextProvider> =
+      ExtensionPointName.create("com.google.idea.blaze.BinaryContextProvider")
   }
 }

@@ -35,7 +35,7 @@ interface BlazeCommandRunConfigurationRunner {
   /** @return the RunProfileState corresponding to the given environment.
    */
   @Throws(ExecutionException::class)
-  fun getRunProfileState(executor: Executor?, environment: ExecutionEnvironment?): RunProfileState?
+  fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState
 
   /**
    * Executes any required before run tasks.
@@ -43,11 +43,11 @@ interface BlazeCommandRunConfigurationRunner {
    * @return true if no task exists or the task was successfully completed. Otherwise returns false
    * if the task either failed or was cancelled.
    */
-  fun executeBeforeRunTask(environment: ExecutionEnvironment?): Boolean
+  fun executeBeforeRunTask(environment: ExecutionEnvironment): Boolean
 
   companion object {
     fun isDebugging(environment: ExecutionEnvironment): Boolean {
-      val executor = environment.getExecutor()
+      val executor = environment.executor
       return executor is DefaultDebugExecutor
     }
 
@@ -73,7 +73,7 @@ interface BlazeCommandRunConfigurationRunner {
     fun getBlazeCommand(environment: ExecutionEnvironment): BlazeCommandName? {
       val config: BlazeCommandRunConfiguration = getConfiguration(environment)
       val commonState: BlazeCommandRunConfigurationCommonState? =
-        config.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState?>(
+        config.getHandlerStateIfType(
           BlazeCommandRunConfigurationCommonState::class.java,
         )
       return if (commonState == null) null else commonState.commandState.getCommand()

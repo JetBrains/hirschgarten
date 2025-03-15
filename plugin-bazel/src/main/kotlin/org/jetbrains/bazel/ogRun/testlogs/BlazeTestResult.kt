@@ -15,12 +15,17 @@
  */
 package org.jetbrains.bazel.ogRun.testlogs
 
-import com.google.auto.value.AutoValue
-import com.google.common.collect.ImmutableSet
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.ogRun.other.Kind
+
 
 /** The result of a single blaze test action.  */
-@AutoValue
-abstract class BlazeTestResult {
+data class BlazeTestResult(
+  val label: Label?,
+  val targetKind: Kind?,
+val testStatus: TestStatus?,
+val outputXmlFiles: Set<out BlazeArtifact>?)
+{
   /** Status for a single blaze test action.  */
   enum class TestStatus {
     NO_STATUS,
@@ -34,34 +39,15 @@ abstract class BlazeTestResult {
     TOOL_HALTED_BEFORE_TESTING,
   }
 
-  @JvmField
-  abstract val label: Label?
-
-  @JvmField
-  abstract val targetKind: Kind?
-
-  @JvmField
-  abstract val testStatus: TestStatus?
-
-  @JvmField
-  abstract val outputXmlFiles: ImmutableSet<out BlazeArtifact>?
-
   companion object {
     /** The set of statuses for which no useful output XML is written.  */
     @JvmField
-    val NO_USEFUL_OUTPUT: ImmutableSet<TestStatus?> =
-      ImmutableSet.of<TestStatus?>(
+    val NO_USEFUL_OUTPUT: Set<TestStatus?> =
+      setOf<TestStatus?>(
         TestStatus.TIMEOUT,
         TestStatus.REMOTE_FAILURE,
         TestStatus.FAILED_TO_BUILD,
         TestStatus.TOOL_HALTED_BEFORE_TESTING,
       )
-
-    fun create(
-      label: Label?,
-      targetKind: Kind?,
-      testStatus: TestStatus?,
-      outputXmlFiles: ImmutableSet<out BlazeArtifact?>?,
-    ): BlazeTestResult = AutoValue_BlazeTestResult(label, targetKind, testStatus, outputXmlFiles)
   }
 }
