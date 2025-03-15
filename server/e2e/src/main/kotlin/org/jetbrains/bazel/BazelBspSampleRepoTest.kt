@@ -57,6 +57,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       ),
     )
   }
+
   private val testClient = createTestkitClient()
 
   private val scalaRulesPath =
