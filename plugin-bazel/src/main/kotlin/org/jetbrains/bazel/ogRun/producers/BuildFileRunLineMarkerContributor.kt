@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.producers
 
-
 import com.google.idea.blaze.base.lang.buildfile.psi.BuildFile
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.icons.AllIcons
@@ -26,7 +25,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.impl.source.tree.LeafElement
-import com.intellij.util.Function
 import com.intellij.util.containers.ContainerUtil
 
 /** Generates run/debug gutter icons for BUILD files.  */

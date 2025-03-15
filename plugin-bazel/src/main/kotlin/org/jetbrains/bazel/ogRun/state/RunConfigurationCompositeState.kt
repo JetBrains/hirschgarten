@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.state
 
-
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.InvalidDataException
 import com.intellij.openapi.util.WriteExternalException

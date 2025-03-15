@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.producers
 
-import com.google.auto.value.AutoValue
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.psi.PsiElement
@@ -26,10 +25,7 @@ import com.intellij.psi.PsiElement
  */
 interface BinaryContextProvider {
   /** A context related to a blaze binary target, used to configure a run configuration.  */
-  data class BinaryRunContext(
-    val sourceElement: PsiElement?,
-    val target: TargetInfo?
-  )
+  data class BinaryRunContext(val sourceElement: PsiElement?, val target: TargetInfo?)
 
   /**
    * Returns the [BinaryRunContext] corresponding to the given [ConfigurationContext],

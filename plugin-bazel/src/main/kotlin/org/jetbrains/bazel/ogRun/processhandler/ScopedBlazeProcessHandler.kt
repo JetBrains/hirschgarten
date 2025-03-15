@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.processhandler
 
-
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.idea.blaze.base.async.process.BinaryPathRemapper
 import com.intellij.execution.Platform
@@ -25,7 +24,6 @@ import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
 import com.intellij.openapi.project.Project
-import java.io.File
 
 /**
  * Scoped process handler.

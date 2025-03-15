@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.smrunner
 
-
 import com.intellij.execution.Location
 import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import com.intellij.openapi.project.Project

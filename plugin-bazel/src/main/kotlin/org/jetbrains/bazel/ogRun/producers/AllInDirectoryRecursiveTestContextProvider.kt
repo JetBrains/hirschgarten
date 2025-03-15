@@ -42,7 +42,6 @@ internal class AllInDirectoryRecursiveTestContextProvider : TestContextProvider 
       )
     }
 
-    private fun getWorkspaceRelativePath(root: WorkspaceRoot, vf: VirtualFile): WorkspacePath? =
-      root.workspacePathForSafe(File(vf.path))
+    private fun getWorkspaceRelativePath(root: WorkspaceRoot, vf: VirtualFile): WorkspacePath? = root.workspacePathForSafe(File(vf.path))
   }
 }

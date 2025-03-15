@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.smrunner
 
-
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.Location

@@ -17,7 +17,6 @@ package org.jetbrains.bazel.ogRun.confighandler
 
 import com.google.common.base.Preconditions
 import com.google.common.base.Verify
-
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -65,14 +64,15 @@ class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRu
     private val configuration: BlazeCommandRunConfiguration = getConfiguration(environment)
     private val handlerState: BlazeCommandRunConfigurationCommonState = configuration.getHandler().state as BlazeCommandRunConfigurationCommonState
     val project = environment.project
-    private val consoleFilters: List<Filter?> = listOf(
-      UrlFilter(),
-      ToolWindowTaskIssueOutputFilter.createWithDefaultParsers(
-        project,
-        WorkspaceRoot.fromProject(project),
-        BlazeInvocationContext.ContextType.RunConfiguration,
-      ),
-    )
+    private val consoleFilters: List<Filter?> =
+      listOf(
+        UrlFilter(),
+        ToolWindowTaskIssueOutputFilter.createWithDefaultParsers(
+          project,
+          WorkspaceRoot.fromProject(project),
+          BlazeInvocationContext.ContextType.RunConfiguration,
+        ),
+      )
 
     @Throws(ExecutionException::class)
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
@@ -199,9 +199,10 @@ class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRu
       val processHandler = this.genericProcessHandler
       val consoleView = consoleBuilder.console
       context.addOutputSink(PrintOutput::class.java, WritingOutputSink(consoleView))
-      consoleBuilder = object : TextConsoleBuilderImpl(project) {
-        override fun createConsole(): ConsoleView = consoleView
-      }
+      consoleBuilder =
+        object : TextConsoleBuilderImpl(project) {
+          override fun createConsole(): ConsoleView = consoleView
+        }
       addConsoleFilters(*consoleFilters.toTypedArray<Filter?>())
 
       val envVars = handlerState.userEnvVarsState.data.envs
@@ -278,9 +279,10 @@ class BlazeCommandGenericRunConfigurationRunner : BlazeCommandRunConfigurationRu
             environment.executor,
             testUiSession,
           )
-        consoleBuilder = object : TextConsoleBuilderImpl(project) {
-          override fun createConsole(): ConsoleView = consoleView
-        }
+        consoleBuilder =
+          object : TextConsoleBuilderImpl(project) {
+            override fun createConsole(): ConsoleView = consoleView
+          }
         context.addOutputSink(PrintOutput::class.java, WritingOutputSink(consoleView))
       }
       addConsoleFilters(*consoleFilters.toTypedArray<Filter?>())

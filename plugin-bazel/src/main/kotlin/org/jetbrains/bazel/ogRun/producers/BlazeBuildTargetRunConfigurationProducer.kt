@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.producers
 
-
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref

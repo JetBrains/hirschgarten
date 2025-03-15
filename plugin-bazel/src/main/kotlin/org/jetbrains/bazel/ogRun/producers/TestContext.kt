@@ -16,8 +16,6 @@
 package org.jetbrains.bazel.ogRun.producers
 
 import com.google.common.base.Preconditions
-
-
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.errorprone.annotations.CanIgnoreReturnValue

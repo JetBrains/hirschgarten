@@ -16,8 +16,6 @@
 package org.jetbrains.bazel.ogRun.producers
 
 import com.google.common.annotations.VisibleForTesting
-
-
 import com.google.idea.blaze.base.dependencies.TargetInfo
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.application.TransactionGuard
@@ -45,7 +43,6 @@ class PendingWebTestContext private constructor(
   description: String?,
 ) : TestContext(sourceElement, blazeFlags, description),
   PendingRunConfigurationContext {
-
   override val isDone: Boolean
     get() = false
 

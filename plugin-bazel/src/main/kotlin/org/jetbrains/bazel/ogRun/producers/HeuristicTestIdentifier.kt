@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.producers
 
-
 import com.google.idea.blaze.base.model.primitives.WorkspacePath
 import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.bazel.ogRun.ExecutorType

@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun
 
-
 import com.google.idea.blaze.base.dependencies.TargetInfo
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile

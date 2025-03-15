@@ -17,7 +17,6 @@ package org.jetbrains.bazel.ogRun.smrunner
 
 import org.jetbrains.bazel.ogRun.testlogs.BlazeTestResultFinderStrategy
 
-
 /**
  * Created during a single blaze test invocation, to manage test result finding and UI.
  *
@@ -33,5 +32,5 @@ data class BlazeTestUiSession(
    */
   val blazeFlags: List<String>,
   /** Returns a [BlazeTestResultFinderStrategy] for this blaze test invocation.  */
-  val testResultFinderStrategy: BlazeTestResultFinderStrategy?
+  val testResultFinderStrategy: BlazeTestResultFinderStrategy?,
 )

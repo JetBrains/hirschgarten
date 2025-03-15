@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun
 
-
 import com.google.common.collect.Sets
 import com.google.idea.blaze.base.model.BlazeProjectData
 import com.intellij.execution.*

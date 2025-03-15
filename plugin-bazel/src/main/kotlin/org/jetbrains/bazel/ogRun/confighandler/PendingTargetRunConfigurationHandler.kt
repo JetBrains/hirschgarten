@@ -18,6 +18,7 @@ package org.jetbrains.bazel.ogRun.confighandler
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
+import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
@@ -32,8 +33,6 @@ import org.jetbrains.bazel.ogRun.ExecutorType
 import org.jetbrains.bazel.ogRun.PendingRunConfigurationContext
 import org.jetbrains.bazel.ogRun.other.BlazeCommandName
 import org.jetbrains.bazel.ogRun.state.BlazeCommandRunConfigurationCommonState
-import com.intellij.execution.RunManager;
-
 
 class PendingTargetRunConfigurationHandler internal constructor(config: BlazeCommandRunConfiguration) :
   BlazeCommandRunConfigurationHandler {
@@ -99,8 +98,7 @@ class PendingTargetRunConfigurationHandler internal constructor(config: BlazeCom
      * A placeholder [RunProfileState]. This is bypassed entirely by PendingTargetProgramRunner.
      */
     private class DummyRunProfileState : RunProfileState {
-      override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult =
-        throw RuntimeException("Unexpected code path")
+      override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = throw RuntimeException("Unexpected code path")
     }
 
     private class PendingTargetRunner : BlazeCommandRunConfigurationRunner {

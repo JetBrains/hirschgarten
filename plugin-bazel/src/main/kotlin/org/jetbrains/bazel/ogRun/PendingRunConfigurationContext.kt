@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun
 
-
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.psi.PsiElement

@@ -51,8 +51,7 @@ internal class AllInBuildFileTestContextProvider : TestContextProvider {
       )
     }
 
-    private fun getWorkspaceRelativePath(root: WorkspaceRoot, vf: VirtualFile): WorkspacePath? =
-      root.workspacePathForSafe(File(vf.path))
+    private fun getWorkspaceRelativePath(root: WorkspaceRoot, vf: VirtualFile): WorkspacePath? = root.workspacePathForSafe(File(vf.path))
 
     private fun isBuildFile(context: ConfigurationContext, file: PsiFile): Boolean =
       Blaze.getBuildSystemProvider(context.project).isBuildFile(file.name)

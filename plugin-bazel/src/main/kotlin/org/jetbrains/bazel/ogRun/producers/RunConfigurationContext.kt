@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.producers
 
-
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.psi.PsiElement

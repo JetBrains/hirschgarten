@@ -16,7 +16,6 @@
 package org.jetbrains.bazel.ogRun.producers
 
 import com.google.common.annotations.VisibleForTesting
-
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement

@@ -17,7 +17,6 @@ package org.jetbrains.bazel.ogRun.state
 
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Joiner
-
 import com.google.idea.blaze.base.command.BlazeFlags
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane

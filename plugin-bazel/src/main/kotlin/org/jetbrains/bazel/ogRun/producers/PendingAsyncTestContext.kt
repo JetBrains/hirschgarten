@@ -16,8 +16,6 @@
 package org.jetbrains.bazel.ogRun.producers
 
 import com.google.common.base.Function
-
-
 import com.google.common.util.concurrent.AsyncFunction
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -35,9 +33,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
 import com.intellij.psi.PsiElement
 import com.intellij.util.ui.UIUtil
+import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
 import org.jetbrains.bazel.ogRun.ExecutorType
 import org.jetbrains.bazel.ogRun.PendingRunConfigurationContext
-import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
 
 /**
  * For situations where we appear to be in a recognized test context, but can't efficiently resolve

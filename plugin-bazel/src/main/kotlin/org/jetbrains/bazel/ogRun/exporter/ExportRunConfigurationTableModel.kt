@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.exporter
 
-
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.util.text.UniqueNameGenerator
@@ -49,14 +48,13 @@ internal class ExportRunConfigurationTableModel(configurations: List<RunConfigur
 
   override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = columnIndex != 1
 
-  override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? {
-    return when (columnIndex) {
+  override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? =
+    when (columnIndex) {
       0 -> enabled[rowIndex]
       1 -> names[rowIndex]
       2 -> paths[rowIndex]
       else -> throw RuntimeException("Invalid column index: $columnIndex")
     }
-  }
 
   override fun setValueAt(
     aValue: Any?,

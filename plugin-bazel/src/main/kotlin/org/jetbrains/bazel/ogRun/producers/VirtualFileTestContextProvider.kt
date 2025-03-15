@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.producers
 
-
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
@@ -24,7 +23,6 @@ import com.intellij.execution.PsiLocation
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -37,7 +35,6 @@ import com.intellij.psi.util.PsiModificationTracker
 import org.jetbrains.ide.PooledThreadExecutor
 import java.io.File
 import java.util.*
-import java.util.concurrent.Callable
 
 /**
  * For situations where psi elements for the current file can't be efficiently resolved (for
@@ -91,7 +88,7 @@ internal class VirtualFileTestContextProvider : TestContextProvider {
 
     private fun findContextAsync(context: ConfigurationContext): RunConfigurationContext? =
       TestContextProvider.EP_NAME.extensionList
-        .filter {  it !is VirtualFileTestContextProvider }
+        .filter { it !is VirtualFileTestContextProvider }
         .firstNotNullOfOrNull {
           ReadAction.compute<RunConfigurationContext, RuntimeException> { it.getTestContext(context) }
         }

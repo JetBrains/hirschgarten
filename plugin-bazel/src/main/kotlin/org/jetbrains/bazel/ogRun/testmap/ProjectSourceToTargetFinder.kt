@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.testmap
 
-
 import com.google.common.collect.ImmutableSortedSet
 import com.google.common.util.concurrent.Futures
 import com.google.idea.blaze.base.dependencies.TargetInfo

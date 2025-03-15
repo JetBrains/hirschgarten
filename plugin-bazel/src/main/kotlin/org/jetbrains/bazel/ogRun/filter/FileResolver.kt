@@ -36,18 +36,16 @@ interface FileResolver {
         .mapNotNull { it.resolve(project, fileString) }
         .mapNotNull { file ->
           VirtualFileSystemProvider.instance.system.findFileByPath(file.path)
-        }
-        .firstOrNull()
+        }.firstOrNull()
 
     /**
      * Iterates through all available [FileResolver]s, returning the first successful result.
      */
-    fun resolveToFile(project: Project, fileString: String): File? {
-      return EP_NAME.extensions
+    fun resolveToFile(project: Project, fileString: String): File? =
+      EP_NAME.extensions
         .asSequence()
         .mapNotNull { it.resolve(project, fileString) }
         .firstOrNull()
-    }
 
     val EP_NAME: ExtensionPointName<FileResolver> =
       ExtensionPointName.create("com.google.idea.blaze.FileStringParser")

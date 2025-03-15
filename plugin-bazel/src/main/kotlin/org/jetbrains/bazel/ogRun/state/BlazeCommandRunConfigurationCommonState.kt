@@ -16,7 +16,6 @@
 package org.jetbrains.bazel.ogRun.state
 
 import com.google.common.base.Preconditions
-
 import com.google.idea.blaze.base.command.BlazeFlags
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.configurations.RuntimeConfigurationException

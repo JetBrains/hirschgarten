@@ -17,7 +17,6 @@ package org.jetbrains.bazel.ogRun.smrunner
 
 import com.google.common.base.Splitter
 import com.google.common.base.Strings
-
 import com.intellij.execution.Location
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope

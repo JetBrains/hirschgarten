@@ -15,8 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun
 
-
-
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.idea.blaze.base.dependencies.TargetInfo
 import com.intellij.openapi.extensions.ExtensionPointName

@@ -16,11 +16,8 @@
 package org.jetbrains.bazel.ogRun.exporter
 
 import com.google.common.base.Strings
-
 import com.google.idea.blaze.base.io.FileOperationProvider
-import com.intellij.execution.RunManager;
-import java.io.FileOutputStream;
-
+import com.intellij.execution.RunManager
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -41,8 +38,8 @@ import org.jetbrains.bazel.ogRun.BlazeRunConfiguration
 import java.awt.Dimension
 import java.awt.event.ActionListener
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
-import java.util.stream.Collectors
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTable

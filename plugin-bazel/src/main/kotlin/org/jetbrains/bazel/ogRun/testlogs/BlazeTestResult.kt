@@ -18,14 +18,13 @@ package org.jetbrains.bazel.ogRun.testlogs
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ogRun.other.Kind
 
-
 /** The result of a single blaze test action.  */
 data class BlazeTestResult(
   val label: Label?,
   val targetKind: Kind?,
-val testStatus: TestStatus?,
-val outputXmlFiles: Set<out BlazeArtifact>?)
-{
+  val testStatus: TestStatus?,
+  val outputXmlFiles: Set<out BlazeArtifact>?,
+) {
   /** Status for a single blaze test action.  */
   enum class TestStatus {
     NO_STATUS,
@@ -42,8 +41,8 @@ val outputXmlFiles: Set<out BlazeArtifact>?)
   companion object {
     /** The set of statuses for which no useful output XML is written.  */
     @JvmField
-    val NO_USEFUL_OUTPUT: Set<TestStatus?> =
-      setOf<TestStatus?>(
+    val NO_USEFUL_OUTPUT: Set<TestStatus> =
+      setOf(
         TestStatus.TIMEOUT,
         TestStatus.REMOTE_FAILURE,
         TestStatus.FAILED_TO_BUILD,

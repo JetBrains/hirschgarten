@@ -16,7 +16,6 @@
 package org.jetbrains.bazel.ogRun.filter
 
 import com.google.common.annotations.VisibleForTesting
-import com.google.idea.blaze.base.settings.Blaze
 import com.intellij.execution.filters.ConsoleFilterProvider
 import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.OpenFileHyperlinkInfo
@@ -58,7 +57,7 @@ internal class GenericFileMessageFilter(private val project: Project) : Filter {
       if (project.isBazelProject) {
         arrayOf(GenericFileMessageFilter(project))
       } else {
-emptyArray()
+        emptyArray()
       }
   }
 
@@ -84,12 +83,11 @@ emptyArray()
     private val FILE_LINE_COLUMN: Pattern = Pattern.compile("^([^:\\s]+):([0-9]+):([0-9]+): ")
 
     /** defaults to -1 if no number can be parsed.  */
-    private fun parseNumber(string: String?): Int {
-      return try {
+    private fun parseNumber(string: String?): Int =
+      try {
         string?.toInt() ?: -1
       } catch (e: NumberFormatException) {
         -1
       }
-    }
   }
 }

@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.coverage
 
-
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.runners.ExecutionEnvironment
 import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
@@ -45,8 +44,7 @@ object CoverageUtils {
     return BlazeCommandName.TEST == command || BlazeCommandName.COVERAGE == command
   }
 
-  private fun toBlazeConfig(profile: RunProfile): BlazeCommandRunConfiguration? =
-    BlazeCommandRunConfigurationRunner.getBlazeConfig(profile)
+  private fun toBlazeConfig(profile: RunProfile): BlazeCommandRunConfiguration? = BlazeCommandRunConfigurationRunner.getBlazeConfig(profile)
 
   val blazeFlags: List<String?> = listOf<String?>("--combined_report=lcov")
 

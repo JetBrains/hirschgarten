@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.filter
 
-import com.google.idea.blaze.base.settings.Blaze
 import com.intellij.execution.filters.ConsoleFilterProvider
 import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.OpenFileHyperlinkInfo

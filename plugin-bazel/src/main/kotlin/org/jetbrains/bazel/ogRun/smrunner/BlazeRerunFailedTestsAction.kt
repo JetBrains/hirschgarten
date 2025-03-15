@@ -30,7 +30,6 @@ import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
 import org.jetbrains.bazel.ogRun.other.BlazeCommandName
 import org.jetbrains.bazel.ogRun.state.BlazeCommandRunConfigurationCommonState
 import java.util.*
-import java.util.stream.Collectors
 
 /** Re-run failed tests.  */
 class BlazeRerunFailedTestsAction internal constructor(
@@ -44,9 +43,7 @@ class BlazeRerunFailedTestsAction internal constructor(
     return BlazeRerunTestRunProfile(config.clone())
   }
 
-  private inner class BlazeRerunTestRunProfile(private val configuration: BlazeCommandRunConfiguration) :
-    MyRunProfile(configuration) {
-
+  private inner class BlazeRerunTestRunProfile(private val configuration: BlazeCommandRunConfiguration) : MyRunProfile(configuration) {
     @Throws(ExecutionException::class)
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? {
       val handlerState: BlazeCommandRunConfigurationCommonState? =
@@ -59,9 +56,10 @@ class BlazeRerunFailedTestsAction internal constructor(
         return null
       }
       val project = project
-      val locations = getFailedTests(project)
-        .filter { it?.isLeaf == true }
-        .mapNotNull { toLocation(project, it!!) }
+      val locations =
+        getFailedTests(project)
+          .filter { it?.isLeaf == true }
+          .mapNotNull { toLocation(project, it!!) }
       val testFilter = eventsHandler.getTestFilter(project, locations) ?: return null
       val blazeFlags =
         setTestFilter(handlerState.blazeFlagsState.rawFlags, testFilter)

@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.smrunner
 
-
 import com.intellij.execution.Executor
 import com.intellij.execution.testframework.TestConsoleProperties
 import com.intellij.execution.testframework.actions.AbstractRerunFailedTestsAction
@@ -37,10 +36,7 @@ class BlazeTestConsoleProperties(
   private val testUiSession: BlazeTestUiSession,
 ) : SMTRunnerConsoleProperties(runConfiguration, SmRunnerUtils.BLAZE_FRAMEWORK, executor),
   SMCustomMessagesParsing {
-  override fun createTestEventsConverter(
-    framework: String,
-    consoleProperties: TestConsoleProperties,
-  ): OutputToGeneralTestEventsConverter =
+  override fun createTestEventsConverter(framework: String, consoleProperties: TestConsoleProperties): OutputToGeneralTestEventsConverter =
     BlazeXmlToTestEventsConverter(
       framework,
       consoleProperties,

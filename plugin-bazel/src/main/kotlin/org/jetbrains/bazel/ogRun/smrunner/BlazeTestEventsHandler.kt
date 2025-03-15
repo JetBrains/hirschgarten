@@ -16,7 +16,6 @@
 package org.jetbrains.bazel.ogRun.smrunner
 
 import com.google.common.base.Strings
-
 import com.google.idea.blaze.base.dependencies.TargetInfo
 import com.intellij.execution.Location
 import com.intellij.execution.testframework.actions.AbstractRerunFailedTestsAction

@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.state
 
-
 import com.google.common.collect.ImmutableMap
 import com.google.idea.blaze.base.command.BlazeFlags
 import com.intellij.execution.configuration.EnvironmentVariablesComponent

@@ -18,7 +18,6 @@ package org.jetbrains.bazel.ogRun.other
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.ImmutableMultimap
-
 import com.google.common.collect.Multimap
 import com.google.common.collect.Multimaps
 import com.intellij.openapi.application.ApplicationManager

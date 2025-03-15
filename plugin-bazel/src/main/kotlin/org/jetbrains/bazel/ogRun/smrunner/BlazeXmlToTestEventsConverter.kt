@@ -16,7 +16,6 @@
 package org.jetbrains.bazel.ogRun.smrunner
 
 import com.google.common.base.Joiner
-
 import com.google.common.collect.ImmutableMap
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture

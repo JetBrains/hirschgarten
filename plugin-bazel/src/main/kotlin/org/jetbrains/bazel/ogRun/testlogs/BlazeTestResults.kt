@@ -17,7 +17,6 @@ package org.jetbrains.bazel.ogRun.testlogs
 
 import com.google.common.collect.ImmutableMultimap
 import org.jetbrains.bazel.label.Label
-import java.util.function.Consumer
 
 /** Results from a 'blaze test' invocation.  */
 data class BlazeTestResults(val perTargetResults: ImmutableMultimap<Label, BlazeTestResult>) {
