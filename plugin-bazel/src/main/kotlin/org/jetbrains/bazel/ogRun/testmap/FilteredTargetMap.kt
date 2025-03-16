@@ -24,20 +24,12 @@ import java.util.function.Predicate
 
 /** Filters a [TargetMap] according to a given filter.  */
 class FilteredTargetMap(
-  private val project: Project?,
+  private val project: Project,
   decoder: ArtifactLocationDecoder,
-  targetMap: TargetMap,
-  filter: Predicate<TargetIdeInfo?>,
+  val targetMap: TargetMap,
+  val filter: Predicate<TargetIdeInfo>,
 ) {
-  private val rootsMap: Multimap<File?, TargetKey?>
-  private val targetMap: TargetMap
-  private val filter: Predicate<TargetIdeInfo?>
-
-  init {
-    this.rootsMap = createRootsMap(decoder, targetMap.targets())
-    this.targetMap = targetMap
-    this.filter = filter
-  }
+  private val rootsMap: Multimap<File, TargetKey> = createRootsMap(decoder, targetMap.targets())
 
   fun targetsForSourceFile(sourceFile: File): Set<TargetIdeInfo?> = targetsForSourceFiles(listOf<File?>(sourceFile))
 

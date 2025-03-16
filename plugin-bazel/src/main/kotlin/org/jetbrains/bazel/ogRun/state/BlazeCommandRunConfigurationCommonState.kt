@@ -26,31 +26,23 @@ import java.io.File
  * Shared state common to several [ ] types.
  */
 class BlazeCommandRunConfigurationCommonState : RunConfigurationCompositeState() {
-  val commandState: BlazeCommandState
+  val commandState: BlazeCommandState = BlazeCommandState()
 
   /** @return The list of blaze flags that the user specified manually.
    */
-  val blazeFlagsState: RunConfigurationFlagsState
+  val blazeFlagsState: RunConfigurationFlagsState = RunConfigurationFlagsState(USER_BLAZE_FLAG_TAG, buildSystemName.toString() + " flags:")
 
   /** @return The list of executable flags the user specified manually.
    */
-  val exeFlagsState: RunConfigurationFlagsState
+  val exeFlagsState: RunConfigurationFlagsState = RunConfigurationFlagsState(USER_EXE_FLAG_TAG, "Executable flags:")
 
   /** @return The environment variables the user specified manually.
    */
-  val userEnvVarsState: EnvironmentVariablesState
-  val blazeBinaryState: BlazeBinaryState
+  val userEnvVarsState: EnvironmentVariablesState = EnvironmentVariablesState()
+  val blazeBinaryState: BlazeBinaryState = BlazeBinaryState()
 
-  init {
-    this.commandState = BlazeCommandState()
-    this.blazeFlagsState = RunConfigurationFlagsState(USER_BLAZE_FLAG_TAG, buildSystemName.toString() + " flags:")
-    this.exeFlagsState = RunConfigurationFlagsState(USER_EXE_FLAG_TAG, "Executable flags:")
-    this.userEnvVarsState = EnvironmentVariablesState()
-    this.blazeBinaryState = BlazeBinaryState()
-  }
-
-  override fun initializeStates(): List<RunConfigurationState?> =
-    listOf<RunConfigurationState?>(
+  override fun initializeStates(): List<RunConfigurationState> =
+    listOf(
       this.commandState,
       this.blazeFlagsState,
       this.exeFlagsState,

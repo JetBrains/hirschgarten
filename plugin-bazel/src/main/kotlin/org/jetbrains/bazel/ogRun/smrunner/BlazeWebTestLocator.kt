@@ -18,9 +18,12 @@ package org.jetbrains.bazel.ogRun.smrunner
 import com.google.common.base.Splitter
 import com.google.common.base.Strings
 import com.intellij.execution.Location
+import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.io.URLUtil
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.ogRun.other.Kind
 import java.util.stream.Stream
 
 /**
@@ -33,35 +36,26 @@ internal class BlazeWebTestLocator : SMTestLocator {
     path: String,
     project: Project,
     scope: GlobalSearchScope,
-  ): MutableList<Location<*>?> {
+  ): List<Location<*>> {
     if (protocol != BlazeWebTestEventsHandler.WEB_TEST_PROTOCOL) {
-      return listOf<Location<*>?>()
+      return listOf()
     }
     val projectData: BlazeProjectData? =
-      BlazeProjectDataManager.getInstance(project).getBlazeProjectData()
-    if (projectData == null) {
-      return listOf<Location<*>?>()
-    }
+      BlazeProjectDataManager.getInstance(project).getBlazeProjectData() ?: return listOf()
     val components = Splitter.on(SmRunnerUtils.TEST_NAME_PARTS_SPLITTER).splitToList(path)
     if (components.isEmpty()) {
-      return listOf<Location<*>?>()
+      return listOf()
     }
-    val wrapperLabel: Label? = Label.createIfValid(components.get(0))
-    if (wrapperLabel == null) {
-      return listOf<Location<*>?>()
-    }
+    val wrapperLabel: Label? = Label.createIfValid(components.get(0)) ?: return listOf()
     val wrapperTarget: TargetIdeInfo? =
       projectData.getTargetMap().get(TargetKey.forPlainTarget(wrapperLabel))
     if (wrapperTarget == null) {
-      return listOf<Location<*>?>()
+      return listOf()
     }
-    val builder = List.builder<Location<*>?>()
+    val builder = List.builder()
     for (dependency in wrapperTarget.getDependencies()) {
       val targetKey: TargetKey = dependency.getTargetKey()
-      val target: TargetIdeInfo? = projectData.getTargetMap().get(targetKey)
-      if (target == null) {
-        continue
-      }
+      val target: TargetIdeInfo? = projectData.getTargetMap().get(targetKey) ?: continue
       val kind: Kind = target.getKind()
       val label: Label = targetKey.getLabel()
       if (Stream.of<String?>("_wrapped_test", "_debug").noneMatch(label.targetName().toString()::endsWith)) {
@@ -89,35 +83,35 @@ internal class BlazeWebTestLocator : SMTestLocator {
       label: Label,
       kind: Kind,
       components: MutableList<String?>,
-    ): String? {
+    ): String? =
       when (components.size) {
-        2 -> return handler.suiteLocationUrl(label, kind, /* name = */components.get(1))
-        4 -> return handler.testLocationUrl(
-          label,
-          kind, // parentSuite =
-          components.get(1), // name =
-          components.get(2), // className =
-          Strings.emptyToNull(components.get(3)),
-        )
+        2 -> handler.suiteLocationUrl(label, kind, /* name = */components.get(1))
+        4 ->
+          handler.testLocationUrl(
+            label,
+            kind, // parentSuite =
+            components.get(1), // name =
+            components.get(2), // className =
+            Strings.emptyToNull(components.get(3)),
+          )
 
-        else -> return null
+        else -> null
       }
-    }
 
     private fun locate(
       locator: SMTestLocator,
       url: String,
       project: Project,
       scope: GlobalSearchScope,
-    ): MutableList<Location<*>?> {
+    ): List<Location<*>> {
       val components = Splitter.on(URLUtil.SCHEME_SEPARATOR).limit(2).splitToList(url)
       if (components.size != 2) {
-        return listOf<Location<*>?>()
+        return listOf()
       }
       return locator.getLocation(
         // protocol =
-        components.get(0), // path =
-        components.get(1),
+        components[0], // path =
+        components[1],
         project,
         scope,
       )

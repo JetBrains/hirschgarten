@@ -28,13 +28,13 @@ class CompositeSMTestLocator protected constructor(private val locators: List<SM
     path: String,
     project: Project,
     scope: GlobalSearchScope,
-  ): MutableList<Location<*>?> {
+  ): List<Location<*>> {
     for (locator in locators) {
       val result = locator.getLocation(protocol, path, project, scope)
-      if (!result.isEmpty()) {
+      if (result.isNotEmpty()) {
         return result
       }
     }
-    return listOf<Location<*>?>()
+    return listOf()
   }
 }

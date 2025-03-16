@@ -18,11 +18,12 @@ package org.jetbrains.bazel.ogRun.targetfinder
 import com.google.common.util.concurrent.Futures
 import com.google.idea.blaze.base.dependencies.TargetInfo
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.label.Label
 import java.util.concurrent.Future
 
 /** Uses the project's [TargetMap] to locate targets matching a given label.  */
 internal class ProjectTargetFinder : TargetFinder {
-  override fun findTarget(project: Project?, label: Label?): Future<TargetInfo?> {
+  override fun findTarget(project: Project, label: Label): Future<TargetInfo?> {
     val projectData: BlazeProjectData? =
       BlazeProjectDataManager.getInstance(project).getBlazeProjectData()
     var ret: TargetInfo? = null

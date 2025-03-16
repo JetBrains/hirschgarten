@@ -19,7 +19,6 @@ import com.google.common.base.Strings
 import com.google.idea.blaze.base.model.primitives.GenericBlazeRules.RuleTypes
 import com.intellij.execution.Location
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.io.URLUtil
 import java.util.*
 
@@ -34,27 +33,19 @@ class BlazeWebTestEventsHandler : BlazeTestEventsHandler {
     get() = BlazeWebTestLocator.INSTANCE
 
   /** Uses the [BlazeTestEventsHandler] that handles the language of the test location.  */
-  override fun getTestFilter(project: Project?, testLocations: MutableList<Location<*>?>): String? =
+  override fun getTestFilter(project: Project, testLocations: List<Location<*>>): String? =
     testLocations
-      .stream()
-      .map<VirtualFile?> { obj: Location<*>? -> obj!!.getVirtualFile() }
-      .filter { obj: VirtualFile? -> Objects.nonNull(obj) }
-      .map<String?> { obj: VirtualFile? -> obj!!.getExtension() }
-      .filter { obj: String? -> Objects.nonNull(obj) }
-      .map<Any?>(LanguageClass::fromExtension)
-      .filter { obj: Any? -> Objects.nonNull(obj) }
-      .map<Any?>(Kind::getKindsForLanguage)
-      .flatMap<Any?> { obj: Any? -> obj.stream() }
-      .filter { kind: Any? -> kind.getRuleType() === RuleType.TEST }
-      .map<Any?>(BlazeTestEventsHandler::getHandlerForTargetKind)
-      .filter { obj: Any? -> obj.isPresent() }
-      .map<Any?> { obj: Any? -> obj.get() }
-      .filter { handler: Any? -> handler !is BlazeWebTestEventsHandler }
-      .map<Any?> { handler: Any? -> handler.getTestFilter(project, testLocations) }
-      .filter { obj: Any? -> Objects.nonNull(obj) }
-      .filter { filter: Any? -> !filter.isEmpty() }
-      .findFirst()
-      .orElse(null)
+      .asSequence()
+      .mapNotNull { it.virtualFile }
+      .mapNotNull { it.extension }
+      .mapNotNull { LanguageClass.fromExtension(it) }
+      .flatMap { Kind.getKindsForLanguage(it).asSequence() }
+      .filter { it.ruleType == RuleType.TEST }
+      .mapNotNull { BlazeTestEventsHandler.getHandlerForTargetKind(it) }
+      .filterIsInstance<BlazeTestEventsHandler>()
+      .filter { it !is BlazeWebTestEventsHandler }
+      .mapNotNull { it.getTestFilter(project, testLocations) }
+      .firstOrNull { it.isNotEmpty() }
 
   override fun testLocationUrl(
     label: Label?,
@@ -62,7 +53,7 @@ class BlazeWebTestEventsHandler : BlazeTestEventsHandler {
     parentSuite: String?,
     name: String?,
     className: String?,
-  ): String? =
+  ): String =
     (
       WEB_TEST_PROTOCOL +
         URLUtil.SCHEME_SEPARATOR +

@@ -27,12 +27,8 @@ import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerConsoleView
 import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerTestTreeView
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.util.Getter
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.bazel.ogRun.BlazeCommandRunConfiguration
-import java.util.Arrays
-import java.util.Objects
-import java.util.stream.Collectors
 import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
@@ -56,28 +52,25 @@ object SmRunnerUtils {
       SMTestRunnerConnectionUtil.createConsole(BLAZE_FRAMEWORK, properties) as SMTRunnerConsoleView
     Disposer.register(project, console)
     console
-      .getResultsViewer()
-      .getTreeView()!!
-      .getSelectionModel()
-      .setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION)
+      .resultsViewer
+      .treeView!!
+      .selectionModel.selectionMode = TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION
     return console
   }
 
   fun createRerunFailedTestsAction(result: DefaultExecutionResult): AbstractRerunFailedTestsAction? {
-    val console = result.getExecutionConsole()
+    val console = result.executionConsole
     if (console !is SMTRunnerConsoleView) {
       return null
     }
-    val smConsole = console
-    val consoleProperties = smConsole.getProperties()
+    val consoleProperties = console.properties
     if (consoleProperties !is BlazeTestConsoleProperties) {
       return null
     }
-    val properties = consoleProperties
-    val action = properties.createRerunFailedTestsAction(smConsole)
+    val action = consoleProperties.createRerunFailedTestsAction(console)
     if (action != null) {
-      action.init(properties)
-      action.setModelProvider(Getter { smConsole.getResultsViewer() })
+      action.init(consoleProperties)
+      action.setModelProvider { console.resultsViewer }
     }
     return action
   }
@@ -92,46 +85,36 @@ object SmRunnerUtils {
   }
 
   @JvmStatic
-  fun getSelectedSmRunnerTreeElements(context: ConfigurationContext): MutableList<Location<*>?> {
+  fun getSelectedSmRunnerTreeElements(context: ConfigurationContext): List<Location<*>> {
     val project = context.project
     val tests = getSelectedTestProxies(context)
     return tests
-      .stream()
-      .map { test: SMTestProxy? -> test!!.getLocation(project, GlobalSearchScope.allScope(project)) }
-      .filter { obj: Location<Any?>? -> Objects.nonNull(obj) }
-      .collect(Collectors.toList())
+      .mapNotNull { test -> test.getLocation(project, GlobalSearchScope.allScope(project)) }
   }
 
   /** Counts all selected test cases, and their children, recursively  */
   @JvmStatic
   fun countSelectedTestCases(context: ConfigurationContext): Int {
     val tests = getSelectedTestProxies(context)
-    val allTests: MutableSet<SMTestProxy?> = HashSet<SMTestProxy?>(tests)
+    val allTests: MutableSet<SMTestProxy> = HashSet(tests)
     for (test in tests) {
       allTests.addAll(test.collectChildren())
     }
     return allTests.size
   }
 
-  private fun getSelectedTestProxies(context: ConfigurationContext): MutableList<SMTestProxy> {
+  private fun getSelectedTestProxies(context: ConfigurationContext): List<SMTestProxy> {
     val treeView =
-      SMTRunnerTestTreeView.SM_TEST_RUNNER_VIEW.getData(context.getDataContext())
-    if (treeView == null) {
-      return listOf<SMTestProxy?>()
-    }
+      SMTRunnerTestTreeView.SM_TEST_RUNNER_VIEW.getData(context.dataContext) ?: return listOf()
     val paths = treeView.getSelectionPaths()
-    if (paths == null || paths.size == 0) {
-      return listOf<SMTestProxy?>()
+    if (paths == null || paths.isEmpty()) {
+      return listOf()
     }
-    return Arrays
-      .stream<TreePath?>(paths)
-      .map<SMTestProxy?> { path: TreePath? -> SmRunnerUtils.toTestProxy(treeView, path!!) }
-      .filter { obj: SMTestProxy? -> Objects.nonNull(obj) }
-      .collect(Collectors.toList())
+    return paths.mapNotNull { path -> toTestProxy(treeView, path) }
   }
 
   private fun toTestProxy(treeView: SMTRunnerTestTreeView, path: TreePath): SMTestProxy? {
-    if (treeView.isPathSelected(path.getParentPath())) {
+    if (treeView.isPathSelected(path.parentPath)) {
       return null
     }
     return treeView.getSelectedTest(path)

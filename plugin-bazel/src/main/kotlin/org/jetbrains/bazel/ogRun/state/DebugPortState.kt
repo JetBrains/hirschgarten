@@ -33,10 +33,7 @@ class DebugPortState(private val defaultPort: Int) : RunConfigurationState {
 
   @Throws(InvalidDataException::class)
   override fun readExternal(element: Element) {
-    val value = element.getAttributeValue(ATTRIBUTE_TAG)
-    if (value == null) {
-      return
-    }
+    val value = element.getAttributeValue(ATTRIBUTE_TAG) ?: return
     try {
       port = value.toInt()
     } catch (e: NumberFormatException) {

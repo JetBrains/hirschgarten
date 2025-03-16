@@ -25,7 +25,7 @@ interface BlazeTestResultFinderStrategy {
    * results
    */
   @Throws(GetArtifactsException::class)
-  fun findTestResults(): BlazeTestResults?
+  fun findTestResults(): BlazeTestResults
 
   /** Remove any temporary files used by this result finder.  */
   fun deleteTemporaryOutputFiles()

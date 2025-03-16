@@ -22,11 +22,15 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.idea.blaze.base.command.buildresult.BuildResultHelper.GetArtifactsException
 import com.intellij.execution.process.ProcessOutputTypes
 import com.intellij.execution.testframework.TestConsoleProperties
+import com.intellij.execution.testframework.sm.runner.GeneralTestEventsProcessor
 import com.intellij.execution.testframework.sm.runner.OutputToGeneralTestEventsConverter
+import com.intellij.execution.testframework.sm.runner.events.TestFinishedEvent
 import com.intellij.execution.testframework.sm.runner.events.TestOutputEvent
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.ProjectManager
 import jetbrains.buildServer.messages.serviceMessages.TestSuiteStarted
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.ogRun.other.Kind
 import org.jetbrains.bazel.ogRun.testlogs.BlazeTestResult
 import org.jetbrains.bazel.ogRun.testlogs.BlazeTestResultFinderStrategy
 import org.jetbrains.bazel.ogRun.testlogs.BlazeTestResults
@@ -37,19 +41,17 @@ import java.util.function.Consumer
 class BlazeXmlToTestEventsConverter(
   testFrameworkName: String,
   testConsoleProperties: TestConsoleProperties,
-  testResultFinderStrategy: BlazeTestResultFinderStrategy,
+  private val testResultFinderStrategy: BlazeTestResultFinderStrategy,
 ) : OutputToGeneralTestEventsConverter(testFrameworkName, testConsoleProperties) {
   init {
     NO_ERROR.message = "No message" // cannot be null
   }
 
-  private val testResultFinderStrategy: BlazeTestResultFinderStrategy
-
   override fun flushBufferOnProcessTermination(exitCode: Int) {
     super.flushBufferOnProcessTermination(exitCode)
 
     try {
-      val testResults: BlazeTestResults? = testResultFinderStrategy.findTestResults()
+      val testResults: BlazeTestResults = testResultFinderStrategy.findTestResults()
       if (testResults == BlazeTestResults.NO_RESULTS) {
         reportError(exitCode)
       } else {
@@ -64,29 +66,25 @@ class BlazeXmlToTestEventsConverter(
 
   private fun processAllTestResults(testResults: BlazeTestResults) {
     onStartTesting()
-    getProcessor().onTestsReporterAttached()
+    processor.onTestsReporterAttached()
     val futures: MutableList<ListenableFuture<ParsedTargetResults?>?> =
       ArrayList<ListenableFuture<ParsedTargetResults?>?>()
     for (label in testResults.perTargetResults.keySet()) {
       futures.add(
         FetchExecutor.EXECUTOR.submit(
-          { Companion.parseTestXml(label, testResults.perTargetResults.get(label)) },
+          { parseTestXml(label, testResults.perTargetResults.get(label)) },
         ),
       )
     }
-    val parsedResults: MutableList<ParsedTargetResults?>? =
+    val parsedResults: List<ParsedTargetResults> =
       FuturesUtil.getIgnoringErrors<MutableList<ParsedTargetResults?>?>(
         Futures.allAsList<ParsedTargetResults?>(
           futures,
         ),
       )
-    if (parsedResults != null) {
-      parsedResults.forEach(
-        Consumer { parsedResults: ParsedTargetResults? ->
-          this.processParsedTestResults(
-            parsedResults!!,
-          )
-        },
+    parsedResults.forEach {
+      this.processParsedTestResults(
+        it,
       )
     }
   }
@@ -96,49 +94,36 @@ class BlazeXmlToTestEventsConverter(
     if (exitStatus == null) {
       reportTestRuntimeError(
         "Unknown Error",
-        "Test runtime terminated unexpectedly with exit code " + exitCode + ".",
+        "Test runtime terminated unexpectedly with exit code $exitCode.",
       )
     } else {
-      reportTestRuntimeError(exitStatus.title, exitStatus.message!!)
+      reportTestRuntimeError(exitStatus.title, exitStatus.message)
     }
   }
 
   /** Parsed test output for a single target.  */
   private class ParsedTargetResults(
-    label: Label,
-    results: MutableCollection<BlazeTestResult?>,
-    outputFiles: MutableList<BlazeArtifact>,
-    targetSuites: MutableList<BlazeXmlSchema.TestSuite>,
-  ) {
-    private val label: Label
-    private val results: MutableCollection<BlazeTestResult?>
-    private val outputFiles: MutableList<BlazeArtifact>
-    private val targetSuites: MutableList<BlazeXmlSchema.TestSuite>
-
-    init {
-      this.label = label
-      this.results = results
-      this.outputFiles = outputFiles
-      this.targetSuites = targetSuites
-    }
-  }
+    private val label: Label,
+    val results: MutableCollection<BlazeTestResult>,
+    val outputFiles: MutableList<BlazeArtifact>,
+    private val targetSuites: MutableList<BlazeXmlSchema.TestSuite>,
+  )
 
   /** Process all parsed test XML files from a single test target.  */
   private fun processParsedTestResults(parsedResults: ParsedTargetResults) {
     if (noUsefulOutput(parsedResults.results, parsedResults.outputFiles)) {
       val status: BlazeTestResult.TestStatus? =
         parsedResults.results
-          .stream()
-          .map<Any?>(BlazeTestResult::getTestStatus)
-          .findFirst()
-      status.ifPresent(
-        Consumer { testStatus: BlazeTestResult.TestStatus? ->
-          reportTargetWithoutOutputFiles(
-            parsedResults.label,
-            testStatus,
-          )
-        },
-      )
+          .map {
+            it.getTestStatus()
+          }.firstOrNull()
+
+      status?.let {
+        reportTargetWithoutOutputFiles(
+          parsedResults.label,
+          it,
+        )
+      }
       return
     }
 
@@ -157,7 +142,7 @@ class BlazeXmlToTestEventsConverter(
       } else {
         BlazeXmlSchema.mergeSuites(parsedResults.targetSuites)
       }
-    processTestSuite(getProcessor(), eventsHandler, parsedResults.label, kind, suite)
+    processTestSuite(processor, eventsHandler, parsedResults.label, kind, suite)
   }
 
   /**
@@ -165,7 +150,6 @@ class BlazeXmlToTestEventsConverter(
    * messages to help them decide what to do next. (e.g. re-run the test?)
    */
   private fun reportTestRuntimeError(errorName: String?, errorMessage: String) {
-    val processor: GeneralTestEventsProcessor = getProcessor()
     processor.onTestFailure(
       getTestFailedEvent(errorName, errorMessage, null, BlazeComparisonFailureData.NONE, 0, true),
     )
@@ -180,7 +164,6 @@ class BlazeXmlToTestEventsConverter(
       // Empty test targets do not produce output XML, yet technically pass. Ignore them.
       return
     }
-    val processor: GeneralTestEventsProcessor = getProcessor()
     val suiteStarted = TestSuiteStarted(label.toString())
     processor.onSuiteStarted(TestSuiteStartedEvent(suiteStarted, /*locationUrl=*/null))
     val targetName = label.targetName().toString()
@@ -201,12 +184,8 @@ class BlazeXmlToTestEventsConverter(
     processor.onSuiteFinished(TestSuiteFinishedEvent(label.toString()))
   }
 
-  init {
-    this.testResultFinderStrategy = testResultFinderStrategy
-  }
-
   companion object {
-    private val NO_ERROR: ErrorOrFailureOrSkipped = ErrorOrFailureOrSkipped()
+    private val NO_ERROR: BlazeXmlSchema.ErrorOrFailureOrSkipped = BlazeXmlSchema.ErrorOrFailureOrSkipped()
     private val removeZeroRunTimeCheck: BoolExperiment = BoolExperiment("remove.zero.run.time.check", true)
 
     /** Parse all test XML files from a single test target.  */

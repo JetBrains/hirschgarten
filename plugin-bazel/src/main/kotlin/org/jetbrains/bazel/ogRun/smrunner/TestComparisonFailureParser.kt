@@ -40,6 +40,6 @@ interface TestComparisonFailureParser {
     }
 
     val EP_NAME: ExtensionPointName<TestComparisonFailureParser> =
-      create.create<TestComparisonFailureParser?>("com.google.idea.blaze.TestComparisonFailureParser")
+      ExtensionPointName.create("com.google.idea.blaze.TestComparisonFailureParser")
   }
 }

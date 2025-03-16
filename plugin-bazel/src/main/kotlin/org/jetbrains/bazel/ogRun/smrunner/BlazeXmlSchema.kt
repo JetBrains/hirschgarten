@@ -17,8 +17,6 @@ package org.jetbrains.bazel.ogRun.smrunner
 
 import com.google.common.collect.Lists
 import java.io.InputStream
-import java.util.Objects
-import java.util.stream.Collectors
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.JAXBException
 import javax.xml.bind.annotation.XmlAnyElement
@@ -64,23 +62,20 @@ object BlazeXmlSchema {
 
   @JvmStatic
   fun getErrorContent(err: ErrorOrFailureOrSkipped): String? {
-    if (err.content == null) {
-      return null
-    }
-    return err.content
-      .stream()
-      .filter { obj: Any? -> Objects.nonNull(obj) }
-      .map<String?> { obj: Any? -> obj.toString() }
-      .map<String?> { obj: String? -> obj!!.trim { it <= ' ' } }
-      .filter { s: String? -> !s!!.isEmpty() }
-      .collect(Collectors.joining("\n"))
+    val content = err.content ?: return null
+    return content
+      .asSequence()
+      .filterNotNull()
+      .map { it.toString().trim() }
+      .filter { it.isNotEmpty() }
+      .joinToString("\n")
   }
 
   // optional wrapping XML element. Some test runners don't include it.
   @XmlRootElement(name = "testsuites")
   internal class TestSuites {
     @XmlElement(name = "testsuite")
-    var testSuites: MutableList<TestSuite?> = Lists.newArrayList<TestSuite?>()
+    var testSuites: MutableList<TestSuite> = Lists.newArrayList<TestSuite>()
 
     fun convertToTestSuite(): TestSuite {
       val suite = TestSuite()
@@ -133,18 +128,18 @@ object BlazeXmlSchema {
 
     @JvmField
     @XmlElement(name = "testsuite")
-    var testSuites: MutableList<TestSuite> = Lists.newArrayList<TestSuite?>()
+    var testSuites: MutableList<TestSuite> = mutableListOf()
 
     @JvmField
     @XmlElement(name = "testdecorator")
-    var testDecorators: MutableList<TestSuite?> = Lists.newArrayList<TestSuite?>()
+    var testDecorators: MutableList<TestSuite?> = mutableListOf()
 
     @JvmField
     @XmlElement(name = "testcase")
-    var testCases: MutableList<TestCase?> = Lists.newArrayList<TestCase?>()
+    var testCases: MutableList<TestCase?> = mutableListOf()
 
     /** Used to merge test suites from a single target, split across multiple shards  */
-    private fun addSuite(suite: TestSuite) {
+    fun addSuite(suite: TestSuite) {
       for (existing in testSuites) {
         if (existing.name == suite.name) {
           existing.mergeWithSuite(suite)
@@ -212,11 +207,11 @@ object BlazeXmlSchema {
     var skipped: ErrorOrFailureOrSkipped? = null
   }
 
-  internal class ErrorOrFailureOrSkipped {
+  class ErrorOrFailureOrSkipped {
     // Can't use @XmlValue with @XmlElement
     @XmlMixed
     @XmlAnyElement(lax = true)
-    private val content: MutableList<Any?>? = null
+    val content: MutableList<Any?>? = null
 
     @JvmField
     @XmlAttribute
@@ -234,7 +229,7 @@ object BlazeXmlSchema {
     var actual: Values? = null
   }
 
-  internal class Values {
+  class Values {
     @JvmField
     @XmlElement(name = "value", type = String::class)
     var values: MutableList<String?> = ArrayList<String?>()

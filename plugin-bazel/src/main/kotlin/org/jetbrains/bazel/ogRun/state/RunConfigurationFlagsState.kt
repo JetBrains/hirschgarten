@@ -25,7 +25,6 @@ import org.jdom.Element
 import org.jetbrains.bazel.ogRun.other.UiUtil
 import java.awt.Container
 import java.awt.Dimension
-import java.util.stream.Collectors
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JTextArea
@@ -34,32 +33,26 @@ import javax.swing.ScrollPaneConstants
 import javax.swing.ViewportLayout
 
 /** State for a list of user-defined flags.  */
-class RunConfigurationFlagsState(private val tag: String?, private val fieldLabel: String?) : RunConfigurationState {
+class RunConfigurationFlagsState(private val tag: String, private val fieldLabel: String) : RunConfigurationState {
   /** Unprocessed flags, as the user entered them, tokenised on unquoted whitespace.  */
-  private var flags: List<String?> = listOf<String?>()
+  private var flags: List<String> = listOf()
 
-  val flagsForExternalProcesses: MutableList<String?>
+  val flagsForExternalProcesses: MutableList<String>
     /** Flags ready to be used directly as args for external processes.  */
     get() {
       val processedFlags =
-        flags
-          .stream()
-          .map { s: String? ->
-            ParametersListUtil
-              .parse(
-                s!!,
-                false,
-                true,
-              ).first()
-          }.collect(Collectors.toList())
+        flags.map {
+          ParametersListUtil.parse(it, false, true).firstOrNull()
+        }
+
       return BlazeFlags.expandBuildFlags(processedFlags)
     }
 
-  var rawFlags: MutableList<String?>
+  var rawFlags: MutableList<String>
     /** Unprocessed flags that haven't been macro expanded or processed for escaping/quotes.  */
     get() = flags
     set(flags) {
-      this.flags = listOf<String?>(flags)
+      this.flags = listOf(flags)
     }
 
   fun copy(): RunConfigurationFlagsState {
@@ -69,14 +62,12 @@ class RunConfigurationFlagsState(private val tag: String?, private val fieldLabe
   }
 
   override fun readExternal(element: Element) {
-    val flagsBuilder = List.builder<String?>()
-    for (e in element.getChildren(tag)) {
-      val flag = e.textTrim
-      if (flag != null && !flag.isEmpty()) {
-        flagsBuilder.add(flag)
-      }
-    }
-    flags = flagsBuilder.build()
+    val flagsList =
+      element
+        .getChildren(tag)
+        .mapNotNull { it.textTrim.takeIf { flag -> flag.isNotEmpty() } }
+
+    flags = flagsList
   }
 
   override fun writeExternal(element: Element) {
@@ -129,12 +120,12 @@ class RunConfigurationFlagsState(private val tag: String?, private val fieldLabe
     override fun applyEditorTo(genericState: RunConfigurationState) {
       val state = genericState as RunConfigurationFlagsState
       // split on unescaped whitespace and newlines only. Otherwise leave unchanged.
-      val list: MutableList<String?> = BlazeParametersListUtil.splitParameters(flagsField.getText())
+      val list: MutableList<String> = BlazeParametersListUtil.splitParameters(flagsField.getText())
       state.rawFlags = list
     }
 
     private fun createScrollPane(field: JTextArea): JBScrollPane {
-      val viewport: JViewport = JViewport()
+      val viewport = JViewport()
       viewport.setView(field)
       viewport.setLayout(
         object : ViewportLayout() {

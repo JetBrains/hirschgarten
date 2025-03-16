@@ -32,13 +32,10 @@ class EnvironmentVariablesState : RunConfigurationState {
     EnvironmentVariablesData.create(ImmutableMap.of<String?, String?>(), /* passParentEnvs= */true)
     private set
 
-  fun asBlazeTestEnvFlags(): List<String?> {
-    val flags = List.builder<String?>()
-    for (env in data.envs.entries) {
-      flags.add(BlazeFlags.TEST_ENV, String.format("%s=%s", env.key, env.value))
+  fun asBlazeTestEnvFlags(): List<String> =
+    data.envs.map { (key, value) ->
+      "${BlazeFlags.TEST_ENV}=$key=$value"
     }
-    return flags.build()
-  }
 
   @Throws(InvalidDataException::class)
   override fun readExternal(element: Element) {
@@ -59,7 +56,7 @@ class EnvironmentVariablesState : RunConfigurationState {
   override fun getEditor(project: Project): RunConfigurationStateEditor = Editor()
 
   @VisibleForTesting
-  fun setEnvVars(vars: MutableMap<String?, String?>) {
+  fun setEnvVars(vars: Map<String, String>) {
     data = data.with(vars)
   }
 

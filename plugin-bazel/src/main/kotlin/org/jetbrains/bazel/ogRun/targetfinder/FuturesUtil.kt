@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.ogRun.targetfinder
 
-import com.google.common.base.Function
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.JdkFutureAdapters
 import com.google.common.util.concurrent.ListenableFuture
@@ -51,9 +50,9 @@ object FuturesUtil {
    * Prioritizes immediately available results.
    */
   fun <T> getFirstFutureSatisfyingPredicate(iterable: Iterable<Future<T?>>, predicate: Predicate<T?>): ListenableFuture<T?> {
-    val futures: MutableList<ListenableFuture<T?>?> = ArrayList<ListenableFuture<T?>?>()
+    val futures: MutableList<ListenableFuture<T?>?> = ArrayList()
     for (future in iterable) {
-      if (future.isDone()) {
+      if (future.isDone) {
         val result = getIgnoringErrors<T?>(future)
         if (predicate.test(result)) {
           return Futures.immediateFuture<T?>(result)
@@ -65,21 +64,11 @@ object FuturesUtil {
       }
     }
     if (futures.isEmpty()) {
-      return Futures.immediateFuture<T?>(null)
+      return Futures.immediateFuture(null)
     }
-    return Futures.transform<MutableList<T?>?, T?>(
-      Futures.allAsList<T?>(futures),
-      Function { list: MutableList<T?>? ->
-        if (list == null) {
-          null
-        } else {
-          list
-            .stream()
-            .filter(predicate)
-            .findFirst()
-            .orElse(null)
-        }
-      },
+    return Futures.transform<MutableList<T>, T?>(
+      Futures.allAsList(futures),
+      { it.firstOrNull { predicate.test(it) } },
       MoreExecutors.directExecutor(),
     )
   }

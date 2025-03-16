@@ -61,10 +61,10 @@ class ConsoleOutputFileSettingsUi<T : RunConfigurationBase<*>> : SettingsEditor<
 
   public override fun applyEditorTo(config: T) {
     val text = outputFile.getText()
-    config!!.setFileOutputPath(
+    config.setFileOutputPath(
       if (StringUtil.isEmpty(text)) null else FileUtil.toSystemIndependentName(text),
     )
-    config.setSaveOutputToFile(saveToFile.isSelected())
+    config.isSaveOutputToFile = saveToFile.isSelected
   }
 
   override fun createEditor(): JComponent = UiUtil.createHorizontalBox( /* gap= */5, saveToFile, outputFile)
