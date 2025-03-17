@@ -7,14 +7,12 @@ import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bazel.server.bsp.managers.BazelExternalRulesetsQueryImpl
-import org.jetbrains.bazel.server.bsp.managers.BazelLabelExpander
 import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bazel.server.bzlmod.canonicalize
@@ -33,7 +31,6 @@ class ProjectResolver(
   private val bazelBspAspectsManager: BazelBspAspectsManager,
   private val bazelToolchainManager: BazelToolchainManager,
   private val bazelBspLanguageExtensionsGenerator: BazelBspLanguageExtensionsGenerator,
-  private val bazelLabelExpander: BazelLabelExpander,
   private val workspaceContextProvider: WorkspaceContextProvider,
   private val bazelProjectMapper: BazelProjectMapper,
   private val targetInfoReader: TargetInfoReader,
@@ -129,7 +126,7 @@ class ProjectResolver(
             .readTargetMapFromAspectOutputs(aspectOutputs)
             .map { (k, v) ->
               // TODO: make sure we canonicalize everything
-              //  (https://youtrack.jetbrains.com/issue/BAZEL-1595/Merge-WildcardTargetExpander-and-BazelLabelExpander)
+              //  (https://youtrack.jetbrains.com/issue/BAZEL-1597/Make-sure-all-labels-in-the-server-are-canonicalized)
               //  also, this can be done in a more efficient way
               //  maybe we can do it in the aspect with some flag or something
               val label = k.canonicalize(repoMapping)
@@ -151,15 +148,7 @@ class ProjectResolver(
             }.toMap()
         }
       // resolve root targets (expand wildcards)
-      val rootTargets =
-        measured("Calculating root targets") {
-          bazelLabelExpander
-            .getAllPossibleTargets(
-              targetsToSync,
-              workspaceContext,
-            ).map { it.assumeResolved().canonicalize(repoMapping) }
-            .toSet()
-        }
+      val rootTargets = buildAspectResult.bepOutput.rootTargets()
       return@useWithScope measured(
         "Mapping to internal model",
       ) {

@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.sync
 
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
@@ -67,11 +68,9 @@ import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
-import java.io.IOException
 import java.net.URI
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.name
 import kotlin.io.path.relativeToOrNull
 import kotlin.io.path.toPath
 
@@ -126,11 +125,15 @@ class BspProjectMapper(
   }
 
   fun workspaceDirectories(project: Project): WorkspaceDirectoriesResult {
+    // bazel symlinks exclusion logic is now taken care by BazelSymlinkExcludeService,
+    // so there is no need for excluding them here anymore
+
     val directoriesSection = project.workspaceContext.directories
 
-    val symlinksToExclude = computeSymlinksToExclude(project.workspaceRoot)
-    val additionalDirectoriesToExclude = computeAdditionalDirectoriesToExclude()
-    val directoriesToExclude = directoriesSection.excludedValues + symlinksToExclude + additionalDirectoriesToExclude
+    val workspaceRoot = project.workspaceRoot.toPath()
+
+    val additionalDirectoriesToExclude = computeAdditionalDirectoriesToExclude(workspaceRoot)
+    val directoriesToExclude = directoriesSection.excludedValues + additionalDirectoriesToExclude
 
     return WorkspaceDirectoriesResult(
       includedDirectories = directoriesSection.values.map { it.toDirectoryItem() },
@@ -153,24 +156,11 @@ class BspProjectMapper(
     }
   }
 
-  private fun computeSymlinksToExclude(workspaceRoot: URI): List<Path> {
-    val stableSymlinkNames = setOf("bazel-out", "bazel-testlogs", "bazel-bin")
-    val workspaceRootPath = workspaceRoot.toPath()
-    val workspaceSymlinkNames = setOf("bazel-${workspaceRootPath.name}")
-
-    val symlinks = (stableSymlinkNames + workspaceSymlinkNames).map { workspaceRootPath.resolve(it) }
-    val realPaths =
-      symlinks.mapNotNull {
-        try {
-          it.toRealPath()
-        } catch (e: IOException) {
-          null
-        }
-      }
-    return symlinks + realPaths
-  }
-
-  private fun computeAdditionalDirectoriesToExclude(): List<Path> = listOf(bspInfo.bazelBspDir())
+  private fun computeAdditionalDirectoriesToExclude(workspaceRoot: Path): List<Path> =
+    listOf(
+      bspInfo.bazelBspDir(),
+      workspaceRoot.resolve(JPS_COMPILED_BASE_DIRECTORY),
+    )
 
   private fun Path.toDirectoryItem() =
     DirectoryItem(

@@ -80,6 +80,7 @@ data class WorkspaceContext(
   val shardSync: ShardSyncSpec,
   val targetShardSize: TargetShardSizeSpec,
   val shardingApproachSpec: ShardingApproachSpec,
+  val importRunConfigurations: ImportRunConfigurationsSpec,
 ) : ExecutionContext()
 
 /**

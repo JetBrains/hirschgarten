@@ -39,6 +39,9 @@ class ExternalRepoResolveTest : IdeStarterBaseProjectTest() {
         .openFile("src/BUILD")
         // load(":junit_test.bzl", "kt_<caret>test") -> def <caret>kt_test
         .navigateToFile(1, 29, expectedFilename = "junit_test.bzl", 3, 5)
+        .openFile("src/BUILD")
+        // kt_<caret>test( -> def <caret>kt_test
+        .navigateToFile(3, 4, expectedFilename = "junit_test.bzl", 3, 5)
         // load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm<caret>_test") -> <caret>kt_jvm_test
         .navigateToFile(1, 46, expectedFilename = "jvm.bzl", 17, 1)
         // "//kotlin/internal:opts.<caret>bzl" -> <caret>kt_javac_options

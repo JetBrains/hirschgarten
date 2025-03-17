@@ -41,6 +41,7 @@ class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDi
       shardSync = ShardSyncSpecExtractor.fromProjectView(projectView),
       targetShardSize = TargetShardSizeSpecExtractor.fromProjectView(projectView),
       shardingApproachSpec = ShardingApproachSpecExtractor.fromProjectView(projectView),
+      importRunConfigurations = ImportRunConfigurationsSpecExtractor.fromProjectView(projectView),
     )
   }
 }

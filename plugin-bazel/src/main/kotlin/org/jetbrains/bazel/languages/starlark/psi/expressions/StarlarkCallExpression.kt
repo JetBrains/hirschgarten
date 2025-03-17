@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiReference
+import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRules
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
@@ -30,6 +31,9 @@ class StarlarkCallExpression(node: ASTNode) : StarlarkBaseElement(node) {
 
   fun getArgumentList(): StarlarkArgumentList? = findChildrenByClass(StarlarkArgumentList::class.java).firstOrNull()
 
-  override fun getOwnReferences(): Collection<BazelNativeRuleReference> =
-    name?.let { listOf(BazelNativeRuleReference(this)) } ?: emptyList()
+  override fun getOwnReferences(): Collection<BazelNativeRuleReference> {
+    val name = name ?: return emptyList()
+    val nativeRule = BazelNativeRules.getRuleByName(name) ?: return emptyList()
+    return listOf(BazelNativeRuleReference(this, nativeRule))
+  }
 }

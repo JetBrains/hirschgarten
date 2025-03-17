@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.server.sync.languages
 
-import java.io.File
 import java.nio.charset.Charset
 import java.nio.file.Path
+import kotlin.io.path.bufferedReader
 
 object JVMLanguagePluginParser {
   private val PACKAGE_PATTERN = Regex("^\\s*package\\s+([\\p{L}0-9_.]+)")
@@ -13,7 +13,7 @@ object JVMLanguagePluginParser {
     findPackage(source, multipleLines)?.let { SourceRootAndData(jvmPackagePrefix = it) }
 
   private fun findPackage(source: Path, multipleLines: Boolean): String? =
-    File(source.toUri()).bufferedReader(charset = ONE_BYTE_CHARSET, bufferSize = BUFFER_SIZE).use { bufferedReader ->
+    source.bufferedReader(charset = ONE_BYTE_CHARSET, bufferSize = BUFFER_SIZE).use { bufferedReader ->
       // Not using UTF-8 charset because it is slower to decode
       val packages =
         bufferedReader.lineSequence().mapNotNull { line ->
