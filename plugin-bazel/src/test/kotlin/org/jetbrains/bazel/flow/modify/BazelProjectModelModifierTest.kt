@@ -27,7 +27,7 @@ class BazelProjectModelModifierTest : IdeStarterBaseProjectTest() {
     get() =
       GitProjectInfo(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "d968379e085e33c9a869a2382e0d50069134413d",
+        commitHash = "dfdeecb49806f57818c74bf13b3b671349568865",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("bazelProjectModelModifierTest") },
         isReusable = false,
