@@ -19,6 +19,7 @@ import com.google.idea.blaze.base.bazel.BuildSystemProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
+import org.jetbrains.bazel.ogRun.other.TestSize
 import java.io.File
 
 /** Looks for a test rule in the same blaze package as the source file.  */
