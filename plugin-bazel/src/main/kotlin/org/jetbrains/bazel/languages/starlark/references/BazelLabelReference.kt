@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.languages.starlark.references
 
+import com.intellij.codeInsight.completion.util.ParenthesesInsertHandler
+import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
@@ -9,11 +12,15 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReferenceBase
+import com.intellij.util.PlatformIcons
+import com.jetbrains.rd.util.insert
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkLookupElement
+import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkParameterLookupElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
@@ -23,15 +30,14 @@ import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPat
 import org.jetbrains.bazel.languages.starlark.repomapping.repositoryPaths
 import org.jetbrains.bazel.utils.allAncestorsSequence
 import java.nio.file.Path
-import com.intellij.openapi.diagnostic.logger
-import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkNamedLookupElement
+import org.jetbrains.bazel.target.TargetUtils
+import org.jetbrains.bazel.target.targetUtils
 
 public val BUILD_FILE_NAMES = sequenceOf("BUILD.bazel", "BUILD")
 
 // Tested in ExternalRepoResolveTest
 class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolean) :
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), soft) {
-  private val LOG = logger<BazelLabelReference>()
   override fun resolve(): PsiElement? {
     val project = element.project
     if (!project.isBazelProject || isInNameArgument()) return null
@@ -39,6 +45,24 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
 
     return resolveLabel(project, label, element.containingFile.originalFile.virtualFile, true)
   }
+
+  override fun getVariants(): Array<LookupElement> {
+    val project = element.project
+    if (!project.isBazelProject || isInNameArgument()) return emptyArray()
+    val targetUtils = project.targetUtils
+    val targets = targetUtils.allTargets()
+    val listTargets = emptyList<LookupElement>().toMutableList()
+    for (target in targets) {
+      val targetName = "\"" + target.toString()
+      listTargets += functionLookupElement(targetName)
+    }
+    return listTargets.toTypedArray()
+  }
+
+  private fun functionLookupElement(name: String): LookupElement =
+    LookupElementBuilder
+      .create(name)
+      .withIcon(PlatformIcons.PACKAGE_ICON)
 
   private fun isInNameArgument(): Boolean {
     val parent = element.parent ?: return false
