@@ -22,6 +22,9 @@ class BazelNativeRuleArgumentDocumentationTarget(symbol: BazelNativeRuleArgument
 
   override fun computeDocumentation(): DocumentationResult? =
     symbolPtr.dereference().run {
+      if (nativeRuleArgument.docString == null || nativeRuleArgument.docString == "") {
+        return null
+      }
       val html = nativeRuleArgument.docString
       DocumentationResult.documentation(html.toString())
     }
