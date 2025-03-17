@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.codeInsight.completion.util.ParenthesesInsertHandler
+import com.intellij.codeInsight.lookup.AutoCompletionPolicy
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.Project
@@ -23,6 +24,7 @@ import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkLookupE
 import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkParameterLookupElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.repomapping.apparentRepoNameToCanonicalName
@@ -48,18 +50,24 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
 
   override fun getVariants(): Array<LookupElement> {
     val project = element.project
-    if (!project.isBazelProject || isInNameArgument()) return emptyArray()
+    if (!project.isBazelProject || isInNameArgument() || !validLabelLocation()) return emptyArray()
+
     val targetUtils = project.targetUtils
     val targets = targetUtils.allTargets()
     val listTargets = emptyList<LookupElement>().toMutableList()
     for (target in targets) {
-      val targetName = "\"" + target.toString()
-      listTargets += functionLookupElement(targetName)
+      val targetName = "\"" + target.toString().drop(1)
+      listTargets += targetLookupElement(targetName)
     }
     return listTargets.toTypedArray()
   }
 
-  private fun functionLookupElement(name: String): LookupElement =
+  private fun validLabelLocation(): Boolean {
+    val parent = element.parent ?: return false
+    return parent is StarlarkListLiteralExpression
+  }
+
+  private fun targetLookupElement(name: String): LookupElement =
     LookupElementBuilder
       .create(name)
       .withIcon(PlatformIcons.PACKAGE_ICON)

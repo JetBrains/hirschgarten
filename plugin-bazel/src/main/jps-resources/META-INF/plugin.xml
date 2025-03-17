@@ -391,9 +391,6 @@
         <completion.contributor
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesArgumentCompletionContributor"/>
-        <completion.contributor
-                language="Starlark"
-                implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelTargetsCompletionContributor"/>
         <editorTabTitleProvider
                 implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider"/>
         <extendWordSelectionHandler
