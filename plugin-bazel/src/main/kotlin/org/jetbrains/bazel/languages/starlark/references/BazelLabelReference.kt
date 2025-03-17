@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.languages.starlark.references
 
-import com.intellij.codeInsight.completion.util.ParenthesesInsertHandler
-import com.intellij.codeInsight.lookup.AutoCompletionPolicy
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.Project
@@ -14,14 +12,11 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReferenceBase
 import com.intellij.util.PlatformIcons
-import com.jetbrains.rd.util.insert
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
-import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkLookupElement
-import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkParameterLookupElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
@@ -30,10 +25,9 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 import org.jetbrains.bazel.languages.starlark.repomapping.apparentRepoNameToCanonicalName
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 import org.jetbrains.bazel.languages.starlark.repomapping.repositoryPaths
+import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.utils.allAncestorsSequence
 import java.nio.file.Path
-import org.jetbrains.bazel.target.TargetUtils
-import org.jetbrains.bazel.target.targetUtils
 
 public val BUILD_FILE_NAMES = sequenceOf("BUILD.bazel", "BUILD")
 
