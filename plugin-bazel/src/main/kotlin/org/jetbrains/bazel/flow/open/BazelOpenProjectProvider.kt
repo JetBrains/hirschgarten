@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.coroutines.CoroutineService
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.startup.BazelStartupActivity
 
 internal class BazelOpenProjectProvider : AbstractOpenProjectProvider() {
@@ -30,7 +30,7 @@ internal fun performOpenBazelProject(project: Project?, projectRootDir: VirtualF
   if (projectRootDir != null && project != null) {
     project.initProperties(projectRootDir)
     CounterPlatformProjectConfigurator().configureProject(project)
-    CoroutineService.getInstance(project).start {
+    BazelCoroutineService.getInstance(project).start {
       BazelStartupActivity().execute(project)
     }
   }
