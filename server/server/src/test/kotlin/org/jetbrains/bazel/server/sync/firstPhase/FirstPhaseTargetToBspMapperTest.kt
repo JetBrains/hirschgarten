@@ -166,7 +166,7 @@ class FirstPhaseTargetToBspMapperTest {
                 canCompile = true,
                 canRun = false,
                 canTest = false,
-                canDebug = false,
+                
               ),
           ),
           BuildTarget(
@@ -179,7 +179,7 @@ class FirstPhaseTargetToBspMapperTest {
                 canCompile = true,
                 canRun = true,
                 canTest = false,
-                canDebug = false,
+                
               ),
           ),
           BuildTarget(
@@ -192,7 +192,7 @@ class FirstPhaseTargetToBspMapperTest {
                 canCompile = true,
                 canRun = false,
                 canTest = true,
-                canDebug = false,
+                
               ),
           ),
           BuildTarget(
@@ -205,7 +205,7 @@ class FirstPhaseTargetToBspMapperTest {
                 canCompile = true,
                 canRun = false,
                 canTest = false,
-                canDebug = false,
+                
               ),
           ),
           BuildTarget(
@@ -218,7 +218,7 @@ class FirstPhaseTargetToBspMapperTest {
                 canCompile = true,
                 canRun = true,
                 canTest = false,
-                canDebug = false,
+                
               ),
           ),
           BuildTarget(
@@ -231,7 +231,7 @@ class FirstPhaseTargetToBspMapperTest {
                 canCompile = true,
                 canRun = false,
                 canTest = true,
-                canDebug = false,
+                
               ),
           ),
           BuildTarget(
@@ -244,7 +244,7 @@ class FirstPhaseTargetToBspMapperTest {
                 canCompile = true,
                 canRun = false,
                 canTest = false,
-                canDebug = false,
+                
               ),
           ),
         )

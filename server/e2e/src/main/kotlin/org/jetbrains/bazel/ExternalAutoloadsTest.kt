@@ -50,7 +50,7 @@ object ExternalAutoloadsTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
+          
         ),
         displayName = "//src:hello",
         baseDirectory = "file://\$WORKSPACE/src/",

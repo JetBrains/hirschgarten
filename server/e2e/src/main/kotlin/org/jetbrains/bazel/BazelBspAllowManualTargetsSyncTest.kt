@@ -131,7 +131,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
             canCompile = true,
             canTest = false,
             canRun = false,
-            canDebug = false,
+            
           ),
         displayName = "//manual_target:java_library",
         baseDirectory = "file://\$WORKSPACE/manual_target/",
@@ -149,7 +149,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
             canCompile = true,
             canTest = false,
             canRun = true,
-            canDebug = false,
+            
           ),
         displayName = "//manual_target:java_binary",
         baseDirectory = "file://\$WORKSPACE/manual_target/",
@@ -167,7 +167,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
             canCompile = true,
             canTest = true,
             canRun = false,
-            canDebug = false,
+            
           ),
         displayName = "//manual_target:java_test",
         baseDirectory = "file://\$WORKSPACE/manual_target/",

@@ -74,7 +74,7 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
+          
         ),
         displayName = "//src:main",
         baseDirectory = "file://\$WORKSPACE/src/",

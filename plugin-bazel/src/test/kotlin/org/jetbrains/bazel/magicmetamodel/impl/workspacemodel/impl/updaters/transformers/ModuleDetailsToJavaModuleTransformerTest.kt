@@ -790,7 +790,7 @@ class ExtractJvmBuildTargetTest {
           canCompile = true,
           canTest = false,
           canRun = true,
-          canDebug = false,
+          
         ),
         displayName = "target name",
         baseDirectory = "/base/dir",

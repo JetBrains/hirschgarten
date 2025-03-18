@@ -50,7 +50,7 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
             canCompile = true,
             canTest = false,
             canRun = true,
-            canDebug = false,
+            
           ),
         displayName = "//example",
         baseDirectory = "file://\$WORKSPACE/example/",
@@ -68,7 +68,7 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
             canCompile = false,
             canTest = false,
             canRun = false,
-            canDebug = false,
+            
           ),
         baseDirectory = "file://\$WORKSPACE/",
         displayName = "bsp-workspace-root",

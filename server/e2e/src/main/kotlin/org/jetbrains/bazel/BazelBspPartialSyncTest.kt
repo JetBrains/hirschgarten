@@ -89,7 +89,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
               canCompile = true,
               canTest = false,
               canRun = true,
-              canDebug = false,
+              
             ),
             displayName = "//java_targets:java_binary",
             baseDirectory = "file://\$WORKSPACE/java_targets/",
@@ -145,7 +145,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
+          
         ),
         displayName = "//java_targets:java_library",
         baseDirectory = "file://\$WORKSPACE/java_targets/",

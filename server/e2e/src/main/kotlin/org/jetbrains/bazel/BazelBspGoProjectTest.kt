@@ -129,7 +129,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = true,
-          canDebug = false,
+          
         ),
       dependencies =
         listOf(
@@ -149,7 +149,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
+          
         ),
       importPath = "example.com/lib",
     )
@@ -164,7 +164,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = true,
           canRun = false,
-          canDebug = false,
+          
         ),
       importPath = "testmain",
     )

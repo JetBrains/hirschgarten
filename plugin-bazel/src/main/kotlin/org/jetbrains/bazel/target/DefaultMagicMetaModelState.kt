@@ -48,7 +48,6 @@ data class ModuleCapabilitiesState(
       canRun = canRun,
       canTest = canTest,
       canCompile = canCompile,
-      canDebug = canDebug,
     )
 }
 
@@ -57,5 +56,4 @@ fun ModuleCapabilities.toState(): ModuleCapabilitiesState =
     canRun = canRun,
     canTest = canTest,
     canCompile = canCompile,
-    canDebug = canDebug,
   )

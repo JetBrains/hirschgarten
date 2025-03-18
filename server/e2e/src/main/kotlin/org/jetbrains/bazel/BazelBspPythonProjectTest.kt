@@ -65,7 +65,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = true,
-          canDebug = false,
+          
         ),
         displayName = "//example",
         baseDirectory = "file://\$WORKSPACE/example/",
@@ -87,7 +87,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
+          
         ),
         displayName = "//lib:example_library",
         baseDirectory = "file://\$WORKSPACE/lib/",
@@ -104,7 +104,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = true,
           canRun = false,
-          canDebug = false,
+          
         ),
         displayName = "//test",
         baseDirectory = "file://\$WORKSPACE/test/",

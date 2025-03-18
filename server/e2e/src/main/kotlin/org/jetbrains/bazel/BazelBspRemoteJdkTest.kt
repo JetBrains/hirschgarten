@@ -52,7 +52,7 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = true,
-          canDebug = false,
+          
         ),
         displayName = "//example",
         baseDirectory = "file://\$WORKSPACE/example/",

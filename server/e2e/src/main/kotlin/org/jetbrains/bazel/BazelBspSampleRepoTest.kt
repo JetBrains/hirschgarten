@@ -870,7 +870,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
               canCompile = true,
               canTest = false,
               canRun = true,
-              canDebug = false,
+              
             ),
             displayName = "//genrule:foo",
             baseDirectory = "file://$workspaceDir/genrule/",
@@ -884,7 +884,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
               canCompile = true,
               canTest = false,
               canRun = false,
-              canDebug = false,
+              
             ),
             displayName = "//target_with_resources:resources",
             baseDirectory = "file://$workspaceDir/target_with_resources/",
@@ -898,7 +898,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
               canCompile = true,
               canTest = false,
               canRun = true,
-              canDebug = false,
+              
             ),
             displayName = "//target_without_java_info:filegroup",
             baseDirectory = "file://$workspaceDir/target_without_java_info/",
@@ -912,7 +912,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
               canCompile = true,
               canTest = false,
               canRun = true,
-              canDebug = false,
+              
             ),
             displayName = "//target_without_java_info:genrule",
             baseDirectory = "file://$workspaceDir/target_without_java_info/",
@@ -984,7 +984,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = true,
-          canDebug = false,
+          
         ),
         displayName = "//java_targets:java_binary",
         baseDirectory = "file://\$WORKSPACE/java_targets/",
@@ -1000,7 +1000,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = true,
-          canDebug = false,
+          
         ),
         displayName = "//java_targets:java_binary_with_flag",
         baseDirectory = "file://\$WORKSPACE/java_targets/",
@@ -1034,7 +1034,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = true,
-          canDebug = false,
+          
         ),
         displayName = "//scala_targets:scala_binary",
         baseDirectory = "file://\$WORKSPACE/scala_targets/",
@@ -1050,7 +1050,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
+          
         ),
         displayName = "//java_targets/subpackage:java_library",
         baseDirectory = "file://\$WORKSPACE/java_targets/subpackage/",
@@ -1066,7 +1066,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
+          
         ),
         displayName = "//java_targets:java_library",
         baseDirectory = "file://\$WORKSPACE/java_targets/",
@@ -1086,7 +1086,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = true,
-          canDebug = false,
+          
         ),
         displayName = "//target_without_jvm_flags:binary",
         baseDirectory = "file://\$WORKSPACE/target_without_jvm_flags/",
@@ -1106,7 +1106,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
+          
         ),
         displayName = "//target_without_main_class:library",
         baseDirectory = "file://\$WORKSPACE/target_without_main_class/",
@@ -1126,7 +1126,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = true,
-          canDebug = false,
+          
         ),
         displayName = "//target_without_args:binary",
         baseDirectory = "file://\$WORKSPACE/target_without_args/",
@@ -1150,7 +1150,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = true,
-          canDebug = false,
+          
         ),
         displayName = "//target_with_dependency:java_binary",
         baseDirectory = "file://\$WORKSPACE/target_with_dependency/",
@@ -1184,7 +1184,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = true,
           canRun = false,
-          canDebug = false,
+          
         ),
         displayName = "//scala_targets:scala_test",
         baseDirectory = "file://\$WORKSPACE/scala_targets/",
@@ -1200,7 +1200,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = true,
-          canDebug = false,
+          
         ),
         displayName = "//target_with_resources:java_binary",
         baseDirectory = "file://\$WORKSPACE/target_with_resources/",
@@ -1219,7 +1219,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
+          
         ),
         displayName = "//java_targets:java_library_exported",
         baseDirectory = "file://\$WORKSPACE/java_targets/",
@@ -1235,7 +1235,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = true,
-          canDebug = false,
+          
         ),
         displayName = "//environment_variables:java_binary",
         baseDirectory = "file://\$WORKSPACE/environment_variables/",
@@ -1251,7 +1251,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = true,
           canRun = false,
-          canDebug = false,
+          
         ),
         displayName = "//environment_variables:java_test",
         baseDirectory = "file://\$WORKSPACE/environment_variables/",
@@ -1267,7 +1267,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
+          
         ),
         displayName = "//target_with_javac_exports:java_library",
         baseDirectory = "file://\$WORKSPACE/target_with_javac_exports/",

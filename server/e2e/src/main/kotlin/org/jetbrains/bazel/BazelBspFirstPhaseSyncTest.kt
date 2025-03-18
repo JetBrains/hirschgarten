@@ -70,7 +70,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
             canCompile = true,
             canTest = false,
             canRun = false,
-            canDebug = false,
+            
           ),
       )
 
@@ -85,7 +85,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
             canCompile = true,
             canTest = false,
             canRun = true,
-            canDebug = false,
+            
           ),
       )
 
@@ -100,7 +100,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
             canCompile = true,
             canTest = false,
             canRun = false,
-            canDebug = false,
+            
           ),
       )
 
@@ -115,7 +115,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
             canCompile = true,
             canTest = false,
             canRun = true,
-            canDebug = false,
+            
           ),
       )
 

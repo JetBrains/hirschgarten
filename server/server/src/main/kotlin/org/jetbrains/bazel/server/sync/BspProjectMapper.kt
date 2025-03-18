@@ -212,15 +212,10 @@ class BspProjectMapper(
     val canCompile = !tags.contains(Tag.NO_BUILD)
     val canTest = tags.contains(Tag.TEST)
     val canRun = tags.contains(Tag.APPLICATION)
-    // Native-BSP debug is not supported with Bazel.
-    // It simply means that the `debugSession/start` method should not be called on any Bazel target.
-    // Enabling client-side debugging (for example, for JVM targets via JDWP) is up to the client.
-    val canDebug = false
     return BuildTargetCapabilities(
       canCompile = canCompile,
       canTest = canTest,
       canRun = canRun,
-      canDebug = canDebug,
     )
   }
 

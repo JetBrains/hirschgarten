@@ -125,19 +125,16 @@ data class ModuleCapabilities(
   val canRun: Boolean = false,
   val canTest: Boolean = false,
   val canCompile: Boolean = false,
-  val canDebug: Boolean = false,
 ) {
   fun asMap(): Map<String, String> =
     mapOf(
       KEYS.CAN_RUN.name to canRun.toString(),
-      KEYS.CAN_DEBUG.name to canDebug.toString(),
       KEYS.CAN_TEST.name to canTest.toString(),
       KEYS.CAN_COMPILE.name to canCompile.toString(),
     )
 
   private enum class KEYS {
     CAN_RUN,
-    CAN_DEBUG,
     CAN_TEST,
     CAN_COMPILE,
   }
@@ -146,7 +143,7 @@ data class ModuleCapabilities(
 }
 
 fun BuildTargetCapabilities.toModuleCapabilities() =
-  ModuleCapabilities(canRun == true, canTest == true, canCompile == true, canDebug == true)
+  ModuleCapabilities(canRun == true, canTest == true, canCompile == true)
 
 interface Module {
   fun getModuleName(): String

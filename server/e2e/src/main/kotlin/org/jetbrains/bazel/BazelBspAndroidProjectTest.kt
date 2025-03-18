@@ -73,7 +73,7 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
           canCompile = true,
           canTest = true,
           canRun = true,
-          canDebug = false,
+          
         ),
         displayName = "//src/main:app",
         baseDirectory = "file://\$WORKSPACE/src/main/",
@@ -90,7 +90,7 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
+          
         ),
         displayName = "//src/main/java/com/example/myapplication:lib",
         baseDirectory = "file://\$WORKSPACE/src/main/java/com/example/myapplication/",

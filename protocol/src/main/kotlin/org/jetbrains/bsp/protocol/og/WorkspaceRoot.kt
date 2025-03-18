@@ -1,9 +1,6 @@
 package org.jetbrains.bsp.protocol.og
 
 
-import com.google.idea.blaze.base.ideinfo.ProtoWrapper
-import com.google.idea.blaze.base.settings.BlazeImportSettings
-import com.google.idea.blaze.base.settings.BlazeImportSettingsManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -112,48 +109,5 @@ class WorkspaceRoot(private val directory: File) {
 
   override fun hashCode(): Int {
     return directory.hashCode()
-  }
-
-  override fun toProto(): String {
-    return directory.path
-  }
-
-  companion object {
-    /**
-     * Get the workspace root for a project
-     *
-     * @param blazeSettings settings for the project in question
-     * @return the path to workspace root that is used for the project
-     */
-    fun fromImportSettings(blazeSettings: BlazeImportSettings): WorkspaceRoot {
-      return WorkspaceRoot(File(blazeSettings.getWorkspaceRoot()))
-    }
-
-    /**
-     * Tries to load the import settings for the given project and get the workspace root directory.
-     * <br></br>
-     * Unlike [.fromProject], it will silently return null if this is not a blaze project of if
-     * the project is not properly initialized (eg. in tests).
-     */
-    fun fromProjectSafe(project: Project?): WorkspaceRoot? {
-      val manager: BlazeImportSettingsManager = BlazeImportSettingsManager.getInstance(project) ?: return null
-
-      val importSettings: BlazeImportSettings = manager.getImportSettings()
-      return if (importSettings != null) fromImportSettings(importSettings) else null
-    }
-
-    /**
-     * Tries to load the import settings for the given project and get the workspace root directory.
-     */
-    fun fromProject(project: Project?): WorkspaceRoot {
-      val importSettings: BlazeImportSettings =
-        BlazeImportSettingsManager.getInstance(project).getImportSettings()
-      checkNotNull(importSettings) { "null BlazeImportSettings." }
-      return fromImportSettings(importSettings)
-    }
-
-    fun fromProto(proto: String): WorkspaceRoot {
-      return WorkspaceRoot(File(proto))
-    }
   }
 }
