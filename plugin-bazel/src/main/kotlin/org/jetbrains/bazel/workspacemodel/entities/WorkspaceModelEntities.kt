@@ -1,7 +1,10 @@
+@file:Suppress("PROVIDED_RUNTIME_TOO_LOW") // TODO
+
 package org.jetbrains.bazel.workspacemodel.entities
 
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import kotlinx.serialization.Serializable
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -9,6 +12,7 @@ import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import java.nio.file.Path
 
+@Serializable
 data class BuildTargetInfo(
   val id: Label,
   val displayName: String? = null,
@@ -121,6 +125,7 @@ data class GenericModuleInfo(
   }
 }
 
+@Serializable
 data class ModuleCapabilities(
   val canRun: Boolean = false,
   val canTest: Boolean = false,
@@ -135,7 +140,8 @@ data class ModuleCapabilities(
       KEYS.CAN_COMPILE.name to canCompile.toString(),
     )
 
-  private enum class KEYS {
+  @Serializable
+  enum class KEYS {
     CAN_RUN,
     CAN_DEBUG,
     CAN_TEST,

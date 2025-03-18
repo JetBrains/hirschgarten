@@ -1,6 +1,8 @@
+@file:UseSerializers(UriSerializer::class)
+
 package org.jetbrains.bazel.target
 
-import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.SerializablePersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
@@ -17,6 +19,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -37,15 +47,33 @@ import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.to
 
+// TODO yeet URIs
+object UriSerializer : KSerializer<URI> {
+  override val descriptor: SerialDescriptor =
+    PrimitiveSerialDescriptor("URI", PrimitiveKind.STRING)
+
+  override fun serialize(encoder: Encoder, value: URI) {
+    encoder.encodeString(value.toString())
+  }
+
+  override fun deserialize(decoder: Decoder): URI {
+    val uriString = decoder.decodeString()
+    return uriString.safeCastToURI()
+  }
+}
+
 private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
 @ApiStatus.Internal
+@Serializable
 data class TargetUtilsState(
-  var labelToTargetInfo: Map<String, BuildTargetInfoState> = emptyMap(),
-  var moduleIdToTarget: Map<String, String> = emptyMap(),
-  var libraryIdToTarget: Map<String, String> = emptyMap(),
-  var fileToTarget: Map<String, List<String>> = emptyMap(),
-  var fileToExecutableTargets: Map<String, List<String>> = emptyMap(),
+  val labelToTargetInfo: Map<Label, BuildTargetInfo> = emptyMap(),
+  val moduleIdToTarget: Map<String, Label> = emptyMap(),
+  val libraryIdToTarget: Map<String, Label> = emptyMap(),
+  // we must use URI as comparing URI path strings is susceptible to errors.
+  // e.g., file:/test and file:///test should be similar in the URI world
+  val fileToTarget: Map<URI, List<Label>> = emptyMap(),
+  val fileToExecutableTargets: Map<URI, List<Label>> = emptyMap(),
 )
 
 @PublicApi
@@ -54,32 +82,25 @@ data class TargetUtilsState(
   name = "TargetUtils",
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
-class TargetUtils(private val project: Project) : PersistentStateComponent<TargetUtilsState> {
-  @ApiStatus.Internal
-  var labelToTargetInfo: Map<Label, BuildTargetInfo> = emptyMap()
-    private set
-  private var moduleIdToTarget: Map<String, Label> = emptyMap()
-
-  private var libraryIdToTarget: Map<String, Label> = emptyMap()
-
-  // we must use URI as comparing URI path strings is susceptible to errors.
-  // e.g., file:/test and file:///test should be similar in the URI world
-  var fileToTarget: Map<URI, List<Label>> = hashMapOf()
-    private set
-
-  private var fileToExecutableTargets: Map<URI, List<Label>> = hashMapOf()
-
+class TargetUtils(private val project: Project) : SerializablePersistentStateComponent<TargetUtilsState>(TargetUtilsState()) {
   // Not persisted!
+  @ApiStatus.Internal
   private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
 
   private var listeners: List<(Boolean) -> Unit> = emptyList()
 
   fun addFileToTargetIdEntry(uri: URI, targets: List<Label>) {
-    fileToTarget = fileToTarget + (uri to targets)
+    updateState { state ->
+      val fileToTarget = state.fileToTarget + (uri to targets)
+      state.copy(fileToTarget = fileToTarget)
+    }
   }
 
   fun removeFileToTargetIdEntry(uri: URI) {
-    fileToTarget = fileToTarget - uri
+    updateState { state ->
+      val fileToTarget = state.fileToTarget - uri
+      state.copy(fileToTarget = fileToTarget)
+    }
   }
 
   @ApiStatus.Internal
@@ -91,44 +112,54 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     libraryModules: List<JavaModule>,
     nameProvider: TargetNameReformatProvider,
   ) {
-    this.labelToTargetInfo = targetIdToTargetInfo.mapKeys { it.key }
-    moduleIdToTarget =
-      targetIdToModuleEntity.entries.associate { (targetId, modules) ->
-        modules.first().getModuleName() to targetId
-      }
-    libraryIdToTarget =
-      libraryItems
-        ?.associate { library ->
-          nameProvider.invoke(BuildTargetInfo(id = library.id)) to library.id
-        }.orEmpty()
+    updateState { state ->
+      val labelToTargetInfo = targetIdToTargetInfo.mapKeys { it.key }
+      val moduleIdToTarget =
+        targetIdToModuleEntity.entries.associate { (targetId, modules) ->
+          modules.first().getModuleName() to targetId
+        }
+      val libraryIdToTarget =
+        libraryItems
+          ?.associate { library ->
+            nameProvider.invoke(BuildTargetInfo(id = library.id)) to library.id
+          }.orEmpty()
 
-    this.fileToTarget = fileToTarget
-    fileToExecutableTargets = calculateFileToExecutableTargets(libraryItems)
+      val fileToExecutableTargets = calculateFileToExecutableTargets(libraryItems)
+      state.copy(
+        labelToTargetInfo = labelToTargetInfo,
+        moduleIdToTarget = moduleIdToTarget,
+        libraryIdToTarget = libraryIdToTarget,
+        fileToTarget = fileToTarget,
+        fileToExecutableTargets = fileToExecutableTargets,
+      )
+    }
 
     this.libraryModulesLookupTable = createLibraryModulesLookupTable(libraryModules)
   }
 
   private suspend fun calculateFileToExecutableTargets(libraryItems: List<LibraryItem>?): Map<URI, List<Label>> =
     withContext(Dispatchers.Default) {
-      val targetDependentsGraph = TargetDependentsGraph(labelToTargetInfo, libraryItems)
-      val targetToTransitiveRevertedDependenciesCache = ConcurrentHashMap<Label, Set<Label>>()
-      fileToTarget
-        .map { (uri, targets) ->
-          async {
-            val dependents =
-              targets
-                .flatMap { label ->
-                  calculateTransitivelyExecutableTargets(
-                    targetToTransitiveRevertedDependenciesCache,
-                    targetDependentsGraph,
-                    label,
-                  )
-                }.distinct()
-            uri to dependents
-          }
-        }.awaitAll()
-        .filter { it.second.isNotEmpty() } // Avoid excessive memory consumption
-        .toMap()
+      state.let { state ->
+        val targetDependentsGraph = TargetDependentsGraph(state.labelToTargetInfo, libraryItems)
+        val targetToTransitiveRevertedDependenciesCache = ConcurrentHashMap<Label, Set<Label>>()
+        state.fileToTarget
+          .map { (uri, targets) ->
+            async {
+              val dependents =
+                targets
+                  .flatMap { label ->
+                    calculateTransitivelyExecutableTargets(
+                      targetToTransitiveRevertedDependenciesCache,
+                      targetDependentsGraph,
+                      label,
+                    )
+                  }.distinct()
+              uri to dependents
+            }
+          }.awaitAll()
+          .filter { it.second.isNotEmpty() } // Avoid excessive memory consumption
+          .toMap()
+      }
     }
 
   private fun calculateTransitivelyExecutableTargets(
@@ -137,7 +168,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     target: Label,
   ): Set<Label> =
     resultCache.getOrPut(target) {
-      val targetInfo = labelToTargetInfo[target]
+      val targetInfo = state.labelToTargetInfo[target]
       if (targetInfo?.capabilities?.isExecutable() == true) {
         return@getOrPut setOf(target)
       }
@@ -165,20 +196,20 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     listeners += listener
   }
 
-  fun allTargets(): List<Label> = labelToTargetInfo.keys.toList()
+  fun allTargets(): List<Label> = state.labelToTargetInfo.keys.toList()
 
-  fun getTargetsForURI(uri: URI): List<Label> = fileToTarget[uri] ?: emptyList()
+  fun getTargetsForURI(uri: URI): List<Label> = state.fileToTarget[uri] ?: emptyList()
 
   fun getTargetsForFile(file: VirtualFile): List<Label> =
-    fileToTarget[file.url.removeTrailingSlash().safeCastToURI()]
+    state.fileToTarget[file.url.removeTrailingSlash().safeCastToURI()]
       ?: getTargetsFromAncestorsForFile(file)
 
   @ApiStatus.Internal
   fun getExecutableTargetsForFile(file: VirtualFile): List<Label> {
     val executableDirectTargets =
-      getTargetsForFile(file).filter { label -> labelToTargetInfo[label]?.capabilities?.isExecutable() == true }
+      getTargetsForFile(file).filter { label -> state.labelToTargetInfo[label]?.capabilities?.isExecutable() == true }
     if (executableDirectTargets.isEmpty()) {
-      return fileToExecutableTargets.getOrDefault(file.url.removeTrailingSlash().safeCastToURI(), emptySet()).toList()
+      return state.fileToExecutableTargets.getOrDefault(file.url.removeTrailingSlash().safeCastToURI(), emptySet()).toList()
     }
     return executableDirectTargets
   }
@@ -189,7 +220,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       var iter = file.parent
       while (iter != null && VfsUtil.isAncestor(rootDir, iter, false)) {
         val key = iter.url.removeTrailingSlash().safeCastToURI()
-        if (key in fileToTarget) return fileToTarget[key]!!
+        state.fileToTarget[key]?.let { return it }
         iter = iter.parent
       }
       emptyList()
@@ -203,13 +234,13 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   fun isLibrary(target: Label): Boolean = BuildTargetTag.LIBRARY in getBuildTargetInfoForLabel(target)?.tags.orEmpty()
 
   @PublicApi
-  fun getTargetForModuleId(moduleId: String): Label? = moduleIdToTarget[moduleId]
+  fun getTargetForModuleId(moduleId: String): Label? = state.moduleIdToTarget[moduleId]
 
   @PublicApi
-  fun getTargetForLibraryId(libraryId: String): Label? = libraryIdToTarget[libraryId]
+  fun getTargetForLibraryId(libraryId: String): Label? = state.libraryIdToTarget[libraryId]
 
   @ApiStatus.Internal
-  fun getBuildTargetInfoForLabel(label: Label): BuildTargetInfo? = labelToTargetInfo[label]
+  fun getBuildTargetInfoForLabel(label: Label): BuildTargetInfo? = state.labelToTargetInfo[label]
 
   @ApiStatus.Internal
   fun getBuildTargetInfoForModule(module: com.intellij.openapi.module.Module): BuildTargetInfo? =
@@ -220,30 +251,6 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
    */
   @ApiStatus.Internal
   fun isLibraryModule(name: String): Boolean = name.addLibraryModulePrefix() in libraryModulesLookupTable
-
-  @ApiStatus.Internal
-  override fun getState(): TargetUtilsState =
-    TargetUtilsState(
-      labelToTargetInfo = labelToTargetInfo.mapKeys { it.key.toString() }.mapValues { it.value.toState() },
-      moduleIdToTarget = moduleIdToTarget.mapValues { it.value.toString() },
-      libraryIdToTarget = libraryIdToTarget.mapValues { it.value.toString() },
-      fileToTarget = fileToTarget.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.toString() } },
-      fileToExecutableTargets = fileToExecutableTargets.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.toString() } },
-    )
-
-  @ApiStatus.Internal
-  override fun loadState(state: TargetUtilsState) {
-    labelToTargetInfo =
-      state.labelToTargetInfo
-        .mapKeys { Label.parse(it.key) }
-        .mapValues { it.value.fromState() }
-    moduleIdToTarget = state.moduleIdToTarget.mapValues { Label.parse(it.value) }
-    libraryIdToTarget = state.libraryIdToTarget.mapValues { Label.parse(it.value) }
-    fileToTarget =
-      state.fileToTarget.mapKeys { o -> o.key.safeCastToURI() }.mapValues { o -> o.value.map { Label.parse(it) } }
-    fileToExecutableTargets =
-      state.fileToExecutableTargets.mapKeys { o -> o.key.safeCastToURI() }.mapValues { o -> o.value.map { Label.parse(it) } }
-  }
 }
 
 @ApiStatus.Internal

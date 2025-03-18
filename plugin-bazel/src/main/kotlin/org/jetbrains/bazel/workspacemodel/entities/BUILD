@@ -7,6 +7,7 @@ kt_jvm_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
+        "//:kotlin_serialization",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/annotations",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
         "//protocol",

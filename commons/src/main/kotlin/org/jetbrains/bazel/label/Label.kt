@@ -1,6 +1,7 @@
 // Do not change this package, see https://youtrack.jetbrains.com/issue/BAZEL-1632
 package org.jetbrains.bazel.label
 
+import kotlinx.serialization.Serializable
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -177,6 +178,7 @@ data class RelativeLabel(override val packagePath: PackageType, override val tar
  * Represents a Bazel label.
  * See https://bazel.build/concepts/labels
  */
+@Serializable(with = LabelSerializer::class)
 sealed interface Label {
   val packagePath: PackageType
   val target: TargetType

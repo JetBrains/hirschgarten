@@ -283,7 +283,8 @@ class CollectProjectDetailsTask(
               if (syncScope is FullProjectSync) {
                 syncedTargetIdToTargetInfo
               } else {
-                project.targetUtils.labelToTargetInfo.mapKeys { it.key } +
+                project.targetUtils.state.labelToTargetInfo
+                  .mapKeys { it.key } +
                   syncedTargetIdToTargetInfo
               }
             val targetIdToModuleEntityMap =
@@ -451,7 +452,7 @@ class CollectProjectDetailsTask(
     }
 
   private fun checkOverlappingSources() {
-    val fileToTarget = project.targetUtils.fileToTarget
+    val fileToTarget = project.targetUtils.state.fileToTarget
     for ((file, targets) in fileToTarget) {
       if (targets.size <= 1) continue
       if (!file.isSourceFile()) continue
