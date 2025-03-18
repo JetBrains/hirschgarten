@@ -6,126 +6,119 @@ import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TestStatus
 import java.util.UUID
-import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 /**
  * Parses the nice-looking test execution tree Junit5 produces
  */
 class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientTestNotifier) {
-  private val startedSuites: ArrayDeque<TestOutputLine> = ArrayDeque()
-
   fun processTestOutput(output: String) {
-    var startedBuildTarget: StartedBuildTarget? = null
-    var previousOutputLine: TestOutputLine? = null
+    val tree = generateTestResultTree(output)
+    notifyClient(tree)
+  }
 
-    output.lines().forEach {
-      if (startedBuildTarget == null) {
-        startedBuildTarget = parseStartedBuildTarget(it)
-      } else {
-        val testingEndedMatcher = testingEndedPattern.matcher(it)
-        val currentOutputLine = getCurrentOutputLine(it)
-        if (currentOutputLine != null) {
-          processPreviousOutputLine(previousOutputLine, currentOutputLine)
-          previousOutputLine = currentOutputLine
-        } else if (testingEndedMatcher.find()) {
-          processTestingEndingLine(previousOutputLine, testingEndedMatcher, startedBuildTarget)
-          startedBuildTarget = null
+  /**
+   * generateTestResultTree parse the junit5 test report and return the test result tree for each test target
+   *
+   * The tree for each target is organized as follow:
+   * The root is a TestResultTreeNode where the name is the bazel test target, and its status is null.
+   * The sibling nodes of the root are the test result tree for each junit5 test classes in this test target. It can recursively
+   * contain test result or a test suit result.
+   *
+   * The sibling's taskId include its parent's taskId as parent. However, one exception is that direct sibling of root node does not have parents in taskId.
+   * It is because that when we notify the client, the root node will be converted to beginTestTarget call, while other nodes are converted into startTest
+   * call.
+   *
+   * @return Map<String, TestResultTreeNode>, where the key is the test target and value is the root of the test result tree for that target.
+   * */
+  private fun generateTestResultTree(output: String): Map<String, TestResultTreeNode> {
+    val lines = output.lines()
+    val targetToTestResultTree = mutableMapOf<String, TestResultTreeNode>()
+    var treeRootForCurrentTarget: TestResultTreeNode? = null
+    var previousNode: TestResultTreeNode? = null
+    var i = 0
+    while (i < lines.size) {
+      val line = lines[i]
+      val cleanLine = line.removeFormat()
+      val testEndedMatcher = testingEndedPattern.matcher(line)
+      val testLineMatcher = testLinePattern.matcher(cleanLine)
+      if (treeRootForCurrentTarget == null) {
+        parseBuildTargetName(line)?.let {
+          treeRootForCurrentTarget = TestResultTreeNode(it, TaskId(testUUID()), null, "", -1)
+          targetToTestResultTree[it] = treeRootForCurrentTarget
+          previousNode = treeRootForCurrentTarget
+        }
+      } else if (testEndedMatcher.find()) {
+        val time = testEndedMatcher.group("time").toLongOrNull()
+        treeRootForCurrentTarget.time = time
+        previousNode = null
+        treeRootForCurrentTarget = null
+      } else if (testLineMatcher.find()) {
+        val indent = testLineMatcher.start("name")
+        val parent = previousNode?.let { findParentByIndent(it, indent) }
+        val parentId = if (parent?.isRootNode() == true) null else parent?.taskId?.id
+        val newNode =
+          TestResultTreeNode(
+            name = testLineMatcher.group("name"),
+            taskId = TaskId(testUUID(), parents = listOfNotNull(parentId)),
+            status = testLineMatcher.group("result").toTestStatus(),
+            message = testLineMatcher.group("message"),
+            indent = indent,
+            parent = parent,
+          )
+        parent?.children?.put(newNode.name, newNode)
+        previousNode = newNode
+      } else if (isStackTraceStartingLine(cleanLine)) {
+        val testNode = findNodeByPath(cleanLine, treeRootForCurrentTarget)
+        if (testNode != null) {
+          while (i + 1 < lines.size && lines[i + 1].isNotEmpty() && !isStackTraceStartingLine(lines[i + 1].removeFormat())) {
+            testNode.stacktrace.add(lines[++i].removeFormat())
+          }
         }
       }
+      i++
+    }
+    return targetToTestResultTree
+  }
+
+  private fun notifyClient(trees: Map<String, TestResultTreeNode>) {
+    for ((_, tree) in trees.entries) {
+      tree.notifyClient(bspClientTestNotifier)
     }
   }
 
-  private fun processTestingEndingLine(
-    previousOutputLine: TestOutputLine?,
-    testingEndedMatcher: Matcher,
-    startedBuildTarget: StartedBuildTarget?,
-  ) {
-    previousOutputLine?.let { startAndFinishTest(it) }
-    while (startedSuites.isNotEmpty()) {
-      finishTopmostSuite()
-    }
-    val time = testingEndedMatcher.group("time").toLongOrNull() ?: 0
-  }
-
-  private fun processPreviousOutputLine(previousOutputLine: TestOutputLine?, currentOutputLine: TestOutputLine) {
-    if (previousOutputLine != null) {
-      if (currentOutputLine.indent > previousOutputLine.indent) {
-        startSuite(previousOutputLine)
-      } else {
-        startAndFinishTest(previousOutputLine)
-        removeAllFinishedSuites(currentOutputLine)
-      }
-    }
-  }
-
-  private fun removeAllFinishedSuites(currentOutputLine: TestOutputLine) {
-    while (startedSuites.isNotEmpty() && startedSuites.last().indent >= currentOutputLine.indent) {
-      finishTopmostSuite()
-    }
-  }
-
-  private fun getCurrentOutputLine(line: String): TestOutputLine? {
-    val cleanLine = line.removeFormat()
-
-    val currentLineMatcher = testLinePattern.matcher(cleanLine)
-    return if (currentLineMatcher.find()) {
-      TestOutputLine(
-        name = currentLineMatcher.group("name"),
-        status = currentLineMatcher.group("result").toTestStatus(),
-        message = currentLineMatcher.group("message"),
-        indent = currentLineMatcher.start("name"),
-        taskId = TaskId(testUUID()),
-      )
-    } else {
-      null
-    }
-  }
-
-  private fun parseStartedBuildTarget(line: String): StartedBuildTarget? {
+  private fun parseBuildTargetName(line: String): String? {
     val testingStartMatcher = testingStartPattern.matcher(line)
     return if (testingStartMatcher.find()) {
-      StartedBuildTarget(testingStartMatcher.group("target"), TaskId(testUUID())).also {
-        beginTesting(it)
-      }
+      testingStartMatcher.group("target")
     } else {
       null
     }
   }
 
-  private fun beginTesting(startedBuildTarget: StartedBuildTarget) {
-    bspClientTestNotifier.beginTestTarget(Label.parse(startedBuildTarget.uri), startedBuildTarget.taskId)
-  }
-
-  private fun startSuite(suite: TestOutputLine) {
-    bspClientTestNotifier.startTest(suite.name, suite.taskId)
-    startedSuites.addLast(suite)
-  }
-
-  private fun finishTopmostSuite() {
-    with(startedSuites.removeLastOrNull() ?: return) {
-      bspClientTestNotifier.finishTest(
-        displayName = name,
-        taskId = taskId,
-        status = status,
-        message = message,
-      )
+  private fun findParentByIndent(previousNode: TestResultTreeNode, indent: Int) =
+    when {
+      previousNode.indent < indent -> previousNode
+      previousNode.indent == indent -> previousNode.parent
+      else -> {
+        var realParent = previousNode
+        while (realParent.parent != null && realParent.indent >= indent) {
+          realParent = realParent.parent
+        }
+        realParent
+      }
     }
-  }
 
-  private fun startAndFinishTest(test: TestOutputLine) {
-    test.taskId.parents = generateParentList()
-    bspClientTestNotifier.startTest(test.name, test.taskId)
-    bspClientTestNotifier.finishTest(
-      displayName = test.name,
-      taskId = test.taskId,
-      status = test.status,
-      message = test.message,
-      data = createTestCaseData(test.message),
-    )
-  }
+  private fun isStackTraceStartingLine(line: String) = line.trim().startsWith("JUnit Jupiter:")
 
-  private fun generateParentList(): List<String> = startedSuites.toList().reversed().mapNotNull { it.taskId.id }
+  private fun findNodeByPath(path: String, root: TestResultTreeNode): TestResultTreeNode? {
+    val segment = path.trim().split(":")
+    var result = root
+    for (i in 1 until segment.size) {
+      result = result.children[segment[i]] ?: return null
+    }
+    return result
+  }
 
   private fun testUUID(): String = "test-" + UUID.randomUUID().toString()
 
@@ -150,21 +143,63 @@ private val testingEndedPattern = Pattern.compile("^Test\\hrun\\hfinished\\hafte
 private fun String.removeFormat(): String =
   this.replace(Regex("[?\\u001b]\\[[;\\d]*m"), "") // '1B' symbol appears in console output and test logs, while '?' appears in test XMLs
 
-private fun createTestCaseData(message: String): JUnitStyleTestCaseData =
+private fun createTestCaseData(message: String, time: Long?): JUnitStyleTestCaseData =
   JUnitStyleTestCaseData(
-    time = null,
+    time = time as Double?,
     className = null,
     errorMessage = message,
     errorContent = null,
     errorType = null,
   )
 
-private data class TestOutputLine(
+private class TestResultTreeNode(
   val name: String,
-  val status: TestStatus,
+  val taskId: TaskId,
+  val status: TestStatus?,
   val message: String,
   val indent: Int,
-  val taskId: TaskId,
-)
+  val parent: TestResultTreeNode? = null,
+  var time: Long? = null,
+) {
+  val children: MutableMap<String, TestResultTreeNode> = mutableMapOf()
+  val stacktrace: MutableList<String> = mutableListOf()
 
-private data class StartedBuildTarget(val uri: String, val taskId: TaskId)
+  fun isLeafNode() = children.isEmpty()
+
+  fun isRootNode() = parent == null
+
+  fun notifyClient(bspClientTestNotifier: BspClientTestNotifier) {
+    if (isRootNode()) {
+      bspClientTestNotifier.beginTestTarget(Label.parse(name), taskId)
+      children.forEach { it.value.notifyClient(bspClientTestNotifier) }
+      bspClientTestNotifier.endTestTarget(Label.parse(name), taskId, time = time)
+    } else if (isLeafNode()) {
+      val fullMessage = generateMessage()
+      bspClientTestNotifier.startTest(name, taskId)
+      bspClientTestNotifier.finishTest(
+        displayName = name,
+        taskId = taskId,
+        status =
+          status
+            ?: return,
+        // this should never be null, because every node except root nodes should have status. Just for compiling
+        message = fullMessage,
+        data = createTestCaseData(fullMessage, time),
+      )
+    } else {
+      bspClientTestNotifier.startTest(name, taskId)
+      children.forEach { it.value.notifyClient(bspClientTestNotifier) }
+      bspClientTestNotifier.finishTest(
+        displayName = name,
+        taskId = taskId,
+        status =
+          status
+            ?: return,
+        // this should never be null, because every node except root nodes should have status. Just for compiling
+        message = message,
+      )
+    }
+  }
+
+  private fun generateMessage(): String = message + "\n" + stacktrace.joinToString("\n")
+}
