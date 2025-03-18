@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.flow.sync
 
 import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.SerializablePersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
@@ -8,6 +9,7 @@ import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.coroutineScope
+import kotlinx.serialization.Serializable
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.task.query
 
@@ -17,7 +19,7 @@ class BazelBinPathSyncHook : ProjectSyncHook {
       val bazelBinPathService = BazelBinPathService.getInstance(environment.project)
       val bazelBinPathResult =
         query("workspace/bazelBinPath") { environment.server.workspaceBazelBinPath() }
-      bazelBinPathService.bazelBinPath = bazelBinPathResult.path
+      bazelBinPathService.state = bazelBinPathService.state.copy(path = bazelBinPathResult.path)
     }
 }
 
@@ -27,18 +29,11 @@ class BazelBinPathSyncHook : ProjectSyncHook {
   reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
-class BazelBinPathService : PersistentStateComponent<BazelBinPathService.State> {
-  var bazelBinPath: String? = null
-
-  override fun getState(): State? = bazelBinPath?.let { State(it) }
-
-  override fun loadState(state: State) {
-    bazelBinPath = state.path
-  }
-
+class BazelBinPathService : SerializablePersistentStateComponent<BazelBinPathService.State>(State()) {
   companion object {
     fun getInstance(project: Project): BazelBinPathService = project.service<BazelBinPathService>()
   }
 
-  data class State(var path: String? = null)
+  @Serializable
+  data class State(val path: String? = null)
 }

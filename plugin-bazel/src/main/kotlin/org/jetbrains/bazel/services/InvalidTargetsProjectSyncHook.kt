@@ -1,12 +1,14 @@
 package org.jetbrains.bazel.services
 
 import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.SerializablePersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import kotlinx.serialization.Serializable
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.ProjectSyncHook
@@ -21,9 +23,9 @@ internal class InvalidTargetsProjectSyncHook : ProjectSyncHook {
       query("workspace/invalidTargets") {
         environment.server.workspaceInvalidTargets()
       }.targets
-    bazelInvalidTargetsService.invalidTargets = invalidTargetsResult
+    bazelInvalidTargetsService.setInvalidTargets(invalidTargetsResult)
 
-    if (bazelInvalidTargetsService.invalidTargets.isNotEmpty()) {
+    if (invalidTargetsResult.isNotEmpty()) {
       BazelBalloonNotifier.warn(
         BazelPluginBundle.message("widget.collect.targets.not.imported.properly.title"),
         BazelPluginBundle.message("widget.collect.targets.not.imported.properly.message"),
@@ -32,7 +34,8 @@ internal class InvalidTargetsProjectSyncHook : ProjectSyncHook {
   }
 }
 
-internal data class BazelInvalidTargetsServiceState(var invalidTargets: List<String> = emptyList())
+@Serializable
+internal data class BazelInvalidTargetsServiceState(val invalidTargets: List<Label> = emptyList())
 
 @State(
   name = "BazelInvalidTargetsService",
@@ -40,21 +43,15 @@ internal data class BazelInvalidTargetsServiceState(var invalidTargets: List<Str
   reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
-internal class BazelInvalidTargetsService : PersistentStateComponent<BazelInvalidTargetsServiceState> {
-  internal var invalidTargets: List<Label> = emptyList()
-
-  override fun getState(): BazelInvalidTargetsServiceState? =
-    BazelInvalidTargetsServiceState(invalidTargets.map { it.toShortString() })
-      .takeIf { it.invalidTargets.isNotEmpty() }
-
-  override fun loadState(state: BazelInvalidTargetsServiceState) {
-    invalidTargets = state.invalidTargets.map { Label.parse(it) }
-  }
-
+internal class BazelInvalidTargetsService : SerializablePersistentStateComponent<BazelInvalidTargetsServiceState>(BazelInvalidTargetsServiceState()) {
   companion object {
     internal fun getInstance(project: Project): BazelInvalidTargetsService = project.service<BazelInvalidTargetsService>()
+  }
+
+  fun setInvalidTargets(invalidTargets: List<Label>) {
+    state = state.copy(invalidTargets = invalidTargets)
   }
 }
 
 val Project.invalidTargets: List<Label>
-  get() = BazelInvalidTargetsService.getInstance(this).invalidTargets
+  get() = BazelInvalidTargetsService.getInstance(this).state.invalidTargets
