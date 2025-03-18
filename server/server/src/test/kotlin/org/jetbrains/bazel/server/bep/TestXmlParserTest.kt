@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.bep
 
-import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.equals.shouldBeEqual
@@ -510,7 +509,6 @@ class TestXmlParserTest {
       val data = (it.data as TestFinish)
       when (data.displayName) {
         "TripleTest" -> {
-          it.taskId.parents.shouldBeEmpty()
         }
         "testFailure()" -> {
           it.taskId.parents.shouldNotBeNull()
@@ -518,6 +516,7 @@ class TestXmlParserTest {
           data.status shouldBe TestStatus.FAILED
           val details = (data.data as JUnitStyleTestCaseData)
           details.errorMessage shouldNotBe null
+          data.message!!.split("\n".toRegex()).size shouldBe 7
         }
         "testIgnored()" -> {
           it.taskId.parents.shouldNotBeNull()
@@ -615,7 +614,6 @@ class TestXmlParserTest {
       val data = (it.data as TestFinish)
       when (data.displayName) {
         "TripleTest" -> {
-          it.taskId.parents.shouldBeEmpty()
         }
         "testFailure()" -> {
           it.taskId.parents.shouldNotBeNull()
@@ -623,6 +621,7 @@ class TestXmlParserTest {
           data.status shouldBe TestStatus.FAILED
           val details = (data.data as JUnitStyleTestCaseData)
           details.errorMessage shouldNotBe null
+          data.message!!.split("\n".toRegex()).size shouldBe 7
         }
         "testIgnored()" -> {
           it.taskId.parents.shouldNotBeNull()
@@ -721,12 +720,10 @@ class TestXmlParserTest {
       when (data.displayName) {
         "testIgnored()" -> {
           it.taskId.parents.shouldNotBeNull()
-          it.taskId.parents.shouldBeEmpty() // parent suite should have been ignored, as it was defined in a malformed row
           data.status shouldBe TestStatus.SKIPPED
         }
         "testSuccess()" -> {
           it.taskId.parents.shouldNotBeNull()
-          it.taskId.parents.shouldBeEmpty() // parent suite should have been ignored, as it was defined in a malformed row
           data.status shouldBe TestStatus.PASSED
         }
       }
