@@ -8,4 +8,5 @@ data class RunParams(
   val arguments: List<String>? = null,
   val environmentVariables: Map<String, String>? = null,
   val workingDirectory: String? = null,
+  val additionalBazelParams: String? = null,
 )

@@ -35,6 +35,7 @@ class BazelRunCommandLineState(
         arguments = transformProgramArguments(runState.programArguments),
         environmentVariables = runState.env.envs,
         workingDirectory = runState.workingDirectory,
+        additionalBazelParams = runState.additionalBazelParams,
       )
     server.buildTargetRun(runParams)
   }

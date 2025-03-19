@@ -3,6 +3,7 @@ package org.jetbrains.bazel.runnerAction
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationType
+import com.intellij.execution.configurations.runConfigurationType
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
@@ -16,12 +17,12 @@ abstract class BazelRunnerAction(
   isDebugAction: Boolean = false,
   isCoverageAction: Boolean = false,
 ) : BaseRunnerAction(targetInfos, { text(false) }, icon, isDebugAction, isCoverageAction) {
-  fun getConfigurationType(project: Project): ConfigurationType = BazelRunConfigurationType()
+  private fun getConfigurationType(): ConfigurationType = runConfigurationType<BazelRunConfigurationType>()
 
-  open fun RunnerAndConfigurationSettings.customizeRunConfiguration() {}
+  protected open fun RunnerAndConfigurationSettings.customizeRunConfiguration() {}
 
   override suspend fun getRunnerSettings(project: Project, buildTargetInfos: List<BuildTargetInfo>): RunnerAndConfigurationSettings? {
-    val factory = getConfigurationType(project).configurationFactories.first()
+    val factory = getConfigurationType().configurationFactories.first()
     val name = text(true)
     val settings =
       RunManager.getInstance(project).createConfiguration(name, factory)
