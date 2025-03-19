@@ -4,7 +4,7 @@ import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
@@ -29,7 +29,7 @@ class BspPanelComponent private constructor(
 ) : JPanel(VerticalLayout(0)) {
   private val emptyTreeMessage =
     JBLabel(
-      BspPluginBundle.message("widget.no.targets.message"),
+      BazelPluginBundle.message("widget.no.targets.message"),
       SwingConstants.CENTER,
     )
 

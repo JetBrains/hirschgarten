@@ -4,7 +4,7 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Deferred
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import java.io.OutputStream
 import kotlin.coroutines.cancellation.CancellationException
@@ -21,7 +21,7 @@ open class BazelProcessHandler(private val project: Project, private val runDefe
           }
 
           is CancellationException -> {
-            notifyTextAvailable(BspPluginBundle.message("console.task.run.cancelled"), ProcessOutputType.STDERR)
+            notifyTextAvailable(BazelPluginBundle.message("console.task.run.cancelled"), ProcessOutputType.STDERR)
             notifyProcessTerminated(1)
           }
 

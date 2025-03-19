@@ -13,7 +13,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.entities
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.orDefault
 import org.jetbrains.bazel.performance.bspTracer
@@ -44,7 +44,7 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
     project.syncConsole.withSubtask(
       taskId = taskId,
       subtaskId = "apply-changes-on-workspace-model",
-      message = BspPluginBundle.message("console.task.model.apply.changes"),
+      message = BazelPluginBundle.message("console.task.model.apply.changes"),
     ) {
       bspTracer.spanBuilder("apply.changes.on.workspace.model.ms").useWithScope {
         val workspaceModel = WorkspaceModel.getInstance(project) as WorkspaceModelInternal

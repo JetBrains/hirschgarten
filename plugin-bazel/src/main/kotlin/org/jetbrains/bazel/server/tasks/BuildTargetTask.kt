@@ -14,7 +14,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
@@ -129,7 +129,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
 
     bspBuildConsole.startTask(
       taskId = originId,
-      title = BspPluginBundle.message("console.task.build.title"),
+      title = BazelPluginBundle.message("console.task.build.title"),
       message = startBuildMessage,
       cancelAction = { cs.cancel() },
       redoAction = { BazelCoroutineService.getInstance(project).start { runBuildTargetTask(targetIds, project) } },
@@ -138,9 +138,9 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
 
   private fun calculateStartBuildMessage(targetIds: List<Label>): String =
     when (targetIds.size) {
-      0 -> BspPluginBundle.message("console.task.build.no.targets")
-      1 -> BspPluginBundle.message("console.task.build.in.progress.one", targetIds.first().toShortString())
-      else -> BspPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
+      0 -> BazelPluginBundle.message("console.task.build.no.targets")
+      1 -> BazelPluginBundle.message("console.task.build.in.progress.one", targetIds.first().toShortString())
+      else -> BazelPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
     }
 
   private fun createCompileParams(targetIds: List<Label>, originId: String) =

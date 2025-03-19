@@ -12,7 +12,7 @@ import com.intellij.openapi.util.Key
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.projectAware.BazelProjectModuleBuildTasksTracker
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
@@ -80,7 +80,7 @@ abstract class LocalJvmRunnerAction(
         this is TestWithLocalJvmRunnerAction -> "target.test.with.jvm.runner.config.name"
         else -> "target.run.with.jvm.runner.config.name"
       }
-    return BspPluginBundle.message(actionNameKey, targetDisplayName)
+    return BazelPluginBundle.message(actionNameKey, targetDisplayName)
   }
 
   private suspend fun queryJvmEnvironment(project: Project, bspSyncConsole: TaskConsole) =
@@ -89,14 +89,14 @@ abstract class LocalJvmRunnerAction(
         val job = async { getEnvironment(project) }
         bspSyncConsole.startTask(
           RETRIEVE_JVM_ENVIRONMENT_ID,
-          BspPluginBundle.message("console.task.query.jvm.environment.title"),
-          BspPluginBundle.message("console.task.query.jvm.environment.in.progress"),
+          BazelPluginBundle.message("console.task.query.jvm.environment.title"),
+          BazelPluginBundle.message("console.task.query.jvm.environment.in.progress"),
           { job.cancel() },
         )
         val env = job.await()
         bspSyncConsole.finishTask(
           RETRIEVE_JVM_ENVIRONMENT_ID,
-          BspPluginBundle.message("console.task.query.jvm.environment.success"),
+          BazelPluginBundle.message("console.task.query.jvm.environment.success"),
         )
         env
       }
@@ -104,13 +104,13 @@ abstract class LocalJvmRunnerAction(
       if (e is CancellationException) {
         bspSyncConsole.finishTask(
           RETRIEVE_JVM_ENVIRONMENT_ID,
-          BspPluginBundle.message("console.task.query.jvm.environment.cancel"),
+          BazelPluginBundle.message("console.task.query.jvm.environment.cancel"),
           FailureResultImpl(),
         )
       } else {
         bspSyncConsole.finishTask(
           RETRIEVE_JVM_ENVIRONMENT_ID,
-          BspPluginBundle.message("console.task.query.jvm.environment.failed"),
+          BazelPluginBundle.message("console.task.query.jvm.environment.failed"),
           FailureResultImpl(e),
         )
       }

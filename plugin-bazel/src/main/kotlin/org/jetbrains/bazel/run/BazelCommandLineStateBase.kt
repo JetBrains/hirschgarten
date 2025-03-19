@@ -13,7 +13,7 @@ import com.intellij.execution.ui.RunContentManager
 import com.intellij.openapi.application.EDT
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.server.connection.connection
@@ -70,7 +70,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, prot
 
     val console: BaseTestsOutputConsoleView =
       SMTestRunnerConnectionUtil.createAndAttachConsole(
-        BspPluginBundle.message("console.tasks.test.framework.name"),
+        BazelPluginBundle.message("console.tasks.test.framework.name"),
         handler,
         properties,
       )
