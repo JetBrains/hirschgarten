@@ -56,6 +56,8 @@ interface RunHandlerProvider {
         thisLogger().warn("Some targets could not be found: ${targets - targetInfos.map { it.id }.toSet()}")
       }
 
+      require(targetInfos.isNotEmpty()) { "targetInfos should not be empty" }
+
       return getRunHandlerProvider(targetInfos)
         ?: throw IllegalArgumentException("No BspRunHandlerProvider found for targets: $targets")
     }

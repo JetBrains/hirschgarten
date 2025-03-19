@@ -87,12 +87,12 @@ abstract class IdeStarterBaseProjectTest {
     return this
   }
 
-  fun configureProjectBeforeUse(context: IDETestContext) {
+  fun configureProjectBeforeUse(context: IDETestContext, createProjectView: Boolean = true) {
     runBazelClean(context)
-    configureProjectBeforeUseWithoutBazelClean(context)
+    configureProjectBeforeUseWithoutBazelClean(context, createProjectView)
   }
 
-  fun configureProjectBeforeUseWithoutBazelClean(context: IDETestContext) {
+  fun configureProjectBeforeUseWithoutBazelClean(context: IDETestContext, createProjectView: Boolean = true) {
     (context.resolvedProjectHome / ".idea").deleteRecursively()
     (context.resolvedProjectHome / ".bazelbsp").deleteRecursively()
     (context.resolvedProjectHome / "build.gradle").deleteIfExists()
@@ -101,7 +101,9 @@ abstract class IdeStarterBaseProjectTest {
     (context.resolvedProjectHome / "settings.gradle.kts").deleteIfExists()
     (context.resolvedProjectHome / "gradlew").deleteIfExists()
     (context.resolvedProjectHome / "gradlew.bat").deleteIfExists()
-    createProjectViewFile(context)
+    if (createProjectView) {
+      createProjectViewFile(context)
+    }
   }
 
   private fun runBazelClean(context: IDETestContext) {

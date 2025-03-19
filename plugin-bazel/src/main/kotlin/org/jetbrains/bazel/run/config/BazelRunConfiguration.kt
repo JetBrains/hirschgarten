@@ -32,9 +32,9 @@ class BazelRunConfiguration internal constructor(
   var targets: List<Label> = emptyList()
     private set // private because we need to set the targets directly when running readExternal
 
-  fun updateTargets(newTargets: List<Label>) {
+  fun updateTargets(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider? = null) {
     targets = newTargets
-    updateHandlerIfDifferentProvider(RunHandlerProvider.getRunHandlerProvider(project, newTargets))
+    updateHandlerIfDifferentProvider(runHandlerProvider ?: RunHandlerProvider.getRunHandlerProvider(project, newTargets))
   }
 
   private var handlerProvider: RunHandlerProvider? = null

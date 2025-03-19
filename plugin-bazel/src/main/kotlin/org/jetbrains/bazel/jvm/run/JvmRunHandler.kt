@@ -7,10 +7,10 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
-import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
@@ -41,7 +41,7 @@ class JvmRunHandler(val configuration: BazelRunConfiguration) : BazelRunHandler 
       }
     }
 
-  class JvmRunHandlerProvider : RunHandlerProvider {
+  class JvmRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
     override val id: String = "JvmBspRunHandlerProvider"
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = JvmRunHandler(configuration)
@@ -57,6 +57,9 @@ class JvmRunHandler(val configuration: BazelRunConfiguration) : BazelRunHandler 
       }
 
     override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)
+
+    override val googleHandlerId: String = "BlazeJavaRunConfigurationHandlerProvider"
+    override val isTestHandler: Boolean = false
   }
 }
 
@@ -77,6 +80,7 @@ class JvmRunWithDebugCommandLineState(
         arguments = transformProgramArguments(settings.programArguments),
         environmentVariables = settings.env.envs,
         workingDirectory = settings.workingDirectory,
+        additionalBazelParams = settings.additionalBazelParams,
       )
     val remoteDebugData = RemoteDebugData("jdwp", getConnectionPort())
     val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
