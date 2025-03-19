@@ -56,6 +56,8 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     file1APath.toFile().deleteOnExit()
     val file2APath = createTempFile(packageA2Path, "File2", ".java")
     file2APath.toFile().deleteOnExit()
+    val irrelevantFilePath = createTempFile(projectRoot, "irrelevant", ".xml")
+    irrelevantFilePath.toFile().deleteOnExit()
     val packagePrefix = packageA2Path.name
 
     val givenJavaModule =
@@ -76,6 +78,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
               packagePrefix = packagePrefix,
               rootType = JAVA_SOURCE_ROOT_TYPE,
             ),
+            JavaSourceRoot(
+              sourcePath = irrelevantFilePath.toAbsolutePath(),
+              generated = false,
+              packagePrefix = "",
+              rootType = JAVA_SOURCE_ROOT_TYPE,
+            ),
           ),
         resourceRoots = listOf(),
         jvmJdkName = javaVersion,
@@ -90,6 +98,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       listOf(
         JavaSourceRoot(
           sourcePath = packageA1Path.toAbsolutePath(),
+          generated = false,
+          packagePrefix = "",
+          rootType = JAVA_SOURCE_ROOT_TYPE,
+        ),
+        JavaSourceRoot(
+          sourcePath = irrelevantFilePath.toAbsolutePath(),
           generated = false,
           packagePrefix = "",
           rootType = JAVA_SOURCE_ROOT_TYPE,
