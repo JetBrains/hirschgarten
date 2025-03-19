@@ -26,6 +26,8 @@ import kotlin.io.path.name
 import kotlin.io.path.notExists
 import kotlin.io.path.pathString
 
+private val RELEVANT_EXTENSIONS = listOf("java", "kt", "scala")
+
 /**
  * This is a HACK for letting single source Java files to be resolved normally
  * Should remove soon and replace with a more robust solution
@@ -45,14 +47,15 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
     if (!BazelFeatureFlags.addDummyModules && !BazelFeatureFlags.mergeSourceRoots) return DummyModulesToAdd(emptyList())
 
     val buildFileDirectory = inputEntity.baseDirContentRoot?.path
+    val (relevantSourceRoots, irrelevantSourceRoots) = inputEntity.sourceRoots.partition { it.isRelevant() }
     val mergedSourceRootVotes =
-      calculateSourceRootsForParentDirs(inputEntity.sourceRoots)
+      calculateSourceRootsForParentDirs(relevantSourceRoots)
         .restoreSourceRootFromPackagePrefix(limit = buildFileDirectory)
     val dummyJavaResourcePath = calculateDummyResourceRootPath(inputEntity, mergedSourceRootVotes.keys.toList(), projectBasePath, project)
 
     if (BazelFeatureFlags.mergeSourceRoots) {
-      tryMergeSources(inputEntity.sourceRoots, mergedSourceRootVotes, dummyJavaResourcePath)?.let { mergedSourceRoots ->
-        return MergedSourceRoots(mergedSourceRoots)
+      tryMergeSources(relevantSourceRoots, mergedSourceRootVotes, dummyJavaResourcePath)?.let { mergedSourceRoots ->
+        return MergedSourceRoots(mergedSourceRoots + irrelevantSourceRoots)
       }
     }
     return if (!BazelFeatureFlags.addDummyModules) {
@@ -87,6 +90,8 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
       )
     }
   }
+
+  private fun JavaSourceRoot.isRelevant(): Boolean = this.sourcePath.extension in RELEVANT_EXTENSIONS || this.sourcePath.isDirectory()
 
   private fun tryMergeSources(
     sourceRoots: List<JavaSourceRoot>,
