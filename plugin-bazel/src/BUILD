@@ -102,6 +102,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/tasks",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/services",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/startup",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/action",
