@@ -14,6 +14,7 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import com.intellij.ui.components.JBTabbedPane
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
@@ -25,12 +26,11 @@ import org.jetbrains.bazel.services.invalidTargets
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.ui.dialogs.BazelQueryDialogWindow
+import org.jetbrains.bazel.ui.dialogs.queryTab.BazelQueryDialogWindow
 import org.jetbrains.bazel.ui.widgets.tool.window.filter.FilterActionGroup
 import org.jetbrains.bazel.ui.widgets.tool.window.filter.TargetFilter
 import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
-import java.awt.EventQueue
 import java.nio.file.Path
 import javax.swing.SwingConstants
 
@@ -38,6 +38,9 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
   private val targetFilter = TargetFilter { rerenderComponents() }
   private val searchBarPanel = SearchBarPanel()
   private var loadedTargetsPanel: BspPanelComponent
+  // Dodajemy panel Bazel Query jako zakładkę
+  private val bazelQueryDialogWindow = BazelQueryDialogWindow(project)
+
 
   init {
     val actionManager = ActionManager.getInstance()
@@ -55,8 +58,6 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
         add(BspToolWindowSettingsAction(BazelPluginBundle.message("project.settings.display.name")))
         addSeparator()
         add(BspToolWindowConfigFileOpenAction())
-        addSeparator()
-        add(BazelQueryDialogWindowAction())
       }
 
     val actionToolbar =
@@ -66,7 +67,14 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
       }
 
     this.toolbar = actionToolbar.component
-    setContent(loadedTargetsPanel.withScrollAndSearch())
+
+    val tabbedPane = JBTabbedPane().apply {
+      addTab("Loaded Targets", loadedTargetsPanel.withScrollAndSearch())
+      addTab("Bazel Query", bazelQueryDialogWindow)
+    }
+    setContent(tabbedPane)
+
+    //setContent(loadedTargetsPanel.withScrollAndSearch())
 
     targetUtils.registerSyncListener { targetListChanged ->
       if (targetListChanged) {
@@ -133,13 +141,4 @@ private fun Path.getPsiFile(project: Project): PsiFile? {
   val virtualFile =
     virtualFileManager.findFileByNioPath(this) ?: return null
   return PsiManager.getInstance(project).findFile(virtualFile)
-}
-
-private class BazelQueryDialogWindowAction() :
-  SuspendableAction({ "Open Bazel Query window" }, AllIcons.Actions.Search) {
-  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    EventQueue.invokeLater {
-      BazelQueryDialogWindow(project).show()
-    }
-  }
 }

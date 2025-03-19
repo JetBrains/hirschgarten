@@ -1,10 +1,14 @@
 package org.jetbrains.bazel.languages.bazelquery.completion
 
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.bazel.target.targetUtils
 import kotlin.text.removePrefix
 import kotlin.text.startsWith
 
+
+private val separator = if (SystemInfo.isWindows) "\\" else "/"
+private val startPathSign = "$separator$separator"
 
 private val targets = ProjectManager.getInstance()
   .openProjects.firstOrNull()
@@ -18,27 +22,27 @@ fun generateTargetCompletions(prefix: String, directory: String = ""): List<Stri
   val suggestions = mutableListOf<String>()
   val projectDir = ProjectManager.getInstance().openProjects.firstOrNull()?.basePath ?: ""
   if (!directory.startsWith(projectDir) && directory.isNotEmpty()) return suggestions
-  val currentDir = directory.removePrefix(projectDir).removePrefix("/")
-  val prefixPath = "//$currentDir"
+  val currentDir = directory.removePrefix(projectDir).removePrefix(separator)
+  val prefixPath = "$startPathSign$currentDir"
 
   val allTargets: MutableSet<String> =  targets?.toMutableSet() ?: mutableSetOf()
   val allTargetsDirDepFormat =
     if (currentDir.isNotEmpty())
       allTargets
-        .filter { it.startsWith("$prefixPath/") }
-        .map { it.removePrefix("$prefixPath/") }
+        .filter { it.startsWith("$prefixPath$separator") }
+        .map { it.removePrefix("$prefixPath$separator") }
     else
-      allTargets.map{ it.removePrefix("//") }
+      allTargets.map{ it.removePrefix(startPathSign) }
   allTargets.addAll(allTargetsDirDepFormat)
 
   suggestions.addAll(allTargets.filter { it.startsWith(prefix) })
   suggestions.addAll(generateTargetPatterns(prefix, suggestions))
 
-  if (prefix.startsWith("/") || prefix.isEmpty()) {
+  if (prefix.startsWith(separator) || prefix.isEmpty()) {
     // All rule targets in packages in the main repository. Does not include targets from external repositories.
-    suggestions.add("//...")
+    suggestions.add("$startPathSign...")
     // All rule targets in the top-level package, if there is a `BUILD` file at the root of the workspace.
-    suggestions.add("//:all")
+    suggestions.add("$startPathSign:all")
   }
   if (prefix.startsWith(":") || prefix.isEmpty()) {
     // All rule targets in the working directory.
@@ -80,35 +84,35 @@ private fun generateTargetPatterns(prefix: String, suggestions: List<String>): L
   var prefixSegments = 0
 
   if (prefix.isNotEmpty()) {
-    isProjectRootDependentFormat = prefix[0] == '/'
+    isProjectRootDependentFormat = prefix[0] == separator[0]
     prefixSegments += prefix
-      .removePrefix("/").removePrefix("/").split(":")[0]
-      .split("/").size
+      .removePrefix(separator).removePrefix(separator).split(":")[0]
+      .split(separator).size
   }
 
   // Add all subpaths to use with wildcards
   availableSuggestions
     .forEach { s ->
       patterns.add(s)
-      val suggestionSegments = s.removePrefix("//").split(":")[0].split("/")
+      val suggestionSegments = s.removePrefix(startPathSign).split(":")[0].split(separator)
       suggestionSegments.indices.reversed()
         .filter { it + 1 >= prefixSegments }
         .forEach { i ->
-          availablePathsSet.add(suggestionSegments.subList(0, i + 1).joinToString("/"))
+          availablePathsSet.add(suggestionSegments.subList(0, i + 1).joinToString(separator))
         }
     }
 
   if (isProjectRootDependentFormat) {
     availablePathsSet.forEach { path ->
-      patterns.add("//$path:all")
-      patterns.add("//$path/...:all-targets")
-      patterns.add("//$path/...:all")
+      patterns.add("$startPathSign$path:all")
+      patterns.add("$startPathSign$path$separator...:all-targets")
+      patterns.add("$startPathSign$path$separator...:all")
     }
   }
   else {
     availablePathsSet.forEach { path ->
       patterns.add("$path:all")
-      patterns.add("$path/...:all")
+      patterns.add("$path$separator...:all")
     }
   }
 

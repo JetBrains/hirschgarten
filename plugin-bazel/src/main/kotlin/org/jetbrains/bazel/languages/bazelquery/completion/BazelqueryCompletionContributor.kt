@@ -17,6 +17,7 @@ import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.startOffset
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryFile
+import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
 
 
 class BazelqueryCompletionContributor : CompletionContributor() {
@@ -29,6 +30,12 @@ val knownCommands =
   BazelqueryTokenSets.COMMANDS.types.map { tokenType ->
     tokenType as BazelqueryTokenType
     tokenType.completionText() + "()"
+  }.toList()
+
+val knownOperations =
+  BazelqueryTokenSets.OPERATIONS.types.map { tokenType ->
+    tokenType as BazelqueryTokenType
+    tokenType.completionText()
   }.toList()
 
 class BazelqueryPrefixMatcher(prefix: String) : PrefixMatcher(prefix) {
@@ -71,11 +78,16 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
       .trim()
       .removePrefix("\"")
       .removePrefix("'")
-    val targetSuggestions = generateTargetCompletions(prefix)
+    val currentDirectory = BazelWorkingDirectoryManager.getWorkingDirectory()
+    val targetSuggestions = generateTargetCompletions(prefix, currentDirectory)
+
 
     result.withPrefixMatcher(BazelqueryPrefixMatcher(prefix)).run {
       addAllElements(
         knownCommands.map(::functionLookupElement),
+      )
+      addAllElements(
+        knownOperations.map(::functionLookupElement),
       )
       addAllElements(
         targetSuggestions.map(::functionLookupElement)
