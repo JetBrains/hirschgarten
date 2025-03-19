@@ -14,6 +14,7 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import com.intellij.ui.components.JBTabbedPane
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
@@ -25,13 +26,12 @@ import org.jetbrains.bazel.services.invalidTargets
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.ui.dialogs.BazelQueryDialogWindow
+import org.jetbrains.bazel.ui.dialogs.queryTab.BazelQueryDialogWindow
 import org.jetbrains.bazel.ui.widgets.tool.window.filter.FilterActionGroup
 import org.jetbrains.bazel.ui.widgets.tool.window.filter.TargetFilter
 import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
 import java.nio.file.Path
-import javax.swing.JTabbedPane
 import javax.swing.SwingConstants
 
 class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, true) {
@@ -68,7 +68,7 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
 
     this.toolbar = actionToolbar.component
 
-    val tabbedPane = JTabbedPane().apply {
+    val tabbedPane = JBTabbedPane().apply {
       addTab("Loaded Targets", loadedTargetsPanel.withScrollAndSearch())
       addTab("Bazel Query", bazelQueryDialogWindow)
     }
