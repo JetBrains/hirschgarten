@@ -212,8 +212,6 @@
         <consoleFilterProvider
                 implementation="org.jetbrains.bazel.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"/>
 
-        <iconMapper mappingFile="BSPIconMappings.json"/>
-
         <notificationGroup displayType="BALLOON" id="Bazel Plugin"/>
         <editorNotificationProvider
                 implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"/>
