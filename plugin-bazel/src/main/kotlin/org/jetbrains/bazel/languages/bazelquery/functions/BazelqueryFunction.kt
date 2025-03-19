@@ -41,7 +41,7 @@ sealed class BazelqueryFunction {
       SimpleFunction(
         name = "allrdeps",
         description = "Computes all reverse dependencies in the universe set.",
-        exampleUsage = "allrdeps(//foo:bar, depth = 2)",
+        exampleUsage = "allrdeps(//foo:bar, 2)",
         arguments = listOf(
           FunctionArgument("expr", "expr", false, "The input set of targets."),
           FunctionArgument("depth", "int", true, "Maximum depth for reverse dependencies.")
