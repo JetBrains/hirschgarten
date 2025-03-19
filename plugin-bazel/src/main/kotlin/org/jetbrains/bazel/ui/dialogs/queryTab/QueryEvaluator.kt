@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.ui.dialogs.queryTab
 
 import com.intellij.openapi.vfs.VirtualFile
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
@@ -16,7 +15,9 @@ import java.nio.file.Path
 internal class QueryEvaluator {
   private var currentRunnerDirFile: VirtualFile? = null
   private var bazelRunner: BazelRunner? = null
+
   val isDirectorySet: Boolean get() = bazelRunner != null
+
   fun setEvaluationDirectory(directoryFile: VirtualFile) {
     if (!directoryFile.isDirectory) throw IllegalArgumentException("$directoryFile is not a directory")
 
@@ -35,7 +36,11 @@ internal class QueryEvaluator {
   }
 
 
-  fun evaluate(command: String, flags: List<String>, flagsAlreadyPrefixedWithDoubleHyphen: Boolean = false): BazelProcessResult {
+  suspend fun evaluate(
+    command: String,
+    flags: List<String>,
+    flagsAlreadyPrefixedWithDoubleHyphen: Boolean = false
+  ): BazelProcessResult {
     if (!isDirectorySet) throw IllegalStateException("Directory to run query from is not set")
 
     // TODO: add proper way to add raw query to evaluation
@@ -49,10 +54,8 @@ internal class QueryEvaluator {
       commandToRun.options.add((if (flagsAlreadyPrefixedWithDoubleHyphen) "" else "--") + flag)
     }
 
-    return runBlocking {
-      bazelRunner!!
-        .runBazelCommand(commandToRun, serverPidFuture = null)
-        .waitAndGetResult()
-    }
+    return bazelRunner!!
+      .runBazelCommand(commandToRun, serverPidFuture = null)
+      .waitAndGetResult()
   }
 }

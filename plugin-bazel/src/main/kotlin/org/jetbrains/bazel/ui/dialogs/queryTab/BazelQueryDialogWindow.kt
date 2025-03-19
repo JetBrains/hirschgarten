@@ -13,6 +13,8 @@ import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
+import org.jetbrains.bazel.bazelrunner.BazelProcessResult
+import org.jetbrains.bazel.coroutines.CoroutineService
 import org.jetbrains.bazel.languages.bazelquery.BazelqueryLanguage
 import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
 import java.awt.BorderLayout
@@ -22,6 +24,7 @@ import javax.swing.JCheckBox
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.ScrollPaneConstants
+import javax.swing.SwingUtilities
 
 private class QueryFlagField(
   val flag: String,
@@ -59,12 +62,12 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
 
   // UI elements
   private val editorTextField = LanguageTextField(BazelqueryLanguage, project, "")
-  private val resultField = JBTextArea().apply { isEditable = false }
   private val directoryField = JBTextField().apply { isEditable = false }
   private val flagsPanel = JPanel().apply {
     layout = BoxLayout(this, BoxLayout.Y_AXIS)
     defaultFlags.forEach { it.addToPanel(this) }
   }
+  private val resultField = JBTextArea().apply { isEditable = false }
 
   init {
     layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -165,17 +168,24 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
       }
     }
 
-    val commandResults = queryEvaluator.evaluate(editorTextField.text, flagsToRun)
+    resultField.text = "Bazel Query in progress..."
 
-    if (commandResults.isSuccess) {
-      resultField.text = commandResults.stdout.ifEmpty { "Nothing found" }
-    } else {
-      resultField.text = "Command execution failed:\n" + commandResults.stderr
+    var commandResults: BazelProcessResult? = null
+    CoroutineService.getInstance(project).start {
+      commandResults = queryEvaluator.evaluate(editorTextField.text, flagsToRun)
+    }.invokeOnCompletion {
+      SwingUtilities.invokeLater {
+        if (commandResults!!.isSuccess) {
+          resultField.text = commandResults.stdout.ifEmpty { "Nothing found" }
+        } else {
+          resultField.text = "Command execution failed:\n" + commandResults.stderr
+        }
+        updateUI()
+      }
     }
-    updateUI()
   }
 
-  fun clear() {
+  private fun clear() {
     editorTextField.text = ""
     resultField.text = ""
   }
