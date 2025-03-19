@@ -17,7 +17,7 @@ import com.intellij.openapi.ui.Messages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import javax.swing.Icon
 
@@ -58,7 +58,7 @@ public abstract class BaseRunnerAction(
       }
     } catch (e: Exception) {
       withContext(Dispatchers.EDT) {
-        Messages.showErrorDialog(project, e.toString(), BspPluginBundle.message("widget.side.menu.error.title"))
+        Messages.showErrorDialog(project, e.toString(), BazelPluginBundle.message("widget.side.menu.error.title"))
       }
     }
   }

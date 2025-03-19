@@ -26,7 +26,7 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
@@ -183,7 +183,7 @@ private class ExcludedDirectoriesNode(
   override fun isIncludedInExpandAll(): Boolean = false
 
   override fun update(presentation: PresentationData) {
-    presentation.presentableText = BspPluginBundle.message("widget.project.tree.excluded.directories")
+    presentation.presentableText = BazelPluginBundle.message("widget.project.tree.excluded.directories")
     presentation.setIcon(AllIcons.Modules.ExcludeRoot)
     // Show in gray even if the project root dir is excluded (for better visibility)
     presentation.background = null

@@ -12,7 +12,7 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.backend.workspace.virtualFile
 import org.jetbrains.bazel.action.SuspendableAction
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.target.targetUtils
@@ -72,22 +72,22 @@ internal open class RunAllTestsBaseAction(
 
 internal class RunAllTestsAction :
   RunAllTestsBaseAction(
-    text = { BspPluginBundle.message("action.run.all.tests") },
+    text = { BazelPluginBundle.message("action.run.all.tests") },
     icon = AllIcons.Actions.Execute,
     createAction = { targets, directoryName ->
       TestTargetAction(targets, text = {
-        BspPluginBundle.message("action.run.all.tests.under", directoryName)
+        BazelPluginBundle.message("action.run.all.tests.under", directoryName)
       })
     },
   )
 
 internal class RunAllTestsWithCoverageAction :
   RunAllTestsBaseAction(
-    text = { BspPluginBundle.message("action.run.all.tests.with.coverage") },
+    text = { BazelPluginBundle.message("action.run.all.tests.with.coverage") },
     icon = AllIcons.General.RunWithCoverage,
     createAction = { targets, directoryName ->
       RunWithCoverageAction(targets, text = {
-        BspPluginBundle.message("action.run.all.tests.under.with.coverage", directoryName)
+        BazelPluginBundle.message("action.run.all.tests.under.with.coverage", directoryName)
       })
     },
   )

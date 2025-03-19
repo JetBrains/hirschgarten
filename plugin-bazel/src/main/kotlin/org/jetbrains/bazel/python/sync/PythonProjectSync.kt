@@ -28,7 +28,7 @@ import com.jetbrains.python.sdk.PythonSdkUpdater
 import com.jetbrains.python.sdk.detectSystemWideSdks
 import com.jetbrains.python.sdk.guessedLanguageLevel
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
@@ -189,11 +189,11 @@ class PythonProjectSync : ProjectSyncHook {
     environment: ProjectSyncHookEnvironment,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): Map<Label, Sdk> =
-    environment.progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
+    environment.progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
       environment.project.syncConsole.withSubtask(
         taskId = environment.taskId,
         subtaskId = "calculate-and-add-all-python-sdk-infos",
-        message = BspPluginBundle.message("console.task.model.calculate.python.sdks"),
+        message = BazelPluginBundle.message("console.task.model.calculate.python.sdks"),
       ) {
         doCalculateAndAddSdks(calculateDependenciesSources(targets, environment), targets, virtualFileUrlManager)
       }

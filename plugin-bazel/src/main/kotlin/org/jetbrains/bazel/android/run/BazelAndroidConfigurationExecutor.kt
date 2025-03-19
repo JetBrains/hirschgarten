@@ -30,7 +30,7 @@ import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.workspaceModel.ide.toPath
 import com.intellij.xdebugger.impl.XDebugSessionImpl
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.getModuleEntity
@@ -144,17 +144,17 @@ class BazelAndroidConfigurationExecutor(private val environment: ExecutionEnviro
     val project = environment.project
     val apkPath =
       getApkPath(project, targetId)
-        ?: throw ExecutionException(BspPluginBundle.message("console.task.apk.install.could.not.get.apk"))
+        ?: throw ExecutionException(BazelPluginBundle.message("console.task.apk.install.could.not.get.apk"))
 
     val applicationId =
       try {
         BspApplicationIdProvider(project, targetId).packageName
       } catch (_: ApkProvisionException) {
-        throw ExecutionException(BspPluginBundle.message("console.task.apk.install.could.not.get.application.id"))
+        throw ExecutionException(BazelPluginBundle.message("console.task.apk.install.could.not.get.application.id"))
       }
 
     if (!apkPath.exists()) {
-      throw ExecutionException(BspPluginBundle.message("console.task.apk.install.apk.not.found", apkPath.toString()))
+      throw ExecutionException(BazelPluginBundle.message("console.task.apk.install.apk.not.found", apkPath.toString()))
     }
     val apkInfo =
       ApkInfo(

@@ -27,7 +27,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
@@ -243,11 +243,11 @@ class GoProjectSync : ProjectSyncHook {
     goTargets: List<BaseTargetInfo>,
     project: Project,
     taskId: String,
-  ) = reporter.indeterminateStep(BspPluginBundle.message("progress.bar.calculate.go.sdk.infos")) {
+  ) = reporter.indeterminateStep(BazelPluginBundle.message("progress.bar.calculate.go.sdk.infos")) {
     project.syncConsole.withSubtask(
       taskId = taskId,
       subtaskId = "calculate-and-add-bsp-fetched-go-sdk",
-      message = BspPluginBundle.message("console.task.model.calculate.add.go.fetched.sdk"),
+      message = BazelPluginBundle.message("console.task.model.calculate.add.go.fetched.sdk"),
     ) {
       goTargets
         .findGoSdkOrNull()
@@ -276,7 +276,7 @@ class GoProjectSync : ProjectSyncHook {
   ) = project.syncConsole.withSubtask(
     taskId,
     "enable-go-support-in-targets",
-    BspPluginBundle.message("console.task.model.add.go.support.in.targets"),
+    BazelPluginBundle.message("console.task.model.add.go.support.in.targets"),
   ) {
     val workspaceModel = WorkspaceModel.getInstance(project)
     moduleEntities.forEach { moduleEntity ->

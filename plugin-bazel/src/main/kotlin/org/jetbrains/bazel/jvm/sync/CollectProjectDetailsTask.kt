@@ -18,7 +18,7 @@ import org.jetbrains.bazel.android.AndroidSdkGetterExtension
 import org.jetbrains.bazel.android.androidSdkGetterExtension
 import org.jetbrains.bazel.android.androidSdkGetterExtensionExists
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.config.defaultJdkName
 import org.jetbrains.bazel.config.rootDir
@@ -96,11 +96,11 @@ class CollectProjectDetailsTask(
     baseTargetInfos: BaseTargetInfos,
   ) {
     val projectDetails =
-      progressReporter.sizedStep(workSize = 50, text = BspPluginBundle.message("progress.bar.collect.project.details")) {
+      progressReporter.sizedStep(workSize = 50, text = BazelPluginBundle.message("progress.bar.collect.project.details")) {
         collectModel(project, server, baseTargetInfos)
       }
 
-    progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
+    progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.bar.calculate.jdk.infos")) {
       calculateAllUniqueJdkInfosSubtask(projectDetails)
       uniqueJavaHomes.orEmpty().also {
         if (it.isNotEmpty()) {
@@ -119,12 +119,12 @@ class CollectProjectDetailsTask(
     }
 
     if (BazelFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
-      progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
+      progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
         calculateAllAndroidSdkInfosSubtask(projectDetails)
       }
     }
 
-    progressReporter.sizedStep(workSize = 25, text = BspPluginBundle.message("progress.bar.update.internal.model")) {
+    progressReporter.sizedStep(workSize = 25, text = BazelPluginBundle.message("progress.bar.update.internal.model")) {
       updateInternalModelSubtask(projectDetails, syncScope)
     }
   }
@@ -138,7 +138,7 @@ class CollectProjectDetailsTask(
       project.syncConsole.startSubtask(
         this.taskId,
         IMPORT_SUBTASK_ID,
-        BspPluginBundle.message("console.task.model.collect"),
+        BazelPluginBundle.message("console.task.model.collect"),
       )
 
       val projectDetails =
@@ -172,7 +172,7 @@ class CollectProjectDetailsTask(
     project.syncConsole.withSubtask(
       taskId = taskId,
       subtaskId = "calculate-all-unique-jdk-infos",
-      message = BspPluginBundle.message("console.task.model.calculate.jdks.infos"),
+      message = BazelPluginBundle.message("console.task.model.calculate.jdks.infos"),
     ) {
       uniqueJavaHomes =
         bspTracer.spanBuilder("calculate.all.unique.jdk.infos.ms").use {
@@ -190,7 +190,7 @@ class CollectProjectDetailsTask(
     project.syncConsole.withSubtask(
       taskId = taskId,
       subtaskId = "calculate-all-scala-sdk-infos",
-      message = BspPluginBundle.message("console.task.model.calculate.scala.sdk.infos"),
+      message = BazelPluginBundle.message("console.task.model.calculate.scala.sdk.infos"),
     ) {
       scalaSdks =
         bspTracer.spanBuilder("calculate.all.scala.sdk.infos.ms").use {
@@ -218,7 +218,7 @@ class CollectProjectDetailsTask(
     project.syncConsole.withSubtask(
       taskId,
       "calculate-all-android-sdk-infos",
-      BspPluginBundle.message("progress.bar.calculate.android.sdk.infos"),
+      BazelPluginBundle.message("progress.bar.calculate.android.sdk.infos"),
     ) {
       androidSdks =
         bspTracer.spanBuilder("calculate.all.android.sdk.infos.ms").use {
@@ -243,7 +243,7 @@ class CollectProjectDetailsTask(
     project.syncConsole.withSubtask(
       taskId,
       "calculate-project-structure",
-      BspPluginBundle.message("console.task.model.calculate.structure"),
+      BazelPluginBundle.message("console.task.model.calculate.structure"),
     ) {
       coroutineScope {
         val projectBasePath = project.rootDir.toNioPath()
@@ -380,7 +380,7 @@ class CollectProjectDetailsTask(
     project.syncConsole.withSubtask(
       taskId,
       "add-bsp-fetched-jdks",
-      BspPluginBundle.message("console.task.model.add.fetched.jdks"),
+      BazelPluginBundle.message("console.task.model.add.fetched.jdks"),
     ) {
       bspTracer.spanBuilder("add.bsp.fetched.jdks.ms").useWithScope {
         uniqueJavaHomes?.forEach {
@@ -397,7 +397,7 @@ class CollectProjectDetailsTask(
       project.syncConsole.withSubtask(
         taskId,
         "add-bsp-fetched-scala-sdks",
-        BspPluginBundle.message("console.task.model.add.scala.fetched.sdks"),
+        BazelPluginBundle.message("console.task.model.add.scala.fetched.sdks"),
       ) {
         val modifiableProvider = IdeModifiableModelsProviderImpl(project)
 
@@ -414,7 +414,7 @@ class CollectProjectDetailsTask(
       project.syncConsole.withSubtask(
         taskId,
         "add-bsp-fetched-android-sdks",
-        BspPluginBundle.message("console.task.model.add.android.fetched.sdks"),
+        BazelPluginBundle.message("console.task.model.add.android.fetched.sdks"),
       ) {
         bspTracer.spanBuilder("add.bsp.fetched.android.sdks.ms").useWithScope {
           androidSdks?.forEach { addAndroidSdkIfNeeded(it, extension) }
@@ -467,8 +467,8 @@ class CollectProjectDetailsTask(
     source: URI,
   ) {
     BazelBalloonNotifier.warn(
-      BspPluginBundle.message("widget.collect.targets.overlapping.sources.title"),
-      BspPluginBundle.message(
+      BazelPluginBundle.message("widget.collect.targets.overlapping.sources.title"),
+      BazelPluginBundle.message(
         "widget.collect.targets.overlapping.sources.message",
         firstTarget.toString(),
         secondTarget.toString(),

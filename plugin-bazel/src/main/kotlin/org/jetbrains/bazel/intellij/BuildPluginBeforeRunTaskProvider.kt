@@ -8,7 +8,7 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bsp.protocol.StatusCode
@@ -22,7 +22,7 @@ public class BuildPluginBeforeRunTaskProvider : BeforeRunTaskProvider<BuildPlugi
 
   override fun getId(): Key<Task> = PROVIDER_ID
 
-  override fun getName(): String = BspPluginBundle.message("console.task.build.title")
+  override fun getName(): String = BazelPluginBundle.message("console.task.build.title")
 
   override fun createTask(configuration: RunConfiguration): Task? =
     if (configuration is BazelRunConfiguration) {

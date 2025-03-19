@@ -2,7 +2,7 @@ package org.jetbrains.bazel.run.commandLine
 
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.runners.ExecutionEnvironment
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
@@ -24,7 +24,7 @@ class BazelRunCommandLineState(
 
   override suspend fun startBsp(server: JoinedBuildServer) {
     if (configuration.targets.singleOrNull() == null) {
-      throw ExecutionException(BspPluginBundle.message("bsp.run.error.cannotRun"))
+      throw ExecutionException(BazelPluginBundle.message("bsp.run.error.cannotRun"))
     }
 
     val targetId = configuration.targets.single()

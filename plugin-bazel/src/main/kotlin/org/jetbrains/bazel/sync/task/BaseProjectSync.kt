@@ -2,7 +2,7 @@ package org.jetbrains.bazel.sync.task
 
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.coroutineScope
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.BaseTargetInfo
 import org.jetbrains.bazel.sync.BaseTargetInfos
@@ -35,7 +35,7 @@ class BaseProjectSync(private val project: Project) {
     project.syncConsole.withSubtask(
       taskId = taskId,
       subtaskId = BASE_PROJECT_SYNC_SUBTASK_ID,
-      message = BspPluginBundle.message("console.task.base.sync"),
+      message = BazelPluginBundle.message("console.task.base.sync"),
     ) {
       coroutineScope {
         val buildResult = queryWorkspaceBuildTargets(server, syncScope, buildProject, taskId)

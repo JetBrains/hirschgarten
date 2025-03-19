@@ -9,7 +9,7 @@ import com.intellij.platform.ide.progress.withBackgroundProgress
 import kotlinx.coroutines.guava.await
 import org.jetbrains.android.sdk.AndroidSdkUtils
 import org.jetbrains.bazel.action.saveAllFiles
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.tasks.BspServerSingleTargetTask
@@ -59,8 +59,8 @@ class MobileInstallTargetTask(
   ) {
     bspBuildConsole.startTask(
       originId,
-      BspPluginBundle.message("console.task.mobile.install.title"),
-      BspPluginBundle.message("console.task.mobile.install.in.progress.target", targetId.toShortString()),
+      BazelPluginBundle.message("console.task.mobile.install.title"),
+      BazelPluginBundle.message("console.task.mobile.install.in.progress.target", targetId.toShortString()),
       { cancelOn.cancel(true) },
     ) {
       BazelCoroutineService.getInstance(project).start {
@@ -97,7 +97,7 @@ class MobileInstallTargetTask(
 
   private suspend fun launchAndroidDevice(bspBuildConsole: TaskConsole): IDevice {
     if (!deviceFuture.isDone) {
-      bspBuildConsole.addMessage(BspPluginBundle.message("console.task.mobile.install.waiting.for.target.device"))
+      bspBuildConsole.addMessage(BazelPluginBundle.message("console.task.mobile.install.waiting.for.target.device"))
     }
     return deviceFuture.await()
   }
@@ -112,7 +112,7 @@ suspend fun runMobileInstallTargetTask(
 ): MobileInstallResult? =
   try {
     saveAllFiles()
-    withBackgroundProgress(project, BspPluginBundle.message("console.task.mobile.install.in.progress")) {
+    withBackgroundProgress(project, BazelPluginBundle.message("console.task.mobile.install.in.progress")) {
       MobileInstallTargetTask(project, deviceFuture, startType).connectAndExecute(targetId)
     }
   } catch (e: Exception) {

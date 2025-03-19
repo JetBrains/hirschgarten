@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.runnerAction
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.server.tasks.JvmTestEnvironmentTask
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
@@ -17,12 +17,12 @@ public class TestWithLocalJvmRunnerAction(
       if (text != null) {
         text()
       } else if (isDebugMode) {
-        BspPluginBundle.message(
+        BazelPluginBundle.message(
           "target.debug.with.jvm.runner.action.text",
           if (includeTargetNameInText) targetInfo.buildTargetName else "",
         )
       } else {
-        BspPluginBundle.message(
+        BazelPluginBundle.message(
           "target.test.with.jvm.runner.action.text",
           if (includeTargetNameInText) targetInfo.buildTargetName else "",
         )
