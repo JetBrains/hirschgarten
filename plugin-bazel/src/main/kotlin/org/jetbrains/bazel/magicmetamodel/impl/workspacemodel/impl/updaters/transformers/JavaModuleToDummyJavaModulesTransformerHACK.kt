@@ -130,7 +130,8 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
     val originalSourceRoots: Set<Path> = sourceRoots.map { it.sourcePath }.toSet()
     if (originalSourceRoots.any { !it.isUnder(mergedSourceRootPaths) }) return null
     if (!CodeInsightContextManager.getInstance(project).isSharedSourceSupportEnabled &&
-      originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }
+      originalSourceRoots.filter { !it.isDirectory() && it.extension == "java" }
+        .any { it.isSharedBetweenSeveralTargets() }
     ) {
       return null
     }
@@ -154,7 +155,8 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
    * We don't really support shared sources anyway, but adding whole directories if some of the source files
    * are contained in several targets can cause red code on https://github.com/bazelbuild/bazel
    */
-  private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTarget[this.toUri()]?.size ?: 0) > 1
+  private fun Path.isSharedBetweenSeveralTargets(): Boolean = 
+    this.extension == "java" && (fileToTarget[this.toUri()]?.size ?: 0) > 1
 
   /**
    * See [com.intellij.openapi.vfs.VfsUtilCore.isUnder]
