@@ -15,6 +15,7 @@ import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.coroutines.CoroutineService
+import org.jetbrains.bazel.languages.bazelquery.BazelqueryFlagsLanguage
 import org.jetbrains.bazel.languages.bazelquery.BazelqueryLanguage
 import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
 import java.awt.BorderLayout
@@ -63,9 +64,11 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
   // UI elements
   private val editorTextField = LanguageTextField(BazelqueryLanguage, project, "")
   private val directoryField = JBTextField().apply { isEditable = false }
+  private val flagTextField = LanguageTextField(BazelqueryFlagsLanguage, project, "")
   private val flagsPanel = JPanel().apply {
     layout = BoxLayout(this, BoxLayout.Y_AXIS)
     defaultFlags.forEach { it.addToPanel(this) }
+    add(flagTextField)
   }
   private val resultField = JBTextArea().apply { isEditable = false }
 
@@ -172,7 +175,7 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
 
     var commandResults: BazelProcessResult? = null
     CoroutineService.getInstance(project).start {
-      commandResults = queryEvaluator.evaluate(editorTextField.text, flagsToRun)
+      commandResults = queryEvaluator.evaluate(editorTextField.text, flagsToRun, flagTextField.text)
     }.invokeOnCompletion {
       SwingUtilities.invokeLater {
         if (commandResults!!.isSuccess) {

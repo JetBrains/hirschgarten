@@ -39,6 +39,7 @@ internal class QueryEvaluator {
   suspend fun evaluate(
     command: String,
     flags: List<String>,
+    additionalFlags: String,
     flagsAlreadyPrefixedWithDoubleHyphen: Boolean = false
   ): BazelProcessResult {
     if (!isDirectorySet) throw IllegalStateException("Directory to run query from is not set")
@@ -52,6 +53,9 @@ internal class QueryEvaluator {
     commandToRun.options.clear()
     for (flag in flags) {
       commandToRun.options.add((if (flagsAlreadyPrefixedWithDoubleHyphen) "" else "--") + flag)
+    }
+    for (flag in additionalFlags.split(" -")) {
+      commandToRun.options.add(if (flag.startsWith("--")) flag.trim() else "-${flag.trim()}")
     }
 
     return bazelRunner!!
