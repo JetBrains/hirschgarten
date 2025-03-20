@@ -124,6 +124,7 @@ class BazelBspAspectsManager(
       val variableMap =
         mapOf(
           "rulesetName" to ruleLanguage?.calculateCanonicalName(repoMapping).orEmpty(),
+          "rulesetNameApparent" to ruleLanguage?.rulesetName.orEmpty(),
           "addTransitiveCompileTimeJars" to
             workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
           "transitiveCompileTimeJarsTargetKinds" to
