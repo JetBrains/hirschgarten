@@ -8,6 +8,8 @@ data class BuildTarget(
   val languageIds: List<String>,
   val dependencies: List<Label>,
   val capabilities: BuildTargetCapabilities,
+  val sources: List<SourceItem>,
+  val resources: List<String>,
   val displayName: String? = null,
   val baseDirectory: String? = null,
   var data: BuildTargetData? = null,

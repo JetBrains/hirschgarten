@@ -40,8 +40,6 @@ import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.server.client.IMPORT_SUBTASK_ID
-import org.jetbrains.bazel.sync.BaseTargetInfo
-import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.task.asyncQueryIf
@@ -63,6 +61,7 @@ import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
@@ -92,7 +91,7 @@ class CollectProjectDetailsTask(
     server: JoinedBuildServer,
     syncScope: ProjectSyncScope,
     progressReporter: SequentialProgressReporter,
-    baseTargetInfos: BaseTargetInfos,
+    baseTargetInfos: WorkspaceBuildTargetsResult,
   ) {
     val projectDetails =
       progressReporter.sizedStep(workSize = 50, text = BazelPluginBundle.message("progress.bar.collect.project.details")) {
@@ -131,7 +130,7 @@ class CollectProjectDetailsTask(
   private suspend fun collectModel(
     project: Project,
     server: JoinedBuildServer,
-    baseTargetInfos: BaseTargetInfos,
+    baseTargetInfos: WorkspaceBuildTargetsResult,
   ): ProjectDetails =
     try {
       project.syncConsole.startSubtask(
@@ -485,12 +484,12 @@ class CollectProjectDetailsTask(
 suspend fun calculateProjectDetailsWithCapabilities(
   project: Project,
   server: JoinedBuildServer,
-  baseTargetInfos: BaseTargetInfos,
+  baseTargetInfos: WorkspaceBuildTargetsResult,
 ): ProjectDetails =
   coroutineScope {
     try {
-      val javaTargetIds = baseTargetInfos.infos.calculateJavaTargetIds()
-      val scalaTargetIds = baseTargetInfos.infos.calculateScalaTargetIds()
+      val javaTargetIds = baseTargetInfos.targets.calculateJavaTargetIds()
+      val scalaTargetIds = baseTargetInfos.targets.calculateScalaTargetIds()
       val libraries: WorkspaceLibrariesResult =
         query("workspace/libraries") {
           server.workspaceLibraries()
@@ -533,10 +532,8 @@ suspend fun calculateProjectDetailsWithCapabilities(
         }
 
       ProjectDetails(
-        targetIds = baseTargetInfos.allTargetIds,
-        targets = baseTargetInfos.infos.map { it.target }.toSet(),
-        sources = baseTargetInfos.infos.flatMap { it.sources },
-        resources = baseTargetInfos.infos.flatMap { it.resources },
+        targetIds = baseTargetInfos.targets.map { it.id },
+        targets = baseTargetInfos.targets.toSet(),
         javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
         // TODO: Son
         scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
@@ -556,8 +553,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
     }
   }
 
-private fun List<BaseTargetInfo>.calculateJavaTargetIds(): List<Label> =
-  filter { it.target.languageIds.includesJava() }.map { it.target.id }
+private fun List<BuildTarget>.calculateJavaTargetIds(): List<Label> = filter { it.languageIds.includesJava() }.map { it.id }
 
-private fun List<BaseTargetInfo>.calculateScalaTargetIds(): List<Label> =
-  filter { it.target.languageIds.includesScala() }.map { it.target.id }
+private fun List<BuildTarget>.calculateScalaTargetIds(): List<Label> = filter { it.languageIds.includesScala() }.map { it.id }

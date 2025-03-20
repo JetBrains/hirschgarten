@@ -84,24 +84,10 @@ internal class ModuleDetailsToJavaModuleTransformer(
   }
 
   private fun toJavaSourceRoots(inputEntity: ModuleDetails): List<JavaSourceRoot> =
-    SourcesItemToJavaSourceRootTransformer().transform(
-      inputEntity.sources.map {
-        BuildTargetAndSourceItem(
-          buildTarget = inputEntity.target,
-          sourcesItem = it,
-        )
-      },
-    )
+    SourcesItemToJavaSourceRootTransformer().transform(inputEntity.target)
 
   private fun toResourceRoots(inputEntity: ModuleDetails): List<ResourceRoot> =
-    resourcesItemToJavaResourceRootTransformer.transform(
-      inputEntity.resources.map {
-        BuildTargetAndResourcesItem(
-          buildTarget = inputEntity.target,
-          resourcesItem = it,
-        )
-      },
-    )
+    resourcesItemToJavaResourceRootTransformer.transform(inputEntity.target)
 
   private fun toGenericModuleInfo(inputEntity: ModuleDetails): GenericModuleInfo {
     val bspModuleDetails =

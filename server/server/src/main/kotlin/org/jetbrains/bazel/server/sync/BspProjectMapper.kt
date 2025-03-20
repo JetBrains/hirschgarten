@@ -52,16 +52,10 @@ import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.PythonOptionsItem
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
-import org.jetbrains.bsp.protocol.ResourcesItem
-import org.jetbrains.bsp.protocol.ResourcesParams
-import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.ScalacOptionsItem
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourcesItem
-import org.jetbrains.bsp.protocol.SourcesParams
-import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -181,9 +175,33 @@ class BspProjectMapper(
         displayName = label.toShortString(),
         baseDirectory = baseDirectory,
         dependencies = emptyList(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
     return buildTarget
   }
+
+  private fun Module.sources(): List<SourceItem> {
+    val sourceItems =
+      sourceSet.sources.map {
+        SourceItem(
+          uri = it.source.toString(),
+          generated = false,
+          jvmPackagePrefix = it.jvmPackagePrefix,
+        )
+      }
+    val generatedSourceItems =
+      sourceSet.generatedSources.map {
+        SourceItem(
+          uri = it.source.toString(),
+          generated = true,
+          jvmPackagePrefix = it.jvmPackagePrefix,
+        )
+      }
+    return sourceItems + generatedSourceItems
+  }
+
+  private fun Module.resources(): List<String> = resources.map(URI::toString)
 
   private fun Module.toBuildTarget(): BuildTarget {
     val label = label
@@ -193,6 +211,7 @@ class BspProjectMapper(
     val capabilities = inferCapabilities(tags)
     val tags = tags.mapNotNull(BspMappings::toBspTag)
     val baseDirectory = BspMappings.toBspUri(baseDirectory)
+
     val buildTarget =
       BuildTarget(
         id = label,
@@ -202,6 +221,8 @@ class BspProjectMapper(
         capabilities = capabilities,
         displayName = label.toShortString(),
         baseDirectory = baseDirectory,
+        sources = sources(),
+        resources = resources(),
       )
 
     applyLanguageData(this, buildTarget)
@@ -227,55 +248,6 @@ class BspProjectMapper(
   private fun applyLanguageData(module: Module, buildTarget: BuildTarget) {
     val plugin = languagePluginsService.getPlugin(module.languages)
     module.languageData?.let { plugin.setModuleData(it, buildTarget) }
-  }
-
-  fun sources(project: AspectSyncProject, sourcesParams: SourcesParams): SourcesResult {
-    fun toSourcesItem(module: Module): SourcesItem {
-      val sourceSet = module.sourceSet
-      val sourceItems =
-        sourceSet.sources.map {
-          SourceItem(
-            uri = it.source.toString(),
-            generated = false,
-            jvmPackagePrefix = it.jvmPackagePrefix,
-          )
-        }
-      val generatedSourceItems =
-        sourceSet.generatedSources.map {
-          SourceItem(
-            uri = it.source.toString(),
-            generated = true,
-            jvmPackagePrefix = it.jvmPackagePrefix,
-          )
-        }
-      val sourcesItem = SourcesItem((module).label, sourceItems + generatedSourceItems)
-      return sourcesItem
-    }
-
-    fun emptySourcesItem(label: Label): SourcesItem = SourcesItem(label, emptyList())
-
-    val labels = sourcesParams.targets
-    val sourcesItems =
-      labels.map {
-        project.findModule(it)?.let(::toSourcesItem) ?: emptySourcesItem(it)
-      }
-    return SourcesResult(sourcesItems)
-  }
-
-  fun resources(project: AspectSyncProject, resourcesParams: ResourcesParams): ResourcesResult {
-    fun toResourcesItem(module: Module): ResourcesItem {
-      val resources = module.resources.map(BspMappings::toBspUri)
-      return ResourcesItem(module.label, resources)
-    }
-
-    fun emptyResourcesItem(label: Label): ResourcesItem = ResourcesItem(label, emptyList())
-
-    val labels = resourcesParams.targets
-    val resourcesItems =
-      labels.map {
-        project.findModule(it)?.let(::toResourcesItem) ?: emptyResourcesItem(it)
-      }
-    return ResourcesResult(resourcesItems)
   }
 
   suspend fun inverseSources(project: AspectSyncProject, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {

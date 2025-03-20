@@ -7,7 +7,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import org.jetbrains.bsp.protocol.ResourcesItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
@@ -22,7 +21,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   @Test
   fun `should return no resources roots for no resources items`() {
     // given
-    val emptyResources = listOf<BuildTargetAndResourcesItem>()
+    val emptyResources = listOf<BuildTarget>()
 
     // when
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(emptyResources)
@@ -34,6 +33,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   @Test
   fun `should return single resource root for resources item with one file path`() {
     // given
+    val resourceFilePath = Files.createTempFile(projectBasePath, "resource", "File.txt")
+    resourceFilePath.toFile().deleteOnExit()
+    val resourceRawUri = resourceFilePath.toUri().toString()
+
     val buildTarget =
       BuildTarget(
         Label.parse("//target"),
@@ -41,23 +44,12 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         emptyList(),
         listOf(),
         BuildTargetCapabilities(),
-      )
-    val resourceFilePath = Files.createTempFile(projectBasePath, "resource", "File.txt")
-    resourceFilePath.toFile().deleteOnExit()
-    val resourceRawUri = resourceFilePath.toUri().toString()
-
-    val resourcesItem =
-      BuildTargetAndResourcesItem(
-        buildTarget = buildTarget,
-        resourcesItem =
-          ResourcesItem(
-            buildTarget.id,
-            listOf(resourceRawUri),
-          ),
+        emptyList(),
+        listOf(resourceRawUri),
       )
 
     // when
-    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(resourcesItem)
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
 
     // then
     val expectedJavaResource =
@@ -72,6 +64,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   @Test
   fun `should return resource root with type test for resources item coming from a build target having test tag`() {
     // given
+    val resourceFilePath = Files.createTempFile(projectBasePath, "resource", "File.txt")
+    resourceFilePath.toFile().deleteOnExit()
+    val resourceRawUri = resourceFilePath.toUri().toString()
+
     val buildTarget =
       BuildTarget(
         Label.parse("//target"),
@@ -79,23 +75,12 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         emptyList(),
         listOf(),
         BuildTargetCapabilities(),
-      )
-    val resourceFilePath = Files.createTempFile(projectBasePath, "resource", "File.txt")
-    resourceFilePath.toFile().deleteOnExit()
-    val resourceRawUri = resourceFilePath.toUri().toString()
-
-    val resourcesItem =
-      BuildTargetAndResourcesItem(
-        buildTarget = buildTarget,
-        resourcesItem =
-          ResourcesItem(
-            buildTarget.id,
-            listOf(resourceRawUri),
-          ),
+        emptyList(),
+        listOf(resourceRawUri),
       )
 
     // when
-    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(resourcesItem)
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
 
     // then
     val expectedJavaResource =
@@ -110,6 +95,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   @Test
   fun `should return single resource root for resources item with one dir path`() {
     // given
+    val resourceDirPath = Files.createTempDirectory(projectBasePath, "resource")
+    resourceDirPath.toFile().deleteOnExit()
+    val resourceRawUri = resourceDirPath.toUri().toString()
+
     val buildTarget =
       BuildTarget(
         Label.parse("//target"),
@@ -117,23 +106,12 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         emptyList(),
         listOf(),
         BuildTargetCapabilities(),
-      )
-    val resourceDirPath = Files.createTempDirectory(projectBasePath, "resource")
-    resourceDirPath.toFile().deleteOnExit()
-    val resourceRawUri = resourceDirPath.toUri().toString()
-
-    val resourcesItem =
-      BuildTargetAndResourcesItem(
-        buildTarget = buildTarget,
-        resourcesItem =
-          ResourcesItem(
-            buildTarget.id,
-            listOf(resourceRawUri),
-          ),
+        emptyList(),
+        listOf(resourceRawUri),
       )
 
     // when
-    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(resourcesItem)
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
 
     // then
     val expectedJavaResource =
@@ -148,14 +126,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   @Test
   fun `should return multiple resource roots for resources item with multiple paths with the same directories`() {
     // given
-    val buildTarget =
-      BuildTarget(
-        Label.parse("//target"),
-        emptyList(),
-        emptyList(),
-        listOf(),
-        BuildTargetCapabilities(),
-      )
+
     val resourceFilePath1 = Files.createTempFile(projectBasePath, "resource", "File1.txt")
     resourceFilePath1.toFile().deleteOnExit()
     val resourceRawUri1 = resourceFilePath1.toUri().toString()
@@ -166,18 +137,19 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     resourceFilePath3.toFile().deleteOnExit()
     val resourceRawUri3 = resourceFilePath3.toUri().toString()
 
-    val resourcesItem =
-      BuildTargetAndResourcesItem(
-        buildTarget = buildTarget,
-        resourcesItem =
-          ResourcesItem(
-            buildTarget.id,
-            listOf(resourceRawUri1, resourceRawUri2, resourceRawUri3),
-          ),
+    val buildTarget =
+      BuildTarget(
+        Label.parse("//target"),
+        emptyList(),
+        emptyList(),
+        listOf(),
+        BuildTargetCapabilities(),
+        emptyList(),
+        listOf(resourceRawUri1, resourceRawUri2, resourceRawUri3),
       )
 
     // when
-    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(resourcesItem)
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
 
     // then
     val expectedJavaResource1 =
@@ -206,14 +178,6 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   @Test
   fun `should return multiple resource roots for resources item with multiple paths`() {
     // given
-    val buildTarget =
-      BuildTarget(
-        Label.parse("//target"),
-        emptyList(),
-        emptyList(),
-        listOf(),
-        BuildTargetCapabilities(),
-      )
     val resourceFilePath = Files.createTempFile(projectBasePath, "resource", "File1.txt")
     resourceFilePath.toFile().deleteOnExit()
     val resourceRawUri = resourceFilePath.toUri().toString()
@@ -221,18 +185,19 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     resourceDirPath.toFile().deleteOnExit()
     val resourceDirRawUri = resourceDirPath.toUri().toString()
 
-    val resourcesItem =
-      BuildTargetAndResourcesItem(
-        buildTarget = buildTarget,
-        resourcesItem =
-          ResourcesItem(
-            buildTarget.id,
-            listOf(resourceRawUri, resourceDirRawUri),
-          ),
+    val buildTarget =
+      BuildTarget(
+        Label.parse("//target"),
+        emptyList(),
+        emptyList(),
+        listOf(),
+        BuildTargetCapabilities(),
+        emptyList(),
+        listOf(resourceRawUri, resourceDirRawUri),
       )
 
     // when
-    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(resourcesItem)
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
 
     // then
     val expectedJavaResource1 =
@@ -252,14 +217,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   @Test
   fun `should return multiple resource roots for multiple resources items`() {
     // given
-    val buildTarget =
-      BuildTarget(
-        Label.parse("//target"),
-        emptyList(),
-        emptyList(),
-        listOf(),
-        BuildTargetCapabilities(),
-      )
+
     val resourceFilePath1 = Files.createTempFile(projectBasePath, "resource", "File1.txt")
     resourceFilePath1.toFile().deleteOnExit()
     val resourceRawUri1 = resourceFilePath1.toUri().toString()
@@ -272,30 +230,19 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     resourceDirPath3.toFile().deleteOnExit()
     val resourceDirRawUri3 = resourceDirPath3.toUri().toString()
 
-    val resourcesItem1 =
-      BuildTargetAndResourcesItem(
-        buildTarget = buildTarget,
-        resourcesItem =
-          ResourcesItem(
-            buildTarget.id,
-            listOf(resourceRawUri1, resourceRawUri2),
-          ),
+    val buildTarget =
+      BuildTarget(
+        Label.parse("//target"),
+        emptyList(),
+        emptyList(),
+        listOf(),
+        BuildTargetCapabilities(),
+        emptyList(),
+        listOf(resourceRawUri1, resourceRawUri2, resourceDirRawUri3),
       )
-
-    val resourcesItem2 =
-      BuildTargetAndResourcesItem(
-        buildTarget = buildTarget,
-        resourcesItem =
-          ResourcesItem(
-            buildTarget.id,
-            listOf(resourceRawUri2, resourceDirRawUri3),
-          ),
-      )
-
-    val resourcesItems = listOf(resourcesItem1, resourcesItem2)
 
     // when
-    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(resourcesItems)
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
 
     // then
     val expectedJavaResource1 =
@@ -325,14 +272,6 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   @Test
   fun `should return resource roots regardless they have resource items in project base path or not`() {
     // given
-    val buildTarget =
-      BuildTarget(
-        Label.parse("//target"),
-        emptyList(),
-        emptyList(),
-        listOf(),
-        BuildTargetCapabilities(),
-      )
 
     val resourceFilePath1 = Files.createTempFile(projectBasePath, "resource1", "File1.txt")
     resourceFilePath1.toFile().deleteOnExit()
@@ -346,29 +285,19 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     resourceDirPath3.toFile().deleteOnExit()
     val resourceDirRawUri3 = resourceDirPath3.toUri().toString()
 
-    val resourcesItem1 =
-      BuildTargetAndResourcesItem(
-        buildTarget = buildTarget,
-        resourcesItem =
-          ResourcesItem(
-            buildTarget.id,
-            listOf(resourceRawUri1, resourceRawUri2),
-          ),
+    val buildTarget =
+      BuildTarget(
+        Label.parse("//target"),
+        emptyList(),
+        emptyList(),
+        listOf(),
+        BuildTargetCapabilities(),
+        emptyList(),
+        listOf(resourceRawUri1, resourceRawUri2, resourceDirRawUri3),
       )
-    val resourcesItem2 =
-      BuildTargetAndResourcesItem(
-        buildTarget = buildTarget,
-        resourcesItem =
-          ResourcesItem(
-            buildTarget.id,
-            listOf(resourceRawUri2, resourceDirRawUri3),
-          ),
-      )
-
-    val resourcesItems = listOf(resourcesItem1, resourcesItem2)
 
     // when
-    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(resourcesItems)
+    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(buildTarget)
 
     // then
     val expectedJavaResource1 =

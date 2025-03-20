@@ -13,8 +13,7 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformer {
   private fun calculateRelativePathsInsideJarToExclude(moduleDetails: Collection<ModuleDetails>): Set<String> =
     moduleDetails
       .asSequence()
-      .flatMap { moduleDetails -> moduleDetails.sources }
-      .flatMap { sourcesItem -> sourcesItem.sources }
+      .flatMap { moduleDetails -> moduleDetails.target.sources }
       .filterNot { sourceRoot -> sourceRoot.generated }
       .flatMap { sourceRoot ->
         val sourceName = sourceRoot.uri.removeTrailingSlash().substringAfterLast('/')

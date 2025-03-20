@@ -12,7 +12,7 @@ class JvmSyncHook : ProjectSyncHook {
       project = environment.project,
       server = environment.server,
       progressReporter = environment.progressReporter,
-      baseTargetInfos = environment.baseTargetInfos,
+      baseTargetInfos = environment.buildTargets,
       syncScope = environment.syncScope,
     )
     val targetListChanged = environment.syncScope is FullProjectSync

@@ -8,7 +8,6 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourcesItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI
@@ -25,7 +24,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
   @Test
   fun `should return no sources roots for no sources items`() {
     // given
-    val emptySources = listOf<BuildTargetAndSourceItem>()
+    val emptySources = listOf<BuildTarget>()
 
     // when
     val javaSources = sourcesItemToJavaSourceRootTransformer.transform(emptySources)
@@ -46,20 +45,14 @@ class SourcesItemToJavaSourceRootTransformerTest {
       )
 
     val buildTargetAndSourceItem =
-      BuildTargetAndSourceItem(
-        buildTarget =
-          BuildTarget(
-            Label.parse("target"),
-            listOf("library"),
-            listOf("java"),
-            emptyList(),
-            BuildTargetCapabilities(),
-          ),
-        sourcesItem =
-          SourcesItem(
-            Label.parse("target"),
-            listOf(sourceItem),
-          ),
+      BuildTarget(
+        Label.parse("target"),
+        listOf("library"),
+        listOf("java"),
+        emptyList(),
+        BuildTargetCapabilities(),
+        listOf(sourceItem),
+        emptyList(),
       )
 
     // when
@@ -89,20 +82,14 @@ class SourcesItemToJavaSourceRootTransformerTest {
       )
 
     val buildTargetAndSourceItem =
-      BuildTargetAndSourceItem(
-        buildTarget =
-          BuildTarget(
-            Label.parse("target"),
-            listOf("test"),
-            listOf("java"),
-            emptyList(),
-            BuildTargetCapabilities(),
-          ),
-        sourcesItem =
-          SourcesItem(
-            Label.parse("target"),
-            listOf(sourceItem),
-          ),
+      BuildTarget(
+        Label.parse("target"),
+        listOf("test"),
+        listOf("java"),
+        emptyList(),
+        BuildTargetCapabilities(),
+        listOf(sourceItem),
+        emptyList(),
       )
 
     // when
@@ -140,20 +127,14 @@ class SourcesItemToJavaSourceRootTransformerTest {
       )
 
     val buildTargetAndSourceItem =
-      BuildTargetAndSourceItem(
-        buildTarget =
-          BuildTarget(
-            Label.parse("target"),
-            listOf("library"),
-            listOf("java"),
-            emptyList(),
-            BuildTargetCapabilities(),
-          ),
-        sourcesItem =
-          SourcesItem(
-            Label.parse("target"),
-            listOf(sourceItem1, sourceItem2),
-          ),
+      BuildTarget(
+        Label.parse("target"),
+        listOf("library"),
+        listOf("java"),
+        emptyList(),
+        BuildTargetCapabilities(),
+        listOf(sourceItem1, sourceItem2),
+        emptyList(),
       )
 
     // when
@@ -198,36 +179,24 @@ class SourcesItemToJavaSourceRootTransformerTest {
       )
 
     val buildTargetAndSourceItem1 =
-      BuildTargetAndSourceItem(
-        buildTarget =
-          BuildTarget(
-            Label.parse("target"),
-            listOf("library"),
-            listOf("java"),
-            emptyList(),
-            BuildTargetCapabilities(),
-          ),
-        sourcesItem =
-          SourcesItem(
-            Label.parse("target"),
-            listOf(sourceItem1),
-          ),
+      BuildTarget(
+        Label.parse("target"),
+        listOf("library"),
+        listOf("java"),
+        emptyList(),
+        BuildTargetCapabilities(),
+        listOf(sourceItem1),
+        emptyList(),
       )
     val buildTargetAndSourceItem2 =
-      BuildTargetAndSourceItem(
-        buildTarget =
-          BuildTarget(
-            Label.parse("target"),
-            listOf("library"),
-            listOf("java"),
-            emptyList(),
-            BuildTargetCapabilities(),
-          ),
-        sourcesItem =
-          SourcesItem(
-            Label.parse("target"),
-            listOf(sourceItem2),
-          ),
+      BuildTarget(
+        Label.parse("target"),
+        listOf("library"),
+        listOf("java"),
+        emptyList(),
+        BuildTargetCapabilities(),
+        listOf(sourceItem2),
+        emptyList(),
       )
 
     val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)
@@ -273,36 +242,25 @@ class SourcesItemToJavaSourceRootTransformerTest {
       )
 
     val buildTargetAndSourceItem1 =
-      BuildTargetAndSourceItem(
-        buildTarget =
-          BuildTarget(
-            Label.parse("target"),
-            listOf("library"),
-            listOf("java"),
-            emptyList(),
-            BuildTargetCapabilities(),
-          ),
-        sourcesItem =
-          SourcesItem(
-            Label.parse("target"),
-            listOf(sourceItem1),
-          ),
+      BuildTarget(
+        Label.parse("target"),
+        listOf("library"),
+        listOf("java"),
+        emptyList(),
+        BuildTargetCapabilities(),
+        listOf(sourceItem1),
+        emptyList(),
       )
+
     val buildTargetAndSourceItem2 =
-      BuildTargetAndSourceItem(
-        buildTarget =
-          BuildTarget(
-            Label.parse("target"),
-            listOf("library"),
-            listOf("java"),
-            emptyList(),
-            BuildTargetCapabilities(),
-          ),
-        sourcesItem =
-          SourcesItem(
-            Label.parse("target"),
-            listOf(sourceItem2),
-          ),
+      BuildTarget(
+        Label.parse("target"),
+        listOf("library"),
+        listOf("java"),
+        emptyList(),
+        BuildTargetCapabilities(),
+        listOf(sourceItem2),
+        emptyList(),
       )
 
     val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)

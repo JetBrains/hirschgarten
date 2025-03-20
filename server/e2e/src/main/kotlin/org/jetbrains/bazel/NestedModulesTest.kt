@@ -10,7 +10,6 @@ import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import java.net.URI
 import kotlin.io.path.Path
@@ -63,18 +62,9 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
             Label.parse("@//:bin_outer"),
           )
 
-        val sourcesResult =
-          session.server
-            .buildTargetSources(
-              SourcesParams(targetsResult.targets.map { it.id }),
-            )
-
-        sourcesResult.items.size shouldBe 4
-
-        sourcesResult.items
-          .flatMap {
-            it.sources
-          }.map { Path(it.uri.removePrefix("file:")).relativeTo(Path(workspaceDir)).toString() } shouldContainExactlyInAnyOrder
+        targetsResult.targets
+          .flatMap { it.sources }
+          .map { Path(it.uri.removePrefix("file:")).relativeTo(Path(workspaceDir)).toString() } shouldContainExactlyInAnyOrder
           listOf(
             "BinOuter.java",
             "LibOuter.java",

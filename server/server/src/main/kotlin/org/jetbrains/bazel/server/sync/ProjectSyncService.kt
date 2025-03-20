@@ -3,7 +3,6 @@ package org.jetbrains.bazel.server.sync
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.AspectSyncProject
-import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
@@ -28,12 +27,8 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
-import org.jetbrains.bsp.protocol.ResourcesParams
-import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
-import org.jetbrains.bsp.protocol.SourcesParams
-import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
@@ -102,22 +97,6 @@ class ProjectSyncService(
   }
 
   fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = WorkspaceBazelBinPathResult(bazelInfo.bazelBin.toString())
-
-  suspend fun buildTargetSources(sourcesParams: SourcesParams): SourcesResult {
-    val project = projectProvider.get()
-    return when (project) {
-      is AspectSyncProject -> bspMapper.sources(project, sourcesParams)
-      is FirstPhaseProject -> firstPhaseTargetToBspMapper.toSourcesResult(project, sourcesParams)
-    }
-  }
-
-  suspend fun buildTargetResources(resourcesParams: ResourcesParams): ResourcesResult {
-    val project = projectProvider.get()
-    return when (project) {
-      is AspectSyncProject -> bspMapper.resources(project, resourcesParams)
-      is FirstPhaseProject -> firstPhaseTargetToBspMapper.toResourcesResult(project, resourcesParams)
-    }
-  }
 
   suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return InverseSourcesResult(emptyList())

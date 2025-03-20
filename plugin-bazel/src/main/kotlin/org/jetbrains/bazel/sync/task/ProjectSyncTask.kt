@@ -179,7 +179,7 @@ class ProjectSyncTask(private val project: Project) {
               diff = diff,
               taskId = PROJECT_SYNC_TASK_ID,
               progressReporter = progressReporter,
-              baseTargetInfos = baseTargetInfos,
+              buildTargets = baseTargetInfos,
               syncScope = syncScope,
             )
 

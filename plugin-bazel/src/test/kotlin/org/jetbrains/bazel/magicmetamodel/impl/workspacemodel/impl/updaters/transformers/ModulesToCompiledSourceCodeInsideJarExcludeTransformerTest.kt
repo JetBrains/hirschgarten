@@ -6,7 +6,6 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourcesItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -106,22 +105,16 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
           listOf("java"),
           emptyList(),
           BuildTargetCapabilities(),
+          sources =
+            sourceRoots.map {
+              SourceItem(
+                uri = it.sourcePath.toUri().toString(),
+                generated = false,
+                jvmPackagePrefix = it.packagePrefix,
+              )
+            },
+          resources = emptyList(),
         ),
-      sources =
-        listOf(
-          SourcesItem(
-            Label.parse("target"),
-            sources =
-              sourceRoots.map {
-                SourceItem(
-                  uri = it.sourcePath.toUri().toString(),
-                  generated = false,
-                  jvmPackagePrefix = it.packagePrefix,
-                )
-              },
-          ),
-        ),
-      resources = emptyList(),
       javacOptions = null,
       scalacOptions = null,
       libraryDependencies = null,

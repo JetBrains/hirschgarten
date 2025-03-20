@@ -11,15 +11,11 @@ import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.GoLibraryItem
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourcesItem
-import org.jetbrains.bsp.protocol.SourcesParams
-import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import java.net.URI
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
   private val testClient = createTestkitClient()
@@ -57,7 +53,6 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
   override fun scenarioSteps(): List<BazelBspTestScenarioStep> =
     listOf(
       workspaceBuildTargets(),
-      sourcesResults(),
       librariesResult(),
     )
 
@@ -68,56 +63,6 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
         expectedWorkspaceBuildTargetsResult(),
       )
     }
-
-  private fun sourcesResults(): BazelBspTestScenarioStep {
-    val targetHello =
-      SourceItem(
-        "file://\$WORKSPACE/example/hello.go",
-        false,
-      )
-    val targetHelloSources =
-      SourcesItem(
-        Label.parse("$targetPrefix//example:hello"),
-        listOf(targetHello),
-      )
-
-    val targetGoDefaultLibrary =
-      SourceItem(
-        "file://\$WORKSPACE/lib/example_lib.go",
-        false,
-      )
-    val targetGoDefaultLibrarySources =
-      SourcesItem(
-        Label.parse("$targetPrefix//lib:go_default_library"),
-        listOf(targetGoDefaultLibrary),
-      )
-
-    val targetGoDefaultTest =
-      SourceItem(
-        "file://\$WORKSPACE/lib/example_test.go",
-        false,
-      )
-    val targetGoDefaultTestSources =
-      SourcesItem(
-        Label.parse("$targetPrefix//lib:go_default_test"),
-        listOf(
-          targetGoDefaultTest,
-        ),
-      )
-
-    val sourcesParams = SourcesParams(expectedTargetIdentifiers())
-    val expectedSourcesResult =
-      SourcesResult(
-        listOf(
-          targetHelloSources,
-          targetGoDefaultLibrarySources,
-          targetGoDefaultTestSources,
-        ),
-      )
-    return BazelBspTestScenarioStep("sources results") {
-      testClient.testSources(30.seconds, sourcesParams, expectedSourcesResult)
-    }
-  }
 
   private fun exampleBuildTarget(): BuildTarget =
     createGoBuildTarget(
@@ -137,6 +82,13 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
           Label.parse("@org_golang_x_text//cases:cases"),
         ),
       importPath = "example/hello",
+      sources =
+        listOf(
+          SourceItem(
+            "file://\$WORKSPACE/example/hello.go",
+            false,
+          ),
+        ),
     )
 
   private fun libBuildTarget(): BuildTarget =
@@ -152,6 +104,13 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
           canDebug = false,
         ),
       importPath = "example.com/lib",
+      sources =
+        listOf(
+          SourceItem(
+            "file://\$WORKSPACE/lib/example_lib.go",
+            false,
+          ),
+        ),
     )
 
   private fun libTestBuildTarget(): BuildTarget =
@@ -167,6 +126,13 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
           canDebug = false,
         ),
       importPath = "testmain",
+      sources =
+        listOf(
+          SourceItem(
+            "file://\$WORKSPACE/lib/example_test.go",
+            false,
+          ),
+        ),
     )
 
   private fun createGoBuildTarget(
@@ -177,6 +143,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     importPath: String,
     sdkHomePath: URI = defaultSdkHomePath,
     dependencies: List<Label> = listOf(),
+    sources: List<SourceItem> = emptyList(),
   ): BuildTarget {
     val goBuildTarget =
       GoBuildTarget(
@@ -195,6 +162,8 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
         displayName = "//$targetDirectory:$targetName",
         baseDirectory = "file://\$WORKSPACE/$targetDirectory/",
         data = goBuildTarget,
+        sources = sources,
+        resources = emptyList(),
       )
     return buildTargetData
   }

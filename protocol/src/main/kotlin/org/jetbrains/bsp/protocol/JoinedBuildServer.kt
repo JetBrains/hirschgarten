@@ -5,13 +5,9 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 interface JoinedBuildServer {
   suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult
 
-  suspend fun buildTargetSources(params: SourcesParams): SourcesResult
-
   suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult
 
   suspend fun buildTargetDependencySources(params: DependencySourcesParams): DependencySourcesResult
-
-  suspend fun buildTargetResources(params: ResourcesParams): ResourcesResult
 
   suspend fun buildTargetCompile(params: CompileParams): CompileResult
 

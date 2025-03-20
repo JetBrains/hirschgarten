@@ -6,9 +6,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourcesItem
-import org.jetbrains.bsp.protocol.SourcesParams
-import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -52,9 +49,6 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
         assertFalse(javaBinaryJar.exists())
         assertFalse(kotlinLibraryJar.exists())
         assertFalse(kotlinBinaryJar.exists())
-
-        val sourcesResult = session.server.buildTargetSources(SourcesParams(expectedTargetIdentifiers()))
-        testClient.assertJsonEquals(expectedSourcesResult(), sourcesResult)
       }
     }
 
@@ -72,6 +66,8 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
             canRun = false,
             canDebug = false,
           ),
+        sources = listOf(SourceItem("file://\$WORKSPACE/src/Lib.java", false)),
+        resources = emptyList(),
       )
 
     val srcJavaBinaryTarget =
@@ -87,6 +83,8 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
             canRun = true,
             canDebug = false,
           ),
+        sources = listOf(SourceItem("file://\$WORKSPACE/src/Main.java", false)),
+        resources = emptyList(),
       )
 
     val srcKotlinLibTarget =
@@ -102,6 +100,8 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
             canRun = false,
             canDebug = false,
           ),
+        sources = listOf(SourceItem("file://\$WORKSPACE/src/Lib.kt", false)),
+        resources = emptyList(),
       )
 
     val srcKotlinBinaryTarget =
@@ -117,34 +117,10 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
             canRun = true,
             canDebug = false,
           ),
+        sources = listOf(SourceItem("file://\$WORKSPACE/src/Main.kt", false)),
+        resources = emptyList(),
       )
 
     return WorkspaceBuildTargetsResult(listOf(srcJavaLibTarget, srcJavaBinaryTarget, srcKotlinLibTarget, srcKotlinBinaryTarget))
-  }
-
-  fun expectedSourcesResult(): SourcesResult {
-    val srcJavaLibSource =
-      SourcesItem(
-        Label.parse("//src:java-lib"),
-        listOf(SourceItem("file://\$WORKSPACE/src/Lib.java", false)),
-      )
-    val srcJavaBinarySource =
-      SourcesItem(
-        Label.parse("//src:java-binary"),
-        listOf(SourceItem("file://\$WORKSPACE/src/Main.java", false)),
-      )
-    val srcKotlinLibSource =
-      SourcesItem(
-        Label.parse("//src:kt-lib"),
-        listOf(SourceItem("file://\$WORKSPACE/src/Lib.kt", false)),
-      )
-
-    val srcKotlinBinarySource =
-      SourcesItem(
-        Label.parse("//src:kt-binary"),
-        listOf(SourceItem("file://\$WORKSPACE/src/Main.kt", false)),
-      )
-
-    return SourcesResult(listOf(srcJavaLibSource, srcJavaBinarySource, srcKotlinLibSource, srcKotlinBinarySource))
   }
 }
