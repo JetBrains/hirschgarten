@@ -12,7 +12,7 @@ import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.server.tasks.BspServerSingleTargetTask
+import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.server.tasks.BspTaskStatusLogger
 import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
@@ -26,13 +26,13 @@ import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.cancellation.CancellationException
 
 class MobileInstallTargetTask(
-  project: Project,
+  private val project: Project,
   private val deviceFuture: ListenableFuture<IDevice>,
   private val startType: MobileInstallStartType,
-) : BspServerSingleTargetTask<MobileInstallResult>("mobile install target", project) {
+) {
   private val log = logger<MobileInstallTargetTask>()
 
-  override suspend fun executeWithServer(server: JoinedBuildServer, targetId: Label): MobileInstallResult {
+  suspend fun executeWithServer(server: JoinedBuildServer, targetId: Label): MobileInstallResult {
     val bspBuildConsole = ConsoleService.getInstance(project).buildConsole
     val originId = "mobile-install-" + UUID.randomUUID().toString()
     val cancelOn = CompletableFuture<Void>()
@@ -113,7 +113,7 @@ suspend fun runMobileInstallTargetTask(
   try {
     saveAllFiles()
     withBackgroundProgress(project, BazelPluginBundle.message("console.task.mobile.install.in.progress")) {
-      MobileInstallTargetTask(project, deviceFuture, startType).connectAndExecute(targetId)
+      project.connection.runWithServer { MobileInstallTargetTask(project, deviceFuture, startType).executeWithServer(it, targetId) }
     }
   } catch (e: Exception) {
     when {

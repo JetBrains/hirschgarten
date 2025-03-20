@@ -40,7 +40,6 @@ import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.server.client.IMPORT_SUBTASK_ID
-import org.jetbrains.bazel.server.tasks.BspServerTask
 import org.jetbrains.bazel.sync.BaseTargetInfo
 import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.scope.FullProjectSync
@@ -76,10 +75,10 @@ import java.util.concurrent.ExecutionException
 import kotlin.io.path.toPath
 
 class CollectProjectDetailsTask(
-  project: Project,
+  private val project: Project,
   private val taskId: String,
   private val diff: MutableEntityStorage,
-) : BspServerTask<ProjectDetails>("collect project details", project) {
+) {
   private var uniqueJavaHomes: Set<String>? = null
 
   private lateinit var javacOptions: Map<String, String>

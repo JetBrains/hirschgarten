@@ -2,11 +2,13 @@ package org.jetbrains.bazel.runnerAction
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.server.tasks.JvmTestEnvironmentTask
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
+import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 
-public class TestWithLocalJvmRunnerAction(
+class TestWithLocalJvmRunnerAction(
   targetInfo: BuildTargetInfo,
   text: (() -> String)? = null,
   isDebugMode: Boolean = false,
@@ -30,6 +32,13 @@ public class TestWithLocalJvmRunnerAction(
     },
     isDebugMode = isDebugMode,
   ) {
-  override suspend fun getEnvironment(project: Project): JvmEnvironmentItem? =
-    JvmTestEnvironmentTask(project).connectAndExecute(targetInfo.id)?.items?.first()
+  override suspend fun getEnvironment(project: Project): JvmEnvironmentItem? {
+    val params = createJvmTestEnvironmentParams(targetInfo.id)
+    return project.connection
+      .runWithServer { it.buildTargetJvmTestEnvironment(params) }
+      .items
+      .firstOrNull()
+  }
+
+  private fun createJvmTestEnvironmentParams(targetId: Label) = JvmTestEnvironmentParams(listOf(targetId))
 }
