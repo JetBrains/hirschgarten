@@ -34,7 +34,7 @@ import java.net.URI
 import kotlin.io.path.toPath
 
 private data class GoTestSet(
-  val baseTargetInfos: WorkspaceBuildTargetsResult,
+  val buildTargets: WorkspaceBuildTargetsResult,
   val expectedVgoStandaloneEntities: List<ExpectedVgoStandaloneModuleEntity>,
   val expectedVgoDependencyEntities: List<ExpectedVgoDependencyEntity>,
 )
@@ -90,7 +90,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
-            buildTargets = goTestTargets.baseTargetInfos,
+            buildTargets = goTestTargets.buildTargets,
           )
         hook.onSync(environment)
       }
@@ -125,7 +125,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
-            buildTargets = goTestTargets.baseTargetInfos,
+            buildTargets = goTestTargets.buildTargets,
           )
         hook.onSync(environment)
       }
@@ -165,7 +165,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
 
     val targetInfos = listOf(goLibrary1, goLibrary2, goApplication)
     val targets = targetInfos.map { generateTarget(it) }
-    val baseTargetInfos = WorkspaceBuildTargetsResult(targets, false)
+    val buildTargets = WorkspaceBuildTargetsResult(targets, false)
     val virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
 
     val expectedRoot = URI.create("file:///targets_base_dir").toPath().toVirtualFileUrl(virtualFileUrlManager)
@@ -176,7 +176,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
         generateVgoDependencyResult(goLibrary1, goApplication, expectedRoot, nameProvider),
         generateVgoDependencyResult(goLibrary2, goApplication, expectedRoot, nameProvider),
       )
-    return GoTestSet(baseTargetInfos, expectedVgoStandaloneEntities, expectedVgoDependencyEntities)
+    return GoTestSet(buildTargets, expectedVgoStandaloneEntities, expectedVgoDependencyEntities)
   }
 
   private fun generateTarget(info: GeneratedTargetInfo): BuildTarget =

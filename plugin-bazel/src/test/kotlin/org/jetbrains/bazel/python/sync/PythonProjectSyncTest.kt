@@ -40,7 +40,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 private data class PythonTestSet(
-  val baseTargetInfos: WorkspaceBuildTargetsResult,
+  val buildTargets: WorkspaceBuildTargetsResult,
   val expectedModuleEntities: List<ExpectedModuleEntity>,
   val expectedSourceRootEntities: List<ExpectedSourceRootEntity>,
 )
@@ -85,7 +85,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
-            buildTargets = pythonTestTargets.baseTargetInfos,
+            buildTargets = pythonTestTargets.buildTargets,
           )
         hook.onSync(environment)
       }
@@ -122,7 +122,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
-            buildTargets = pythonTestTargets.baseTargetInfos,
+            buildTargets = pythonTestTargets.buildTargets,
           )
         hook.onSync(environment)
       }

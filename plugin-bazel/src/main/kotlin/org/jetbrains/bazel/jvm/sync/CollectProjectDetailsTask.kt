@@ -91,11 +91,11 @@ class CollectProjectDetailsTask(
     server: JoinedBuildServer,
     syncScope: ProjectSyncScope,
     progressReporter: SequentialProgressReporter,
-    baseTargetInfos: WorkspaceBuildTargetsResult,
+    buildTargets: WorkspaceBuildTargetsResult,
   ) {
     val projectDetails =
       progressReporter.sizedStep(workSize = 50, text = BazelPluginBundle.message("progress.bar.collect.project.details")) {
-        collectModel(project, server, baseTargetInfos)
+        collectModel(project, server, buildTargets)
       }
 
     progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.bar.calculate.jdk.infos")) {
@@ -130,7 +130,7 @@ class CollectProjectDetailsTask(
   private suspend fun collectModel(
     project: Project,
     server: JoinedBuildServer,
-    baseTargetInfos: WorkspaceBuildTargetsResult,
+    buildTargets: WorkspaceBuildTargetsResult,
   ): ProjectDetails =
     try {
       project.syncConsole.startSubtask(
@@ -143,7 +143,7 @@ class CollectProjectDetailsTask(
         calculateProjectDetailsWithCapabilities(
           project = project,
           server = server,
-          baseTargetInfos = baseTargetInfos,
+          buildTargets = buildTargets,
         )
 
       project.syncConsole.finishSubtask(IMPORT_SUBTASK_ID)
@@ -484,12 +484,12 @@ class CollectProjectDetailsTask(
 suspend fun calculateProjectDetailsWithCapabilities(
   project: Project,
   server: JoinedBuildServer,
-  baseTargetInfos: WorkspaceBuildTargetsResult,
+  buildTargets: WorkspaceBuildTargetsResult,
 ): ProjectDetails =
   coroutineScope {
     try {
-      val javaTargetIds = baseTargetInfos.targets.calculateJavaTargetIds()
-      val scalaTargetIds = baseTargetInfos.targets.calculateScalaTargetIds()
+      val javaTargetIds = buildTargets.targets.calculateJavaTargetIds()
+      val scalaTargetIds = buildTargets.targets.calculateScalaTargetIds()
       val libraries: WorkspaceLibrariesResult =
         query("workspace/libraries") {
           server.workspaceLibraries()
@@ -532,8 +532,8 @@ suspend fun calculateProjectDetailsWithCapabilities(
         }
 
       ProjectDetails(
-        targetIds = baseTargetInfos.targets.map { it.id },
-        targets = baseTargetInfos.targets.toSet(),
+        targetIds = buildTargets.targets.map { it.id },
+        targets = buildTargets.targets.toSet(),
         javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
         // TODO: Son
         scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
