@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.jvm.sync
 
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.codeInsight.multiverse.CodeInsightContextManager
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.thisLogger
@@ -372,7 +373,7 @@ class CollectProjectDetailsTask(
 
     VirtualFileManager.getInstance().asyncRefresh()
     project.refreshKotlinHighlighting()
-    checkOverlappingSources()
+    checkSharedSources()
   }
 
   private suspend fun addBspFetchedJdks() =
@@ -449,7 +450,8 @@ class CollectProjectDetailsTask(
       }
     }
 
-  private fun checkOverlappingSources() {
+  private fun checkSharedSources() {
+    if (CodeInsightContextManager.getInstance(project).isSharedSourceSupportEnabled) return
     val fileToTarget = project.targetUtils.fileToTarget
     for ((file, targets) in fileToTarget) {
       if (targets.size <= 1) continue

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
+import com.intellij.codeInsight.multiverse.CodeInsightContextManager
 import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
@@ -128,7 +129,11 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
 
     val originalSourceRoots: Set<Path> = sourceRoots.map { it.sourcePath }.toSet()
     if (originalSourceRoots.any { !it.isUnder(mergedSourceRootPaths) }) return null
-    if (originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }) return null
+    if (!CodeInsightContextManager.getInstance(project).isSharedSourceSupportEnabled &&
+      originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }
+    ) {
+      return null
+    }
 
     for (mergedSourceRoot in mergedSourceRootPaths) {
       Files.walk(mergedSourceRoot).use { children ->
