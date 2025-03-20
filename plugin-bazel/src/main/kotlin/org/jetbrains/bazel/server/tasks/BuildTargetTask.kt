@@ -4,7 +4,6 @@ import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.ide.progress.withBackgroundProgress
@@ -17,6 +16,7 @@ import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
@@ -30,10 +30,8 @@ import org.jetbrains.bsp.protocol.StatusCode
 import java.util.UUID
 
 @ApiStatus.Internal
-public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<CompileResult>("build targets", project) {
-  private val log = logger<BuildTargetTask>()
-
-  protected override suspend fun executeWithServer(server: JoinedBuildServer, targetsIds: List<Label>): CompileResult =
+class BuildTargetTask(private val project: Project) {
+  suspend fun execute(server: JoinedBuildServer, targetsIds: List<Label>): CompileResult =
     coroutineScope {
       val bspBuildConsole = ConsoleService.getInstance(project).buildConsole
       val originId = "build-" + UUID.randomUUID().toString()
@@ -147,10 +145,10 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
     CompileParams(targetIds, originId = originId, arguments = listOf("--keep_going"))
 }
 
-public suspend fun runBuildTargetTask(targetIds: List<Label>, project: Project): CompileResult? {
+suspend fun runBuildTargetTask(targetIds: List<Label>, project: Project): CompileResult? {
   saveAllFiles()
   return withBackgroundProgress(project, "Building target(s)...") {
-    BuildTargetTask(project).connectAndExecute(targetIds)
+    project.connection.runWithServer { BuildTargetTask(project).execute(it, targetIds) }
   }.also {
     VirtualFileManager.getInstance().asyncRefresh()
   }

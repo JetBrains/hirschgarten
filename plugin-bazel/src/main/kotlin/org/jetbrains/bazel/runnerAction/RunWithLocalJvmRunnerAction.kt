@@ -2,9 +2,11 @@ package org.jetbrains.bazel.runnerAction
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.server.tasks.JvmRunEnvironmentTask
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
+import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 
 class RunWithLocalJvmRunnerAction(
   targetInfo: BuildTargetInfo,
@@ -30,6 +32,13 @@ class RunWithLocalJvmRunnerAction(
     },
     isDebugMode = isDebugMode,
   ) {
-  override suspend fun getEnvironment(project: Project): JvmEnvironmentItem? =
-    JvmRunEnvironmentTask(project).connectAndExecute(targetInfo.id)?.items?.first()
+  override suspend fun getEnvironment(project: Project): JvmEnvironmentItem? {
+    val params = createJvmRunEnvironmentParams(targetInfo.id)
+    return project.connection
+      .runWithServer { it.buildTargetJvmRunEnvironment(params) }
+      .items
+      .firstOrNull()
+  }
+
+  private fun createJvmRunEnvironmentParams(targetId: Label) = JvmRunEnvironmentParams(listOf(targetId))
 }
