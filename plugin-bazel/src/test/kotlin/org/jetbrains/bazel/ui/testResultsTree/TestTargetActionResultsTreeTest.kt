@@ -20,6 +20,11 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
+/**
+ * ```sh
+ * bazel test //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testResultsTree --jvmopt="-Dbazel.ide.starter.test.cache.directory=$HOME/IdeaProjects/hirschgarten" --sandbox_writable_path=/ --action_env=PATH --java_debug --test_arg=--wrapper_script_flag=--debug=8000
+ * ```
+ */
 class TestTargetActionResultsTreeTest : IdeStarterBaseProjectTest() {
   override val projectInfo: ProjectInfoSpec
     get() =

@@ -24,9 +24,8 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.action.SuspendableAction
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.config.BspPluginIcons
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.ui.console.ids.BASE_PROJECT_SYNC_SUBTASK_ID
@@ -70,7 +69,7 @@ abstract class TaskConsole(
       tasksInProgress.add(taskId)
       doStartTask(
         taskId,
-        BspPluginBundle.message("console.tasks.title", BazelPluginConstants.BAZEL_DISPLAY_NAME, title),
+        BazelPluginBundle.message("console.tasks.title", BazelPluginConstants.BAZEL_DISPLAY_NAME, title),
         message,
         cancelAction,
         redoAction,
@@ -380,7 +379,7 @@ abstract class TaskConsole(
   private fun maybeGetRootTask(taskId: Any): Any? = if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.rootTask
 
   private inner class CancelAction(private val doCancelAction: () -> Unit, private val taskId: Any) :
-    DumbAwareAction({ "Stop" }, BspPluginIcons.disconnect) {
+    DumbAwareAction({ "Stop" }, AllIcons.Actions.Suspend) {
     @Volatile
     private var cancelActionActivated = false
 
@@ -418,7 +417,7 @@ class SyncTaskConsole(
   project: Project,
 ) : TaskConsole(taskView, basePath, project) {
   override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
-    object : SuspendableAction({ BspPluginBundle.message("resync.action.text") }, BspPluginIcons.reload) {
+    object : SuspendableAction({ BazelPluginBundle.message("resync.action.text") }, AllIcons.Actions.Refresh) {
       @Volatile
       private var redoActionActivated = false
 
@@ -439,7 +438,7 @@ class BuildTaskConsole(
   project: Project,
 ) : TaskConsole(taskView, basePath, project) {
   override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
-    object : SuspendableAction({ BspPluginBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
+    object : SuspendableAction({ BazelPluginBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
       @Volatile
       private var redoActionActivated = false
 

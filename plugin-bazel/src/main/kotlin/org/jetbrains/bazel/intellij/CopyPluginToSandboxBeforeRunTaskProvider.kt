@@ -9,7 +9,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.util.Key
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.getModule
@@ -30,7 +30,7 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
 
   override fun getId(): Key<Task> = PROVIDER_ID
 
-  override fun getName(): String = BspPluginBundle.message("console.task.copy.plugin.to.sandbox")
+  override fun getName(): String = BazelPluginBundle.message("console.task.copy.plugin.to.sandbox")
 
   override fun createTask(configuration: RunConfiguration): Task? =
     if (configuration is BazelRunConfiguration) {
@@ -69,12 +69,12 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
     }
 
     if (pluginJars.isEmpty()) {
-      showError(BspPluginBundle.message("console.task.exception.no.plugin.jars"))
+      showError(BazelPluginBundle.message("console.task.exception.no.plugin.jars"))
       return false
     }
     for (pluginJar in pluginJars) {
       if (!pluginJar.exists()) {
-        showError(BspPluginBundle.message("console.task.exception.plugin.jar.not.found", pluginJar))
+        showError(BazelPluginBundle.message("console.task.exception.plugin.jar.not.found", pluginJar))
         return false
       }
       try {
@@ -82,7 +82,7 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
         pluginJar.copyTo(pluginSandbox.resolve(pluginJar.name), overwrite = true)
       } catch (e: IOException) {
         val errorMessage =
-          BspPluginBundle.message(
+          BazelPluginBundle.message(
             "console.task.exception.plugin.jar.could.not.copy",
             pluginJar,
             pluginSandbox,
@@ -98,7 +98,7 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
 
   // Throwing an ExecutionException doesn't work from before run tasks, so we have to show the notification ourselves.
   private fun showError(message: String) {
-    val title = BspPluginBundle.message("console.task.exception.copy.plugin.to.sandbox")
+    val title = BazelPluginBundle.message("console.task.exception.copy.plugin.to.sandbox")
     BazelBalloonNotifier.warn(title, message)
   }
 }

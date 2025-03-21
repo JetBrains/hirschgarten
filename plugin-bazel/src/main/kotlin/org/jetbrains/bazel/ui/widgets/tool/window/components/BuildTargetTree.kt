@@ -4,7 +4,7 @@ import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.PlatformIcons
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.extensionPoints.BazelBuildTargetClassifier
 import org.jetbrains.bazel.extensionPoints.DefaultBuildTargetClassifierExtension
 import org.jetbrains.bazel.label.Label
@@ -332,7 +332,7 @@ private class TargetTreeCellRenderer(
 
       else ->
         JBLabel(
-          BspPluginBundle.message("widget.no.renderable.component"),
+          BazelPluginBundle.message("widget.no.renderable.component"),
           PlatformIcons.ERROR_INTRODUCTION_ICON,
           SwingConstants.LEFT,
         )

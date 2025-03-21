@@ -7,11 +7,11 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.actionSystem.Toggleable
 import com.intellij.openapi.project.DumbAware
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 
 class FilterActionGroup(private val targetFilter: TargetFilter) :
   DefaultActionGroup(
-    BspPluginBundle.message("widget.filter.action.group"),
+    BazelPluginBundle.message("widget.filter.action.group"),
     null,
     AllIcons.General.Filter,
   ),
@@ -21,15 +21,15 @@ class FilterActionGroup(private val targetFilter: TargetFilter) :
     this.isPopup = true
     addFilterChangeAction(
       TargetFilter.FILTER.OFF,
-      BspPluginBundle.message("widget.filter.turn.off"),
+      BazelPluginBundle.message("widget.filter.turn.off"),
     )
     addFilterChangeAction(
       TargetFilter.FILTER.CAN_RUN,
-      BspPluginBundle.message("widget.filter.can.run"),
+      BazelPluginBundle.message("widget.filter.can.run"),
     )
     addFilterChangeAction(
       TargetFilter.FILTER.CAN_TEST,
-      BspPluginBundle.message("widget.filter.can.test"),
+      BazelPluginBundle.message("widget.filter.can.test"),
     )
   }
 

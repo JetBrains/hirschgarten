@@ -34,6 +34,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
             bazelBinary = Path(bazelBinary),
             targets = listOf("@//java_targets:java_library"),
             directories = listOf(workspaceDir),
+            enabledRules = listOf("io_bazel_rules_scala", "rules_java", "rules_jvm"),
           ),
       ),
     )

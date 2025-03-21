@@ -131,6 +131,7 @@ class ExecuteService(
           params.environmentVariables?.let { environment.putAll(it) }
           params.workingDirectory?.let { workingDirectory = Path(it) }
           params.arguments?.let { programArguments.addAll(it) }
+          params.additionalBazelParams?.let { additionalBazelOptions.addAll(it.split(" ")) }
         }
       }
     val bazelProcessResult =

@@ -13,7 +13,7 @@ import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.EditorNotifications
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
@@ -79,9 +79,9 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotification
   private inner class BuildAndResyncOnUnresolvedImportEditorPanel(project: Project, fileEditor: FileEditor) :
     EditorNotificationPanel(fileEditor, Status.Warning) {
     init {
-      text = BspPluginBundle.message("notification.unresolved.imports")
+      text = BazelPluginBundle.message("notification.unresolved.imports")
 
-      createActionLabel(BspPluginBundle.message("build.and.resync.action.text")) {
+      createActionLabel(BazelPluginBundle.message("build.and.resync.action.text")) {
         BazelCoroutineService.getInstance(project).start {
           ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = true)
         }

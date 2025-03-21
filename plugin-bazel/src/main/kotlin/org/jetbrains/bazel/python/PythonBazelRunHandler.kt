@@ -5,9 +5,9 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import org.jetbrains.bazel.run.BazelRunHandler
-import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import java.util.UUID
@@ -26,7 +26,7 @@ class PythonBazelRunHandler : BazelRunHandler {
     }
   }
 
-  class Provider : RunHandlerProvider {
+  class Provider : GooglePluginAwareRunHandlerProvider {
     override val id: String = "PythonBazelRunHandlerProvider"
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = PythonBazelRunHandler()
@@ -37,5 +37,8 @@ class PythonBazelRunHandler : BazelRunHandler {
       }
 
     override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)
+
+    override val googleHandlerId: String = "BlazePyRunConfigurationHandlerProvider"
+    override val isTestHandler: Boolean = false
   }
 }

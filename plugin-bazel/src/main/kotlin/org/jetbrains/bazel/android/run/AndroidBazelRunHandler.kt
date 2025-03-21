@@ -11,7 +11,7 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
@@ -41,9 +41,9 @@ class AndroidBazelRunHandler(private val configuration: BazelRunConfiguration) :
 
     val deviceFutures = deployTarget.getDevices(configuration.project).get()
     if (deviceFutures.isEmpty()) {
-      throw ExecutionException(BspPluginBundle.message("console.task.mobile.no.target.device"))
+      throw ExecutionException(BazelPluginBundle.message("console.task.mobile.no.target.device"))
     } else if (deviceFutures.size > 1) {
-      throw ExecutionException(BspPluginBundle.message("console.task.mobile.cannot.run.on.multiple.devices"))
+      throw ExecutionException(BazelPluginBundle.message("console.task.mobile.cannot.run.on.multiple.devices"))
     }
 
     // Store the device inside ExecutionEnvironment, so that MobileInstallBeforeRunTaskProvider can access it.

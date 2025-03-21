@@ -18,8 +18,6 @@ import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.junit.jupiter.api.Test
 
 /**
- * TODO: this test fails locally but passes on CI, because we invoke Buildifier after adding a dependency, but it's not installed on CI.
- *  So the expected test outputs differ on CI (not formatted) and locally (formatted).
  * ```sh
  * bazel test //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/flow/modify:BazelProjectModelModifierTest --jvmopt="-Dbazel.ide.starter.test.cache.directory=$HOME/IdeaProjects/hirschgarten" --sandbox_writable_path=/ --action_env=PATH --java_debug --test_arg=--wrapper_script_flag=--debug=8000
  * ```
@@ -29,7 +27,7 @@ class BazelProjectModelModifierTest : IdeStarterBaseProjectTest() {
     get() =
       GitProjectInfo(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "d968379e085e33c9a869a2382e0d50069134413d",
+        commitHash = "dfdeecb49806f57818c74bf13b3b671349568865",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("bazelProjectModelModifierTest") },
         isReusable = false,

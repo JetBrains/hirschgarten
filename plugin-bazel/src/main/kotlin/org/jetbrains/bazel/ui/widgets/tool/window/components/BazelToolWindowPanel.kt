@@ -20,7 +20,6 @@ import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.services.invalidTargets
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.target.TargetUtils
@@ -96,7 +95,7 @@ class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, t
 
 private class BazelToolWindowSettingsAction(private val settingsDisplayName: String) :
   SuspendableAction(
-    { BspPluginBundle.message("widget.settings.popup.message", settingsDisplayName) },
+    { BazelPluginBundle.message("widget.settings.popup.message", settingsDisplayName) },
     AllIcons.General.Settings,
   ) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
@@ -111,7 +110,7 @@ private class BazelToolWindowSettingsAction(private val settingsDisplayName: Str
 
 private class BazelToolWindowConfigFileOpenAction :
   SuspendableAction(
-    { BspPluginBundle.message("widget.config.file.popup.message", BazelPluginBundle.message("tool.window.generic.config.file")) },
+    { BazelPluginBundle.message("widget.config.file.popup.message", BazelPluginBundle.message("tool.window.generic.config.file")) },
     AllIcons.FileTypes.Config,
   ) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {

@@ -3,9 +3,8 @@ package org.jetbrains.bazel.runnerAction
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationType
+import com.intellij.execution.configurations.runConfigurationType
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
@@ -18,12 +17,12 @@ abstract class BazelRunnerAction(
   isDebugAction: Boolean = false,
   isCoverageAction: Boolean = false,
 ) : BaseRunnerAction(targetInfos, { text(false) }, icon, isDebugAction, isCoverageAction) {
-  fun getConfigurationType(project: Project): ConfigurationType = BazelRunConfigurationType()
+  private fun getConfigurationType(): ConfigurationType = runConfigurationType<BazelRunConfigurationType>()
 
-  open fun RunnerAndConfigurationSettings.customizeRunConfiguration() {}
+  protected open fun RunnerAndConfigurationSettings.customizeRunConfiguration() {}
 
   override suspend fun getRunnerSettings(project: Project, buildTargetInfos: List<BuildTargetInfo>): RunnerAndConfigurationSettings? {
-    val factory = getConfigurationType(project).configurationFactories.first()
+    val factory = getConfigurationType().configurationFactories.first()
     val name = text(true)
     val settings =
       RunManager.getInstance(project).createConfiguration(name, factory)
@@ -32,15 +31,5 @@ abstract class BazelRunnerAction(
 
     settings.customizeRunConfiguration()
     return settings
-  }
-
-  private fun calculateConfigurationName(project: Project, targetInfo: List<BuildTargetInfo>): String {
-    val targetDisplayName = targetInfo.joinToString(";") { it.id.toShortString() }
-    val actionNameKey =
-      when {
-        this is TestTargetAction -> "target.test.config.name"
-        else -> "target.run.config.name"
-      }
-    return BspPluginBundle.message(actionNameKey, targetDisplayName, BazelPluginConstants.BAZEL_DISPLAY_NAME)
   }
 }

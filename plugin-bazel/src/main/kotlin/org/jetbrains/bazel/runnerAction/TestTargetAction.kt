@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.runnerAction
 
 import com.intellij.execution.RunnerAndConfigurationSettings
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasTestFilter
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
@@ -19,13 +19,13 @@ class TestTargetAction(
       if (text != null) {
         text(includeTargetNameInTextParam || includeTargetNameInText)
       } else if (isDebugAction) {
-        BspPluginBundle.message(
+        BazelPluginBundle.message(
           "target.debug.test.action.text",
           if (includeTargetNameInTextParam || includeTargetNameInText) targetInfos.joinToString(";") { it.buildTargetName } else "",
           BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       } else {
-        BspPluginBundle.message(
+        BazelPluginBundle.message(
           "target.test.action.text",
           if (includeTargetNameInTextParam || includeTargetNameInText) targetInfos.joinToString(";") { it.buildTargetName } else "",
           BazelPluginConstants.BAZEL_DISPLAY_NAME,

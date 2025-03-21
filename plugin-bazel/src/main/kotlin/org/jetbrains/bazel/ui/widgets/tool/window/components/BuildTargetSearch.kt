@@ -6,7 +6,7 @@ import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.search.LazySearchDisplay
@@ -35,7 +35,7 @@ class BuildTargetSearch(
   private var displayedSearchPanel: JPanel? = null
   private val noResultsInfoComponent =
     JBLabel(
-      BspPluginBundle.message("widget.target.search.no.results"),
+      BazelPluginBundle.message("widget.target.search.no.results"),
       SwingConstants.CENTER,
     )
 

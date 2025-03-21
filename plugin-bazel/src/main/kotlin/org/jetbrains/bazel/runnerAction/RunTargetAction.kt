@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.runnerAction
 
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
 class RunTargetAction(
@@ -12,13 +12,13 @@ class RunTargetAction(
     targetInfos = listOf(targetInfo),
     text = { includeTargetNameInTextParam ->
       if (isDebugAction) {
-        BspPluginBundle.message(
+        BazelPluginBundle.message(
           "target.debug.run.action.text",
           if (includeTargetNameInTextParam || includeTargetNameInText) targetInfo.buildTargetName else "",
           BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       } else {
-        BspPluginBundle.message(
+        BazelPluginBundle.message(
           "target.run.action.text",
           if (includeTargetNameInTextParam || includeTargetNameInText) targetInfo.buildTargetName else "",
           BazelPluginConstants.BAZEL_DISPLAY_NAME,

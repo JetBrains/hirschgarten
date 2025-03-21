@@ -36,7 +36,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         javacOptions = emptyList(),
         libraries = null,
         scalacOptions = emptyList(),
-        nonModuleTargets = emptyList(),
       )
 
     // when
@@ -97,7 +96,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         javacOptions = listOf(javacOptions),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        nonModuleTargets = emptyList(),
       )
 
     // when
@@ -224,7 +222,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         javacOptions = listOf(target3JavacOptionsItem, target1JavacOptionsItem),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        nonModuleTargets = emptyList(),
       )
 
     // when

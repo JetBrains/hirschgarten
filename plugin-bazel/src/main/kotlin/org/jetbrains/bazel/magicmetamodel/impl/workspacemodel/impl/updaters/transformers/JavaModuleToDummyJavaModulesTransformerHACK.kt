@@ -9,6 +9,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.BazelJavaSourceRootEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
+import org.jetbrains.bazel.sdkcompat.isSharedSourceSupportEnabled
 import org.jetbrains.bazel.utils.allAncestorsSequence
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
@@ -25,6 +26,8 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.notExists
 import kotlin.io.path.pathString
+
+private val RELEVANT_EXTENSIONS = listOf("java", "kt", "scala")
 
 /**
  * This is a HACK for letting single source Java files to be resolved normally
@@ -45,14 +48,19 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
     if (!BazelFeatureFlags.addDummyModules && !BazelFeatureFlags.mergeSourceRoots) return DummyModulesToAdd(emptyList())
 
     val buildFileDirectory = inputEntity.baseDirContentRoot?.path
-    val mergedSourceRootVotes =
-      calculateSourceRootsForParentDirs(inputEntity.sourceRoots)
-        .restoreSourceRootFromPackagePrefix(limit = buildFileDirectory)
+    val (relevantSourceRoots, irrelevantSourceRoots) = inputEntity.sourceRoots.partition { it.isRelevant() }
+    val sourceRootsForParentDirs = calculateSourceRootsForParentDirs(relevantSourceRoots)
+    val mergedSourceRootVotes = sourceRootsForParentDirs.restoreSourceRootFromPackagePrefix(limit = buildFileDirectory)
     val dummyJavaResourcePath = calculateDummyResourceRootPath(inputEntity, mergedSourceRootVotes.keys.toList(), projectBasePath, project)
 
     if (BazelFeatureFlags.mergeSourceRoots) {
-      tryMergeSources(inputEntity.sourceRoots, mergedSourceRootVotes, dummyJavaResourcePath)?.let { mergedSourceRoots ->
-        return MergedSourceRoots(mergedSourceRoots)
+      tryMergeSources(
+        relevantSourceRoots,
+        mergedSourceRootVotes,
+        sourceRootsForParentDirs,
+        dummyJavaResourcePath,
+      )?.let { mergedSourceRoots ->
+        return MergedSourceRoots(mergedSourceRoots + irrelevantSourceRoots)
       }
     }
     return if (!BazelFeatureFlags.addDummyModules) {
@@ -88,13 +96,27 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
     }
   }
 
+  private fun JavaSourceRoot.isRelevant(): Boolean = this.sourcePath.extension in RELEVANT_EXTENSIONS || this.sourcePath.isDirectory()
+
   private fun tryMergeSources(
     sourceRoots: List<JavaSourceRoot>,
     mergeSourceRootVotes: Map<JavaSourceRoot, Int>,
+    sourceRootsForParentDirsVotes: Map<JavaSourceRoot, Int>,
     dummyJavaResourcePath: Path?,
   ): List<JavaSourceRoot>? {
     if (dummyJavaResourcePath != null) return null
 
+    val originalSourceRoots: Set<Path> = sourceRoots.map { it.sourcePath }.toSet()
+    if (!project.isSharedSourceSupportEnabled &&
+      originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }
+    ) {
+      return null
+    }
+
+    return tryMergeSources(originalSourceRoots, mergeSourceRootVotes) ?: tryMergeSources(originalSourceRoots, sourceRootsForParentDirsVotes)
+  }
+
+  private fun tryMergeSources(originalSourceRoots: Set<Path>, mergeSourceRootVotes: Map<JavaSourceRoot, Int>): List<JavaSourceRoot>? {
     val sourceRootsSortedByVotes: List<JavaSourceRoot> =
       mergeSourceRootVotes.entries
         // Prefer test roots over production roots, e.g., if some utility target is in the same package as a java_test
@@ -121,9 +143,7 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
       parentsOfMergedSourceRoots.addAll(sourcePath.allAncestorsSequence())
     }
 
-    val originalSourceRoots: Set<Path> = sourceRoots.map { it.sourcePath }.toSet()
     if (originalSourceRoots.any { !it.isUnder(mergedSourceRootPaths) }) return null
-    if (originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }) return null
 
     for (mergedSourceRoot in mergedSourceRootPaths) {
       Files.walk(mergedSourceRoot).use { children ->

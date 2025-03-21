@@ -11,7 +11,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import org.jetbrains.bazel.action.SuspendableAction
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.run.RunHandlerProvider
@@ -159,14 +159,14 @@ fun DefaultActionGroup.fillWithEligibleActions(
 
 internal class RunAllTestsActionInTargetTreeAction(private val targets: List<BuildTargetInfo>, private val directoryName: String) :
   SuspendableAction(
-    text = { BspPluginBundle.message("action.run.all.tests") },
+    text = { BazelPluginBundle.message("action.run.all.tests") },
     icon = AllIcons.Actions.Execute,
   ) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     TestTargetAction(
       targets,
       text = {
-        BspPluginBundle.message("action.run.all.tests.under", directoryName)
+        BazelPluginBundle.message("action.run.all.tests.under", directoryName)
       },
     ).actionPerformed(e)
   }
@@ -176,14 +176,14 @@ internal class RunAllTestsActionWithCoverageInTargetTreeAction(
   private val targets: List<BuildTargetInfo>,
   private val directoryName: String,
 ) : SuspendableAction(
-    text = { BspPluginBundle.message("action.run.all.tests.with.coverage") },
+    text = { BazelPluginBundle.message("action.run.all.tests.with.coverage") },
     icon = AllIcons.General.RunWithCoverage,
   ) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     RunWithCoverageAction(
       targets,
       text = {
-        BspPluginBundle.message("action.run.all.tests.under.with.coverage", directoryName)
+        BazelPluginBundle.message("action.run.all.tests.under.with.coverage", directoryName)
       },
     ).actionPerformed(e)
   }

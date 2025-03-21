@@ -17,7 +17,7 @@ import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup
 import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager
 import org.jetbrains.bazel.assets.BazelPluginIcons
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.label.Label
@@ -63,7 +63,7 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
   }
 
   private fun inactiveWidgetState(icon: Icon): WidgetState {
-    val state = WidgetState(BspPluginBundle.message("widget.tooltip.text.inactive"), "", false)
+    val state = WidgetState(BazelPluginBundle.message("widget.tooltip.text.inactive"), "", false)
     state.icon = icon
 
     return state
@@ -72,7 +72,7 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-988
   private fun activeWidgetState(loadedTarget: Label?, icon: Icon): WidgetState {
     val text = loadedTarget?.toString() ?: ""
-    val state = WidgetState(BspPluginBundle.message("widget.tooltip.text.active"), text, true)
+    val state = WidgetState(BazelPluginBundle.message("widget.tooltip.text.active"), text, true)
     state.icon = icon
 
     return state
@@ -82,7 +82,7 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
     val file = CommonDataKeys.VIRTUAL_FILE.getData(context)!!
     val group = calculatePopupGroup(file)
     val mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS
-    val title = BspPluginBundle.message("widget.title")
+    val title = BazelPluginBundle.message("widget.title")
 
     return JBPopupFactory.getInstance().createActionGroupPopup(title, group, context, mnemonics, true)
   }
@@ -124,7 +124,7 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
 class BazelFileTargetsWidgetFactory : StatusBarWidgetFactory {
   override fun getId(): String = WIDGET_ID
 
-  override fun getDisplayName(): String = BspPluginBundle.message("widget.factory.display.name")
+  override fun getDisplayName(): String = BazelPluginBundle.message("widget.factory.display.name")
 
   override fun isAvailable(project: Project): Boolean = project.isBazelProject
 

@@ -8,10 +8,10 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
-import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
@@ -39,7 +39,7 @@ class JvmTestHandler : BazelRunHandler {
       }
     }
 
-  class JvmTestHandlerProvider : RunHandlerProvider {
+  class JvmTestHandlerProvider : GooglePluginAwareRunHandlerProvider {
     override val id: String = "JvmBspTestHandlerProvider"
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = JvmTestHandler()
@@ -50,6 +50,9 @@ class JvmTestHandler : BazelRunHandler {
       }
 
     override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)
+
+    override val googleHandlerId: String = "BlazeJavaRunConfigurationHandlerProvider"
+    override val isTestHandler: Boolean = true
   }
 }
 
