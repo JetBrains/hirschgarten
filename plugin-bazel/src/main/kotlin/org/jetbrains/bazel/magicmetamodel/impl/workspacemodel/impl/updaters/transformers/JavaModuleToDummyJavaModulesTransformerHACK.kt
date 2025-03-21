@@ -49,13 +49,17 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
 
     val buildFileDirectory = inputEntity.baseDirContentRoot?.path
     val (relevantSourceRoots, irrelevantSourceRoots) = inputEntity.sourceRoots.partition { it.isRelevant() }
-    val mergedSourceRootVotes =
-      calculateSourceRootsForParentDirs(relevantSourceRoots)
-        .restoreSourceRootFromPackagePrefix(limit = buildFileDirectory)
+    val sourceRootsForParentDirs = calculateSourceRootsForParentDirs(relevantSourceRoots)
+    val mergedSourceRootVotes = sourceRootsForParentDirs.restoreSourceRootFromPackagePrefix(limit = buildFileDirectory)
     val dummyJavaResourcePath = calculateDummyResourceRootPath(inputEntity, mergedSourceRootVotes.keys.toList(), projectBasePath, project)
 
     if (BazelFeatureFlags.mergeSourceRoots) {
-      tryMergeSources(relevantSourceRoots, mergedSourceRootVotes, dummyJavaResourcePath)?.let { mergedSourceRoots ->
+      tryMergeSources(
+        relevantSourceRoots,
+        mergedSourceRootVotes,
+        sourceRootsForParentDirs,
+        dummyJavaResourcePath,
+      )?.let { mergedSourceRoots ->
         return MergedSourceRoots(mergedSourceRoots + irrelevantSourceRoots)
       }
     }
@@ -97,10 +101,22 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
   private fun tryMergeSources(
     sourceRoots: List<JavaSourceRoot>,
     mergeSourceRootVotes: Map<JavaSourceRoot, Int>,
+    sourceRootsForParentDirsVotes: Map<JavaSourceRoot, Int>,
     dummyJavaResourcePath: Path?,
   ): List<JavaSourceRoot>? {
     if (dummyJavaResourcePath != null) return null
 
+    val originalSourceRoots: Set<Path> = sourceRoots.map { it.sourcePath }.toSet()
+    if (!project.isSharedSourceSupportEnabled &&
+      originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }
+    ) {
+      return null
+    }
+
+    return tryMergeSources(originalSourceRoots, mergeSourceRootVotes) ?: tryMergeSources(originalSourceRoots, sourceRootsForParentDirsVotes)
+  }
+
+  private fun tryMergeSources(originalSourceRoots: Set<Path>, mergeSourceRootVotes: Map<JavaSourceRoot, Int>): List<JavaSourceRoot>? {
     val sourceRootsSortedByVotes: List<JavaSourceRoot> =
       mergeSourceRootVotes.entries
         // Prefer test roots over production roots, e.g., if some utility target is in the same package as a java_test
@@ -127,13 +143,7 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
       parentsOfMergedSourceRoots.addAll(sourcePath.allAncestorsSequence())
     }
 
-    val originalSourceRoots: Set<Path> = sourceRoots.map { it.sourcePath }.toSet()
     if (originalSourceRoots.any { !it.isUnder(mergedSourceRootPaths) }) return null
-    if (!project.isSharedSourceSupportEnabled &&
-      originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }
-    ) {
-      return null
-    }
 
     for (mergedSourceRoot in mergedSourceRootPaths) {
       Files.walk(mergedSourceRoot).use { children ->
