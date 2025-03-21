@@ -9,6 +9,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.BazelJavaSourceRootEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
+import org.jetbrains.bazel.sdkcompat.isSharedSourceSupportEnabled
 import org.jetbrains.bazel.utils.allAncestorsSequence
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
@@ -128,7 +129,11 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
 
     val originalSourceRoots: Set<Path> = sourceRoots.map { it.sourcePath }.toSet()
     if (originalSourceRoots.any { !it.isUnder(mergedSourceRootPaths) }) return null
-    if (originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }) return null
+    if (!project.isSharedSourceSupportEnabled &&
+      originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }
+    ) {
+      return null
+    }
 
     for (mergedSourceRoot in mergedSourceRootPaths) {
       Files.walk(mergedSourceRoot).use { children ->

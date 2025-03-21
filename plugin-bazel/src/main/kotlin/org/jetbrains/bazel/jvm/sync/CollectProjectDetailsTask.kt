@@ -39,6 +39,7 @@ import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
+import org.jetbrains.bazel.sdkcompat.isSharedSourceSupportEnabled
 import org.jetbrains.bazel.server.client.IMPORT_SUBTASK_ID
 import org.jetbrains.bazel.sync.BaseTargetInfo
 import org.jetbrains.bazel.sync.BaseTargetInfos
@@ -372,7 +373,7 @@ class CollectProjectDetailsTask(
 
     VirtualFileManager.getInstance().asyncRefresh()
     project.refreshKotlinHighlighting()
-    checkOverlappingSources()
+    checkSharedSources()
   }
 
   private suspend fun addBspFetchedJdks() =
@@ -449,7 +450,8 @@ class CollectProjectDetailsTask(
       }
     }
 
-  private fun checkOverlappingSources() {
+  private fun checkSharedSources() {
+    if (project.isSharedSourceSupportEnabled) return
     val fileToTarget = project.targetUtils.fileToTarget
     for ((file, targets) in fileToTarget) {
       if (targets.size <= 1) continue
