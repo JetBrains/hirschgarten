@@ -270,11 +270,8 @@ class CollectProjectDetailsTask(
 
         val targetIdToModuleEntitiesMap =
           bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
-            // Filter out non-module targets which cannot be run, as they are just cluttering the ui
-            val usefulNonModuleTargets = projectDetails.nonModuleTargets.filter { it.capabilities.canRun }
-
             val syncedTargetIdToTargetInfo =
-              (projectDetails.targets + usefulNonModuleTargets).associate {
+              (projectDetails.targets).associate {
                 it.id to
                   it.toBuildTargetInfo()
               }
@@ -498,11 +495,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
           server.workspaceLibraries()
         }
 
-      val nonModuleTargets =
-        query("workspace/nonModuleTargets") {
-          server.workspaceNonModuleTargets()
-        }
-
       val jvmBinaryJarsResult =
         queryIf(
           javaTargetIds.isNotEmpty() &&
@@ -543,7 +535,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
         // TODO: Son
         scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
         libraries = libraries.libraries,
-        nonModuleTargets = nonModuleTargets.nonModuleTargets,
         jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
       )
     } catch (e: Exception) {

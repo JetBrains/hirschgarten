@@ -9,6 +9,8 @@
                 implementation="org.jetbrains.bazel.flow.modify.ideStarter.BazelProjectModelModifierCommandProvider"/>
         <performancePlugin.commandProvider
                 implementation="org.jetbrains.bazel.run.coverage.ideStarter.BazelCoverageCommandProvider"/>
+        <performancePlugin.commandProvider
+                implementation="org.jetbrains.bazel.nonmodule.sync.ideStarter.CheckNonModuleTargetsProvider"/>
         <performancePlugin.commandProvider implementation="org.jetbrains.bazel.ui.ideStarter.UITestCommandProvider"/>
     </extensions>
 </idea-plugin>

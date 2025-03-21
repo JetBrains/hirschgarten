@@ -108,6 +108,10 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     this.libraryModulesLookupTable = createLibraryModulesLookupTable(libraryModules)
   }
 
+  fun addTargets(targetInfos: List<BuildTargetInfo>) {
+    labelToTargetInfo = labelToTargetInfo + targetInfos.associateBy { it.id }
+  }
+
   private suspend fun calculateFileToExecutableTargets(libraryItems: List<LibraryItem>?): Map<URI, List<Label>> =
     withContext(Dispatchers.Default) {
       val targetDependentsGraph = TargetDependentsGraph(labelToTargetInfo, libraryItems)

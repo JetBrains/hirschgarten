@@ -24,7 +24,6 @@ data class ProjectDetails(
   val javacOptions: List<JavacOptionsItem>,
   val scalacOptions: List<ScalacOptionsItem>,
   val libraries: List<LibraryItem>?,
-  val nonModuleTargets: List<BuildTarget>,
   var defaultJdkName: String? = null,
   var jvmBinaryJars: List<JvmBinaryJarsItem> = emptyList(),
 )
