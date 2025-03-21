@@ -1,0 +1,5 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="org.jetbrains.bazel">
+        <localJvmRunnerRunConfigurationProvider implementation="org.jetbrains.bazel.jvm.junit.JunitLocalJvmRunnerRunConfigurationProvider"/>
+    </extensions>
+</idea-plugin>

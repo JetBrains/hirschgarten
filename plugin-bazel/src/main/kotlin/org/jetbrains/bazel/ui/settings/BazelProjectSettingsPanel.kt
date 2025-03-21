@@ -27,6 +27,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
 
   // experimental features
   private val enableLocalJvmActionsCheckBox: JBCheckBox
+  private val useIntellijTestRunnerCheckBox: JBCheckBox
   private val enableBuildWithJpsCheckBox: JBCheckBox
 
   private var currentProjectSettings = project.bazelProjectSettings
@@ -37,7 +38,9 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
 
     // experimental features
+    useIntellijTestRunnerCheckBox = initUseIntellijTestRunnerCheckBoxBox()
     enableLocalJvmActionsCheckBox = initEnableLocalJvmActionsCheckBox()
+
     enableBuildWithJpsCheckBox = initEnableBuildWithJpsCheckBox()
   }
 
@@ -46,6 +49,16 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
       isSelected = currentProjectSettings.enableLocalJvmActions
       addItemListener {
         currentProjectSettings = currentProjectSettings.copy(enableLocalJvmActions = isSelected)
+        useIntellijTestRunnerCheckBox.isEnabled = isSelected
+      }
+    }
+
+  private fun initUseIntellijTestRunnerCheckBoxBox(): JBCheckBox =
+    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.use.intellij.test.runner.checkbox.text")).apply {
+      isSelected = currentProjectSettings.useIntellijTestRunner
+      isEnabled = currentProjectSettings.enableLocalJvmActions
+      addItemListener {
+        currentProjectSettings = currentProjectSettings.copy(useIntellijTestRunner = isSelected)
       }
     }
 
@@ -99,7 +112,14 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
         row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
       }
       group(BazelPluginBundle.message("project.settings.experimental.settings")) {
-        row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
+        group (BazelPluginBundle.message("project.settings.local.runner.settings")) {
+          row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
+          row {
+            cell (useIntellijTestRunnerCheckBox).align(Align.FILL)
+            contextHelp(BazelPluginBundle.message("project.settings.plugin.use.intellij.test.runner.help.text"))
+          }
+        }
+
         row { cell(enableBuildWithJpsCheckBox).align(Align.FILL) }
       }
     }

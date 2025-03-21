@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.ui.PopupHandler
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -120,6 +121,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
   target: BuildTargetInfo,
   includeTargetNameInText: Boolean,
   singleTestFilter: String? = null,
+  callerPsiElement: PsiElement? = null,
 ): DefaultActionGroup {
   val canBeDebugged = RunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
   if (target.capabilities.canRun) {
@@ -150,11 +152,19 @@ fun DefaultActionGroup.fillWithEligibleActions(
       addAction(RunWithLocalJvmRunnerAction(target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
     }
     if (target.capabilities.canTest) {
-      addAction(TestWithLocalJvmRunnerAction(target, includeTargetNameInText = includeTargetNameInText))
-      addAction(TestWithLocalJvmRunnerAction(target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
+      if (callerPsiElement != null) { // called from gutter
+        addLocalJvmTestActions(target, includeTargetNameInText, callerPsiElement)
+      } else if (!project.bazelProjectSettings.useIntellijTestRunner) { // called from target tree widget
+        addLocalJvmTestActions(target, includeTargetNameInText, null)
+      }
     }
   }
   return this
+}
+
+private fun DefaultActionGroup.addLocalJvmTestActions(target: BuildTargetInfo, includeTargetNameInText: Boolean, callerPsiElement: PsiElement?) {
+  addAction(TestWithLocalJvmRunnerAction(target, includeTargetNameInText = includeTargetNameInText, callerPsiElement = callerPsiElement))
+  addAction(TestWithLocalJvmRunnerAction(target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText, callerPsiElement = callerPsiElement))
 }
 
 internal class RunAllTestsActionInTargetTreeAction(private val targets: List<BuildTargetInfo>, private val directoryName: String) :

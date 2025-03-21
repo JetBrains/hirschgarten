@@ -1,6 +1,10 @@
 package org.jetbrains.bazel.runnerAction
 
+import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.openapi.extensions.ExtensionPointName
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.connection
@@ -13,6 +17,7 @@ class TestWithLocalJvmRunnerAction(
   text: (() -> String)? = null,
   isDebugMode: Boolean = false,
   includeTargetNameInText: Boolean = false,
+  private val callerPsiElement: PsiElement? = null,
 ) : LocalJvmRunnerAction(
     targetInfo = targetInfo,
     text = {
@@ -41,4 +46,40 @@ class TestWithLocalJvmRunnerAction(
   }
 
   private fun createJvmTestEnvironmentParams(targetId: Label) = JvmTestEnvironmentParams(listOf(targetId))
+
+  override fun calculateConfiguration(
+    configurationName: String,
+    environment: JvmEnvironmentItem,
+    module: Module,
+    project: Project,
+    targetInfo: BuildTargetInfo
+  ): RunConfiguration? =
+    if (callerPsiElement != null) {
+      LocalJvmRunnerRunConfigurationProvider.ep.extensionList.firstNotNullOfOrNull {
+        it.provideRunConfiguration(
+          configurationName = configurationName,
+          environment = environment,
+          module = module,
+          project = project,
+          callerPsiElement = callerPsiElement,
+        )
+      } ?: super.calculateConfiguration(configurationName, environment, module, project, targetInfo)
+    }
+    else {
+      super.calculateConfiguration(configurationName, environment, module, project, targetInfo)
+    }
+}
+
+interface LocalJvmRunnerRunConfigurationProvider {
+  fun provideRunConfiguration(
+    configurationName: String,
+    environment: JvmEnvironmentItem,
+    module: Module,
+    project: Project,
+    callerPsiElement: PsiElement
+  ): RunConfiguration?
+
+  companion object {
+    val ep = ExtensionPointName.create<LocalJvmRunnerRunConfigurationProvider>("org.jetbrains.bazel.localJvmRunnerRunConfigurationProvider")
+  }
 }

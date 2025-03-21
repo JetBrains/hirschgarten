@@ -34,6 +34,7 @@
     <depends optional="true" config-file="withGo.xml">org.jetbrains.plugins.go</depends>
     <depends optional="true" config-file="withIdeStarter.xml">com.jetbrains.performancePlugin</depends>
     <depends optional="true" config-file="withPython.xml">com.intellij.modules.python</depends>
+    <depends optional="true" config-file="withJunit.xml">JUnit</depends>
 
     <extensionPoints>
         <extensionPoint qualifiedName="org.jetbrains.bazel.sourceTypeIconProvider"
@@ -92,6 +93,9 @@
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.jvmBinaryJarsExtension"
                         interface="org.jetbrains.bazel.extensionPoints.JvmBinaryJarsExtension"
+                        dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bazel.localJvmRunnerRunConfigurationProvider"
+                        interface="org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider"
                         dynamic="true"/>
     </extensionPoints>
 

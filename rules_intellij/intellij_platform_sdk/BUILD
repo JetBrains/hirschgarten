@@ -103,6 +103,28 @@ java_library(
     ),
 )
 
+# IntelliJ JUnit plugin
+java_library(
+    name = "junit",
+    neverlink = 1,
+    exports = select_from_plugin_api_directory(
+        android_studio = [],
+        clion = [],
+        intellij = [":junit"],
+    ),
+)
+
+# IntelliJ JUnit plugin
+java_library(
+    name = "junit_for_tests",
+    testonly = 1,
+    exports = select_from_plugin_api_directory(
+        android_studio = [],
+        clion = [],
+        intellij = [":junit"],
+    ),
+)
+
 # Bundled plugins required by integration tests
 java_library(
     name = "bundled_plugins",
