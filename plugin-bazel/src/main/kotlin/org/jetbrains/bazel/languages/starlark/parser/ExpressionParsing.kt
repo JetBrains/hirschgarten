@@ -280,7 +280,7 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
           ) {
             expr.done(StarlarkElementTypes.TARGET_EXPRESSION)
           } else {
-            expr.done(StarlarkElementTypes.REFERENCE_EXPRESSION)
+            expr.done(StarlarkElementTypes.GLOB_EXPRESSION) //REFERENCE_EXPRESSION)
           }
           expr = expr.precede()
         } else if (tokenType === StarlarkTokenTypes.LPAR) {
@@ -795,7 +795,14 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
   }
 
   private fun getTargetOrReferenceExpression(isTarget: Boolean) =
-    if (isTarget && builder.tokenText != "_") StarlarkElementTypes.TARGET_EXPRESSION else StarlarkElementTypes.REFERENCE_EXPRESSION
+    if (isTarget && builder.tokenText != "_")
+      StarlarkElementTypes.TARGET_EXPRESSION
+    else if (builder.tokenText == "glob") {
+      StarlarkElementTypes.GLOB_EXPRESSION
+    } else {
+      StarlarkElementTypes.GLOB_EXPRESSION // REFERENCE_EXPRESSION
+    }
+
 
   companion object {
     private val BRACKET_OR_COMMA = TokenSet.create(StarlarkTokenTypes.RBRACKET, StarlarkTokenTypes.COMMA)
