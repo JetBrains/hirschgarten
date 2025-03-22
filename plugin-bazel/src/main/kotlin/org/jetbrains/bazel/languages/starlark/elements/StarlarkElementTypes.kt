@@ -153,7 +153,7 @@ object StarlarkElementTypes {
       NONE_LITERAL_EXPRESSION -> StarlarkNoneLiteralExpression(node)
       PARENTHESIZED_EXPRESSION -> StarlarkParenthesizedExpression(node)
       PREFIX_EXPRESSION -> StarlarkPrefixExpression(node)
-      REFERENCE_EXPRESSION -> StarlarkGlobExpression(node)
+      REFERENCE_EXPRESSION -> StarlarkReferenceExpression(node)
       SLICE_EXPRESSION -> StarlarkSliceExpression(node)
       SLICE_ITEM -> StarlarkSliceItem(node)
       STAR_ARGUMENT_EXPRESSION -> StarlarkStarArgumentExpression(node)

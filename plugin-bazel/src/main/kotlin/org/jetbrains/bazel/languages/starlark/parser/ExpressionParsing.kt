@@ -280,7 +280,7 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
           ) {
             expr.done(StarlarkElementTypes.TARGET_EXPRESSION)
           } else {
-            expr.done(StarlarkElementTypes.GLOB_EXPRESSION) //REFERENCE_EXPRESSION)
+            expr.done(StarlarkElementTypes.REFERENCE_EXPRESSION) // GLOB_EXPRESSION) //REFERENCE_EXPRESSION)
           }
           expr = expr.precede()
         } else if (tokenType === StarlarkTokenTypes.LPAR) {
@@ -800,7 +800,7 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
     else if (builder.tokenText == "glob") {
       StarlarkElementTypes.GLOB_EXPRESSION
     } else {
-      StarlarkElementTypes.GLOB_EXPRESSION // REFERENCE_EXPRESSION
+      StarlarkElementTypes.REFERENCE_EXPRESSION
     }
 
 
