@@ -29,6 +29,8 @@ import javax.swing.JPanel
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingUtilities
 import javax.swing.event.HyperlinkEvent
+import java.io.OutputStreamWriter
+import javax.swing.ImageIcon
 
 private class QueryFlagField(
   val flag: String,
@@ -64,6 +66,10 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
   // Bazel Runner
   private val queryEvaluator = QueryEvaluator()
 
+  // Graph Window Manager
+  private val graphWindowManager = GraphWindowManager()
+
+
   // UI elements
   private val editorTextField = LanguageTextField(BazelqueryLanguage, project, "")
   private val directoryField = JBTextField().apply { isEditable = false }
@@ -73,7 +79,6 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
     defaultFlags.forEach { it.addToPanel(this) }
     add(flagTextField)
   }
-
   private val bazelFilter = BazelBuildTargetConsoleFilter(project)
   private val hyperlinkInfoMap = mutableMapOf<String, HyperlinkInfo>()
   private val resultField = JEditorPane().apply {
@@ -87,12 +92,14 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
       }
     }
   }
+
   init {
     layout = BoxLayout(this, BoxLayout.Y_AXIS)
     chooseDirectory(project.baseDir)
     initializeUI()
   }
 
+  // Clickable targets in output
   private fun addLinksToResult(text: String): String {
     val filterResult = bazelFilter.applyFilter(text, text.length)
     var processedText = text
@@ -107,6 +114,30 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
       processedText = processedText.replace(linkText, hyperlink)
     }
     return processedText
+  }
+
+  // Graph visualization
+  private fun convertDotToImageIcon(dotContent: String): ImageIcon? {
+    return try {
+      val process = ProcessBuilder("dot", "-Tpng")
+        .redirectErrorStream(true)
+        .start()
+
+      OutputStreamWriter(process.outputStream).use { writer ->
+        writer.write(dotContent)
+        writer.flush()
+      }
+
+      val pngBytes = process.inputStream.readBytes()
+      val exitCode = process.waitFor()
+      if (exitCode == 0)
+        ImageIcon(pngBytes)
+      else
+        null
+    } catch (e: Exception) {
+      e.printStackTrace()
+      null
+    }
   }
 
   private fun initializeUI() {
@@ -201,7 +232,6 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
         flagsToRun.add(flag.flag)
       }
     }
-
     resultField.text = "Bazel Query in progress..."
 
     var commandResults: BazelProcessResult? = null
@@ -214,7 +244,15 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
           if (res.isEmpty()) {
             resultField.text = "Nothing found"
           } else {
-            resultField.text = "<html><pre>${addLinksToResult(res)}</pre></html>"
+            resultField.text = "<html><pre>${addLinksToResult(res.replace("//", "&#47;&#47;"))}</pre></html>"
+            if (res.startsWith("digraph")) {
+              val imageIcon = convertDotToImageIcon(res)
+              if (imageIcon != null) {
+                graphWindowManager.openImageInNewWindow(imageIcon)
+              } else {
+                System.err.println("Failed to generate graph visualization")
+              }
+            }
           }
         } else {
           resultField.text = "Command execution failed:\n" + commandResults.stderr
