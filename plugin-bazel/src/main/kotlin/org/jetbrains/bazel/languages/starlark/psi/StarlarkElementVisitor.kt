@@ -11,6 +11,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkEmptyExpre
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFalseLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFloatLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGeneratorExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkIntegerLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkKeyValueExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkLambdaExpression
@@ -250,6 +251,10 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
   }
 
   fun visitTupleExpression(node: StarlarkTupleExpression) {
+    visitElement(node)
+  }
+
+  fun visitGlobExpression(node: StarlarkGlobExpression) {
     visitElement(node)
   }
 }
