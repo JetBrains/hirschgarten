@@ -54,8 +54,10 @@ internal class QueryEvaluator {
     for (flag in flags) {
       commandToRun.options.add((if (flagsAlreadyPrefixedWithDoubleHyphen) "" else "--") + flag)
     }
-    for (flag in additionalFlags.split(" -")) {
-      commandToRun.options.add(if (flag.startsWith("--")) flag.trim() else "-${flag.trim()}")
+    if (additionalFlags.isNotEmpty()) {
+      for (flag in additionalFlags.split(" -")) {
+        commandToRun.options.add(if (flag.startsWith("--")) flag.trim() else "-${flag.trim()}")
+      }
     }
 
     return bazelRunner!!

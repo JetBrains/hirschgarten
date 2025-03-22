@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.ui.dialogs.queryTab
 
+import com.intellij.execution.filters.HyperlinkInfo
 import com.intellij.icons.AllIcons
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -11,21 +12,23 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.CollapsiblePanel
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.coroutines.CoroutineService
 import org.jetbrains.bazel.languages.bazelquery.BazelqueryFlagsLanguage
 import org.jetbrains.bazel.languages.bazelquery.BazelqueryLanguage
+import org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilter
 import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
 import java.awt.BorderLayout
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JCheckBox
+import javax.swing.JEditorPane
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingUtilities
+import javax.swing.event.HyperlinkEvent
 
 private class QueryFlagField(
   val flag: String,
@@ -70,12 +73,40 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
     defaultFlags.forEach { it.addToPanel(this) }
     add(flagTextField)
   }
-  private val resultField = JBTextArea().apply { isEditable = false }
 
+  private val bazelFilter = BazelBuildTargetConsoleFilter(project)
+  private val hyperlinkInfoMap = mutableMapOf<String, HyperlinkInfo>()
+  private val resultField = JEditorPane().apply {
+    contentType = "text/html"
+    isEditable = false
+    addHyperlinkListener { event ->
+      if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
+        val key = event.description
+        val hyperlinkInfo = hyperlinkInfoMap[key]
+        hyperlinkInfo?.navigate(project)
+      }
+    }
+  }
   init {
     layout = BoxLayout(this, BoxLayout.Y_AXIS)
     chooseDirectory(project.baseDir)
     initializeUI()
+  }
+
+  private fun addLinksToResult(text: String): String {
+    val filterResult = bazelFilter.applyFilter(text, text.length)
+    var processedText = text
+
+    filterResult?.resultItems?.forEachIndexed { index, item ->
+      val linkText = text.substring(item.highlightStartOffset, item.highlightEndOffset)
+
+      val hyperlinkKey = index.toString()
+      hyperlinkInfoMap[hyperlinkKey] = item.hyperlinkInfo as HyperlinkInfo
+
+      val hyperlink = "<a href='$hyperlinkKey'>$linkText</a>"
+      processedText = processedText.replace(linkText, hyperlink)
+    }
+    return processedText
   }
 
   private fun initializeUI() {
@@ -179,7 +210,12 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
     }.invokeOnCompletion {
       SwingUtilities.invokeLater {
         if (commandResults!!.isSuccess) {
-          resultField.text = commandResults.stdout.ifEmpty { "Nothing found" }
+          val res = commandResults.stdout
+          if (res.isEmpty()) {
+            resultField.text = "Nothing found"
+          } else {
+            resultField.text = "<html><pre>${addLinksToResult(res)}</pre></html>"
+          }
         } else {
           resultField.text = "Command execution failed:\n" + commandResults.stderr
         }
