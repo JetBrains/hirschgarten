@@ -13,6 +13,7 @@ import com.intellij.ui.CollapsiblePanel
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
+import com.intellij.util.ui.JBUI
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.coroutines.CoroutineService
 import org.jetbrains.bazel.languages.bazelquery.BazelqueryFlagsLanguage
@@ -32,12 +33,32 @@ import javax.swing.event.HyperlinkEvent
 import java.io.OutputStreamWriter
 import javax.swing.ImageIcon
 
+import org.jetbrains.bazel.languages.bazelquery.options.BazelqueryCommonOptions
+import javax.swing.ButtonGroup
+import javax.swing.JRadioButton
+import javax.swing.border.EmptyBorder
+
 private class QueryFlagField(
   val flag: String,
-  checked: Boolean = false
+  checked: Boolean = false,
+  val values: List<String> = emptyList(),
 ) {
   val checkBox = JCheckBox(flag, checked).apply {
-    addActionListener { updateFlagCount(isSelected) }
+    addActionListener {
+      updateFlagCount(isSelected)
+      valuesButtons.forEach { it.isVisible = isSelected }
+    }
+  }
+  val valuesButtons: List<JRadioButton> = values.map {
+    JRadioButton(it).apply { border = JBUI.Borders.emptyLeft(25) }
+  }
+  val valuesGroup: ButtonGroup = ButtonGroup()
+  init {
+    valuesButtons.forEach {
+      valuesGroup.add(it)
+      it.isVisible = false
+    }
+    valuesButtons.firstOrNull()?.isSelected = true
   }
 
   companion object {
@@ -50,6 +71,9 @@ private class QueryFlagField(
 
   fun addToPanel(panel: JPanel) {
     panel.add(checkBox)
+    valuesButtons.forEach {
+      panel.add(it)
+    }
   }
 
   val isSelected get() = checkBox.isSelected
@@ -57,11 +81,12 @@ private class QueryFlagField(
 
 // TODO: Rename to something else than window and move to correct directory
 class BazelQueryDialogWindow(private val project: Project) : JPanel() {
-  private val defaultFlags = listOf(
-    QueryFlagField("noimplicit_deps"),
-    QueryFlagField("flag2"),
-    QueryFlagField("flag3"),
-  )
+  private val defaultFlags = BazelqueryCommonOptions().getAll().map { option ->
+    QueryFlagField(
+      flag = option.name,
+      values = option.values
+    )
+  }
 
   // Bazel Runner
   private val queryEvaluator = QueryEvaluator()
@@ -76,7 +101,9 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
   private val flagTextField = LanguageTextField(BazelqueryFlagsLanguage, project, "")
   private val flagsPanel = JPanel().apply {
     layout = BoxLayout(this, BoxLayout.Y_AXIS)
-    defaultFlags.forEach { it.addToPanel(this) }
+    defaultFlags.forEach {
+      it.addToPanel(this)
+    }
     add(flagTextField)
   }
   private val bazelFilter = BazelBuildTargetConsoleFilter(project)
@@ -154,7 +181,9 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
     }
 
     fun createFlagsPanel() = CollapsiblePanel(
-      flagsPanel,
+      JBScrollPane(flagsPanel).apply {
+        verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
+      },
       true,
       true,
       AllIcons.General.ChevronUp,
@@ -229,7 +258,12 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
     val flagsToRun = mutableListOf<String>()
     for (flag in defaultFlags) {
       if (flag.isSelected) {
-        flagsToRun.add(flag.flag)
+        var option = flag.flag
+        if (flag.values.isNotEmpty()) {
+          val selectedValue = flag.valuesGroup.elements.toList().find { it.isSelected }?.text
+          option += "=$selectedValue"
+        }
+        flagsToRun.add(option)
       }
     }
     resultField.text = "Bazel Query in progress..."
