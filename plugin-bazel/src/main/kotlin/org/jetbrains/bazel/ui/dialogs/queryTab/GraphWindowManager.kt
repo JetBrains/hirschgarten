@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.ui.dialogs.queryTab
 
+import com.intellij.ui.components.JBScrollPane
 import java.awt.BorderLayout
 import javax.swing.ImageIcon
 import javax.swing.JFrame
 import javax.swing.JLabel
-import javax.swing.JScrollPane
 
 class GraphWindowManager {
   private var lastGraph: JFrame? = null
@@ -17,7 +17,7 @@ class GraphWindowManager {
     graph.layout = BorderLayout()
 
     val imageLabel = JLabel(image)
-    graph.add(JScrollPane(imageLabel), BorderLayout.CENTER)
+    graph.add(JBScrollPane(imageLabel), BorderLayout.CENTER)
 
     graph.setSize(800, 600)
     graph.setLocationRelativeTo(null)

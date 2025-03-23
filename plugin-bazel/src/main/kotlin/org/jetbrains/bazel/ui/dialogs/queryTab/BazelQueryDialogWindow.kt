@@ -1,6 +1,10 @@
 package org.jetbrains.bazel.ui.dialogs.queryTab
 
 import com.intellij.execution.filters.HyperlinkInfo
+import com.intellij.execution.filters.HyperlinkInfoBase
+import com.intellij.execution.impl.ConsoleViewImpl
+import com.intellij.execution.ui.ConsoleView
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.icons.AllIcons
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -11,6 +15,7 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.CollapsiblePanel
 import com.intellij.ui.LanguageTextField
+import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.JBUI
@@ -24,19 +29,16 @@ import java.awt.BorderLayout
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JCheckBox
-import javax.swing.JEditorPane
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingUtilities
-import javax.swing.event.HyperlinkEvent
 import java.io.OutputStreamWriter
 import javax.swing.ImageIcon
 
 import org.jetbrains.bazel.languages.bazelquery.options.BazelqueryCommonOptions
 import javax.swing.ButtonGroup
 import javax.swing.JRadioButton
-import javax.swing.border.EmptyBorder
 
 private class QueryFlagField(
   val flag: String,
@@ -107,18 +109,7 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
     add(flagTextField)
   }
   private val bazelFilter = BazelBuildTargetConsoleFilter(project)
-  private val hyperlinkInfoMap = mutableMapOf<String, HyperlinkInfo>()
-  private val resultField = JEditorPane().apply {
-    contentType = "text/html"
-    isEditable = false
-    addHyperlinkListener { event ->
-      if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-        val key = event.description
-        val hyperlinkInfo = hyperlinkInfoMap[key]
-        hyperlinkInfo?.navigate(project)
-      }
-    }
-  }
+  private val resultField: ConsoleView = ConsoleViewImpl(project, false)
 
   init {
     layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -127,20 +118,20 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
   }
 
   // Clickable targets in output
-  private fun addLinksToResult(text: String): String {
+  private fun addLinksToResult(
+    text: String,
+    hyperlinkInfoList: MutableList<Pair<IntRange, HyperlinkInfo>>
+  ) {
     val filterResult = bazelFilter.applyFilter(text, text.length)
-    var processedText = text
 
     filterResult?.resultItems?.forEachIndexed { index, item ->
-      val linkText = text.substring(item.highlightStartOffset, item.highlightEndOffset)
-
-      val hyperlinkKey = index.toString()
-      hyperlinkInfoMap[hyperlinkKey] = item.hyperlinkInfo as HyperlinkInfo
-
-      val hyperlink = "<a href='$hyperlinkKey'>$linkText</a>"
-      processedText = processedText.replace(linkText, hyperlink)
+      hyperlinkInfoList.add(
+        Pair(
+          IntRange(item.highlightStartOffset, item.highlightEndOffset),
+          item.hyperlinkInfo as HyperlinkInfo
+        )
+      )
     }
-    return processedText
   }
 
   // Graph visualization
@@ -192,9 +183,7 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
     )
 
     fun createResultPanel() = JPanel(BorderLayout()).apply {
-      add(JBScrollPane(resultField).apply {
-        verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
-      })
+      add(resultField.component, BorderLayout.CENTER)
     }
 
     fun createButtonsPanel() = JPanel(BorderLayout()).apply {
@@ -250,7 +239,7 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
   private fun evaluate() {
     if (!queryEvaluator.isDirectorySet) {
       System.err.println("Bazel Query directory not set or other error occurred")
-      resultField.text = "Bazel Query directory not set or other error occurred"
+      showInConsole("Bazel Query directory not set or other error occurred")
       updateUI()
       return
     }
@@ -266,7 +255,7 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
         flagsToRun.add(option)
       }
     }
-    resultField.text = "Bazel Query in progress..."
+    showInConsole("Bazel Query in progress...")
 
     var commandResults: BazelProcessResult? = null
     CoroutineService.getInstance(project).start {
@@ -276,9 +265,11 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
         if (commandResults!!.isSuccess) {
           val res = commandResults.stdout
           if (res.isEmpty()) {
-            resultField.text = "Nothing found"
+            showInConsole("Nothing found")
           } else {
-            resultField.text = "<html><pre>${addLinksToResult(res.replace("//", "&#47;&#47;"))}</pre></html>"
+            val hyperlinkInfoList = mutableListOf<Pair<IntRange, HyperlinkInfo>>()
+            addLinksToResult(res, hyperlinkInfoList)
+            showInConsole(res, hyperlinkInfoList)
             if (res.startsWith("digraph")) {
               val imageIcon = convertDotToImageIcon(res)
               if (imageIcon != null) {
@@ -289,7 +280,7 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
             }
           }
         } else {
-          resultField.text = "Command execution failed:\n" + commandResults.stderr
+          showInConsole("Command execution failed:\n" + commandResults.stderr)
         }
         updateUI()
       }
@@ -298,6 +289,34 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
 
   private fun clear() {
     editorTextField.text = ""
-    resultField.text = ""
+    showInConsole("")
+  }
+
+  private fun showInConsole(
+    text: String,
+    hyperlinkInfoList: List<Pair<IntRange, HyperlinkInfo?>> = emptyList()
+  ) {
+    resultField.clear()
+
+    var lastIndex = 0
+    for ((range, hyperlinkInfo) in hyperlinkInfoList) {
+      if (range.first > lastIndex) {
+        val normalText = text.substring(lastIndex, range.first)
+        resultField.print(normalText, ConsoleViewContentType.NORMAL_OUTPUT)
+      }
+      val hyperlinkText = text.substring(range.first, range.last)
+      resultField.printHyperlink(hyperlinkText, object : HyperlinkInfoBase() {
+        override fun navigate(project: Project, hyperlinkLocationPoint: RelativePoint?) {
+          hyperlinkInfo?.navigate(project)
+        }
+      })
+
+      lastIndex = range.last
+    }
+
+    if (lastIndex < text.length) {
+      val normalText = text.substring(lastIndex)
+      resultField.print(normalText, ConsoleViewContentType.NORMAL_OUTPUT)
+    }
   }
 }
