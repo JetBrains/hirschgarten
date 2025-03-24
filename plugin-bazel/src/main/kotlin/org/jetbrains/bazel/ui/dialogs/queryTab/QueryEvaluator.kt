@@ -55,8 +55,9 @@ internal class QueryEvaluator {
       commandToRun.options.add((if (flagsAlreadyPrefixedWithDoubleHyphen) "" else "--") + flag)
     }
     if (additionalFlags.isNotEmpty()) {
-      for (flag in additionalFlags.split(" -")) {
-        commandToRun.options.add(if (flag.startsWith("--")) flag.trim() else "-${flag.trim()}")
+      for (flag in additionalFlags.trim().split(" -")) {
+        val option = flag.trim().replace(" ", "=")
+        commandToRun.options.add(if (flag.startsWith("--")) option else "-${option}")
       }
     }
 
