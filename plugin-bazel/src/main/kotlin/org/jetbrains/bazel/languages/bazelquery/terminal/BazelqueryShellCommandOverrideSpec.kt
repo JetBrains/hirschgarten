@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.languages.bazelquery.terminal
 
+import com.intellij.markdown.utils.doc.DocMarkdownToHtmlConverter
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.terminal.completion.spec.ShellCommandParserOptions
 import com.intellij.terminal.completion.spec.ShellCommandSpec
 import com.intellij.terminal.completion.spec.ShellCompletionSuggestion
@@ -8,6 +10,8 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.languages.bazelquery.completion.generateTargetCompletions
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenType
+import org.jetbrains.bazel.languages.bazelquery.functions.BazelqueryFunction
+import org.jetbrains.bazel.languages.bazelquery.functions.BazelqueryFunctionSymbol
 import org.jetbrains.plugins.terminal.block.completion.spec.*
 
 /*
@@ -15,6 +19,7 @@ TODO
 - flags
 - expressions
  */
+@Suppress("UnstableApiUsage")
 internal fun bazelQueryCommandSpec(): ShellCommandSpec = ShellCommandSpec("bazel") {
   requiresSubcommand = true
   subcommands { context: ShellRuntimeContext ->
@@ -42,16 +47,31 @@ internal fun bazelQueryCommandSpec(): ShellCommandSpec = ShellCommandSpec("bazel
           }.toMutableList()
           suggestions.addAll(
             knownCommands.map {
+              val markdownText =
+                """
+                  |${it.description}
+                  |
+                  |**Arguments:**
+                  |${it.argumentsMarkdown()}
+                  |
+                  |**Example Usage:**
+                  ```
+                    ${if (it is BazelqueryFunction.SimpleFunction) it.exampleUsage else "N/A"}
+                  ```
+                """.trimMargin()
+              val htmlText = DocMarkdownToHtmlConverter.convert(ProjectManager.getInstance().openProjects.first(), markdownText)
+
               ShellCompletionSuggestion(
-                name = "$it()",
+                name = "${it.name}()",
+                description = htmlText,
                 icon = BazelPluginIcons.bazel,
                 prefixReplacementIndex = offset,
-                insertValue = "$it({cursor})",
+                insertValue = "${it.name}({cursor})",
               )
             }
           )
 
-          // Empty suggestion for the parser to consider quoted expression as valid argument, so flags will be suggested after argument.
+          // Empty suggestion for the parser to consider quoted expression as valid argument, so flags will be suggested after the argument.
           // Inspired from ShellDataGenerators#getFileSuggestions.
           if (isStartAndEndWithQuote(context.typedPrefix)) {
             val emptySuggestion = ShellCompletionSuggestion(name = "", prefixReplacementIndex = offset, isHidden = true)
@@ -77,9 +97,9 @@ fun isStartAndEndWithQuote(expression: String) : Boolean {
   return expression.length >= 2 && ((expression.startsWith('\'') && expression.endsWith('\'')) || (expression.startsWith('"') && expression.endsWith('"')))
 }
 
-val knownCommands =
-  BazelqueryTokenSets.COMMANDS.types.map { tokenType ->
-    tokenType as BazelqueryTokenType
-    tokenType.completionText()
-  }.toList()
+val knownCommands = BazelqueryFunction.getAll()
 
+private fun BazelqueryFunction.argumentsMarkdown(): String =
+  arguments.joinToString(separator = "\n") { arg ->
+    "- `${arg.name}` (${arg.type}${if (arg.optional) ", optional" else ""}): ${arg.description}"
+  }
