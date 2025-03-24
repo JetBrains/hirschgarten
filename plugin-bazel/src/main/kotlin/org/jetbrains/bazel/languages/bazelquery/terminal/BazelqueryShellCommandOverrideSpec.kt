@@ -6,12 +6,30 @@ import com.intellij.terminal.completion.spec.ShellCommandParserOptions
 import com.intellij.terminal.completion.spec.ShellCommandSpec
 import com.intellij.terminal.completion.spec.ShellCompletionSuggestion
 import com.intellij.terminal.completion.spec.ShellRuntimeContext
+import kotlinx.collections.immutable.toPersistentMap
 import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.languages.bazelquery.completion.generateTargetCompletions
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenType
 import org.jetbrains.bazel.languages.bazelquery.functions.BazelqueryFunction
 import org.jetbrains.bazel.languages.bazelquery.functions.BazelqueryFunctionSymbol
+import org.jetbrains.bazel.languages.bazelquery.options.BazelqueryCommonOptions
+import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget
+import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget.Companion.allowMultiple
+import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget.Companion.default
+import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget.Companion.effects
+import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget.Companion.expandsTo
+import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget.Companion.help
+import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget.Companion.metadataTags
+import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget.Companion.oldName
+import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget.Companion.type
+import org.jetbrains.bazel.languages.bazelrc.flags.BazelFlagSymbol
+import org.jetbrains.bazel.languages.bazelrc.flags.Flag
+import org.jetbrains.bazel.languages.bazelrc.flags.Flag.Companion.declaredFieldsMap
+import org.jetbrains.bazel.languages.bazelrc.flags.KnownFlags
+import org.jetbrains.bazel.languages.bazelrc.flags.Option
+import org.jetbrains.bazel.languages.bazelrc.flags.knownFlagNames
 import org.jetbrains.plugins.terminal.block.completion.spec.*
 
 /*
@@ -47,6 +65,7 @@ internal fun bazelQueryCommandSpec(): ShellCommandSpec = ShellCommandSpec("bazel
           }.toMutableList()
           suggestions.addAll(
             knownCommands.map {
+              // TODO not this copy paste from functions
               val markdownText =
                 """
                   |${it.description}
@@ -59,7 +78,7 @@ internal fun bazelQueryCommandSpec(): ShellCommandSpec = ShellCommandSpec("bazel
                     ${if (it is BazelqueryFunction.SimpleFunction) it.exampleUsage else "N/A"}
                   ```
                 """.trimMargin()
-              val htmlText = DocMarkdownToHtmlConverter.convert(ProjectManager.getInstance().openProjects.first(), markdownText)
+              val htmlText = DocMarkdownToHtmlConverter.convert(context.project, markdownText)
 
               ShellCompletionSuggestion(
                 name = "${it.name}()",
@@ -82,11 +101,34 @@ internal fun bazelQueryCommandSpec(): ShellCommandSpec = ShellCommandSpec("bazel
         })
       }
 
-      option("--aspect_deps") {
-        separator = "="
-        argument {
-          displayName("option")
-          suggestions("off", "conservative", "precise")
+
+      knownOptions.forEach {
+        val flagName = "--${it.name}"
+        val flag = Flag.byName(flagName)!!
+        // TODO not this copy paste from BazelFlagDocumentationTarget
+        val markdownText =
+          """
+            |
+            |${flag.type()}
+            |
+            |${flag.default()}
+            |
+            |${flag.oldName()}
+            |
+            |${flag.allowMultiple()}
+            |
+            |${flag.help()}
+            |
+            |${flag.expandsTo()}
+            |
+            |${flag.effects()}
+            |
+            |${flag.metadataTags()}
+            """.trimMargin()
+        val htmlText = DocMarkdownToHtmlConverter.convert(context.project, markdownText)
+        option(flagName) {
+          // TODO maybe add arguments for some flags
+          description(htmlText)
         }
       }
     }
@@ -103,3 +145,5 @@ private fun BazelqueryFunction.argumentsMarkdown(): String =
   arguments.joinToString(separator = "\n") { arg ->
     "- `${arg.name}` (${arg.type}${if (arg.optional) ", optional" else ""}): ${arg.description}"
   }
+
+val knownOptions = BazelqueryCommonOptions().getAll()
