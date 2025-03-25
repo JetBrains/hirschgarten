@@ -33,7 +33,7 @@ class StarlarkGlobExpression(node: ASTNode): StarlarkBaseElement(node) {
   fun getIncludes(): PsiElement? {
     var arg: StarlarkArgumentElement? = getKeywordArgument("include")
     if (arg == null) {
-      var allArgs = getArguments()
+      val allArgs = getArguments()
       if (allArgs.size != 0 && allArgs[0] is StarlarkArgumentExpression) {
         arg = allArgs[0]
       }

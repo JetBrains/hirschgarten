@@ -10,7 +10,6 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
-import com.jetbrains.python.extensions.toPsi
 import org.jetbrains.bazel.languages.starlark.globbing.StarlarkUnixGlob
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
@@ -55,7 +54,7 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) : PsiPolyVariantRef
       }
 
       return results.toTypedArray()
-    } catch (e: Exception) {
+    } catch (_: Exception) {
       return ResolveResult.EMPTY_ARRAY
     }
   }
@@ -84,12 +83,11 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) : PsiPolyVariantRef
     if (expr !is StarlarkListLiteralExpression) {
       return mutableListOf()
     }
-    val list = expr as StarlarkListLiteralExpression
-    val children = list.getElements()
+    val children = expr.getElements()
     val strings: MutableList<String> = mutableListOf()
     for (child in children) {
       if (child is StarlarkStringLiteralExpression) {
-        strings.add((child as StarlarkStringLiteralExpression).getStringContents())
+        strings.add(child.getStringContents())
       }
     }
     return strings

@@ -344,7 +344,9 @@ object StarlarkUnixGlob {
         return globAsync(base, patterns, excludeDirectories, dirPred)!!.get()!!
       } catch (e: ExecutionException) {
         val cause = e.cause
-        Throwables.propagateIfPossible<IOException?>(cause, IOException::class.java)
+        if (cause != null) {
+          Throwables.throwIfInstanceOf(cause, IOException::class.java)
+        }
         throw RuntimeException(e)
       }
     }
@@ -387,24 +389,22 @@ object StarlarkUnixGlob {
       cache: Cache<String, Pattern>,
       dirPred: Predicate<VirtualFile?>
     ) {
-      enqueue(
-        Runnable {
-          try {
-            reallyGlob(
-              base,
-              baseIsDirectory,
-              patternParts,
-              idx,
-              excludeDirectories,
-              results,
-              cache,
-              dirPred,
-            )
-          } catch (e: IOException) {
-            failure.set(e)
-          }
-        },
-      )
+      enqueue {
+        try {
+          reallyGlob(
+            base,
+            baseIsDirectory,
+            patternParts,
+            idx,
+            excludeDirectories,
+            results,
+            cache,
+            dirPred,
+          )
+        } catch (e: IOException) {
+          failure.set(e)
+        }
+      }
     }
 
     fun enqueue(r: Runnable) {
