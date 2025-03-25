@@ -41,6 +41,8 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
           Label.parse("@maven//:lib1"),
         ),
         BuildTargetCapabilities(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
     val allTargets = setOf<Label>()
 
@@ -66,6 +68,8 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
           Label.parse("@maven//:lib1"),
         ),
         BuildTargetCapabilities(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
     val allTargets =
       setOf(
@@ -105,6 +109,8 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
           Label.parse("@maven//:lib2"),
         ),
         BuildTargetCapabilities(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
     val allTargets =
       setOf(
@@ -155,6 +161,8 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
           Label.parse("@maven//:lib2"),
         ),
         BuildTargetCapabilities(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
     val buildTarget2 =
       BuildTarget(
@@ -167,6 +175,8 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
           Label.parse("@maven//:lib2"),
         ),
         BuildTargetCapabilities(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
 
     val allTargets =

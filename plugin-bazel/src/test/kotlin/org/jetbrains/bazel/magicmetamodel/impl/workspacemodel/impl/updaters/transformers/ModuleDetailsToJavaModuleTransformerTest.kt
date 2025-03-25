@@ -26,9 +26,7 @@ import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
-import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourcesItem
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -48,24 +46,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val javaHome = "/fake/path/to/local_jdk"
     val javaVersion = "11"
 
-    val data = JvmBuildTarget(javaHome, javaVersion)
-
-    val buildTargetId = Label.parse("module1")
-    val buildTarget =
-      BuildTarget(
-        buildTargetId,
-        listOf("library"),
-        listOf("java"),
-        listOf(
-          Label.parse("module2"),
-          Label.parse("module3"),
-          Label.parse("@maven//:lib1"),
-        ),
-        BuildTargetCapabilities(),
-        baseDirectory = projectRoot.toUri().toString(),
-        data = data,
-      )
-
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")
     packageA1Path.toFile().deleteOnExit()
     val packageA2Path = createTempDirectory(packageA1Path, "packageA2")
@@ -82,29 +62,42 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val dir1BPath = createTempDirectory(packageB2Path, "dir1")
     dir1BPath.toFile().deleteOnExit()
 
-    val sourcesItem =
-      SourcesItem(
-        buildTargetId,
-        listOf(
-          SourceItem(
-            uri = file1APath.toUri().toString(),
-            generated = false,
-            jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
-          ),
-          SourceItem(
-            uri = file2APath.toUri().toString(),
-            generated = false,
-            jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
-          ),
-        ),
-      )
-
     val resourceFilePath = createTempFile(projectBasePath, "resource", "File.txt")
     resourceFilePath.toFile().deleteOnExit()
-    val resourcesItem =
-      ResourcesItem(
+
+    val data = JvmBuildTarget(javaHome, javaVersion)
+
+    val buildTargetId = Label.parse("module1")
+    val buildTarget =
+      BuildTarget(
         buildTargetId,
-        listOf(resourceFilePath.toUri().toString()),
+        listOf("library"),
+        listOf("java"),
+        listOf(
+          Label.parse("module2"),
+          Label.parse("module3"),
+          Label.parse("@maven//:lib1"),
+        ),
+        BuildTargetCapabilities(),
+        baseDirectory = projectRoot.toUri().toString(),
+        data = data,
+        sources =
+          listOf(
+            SourceItem(
+              uri = file1APath.toUri().toString(),
+              generated = false,
+              jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+            ),
+            SourceItem(
+              uri = file2APath.toUri().toString(),
+              generated = false,
+              jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+            ),
+          ),
+        resources =
+          listOf(
+            resourceFilePath.toUri().toString(),
+          ),
       )
 
     val javacOptionsItem =
@@ -116,8 +109,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val moduleDetails =
       ModuleDetails(
         target = buildTarget,
-        sources = listOf(sourcesItem),
-        resources = listOf(resourcesItem),
         javacOptions = javacOptionsItem,
         scalacOptions = null,
         libraryDependencies = null,
@@ -228,6 +219,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         BuildTargetCapabilities(),
         baseDirectory = projectRoot.toUri().toString(),
         data = kotlinBuildTarget,
+        sources = emptyList(),
+        resources = emptyList(),
       )
 
     val resourceFilePath = createTempFile(projectBasePath, "resource", "File.txt")
@@ -235,8 +228,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val moduleDetails =
       ModuleDetails(
         target = buildTarget,
-        sources = listOf(),
-        resources = listOf(),
         javacOptions = null,
         scalacOptions = null,
         libraryDependencies = emptyList(),
@@ -308,6 +299,20 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val module1Root = createTempDirectory(projectBasePath, "module1").toAbsolutePath()
     module1Root.toFile().deleteOnExit()
 
+    val packageA1Path = createTempDirectory(module1Root, "packageA1")
+    packageA1Path.toFile().deleteOnExit()
+    val packageA2Path = createTempDirectory(packageA1Path, "packageA2")
+    packageA2Path.toFile().deleteOnExit()
+    val file1APath = createTempFile(packageA2Path, "File1", ".java")
+    file1APath.toFile().deleteOnExit()
+    val file2APath = createTempFile(packageA2Path, "File2", ".java")
+    file2APath.toFile().deleteOnExit()
+
+    val resourceFilePath11 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File1.txt")
+    resourceFilePath11.toFile().deleteOnExit()
+    val resourceFilePath12 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File2.txt")
+    resourceFilePath12.toFile().deleteOnExit()
+
     val buildTargetId1 = Label.parse("module1")
     val buildTarget1 =
       BuildTarget(
@@ -321,45 +326,24 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         ),
         BuildTargetCapabilities(),
         baseDirectory = module1Root.toUri().toString(),
-      )
-
-    val packageA1Path = createTempDirectory(module1Root, "packageA1")
-    packageA1Path.toFile().deleteOnExit()
-    val packageA2Path = createTempDirectory(packageA1Path, "packageA2")
-    packageA2Path.toFile().deleteOnExit()
-    val file1APath = createTempFile(packageA2Path, "File1", ".java")
-    file1APath.toFile().deleteOnExit()
-    val file2APath = createTempFile(packageA2Path, "File2", ".java")
-    file2APath.toFile().deleteOnExit()
-
-    val sourcesItem1 =
-      SourcesItem(
-        buildTargetId1,
-        listOf(
-          SourceItem(
-            uri = file1APath.toUri().toString(),
-            generated = false,
-            jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+        sources =
+          listOf(
+            SourceItem(
+              uri = file1APath.toUri().toString(),
+              generated = false,
+              jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+            ),
+            SourceItem(
+              uri = file2APath.toUri().toString(),
+              generated = false,
+              jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+            ),
           ),
-          SourceItem(
-            uri = file2APath.toUri().toString(),
-            generated = false,
-            jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+        resources =
+          listOf(
+            resourceFilePath11.toUri().toString(),
+            resourceFilePath12.toUri().toString(),
           ),
-        ),
-      )
-
-    val resourceFilePath11 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File1.txt")
-    resourceFilePath11.toFile().deleteOnExit()
-    val resourceFilePath12 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File2.txt")
-    resourceFilePath12.toFile().deleteOnExit()
-    val resourcesItem1 =
-      ResourcesItem(
-        buildTargetId1,
-        listOf(
-          resourceFilePath11.toUri().toString(),
-          resourceFilePath12.toUri().toString(),
-        ),
       )
 
     val target1JavacOptionsItem =
@@ -371,8 +355,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val moduleDetails1 =
       ModuleDetails(
         target = buildTarget1,
-        sources = listOf(sourcesItem1),
-        resources = listOf(resourcesItem1),
         javacOptions = target1JavacOptionsItem,
         scalacOptions = null,
         libraryDependencies = null,
@@ -388,6 +370,15 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
     module2Root.toFile().deleteOnExit()
 
+    val packageC1Path = createTempDirectory(module2Root, "packageC1")
+    packageC1Path.toFile().deleteOnExit()
+    val packageC2Path = createTempDirectory(packageC1Path, "packageC2")
+    packageC2Path.toFile().deleteOnExit()
+    val dir1CPath = createTempFile(packageC2Path, "File1", ".java")
+    dir1CPath.toFile().deleteOnExit()
+
+    val resourceDirPath21 = Files.createTempDirectory(projectBasePath.toAbsolutePath(), "resource")
+
     val buildTargetId2 = Label.parse("module2")
     val buildTarget2 =
       BuildTarget(
@@ -400,32 +391,18 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         ),
         BuildTargetCapabilities(),
         baseDirectory = module2Root.toUri().toString(),
-      )
-
-    val packageC1Path = createTempDirectory(module2Root, "packageC1")
-    packageC1Path.toFile().deleteOnExit()
-    val packageC2Path = createTempDirectory(packageC1Path, "packageC2")
-    packageC2Path.toFile().deleteOnExit()
-    val dir1CPath = createTempFile(packageC2Path, "File1", ".java")
-    dir1CPath.toFile().deleteOnExit()
-
-    val sourcesItem2 =
-      SourcesItem(
-        buildTargetId2,
-        listOf(
-          SourceItem(
-            uri = dir1CPath.toUri().toString(),
-            generated = false,
-            jvmPackagePrefix = "${packageC1Path.name}.${packageC2Path.name}",
+        sources =
+          listOf(
+            SourceItem(
+              uri = dir1CPath.toUri().toString(),
+              generated = false,
+              jvmPackagePrefix = "${packageC1Path.name}.${packageC2Path.name}",
+            ),
           ),
-        ),
-      )
-
-    val resourceDirPath21 = Files.createTempDirectory(projectBasePath.toAbsolutePath(), "resource")
-    val resourcesItem2 =
-      ResourcesItem(
-        buildTargetId2,
-        listOf(resourceDirPath21.toUri().toString()),
+        resources =
+          listOf(
+            resourceDirPath21.toUri().toString(),
+          ),
       )
 
     val target2JavacOptionsItem =
@@ -437,8 +414,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val moduleDetails2 =
       ModuleDetails(
         target = buildTarget2,
-        sources = listOf(sourcesItem2),
-        resources = listOf(resourcesItem2),
         javacOptions = target2JavacOptionsItem,
         scalacOptions = null,
         libraryDependencies = null,
@@ -568,22 +543,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val data = JvmBuildTarget(javaHome, javaVersion)
 
-    val buildTargetId = Label.parse("module1")
-    val buildTarget =
-      BuildTarget(
-        buildTargetId,
-        listOf("library"),
-        listOf("java"),
-        listOf(
-          Label.parse("module2"),
-          Label.parse("module3"),
-          Label.parse("@maven//:lib1"),
-        ),
-        BuildTargetCapabilities(),
-        baseDirectory = projectRoot.toUri().toString(),
-        data = data,
-      )
-
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")
     packageA1Path.toFile().deleteOnExit()
     val packageA2Path = createTempDirectory(packageA1Path, "packageA2")
@@ -601,29 +560,37 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val packageB2Path = createTempDirectory(packageB1Path, "packageB2")
     packageB2Path.toFile().deleteOnExit()
 
-    val sourcesItem =
-      SourcesItem(
-        buildTargetId,
-        listOf(
-          SourceItem(
-            uri = file1APath.toUri().toString(),
-            generated = false,
-            jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
-          ),
-          SourceItem(
-            uri = file2APath.toUri().toString(),
-            generated = false,
-            jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
-          ),
-        ),
-      )
-
     val resourceFilePath = createTempFile(projectBasePath, "resource", "File.txt")
     resourceFilePath.toFile().deleteOnExit()
-    val resourcesItem =
-      ResourcesItem(
+
+    val buildTargetId = Label.parse("module1")
+    val buildTarget =
+      BuildTarget(
         buildTargetId,
-        listOf(resourceFilePath.toUri().toString()),
+        listOf("library"),
+        listOf("java"),
+        listOf(
+          Label.parse("module2"),
+          Label.parse("module3"),
+          Label.parse("@maven//:lib1"),
+        ),
+        BuildTargetCapabilities(),
+        baseDirectory = projectRoot.toUri().toString(),
+        data = data,
+        sources =
+          listOf(
+            SourceItem(
+              uri = file1APath.toUri().toString(),
+              generated = false,
+              jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+            ),
+            SourceItem(
+              uri = file2APath.toUri().toString(),
+              generated = false,
+              jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+            ),
+          ),
+        resources = listOf(resourceFilePath.toUri().toString()),
       )
 
     val javacOptionsItem =
@@ -635,8 +602,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val moduleDetails =
       ModuleDetails(
         target = buildTarget,
-        sources = listOf(sourcesItem),
-        resources = listOf(resourcesItem),
         javacOptions = javacOptionsItem,
         scalacOptions = null,
         libraryDependencies = null,
@@ -795,6 +760,8 @@ class ExtractJvmBuildTargetTest {
         displayName = "target name",
         baseDirectory = "/base/dir",
         data = data,
+        sources = listOf(SourceItem("file://\$WORKSPACE/src/Main.java", false)),
+        resources = emptyList(),
       )
     return buildTarget
   }

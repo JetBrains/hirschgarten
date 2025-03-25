@@ -27,8 +27,6 @@ import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
-import org.jetbrains.bsp.protocol.ResourcesResult
-import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -62,8 +60,6 @@ private val mockWorkspaceContext =
 private val mockBuildServer =
   BuildServerMock(
     workspaceBuildTargetsResult = WorkspaceBuildTargetsResult(emptyList()),
-    sourcesResult = SourcesResult(emptyList()),
-    resourcesResult = ResourcesResult(emptyList()),
     workspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
     workspaceLibrariesResult = WorkspaceLibrariesResult(emptyList()),
     workspaceNonModuleTargetsResult = NonModuleTargetsResult(emptyList()),

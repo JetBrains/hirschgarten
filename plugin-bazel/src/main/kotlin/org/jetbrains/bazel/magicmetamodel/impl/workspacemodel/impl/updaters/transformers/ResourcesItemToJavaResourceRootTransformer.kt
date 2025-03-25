@@ -4,16 +4,12 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.ResourcesItem
 import kotlin.io.path.toPath
 
-internal data class BuildTargetAndResourcesItem(val buildTarget: BuildTarget, val resourcesItem: ResourcesItem)
-
-internal class ResourcesItemToJavaResourceRootTransformer :
-  WorkspaceModelEntityPartitionTransformer<BuildTargetAndResourcesItem, ResourceRoot> {
-  override fun transform(inputEntity: BuildTargetAndResourcesItem): List<ResourceRoot> {
-    val rootType = inputEntity.buildTarget.inferRootType()
-    return inputEntity.resourcesItem.resources
+internal class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartitionTransformer<BuildTarget, ResourceRoot> {
+  override fun transform(inputEntity: BuildTarget): List<ResourceRoot> {
+    val rootType = inputEntity.inferRootType()
+    return inputEntity.resources
       .map { toJavaResourceRoot(it, rootType) }
       .distinct()
   }

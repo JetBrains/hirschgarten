@@ -10,6 +10,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.seconds
@@ -87,7 +88,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         Label.parse("$targetPrefix//kotlinc_test:Foo"),
         tags = listOf("application"),
         languageIds = listOf("java", "kotlin"),
-        dependencies = listOf(Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString())),
+        dependencies = listOf(Label.synthetic("rules_kotlin_kotlin-stdlibs")),
         capabilities =
           BuildTargetCapabilities(
             canCompile = true,
@@ -98,6 +99,14 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         displayName = "//kotlinc_test:Foo",
         baseDirectory = "file://\$WORKSPACE/kotlinc_test/",
         data = kotlincTestBuildTargetData,
+        sources =
+          listOf(
+            SourceItem(
+              generated = false,
+              uri = "file://\$WORKSPACE/kotlinc_test/Foo.kt",
+            ),
+          ),
+        resources = emptyList(),
       )
 
     val openForTestingBuildTarget =
@@ -105,7 +114,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         Label.parse("$targetPrefix//plugin_allopen_test:open_for_testing"),
         tags = listOf("library"),
         languageIds = listOf("java", "kotlin"),
-        dependencies = listOf(Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString())),
+        dependencies = listOf(Label.synthetic("rules_kotlin_kotlin-stdlibs")),
         capabilities =
           BuildTargetCapabilities(
             canCompile = true,
@@ -116,6 +125,15 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         displayName = "//plugin_allopen_test:open_for_testing",
         baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
         data = kotlinBuildTargetData,
+        sources =
+          listOf(
+            SourceItem(
+              generated = false,
+              uri = "file://\$WORKSPACE/plugin_allopen_test/OpenForTesting.kt",
+              jvmPackagePrefix = "plugin.allopen",
+            ),
+          ),
+        resources = emptyList(),
       )
 
     val bzlmodPluginRepo =
@@ -167,9 +185,9 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         languageIds = listOf("java", "kotlin"),
         dependencies =
           listOf(
-            Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
+            Label.synthetic("rules_kotlin_kotlin-stdlibs"),
             Label.parse("@//plugin_allopen_test:open_for_testing"),
-            Label.parse(Label.synthetic("allopen-compiler-plugin.jar").toString()),
+            Label.synthetic("allopen-compiler-plugin.jar"),
           ),
         capabilities =
           BuildTargetCapabilities(
@@ -181,6 +199,15 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         displayName = "//plugin_allopen_test:user",
         baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
         data = userBuildTargetData,
+        sources =
+          listOf(
+            SourceItem(
+              generated = false,
+              uri = "file://\$WORKSPACE/plugin_allopen_test/User.kt",
+              jvmPackagePrefix = "plugin.allopen",
+            ),
+          ),
+        resources = emptyList(),
       )
 
     val userOfExportBuildTarget =
@@ -190,9 +217,9 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         languageIds = listOf("java", "kotlin"),
         dependencies =
           listOf(
-            Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
+            Label.synthetic("rules_kotlin_kotlin-stdlibs"),
             Label.parse("@//plugin_allopen_test:open_for_testing_export"),
-            Label.parse(Label.synthetic("allopen-compiler-plugin.jar").toString()),
+            Label.synthetic("allopen-compiler-plugin.jar"),
           ),
         capabilities =
           BuildTargetCapabilities(
@@ -204,6 +231,15 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         displayName = "//plugin_allopen_test:user_of_export",
         baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
         data = userOfExportBuildTargetData,
+        sources =
+          listOf(
+            SourceItem(
+              generated = false,
+              uri = "file://\$WORKSPACE/plugin_allopen_test/User.kt",
+              jvmPackagePrefix = "plugin.allopen",
+            ),
+          ),
+        resources = emptyList(),
       )
 
     val openForTestingExport =
@@ -213,7 +249,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         languageIds = listOf("java", "kotlin"),
         dependencies =
           listOf(
-            Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
+            Label.synthetic("rules_kotlin_kotlin-stdlibs"),
             Label.parse("@//plugin_allopen_test:open_for_testing"),
           ),
         capabilities =
@@ -226,6 +262,9 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         displayName = "//plugin_allopen_test:open_for_testing_export",
         baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
         data = kotlinBuildTargetData,
+        sources =
+          listOf(),
+        resources = emptyList(),
       )
 
     return WorkspaceBuildTargetsResult(

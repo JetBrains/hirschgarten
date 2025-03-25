@@ -33,8 +33,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.orDefault
-import org.jetbrains.bazel.sync.BaseTargetInfo
-import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
@@ -48,6 +46,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import kotlin.io.path.Path
 import kotlin.io.path.toPath
@@ -61,7 +60,7 @@ class PythonProjectSync : ProjectSyncHook {
   override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isPythonSupportEnabled
 
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
-    val pythonTargets = environment.baseTargetInfos.calculatePythonTargets()
+    val pythonTargets = environment.buildTargets.calculatePythonTargets()
     val moduleNameProvider = environment.project.findNameProvider().orDefault()
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
     val sdks = calculateAndAddSdks(pythonTargets, environment, virtualFileUrlManager)
@@ -69,7 +68,7 @@ class PythonProjectSync : ProjectSyncHook {
     sdks.values.updateAll(environment.project)
 
     pythonTargets.forEach {
-      val moduleName = moduleNameProvider(BuildTargetInfo(id = it.target.id))
+      val moduleName = moduleNameProvider(BuildTargetInfo(id = it.id))
       val moduleSourceEntity = BspModuleEntitySource(moduleName)
 
       addModuleEntityFromTarget(
@@ -79,16 +78,16 @@ class PythonProjectSync : ProjectSyncHook {
         entitySource = moduleSourceEntity,
         virtualFileUrlManager = virtualFileUrlManager,
         moduleNameProvider = moduleNameProvider,
-        sdks[it.target.id],
+        sdks[it.id],
       )
     }
   }
 
-  private fun BaseTargetInfos.calculatePythonTargets(): List<BaseTargetInfo> = infos.filter { it.target.languageIds.contains("python") }
+  private fun WorkspaceBuildTargetsResult.calculatePythonTargets(): List<BuildTarget> = targets.filter { it.languageIds.contains("python") }
 
   private fun addModuleEntityFromTarget(
     builder: MutableEntityStorage,
-    target: BaseTargetInfo,
+    target: BuildTarget,
     moduleName: String,
     entitySource: BspModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
@@ -98,7 +97,7 @@ class PythonProjectSync : ProjectSyncHook {
     val contentRoots = getContentRootEntities(target, entitySource, virtualFileUrlManager)
 
     val dependencies =
-      target.target.dependencies.map {
+      target.dependencies.map {
         ModuleDependency(
           module = ModuleId(moduleNameProvider(BuildTargetInfo(id = it))),
           exported = true,
@@ -124,7 +123,7 @@ class PythonProjectSync : ProjectSyncHook {
   private fun Sdk.toModuleDependencyItem(): ModuleDependencyItem = SdkDependency(SdkId(name, PYTHON_SDK_ID))
 
   private fun getContentRootEntities(
-    target: BaseTargetInfo,
+    target: BuildTarget,
     entitySource: BspModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> {
@@ -135,57 +134,53 @@ class PythonProjectSync : ProjectSyncHook {
   }
 
   private fun getSourceContentRootEntities(
-    target: BaseTargetInfo,
+    target: BuildTarget,
     entitySource: BspModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
-    target.sources.flatMap {
-      it.sources.map { source ->
-        val sourceUrl = virtualFileUrlManager.getOrCreateFromUrl(source.uri)
-        val sourceRootEntity =
-          SourceRootEntity(
-            url = sourceUrl,
-            rootTypeId = SourceRootTypeId(PYTHON_SOURCE_ROOT_TYPE),
-            entitySource = entitySource,
-          )
-        ContentRootEntity(
+    target.sources.map { source ->
+      val sourceUrl = virtualFileUrlManager.getOrCreateFromUrl(source.uri)
+      val sourceRootEntity =
+        SourceRootEntity(
           url = sourceUrl,
-          excludedPatterns = emptyList(),
+          rootTypeId = SourceRootTypeId(PYTHON_SOURCE_ROOT_TYPE),
           entitySource = entitySource,
-        ) {
-          this.excludedUrls = emptyList()
-          this.sourceRoots = listOf(sourceRootEntity)
-        }
+        )
+      ContentRootEntity(
+        url = sourceUrl,
+        excludedPatterns = emptyList(),
+        entitySource = entitySource,
+      ) {
+        this.excludedUrls = emptyList()
+        this.sourceRoots = listOf(sourceRootEntity)
       }
     }
 
   private fun getResourceContentRootEntities(
-    target: BaseTargetInfo,
+    target: BuildTarget,
     entitySource: BspModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
-    target.resources.flatMap {
-      it.resources.map { resource ->
-        val resourceUrl = virtualFileUrlManager.getOrCreateFromUrl(resource)
-        val resourceRootEntity =
-          SourceRootEntity(
-            url = resourceUrl,
-            rootTypeId = SourceRootTypeId(PYTHON_RESOURCE_ROOT_TYPE),
-            entitySource = entitySource,
-          )
-        ContentRootEntity(
+    target.resources.map { resource ->
+      val resourceUrl = virtualFileUrlManager.getOrCreateFromUrl(resource)
+      val resourceRootEntity =
+        SourceRootEntity(
           url = resourceUrl,
-          excludedPatterns = emptyList(),
+          rootTypeId = SourceRootTypeId(PYTHON_RESOURCE_ROOT_TYPE),
           entitySource = entitySource,
-        ) {
-          this.excludedUrls = emptyList()
-          this.sourceRoots = listOf(resourceRootEntity)
-        }
+        )
+      ContentRootEntity(
+        url = resourceUrl,
+        excludedPatterns = emptyList(),
+        entitySource = entitySource,
+      ) {
+        this.excludedUrls = emptyList()
+        this.sourceRoots = listOf(resourceRootEntity)
       }
     }
 
   private suspend fun calculateAndAddSdks(
-    targets: List<BaseTargetInfo>,
+    targets: List<BuildTarget>,
     environment: ProjectSyncHookEnvironment,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): Map<Label, Sdk> =
@@ -201,7 +196,7 @@ class PythonProjectSync : ProjectSyncHook {
 
   private suspend fun doCalculateAndAddSdks(
     targetIdToDependenciesSourcesMap: Map<String, List<DependencySourcesItem>>,
-    targets: List<BaseTargetInfo>,
+    targets: List<BuildTarget>,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): Map<Label, Sdk> {
     val detectedSdk: PyDetectedSdk? = getSystemSdk()
@@ -209,27 +204,27 @@ class PythonProjectSync : ProjectSyncHook {
       .mapNotNull { targetInfo ->
         val sdk =
           calculateAndAddSdkIfPossible(
-            target = targetInfo.target,
-            dependenciesSources = targetIdToDependenciesSourcesMap[targetInfo.target.id.toShortString()] ?: emptyList(),
+            target = targetInfo,
+            dependenciesSources = targetIdToDependenciesSourcesMap[targetInfo.id.toShortString()] ?: emptyList(),
             defaultSdk = detectedSdk,
             virtualFileUrlManager = virtualFileUrlManager,
           ) ?: return@mapNotNull null
 
-        targetInfo.target.id to sdk
+        targetInfo.id to sdk
       }.toMap()
   }
 
   private suspend fun calculateDependenciesSources(
-    targets: List<BaseTargetInfo>,
+    targets: List<BuildTarget>,
     environment: ProjectSyncHookEnvironment,
   ): Map<String, List<DependencySourcesItem>> = queryDependenciesSources(environment, targets).items.groupBy { it.target.toShortString() }
 
   private suspend fun queryDependenciesSources(
     environment: ProjectSyncHookEnvironment,
-    targets: List<BaseTargetInfo>,
+    targets: List<BuildTarget>,
   ): DependencySourcesResult =
     query("buildTarget/dependencySources") {
-      environment.server.buildTargetDependencySources(DependencySourcesParams(targets.map { it.target.id }))
+      environment.server.buildTargetDependencySources(DependencySourcesParams(targets.map { it.id }))
     }
 
   private suspend fun calculateAndAddSdkIfPossible(
