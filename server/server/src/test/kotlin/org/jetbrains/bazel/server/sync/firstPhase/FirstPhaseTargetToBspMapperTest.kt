@@ -219,7 +219,7 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.LIBRARY),
             languageIds = listOf("java"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false, canDebug = false),
+            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false),
             sources =
               listOf(
                 SourceItem(target1Src1.toUri().toString(), false, "com.example"),
@@ -237,7 +237,7 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.APPLICATION),
             languageIds = listOf("java", "kotlin"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = true, canTest = false, canDebug = false),
+            capabilities = BuildTargetCapabilities(canCompile = true, canRun = true, canTest = false),
             sources =
               listOf(
                 SourceItem(target2Src1.toUri().toString(), false, "com.example"),
@@ -251,7 +251,7 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.TEST),
             languageIds = listOf("java"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = true, canDebug = false),
+            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = true),
             sources = emptyList(),
             resources =
               listOf(
@@ -265,7 +265,7 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.LIBRARY),
             languageIds = listOf("kotlin"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false, canDebug = false),
+            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false),
             sources = emptyList(),
             resources = emptyList(),
           ),
@@ -275,7 +275,7 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.APPLICATION),
             languageIds = listOf("kotlin"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = true, canTest = false, canDebug = false),
+            capabilities = BuildTargetCapabilities(canCompile = true, canRun = true, canTest = false),
             sources = emptyList(),
             resources = emptyList(),
           ),
@@ -285,7 +285,7 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.TEST),
             languageIds = listOf("kotlin"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = true, canDebug = false),
+            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = true),
             sources = emptyList(),
             resources = emptyList(),
           ),
@@ -295,7 +295,7 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.LIBRARY),
             languageIds = listOf("java"),
             dependencies = emptyList(),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false, canDebug = false),
+            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false),
             sources =
               listOf(
                 SourceItem(target7Src1.toUri().toString(), false, "com.example"),
@@ -309,7 +309,7 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.LIBRARY),
             languageIds = listOf("java", "kotlin"),
             dependencies = emptyList(),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false, canDebug = false),
+            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false),
             sources =
               listOf(
                 // note: the direct mapping for "//target8:src1.kt" becomes workspaceRoot/target8/src1.kt
@@ -331,7 +331,7 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.LIBRARY),
             languageIds = listOf("java"),
             dependencies = emptyList(),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false, canDebug = false),
+            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false),
             sources =
               listOf(
                 SourceItem(fgSrc1.toUri().toString(), false, "com.fg"),
