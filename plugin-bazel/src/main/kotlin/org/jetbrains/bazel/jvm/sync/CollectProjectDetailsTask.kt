@@ -56,7 +56,6 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bazel.workspacemodel.entities.includesJava
 import org.jetbrains.bazel.workspacemodel.entities.includesScala
-import org.jetbrains.bazel.workspacemodel.entities.toBuildTargetInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -270,10 +269,7 @@ class CollectProjectDetailsTask(
         val targetIdToModuleEntitiesMap =
           bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
             val syncedTargetIdToTargetInfo =
-              (projectDetails.targets).associate {
-                it.id to
-                  it.toBuildTargetInfo()
-              }
+              (projectDetails.targets).associateBy { it.id }
 
             val targetIdToTargetInfo =
               if (syncScope is FullProjectSync) {

@@ -756,7 +756,6 @@ class ExtractJvmBuildTargetTest {
           canTest = false,
           canRun = true,
         ),
-        displayName = "target name",
         baseDirectory = "/base/dir",
         data = data,
         sources = listOf(SourceItem("file://\$WORKSPACE/src/Main.java", false)),

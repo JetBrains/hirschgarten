@@ -23,8 +23,6 @@ import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
-import org.jetbrains.bazel.target.TargetUtils
-import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.CompileParams
@@ -76,10 +74,9 @@ class PythonDebugCommandLineState(
 
 private fun getSdkForTarget(project: Project, target: Label): Sdk {
   val storage = WorkspaceModel.getInstance(project).currentSnapshot
-  val targetUtils = project.targetUtils
   val moduleNameProvider = project.findNameProvider()
   return moduleNameProvider
-    ?.let { target.toModuleEntity(storage, it, targetUtils) } // module
+    .let { target.toModuleEntity(storage, it) } // module
     ?.dependencies // module's dependencies
     ?.firstNotNullOfOrNull { it as? SdkDependency } // first SDK dependency
     ?.sdk
@@ -88,13 +85,8 @@ private fun getSdkForTarget(project: Project, target: Label): Sdk {
     ?: error(BazelPluginBundle.message("python.debug.error.no.sdk", target))
 }
 
-private fun Label.toModuleEntity(
-  storage: ImmutableEntityStorage,
-  moduleNameProvider: TargetNameReformatProvider,
-  targetUtils: TargetUtils,
-): ModuleEntity? {
-  val targetInfo = targetUtils.getBuildTargetInfoForLabel(this) ?: return null
-  val moduleName = moduleNameProvider(targetInfo)
+private fun Label.toModuleEntity(storage: ImmutableEntityStorage, moduleNameProvider: TargetNameReformatProvider): ModuleEntity? {
+  val moduleName = moduleNameProvider(this)
   val moduleId = ModuleId(moduleName)
   return storage.resolve(moduleId)
 }

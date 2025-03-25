@@ -5,10 +5,10 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasTestFilter
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 
 class RunWithCoverageAction(
-  targetInfos: List<BuildTargetInfo>,
+  targetInfos: List<BuildTarget>,
   text: ((includeTargetNameInText: Boolean) -> String)? = null,
   includeTargetNameInText: Boolean = false,
   private val singleTestFilter: String? = null,
@@ -20,7 +20,7 @@ class RunWithCoverageAction(
       } else {
         BazelPluginBundle.message(
           "target.run.with.coverage.action.text",
-          if (includeTargetNameInTextParam || includeTargetNameInText) targetInfos.joinToString(";") { it.buildTargetName } else "",
+          if (includeTargetNameInTextParam || includeTargetNameInText) targetInfos.joinToString(";") { it.displayName } else "",
           BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       }

@@ -26,8 +26,8 @@ import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BuildTargetContainer
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.isJvmTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.awt.Component
 import java.awt.event.MouseEvent
 
@@ -70,7 +70,7 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
     }
   }
 
-  private fun calculatePopupGroup(target: BuildTargetInfo): ActionGroup =
+  private fun calculatePopupGroup(target: BuildTarget): ActionGroup =
     DefaultActionGroup().apply {
       ResyncTargetAction.createIfEnabled(target.id)?.let { addAction(it) }
       addAction(container.copyTargetIdAction)
@@ -83,7 +83,7 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
       if (StarlarkDebugAction.isApplicableTo(target)) add(StarlarkDebugAction(target.id))
     }
 
-  private fun calculatePopupGroup(targets: List<BuildTargetInfo>): ActionGroup? {
+  private fun calculatePopupGroup(targets: List<BuildTarget>): ActionGroup? {
     val testTargets = targets.filter { it.capabilities.canTest }
     return if (testTargets.isEmpty()) {
       null
@@ -117,7 +117,7 @@ private fun BazelRunnerAction.prepareAndPerform(project: Project) {
 @Suppress("CognitiveComplexMethod")
 fun DefaultActionGroup.fillWithEligibleActions(
   project: Project,
-  target: BuildTargetInfo,
+  target: BuildTarget,
   includeTargetNameInText: Boolean,
   singleTestFilter: String? = null,
 ): DefaultActionGroup {
@@ -157,7 +157,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
   return this
 }
 
-internal class RunAllTestsActionInTargetTreeAction(private val targets: List<BuildTargetInfo>, private val directoryName: String) :
+internal class RunAllTestsActionInTargetTreeAction(private val targets: List<BuildTarget>, private val directoryName: String) :
   SuspendableAction(
     text = { BazelPluginBundle.message("action.run.all.tests") },
     icon = AllIcons.Actions.Execute,
@@ -172,10 +172,8 @@ internal class RunAllTestsActionInTargetTreeAction(private val targets: List<Bui
   }
 }
 
-internal class RunAllTestsActionWithCoverageInTargetTreeAction(
-  private val targets: List<BuildTargetInfo>,
-  private val directoryName: String,
-) : SuspendableAction(
+internal class RunAllTestsActionWithCoverageInTargetTreeAction(private val targets: List<BuildTarget>, private val directoryName: String) :
+  SuspendableAction(
     text = { BazelPluginBundle.message("action.run.all.tests.with.coverage") },
     icon = AllIcons.General.RunWithCoverage,
   ) {

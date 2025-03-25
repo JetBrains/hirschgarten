@@ -29,7 +29,6 @@ import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactly
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.DependencySourcesResult
@@ -213,7 +212,6 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         listOf("python"),
         info.dependencies,
         BuildTargetCapabilities(),
-        displayName = info.targetId.toString(),
         baseDirectory = "file:///targets_base_dir",
         data =
           PythonBuildTarget(
@@ -236,7 +234,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val moduleDependencies: List<ModuleDependencyItem> =
       dependenciesTargetInfo.map {
         ModuleDependency(
-          module = ModuleId(nameProvider(BuildTargetInfo(id = it.targetId))),
+          module = ModuleId(nameProvider(it.targetId)),
           exported = true,
           scope = DependencyScope.COMPILE,
           productionOnTest = true,
@@ -245,7 +243,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     return ExpectedModuleEntity(
       moduleEntity =
         ModuleEntity(
-          name = nameProvider(BuildTargetInfo(id = targetInfo.targetId)),
+          name = nameProvider(targetInfo.targetId),
           entitySource = BspProjectEntitySource,
           dependencies = moduleDependencies + sdkDependency,
         ) {

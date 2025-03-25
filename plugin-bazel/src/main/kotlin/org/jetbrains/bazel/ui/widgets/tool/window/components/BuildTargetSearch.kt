@@ -11,7 +11,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.search.LazySearchDisplay
 import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.awt.Point
 import java.util.concurrent.Callable
 import javax.swing.Icon
@@ -22,7 +22,7 @@ import javax.swing.SwingConstants
 class BuildTargetSearch(
   private val targetIcon: Icon,
   private val toolName: String,
-  targets: Collection<BuildTargetInfo>,
+  targets: Collection<BuildTarget>,
   val searchBarPanel: SearchBarPanel,
 ) : BuildTargetContainer {
   private val targetSearchPanel: JPanel = JPanel(VerticalLayout(0))
@@ -39,7 +39,7 @@ class BuildTargetSearch(
       SwingConstants.CENTER,
     )
 
-  private val targets = targets.sortedBy { it.buildTargetName }
+  private val targets = targets.sortedBy { it.displayName }
 
   private var popupHandlerBuilder: ((BuildTargetContainer) -> PopupHandler)? = null
   private val queryChangeListeners = mutableSetOf<() -> Unit>()
@@ -127,9 +127,9 @@ class BuildTargetSearch(
     queryChangeListeners.add(listener)
   }
 
-  override fun getSelectedBuildTarget(): BuildTargetInfo? = chooseTargetSearchPanel().getSelectedBuildTarget()
+  override fun getSelectedBuildTarget(): BuildTarget? = chooseTargetSearchPanel().getSelectedBuildTarget()
 
-  override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTargetInfo> =
+  override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget> =
     listOfNotNull(chooseTargetSearchPanel().getSelectedBuildTarget())
 
   override fun getSelectedComponentName(): String = chooseTargetSearchPanel().getSelectedBuildTarget()?.displayName ?: ""
@@ -140,19 +140,19 @@ class BuildTargetSearch(
     chooseTargetSearchPanel().selectTopTargetAndFocus()
   }
 
-  override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>, newInvalidTargets: List<Label>): BuildTargetSearch {
+  override fun createNewWithTargets(newTargets: Collection<BuildTarget>, newInvalidTargets: List<Label>): BuildTargetSearch {
     val new = BuildTargetSearch(targetIcon, toolName, newTargets, searchBarPanel)
     popupHandlerBuilder?.let { new.registerPopupHandler(it) }
     return new
   }
 
-  private class SearchCallable(private val query: Regex, private val targets: Collection<BuildTargetInfo>) : Callable<SearchResults> {
+  private class SearchCallable(private val query: Regex, private val targets: Collection<BuildTarget>) : Callable<SearchResults> {
     override fun call(): SearchResults =
       SearchResults(
         query,
-        targets.filter { query.containsMatchIn(it.buildTargetName) },
+        targets.filter { query.containsMatchIn(it.displayName) },
       )
   }
 }
 
-private data class SearchResults(val query: Regex, val targets: List<BuildTargetInfo>)
+private data class SearchResults(val query: Regex, val targets: List<BuildTarget>)

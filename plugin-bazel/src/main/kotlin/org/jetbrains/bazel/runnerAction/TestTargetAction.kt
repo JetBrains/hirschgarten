@@ -5,10 +5,10 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasTestFilter
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 
 class TestTargetAction(
-  targetInfos: List<BuildTargetInfo>,
+  targetInfos: List<BuildTarget>,
   text: ((includeTargetNameInText: Boolean) -> String)? = null,
   isDebugAction: Boolean = false,
   includeTargetNameInText: Boolean = false,
@@ -21,13 +21,13 @@ class TestTargetAction(
       } else if (isDebugAction) {
         BazelPluginBundle.message(
           "target.debug.test.action.text",
-          if (includeTargetNameInTextParam || includeTargetNameInText) targetInfos.joinToString(";") { it.buildTargetName } else "",
+          if (includeTargetNameInTextParam || includeTargetNameInText) targetInfos.joinToString(";") { it.displayName } else "",
           BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       } else {
         BazelPluginBundle.message(
           "target.test.action.text",
-          if (includeTargetNameInTextParam || includeTargetNameInText) targetInfos.joinToString(";") { it.buildTargetName } else "",
+          if (includeTargetNameInTextParam || includeTargetNameInText) targetInfos.joinToString(";") { it.displayName } else "",
           BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       }

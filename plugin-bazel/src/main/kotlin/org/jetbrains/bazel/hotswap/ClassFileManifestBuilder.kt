@@ -126,7 +126,7 @@ object ClassFileManifestBuilder {
 
   private fun Label.isTestTarget(project: Project): Boolean =
     project.targetUtils
-      .getBuildTargetInfoForLabel(this)
+      .getBuildTargetForLabel(this)
       ?.capabilities
       ?.canTest == true
 

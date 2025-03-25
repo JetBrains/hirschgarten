@@ -55,7 +55,6 @@ object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
           canTest = false,
           canRun = true,
         ),
-        displayName = "//example",
         baseDirectory = "file://\$WORKSPACE/example/",
         data = exampleExampleJvmBuildTarget,
         sources =

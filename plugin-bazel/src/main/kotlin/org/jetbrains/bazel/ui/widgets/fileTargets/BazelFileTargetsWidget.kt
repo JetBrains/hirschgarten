@@ -27,7 +27,7 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.Icon
 
 /**
@@ -102,9 +102,9 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
     }
   }
 
-  private fun List<Label>.getTargetInfos(): List<BuildTargetInfo> = this.mapNotNull { project.targetUtils.getBuildTargetInfoForLabel(it) }
+  private fun List<Label>.getTargetInfos(): List<BuildTarget> = this.mapNotNull { project.targetUtils.getBuildTargetForLabel(it) }
 
-  private fun BuildTargetInfo.calculatePopupGroup(): ActionGroup =
+  private fun BuildTarget.calculatePopupGroup(): ActionGroup =
     DefaultActionGroup(id.toShortString(), true).also {
       ResyncTargetAction.createIfEnabled(id)?.let { resyncTargetAction -> it.add(resyncTargetAction) }
       it.add(CopyTargetIdAction.FromTargetInfo(this))

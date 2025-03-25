@@ -357,7 +357,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val targetsMap = listOf("//target1").toDefaultTargetsMap()
 
     // when
-    val nameProvider: TargetNameReformatProvider = { "${it.id.toShortString()}${it.id.toShortString()}" }
+    val nameProvider: TargetNameReformatProvider = { "${it.toShortString()}${it.toShortString()}" }
     val transformer =
       BspModuleDetailsToModuleTransformer(
         targetsMap,

@@ -63,7 +63,6 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           canTest = false,
           canRun = true,
         ),
-        displayName = "//example",
         baseDirectory = "file://\$WORKSPACE/example/",
         data = examplePythonBuildTarget,
         sources =
@@ -92,7 +91,6 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           canTest = false,
           canRun = false,
         ),
-        displayName = "//lib:example_library",
         baseDirectory = "file://\$WORKSPACE/lib/",
         data = examplePythonBuildTarget,
         sources =
@@ -116,7 +114,6 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           canTest = true,
           canRun = false,
         ),
-        displayName = "//test",
         baseDirectory = "file://\$WORKSPACE/test/",
         data = examplePythonBuildTarget,
         sources =

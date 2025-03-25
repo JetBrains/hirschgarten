@@ -5,3 +5,5 @@ data class BuildTargetCapabilities(
   val canTest: Boolean = false,
   val canRun: Boolean = false,
 )
+
+val BuildTargetCapabilities.isExecutable get() = canTest || canRun

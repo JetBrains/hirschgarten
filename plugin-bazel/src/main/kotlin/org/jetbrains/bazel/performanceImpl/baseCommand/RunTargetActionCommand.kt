@@ -15,7 +15,7 @@ abstract class RunTargetActionCommand(text: String, line: Int) : PlaybackCommand
 
   private suspend fun executeRunTargetAction(project: Project) {
     val id = getTargetId(project) ?: return
-    val targetInfo = project.targetUtils.getBuildTargetInfoForLabel(id) ?: return
+    val targetInfo = project.targetUtils.getBuildTargetForLabel(id) ?: return
     if (targetInfo.capabilities.canTest) {
       TestTargetAction(listOf(targetInfo), isDebugAction = false).doPerformAction(project)
     } else {
