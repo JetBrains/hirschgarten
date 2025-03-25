@@ -1,0 +1,6 @@
+FILE
+  ProjectViewPsiImport(import)
+    PsiElement(ProjectView:import_keyword)('import')
+    PsiWhiteSpace(' ')
+    ProjectViewPsiImportItem(import_item)
+      PsiElement(ProjectView:identifier)('java/com/google/android/myproject/myproject.bazelproject')
