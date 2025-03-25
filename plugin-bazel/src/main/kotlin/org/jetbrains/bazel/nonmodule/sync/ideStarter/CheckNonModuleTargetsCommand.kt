@@ -13,12 +13,12 @@ class CheckNonModuleTargetsCommand(text: String, line: Int) : PlaybackCommandCor
       "Expected targets: //:bin, //:test, actual: $loadedTargets"
     }
 
-    val binInfo = checkNotNull(project.targetUtils.getBuildTargetInfoForLabel(Label.parse("//:bin"))) { "No info for //:bin" }
+    val binInfo = checkNotNull(project.targetUtils.getBuildTargetForLabel(Label.parse("//:bin"))) { "No info for //:bin" }
     check(binInfo.capabilities.canRun) {
       "Expected //:bin to be runnable, actual: ${binInfo.capabilities.canRun}"
     }
 
-    val testInfo = checkNotNull(project.targetUtils.getBuildTargetInfoForLabel(Label.parse("//:test"))) { "No info for //:test" }
+    val testInfo = checkNotNull(project.targetUtils.getBuildTargetForLabel(Label.parse("//:test"))) { "No info for //:test" }
     check(testInfo.capabilities.canTest) {
       "Expected //:test to be testable, actual: ${testInfo.capabilities.canTest}"
     }

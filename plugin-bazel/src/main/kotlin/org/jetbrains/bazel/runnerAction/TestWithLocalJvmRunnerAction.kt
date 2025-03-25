@@ -4,12 +4,12 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.connection
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 
 class TestWithLocalJvmRunnerAction(
-  targetInfo: BuildTargetInfo,
+  targetInfo: BuildTarget,
   text: (() -> String)? = null,
   isDebugMode: Boolean = false,
   includeTargetNameInText: Boolean = false,
@@ -21,12 +21,12 @@ class TestWithLocalJvmRunnerAction(
       } else if (isDebugMode) {
         BazelPluginBundle.message(
           "target.debug.with.jvm.runner.action.text",
-          if (includeTargetNameInText) targetInfo.buildTargetName else "",
+          if (includeTargetNameInText) targetInfo.displayName else "",
         )
       } else {
         BazelPluginBundle.message(
           "target.test.with.jvm.runner.action.text",
-          if (includeTargetNameInText) targetInfo.buildTargetName else "",
+          if (includeTargetNameInText) targetInfo.displayName else "",
         )
       }
     },

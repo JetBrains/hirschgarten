@@ -41,7 +41,6 @@ import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
@@ -68,7 +67,7 @@ class PythonProjectSync : ProjectSyncHook {
     sdks.values.updateAll(environment.project)
 
     pythonTargets.forEach {
-      val moduleName = moduleNameProvider(BuildTargetInfo(id = it.id))
+      val moduleName = moduleNameProvider(it.id)
       val moduleSourceEntity = BspModuleEntitySource(moduleName)
 
       addModuleEntityFromTarget(
@@ -99,7 +98,7 @@ class PythonProjectSync : ProjectSyncHook {
     val dependencies =
       target.dependencies.map {
         ModuleDependency(
-          module = ModuleId(moduleNameProvider(BuildTargetInfo(id = it))),
+          module = ModuleId(moduleNameProvider(it)),
           exported = true,
           scope = DependencyScope.COMPILE,
           productionOnTest = true,

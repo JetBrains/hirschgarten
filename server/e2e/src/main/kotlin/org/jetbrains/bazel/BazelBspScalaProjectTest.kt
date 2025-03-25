@@ -110,7 +110,6 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
           canTest = false,
           canRun = false,
         ),
-        displayName = "//scala_targets:library",
         baseDirectory = "file://\$WORKSPACE/scala_targets/",
         data = scalaBuildTarget,
         sources =

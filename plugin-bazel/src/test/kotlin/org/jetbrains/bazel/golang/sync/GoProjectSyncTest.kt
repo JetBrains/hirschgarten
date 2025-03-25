@@ -21,7 +21,6 @@ import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.GoBuildTarget
@@ -186,7 +185,6 @@ class GoProjectSyncTest : MockProjectBaseTest() {
       listOf("go"),
       info.dependencies,
       BuildTargetCapabilities(),
-      displayName = info.targetId.toString(),
       baseDirectory = "file:///targets_base_dir",
       data =
         GoBuildTarget(
@@ -204,7 +202,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     nameProvider: TargetNameReformatProvider,
   ): ExpectedVgoStandaloneModuleEntity =
     ExpectedVgoStandaloneModuleEntity(
-      moduleId = ModuleId(nameProvider(BuildTargetInfo(id = info.targetId))),
+      moduleId = ModuleId(nameProvider(info.targetId)),
       entitySource = BspProjectEntitySource,
       importPath = info.importPath,
       root = expectedRoot,

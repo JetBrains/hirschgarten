@@ -10,10 +10,11 @@ data class BuildTarget(
   val capabilities: BuildTargetCapabilities,
   val sources: List<SourceItem>,
   val resources: List<String>,
-  val displayName: String? = null,
   val baseDirectory: String? = null,
   var data: BuildTargetData? = null,
-)
+) {
+  val displayName: String = id.toShortString()
+}
 
 sealed interface BuildTargetData
 

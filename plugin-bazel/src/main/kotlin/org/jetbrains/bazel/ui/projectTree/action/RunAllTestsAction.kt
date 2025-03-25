@@ -16,13 +16,13 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.Icon
 
 internal open class RunAllTestsBaseAction(
   text: () -> String,
   icon: Icon,
-  private val createAction: (targets: List<BuildTargetInfo>, directoryName: String) -> SuspendableAction,
+  private val createAction: (targets: List<BuildTarget>, directoryName: String) -> SuspendableAction,
 ) : SuspendableAction(
     text = text,
     icon = icon,
@@ -40,7 +40,7 @@ internal open class RunAllTestsBaseAction(
     e.presentation.isEnabledAndVisible = runReadAction { shouldShowAction(project, e) }
   }
 
-  private fun getAllTestTargetInfos(project: Project, e: AnActionEvent): List<BuildTargetInfo> =
+  private fun getAllTestTargetInfos(project: Project, e: AnActionEvent): List<BuildTarget> =
     e
       .getCurrentPath()
       ?.toSubFilesInTestSourceContent(project)
@@ -53,7 +53,7 @@ internal open class RunAllTestsBaseAction(
 
   private fun AnActionEvent.getCurrentPath(): VirtualFile? = getData(PlatformDataKeys.VIRTUAL_FILE)
 
-  private fun VirtualFile.toSubFilesInTestSourceContent(project: Project): Sequence<BuildTargetInfo> {
+  private fun VirtualFile.toSubFilesInTestSourceContent(project: Project): Sequence<BuildTarget> {
     val pfIndex = ProjectFileIndex.getInstance(project)
     val vfsManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
     val targetUtilService = project.targetUtils
@@ -66,7 +66,7 @@ internal open class RunAllTestsBaseAction(
       .filter { pfIndex.isInTestSourceContent(it) }
       .flatMap { targetUtilService.getExecutableTargetsForFile(it) }
       .distinct()
-      .mapNotNull { targetUtilService.getBuildTargetInfoForLabel(it) }
+      .mapNotNull { targetUtilService.getBuildTargetForLabel(it) }
   }
 }
 

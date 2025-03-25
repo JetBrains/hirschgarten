@@ -15,9 +15,9 @@ import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.includesAndroid
 import org.jetbrains.bazel.workspacemodel.entities.isJvmTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunParams
@@ -50,13 +50,13 @@ class JvmRunHandler(val configuration: BazelRunConfiguration) : BazelRunHandler 
     // Because we have android_local_test with mocked Android classes, which should be run, well, locally,
     //  as opposed to on-device like with android_binary
     // TODO: perhaps better solved by having a tag
-    override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
+    override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       targetInfos.all {
         (it.languageIds.isJvmTarget() && !it.capabilities.canTest) ||
           (it.languageIds.includesAndroid() && it.capabilities.canTest)
       }
 
-    override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)
+    override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
 
     override val googleHandlerId: String = "BlazeJavaRunConfigurationHandlerProvider"
     override val isTestHandler: Boolean = false

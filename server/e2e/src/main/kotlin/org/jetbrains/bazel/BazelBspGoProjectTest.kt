@@ -156,7 +156,6 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
         languageIds = listOf("go"),
         dependencies = dependencies,
         capabilities = capabilities,
-        displayName = "//$targetDirectory:$targetName",
         baseDirectory = "file://\$WORKSPACE/$targetDirectory/",
         data = goBuildTarget,
         sources = sources,

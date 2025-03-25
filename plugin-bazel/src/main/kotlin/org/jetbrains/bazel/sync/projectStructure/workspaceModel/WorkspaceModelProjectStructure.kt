@@ -27,7 +27,6 @@ import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BspEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
 class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntityStorage) : ProjectStructureDiff {
   private val postApplyActions = mutableListOf<suspend () -> Unit>()
@@ -78,7 +77,7 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
 
   private fun EntitySource.isBspRelevantForPartialSync(project: Project, syncScope: PartialProjectSync): Boolean {
     val moduleNameProvider = project.findNameProvider().orDefault()
-    val targetsToSyncNames = syncScope.targetsToSync.map { moduleNameProvider(BuildTargetInfo(id = it)) }
+    val targetsToSyncNames = syncScope.targetsToSync.map { moduleNameProvider(it) }
 
     if (this is BspModuleEntitySource) {
       return moduleName in targetsToSyncNames

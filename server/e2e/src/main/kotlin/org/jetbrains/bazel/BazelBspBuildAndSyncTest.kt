@@ -76,7 +76,6 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
           canTest = false,
           canRun = false,
         ),
-        displayName = "//src:main",
         baseDirectory = "file://\$WORKSPACE/src/",
         data = exampleExampleJvmBuildTarget,
         sources =

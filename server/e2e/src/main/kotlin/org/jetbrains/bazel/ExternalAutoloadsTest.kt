@@ -52,7 +52,6 @@ object ExternalAutoloadsTest : BazelBspTestBaseScenario() {
           canTest = false,
           canRun = false,
         ),
-        displayName = "//src:hello",
         baseDirectory = "file://\$WORKSPACE/src/",
         data = exampleExampleJvmBuildTarget,
         sources =

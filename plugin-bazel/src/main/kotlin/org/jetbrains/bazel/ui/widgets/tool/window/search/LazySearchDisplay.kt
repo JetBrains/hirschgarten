@@ -3,7 +3,7 @@ package org.jetbrains.bazel.ui.widgets.tool.window.search
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.panels.VerticalLayout
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BuildTargetTree
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.awt.Point
 import javax.swing.Icon
 import javax.swing.JPanel
@@ -11,7 +11,7 @@ import javax.swing.JPanel
 class LazySearchDisplay(icon: Icon, showAsTree: Boolean) {
   private val component: JPanel = JPanel(VerticalLayout(0))
 
-  private var targets: List<BuildTargetInfo> = emptyList()
+  private var targets: List<BuildTarget> = emptyList()
   private var query: Regex = "".toRegex()
 
   private var isOutdated = true
@@ -29,7 +29,7 @@ class LazySearchDisplay(icon: Icon, showAsTree: Boolean) {
       )
   }
 
-  fun updateSearch(newTargets: List<BuildTargetInfo>, newQuery: Regex) {
+  fun updateSearch(newTargets: List<BuildTarget>, newQuery: Regex) {
     targets = newTargets
     query = newQuery
     isOutdated = true
@@ -59,7 +59,7 @@ class LazySearchDisplay(icon: Icon, showAsTree: Boolean) {
     targetTree.registerPopupHandler { _ -> popupHandler }
   }
 
-  fun getSelectedBuildTarget(): BuildTargetInfo? = targetTree.getSelectedBuildTarget()
+  fun getSelectedBuildTarget(): BuildTarget? = targetTree.getSelectedBuildTarget()
 
   fun selectTopTargetAndFocus() {
     targetTree.selectTopTargetAndFocus()

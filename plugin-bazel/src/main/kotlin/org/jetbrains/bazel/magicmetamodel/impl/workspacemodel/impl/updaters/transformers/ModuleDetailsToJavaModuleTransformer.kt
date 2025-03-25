@@ -9,7 +9,6 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.utils.StringUtils
 import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.AndroidAddendum
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
@@ -19,6 +18,7 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.ScalaAddendum
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
@@ -29,7 +29,7 @@ import java.nio.file.Path
 import kotlin.io.path.toPath
 
 internal class ModuleDetailsToJavaModuleTransformer(
-  targetsMap: Map<Label, BuildTargetInfo>,
+  targetsMap: Map<Label, BuildTarget>,
   fileToTarget: Map<URI, List<Label>>,
   nameProvider: TargetNameReformatProvider,
   projectBasePath: Path,

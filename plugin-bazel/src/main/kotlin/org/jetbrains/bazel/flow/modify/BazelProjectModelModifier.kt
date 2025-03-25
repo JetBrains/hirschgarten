@@ -92,9 +92,9 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
 
   private suspend fun tryAddingModuleDependencyToBuildFile(from: Module, labelToInsert: Label?): Boolean {
     if (labelToInsert !is ResolvedLabel) return false
-    val fromBuildTargetInfo = from.project.targetUtils.getBuildTargetInfoForModule(from) ?: return false
-    val targetBuildFile = readAction { findBuildFile(from.project, fromBuildTargetInfo) } ?: return false
-    val targetRuleLabel = fromBuildTargetInfo.id
+    val fromBuildTarget = from.project.targetUtils.getBuildTargetForModule(from) ?: return false
+    val targetBuildFile = readAction { findBuildFile(from.project, fromBuildTarget) } ?: return false
+    val targetRuleLabel = fromBuildTarget.id
     val ruleTarget = readAction { targetBuildFile.findRuleTarget(targetRuleLabel.targetName) } ?: return false
     val depsList =
       readAction {
@@ -178,8 +178,8 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
     }
 
   private suspend fun Module.jumpToBuildFile() {
-    val buildTargetInfo = project.targetUtils.getBuildTargetInfoForModule(this) ?: return
-    jumpToBuildFile(project, buildTargetInfo)
+    val buildTarget = project.targetUtils.getBuildTargetForModule(this) ?: return
+    jumpToBuildFile(project, buildTarget)
   }
 
   private fun asyncPromise(callable: suspend () -> Unit): Promise<Void> =

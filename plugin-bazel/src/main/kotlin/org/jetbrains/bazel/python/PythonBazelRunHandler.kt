@@ -9,7 +9,7 @@ import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericRunState
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.util.UUID
 
 class PythonBazelRunHandler : BazelRunHandler {
@@ -31,12 +31,12 @@ class PythonBazelRunHandler : BazelRunHandler {
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = PythonBazelRunHandler()
 
-    override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
+    override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       targetInfos.all {
         it.languageIds.contains("python") && it.capabilities.canRun
       }
 
-    override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)
+    override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
 
     override val googleHandlerId: String = "BlazePyRunConfigurationHandlerProvider"
     override val isTestHandler: Boolean = false

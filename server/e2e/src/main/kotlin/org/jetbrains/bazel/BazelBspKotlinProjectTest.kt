@@ -95,7 +95,6 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = true,
           ),
-        displayName = "//kotlinc_test:Foo",
         baseDirectory = "file://\$WORKSPACE/kotlinc_test/",
         data = kotlincTestBuildTargetData,
         sources =
@@ -120,7 +119,6 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = false,
           ),
-        displayName = "//plugin_allopen_test:open_for_testing",
         baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
         data = kotlinBuildTargetData,
         sources =
@@ -193,7 +191,6 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = false,
           ),
-        displayName = "//plugin_allopen_test:user",
         baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
         data = userBuildTargetData,
         sources =
@@ -224,7 +221,6 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = false,
           ),
-        displayName = "//plugin_allopen_test:user_of_export",
         baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
         data = userOfExportBuildTargetData,
         sources =
@@ -254,7 +250,6 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = false,
           ),
-        displayName = "//plugin_allopen_test:open_for_testing_export",
         baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
         data = kotlinBuildTargetData,
         sources =
