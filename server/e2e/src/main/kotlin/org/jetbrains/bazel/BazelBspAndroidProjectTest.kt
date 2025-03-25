@@ -78,6 +78,8 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
         displayName = "//src/main:app",
         baseDirectory = "file://\$WORKSPACE/src/main/",
         data = appAndroidBuildTargetData,
+        sources = emptyList(),
+        resources = listOf("file://\$WORKSPACE/src/main/AndroidManifest.xml"),
       )
 
     val libBuildTarget =
@@ -95,6 +97,8 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
         displayName = "//src/main/java/com/example/myapplication:lib",
         baseDirectory = "file://\$WORKSPACE/src/main/java/com/example/myapplication/",
         data = libAndroidBuildTargetData,
+        sources = emptyList(),
+        resources = listOf("file://\$WORKSPACE/src/main/java/com/example/myapplication/AndroidManifest.xml"),
       )
 
     val libTestBuildTarget =
@@ -117,6 +121,8 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
         displayName = "//src/test/java/com/example/myapplication:lib_test",
         baseDirectory = "file://\$WORKSPACE/src/test/java/com/example/myapplication/",
         data = libTestAndroidBuildTargetData,
+        sources = emptyList(),
+        resources = listOf("file://\$WORKSPACE/src/test/java/com/example/myapplication/AndroidManifest.xml"),
       )
 
     return WorkspaceBuildTargetsResult(listOf(appBuildTarget, libBuildTarget, libTestBuildTarget))

@@ -6,6 +6,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.time.Duration.Companion.minutes
 
@@ -57,6 +58,15 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
         displayName = "//example",
         baseDirectory = "file://\$WORKSPACE/example/",
         data = exampleExampleJvmBuildTarget,
+        sources =
+          listOf(
+            SourceItem(
+              uri = "file://\$WORKSPACE/example/Example.java",
+              generated = false,
+              jvmPackagePrefix = "example",
+            ),
+          ),
+        resources = emptyList(),
       )
 
     return WorkspaceBuildTargetsResult(

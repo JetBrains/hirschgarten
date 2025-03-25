@@ -286,6 +286,4 @@ fun calculateFileToTarget(targetIdToModuleDetails: Map<Label, ModuleDetails>): M
     .mapValues { it.value.map { pair -> pair.second } }
 
 private fun ModuleDetails.toPairsUrlToId(): List<Pair<URI, Label>> =
-  sources.flatMap { sources ->
-    sources.sources.map { it.uri.removeTrailingSlash().safeCastToURI() }.map { it to target.id }
-  }
+  target.sources.map { it.uri.removeTrailingSlash().safeCastToURI() }.map { it to target.id }

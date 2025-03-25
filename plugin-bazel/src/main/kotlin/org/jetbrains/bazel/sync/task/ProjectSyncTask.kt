@@ -171,7 +171,7 @@ class ProjectSyncTask(private val project: Project) {
       project.connection.runWithServer { server ->
         bspTracer.spanBuilder("collect.project.details.ms").use {
           // if this bazel build fails, we still want the sync hooks to be executed
-          val baseTargetInfos = BaseProjectSync(project).execute(syncScope, buildProject, server, PROJECT_SYNC_TASK_ID)
+          val buildTargets = BaseProjectSync(project).execute(syncScope, buildProject, server, PROJECT_SYNC_TASK_ID)
           val environment =
             ProjectSyncHookEnvironment(
               project = project,
@@ -179,14 +179,14 @@ class ProjectSyncTask(private val project: Project) {
               diff = diff,
               taskId = PROJECT_SYNC_TASK_ID,
               progressReporter = progressReporter,
-              baseTargetInfos = baseTargetInfos,
+              buildTargets = buildTargets,
               syncScope = syncScope,
             )
 
           project.projectSyncHooks.forEach {
             it.onSync(environment)
           }
-          baseTargetInfos.hasError
+          buildTargets.hasError
         }
       }
 

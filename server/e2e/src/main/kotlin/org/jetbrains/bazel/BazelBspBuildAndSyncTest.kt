@@ -6,6 +6,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -79,6 +80,14 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
         displayName = "//src:main",
         baseDirectory = "file://\$WORKSPACE/src/",
         data = exampleExampleJvmBuildTarget,
+        sources =
+          listOf(
+            SourceItem(
+              uri = "file://\$WORKSPACE/src/Main.java",
+              generated = false,
+            ),
+          ),
+        resources = emptyList(),
       )
 
     return WorkspaceBuildTargetsResult(listOf(srcMainBuildTarget))

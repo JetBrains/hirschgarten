@@ -6,8 +6,6 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 
 class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: ProjectDetails, private val libraryGraph: LibraryGraph) {
   private val targetsIndex = projectDetails.targets.associateBy { it.id }
-  private val sourcesIndex = projectDetails.sources.groupBy { it.target }
-  private val resourcesIndex = projectDetails.resources.groupBy { it.target }
   private val javacOptionsIndex = projectDetails.javacOptions.associateBy { it.target }
   private val scalacOptionsIndex = projectDetails.scalacOptions.associateBy { it.target }
   private val jvmBinaryJarsIndex = projectDetails.jvmBinaryJars.groupBy { it.target }
@@ -17,8 +15,6 @@ class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: Proje
     val allDependencies = libraryGraph.calculateAllDependencies(target)
     return ModuleDetails(
       target = target,
-      sources = sourcesIndex[target.id].orEmpty(),
-      resources = resourcesIndex[targetId].orEmpty(),
       javacOptions = javacOptionsIndex[targetId],
       scalacOptions = scalacOptionsIndex[targetId],
       libraryDependencies = allDependencies.libraryDependencies.takeIf { projectDetails.libraries != null }?.toList(),

@@ -22,6 +22,7 @@ import org.jetbrains.bsp.protocol.ScalaPlatform
 import org.jetbrains.bsp.protocol.ScalacOptionsItem
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
+import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -100,9 +101,9 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
         listOf("library"),
         listOf("scala"),
         listOf(
-          Label.parse(Label.synthetic("scala-compiler-2.12.14.jar").toString()),
-          Label.parse(Label.synthetic("scala-library-2.12.14.jar").toString()),
-          Label.parse(Label.synthetic("scala-reflect-2.12.14.jar").toString()),
+          Label.synthetic("scala-compiler-2.12.14.jar"),
+          Label.synthetic("scala-library-2.12.14.jar"),
+          Label.synthetic("scala-reflect-2.12.14.jar"),
         ),
         BuildTargetCapabilities(
           canCompile = true,
@@ -113,6 +114,15 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
         displayName = "//scala_targets:library",
         baseDirectory = "file://\$WORKSPACE/scala_targets/",
         data = scalaBuildTarget,
+        sources =
+          listOf(
+            SourceItem(
+              uri = "file://\$WORKSPACE/scala_targets/Example.scala",
+              generated = false,
+              jvmPackagePrefix = "example",
+            ),
+          ),
+        resources = listOf(),
       )
     return WorkspaceBuildTargetsResult(
       listOf(target),

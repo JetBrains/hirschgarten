@@ -10,9 +10,6 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourcesItem
-import org.jetbrains.bsp.protocol.SourcesParams
-import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
@@ -49,24 +46,6 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
         val workspaceBuildTargetsResult = session.server.workspaceBuildTargets()
         testClient.assertJsonEquals(expectedWorkspaceBuildTargetsResult(), workspaceBuildTargetsResult)
 
-        val javaTargetsJavaLibraryJava =
-          SourceItem(
-            "file://\$WORKSPACE/java_targets/JavaLibrary.java",
-            false,
-            jvmPackagePrefix = "java_targets",
-          )
-
-        val javaTargetsJavaLibrarySources =
-          SourcesItem(
-            Label.parse("$targetPrefix//java_targets:java_library"),
-            listOf(javaTargetsJavaLibraryJava),
-          )
-
-        val sourcesParams = SourcesParams(expectedTargetIdentifiers())
-        val expectedSourcesResult = SourcesResult(listOf(javaTargetsJavaLibrarySources))
-        val buildTargetSourcesResult = session.server.buildTargetSources(sourcesParams)
-        testClient.assertJsonEquals(expectedSourcesResult, buildTargetSourcesResult)
-
         // partial sync
         val partialSyncTargetId = Label.parse("$targetPrefix//java_targets:java_binary")
         val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
@@ -95,6 +74,8 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
             displayName = "//java_targets:java_binary",
             baseDirectory = "file://\$WORKSPACE/java_targets/",
             data = jvmBuildTarget,
+            sources = listOf(SourceItem("file://\$WORKSPACE/java_targets/JavaBinary.java", false, "java_targets")),
+            resources = emptyList(),
           )
 
         val workspaceBuildTargetsPartialParams =
@@ -103,23 +84,6 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
 
         val workspaceBuildTargetsPartialResult = session.server.workspaceBuildTargetsPartial(workspaceBuildTargetsPartialParams)
         testClient.assertJsonEquals(expectedTargetsResult, workspaceBuildTargetsPartialResult)
-
-        val javaTargetsJavaBinaryJava =
-          SourceItem(
-            "file://\$WORKSPACE/java_targets/JavaBinary.java",
-            false,
-            jvmPackagePrefix = "java_targets",
-          )
-        val javaTargetsJavaBinarySources =
-          SourcesItem(
-            partialSyncTargetId,
-            listOf(javaTargetsJavaBinaryJava),
-          )
-
-        val partialSyncSourcesParams = SourcesParams(listOf(partialSyncTargetId))
-        val expectedPartialSyncSourcesResult = SourcesResult(listOf(javaTargetsJavaBinarySources))
-        val result = session.server.buildTargetSources(partialSyncSourcesParams)
-        testClient.assertJsonEquals(expectedPartialSyncSourcesResult, result)
       }
     }
 
@@ -151,6 +115,8 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
         displayName = "//java_targets:java_library",
         baseDirectory = "file://\$WORKSPACE/java_targets/",
         data = jvmBuildTarget,
+        sources = listOf(SourceItem("file://\$WORKSPACE/java_targets/JavaLibrary.java", false, "java_targets")),
+        resources = emptyList(),
       )
 
     return WorkspaceBuildTargetsResult(listOf(javaTargetsJavaLibrary))

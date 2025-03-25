@@ -14,9 +14,7 @@ import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.PythonOptionsItem
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
-import org.jetbrains.bsp.protocol.ResourcesItem
-import org.jetbrains.bsp.protocol.ResourcesParams
-import org.jetbrains.bsp.protocol.ResourcesResult
+import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -34,7 +32,6 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
       workspaceBuildTargets(),
       dependencySourcesResults(),
       pythonOptionsResults(),
-      resourcesResults(),
     )
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
@@ -70,6 +67,14 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
         displayName = "//example",
         baseDirectory = "file://\$WORKSPACE/example/",
         data = examplePythonBuildTarget,
+        sources =
+          listOf(
+            SourceItem(
+              uri = "file://\$WORKSPACE/example/example.py",
+              generated = false,
+            ),
+          ),
+        resources = listOf(),
       )
 
     val workspacePipDepId = "${externalRepoPrefix}pip_deps_numpy//:pkg"
@@ -92,6 +97,14 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
         displayName = "//lib:example_library",
         baseDirectory = "file://\$WORKSPACE/lib/",
         data = examplePythonBuildTarget,
+        sources =
+          listOf(
+            SourceItem(
+              uri = "file://\$WORKSPACE/lib/example_lib.py",
+              generated = false,
+            ),
+          ),
+        resources = listOf(),
       )
 
     val exampleExampleTestBuildTarget =
@@ -109,6 +122,14 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
         displayName = "//test",
         baseDirectory = "file://\$WORKSPACE/test/",
         data = examplePythonBuildTarget,
+        sources =
+          listOf(
+            SourceItem(
+              uri = "file://\$WORKSPACE/test/test.py",
+              generated = false,
+            ),
+          ),
+        resources = listOf(),
       )
 
     return WorkspaceBuildTargetsResult(
@@ -175,19 +196,6 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
       "pythonOptions results",
     ) {
       testClient.testPythonOptions(30.seconds, pythonOptionsParams, expectedPythonOptionsResult)
-    }
-  }
-
-  private fun resourcesResults(): BazelBspTestScenarioStep {
-    val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it != Label.synthetic("bsp-workspace-root") }
-    val expectedResourcesItems = expectedTargetIdentifiers.map { ResourcesItem(it, emptyList()) }
-    val expectedResourcesResult = ResourcesResult(expectedResourcesItems)
-    val resourcesParams = ResourcesParams(expectedTargetIdentifiers)
-
-    return BazelBspTestScenarioStep(
-      "resources results",
-    ) {
-      testClient.testResources(30.seconds, resourcesParams, expectedResourcesResult)
     }
   }
 }
