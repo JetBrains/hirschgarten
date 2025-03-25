@@ -108,6 +108,17 @@ object StarlarkElementTypes {
   val TRUE_LITERAL_EXPRESSION = StarlarkElementType("TRUE_LITERAL_EXPRESSION")
   val TUPLE_EXPRESSION = StarlarkElementType("TUPLE_EXPRESSION")
 
+  // TODO
+  val EXPRESSIONS = setOf(
+    ARGUMENT_EXPRESSION,
+    ARGUMENT_LIST,
+    BINARY_EXPRESSION,
+    CALL_EXPRESSION,
+    // ...
+    LIST_LITERAL_EXPRESSION,
+    INTEGER_LITERAL_EXPRESSION,
+  )
+
   fun createElement(node: ASTNode): PsiElement =
     when (val type = node.elementType) {
       ASSIGNMENT_STATEMENT -> StarlarkAssignmentStatement(node)
