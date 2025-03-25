@@ -68,7 +68,6 @@ class FirstPhaseTargetToBspMapper(private val workspaceRoot: Path) {
       canCompile = !isManual,
       canRun = isBinary,
       canTest = isTest,
-      canDebug = false,
     )
 
   private fun Target.isSupported(): Boolean {

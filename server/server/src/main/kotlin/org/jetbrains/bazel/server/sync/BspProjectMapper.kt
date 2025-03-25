@@ -241,7 +241,6 @@ class BspProjectMapper(
       canCompile = canCompile,
       canTest = canTest,
       canRun = canRun,
-      canDebug = canDebug,
     )
   }
 

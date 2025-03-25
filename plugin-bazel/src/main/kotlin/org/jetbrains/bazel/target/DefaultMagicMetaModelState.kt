@@ -41,14 +41,12 @@ data class ModuleCapabilitiesState(
   var canRun: Boolean = false,
   var canTest: Boolean = false,
   var canCompile: Boolean = false,
-  var canDebug: Boolean = false,
 ) : ConvertableFromState<ModuleCapabilities> {
   override fun fromState(): ModuleCapabilities =
     ModuleCapabilities(
       canRun = canRun,
       canTest = canTest,
       canCompile = canCompile,
-      canDebug = canDebug,
     )
 }
 
@@ -57,5 +55,4 @@ fun ModuleCapabilities.toState(): ModuleCapabilitiesState =
     canRun = canRun,
     canTest = canTest,
     canCompile = canCompile,
-    canDebug = canDebug,
   )
