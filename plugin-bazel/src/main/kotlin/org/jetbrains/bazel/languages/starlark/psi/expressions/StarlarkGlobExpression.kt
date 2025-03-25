@@ -1,26 +1,14 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
-import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiReference
-import com.intellij.util.getValue
-import com.intellij.util.keyFMap.KeyFMap
-import com.jetbrains.python.ast.findChildByClass
-import com.jetbrains.python.ast.findChildByType
-import com.jetbrains.python.ast.findChildrenByClass
-import com.jetbrains.python.ast.findChildrenByType
-import org.apache.commons.collections.ListUtils
-import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementType
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentElement
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
-import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkKeywordVariadicParameter
 import org.jetbrains.bazel.languages.starlark.references.StarlarkGlobReference
 import kotlin.concurrent.Volatile
 
@@ -65,15 +53,11 @@ class StarlarkGlobExpression(node: ASTNode): StarlarkBaseElement(node) {
     val arg = getKeywordArgument("exclude_directories")
     if (arg != null) {
       // '0' and '1' are the only accepted values
-      val value = arg.getValue()
+      val value = getArgValue(arg)
       return value == null || !value.text.equals("0")
     }
     return true
   }
-//
-//  fun matches(packageRelativePath: String?, isDirectory: Boolean): Boolean {
-//    return getReference().matches(packageRelativePath, isDirectory)
-//  }
 
   @Volatile
   private var reference: StarlarkGlobReference? = null

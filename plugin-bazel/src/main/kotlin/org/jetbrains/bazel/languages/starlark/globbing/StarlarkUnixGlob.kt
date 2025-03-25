@@ -501,7 +501,7 @@ object StarlarkUnixGlob {
       }
 
       if (!pattern.contains("*") && !pattern.contains("?")) {
-        val child = base?.findChild(pattern) // TODO make sure it works for directories, og: File(base, pattern)
+        val child = base?.findChild(pattern)
         if (child == null) return
         val childIsDir = child.isDirectory
         if (!childIsDir && !child.isFile) {

@@ -1,23 +1,21 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions.arguments
 
+import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 
 interface StarlarkArgumentElement : StarlarkElement {
   fun getValue(): PsiElement? {
-    var child_node = node.lastChildNode
-    while (child_node != null) {
-      var type = child_node.elementType
+    var childNode: ASTNode? = node.lastChildNode
+    while (childNode != null) {
+      val type = childNode.elementType
       if (StarlarkElementTypes.EXPRESSIONS.contains(type)) {
-        return child_node.psi
+        return childNode.psi
       }
-      if (type == StarlarkTokenTypes.EQ || type == StarlarkTokenTypes.MULT) {
-        break;
-      }
-      child_node = child_node.treePrev
+      if (type == StarlarkTokenTypes.EQ) break
+      childNode = childNode.treePrev
     }
     return null
   }

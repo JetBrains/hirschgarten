@@ -31,7 +31,7 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) : PsiPolyVariantRef
     val includes = resolveListContents(element.getIncludes()) //resolveListContents(element.getIncludes())
     val excludes = resolveListContents(element.getExcludes())
 
-    val directoriesExcluded: Boolean = false // element.areDirectoriesExcluded()
+    val directoriesExcluded = element.areDirectoriesExcluded()
     if (includes.isEmpty()) {
       return ResolveResult.EMPTY_ARRAY
     }
