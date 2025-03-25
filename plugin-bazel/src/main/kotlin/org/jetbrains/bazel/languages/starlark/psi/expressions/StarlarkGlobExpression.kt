@@ -12,12 +12,11 @@ import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.references.StarlarkGlobReference
 import kotlin.concurrent.Volatile
 
-class StarlarkGlobExpression(node: ASTNode): StarlarkBaseElement(node) {
+class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitGlobExpression(this)
 
-  fun getArgList() : StarlarkArgumentList? {
-    return node.treeParent.findChildByType(StarlarkElementTypes.ARGUMENT_LIST)?.psi as StarlarkArgumentList?
-  }
+  fun getArgList(): StarlarkArgumentList? =
+    node.treeParent.findChildByType(StarlarkElementTypes.ARGUMENT_LIST)?.psi as StarlarkArgumentList?
 
   fun getArguments(): Array<StarlarkArgumentElement> {
     val argList = getArgList()
@@ -41,13 +40,9 @@ class StarlarkGlobExpression(node: ASTNode): StarlarkBaseElement(node) {
     return getArgValue(arg)
   }
 
-  fun getExcludes(): PsiElement? {
-    return getArgValue(getKeywordArgument("exclude"))
-  }
+  fun getExcludes(): PsiElement? = getArgValue(getKeywordArgument("exclude"))
 
-  private fun getArgValue(arg: StarlarkArgumentElement?): PsiElement? {
-    return arg?.getValue()
-  }
+  private fun getArgValue(arg: StarlarkArgumentElement?): PsiElement? = arg?.getValue()
 
   fun areDirectoriesExcluded(): Boolean {
     val arg = getKeywordArgument("exclude_directories")
@@ -74,5 +69,4 @@ class StarlarkGlobExpression(node: ASTNode): StarlarkBaseElement(node) {
       return reference
     }
   }
-
 }

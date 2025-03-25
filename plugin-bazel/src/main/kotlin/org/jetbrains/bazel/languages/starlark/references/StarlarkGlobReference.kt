@@ -15,11 +15,11 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpres
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 
-
-class StarlarkGlobReference(element: StarlarkGlobExpression) : PsiPolyVariantReferenceBase<StarlarkGlobExpression>(
-  element,
-  TextRange(0, element.textLength),
-),
+class StarlarkGlobReference(element: StarlarkGlobExpression) :
+  PsiPolyVariantReferenceBase<StarlarkGlobExpression>(
+    element,
+    TextRange(0, element.textLength),
+  ),
   PsiPolyVariantReference {
   override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult?> {
     val containingDirectory =
@@ -27,7 +27,7 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) : PsiPolyVariantRef
     if (containingDirectory == null) {
       return ResolveResult.EMPTY_ARRAY
     }
-    val includes = resolveListContents(element.getIncludes()) //resolveListContents(element.getIncludes())
+    val includes = resolveListContents(element.getIncludes()) // resolveListContents(element.getIncludes())
     val excludes = resolveListContents(element.getExcludes())
 
     val directoriesExcluded = element.areDirectoriesExcluded()
@@ -38,7 +38,8 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) : PsiPolyVariantRef
 
     try {
       val files: MutableList<VirtualFile?> =
-        StarlarkUnixGlob.forPath(containingDirectory)
+        StarlarkUnixGlob
+          .forPath(containingDirectory)
           .addPatterns(includes)
           .addExcludes(excludes)
           .setExcludeDirectories(directoriesExcluded)
@@ -67,14 +68,12 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) : PsiPolyVariantRef
     return if (vf.isDirectory) manager.findDirectory(vf) else manager.findFile(vf)
   }
 
-  private fun findBuildFile(packageDir: VirtualFile): VirtualFile? =
-    BUILD_FILE_NAMES.mapNotNull { packageDir.findChild(it) }.firstOrNull()
+  private fun findBuildFile(packageDir: VirtualFile): VirtualFile? = BUILD_FILE_NAMES.mapNotNull { packageDir.findChild(it) }.firstOrNull()
 
-  private fun directoryFilter(base: String): (VirtualFile?) -> Boolean {
-    return { file ->
+  private fun directoryFilter(base: String): (VirtualFile?) -> Boolean =
+    { file ->
       file?.path == base || file == null || findBuildFile(file) == null
     }
-  }
 
   private fun resolveListContents(expr: PsiElement?): MutableList<String> {
     if (expr == null) {
