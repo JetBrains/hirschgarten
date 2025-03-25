@@ -196,6 +196,7 @@ object StarlarkUnixGlob {
      * For a description of the syntax of the patterns, see [StarlarkUnixGlob].
      */
     @CanIgnoreReturnValue
+    @Suppress("unused")
     fun addPattern(pattern: String?): Builder {
       this.patterns.add(pattern!!)
       return this
@@ -237,6 +238,7 @@ object StarlarkUnixGlob {
      * in-thread.
      */
     @CanIgnoreReturnValue
+    @Suppress("unused")
     fun setThreadPool(pool: ThreadPoolExecutor?): Builder {
       this.threadPool = pool
       return this
