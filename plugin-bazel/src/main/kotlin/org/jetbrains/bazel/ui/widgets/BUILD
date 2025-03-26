@@ -11,6 +11,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/debug",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extensionPoints",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/fus",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/runnerAction",
