@@ -22,12 +22,11 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
   ),
   PsiPolyVariantReference {
   override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult?> {
-    val containingDirectory =
-      element.containingFile.parent?.virtualFile // : File? = (containingFile as BuildFile).getFile().getParentFile()
+    val containingDirectory = element.containingFile.parent?.virtualFile
     if (containingDirectory == null) {
       return ResolveResult.EMPTY_ARRAY
     }
-    val includes = resolveListContents(element.getIncludes()) // resolveListContents(element.getIncludes())
+    val includes = resolveListContents(element.getIncludes())
     val excludes = resolveListContents(element.getExcludes())
 
     val directoriesExcluded = element.areDirectoriesExcluded()
@@ -91,9 +90,4 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
     }
     return strings
   }
-
-//  override fun resolve(): PsiElement? {
-//    println("Resolving")
-//    return null
-//  }
 }
