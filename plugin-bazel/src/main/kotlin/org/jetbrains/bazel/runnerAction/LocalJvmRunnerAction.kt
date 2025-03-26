@@ -65,7 +65,7 @@ abstract class LocalJvmRunnerAction(
     environment: JvmEnvironmentItem,
     module: Module,
     project: Project,
-    targetInfo: BuildTargetInfo,
+    targetInfo: BuildTarget,
   ): RunConfiguration? {
     val mainClass =
       environment.mainClasses?.firstOrNull() ?: return null // TODO https://youtrack.jetbrains.com/issue/BAZEL-626

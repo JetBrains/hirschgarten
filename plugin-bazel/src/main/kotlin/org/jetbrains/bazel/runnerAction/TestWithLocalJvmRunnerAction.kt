@@ -52,7 +52,7 @@ class TestWithLocalJvmRunnerAction(
     environment: JvmEnvironmentItem,
     module: Module,
     project: Project,
-    targetInfo: BuildTargetInfo
+    targetInfo: BuildTarget,
   ): RunConfiguration? =
     if (callerPsiElement != null) {
       LocalJvmRunnerRunConfigurationProvider.ep.extensionList.firstNotNullOfOrNull {
@@ -64,8 +64,7 @@ class TestWithLocalJvmRunnerAction(
           callerPsiElement = callerPsiElement,
         )
       } ?: super.calculateConfiguration(configurationName, environment, module, project, targetInfo)
-    }
-    else {
+    } else {
       super.calculateConfiguration(configurationName, environment, module, project, targetInfo)
     }
 }
@@ -76,7 +75,7 @@ interface LocalJvmRunnerRunConfigurationProvider {
     environment: JvmEnvironmentItem,
     module: Module,
     project: Project,
-    callerPsiElement: PsiElement
+    callerPsiElement: PsiElement,
   ): RunConfiguration?
 
   companion object {

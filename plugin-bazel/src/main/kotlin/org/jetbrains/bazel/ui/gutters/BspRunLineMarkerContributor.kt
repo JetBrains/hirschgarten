@@ -43,7 +43,7 @@ abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
     project: Project,
     targetInfos: List<BuildTarget>,
     singleTestFilter: String?,
-    psiElement: PsiElement
+    psiElement: PsiElement,
   ): Info? =
     targetInfos
       .flatMap { it.calculateEligibleActions(project, singleTestFilter, targetInfos.size > 1, psiElement) }
@@ -59,11 +59,19 @@ abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
     project: Project,
     singleTestFilter: String?,
     includeTargetNameInText: Boolean,
-    psiElement: PsiElement
+    psiElement: PsiElement,
   ): List<AnAction> =
     if (this == null) {
       emptyList()
     } else {
-      DefaultActionGroup().fillWithEligibleActions(project, this, includeTargetNameInText, singleTestFilter, psiElement).childActionsOrStubs.toList()
+      DefaultActionGroup()
+        .fillWithEligibleActions(
+          project,
+          this,
+          includeTargetNameInText,
+          singleTestFilter,
+          psiElement,
+        ).childActionsOrStubs
+        .toList()
     }
 }

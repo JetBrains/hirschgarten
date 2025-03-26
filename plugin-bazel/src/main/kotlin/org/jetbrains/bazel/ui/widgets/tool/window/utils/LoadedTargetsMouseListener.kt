@@ -162,9 +162,20 @@ fun DefaultActionGroup.fillWithEligibleActions(
   return this
 }
 
-private fun DefaultActionGroup.addLocalJvmTestActions(target: BuildTargetInfo, includeTargetNameInText: Boolean, callerPsiElement: PsiElement?) {
+private fun DefaultActionGroup.addLocalJvmTestActions(
+  target: BuildTarget,
+  includeTargetNameInText: Boolean,
+  callerPsiElement: PsiElement?,
+) {
   addAction(TestWithLocalJvmRunnerAction(target, includeTargetNameInText = includeTargetNameInText, callerPsiElement = callerPsiElement))
-  addAction(TestWithLocalJvmRunnerAction(target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText, callerPsiElement = callerPsiElement))
+  addAction(
+    TestWithLocalJvmRunnerAction(
+      target,
+      isDebugMode = true,
+      includeTargetNameInText = includeTargetNameInText,
+      callerPsiElement = callerPsiElement,
+    ),
+  )
 }
 
 internal class RunAllTestsActionInTargetTreeAction(private val targets: List<BuildTarget>, private val directoryName: String) :

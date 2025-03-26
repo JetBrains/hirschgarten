@@ -13,7 +13,6 @@ import com.intellij.psi.PsiMethod
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.flow.sync.BazelBinPathService
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.run.state.vmOptions
 import org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
@@ -31,27 +30,45 @@ class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurati
     environment: JvmEnvironmentItem,
     module: Module,
     project: Project,
-    callerPsiElement: PsiElement
+    callerPsiElement: PsiElement,
   ): RunConfiguration? =
-    if (project.bazelProjectSettings.useIntellijTestRunner) createConfiguration(configurationName, project, callerPsiElement, module, environment)
-    else null
+    if (project.bazelProjectSettings.useIntellijTestRunner) {
+      createConfiguration(configurationName, project, callerPsiElement, module, environment)
+    } else {
+      null
+    }
 
   private fun createConfiguration(
     configurationName: String,
     project: Project,
     callerPsiElement: PsiElement,
     module: Module,
-    environment: JvmEnvironmentItem
+    environment: JvmEnvironmentItem,
   ): JUnitConfiguration =
     JUnitConfiguration(configurationName, project).apply {
       setModule(module)
       setClassOrMethodConfiguration(callerPsiElement)
-      classpathModifications.addAll(environment.classpath.map { ModuleBasedConfigurationOptions.ClasspathModification(URI.create(it).path, false) })
+      classpathModifications.addAll(
+        environment.classpath.map {
+          ModuleBasedConfigurationOptions.ClasspathModification(URI.create(it).path, false)
+        },
+      )
       workingDirectory = environment.workingDirectory
       vmParameters = environment.jvmOptions.joinToString(" ")
-      envs = environment.environmentVariables + ( "TEST_SRCDIR" to Paths.get(PythonDebugUtils.getBazelBinPath(project), *environment.target.packagePath.pathSegments.toTypedArray(), "${environment.target.targetName}.runfiles").toString()) + ("TEST_WORKSPACE" to "_main")
+      envs =
+        environment.environmentVariables +
+        (
+          "TEST_SRCDIR" to
+            Paths
+              .get(
+                PythonDebugUtils.getBazelBinPath(project),
+                *environment.target.packagePath.pathSegments
+                  .toTypedArray(),
+                "${environment.target.targetName}.runfiles",
+              ).toString()
+        ) +
+        ("TEST_WORKSPACE" to "_main")
     }
-
 
   private fun JUnitConfiguration.setClassOrMethodConfiguration(psiElement: PsiElement) {
     val psiMethod = psiElement.getPsiMethodOrNull()
@@ -69,11 +86,8 @@ class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurati
   private fun PsiElement.getPsiClassOrNull(): PsiClass? =
     parent as? PsiClass ?: runReadAction { getParentOfType<KtClass>(false)?.toLightClass() }
 
-  private fun PsiElement.getPsiMethodOrNull(): PsiMethod? =
-    parent as? PsiMethod ?: runReadAction { parent.getRepresentativeLightMethod() }
-
+  private fun PsiElement.getPsiMethodOrNull(): PsiMethod? = parent as? PsiMethod ?: runReadAction { parent.getRepresentativeLightMethod() }
 }
-
 
 object PythonDebugUtils {
   fun guessRunScriptName(project: Project, target: Label): Path {

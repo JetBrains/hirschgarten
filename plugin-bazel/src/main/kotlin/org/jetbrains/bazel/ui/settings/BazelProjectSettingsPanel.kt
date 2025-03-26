@@ -112,10 +112,10 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
         row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
       }
       group(BazelPluginBundle.message("project.settings.experimental.settings")) {
-        group (BazelPluginBundle.message("project.settings.local.runner.settings")) {
+        group(BazelPluginBundle.message("project.settings.local.runner.settings")) {
           row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
           row {
-            cell (useIntellijTestRunnerCheckBox).align(Align.FILL)
+            cell(useIntellijTestRunnerCheckBox).align(Align.FILL)
             contextHelp(BazelPluginBundle.message("project.settings.plugin.use.intellij.test.runner.help.text"))
           }
         }
