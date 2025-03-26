@@ -6,6 +6,7 @@ import com.intellij.platform.util.progress.SequentialProgressReporter
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 
 /**
  * Represents a sync hook which will be executed on each sync (if `isEnabled` returns true).
@@ -35,7 +36,7 @@ interface ProjectSyncHook {
    * @param diff diff which was prepared before sync and which should be updated in the hook
    * @param taskId task id which should be used in the sync console as root
    * @param progressReporter should be used to report the progress of the hook
-   * @param baseTargetInfos base info about all the available targets in the project
+   * @param buildTargets base info about all the available targets in the project
    */
   data class ProjectSyncHookEnvironment(
     val project: Project,
@@ -44,7 +45,7 @@ interface ProjectSyncHook {
     val diff: AllProjectStructuresDiff,
     val taskId: String,
     val progressReporter: SequentialProgressReporter,
-    val baseTargetInfos: BaseTargetInfos,
+    val buildTargets: WorkspaceBuildTargetsResult,
   )
 }
 

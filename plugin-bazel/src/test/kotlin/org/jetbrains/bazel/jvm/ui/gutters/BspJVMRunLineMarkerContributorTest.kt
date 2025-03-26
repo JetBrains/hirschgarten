@@ -70,7 +70,7 @@ class BspJVMRunLineMarkerContributorTest : BasePlatformTestCase() {
     val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
 
     // then
-    val expectedSingleTestFilter = "should add 1 plus 1"
+    val expectedSingleTestFilter = "BspJVMRunLineMarkerContributorTestData.should add 1 plus 1"
     result shouldBe expectedSingleTestFilter
   }
 
@@ -133,7 +133,7 @@ class BspJVMRunLineMarkerContributorTest : BasePlatformTestCase() {
     val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
 
     // then
-    val expectedSingleTestFilter = "addOnePlusOne"
+    val expectedSingleTestFilter = "BspJVMRunLineMarkerContributorTestData.addOnePlusOne"
     result shouldBe expectedSingleTestFilter
   }
 

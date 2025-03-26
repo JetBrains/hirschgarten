@@ -6,6 +6,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.time.Duration.Companion.minutes
 
@@ -50,11 +51,18 @@ object ExternalAutoloadsTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
         ),
-        displayName = "//src:hello",
         baseDirectory = "file://\$WORKSPACE/src/",
         data = exampleExampleJvmBuildTarget,
+        sources =
+          listOf(
+            SourceItem(
+              uri = "file://\$WORKSPACE/src/Hello.java",
+              generated = false,
+              jvmPackagePrefix = "src",
+            ),
+          ),
+        resources = emptyList(),
       )
 
     return WorkspaceBuildTargetsResult(

@@ -285,6 +285,7 @@
         <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.nonmodule.sync.NonModuleTargetsSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
         <additionalProjectTaskRunnerProvider
                 implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
@@ -408,6 +409,10 @@
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"/>
 
+        <lang.parserDefinition
+                language="ProjectView"
+                implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"/>
+
         <formattingService
                 implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService"/>
 
@@ -496,6 +501,9 @@
                      description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
                      key="bazel.merge.source.roots"/>
         <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
+
+        <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelJavaNewProjectWizard"/>
+        <newProjectWizard.kotlin.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelKotlinNewProjectWizard"/>
     </extensions>
 
     <actions>

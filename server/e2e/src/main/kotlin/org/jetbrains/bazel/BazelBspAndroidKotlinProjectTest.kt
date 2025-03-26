@@ -92,11 +92,11 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
           canCompile = true,
           canTest = true,
           canRun = true,
-          canDebug = false,
         ),
-        displayName = "//src/main:app",
         baseDirectory = "file://\$WORKSPACE/src/main/",
         data = appAndroidBuildTargetData,
+        sources = emptyList(),
+        resources = listOf("file://\$WORKSPACE/src/main/AndroidManifest.xml"),
       )
 
     val libBuildTarget =
@@ -106,17 +106,21 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
         listOf("android", "java", "kotlin"),
         listOf(
           Label.parse("@@rules_jvm_external~~maven~maven//:androidx_appcompat_appcompat"),
-          Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
+          Label.synthetic("rules_kotlin_kotlin-stdlibs"),
         ),
         BuildTargetCapabilities(
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
         ),
-        displayName = "//src/main/java/com/example/myapplication:lib",
         baseDirectory = "file://\$WORKSPACE/src/main/java/com/example/myapplication/",
         data = libAndroidBuildTargetData,
+        sources = emptyList(),
+        resources =
+          listOf(
+            "file://\$WORKSPACE/src/main/java/com/example/myapplication/AndroidManifest.xml",
+            "file://\$WORKSPACE/src/main/java/com/example/myapplication/res/",
+          ),
       )
 
     val libTestBuildTarget =
@@ -131,16 +135,17 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
           Label.parse("@@rules_jvm_external~~maven~maven//:junit_junit"),
           Label.parse("@@rules_jvm_external~~maven~maven//:org_robolectric_robolectric"),
           Label.parse("@@rules_robolectric~//bazel:android-all"),
-          Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
+          Label.synthetic("rules_kotlin_kotlin-stdlibs"),
         ),
         BuildTargetCapabilities(
           canCompile = true,
           canRun = false,
           canTest = true,
         ),
-        displayName = "//src/test/java/com/example/myapplication:lib_test",
         baseDirectory = "file://\$WORKSPACE/src/test/java/com/example/myapplication/",
         data = libTestAndroidBuildTargetData,
+        sources = emptyList(),
+        resources = listOf("file://\$WORKSPACE/src/test/java/com/example/myapplication/AndroidManifest.xml"),
       )
 
     return WorkspaceBuildTargetsResult(listOf(appBuildTarget, libBuildTarget, libTestBuildTarget))

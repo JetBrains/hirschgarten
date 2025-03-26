@@ -10,8 +10,8 @@ object ProjectViewSection {
       data object String : Scalar
     }
 
-    sealed interface Vector<T : Scalar> : Parser {
-      data object String : Vector<Scalar.String>
+    sealed interface List<T : Scalar> : Parser {
+      data object String : List<Scalar.String>
     }
   }
 
@@ -21,20 +21,21 @@ object ProjectViewSection {
       "allow_manual_targets_sync" to Parser.Scalar.Boolean,
       "android_min_sdk" to Parser.Scalar.Integer,
       "bazel_binary" to Parser.Scalar.String,
-      "build_flags" to Parser.Vector.String,
+      "build_flags" to Parser.List.String,
       "derive_targets_from_directories" to Parser.Scalar.Boolean,
-      "directories" to Parser.Vector.String,
+      "directories" to Parser.List.String,
       "enable_native_android_rules" to Parser.Scalar.Boolean,
-      "enabled_rules" to Parser.Vector.String,
+      "enabled_rules" to Parser.List.String,
       "experimental_add_transitive_compile_time_jars" to Parser.Scalar.Boolean,
-      "experimental_no_prune_transitive_compile_time_jars_patterns" to Parser.Vector.String,
-      "experimental_transitive_compile_time_jars_target_kinds" to Parser.Vector.String,
+      "experimental_no_prune_transitive_compile_time_jars_patterns" to Parser.List.String,
+      "experimental_transitive_compile_time_jars_target_kinds" to Parser.List.String,
       "ide_java_home_override" to Parser.Scalar.String,
       "import_depth" to Parser.Scalar.Integer,
       "shard_approach" to Parser.Scalar.String,
       "shard_sync" to Parser.Scalar.Boolean,
-      "sync_flags" to Parser.Vector.String,
+      "sync_flags" to Parser.List.String,
       "target_shard_size" to Parser.Scalar.Integer,
-      "targets" to Parser.Vector.String,
+      "targets" to Parser.List.String,
+      "import_run_configurations" to Parser.List.String,
     )
 }

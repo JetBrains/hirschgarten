@@ -20,7 +20,7 @@ import org.jetbrains.bazel.runnerAction.BuildTargetAction
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 
 internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
   override fun isDumbAware(): Boolean = true
@@ -50,7 +50,7 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
       val targetId = calculateTargetId(virtualFile) ?: return null
 
       val realTargetId = project.targetUtils.allTargets().firstOrNull { it.toString().endsWith(targetId) }
-      val targetInfo = realTargetId?.let { project.targetUtils.getBuildTargetInfoForLabel(it) }
+      val targetInfo = realTargetId?.let { project.targetUtils.getBuildTargetForLabel(it) }
       calculateLineMarkerInfo(project, targetInfo).takeIf { it.actions.isNotEmpty() }
     }
 
@@ -69,13 +69,13 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     return visitor.identifier
   }
 
-  private fun calculateLineMarkerInfo(project: Project, targetInfo: BuildTargetInfo?): Info =
+  private fun calculateLineMarkerInfo(project: Project, targetInfo: BuildTarget?): Info =
     Info(
       AllIcons.Actions.Execute,
       targetInfo.calculateEligibleActions(project).toTypedArray(),
     ) { "Run" }
 
-  private fun BuildTargetInfo?.calculateEligibleActions(project: Project): List<AnAction> =
+  private fun BuildTarget?.calculateEligibleActions(project: Project): List<AnAction> =
     if (this == null) {
       emptyList()
     } else {

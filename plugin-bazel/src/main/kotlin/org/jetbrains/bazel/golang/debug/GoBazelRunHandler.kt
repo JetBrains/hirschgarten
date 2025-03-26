@@ -22,8 +22,8 @@ import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.target.getModule
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.includesGo
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunParams
@@ -59,10 +59,10 @@ class GoBazelRunHandler(private val configuration: BazelRunConfiguration) : Baze
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = GoBazelRunHandler(configuration)
 
-    override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
+    override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       BazelFeatureFlags.isGoSupportEnabled && targetInfos.all { it.languageIds.includesGo() }
 
-    override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)
+    override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
 
     override val googleHandlerId: String = "BlazeGoRunConfigurationHandlerProvider"
     override val isTestHandler: Boolean = false

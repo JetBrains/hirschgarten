@@ -16,8 +16,8 @@ import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.isJvmTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.TestParams
@@ -44,12 +44,12 @@ class JvmTestHandler : BazelRunHandler {
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = JvmTestHandler()
 
-    override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
+    override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       targetInfos.all {
         (it.languageIds.isJvmTarget() && it.capabilities.canTest)
       }
 
-    override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)
+    override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
 
     override val googleHandlerId: String = "BlazeJavaRunConfigurationHandlerProvider"
     override val isTestHandler: Boolean = true

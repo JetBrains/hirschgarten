@@ -23,19 +23,19 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.net.URI
 import kotlin.io.path.toPath
 
-class BazelJumpToBuildFileAction(private val buildTargetInfo: BuildTargetInfo?) :
+class BazelJumpToBuildFileAction(private val buildTarget: BuildTarget?) :
   SuspendableAction({ BazelPluginBundle.message("widget.open.build.file") }, AllIcons.Actions.OpenNewTab) {
   // Used in plugin.xml for source file popup menu
   @Suppress("UNUSED")
   constructor() : this(null)
 
   override fun update(project: Project, e: AnActionEvent) {
-    // buildTargetInfo is provided for the target widget, but not if the action is invoked via the popup menu on a source file
-    if (buildTargetInfo != null) return
+    // buildTarget is provided for the target widget, but not if the action is invoked via the popup menu on a source file
+    if (buildTarget != null) return
 
     e.presentation.isEnabledAndVisible = (e.place == ActionPlaces.EDITOR_POPUP || e.place == ActionPlaces.KEYBOARD_SHORTCUT) &&
       e.getPsiFile()?.virtualFile?.let {
@@ -44,48 +44,48 @@ class BazelJumpToBuildFileAction(private val buildTargetInfo: BuildTargetInfo?) 
   }
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    val buildTargetInfo =
-      this.buildTargetInfo ?: run {
+    val buildTarget =
+      this.buildTarget ?: run {
         val virtualFile = readAction { e.getPsiFile()?.virtualFile } ?: return
-        getBuildTargetInfo(project, virtualFile, e.getEditor()) ?: return
+        getBuildTarget(project, virtualFile, e.getEditor()) ?: return
       }
-    jumpToBuildFile(project, buildTargetInfo)
+    jumpToBuildFile(project, buildTarget)
   }
 
-  private suspend fun getBuildTargetInfo(
+  private suspend fun getBuildTarget(
     project: Project,
     file: VirtualFile,
     editor: Editor?,
-  ): BuildTargetInfo? {
+  ): BuildTarget? {
     val target = project.targetUtils.getTargetsForFile(file).chooseTarget(editor) ?: return null
-    return project.targetUtils.getBuildTargetInfoForLabel(target)
+    return project.targetUtils.getBuildTargetForLabel(target)
   }
 }
 
-suspend fun jumpToBuildFile(project: Project, buildTargetInfo: BuildTargetInfo) {
+suspend fun jumpToBuildFile(project: Project, buildTarget: BuildTarget) {
   val buildFile =
     readAction {
-      findBuildFileTarget(project, buildTargetInfo)
+      findBuildFileTarget(project, buildTarget)
     } ?: return
   withContext(Dispatchers.EDT) {
     EditorHelper.openInEditor(buildFile, true, true)
   }
 }
 
-private fun findBuildFileTarget(project: Project, buildTargetInfo: BuildTargetInfo): PsiElement? {
-  val buildFile = findBuildFile(project, buildTargetInfo) ?: return null
+private fun findBuildFileTarget(project: Project, buildTarget: BuildTarget): PsiElement? {
+  val buildFile = findBuildFile(project, buildTarget) ?: return null
 
   // Try to jump to a specific target
-  val target = buildTargetInfo.id.target as? SingleTarget
+  val target = buildTarget.id.target as? SingleTarget
   if (target != null) {
-    (buildFile as? StarlarkFile)?.findRuleTarget(target.targetName)?.let { return it }
+    buildFile.findRuleTarget(target.targetName)?.let { return it }
   }
   // Fallback to the BUILD file itself
   return buildFile
 }
 
-fun findBuildFile(project: Project, buildTargetInfo: BuildTargetInfo): StarlarkFile? {
-  val baseDirectoryPath = buildTargetInfo.baseDirectory?.let { URI.create(it) } ?: return null
+fun findBuildFile(project: Project, buildTarget: BuildTarget): StarlarkFile? {
+  val baseDirectoryPath = buildTarget.baseDirectory?.let { URI.create(it) } ?: return null
   // Sometimes a project can contain a directory named "build" (which on case-insensitive filesystems is the same as BUILD).
   // Try with BUILD.bazel first to avoid this case.
   val buildBazelFilePath = baseDirectoryPath.addPathSuffix("BUILD.bazel").toPath()

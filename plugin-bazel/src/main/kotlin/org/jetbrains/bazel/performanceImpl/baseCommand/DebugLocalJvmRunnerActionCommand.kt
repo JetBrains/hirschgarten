@@ -15,7 +15,7 @@ abstract class DebugLocalJvmRunnerActionCommand(text: String, line: Int) : Playb
 
   private suspend fun executeDebugLocalJVMRunnerAction(project: Project) {
     val id = getTargetId(project) ?: return
-    val targetInfo = project.targetUtils.getBuildTargetInfoForLabel(id) ?: return
+    val targetInfo = project.targetUtils.getBuildTargetForLabel(id) ?: return
     if (targetInfo.capabilities.canTest) {
       TestWithLocalJvmRunnerAction(targetInfo, isDebugMode = true).doPerformAction(project)
     } else {

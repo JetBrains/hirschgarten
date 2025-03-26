@@ -20,21 +20,21 @@ import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.target.getModule
 import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 import org.jetbrains.bsp.protocol.StatusCode
 import javax.swing.Icon
 import kotlin.coroutines.cancellation.CancellationException
 
 abstract class LocalJvmRunnerAction(
-  protected val targetInfo: BuildTargetInfo,
+  protected val targetInfo: BuildTarget,
   text: () -> String,
   icon: Icon? = null,
   private val isDebugMode: Boolean = false,
 ) : BaseRunnerAction(listOf(targetInfo), text, icon, isDebugMode) {
   abstract suspend fun getEnvironment(project: Project): JvmEnvironmentItem?
 
-  override suspend fun getRunnerSettings(project: Project, buildTargetInfos: List<BuildTargetInfo>): RunnerAndConfigurationSettings? {
+  override suspend fun getRunnerSettings(project: Project, buildTargets: List<BuildTarget>): RunnerAndConfigurationSettings? {
     val module = targetInfo.getModule(project) ?: return null
 
     val bspSyncConsole = ConsoleService.getInstance(project).syncConsole
@@ -52,7 +52,7 @@ abstract class LocalJvmRunnerAction(
     environment: JvmEnvironmentItem,
     module: Module,
     project: Project,
-    targetInfo: BuildTargetInfo,
+    targetInfo: BuildTarget,
   ): RunnerAndConfigurationSettings? {
     val configurationName = calculateConfigurationName(targetInfo)
     val configuration = calculateConfiguration(configurationName, environment, module, project, targetInfo) ?: return null
@@ -82,8 +82,8 @@ abstract class LocalJvmRunnerAction(
     return configuration
   }
 
-  private fun calculateConfigurationName(targetInfo: BuildTargetInfo): String {
-    val targetDisplayName = targetInfo.buildTargetName
+  private fun calculateConfigurationName(targetInfo: BuildTarget): String {
+    val targetDisplayName = targetInfo.displayName
     val actionNameKey =
       when {
         isDebugMode -> "target.debug.with.jvm.runner.config.name"

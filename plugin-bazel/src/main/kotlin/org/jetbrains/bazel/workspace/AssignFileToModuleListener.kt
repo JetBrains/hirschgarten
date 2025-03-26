@@ -181,7 +181,7 @@ private suspend fun processFileCreated(
   val uri = url.toPath().toUri()
   queryTargetsForFile(project, url)
     ?.let { targets ->
-      val modules = targets.mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
+      val modules = targets.mapNotNull { it.toModuleEntity(storage, moduleNameProvider) }
       modules.forEach { url.addToModule(workspaceModel, it, newFile.extension) }
       project.targetUtils.addFileToTargetIdEntry(uri, targets)
     }
@@ -202,7 +202,7 @@ private suspend fun processFileRemoved(
   val modules =
     targetUtils
       .getTargetsForURI(oldUri)
-      .mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
+      .mapNotNull { it.toModuleEntity(storage, moduleNameProvider) }
   modules.forEach {
     oldUrl.removeFromModule(workspaceModel, it)
     newUrl?.removeFromModule(workspaceModel, it) // IntelliJ might have already changed the content root's path to the new one
@@ -230,13 +230,8 @@ private suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileU
       .buildTargetInverseSources(InverseSourcesParams(TextDocumentIdentifier(fileUrl.url)))
   }
 
-private fun Label.toModuleEntity(
-  storage: ImmutableEntityStorage,
-  moduleNameProvider: TargetNameReformatProvider,
-  targetUtils: TargetUtils,
-): ModuleEntity? {
-  val targetInfo = targetUtils.getBuildTargetInfoForLabel(this) ?: return null
-  val moduleName = moduleNameProvider(targetInfo)
+private fun Label.toModuleEntity(storage: ImmutableEntityStorage, moduleNameProvider: TargetNameReformatProvider): ModuleEntity? {
+  val moduleName = moduleNameProvider(this)
   val moduleId = ModuleId(moduleName)
   return storage.resolve(moduleId)
 }

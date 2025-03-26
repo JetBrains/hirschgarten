@@ -53,7 +53,7 @@ def extract_scala_info(target, ctx, output_groups, **kwargs):
     if not kind.startswith("scala_") and not kind.startswith("thrift_"):
         return None, None
 
-    SCALA_TOOLCHAIN = "@io_bazel_rules_scala//scala:toolchain_type"
+    SCALA_TOOLCHAIN = "@${rulesetNameApparent}//scala:toolchain_type"
 
     scala_info = {}
 

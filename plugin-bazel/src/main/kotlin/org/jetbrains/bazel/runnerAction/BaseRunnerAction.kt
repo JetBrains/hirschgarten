@@ -18,11 +18,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.Icon
 
 public abstract class BaseRunnerAction(
-  private val buildTargetInfos: List<BuildTargetInfo>,
+  private val buildTargets: List<BuildTarget>,
   text: () -> String,
   icon: Icon? = null,
   private val isDebugAction: Boolean = false,
@@ -31,10 +31,7 @@ public abstract class BaseRunnerAction(
     text = text,
     icon = icon ?: getIcon(isDebugAction, isCoverageAction),
   ) {
-  protected abstract suspend fun getRunnerSettings(
-    project: Project,
-    buildTargetInfos: List<BuildTargetInfo>,
-  ): RunnerAndConfigurationSettings?
+  protected abstract suspend fun getRunnerSettings(project: Project, buildTargets: List<BuildTarget>): RunnerAndConfigurationSettings?
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     doPerformAction(project)
@@ -42,7 +39,7 @@ public abstract class BaseRunnerAction(
 
   suspend fun doPerformAction(project: Project) {
     try {
-      val settings = getRunnerSettings(project, buildTargetInfos) ?: return
+      val settings = getRunnerSettings(project, buildTargets) ?: return
       RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
       val executor = getExecutor()
       val runner = ProgramRunner.getRunner(executor.id, settings.configuration)

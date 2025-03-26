@@ -15,8 +15,8 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.includesAndroid
+import org.jetbrains.bsp.protocol.BuildTarget
 
 /**
  * Key for storing the target Android device inside an [ExecutionEnvironment]
@@ -59,10 +59,10 @@ class AndroidBazelRunHandler(private val configuration: BazelRunConfiguration) :
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = AndroidBazelRunHandler(configuration)
 
-    override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
+    override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       BazelFeatureFlags.isAndroidSupportEnabled &&
         targetInfos.singleOrNull()?.let { it.languageIds.includesAndroid() && !it.capabilities.canTest } ?: false
 
-    override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)
+    override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
   }
 }

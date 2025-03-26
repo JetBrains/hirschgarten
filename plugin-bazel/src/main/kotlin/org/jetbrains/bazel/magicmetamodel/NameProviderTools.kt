@@ -6,11 +6,11 @@ import org.jetbrains.bazel.extensionPoints.BazelBuildTargetClassifier
 import org.jetbrains.bazel.utils.StringUtils
 
 fun Project.findNameProvider(): TargetNameReformatProvider =
-  { buildTargetInfo ->
-    val targetName = BazelBuildTargetClassifier.calculateBuildTargetName(buildTargetInfo).sanitizeName()
+  { buildTarget ->
+    val targetName = BazelBuildTargetClassifier.calculateBuildTargetName(buildTarget).sanitizeName()
     val prefix =
       BazelBuildTargetClassifier
-        .calculateBuildTargetPath(buildTargetInfo)
+        .calculateBuildTargetPath(buildTarget)
         .shortenTargetPath(targetName.length)
         .joinToString(".") { pathElement -> pathElement.sanitizeName() }
     if (prefix.isBlank()) targetName else "$prefix.$targetName"

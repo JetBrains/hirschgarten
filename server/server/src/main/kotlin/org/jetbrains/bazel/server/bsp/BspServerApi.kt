@@ -32,15 +32,11 @@ import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
-import org.jetbrains.bsp.protocol.ResourcesParams
-import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
-import org.jetbrains.bsp.protocol.SourcesParams
-import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
@@ -76,15 +72,11 @@ class BspServerApi(
   override suspend fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult =
     projectSyncService.workspaceBuildFirstPhase(params)
 
-  override suspend fun buildTargetSources(params: SourcesParams): SourcesResult = projectSyncService.buildTargetSources(params)
-
   override suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult =
     projectSyncService.buildTargetInverseSources(params)
 
   override suspend fun buildTargetDependencySources(params: DependencySourcesParams): DependencySourcesResult =
     projectSyncService.buildTargetDependencySources(params)
-
-  override suspend fun buildTargetResources(params: ResourcesParams): ResourcesResult = projectSyncService.buildTargetResources(params)
 
   override suspend fun buildTargetCompile(params: CompileParams): CompileResult = executeService.compile(params)
 

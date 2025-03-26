@@ -14,7 +14,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.debug.configuration.StarlarkDebugConfiguration
 import org.jetbrains.bazel.debug.configuration.StarlarkDebugConfigurationType
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 
 class StarlarkDebugAction(private val targetId: Label) :
   SuspendableAction(
@@ -36,7 +36,7 @@ class StarlarkDebugAction(private val targetId: Label) :
   }
 
   companion object {
-    fun isApplicableTo(targetInfo: BuildTargetInfo): Boolean = targetInfo.capabilities.canCompile
+    fun isApplicableTo(targetInfo: BuildTarget): Boolean = targetInfo.capabilities.canCompile
   }
 }
 

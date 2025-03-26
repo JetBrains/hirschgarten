@@ -77,7 +77,7 @@ class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, t
       targetIcon = BazelPluginIcons.bazel,
       invalidTargetIcon = BazelPluginIcons.bazelError,
       toolName = BazelPluginConstants.BAZEL_DISPLAY_NAME,
-      targets = targetUtils.allTargets().mapNotNull { targetUtils.getBuildTargetInfoForLabel(it) },
+      targets = targetUtils.allTargets().mapNotNull { targetUtils.getBuildTargetForLabel(it) },
       invalidTargets = project.invalidTargets,
       searchBarPanel = searchBarPanel,
     ).apply {

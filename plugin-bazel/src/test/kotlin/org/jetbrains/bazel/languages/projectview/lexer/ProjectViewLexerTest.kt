@@ -8,18 +8,18 @@ import org.junit.Test
 class ProjectViewLexerTest : LexerTestCase() {
   sealed interface Section {
     data class Scalar(val name: String) : Section {
-      override fun getExpectedTokens(): List<String> = SCALAR_SECTION
+      override fun getExpectedTokens(): kotlin.collections.List<String> = SCALAR_SECTION
 
       override fun getExampleCode() = "$name: value"
     }
 
-    data class Vector(val name: String) : Section {
-      override fun getExpectedTokens(): List<String> = VECTOR_SECTION
+    data class List(val name: String) : Section {
+      override fun getExpectedTokens(): kotlin.collections.List<String> = LIST_SECTION
 
       override fun getExampleCode() = "$name:\n  value"
     }
 
-    fun getExpectedTokens(): List<String>
+    fun getExpectedTokens(): kotlin.collections.List<String>
 
     fun getExampleCode(): String
 
@@ -27,7 +27,7 @@ class ProjectViewLexerTest : LexerTestCase() {
       fun create(key: ProjectViewSyntaxKey, parser: ProjectViewSection.Parser): Section =
         when (parser) {
           is ProjectViewSection.Parser.Scalar -> Scalar(key)
-          is ProjectViewSection.Parser.Vector<*> -> Vector(key)
+          is ProjectViewSection.Parser.List<*> -> List(key)
         }
 
       private val SCALAR_SECTION =
@@ -39,7 +39,7 @@ class ProjectViewLexerTest : LexerTestCase() {
         )
 
       /** A vector section. */
-      private val VECTOR_SECTION =
+      private val LIST_SECTION =
         listOf(
           "ProjectView:section_keyword",
           "ProjectView:colon",

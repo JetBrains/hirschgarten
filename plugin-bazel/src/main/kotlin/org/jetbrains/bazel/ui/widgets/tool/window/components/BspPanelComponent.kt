@@ -9,7 +9,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.Icon
@@ -47,7 +47,7 @@ class BspPanelComponent private constructor(
     targetIcon: Icon,
     invalidTargetIcon: Icon,
     toolName: String,
-    targets: Collection<BuildTargetInfo>,
+    targets: Collection<BuildTarget>,
     invalidTargets: List<Label>,
     searchBarPanel: SearchBarPanel,
   ) : this(
@@ -124,7 +124,7 @@ class BspPanelComponent private constructor(
    * @param targets collection of build targets which the new panel will contain
    * @return newly created panel
    */
-  fun createNewWithTargets(targets: Collection<BuildTargetInfo>, invalidTargets: List<Label>): BspPanelComponent =
+  fun createNewWithTargets(targets: Collection<BuildTarget>, invalidTargets: List<Label>): BspPanelComponent =
     BspPanelComponent(
       targetIcon,
       toolName,

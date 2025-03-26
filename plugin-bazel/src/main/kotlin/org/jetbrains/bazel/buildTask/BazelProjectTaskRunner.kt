@@ -15,7 +15,7 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.concurrency.AsyncPromise
@@ -56,13 +56,13 @@ class BazelProjectTaskRunner : ProjectTaskRunner() {
     return buildBspTargets(project, targetsToBuild)
   }
 
-  private fun obtainTargetsToBuild(project: Project, tasks: List<ModuleBuildTask>): List<BuildTargetInfo> {
+  private fun obtainTargetsToBuild(project: Project, tasks: List<ModuleBuildTask>): List<BuildTarget> {
     val targetUtils = project.targetUtils
-    return tasks.mapNotNull { targetUtils.getBuildTargetInfoForModule(it.module) }
+    return tasks.mapNotNull { targetUtils.getBuildTargetForModule(it.module) }
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTargetInfo>): Promise<Result> {
+  private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTarget>): Promise<Result> {
     val targetIdentifiers = targetsToBuild.filter { it.capabilities.canCompile }.map { it.id }
     val result =
       BazelCoroutineService.getInstance(project).startAsync {

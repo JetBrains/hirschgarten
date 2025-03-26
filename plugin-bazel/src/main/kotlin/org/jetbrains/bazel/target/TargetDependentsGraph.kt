@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.target
 
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 
-internal class TargetDependentsGraph(targetIdToTargetInfo: Map<Label, BuildTargetInfo>, libraryItems: List<LibraryItem>?) {
+internal class TargetDependentsGraph(targetIdToTargetInfo: Map<Label, BuildTarget>, libraryItems: List<LibraryItem>?) {
   private val targetIdToDirectDependentIds = hashMapOf<Label, MutableSet<Label>>()
 
   init {

@@ -8,10 +8,13 @@ data class BuildTarget(
   val languageIds: List<String>,
   val dependencies: List<Label>,
   val capabilities: BuildTargetCapabilities,
-  val displayName: String? = null,
+  val sources: List<SourceItem>,
+  val resources: List<String>,
   val baseDirectory: String? = null,
   var data: BuildTargetData? = null,
-)
+) {
+  val displayName: String = id.toShortString()
+}
 
 sealed interface BuildTargetData
 

@@ -56,6 +56,8 @@ class BspModuleDetailsToModuleTransformerTest {
           Label.parse("//target3"),
         ),
         BuildTargetCapabilities(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
 
     val javacOptions =
@@ -125,6 +127,8 @@ class BspModuleDetailsToModuleTransformerTest {
           Label.parse("//target3"),
         ),
         BuildTargetCapabilities(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
     val bspModuleDetails =
       BspModuleDetails(
@@ -208,6 +212,8 @@ class BspModuleDetailsToModuleTransformerTest {
           Label.parse("//target3"),
         ),
         BuildTargetCapabilities(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
 
     val javacOptionsItem1 =
@@ -243,6 +249,8 @@ class BspModuleDetailsToModuleTransformerTest {
           Label.parse("//target3"),
         ),
         BuildTargetCapabilities(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
 
     val javacOptionsItem2 =
@@ -326,6 +334,8 @@ class BspModuleDetailsToModuleTransformerTest {
         listOf("java"),
         emptyList(),
         BuildTargetCapabilities(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
 
     val javacOptions =
@@ -347,7 +357,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val targetsMap = listOf("//target1").toDefaultTargetsMap()
 
     // when
-    val nameProvider: TargetNameReformatProvider = { "${it.id.toShortString()}${it.id.toShortString()}" }
+    val nameProvider: TargetNameReformatProvider = { "${it.toShortString()}${it.toShortString()}" }
     val transformer =
       BspModuleDetailsToModuleTransformer(
         targetsMap,
