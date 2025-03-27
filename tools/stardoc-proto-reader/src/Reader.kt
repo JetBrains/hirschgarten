@@ -38,7 +38,7 @@ object ProtobufReader {
 
         return "BazelNativeRule(" +
                 "\"" + ruleInfo.ruleName + "\"" + "," +
-                "\"\"" + "," + // Emtpy link for now
+                "null" + "," +
                 attributes + "," +
                 "\"\"\"" + replaceTicks(removeLinks(ruleInfo.docString)) + "\"\"\"" +
                 ")"
