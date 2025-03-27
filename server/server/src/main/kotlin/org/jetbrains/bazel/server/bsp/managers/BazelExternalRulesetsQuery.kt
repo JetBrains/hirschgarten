@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.server.bsp.managers
 
-import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
@@ -113,7 +113,7 @@ class BazelBzlModExternalRulesetsQueryImpl(
   private val bspClientLogger: BspClientLogger,
   private val workspaceContext: WorkspaceContext,
 ) : BazelExternalRulesetsQuery {
-  private val gson = Gson()
+  private val gson = bazelGson
 
   override suspend fun fetchExternalRulesetNames(): List<String> {
     if (!isBzlModEnabled) return emptyList()

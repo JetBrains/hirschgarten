@@ -79,7 +79,7 @@ class BazelClient(
     }
 
     val originId = params.originId
-    val textDocument = params.textDocument.uri
+    val textDocument = params.textDocument?.path
     val buildTarget = params.buildTarget
 
     BazelTaskEventsService.getInstance(project).withListener(originId) {
@@ -110,7 +110,7 @@ class BazelClient(
     params.diagnostics.forEach {
       targetConsole.addDiagnosticMessage(
         params.originId ?: PROJECT_SYNC_TASK_ID,
-        params.textDocument.uri,
+        params.textDocument?.path,
         it.range.start.line,
         it.range.start.character,
         it.message,

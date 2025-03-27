@@ -5,7 +5,6 @@ import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.model.LanguageData
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
-import java.net.URI
 import java.nio.file.Path
 
 data class SourceRootAndData(val jvmPackagePrefix: String)
@@ -15,13 +14,13 @@ abstract class LanguagePlugin<T : LanguageData> {
 
   open fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): List<BspTargetInfo.FileLocation> = listOf()
 
-  open fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<URI> = emptySet()
+  open fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<Path> = emptySet()
 
   open fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {}
 
   open fun resolveModule(targetInfo: BspTargetInfo.TargetInfo): T? = null
 
-  open fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<URI> = emptySet()
+  open fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> = emptySet()
 
   @Suppress("UNCHECKED_CAST")
   fun setModuleData(moduleData: LanguageData, buildTarget: BuildTarget) = applyModuleData(moduleData as T, buildTarget)

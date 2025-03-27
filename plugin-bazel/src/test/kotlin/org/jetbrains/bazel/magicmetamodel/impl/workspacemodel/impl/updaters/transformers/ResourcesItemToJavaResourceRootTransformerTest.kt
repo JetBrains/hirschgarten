@@ -35,7 +35,6 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // given
     val resourceFilePath = Files.createTempFile(projectBasePath, "resource", "File.txt")
     resourceFilePath.toFile().deleteOnExit()
-    val resourceRawUri = resourceFilePath.toUri().toString()
 
     val buildTarget =
       BuildTarget(
@@ -45,7 +44,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         listOf(),
         BuildTargetCapabilities(),
         emptyList(),
-        listOf(resourceRawUri),
+        listOf(resourceFilePath),
       )
 
     // when
@@ -66,7 +65,6 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // given
     val resourceFilePath = Files.createTempFile(projectBasePath, "resource", "File.txt")
     resourceFilePath.toFile().deleteOnExit()
-    val resourceRawUri = resourceFilePath.toUri().toString()
 
     val buildTarget =
       BuildTarget(
@@ -76,7 +74,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         listOf(),
         BuildTargetCapabilities(),
         emptyList(),
-        listOf(resourceRawUri),
+        listOf(resourceFilePath),
       )
 
     // when
@@ -97,7 +95,6 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // given
     val resourceDirPath = Files.createTempDirectory(projectBasePath, "resource")
     resourceDirPath.toFile().deleteOnExit()
-    val resourceRawUri = resourceDirPath.toUri().toString()
 
     val buildTarget =
       BuildTarget(
@@ -107,7 +104,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         listOf(),
         BuildTargetCapabilities(),
         emptyList(),
-        listOf(resourceRawUri),
+        listOf(resourceDirPath),
       )
 
     // when
@@ -129,13 +126,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val resourceFilePath1 = Files.createTempFile(projectBasePath, "resource", "File1.txt")
     resourceFilePath1.toFile().deleteOnExit()
-    val resourceRawUri1 = resourceFilePath1.toUri().toString()
     val resourceFilePath2 = Files.createTempFile(projectBasePath, "resource", "File2.txt")
     resourceFilePath2.toFile().deleteOnExit()
-    val resourceRawUri2 = resourceFilePath2.toUri().toString()
     val resourceFilePath3 = Files.createTempFile(projectBasePath, "resource", "File3.txt")
     resourceFilePath3.toFile().deleteOnExit()
-    val resourceRawUri3 = resourceFilePath3.toUri().toString()
 
     val buildTarget =
       BuildTarget(
@@ -145,7 +139,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         listOf(),
         BuildTargetCapabilities(),
         emptyList(),
-        listOf(resourceRawUri1, resourceRawUri2, resourceRawUri3),
+        listOf(resourceFilePath1, resourceFilePath2, resourceFilePath3),
       )
 
     // when
@@ -180,10 +174,9 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // given
     val resourceFilePath = Files.createTempFile(projectBasePath, "resource", "File1.txt")
     resourceFilePath.toFile().deleteOnExit()
-    val resourceRawUri = resourceFilePath.toUri().toString()
+
     val resourceDirPath = Files.createTempDirectory(projectBasePath, "resourcedir")
     resourceDirPath.toFile().deleteOnExit()
-    val resourceDirRawUri = resourceDirPath.toUri().toString()
 
     val buildTarget =
       BuildTarget(
@@ -193,7 +186,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         listOf(),
         BuildTargetCapabilities(),
         emptyList(),
-        listOf(resourceRawUri, resourceDirRawUri),
+        listOf(resourceFilePath, resourceDirPath),
       )
 
     // when
@@ -220,15 +213,12 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val resourceFilePath1 = Files.createTempFile(projectBasePath, "resource", "File1.txt")
     resourceFilePath1.toFile().deleteOnExit()
-    val resourceRawUri1 = resourceFilePath1.toUri().toString()
 
     val resourceFilePath2 = Files.createTempFile(projectBasePath, "resource", "File2.txt")
     resourceFilePath2.toFile().deleteOnExit()
-    val resourceRawUri2 = resourceFilePath2.toUri().toString()
 
     val resourceDirPath3 = Files.createTempDirectory(projectBasePath, "resourcedir")
     resourceDirPath3.toFile().deleteOnExit()
-    val resourceDirRawUri3 = resourceDirPath3.toUri().toString()
 
     val buildTarget =
       BuildTarget(
@@ -238,7 +228,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         listOf(),
         BuildTargetCapabilities(),
         emptyList(),
-        listOf(resourceRawUri1, resourceRawUri2, resourceDirRawUri3),
+        listOf(resourceFilePath1, resourceFilePath2, resourceDirPath3),
       )
 
     // when
@@ -275,15 +265,12 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val resourceFilePath1 = Files.createTempFile(projectBasePath, "resource1", "File1.txt")
     resourceFilePath1.toFile().deleteOnExit()
-    val resourceRawUri1 = resourceFilePath1.toUri().toString()
 
     val resourceFilePath2 = Files.createTempFile("resource2", "File2.txt")
     resourceFilePath2.toFile().deleteOnExit()
-    val resourceRawUri2 = resourceFilePath2.toUri().toString()
 
     val resourceDirPath3 = Files.createTempDirectory(projectBasePath, "resourcedir")
     resourceDirPath3.toFile().deleteOnExit()
-    val resourceDirRawUri3 = resourceDirPath3.toUri().toString()
 
     val buildTarget =
       BuildTarget(
@@ -293,7 +280,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         listOf(),
         BuildTargetCapabilities(),
         emptyList(),
-        listOf(resourceRawUri1, resourceRawUri2, resourceDirRawUri3),
+        listOf(resourceFilePath1, resourceFilePath2, resourceDirPath3),
       )
 
     // when

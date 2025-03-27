@@ -4,6 +4,7 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import java.net.URI
+import java.nio.file.Path
 import javax.swing.Icon
 import kotlin.io.path.extension
 import kotlin.io.path.toPath
@@ -42,6 +43,8 @@ fun VirtualFile.isSourceFile(): Boolean {
     }
   return isFile && extension?.lowercase()?.let { SourceType.fromExtension(it) } != null
 }
+
+fun Path.isSourceFile(): Boolean = SourceType.fromExtension(this.extension) != null
 
 fun URI.isSourceFile(): Boolean =
   with(toPath()) {

@@ -2,9 +2,8 @@ package org.jetbrains.bazel.server.sync.languages.java
 
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
-import java.net.URI
+import java.nio.file.Path
 import kotlin.io.path.exists
-import kotlin.io.path.toPath
 
 class JdkResolver(private val bazelPathsResolver: BazelPathsResolver, private val jdkVersionResolver: JdkVersionResolver) {
   fun resolve(targets: Sequence<TargetInfo>): Jdk? {
@@ -52,7 +51,7 @@ class JdkResolver(private val bazelPathsResolver: BazelPathsResolver, private va
       } else {
         null
       }
-    val javaHome = javaHomeFile?.let { bazelPathsResolver.resolveUri(it) }
+    val javaHome = javaHomeFile?.let { bazelPathsResolver.resolve(it) }
 
     return JdkCandidateData(hasRuntimeJavaHome, javaHome)
       .takeIf { javaHome != null }
@@ -61,7 +60,6 @@ class JdkResolver(private val bazelPathsResolver: BazelPathsResolver, private va
   private inner class JdkCandidate(private val data: JdkCandidateData) {
     val version =
       data.javaHome
-        ?.toPath()
         ?.takeIf { it.exists() }
         ?.let { jdkVersionResolver.resolve(it) }
         ?.toString()
@@ -72,7 +70,7 @@ class JdkResolver(private val bazelPathsResolver: BazelPathsResolver, private va
     fun asJdk(): Jdk? = version?.let { Jdk(it, javaHome) }
   }
 
-  private data class JdkCandidateData(val isRuntime: Boolean, val javaHome: URI?)
+  private data class JdkCandidateData(val isRuntime: Boolean, val javaHome: Path?)
 
   private fun <A> Sequence<A>.sortByFrequency(): Sequence<A> =
     groupBy { it }

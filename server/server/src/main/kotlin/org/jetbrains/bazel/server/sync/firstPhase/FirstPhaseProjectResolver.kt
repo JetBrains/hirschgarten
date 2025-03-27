@@ -43,7 +43,7 @@ class FirstPhaseProjectResolver(
 
       val project =
         FirstPhaseProject(
-          workspaceRoot = workspaceRoot.toUri(),
+          workspaceRoot = workspaceRoot,
           bazelRelease = bazelInfo.release,
           modules = modules,
           repoMapping = repoMapping,

@@ -50,7 +50,7 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
     val starlarkSemantics = parseStarlarkSemantics(extract(STARLARK_SEMANTICS), bazelReleaseVersion)
 
     return BazelInfo(
-      execRoot = extract(EXECUTION_ROOT),
+      execRoot = Paths.get(extract(EXECUTION_ROOT)),
       outputBase = Paths.get(extract(OUTPUT_BASE)),
       workspaceRoot = Paths.get(extract(WORKSPACE)),
       bazelBin = Paths.get(extract(BAZEL_BIN)),

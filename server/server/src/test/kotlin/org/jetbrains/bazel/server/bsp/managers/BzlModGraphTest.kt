@@ -1,14 +1,14 @@
 package org.jetbrains.bazel.server.bsp.managers
 
-import com.google.gson.Gson
 import com.google.gson.JsonObject
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.gson.bazelGson
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class BzlModGraphTest {
-  private val gson = Gson()
+  private val gson = bazelGson
 
   @Test
   fun `should throw NullPointerException for an invalid BzlMod json`() {

@@ -8,6 +8,7 @@ import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
+import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 
 object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
@@ -31,10 +32,11 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
   }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val javaHomeBazel5And6 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
+    val javaHomeBazel5And6 = Path("\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/")
     val javaHomeBazel7 =
-      "file://\$BAZEL_OUTPUT_BASE_PATH/external/" +
-        "rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_$javaHomeArchitecture/"
+      Path(
+        "\$BAZEL_OUTPUT_BASE_PATH/external/rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_$javaHomeArchitecture/",
+      )
     val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
 
     val exampleExampleJvmBuildTarget =
@@ -54,12 +56,12 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
           canTest = false,
           canRun = true,
         ),
-        baseDirectory = "file://\$WORKSPACE/example/",
+        baseDirectory = Path("\$WORKSPACE/example/"),
         data = exampleExampleJvmBuildTarget,
         sources =
           listOf(
             SourceItem(
-              uri = "file://\$WORKSPACE/example/Example.java",
+              path = Path("\$WORKSPACE/example/Example.java"),
               generated = false,
               jvmPackagePrefix = "example",
             ),

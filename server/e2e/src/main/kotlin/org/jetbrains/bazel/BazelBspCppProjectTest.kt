@@ -12,6 +12,7 @@ import org.jetbrains.bsp.protocol.CppOptionsItem
 import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
+import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.seconds
 
 object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
@@ -51,7 +52,7 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = true,
           ),
-        baseDirectory = "file://\$WORKSPACE/example/",
+        baseDirectory = Path("\$WORKSPACE/example/"),
         data = exampleExampleCppBuildTarget,
         sources = emptyList(),
         resources = emptyList(),
@@ -69,7 +70,7 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = false,
           ),
-        baseDirectory = "file://\$WORKSPACE/",
+        baseDirectory = Path("\$WORKSPACE/"),
         data = null,
         sources = emptyList(),
         resources = emptyList(),

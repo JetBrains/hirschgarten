@@ -1,14 +1,14 @@
 package org.jetbrains.bsp.protocol
 
 import org.jetbrains.bazel.label.Label
-import java.net.URI
+import java.nio.file.Path
 
 public data class LibraryItem(
   val id: Label,
   val dependencies: List<Label>,
-  val ijars: List<String>,
-  val jars: List<String>,
-  val sourceJars: List<String>,
+  val ijars: List<Path>,
+  val jars: List<Path>,
+  val sourceJars: List<Path>,
   val mavenCoordinates: MavenCoordinates?,
 )
 
@@ -21,7 +21,7 @@ data class MavenCoordinates(
 public data class GoLibraryItem(
   val id: Label,
   val goImportPath: String? = null,
-  val goRoot: URI? = null,
+  val goRoot: Path? = null,
 )
 
 public data class WorkspaceLibrariesResult(val libraries: List<LibraryItem>)

@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntity
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import kotlin.io.path.Path
 import kotlin.io.path.name
 
 @DisplayName("kotlinFacetEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
@@ -30,7 +31,7 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
   fun `should add KotlinFacet when given KotlinAddendum`() {
     runInEdtAndWait {
       // given
-      val javaHome = "/fake/path/to/local_jdk"
+      val javaHome = Path("/fake/path/to/local_jdk")
       val javaVersion = "11"
 
       val associates = listOf("//target4", "target5")

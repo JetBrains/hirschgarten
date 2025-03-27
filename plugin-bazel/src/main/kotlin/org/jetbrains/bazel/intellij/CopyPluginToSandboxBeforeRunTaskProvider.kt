@@ -17,6 +17,7 @@ import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import java.io.IOException
 import java.net.URI
 import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists

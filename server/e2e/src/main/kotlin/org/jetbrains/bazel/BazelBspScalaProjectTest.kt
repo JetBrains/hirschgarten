@@ -75,7 +75,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
     ) { testClient.testResolveProject(2.minutes) }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
+    val javaHome = Path("\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/")
     val jvmBuildTarget =
       JvmBuildTarget(
         javaHome = javaHome,
@@ -88,9 +88,9 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
         "2.12",
         ScalaPlatform.JVM,
         listOf(
-          "file://\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_compiler/scala-compiler-2.12.14.jar",
-          "file://\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_library/scala-library-2.12.14.jar",
-          "file://\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_reflect/scala-reflect-2.12.14.jar",
+          Path("\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_compiler/scala-compiler-2.12.14.jar"),
+          Path("\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_library/scala-library-2.12.14.jar"),
+          Path("\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_reflect/scala-reflect-2.12.14.jar"),
         ),
         jvmBuildTarget = jvmBuildTarget,
       )
@@ -110,12 +110,12 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
           canTest = false,
           canRun = false,
         ),
-        baseDirectory = "file://\$WORKSPACE/scala_targets/",
+        baseDirectory = Path("\$WORKSPACE/scala_targets/"),
         data = scalaBuildTarget,
         sources =
           listOf(
             SourceItem(
-              uri = "file://\$WORKSPACE/scala_targets/Example.scala",
+              path = Path("\$WORKSPACE/scala_targets/Example.scala"),
               generated = false,
               jvmPackagePrefix = "example",
             ),
@@ -185,7 +185,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
       )
 
     val tmpDir = System.getenv()["BIT_WORKSPACE_DIR"]
-    val expectedDocumentId = TextDocumentIdentifier("file://$tmpDir/scala_targets/Example.scala")
+    val expectedDocumentId = TextDocumentIdentifier(Path("$tmpDir/scala_targets/Example.scala"))
     val expectedDiagnosticsParam =
       PublishDiagnosticsParams(
         expectedDocumentId,

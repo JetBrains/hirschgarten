@@ -39,7 +39,6 @@ import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDi
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
-import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.DependencySourcesItem
@@ -47,8 +46,8 @@ import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
+import java.nio.file.Path
 import kotlin.io.path.Path
-import kotlin.io.path.toPath
 
 private const val PYTHON_SDK_ID = "PythonSDK"
 private const val PYTHON_SOURCE_ROOT_TYPE = "python-source"
@@ -138,7 +137,7 @@ class PythonProjectSync : ProjectSyncHook {
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
     target.sources.map { source ->
-      val sourceUrl = virtualFileUrlManager.getOrCreateFromUrl(source.uri)
+      val sourceUrl = source.path.toVirtualFileUrl(virtualFileUrlManager)
       val sourceRootEntity =
         SourceRootEntity(
           url = sourceUrl,
@@ -161,7 +160,7 @@ class PythonProjectSync : ProjectSyncHook {
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
     target.resources.map { resource ->
-      val resourceUrl = virtualFileUrlManager.getOrCreateFromUrl(resource)
+      val resourceUrl = resource.toVirtualFileUrl(virtualFileUrlManager)
       val resourceRootEntity =
         SourceRootEntity(
           url = resourceUrl,
@@ -246,7 +245,7 @@ class PythonProjectSync : ProjectSyncHook {
           ?.let { homePath ->
             calculateAndAddSdk(
               sdkName = "${target.id.toShortString()}-detected",
-              sdkInterpreterUri = Path(homePath).toUri().toString(),
+              sdkInterpreterUri = Path(homePath),
               sdkDependencies = dependenciesSources,
               virtualFileUrlManager = virtualFileUrlManager,
             )
@@ -256,7 +255,7 @@ class PythonProjectSync : ProjectSyncHook {
 
   private suspend fun calculateAndAddSdk(
     sdkName: String,
-    sdkInterpreterUri: String,
+    sdkInterpreterUri: Path,
     sdkDependencies: List<DependencySourcesItem>,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): Sdk {
@@ -271,11 +270,7 @@ class PythonProjectSync : ProjectSyncHook {
 
     val modificator = sdk.sdkModificator
     modificator.homePath =
-      sdkInterpreterUri
-        .safeCastToURI()
-        .toPath()
-        .toString()
-
+      sdkInterpreterUri.toString()
     modificator.versionString // needs to be invoked in order to fetch the version and cache it
 
     val additionalData = PythonSdkAdditionalData()
@@ -284,8 +279,6 @@ class PythonProjectSync : ProjectSyncHook {
         .flatMap { it.sources }
         .mapNotNull {
           it
-            .safeCastToURI()
-            .toPath()
             .toVirtualFileUrl(virtualFileUrlManager)
             .virtualFile
         }.toSet()

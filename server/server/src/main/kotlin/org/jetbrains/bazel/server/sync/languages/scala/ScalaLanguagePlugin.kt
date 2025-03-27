@@ -13,13 +13,12 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import org.jetbrains.bsp.protocol.ScalaPlatform
-import java.net.URI
 import java.nio.file.Path
 
 class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
   LanguagePlugin<ScalaModule>() {
   var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
-  var scalaTestJars: Map<Label, Set<URI>> = emptyMap()
+  var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
 
   override fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
     scalaSdks =
@@ -35,7 +34,7 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
           { it.label() },
           {
             it.scalaTargetInfo.scalatestClasspathList
-              .map(bazelPathsResolver::resolveUri)
+              .map(bazelPathsResolver::resolve)
               .toSet()
           },
         )
@@ -53,7 +52,7 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
     return ScalaModule(sdk, scalacOpts, javaLanguagePlugin.resolveModule(targetInfo))
   }
 
-  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<URI> =
+  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     javaLanguagePlugin.dependencySources(targetInfo, dependencyGraph)
 
   override fun applyModuleData(moduleData: ScalaModule, buildTarget: BuildTarget) {
@@ -64,7 +63,7 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
           version,
           binaryVersion,
           ScalaPlatform.JVM,
-          compilerJars.map { it.toString() }.toList(),
+          compilerJars.toList(),
           jvmBuildTarget = moduleData.javaModule?.let(javaLanguagePlugin::toJvmBuildTarget),
         )
       }

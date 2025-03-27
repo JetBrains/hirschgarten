@@ -1,10 +1,8 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.WorkspaceModelEntity
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
-import kotlin.io.path.toPath
 
 data class SourceRoot(
   val sourcePath: Path,
@@ -15,7 +13,7 @@ data class SourceRoot(
 internal object SourceItemToSourceRootTransformer :
   WorkspaceModelEntityTransformer<SourceItem, SourceRoot> {
   override fun transform(inputEntity: SourceItem): SourceRoot {
-    val sourcePath = inputEntity.uri.safeCastToURI().toPath()
+    val sourcePath = inputEntity.path
 
     return SourceRoot(
       sourcePath = sourcePath,

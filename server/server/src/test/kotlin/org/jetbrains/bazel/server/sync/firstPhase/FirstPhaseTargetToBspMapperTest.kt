@@ -35,7 +35,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createFile
@@ -68,7 +67,7 @@ private fun createMockWorkspaceContext(allowManualTargetsSync: Boolean): Workspa
 
 private fun createMockProject(lightweightModules: List<Build.Target>, allowManualTargetsSync: Boolean): FirstPhaseProject =
   FirstPhaseProject(
-    workspaceRoot = URI.create("file:///path/to/workspace"),
+    workspaceRoot = Path("/path/to/workspace"),
     bazelRelease = BazelRelease(7),
     modules = lightweightModules.associateBy { Label.parse(it.rule.name) },
     repoMapping = RepoMappingDisabled,
@@ -222,13 +221,13 @@ class FirstPhaseTargetToBspMapperTest {
             capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false),
             sources =
               listOf(
-                SourceItem(target1Src1.toUri().toString(), false, "com.example"),
-                SourceItem(target1Src2.toUri().toString(), false, "com.example.a"),
+                SourceItem(target1Src1, false, "com.example"),
+                SourceItem(target1Src2, false, "com.example.a"),
               ),
             resources =
               listOf(
-                target1Resource1.toUri().toString(),
-                target1Resource2.toUri().toString(),
+                target1Resource1,
+                target1Resource2,
               ),
           ),
           // target2: now merges its declared language with those inferred from its .kt sources
@@ -240,8 +239,8 @@ class FirstPhaseTargetToBspMapperTest {
             capabilities = BuildTargetCapabilities(canCompile = true, canRun = true, canTest = false),
             sources =
               listOf(
-                SourceItem(target2Src1.toUri().toString(), false, "com.example"),
-                SourceItem(target2Src2.toUri().toString(), false, "com.example"),
+                SourceItem(target2Src1, false, "com.example"),
+                SourceItem(target2Src2, false, "com.example"),
               ),
             resources = emptyList(),
           ),
@@ -255,8 +254,8 @@ class FirstPhaseTargetToBspMapperTest {
             sources = emptyList(),
             resources =
               listOf(
-                target3Resource1.toUri().toString(),
-                target3Resource2.toUri().toString(),
+                target3Resource1,
+                target3Resource2,
               ),
           ),
           // target4
@@ -298,8 +297,8 @@ class FirstPhaseTargetToBspMapperTest {
             capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false),
             sources =
               listOf(
-                SourceItem(target7Src1.toUri().toString(), false, "com.example"),
-                SourceItem(target7Src2.toUri().toString(), false, "com.example.a"),
+                SourceItem(target7Src1, false, "com.example"),
+                SourceItem(target7Src2, false, "com.example.a"),
               ),
             resources = emptyList(),
           ),
@@ -313,17 +312,17 @@ class FirstPhaseTargetToBspMapperTest {
             sources =
               listOf(
                 // note: the direct mapping for "//target8:src1.kt" becomes workspaceRoot/target8/src1.kt
-                SourceItem(target8Src1.toUri().toString(), false, "com.example"),
+                SourceItem(target8Src1, false, "com.example"),
                 // then the dependency from filegroupSources (its own direct source items)
-                SourceItem(fgSrc1.toUri().toString(), false, "com.fg"),
-                SourceItem(fgSrc2.toUri().toString(), false, "com.fg"),
+                SourceItem(fgSrc1, false, "com.fg"),
+                SourceItem(fgSrc2, false, "com.fg"),
               ),
             resources =
               listOf(
-                target8Resource1.toUri().toString(),
+                target8Resource1,
                 // resources merged from filegroupResources dependency
-                workspaceRoot.resolve("filegroupResources/file1.txt").toUri().toString(),
-                workspaceRoot.resolve("filegroupResources/file2.txt").toUri().toString(),
+                workspaceRoot.resolve("filegroupResources/file1.txt"),
+                workspaceRoot.resolve("filegroupResources/file2.txt"),
               ),
           ),
           BuildTarget(
@@ -334,8 +333,8 @@ class FirstPhaseTargetToBspMapperTest {
             capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false),
             sources =
               listOf(
-                SourceItem(fgSrc1.toUri().toString(), false, "com.fg"),
-                SourceItem(fgSrc2.toUri().toString(), false, "com.fg"),
+                SourceItem(fgSrc1, false, "com.fg"),
+                SourceItem(fgSrc2, false, "com.fg"),
               ),
             resources = emptyList(),
           ),
