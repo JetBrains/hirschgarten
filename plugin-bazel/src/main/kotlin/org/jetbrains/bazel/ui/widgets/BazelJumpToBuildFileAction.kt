@@ -13,7 +13,6 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.isFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
-import com.intellij.remoteDev.util.addPathSuffix
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
@@ -24,8 +23,6 @@ import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
-import java.net.URI
-import kotlin.io.path.toPath
 
 class BazelJumpToBuildFileAction(private val buildTarget: BuildTarget?) :
   SuspendableAction({ BazelPluginBundle.message("widget.open.build.file") }, AllIcons.Actions.OpenNewTab) {
@@ -85,11 +82,11 @@ private fun findBuildFileTarget(project: Project, buildTarget: BuildTarget): Psi
 }
 
 fun findBuildFile(project: Project, buildTarget: BuildTarget): StarlarkFile? {
-  val baseDirectoryPath = buildTarget.baseDirectory?.let { URI.create(it) } ?: return null
+  val baseDirectoryPath = buildTarget.baseDirectory ?: return null
   // Sometimes a project can contain a directory named "build" (which on case-insensitive filesystems is the same as BUILD).
   // Try with BUILD.bazel first to avoid this case.
-  val buildBazelFilePath = baseDirectoryPath.addPathSuffix("BUILD.bazel").toPath()
-  val buildFilePath = baseDirectoryPath.addPathSuffix("BUILD").toPath()
+  val buildBazelFilePath = baseDirectoryPath.resolve("BUILD.bazel")
+  val buildFilePath = baseDirectoryPath.resolve("BUILD")
   val virtualFileManager = VirtualFileManager.getInstance()
   val virtualFile =
     virtualFileManager.findFileByNioPath(buildBazelFilePath)?.takeIf { it.isFile }

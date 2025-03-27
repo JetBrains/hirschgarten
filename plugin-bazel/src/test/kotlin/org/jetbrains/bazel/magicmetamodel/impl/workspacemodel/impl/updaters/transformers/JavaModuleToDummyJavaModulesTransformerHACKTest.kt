@@ -21,7 +21,6 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.junit.jupiter.api.Test
-import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
@@ -1077,7 +1076,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
 
     val fileToTarget =
       mapOf(
-        file1APath.toUri() to listOf(Label.parse("//:target1"), Label.parse("//:target2")),
+        file1APath to listOf(Label.parse("//:target1"), Label.parse("//:target2")),
       )
 
     // when
@@ -1230,10 +1229,10 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       expectedMergedSourceRoots
   }
 
-  private fun transformIntoDummyModules(module: JavaModule, fileToTarget: Map<URI, List<Label>> = emptyMap()): List<JavaModule> =
+  private fun transformIntoDummyModules(module: JavaModule, fileToTarget: Map<Path, List<Label>> = emptyMap()): List<JavaModule> =
     transformIntoDummyModules(listOf(module), fileToTarget)
 
-  private fun transformIntoDummyModules(modules: List<JavaModule>, fileToTarget: Map<URI, List<Label>> = emptyMap()): List<JavaModule> =
+  private fun transformIntoDummyModules(modules: List<JavaModule>, fileToTarget: Map<Path, List<Label>> = emptyMap()): List<JavaModule> =
     modules
       .flatMap { module ->
         val result = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, fileToTarget, project).transform(module)

@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.bazel.utils.removeTrailingSlash
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
 import java.util.Locale
 
@@ -16,7 +15,8 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformer {
       .flatMap { moduleDetails -> moduleDetails.target.sources }
       .filterNot { sourceRoot -> sourceRoot.generated }
       .flatMap { sourceRoot ->
-        val sourceName = sourceRoot.uri.removeTrailingSlash().substringAfterLast('/')
+        val sourceName =
+          sourceRoot.path.fileName.toString()
 
         val classNames =
           if (sourceName.endsWith(".java")) {

@@ -40,7 +40,7 @@ class BepDiagnosticsTest {
     val workspaceRoot = Path("workspaceRoot")
     val bazelInfo =
       BazelInfo(
-        execRoot = "execRoot",
+        execRoot = Path("execRoot"),
         outputBase = Path("outputBase"),
         workspaceRoot = workspaceRoot,
         bazelBin = Path("bazel-bin"),

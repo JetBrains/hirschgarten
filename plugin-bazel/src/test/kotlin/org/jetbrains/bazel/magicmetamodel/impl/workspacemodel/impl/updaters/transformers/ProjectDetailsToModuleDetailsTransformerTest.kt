@@ -10,6 +10,7 @@ import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import kotlin.io.path.Path
 
 @DisplayName("ProjectDetailsToModuleDetailsTransformer.moduleDetailsForTargetId(projectDetails) tests")
 class ProjectDetailsToModuleDetailsTransformerTest {
@@ -66,8 +67,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         emptyList(),
         emptyList(),
         BuildTargetCapabilities(),
-        listOf(SourceItem("file:///root/dir/example/package/File1.java", false)),
-        listOf("file:///root/dir/resource/File.txt"),
+        listOf(SourceItem(Path("/root/dir/example/package/File1.java"), false)),
+        listOf(Path("/root/dir/resource/File.txt")),
       )
 
     val javacOptions =
@@ -116,8 +117,8 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         emptyList(),
         listOf(target2Id),
         BuildTargetCapabilities(),
-        listOf(SourceItem("file:///root/dir1/example/package/File1.java", false)),
-        listOf("file:///root/dir1/resource/File.txt"),
+        listOf(SourceItem(Path("/root/dir1/example/package/File1.java"), false)),
+        listOf(Path("/root/dir1/resource/File.txt")),
       )
     val target1JavacOptionsItem =
       JavacOptionsItem(
@@ -133,10 +134,10 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         emptyList(),
         BuildTargetCapabilities(),
         listOf(
-          SourceItem("file:///root/dir2/example/package/File1.java", false),
-          SourceItem("file:///root/dir2/example/package/File2.java", false),
+          SourceItem(Path("/root/dir2/example/package/File1.java"), false),
+          SourceItem(Path("/root/dir2/example/package/File2.java"), false),
         ),
-        listOf("file:///root/dir2/resource/File.txt"),
+        listOf(Path("/root/dir2/resource/File.txt")),
       )
     val target3Id = Label.parse("target3")
     val target3 =
@@ -164,7 +165,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         listOf(target1Id),
         BuildTargetCapabilities(),
         listOf(
-          SourceItem("file:///root/dir2/example/package/file.py", false),
+          SourceItem(Path("/root/dir2/example/package/file.py"), false),
         ),
         emptyList(),
       )

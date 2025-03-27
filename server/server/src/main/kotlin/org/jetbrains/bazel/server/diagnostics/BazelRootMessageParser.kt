@@ -2,6 +2,7 @@ package org.jetbrains.bazel.server.diagnostics
 
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
+import kotlin.io.path.Path
 
 object BazelRootMessageParser : Parser {
   private const val TARGET_LABEL = """(//[\w/.-]*:[\w/.-]+)"""
@@ -42,7 +43,7 @@ object BazelRootMessageParser : Parser {
     val line = match.groupValues[2].toInt()
     val column = match.groupValues[3].toIntOrNull() ?: 1
     val message = match.groupValues[4]
-    return Diagnostic(Position(line, column), message, path, targetLabel, DiagnosticSeverity.ERROR)
+    return Diagnostic(Position(line, column), message, Path(path), targetLabel, DiagnosticSeverity.ERROR)
   }
 
   private val InfoMessage =

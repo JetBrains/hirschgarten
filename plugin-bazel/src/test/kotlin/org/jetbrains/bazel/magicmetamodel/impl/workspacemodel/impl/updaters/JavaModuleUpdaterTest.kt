@@ -39,9 +39,7 @@ import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.net.URI
 import kotlin.io.path.Path
-import kotlin.io.path.toPath
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.primaryConstructor
@@ -83,12 +81,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         val baseDirContentRoot =
           ContentRoot(
-            path = URI.create("file:///root/dir/example/").toPath(),
+            path = Path("/root/dir/example/"),
           )
 
-        val sourcePath1 = URI.create("file:///root/dir/example/package/one").toPath()
+        val sourcePath1 = Path("/root/dir/example/package/one")
         val sourcePackagePrefix1 = "example.package.one"
-        val sourcePath2 = URI.create("file:///root/dir/example/package/two").toPath()
+        val sourcePath2 = Path("/root/dir/example/package/two")
         val sourcePackagePrefix2 = "example.package.two"
         val sourceRoots =
           listOf(
@@ -106,8 +104,8 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             ),
           )
 
-        val resourcePath1 = URI.create("file:///root/dir/example/resource/File1.txt").toPath()
-        val resourcePath2 = URI.create("file:///root/dir/example/resource/File2.txt").toPath()
+        val resourcePath1 = Path("/root/dir/example/resource/File1.txt")
+        val resourcePath2 = Path("/root/dir/example/resource/File2.txt")
         val resourceRoots =
           listOf(
             ResourceRoot(
@@ -341,12 +339,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         val baseDirContentRoot1 =
           ContentRoot(
-            path = URI.create("file:///root/dir/example/").toPath(),
+            path = Path("/root/dir/example/"),
           )
 
-        val sourcePath11 = URI.create("file:///root/dir/example/package/one").toPath()
+        val sourcePath11 = Path("/root/dir/example/package/one")
         val sourcePackagePrefix11 = "example.package.one"
-        val sourcePath12 = URI.create("file:///root/dir/example/package/two").toPath()
+        val sourcePath12 = Path("/root/dir/example/package/two")
         val sourcePackagePrefix12 = "example.package.two"
         val sourceRoots1 =
           listOf(
@@ -364,8 +362,8 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             ),
           )
 
-        val resourcePath11 = URI.create("file:///root/dir/example/resource/File1.txt").toPath()
-        val resourcePath12 = URI.create("file:///root/dir/example/resource/File2.txt").toPath()
+        val resourcePath11 = Path("/root/dir/example/resource/File1.txt")
+        val resourcePath12 = Path("/root/dir/example/resource/File2.txt")
         val resourceRoots1 =
           listOf(
             ResourceRoot(
@@ -409,10 +407,10 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         val baseDirContentRoot2 =
           ContentRoot(
-            path = URI.create("file:///another/root/dir/example/").toPath(),
+            path = Path("/another/root/dir/example/"),
           )
 
-        val sourcePath21 = URI.create("file:///another/root/dir/another/example/package/").toPath()
+        val sourcePath21 = Path("/another/root/dir/another/example/package/")
         val sourcePackagePrefix21 = "another.example.package"
         val sourceRoots2 =
           listOf(
@@ -424,7 +422,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             ),
           )
 
-        val resourcePath21 = URI.create("file:///another/root/dir/another/example/resource/File1.txt").toPath()
+        val resourcePath21 = Path("/another/root/dir/another/example/resource/File1.txt")
         val resourceRoots2 =
           listOf(
             ResourceRoot(
@@ -737,7 +735,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             languageIds = listOf("java"),
           )
 
-        val baseDirContentRootPath = URI.create("file:///root/dir/").toPath()
+        val baseDirContentRootPath = Path("/root/dir/")
         val baseDirContentRoot =
           ContentRoot(
             path = baseDirContentRootPath,
@@ -790,7 +788,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             languageIds = listOf("java"),
           )
 
-        val baseDirContentRootPath1 = URI.create("file:///root/dir1/").toPath()
+        val baseDirContentRootPath1 = Path("/root/dir1/")
         val baseDirContentRoot1 =
           ContentRoot(
             path = baseDirContentRootPath1,
@@ -815,7 +813,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             languageIds = listOf("java"),
           )
 
-        val baseDirContentRootPath2 = URI.create("file:///root/dir2/").toPath()
+        val baseDirContentRootPath2 = Path("/root/dir2/")
         val baseDirContentRoot2 =
           ContentRoot(
             path = baseDirContentRootPath2,

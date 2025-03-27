@@ -42,7 +42,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
-import kotlin.io.path.toPath
+import java.nio.file.Path
 
 private const val GO_SOURCE_ROOT_TYPE = "go-source"
 private const val GO_TEST_SOURCE_ROOT_TYPE = "go-test"
@@ -127,7 +127,7 @@ class GoProjectSync : ProjectSyncHook {
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
     target.sources.map { source ->
-      val sourceUrl = virtualFileUrlManager.getOrCreateFromUrl(source.uri)
+      val sourceUrl = source.path.toVirtualFileUrl(virtualFileUrlManager)
       val sourceRootEntity =
         SourceRootEntity(
           url = sourceUrl,
@@ -170,8 +170,8 @@ class GoProjectSync : ProjectSyncHook {
       }
     }
 
-  private fun String.asDirectoryOrParent(virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl {
-    val url = virtualFileUrlManager.findByUrl(this) ?: error("Could not find virtual file url for $this.")
+  private fun Path.asDirectoryOrParent(virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl {
+    val url = this.toVirtualFileUrl(virtualFileUrlManager)
 
     return if (url.virtualFile?.isDirectory == true) url else url.parent ?: error("Could not find parent for $url.")
   }
@@ -197,7 +197,7 @@ class GoProjectSync : ProjectSyncHook {
               isMainModule = false,
               internal = true,
             ) {
-              this.root = virtualFileUrlManager.getOrCreateFromUrl(dependencyTargetInfo.baseDirectory!!)
+              this.root = dependencyTargetInfo.baseDirectory?.toVirtualFileUrl(virtualFileUrlManager)
             }
           }
         }
@@ -211,7 +211,7 @@ class GoProjectSync : ProjectSyncHook {
           isMainModule = false,
           internal = false,
         ) {
-          this.root = it.goRoot?.toPath()?.toVirtualFileUrl(virtualFileUrlManager)
+          this.root = it.goRoot?.toVirtualFileUrl(virtualFileUrlManager)
         }
       }
 
@@ -219,7 +219,7 @@ class GoProjectSync : ProjectSyncHook {
       moduleId = moduleId,
       entitySource = entitySource,
       importPath = goBuildInfo?.importPath ?: "",
-      root = virtualFileUrlManager.getOrCreateFromUrl(inputEntity.baseDirectory!!),
+      root = inputEntity.baseDirectory!!.toVirtualFileUrl(virtualFileUrlManager),
     ) {
       this.dependencies = vgoModuleDependencies + vgoModuleLibraries
     }
@@ -251,7 +251,7 @@ class GoProjectSync : ProjectSyncHook {
 
   private fun List<BuildTarget>.findGoSdkOrNull(): GoSdk? =
     firstNotNullOfOrNull { extractGoBuildTarget(it)?.sdkHomePath }
-      ?.let { GoSdk.fromHomePath(it.path) }
+      ?.let { GoSdk.fromHomePath(it.toString()) }
 
   private suspend fun GoSdk.setAsUsed(project: Project) {
     val goSdkService = GoSdkService.getInstance(project)

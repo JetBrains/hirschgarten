@@ -31,8 +31,7 @@ import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.ui.console.ids.BASE_PROJECT_SYNC_SUBTASK_ID
 import org.jetbrains.bazel.ui.console.ids.CONNECT_TASK_ID
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
-import java.io.File
-import java.net.URI
+import java.nio.file.Path
 
 private data class SubtaskParents(val rootTask: Any, val parentTask: Any)
 
@@ -233,7 +232,7 @@ abstract class TaskConsole(
    * Adds a diagnostic message to a particular task in this console.
    *
    * @param taskId id of the task (or a subtask), to which the message will be added
-   * @param fileURI absolute path to the file concerned by the diagnostic
+   * @param path absolute path to the file concerned by the diagnostic
    * @param line line number in given file (first line is 0)
    * @param column column number in given file (first column is 0)
    * @param message description of the diagnostic
@@ -242,7 +241,7 @@ abstract class TaskConsole(
   @Synchronized
   fun addDiagnosticMessage(
     taskId: Any,
-    fileURI: String,
+    path: Path?,
     line: Int,
     column: Int,
     message: String,
@@ -251,10 +250,9 @@ abstract class TaskConsole(
     maybeGetRootTask(taskId)?.let {
       doIfTaskInProgress(it) {
         if (message.isNotBlank()) {
-          val fullFileURI = if (fileURI.startsWith("file://")) fileURI else "file://$fileURI"
           val subtaskId =
             if (tasksInProgress.contains(taskId)) it else taskId
-          val filePosition = FilePosition(File(URI(fullFileURI)), line, column)
+          val filePosition = FilePosition(path?.toFile(), line, column)
           doAddDiagnosticMessage(it, subtaskId, filePosition, message, severity)
         }
       }

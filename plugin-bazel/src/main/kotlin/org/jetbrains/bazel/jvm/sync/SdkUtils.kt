@@ -9,13 +9,12 @@ import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.ProjectRootManager
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToBaseJdkName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
-import org.jetbrains.bazel.utils.safeCastToURI
-import kotlin.io.path.toPath
+import java.nio.file.Path
 
 object SdkUtils {
-  suspend fun addJdkIfNeeded(projectName: String, javaHomeUri: String) {
-    val jdkName = projectName.projectNameToJdkName(javaHomeUri)
-    val path = javaHomeUri.safeCastToURI().toPath().toString()
+  suspend fun addJdkIfNeeded(projectName: String, javaHome: Path) {
+    val jdkName = projectName.projectNameToJdkName(javaHome)
+    val path = javaHome.toString()
     val jdk = ExternalSystemJdkProvider.getInstance().createJdk(jdkName, path)
     addSdkIfNeeded(jdk)
   }

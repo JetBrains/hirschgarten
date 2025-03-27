@@ -2,13 +2,13 @@ package org.jetbrains.bazel.server.sync.languages.scala
 
 import org.jetbrains.bazel.server.model.LanguageData
 import org.jetbrains.bazel.server.sync.languages.java.JavaModule
-import java.net.URI
+import java.nio.file.Path
 
 data class ScalaSdk(
   val organization: String,
   val version: String,
   val binaryVersion: String,
-  val compilerJars: List<URI>,
+  val compilerJars: List<Path>,
 )
 
 data class ScalaModule(

@@ -36,7 +36,7 @@ class DiagnosticsParserImpl : DiagnosticsParser {
         Diagnostic(
           position = Position(0, 0),
           message = output.fullOutput(),
-          fileLocation = "<unknown>",
+          fileLocation = null,
           targetLabel = output.targetLabel,
         ),
       )

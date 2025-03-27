@@ -31,17 +31,18 @@ class BazelJvmEnvironmentProgramPatcher : JavaProgramPatcher() {
     val jpsClassPaths = classPath.pathList.filter { it.contains(JPS_COMPILED_BASE_DIRECTORY) }
 
     val newClassPath =
-      if (includeJpsClassPaths) {
-        jpsClassPaths + item.classpath
-      } else {
-        item.classpath
-      }
+      item.classpath.map { it.toString() } +
+        if (includeJpsClassPaths) {
+          jpsClassPaths
+        } else {
+          emptyList()
+        }
 
     apply {
       env = newEnvironmentVariables
       classPath.clear()
       classPath.addAll(newClassPath)
-      workingDirectory = item.workingDirectory
+      workingDirectory = item.workingDirectory.toString()
       vmParametersList.addAll(item.jvmOptions)
     }
   }

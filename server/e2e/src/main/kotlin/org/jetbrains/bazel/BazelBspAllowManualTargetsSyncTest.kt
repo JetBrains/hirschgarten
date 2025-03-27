@@ -54,10 +54,11 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
-    val javaHomeBazel5And6 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
+    val javaHomeBazel5And6 = Path("\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/")
     val javaHomeBazel7 =
-      "file://\$BAZEL_OUTPUT_BASE_PATH/external/" +
-        "rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_\$OS$architecturePart/"
+      Path(
+        "\$BAZEL_OUTPUT_BASE_PATH/external/rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_\$OS$architecturePart/",
+      )
     val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
     val jvmBuildTarget =
       JvmBuildTarget(
@@ -77,12 +78,12 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = false,
           ),
-        baseDirectory = "file://\$WORKSPACE/manual_target/",
+        baseDirectory = Path("\$WORKSPACE/manual_target/"),
         data = jvmBuildTarget,
         sources =
           listOf(
             SourceItem(
-              uri = "file://\$WORKSPACE/manual_target/TestJavaFile.java",
+              path = Path("\$WORKSPACE/manual_target/TestJavaFile.java"),
               generated = false,
               jvmPackagePrefix = "manual_target",
             ),
@@ -102,12 +103,12 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = true,
           ),
-        baseDirectory = "file://\$WORKSPACE/manual_target/",
+        baseDirectory = Path("\$WORKSPACE/manual_target/"),
         data = jvmBuildTarget,
         sources =
           listOf(
             SourceItem(
-              uri = "file://\$WORKSPACE/manual_target/TestJavaBinary.java",
+              path = Path("\$WORKSPACE/manual_target/TestJavaBinary.java"),
               generated = false,
               jvmPackagePrefix = "manual_target",
             ),
@@ -127,12 +128,12 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
             canTest = true,
             canRun = false,
           ),
-        baseDirectory = "file://\$WORKSPACE/manual_target/",
+        baseDirectory = Path("\$WORKSPACE/manual_target/"),
         data = jvmBuildTarget,
         sources =
           listOf(
             SourceItem(
-              uri = "file://\$WORKSPACE/manual_target/JavaTest.java",
+              path = Path("\$WORKSPACE/manual_target/JavaTest.java"),
               generated = false,
               jvmPackagePrefix = "manual_target",
             ),

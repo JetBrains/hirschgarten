@@ -84,8 +84,7 @@ class MobileInstallTargetTask(
           AndroidSdkUtils
             .findAdb(project)
             .adbPath
-            ?.toURI()
-            ?.toString(),
+            ?.toPath(),
       )
     return params
   }

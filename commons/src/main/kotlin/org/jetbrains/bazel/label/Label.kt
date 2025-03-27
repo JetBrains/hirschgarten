@@ -56,6 +56,8 @@ sealed interface PackageType {
   val pathSegments: List<String>
 }
 
+fun PackageType.toPath(): Path = Path(pathSegments.joinToString(PATH_SEGMENT_SEPARATOR))
+
 data class Package(override val pathSegments: List<String>) : PackageType {
   override fun toString(): String = pathSegments.joinToString(PATH_SEGMENT_SEPARATOR)
 

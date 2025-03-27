@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.diagnostics
 
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
+import kotlin.io.path.Path
 
 object CompilerDiagnosticParser : Parser {
   override fun tryParse(output: Output): List<Diagnostic> = listOfNotNull(tryParseOne(output))
@@ -29,7 +30,7 @@ object CompilerDiagnosticParser : Parser {
         val column = match.groupValues[3].toIntOrNull() ?: tryFindColumnNumber(messageLines) ?: 1
         val level = if (match.groupValues[4] == "warning") DiagnosticSeverity.WARNING else DiagnosticSeverity.ERROR
         val message = messageLines.joinToString("\n")
-        Diagnostic(Position(line, column), message, path, output.targetLabel, level)
+        Diagnostic(Position(line, column), message, Path(path), output.targetLabel, level)
       }
 
   private fun collectMessageLines(header: String, output: Output): List<String> {

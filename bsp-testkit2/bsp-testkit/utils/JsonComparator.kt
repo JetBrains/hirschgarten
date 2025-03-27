@@ -5,12 +5,13 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
+import org.jetbrains.bazel.commons.gson.bazelGson
 import org.junit.jupiter.api.Assertions.assertTrue
 import java.lang.reflect.Type
 import java.util.TreeSet
 
 object JsonComparator {
-  private val gson = gsonSealedSupport
+  private val gson = bazelGson
 
   private val mapType: Type = object : TypeToken<Map<String?, Any?>?>() {}.type
 
