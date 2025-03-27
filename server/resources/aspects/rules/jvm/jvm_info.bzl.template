@@ -157,7 +157,9 @@ def extract_jvm_info(target, ctx, output_groups, **kwargs):
     generated_jars, resolve_files_generated_jars = get_generated_jars(provider)
 
     javac_opts = get_javac_opts(ctx)
-    jvm_flags = getattr(ctx.rule.attr, "jvm_flags", [])
+    raw_jvm_flags = getattr(ctx.rule.attr, "jvm_flags", [])
+    data_deps = getattr(ctx.rule.attr, "data", [])
+    jvm_flags = [ctx.expand_location(flag, targets=data_deps) for flag in raw_jvm_flags]
     args = getattr(ctx.rule.attr, "args", [])
     main_class = getattr(ctx.rule.attr, "main_class", None)
     if ${addTransitiveCompileTimeJars} and ctx.rule.kind in ${transitiveCompileTimeJarsTargetKinds}:
