@@ -56,17 +56,14 @@ class BspModuleDetailsToModuleTransformerTest {
           Label.parse("//target3"),
         ),
         BuildTargetCapabilities(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
 
     val javacOptions =
       JavacOptionsItem(
         targetId,
         emptyList(),
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-          "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
-        ),
-        "file:///compiler/output.jar",
       )
 
     val bspModuleDetails =
@@ -130,6 +127,8 @@ class BspModuleDetailsToModuleTransformerTest {
           Label.parse("//target3"),
         ),
         BuildTargetCapabilities(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
     val bspModuleDetails =
       BspModuleDetails(
@@ -213,17 +212,14 @@ class BspModuleDetailsToModuleTransformerTest {
           Label.parse("//target3"),
         ),
         BuildTargetCapabilities(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
 
     val javacOptionsItem1 =
       JavacOptionsItem(
         target1Id,
         emptyList(),
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-          "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
-        ),
-        "file:///compiler/output1.jar",
       )
 
     val bspModuleDetails1 =
@@ -253,16 +249,14 @@ class BspModuleDetailsToModuleTransformerTest {
           Label.parse("//target3"),
         ),
         BuildTargetCapabilities(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
 
     val javacOptionsItem2 =
       JavacOptionsItem(
         target2Id,
         emptyList(),
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-        ),
-        "file:///compiler/output2.jar",
       )
     val bspModuleDetails2 =
       BspModuleDetails(
@@ -340,17 +334,14 @@ class BspModuleDetailsToModuleTransformerTest {
         listOf("java"),
         emptyList(),
         BuildTargetCapabilities(),
+        sources = emptyList(),
+        resources = emptyList(),
       )
 
     val javacOptions =
       JavacOptionsItem(
         targetId,
         emptyList(),
-        listOf(
-          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-          "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
-        ),
-        "file:///compiler/output.jar",
       )
 
     val bspModuleDetails =
@@ -366,7 +357,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val targetsMap = listOf("//target1").toDefaultTargetsMap()
 
     // when
-    val nameProvider: TargetNameReformatProvider = { "${it.id.toShortString()}${it.id.toShortString()}" }
+    val nameProvider: TargetNameReformatProvider = { "${it.toShortString()}${it.toShortString()}" }
     val transformer =
       BspModuleDetailsToModuleTransformer(
         targetsMap,

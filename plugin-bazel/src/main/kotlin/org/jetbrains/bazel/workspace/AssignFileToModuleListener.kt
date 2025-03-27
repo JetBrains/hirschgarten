@@ -3,10 +3,13 @@
 package org.jetbrains.bazel.workspace
 
 import com.intellij.ide.impl.isTrusted
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectLocator
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent
@@ -26,7 +29,6 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
-import com.intellij.util.withScheme
 import com.intellij.workspaceModel.ide.legacyBridge.impl.java.JAVA_SOURCE_ROOT_ENTITY_TYPE_ID
 import com.intellij.workspaceModel.ide.toPath
 import kotlinx.coroutines.Job
@@ -40,10 +42,11 @@ import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.status.BspSyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
+import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.isSourceFile
-import org.jetbrains.bazel.utils.safeCastToURI
+import org.jetbrains.bazel.workspacemodel.entities.BspDummyEntitySource
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
@@ -170,13 +173,16 @@ private suspend fun processFileCreated(
   storage: ImmutableEntityStorage,
   moduleNameProvider: TargetNameReformatProvider,
 ) {
+  val existingModule = readAction { ProjectFileIndex.getInstance(project).getModuleForFile(newFile) }
+  if (existingModule != null && existingModule.moduleEntity?.entitySource != BspDummyEntitySource) return
+
   val url = newFile.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
-  val uri = url.toPath().toUri()
+  val path = url.toPath()
   queryTargetsForFile(project, url)
     ?.let { targets ->
-      val modules = targets.mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
+      val modules = targets.mapNotNull { it.toModuleEntity(storage, moduleNameProvider) }
       modules.forEach { url.addToModule(workspaceModel, it, newFile.extension) }
-      project.targetUtils.addFileToTargetIdEntry(uri, targets)
+      project.targetUtils.addFileToTargetIdEntry(path, targets)
     }
 }
 
@@ -190,12 +196,12 @@ private suspend fun processFileRemoved(
   moduleNameProvider: TargetNameReformatProvider,
 ) {
   val oldUrl = workspaceModel.getVirtualFileUrlManager().fromPath(oldFilePath)
-  val oldUri = oldFilePath.safeCastToURI().withScheme("file")
+  val oldUri = oldFilePath.toNioPathOrNull()!!
   val newUrl = newFile?.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   val modules =
     targetUtils
-      .getTargetsForURI(oldUri)
-      .mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
+      .getTargetsForPath(oldUri)
+      .mapNotNull { it.toModuleEntity(storage, moduleNameProvider) }
   modules.forEach {
     oldUrl.removeFromModule(workspaceModel, it)
     newUrl?.removeFromModule(workspaceModel, it) // IntelliJ might have already changed the content root's path to the new one
@@ -207,8 +213,8 @@ private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUr
   if (!BspSyncStatusService.getInstance(project).isSyncInProgress) {
     try {
       askForInverseSources(project, fileUrl)
-        ?.targets
-        ?.toList()
+        .targets
+        .toList()
     } catch (ex: Exception) {
       logger.debug(ex)
       null
@@ -220,16 +226,11 @@ private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUr
 private suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileUrl): InverseSourcesResult =
   project.connection.runWithServer { bspServer ->
     bspServer
-      .buildTargetInverseSources(InverseSourcesParams(TextDocumentIdentifier(fileUrl.url)))
+      .buildTargetInverseSources(InverseSourcesParams(TextDocumentIdentifier(fileUrl.toPath())))
   }
 
-private fun Label.toModuleEntity(
-  storage: ImmutableEntityStorage,
-  moduleNameProvider: TargetNameReformatProvider,
-  targetUtils: TargetUtils,
-): ModuleEntity? {
-  val targetInfo = targetUtils.getBuildTargetInfoForLabel(this) ?: return null
-  val moduleName = moduleNameProvider(targetInfo)
+private fun Label.toModuleEntity(storage: ImmutableEntityStorage, moduleNameProvider: TargetNameReformatProvider): ModuleEntity? {
+  val moduleName = moduleNameProvider(this)
   val moduleId = ModuleId(moduleName)
   return storage.resolve(moduleId)
 }

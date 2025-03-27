@@ -410,6 +410,8 @@ private fun mockTarget(id: String, dependencies: List<String>): BuildTarget =
     emptyList(),
     dependencies.map { Label.parse(it) },
     BuildTargetCapabilities(),
+    emptyList(),
+    emptyList(),
   )
 
 private fun mockLibraryItem(id: String, dependencies: List<String>): LibraryItem =

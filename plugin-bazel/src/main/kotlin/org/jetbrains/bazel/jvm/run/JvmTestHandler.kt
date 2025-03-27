@@ -8,16 +8,16 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
-import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.isJvmTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.TestParams
@@ -39,17 +39,20 @@ class JvmTestHandler : BazelRunHandler {
       }
     }
 
-  class JvmTestHandlerProvider : RunHandlerProvider {
+  class JvmTestHandlerProvider : GooglePluginAwareRunHandlerProvider {
     override val id: String = "JvmBspTestHandlerProvider"
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = JvmTestHandler()
 
-    override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
+    override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       targetInfos.all {
         (it.languageIds.isJvmTarget() && it.capabilities.canTest)
       }
 
-    override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)
+    override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
+
+    override val googleHandlerId: String = "BlazeJavaRunConfigurationHandlerProvider"
+    override val isTestHandler: Boolean = true
   }
 }
 
@@ -73,6 +76,7 @@ class JvmTestWithDebugCommandLineState(
         arguments = transformProgramArguments(settings.programArguments),
         environmentVariables = settings.env.envs,
         debug = RemoteDebugData("jdwp", getConnectionPort()),
+        testFilter = settings.testFilter,
       )
 
     server.buildTargetTest(testParams)

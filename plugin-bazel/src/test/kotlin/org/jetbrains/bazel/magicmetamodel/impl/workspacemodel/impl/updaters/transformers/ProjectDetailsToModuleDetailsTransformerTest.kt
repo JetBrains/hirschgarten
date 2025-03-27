@@ -7,12 +7,10 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JavacOptionsItem
-import org.jetbrains.bsp.protocol.ResourcesItem
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
-import org.jetbrains.bsp.protocol.SourcesItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import kotlin.io.path.Path
 
 @DisplayName("ProjectDetailsToModuleDetailsTransformer.moduleDetailsForTargetId(projectDetails) tests")
 class ProjectDetailsToModuleDetailsTransformerTest {
@@ -27,17 +25,16 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         emptyList(),
         emptyList(),
         BuildTargetCapabilities(),
+        emptyList(),
+        emptyList(),
       )
     val projectDetails =
       ProjectDetails(
         targetIds = listOf(targetId),
         targets = setOf(target),
-        sources = emptyList(),
-        resources = emptyList(),
         javacOptions = emptyList(),
         libraries = null,
         scalacOptions = emptyList(),
-        nonModuleTargets = emptyList(),
       )
 
     // when
@@ -48,8 +45,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val expectedModuleDetails =
       ModuleDetails(
         target = target,
-        sources = emptyList(),
-        resources = emptyList(),
         javacOptions = null,
         scalacOptions = null,
         libraryDependencies = null,
@@ -72,35 +67,23 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         emptyList(),
         emptyList(),
         BuildTargetCapabilities(),
+        listOf(SourceItem(Path("/root/dir/example/package/File1.java"), false)),
+        listOf(Path("/root/dir/resource/File.txt")),
       )
-    val targetSources =
-      SourcesItem(
-        targetId,
-        listOf(SourceItem("file:///root/dir/example/package/", SourceItemKind.DIRECTORY, false)),
-      )
-    val targetResources =
-      ResourcesItem(
-        targetId,
-        listOf("file:///root/dir/resource/File.txt"),
-      )
+
     val javacOptions =
       JavacOptionsItem(
         targetId,
         listOf("opt1", "opt2", "opt3"),
-        listOf("classpath1", "classpath2", "classpath3"),
-        "class/dir",
       )
 
     val projectDetails =
       ProjectDetails(
         targetIds = listOf(targetId),
         targets = setOf(target),
-        sources = listOf(targetSources),
-        resources = listOf(targetResources),
         javacOptions = listOf(javacOptions),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        nonModuleTargets = emptyList(),
       )
 
     // when
@@ -111,8 +94,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val expectedModuleDetails =
       ModuleDetails(
         target = target,
-        sources = listOf(targetSources),
-        resources = listOf(targetResources),
         javacOptions = javacOptions,
         scalacOptions = null,
         libraryDependencies = emptyList(),
@@ -136,23 +117,13 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         emptyList(),
         listOf(target2Id),
         BuildTargetCapabilities(),
-      )
-    val target1Sources =
-      SourcesItem(
-        target1Id,
-        listOf(SourceItem("file:///root/dir1/example/package/", SourceItemKind.DIRECTORY, false)),
-      )
-    val target1Resources =
-      ResourcesItem(
-        target1Id,
-        listOf("file:///root/dir1/resource/File.txt"),
+        listOf(SourceItem(Path("/root/dir1/example/package/File1.java"), false)),
+        listOf(Path("/root/dir1/resource/File.txt")),
       )
     val target1JavacOptionsItem =
       JavacOptionsItem(
         target1Id,
         listOf("opt1", "opt2", "opt3"),
-        listOf("classpath1", "classpath2"),
-        "class/dir1",
       )
 
     val target2 =
@@ -162,27 +133,12 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         emptyList(),
         emptyList(),
         BuildTargetCapabilities(),
-      )
-    val target2Sources1 =
-      SourcesItem(
-        target2Id,
         listOf(
-          SourceItem("file:///root/dir2/example/package/File1.java", SourceItemKind.FILE, false),
+          SourceItem(Path("/root/dir2/example/package/File1.java"), false),
+          SourceItem(Path("/root/dir2/example/package/File2.java"), false),
         ),
+        listOf(Path("/root/dir2/resource/File.txt")),
       )
-    val target2Sources2 =
-      SourcesItem(
-        target2Id,
-        listOf(
-          SourceItem("file:///root/dir2/example/package/File2.java", SourceItemKind.FILE, false),
-        ),
-      )
-    val target2Resources =
-      ResourcesItem(
-        target2Id,
-        listOf("file:///root/dir2/resource/File.txt"),
-      )
-
     val target3Id = Label.parse("target3")
     val target3 =
       BuildTarget(
@@ -191,18 +147,13 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         emptyList(),
         listOf(target2Id),
         BuildTargetCapabilities(),
-      )
-    val target3Sources =
-      SourcesItem(
-        target3Id,
+        emptyList(),
         emptyList(),
       )
     val target3JavacOptionsItem =
       JavacOptionsItem(
         target3Id,
         listOf("opt1"),
-        listOf("classpath1", "classpath2", "classpath3"),
-        "class/dir3",
       )
 
     val target4Id = Label.parse("target4")
@@ -213,25 +164,18 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         emptyList(),
         listOf(target1Id),
         BuildTargetCapabilities(),
-      )
-    val target4Sources =
-      SourcesItem(
-        target4Id,
         listOf(
-          SourceItem("file:///root/dir2/example/package/file.py", SourceItemKind.FILE, false),
+          SourceItem(Path("/root/dir2/example/package/file.py"), false),
         ),
+        emptyList(),
       )
-
     val projectDetails =
       ProjectDetails(
         targetIds = listOf(target1Id, target3Id, target2Id, target4Id),
         targets = setOf(target2, target1, target3, target4),
-        sources = listOf(target3Sources, target2Sources1, target1Sources, target2Sources2, target4Sources),
-        resources = listOf(target1Resources, target2Resources),
         javacOptions = listOf(target3JavacOptionsItem, target1JavacOptionsItem),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        nonModuleTargets = emptyList(),
       )
 
     // when
@@ -245,8 +189,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val expectedModuleDetails1 =
       ModuleDetails(
         target = target1,
-        sources = listOf(target1Sources),
-        resources = listOf(target1Resources),
         javacOptions = target1JavacOptionsItem,
         scalacOptions = null,
         libraryDependencies = emptyList(),
@@ -257,8 +199,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val expectedModuleDetails2 =
       ModuleDetails(
         target = target2,
-        sources = listOf(target2Sources1, target2Sources2),
-        resources = listOf(target2Resources),
         javacOptions = null,
         scalacOptions = null,
         libraryDependencies = emptyList(),
@@ -269,8 +209,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val expectedModuleDetails3 =
       ModuleDetails(
         target = target3,
-        sources = listOf(target3Sources),
-        resources = emptyList(),
         javacOptions = target3JavacOptionsItem,
         scalacOptions = null,
         libraryDependencies = emptyList(),
@@ -281,8 +219,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val expectedModuleDetails4 =
       ModuleDetails(
         target = target4,
-        sources = listOf(target4Sources),
-        resources = emptyList(),
         javacOptions = null,
         scalacOptions = null,
         libraryDependencies = emptyList(),

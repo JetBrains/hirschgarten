@@ -1,13 +1,15 @@
 package org.jetbrains.bsp.testkit.client
 
 import kotlinx.coroutines.test.runTest
+import org.jetbrains.bazel.commons.gson.bazelGson
+import org.jetbrains.bazel.server.connection.startServer
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
-import org.jetbrains.bsp.protocol.InitializeBuildParams
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
@@ -19,46 +21,20 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
-import org.jetbrains.bsp.protocol.ResourcesParams
-import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
-import org.jetbrains.bsp.protocol.SourcesParams
-import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.testkit.JsonComparator
-import org.jetbrains.bsp.testkit.gsonSealedSupport
 import java.nio.file.Path
 import kotlin.time.Duration
 
-suspend fun withSession(
-  workspace: Path,
-  client: MockClient,
-  test: suspend (Session) -> Unit,
-) {
-  val session = Session(workspace, client)
-  test(session)
-}
-
-suspend fun withLifetime(
-  initializeParams: InitializeBuildParams,
-  session: Session,
-  f: suspend () -> Unit,
-) {
-  session.server.buildInitialize(initializeParams)
-  session.server.onBuildInitialized()
-  f()
-  session.server.buildShutdown()
-  session.server.onBuildExit()
-}
-
-open class BasicTestClient(
+class TestClient(
   val workspacePath: Path,
-  val initializeParams: InitializeBuildParams,
   val transformJson: (String) -> String,
-  val client: MockClient,
+  val featureFlags: FeatureFlags,
 ) {
-  val gson = gsonSealedSupport
+  val gson = bazelGson
+  val client = MockClient()
 
   inline fun <reified T> applyJsonTransform(element: T): T {
     val json = gson.toJson(element)
@@ -74,25 +50,12 @@ open class BasicTestClient(
 
   fun test(timeout: Duration, doTest: suspend (Session) -> Unit) {
     runTest(timeout = timeout) {
-      withSession(workspacePath, client) { session ->
-        withLifetime(initializeParams, session) {
-          doTest(session)
-        }
-      }
+      val server = startServer(client, workspacePath, null, featureFlags)
+      val session = Session(client, server)
+      doTest(session)
     }
   }
-}
 
-class TestClient(
-  workspacePath: Path,
-  initializeParams: InitializeBuildParams,
-  transformJson: (String) -> String,
-) : BasicTestClient(
-    workspacePath,
-    initializeParams,
-    transformJson,
-    MockClient(),
-  ) {
   fun testJavacOptions(
     timeout: Duration,
     params: JavacOptionsParams,
@@ -165,30 +128,6 @@ class TestClient(
     }
   }
 
-  fun testSources(
-    timeout: Duration,
-    params: SourcesParams,
-    expectedResult: SourcesResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.buildTargetSources(transformedParams)
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
-  fun testResources(
-    timeout: Duration,
-    params: ResourcesParams,
-    expectedResult: ResourcesResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.buildTargetResources(transformedParams)
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
   fun testInverseSources(
     timeout: Duration,
     params: InverseSourcesParams,
@@ -246,8 +185,6 @@ class TestClient(
         val getWorkspaceTargets = session.server.workspaceBuildTargets()
         val targets = getWorkspaceTargets.targets
         val targetIds = targets.map { it.id }
-        session.server.buildTargetSources(SourcesParams(targetIds))
-        session.server.buildTargetResources(ResourcesParams(targetIds))
         val javaTargetIds = targets.filter { it.languageIds.contains("java") }.map { it.id }
         session.server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
         val scalaTargetIds = targets.filter { it.languageIds.contains("scala") }.map { it.id }

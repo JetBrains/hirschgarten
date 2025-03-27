@@ -20,6 +20,7 @@ import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.Test
+import kotlin.io.path.Path
 import kotlin.reflect.KClass
 
 private abstract class TestableEvent(
@@ -95,7 +96,7 @@ class TestTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
   project: Project,
-) : TaskConsole(taskView, basePath, "build tool", project) {
+) : TaskConsole(taskView, basePath, project) {
   override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
     object : SuspendableAction({ "test" }) {
       override suspend fun actionPerformed(project: Project, e: AnActionEvent) {}
@@ -270,7 +271,7 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
   @Test
   fun `should display diagnostic messages correctly`() {
     val basePath = "/project/"
-    val fileURI = "file:///home/directory/project/src/test/Start.kt"
+    val fileURI = Path("/home/directory/project/src/test/Start.kt")
     val os = OsFamily.inferFromSystem()
     val filePositionPath =
       if (os == OsFamily.WINDOWS) {
@@ -299,7 +300,7 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
     taskConsole.addDiagnosticMessage("origin", fileURI, -4, -8, "Diagnostic 6", Kind.ERROR)
 
     // fileURI without `file://`, should be sent correctly
-    taskConsole.addDiagnosticMessage("origin", "/home/directory/project/src/test/Start.kt", 10, 20, "Diagnostic 7", Kind.WARNING)
+    taskConsole.addDiagnosticMessage("origin", Path("/home/directory/project/src/test/Start.kt"), 10, 20, "Diagnostic 7", Kind.WARNING)
 
     taskConsole.finishTask("origin", "finished", SuccessResultImpl())
 

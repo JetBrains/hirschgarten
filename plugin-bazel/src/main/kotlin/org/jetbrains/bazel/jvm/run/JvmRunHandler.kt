@@ -7,17 +7,17 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
-import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.includesAndroid
 import org.jetbrains.bazel.workspacemodel.entities.isJvmTarget
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunParams
@@ -41,7 +41,7 @@ class JvmRunHandler(val configuration: BazelRunConfiguration) : BazelRunHandler 
       }
     }
 
-  class JvmRunHandlerProvider : RunHandlerProvider {
+  class JvmRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
     override val id: String = "JvmBspRunHandlerProvider"
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = JvmRunHandler(configuration)
@@ -50,13 +50,16 @@ class JvmRunHandler(val configuration: BazelRunConfiguration) : BazelRunHandler 
     // Because we have android_local_test with mocked Android classes, which should be run, well, locally,
     //  as opposed to on-device like with android_binary
     // TODO: perhaps better solved by having a tag
-    override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
+    override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       targetInfos.all {
         (it.languageIds.isJvmTarget() && !it.capabilities.canTest) ||
           (it.languageIds.includesAndroid() && it.capabilities.canTest)
       }
 
-    override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)
+    override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
+
+    override val googleHandlerId: String = "BlazeJavaRunConfigurationHandlerProvider"
+    override val isTestHandler: Boolean = false
   }
 }
 
@@ -77,6 +80,7 @@ class JvmRunWithDebugCommandLineState(
         arguments = transformProgramArguments(settings.programArguments),
         environmentVariables = settings.env.envs,
         workingDirectory = settings.workingDirectory,
+        additionalBazelParams = settings.additionalBazelParams,
       )
     val remoteDebugData = RemoteDebugData("jdwp", getConnectionPort())
     val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)

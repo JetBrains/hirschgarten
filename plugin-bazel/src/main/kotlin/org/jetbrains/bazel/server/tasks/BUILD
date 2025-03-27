@@ -5,6 +5,7 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
         "//commons/src/main/kotlin/org/jetbrains/bazel/performance",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
@@ -26,6 +27,5 @@ kt_jvm_library(
         "//rules_intellij/third_party/performance",
         "//rules_intellij/third_party/python",
         "//sdkcompat",
-        "@maven//:com_google_code_gson_gson",
     ],
 )

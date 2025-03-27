@@ -5,17 +5,17 @@ import org.jetbrains.bazel.server.model.LanguageData
 import org.jetbrains.bazel.server.sync.languages.java.JavaModule
 import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinModule
 import org.jetbrains.bsp.protocol.AndroidTargetType
-import java.net.URI
+import java.nio.file.Path
 
 data class AndroidModule(
-  val androidJar: URI,
+  val androidJar: Path,
   val androidTargetType: AndroidTargetType,
-  val manifest: URI?,
+  val manifest: Path?,
   val manifestOverrides: Map<String, String>,
-  val resourceDirectories: List<URI>,
+  val resourceDirectories: List<Path>,
   val resourceJavaPackage: String?,
-  val assetsDirectories: List<URI>,
-  val apk: URI?,
+  val assetsDirectories: List<Path>,
+  val apk: Path?,
   val javaModule: JavaModule?,
   val kotlinModule: KotlinModule?,
   val correspondingKotlinTarget: Label?,

@@ -8,6 +8,7 @@ kt_jvm_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/jpsCompilation/utils",
         "//commons/src/main/kotlin/org/jetbrains/bazel/performance",
         "//protocol",
         "//rules_intellij/intellij_platform_sdk:plugin_api",

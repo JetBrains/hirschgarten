@@ -12,18 +12,18 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
-import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
+import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.target.getModule
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.includesGo
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunParams
@@ -54,15 +54,18 @@ class GoBazelRunHandler(private val configuration: BazelRunConfiguration) : Baze
     (environment.runProfile as? BazelRunConfiguration)?.targets?.singleOrNull()
       ?: throw ExecutionException("Couldn't get BSP target from run configuration")
 
-  class GoBazelRunHandlerProvider : RunHandlerProvider {
+  class GoBazelRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
     override val id: String = "GoBspRunHandlerProvider"
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = GoBazelRunHandler(configuration)
 
-    override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
+    override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       BazelFeatureFlags.isGoSupportEnabled && targetInfos.all { it.languageIds.includesGo() }
 
-    override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)
+    override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
+
+    override val googleHandlerId: String = "BlazeGoRunConfigurationHandlerProvider"
+    override val isTestHandler: Boolean = false
   }
 }
 
@@ -85,6 +88,7 @@ class GoRunWithDebugCommandLineState(
         workingDirectory = settings.workingDirectory,
         arguments = transformProgramArguments(settings.programArguments),
         environmentVariables = settings.env.envs,
+        additionalBazelParams = settings.additionalBazelParams,
       )
     val remoteDebugData = RemoteDebugData("go_dlv", debugServerAddress.port)
     val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)

@@ -18,7 +18,7 @@ import org.jetbrains.bazel.android.AndroidSdkGetterExtension
 import org.jetbrains.bazel.android.androidSdkGetterExtension
 import org.jetbrains.bazel.android.androidSdkGetterExtensionExists
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.config.defaultJdkName
 import org.jetbrains.bazel.config.rootDir
@@ -39,15 +39,14 @@ import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
+import org.jetbrains.bazel.sdkcompat.isSharedSourceSupportEnabled
 import org.jetbrains.bazel.server.client.IMPORT_SUBTASK_ID
-import org.jetbrains.bazel.server.tasks.BspServerTask
-import org.jetbrains.bazel.sync.BaseTargetInfo
-import org.jetbrains.bazel.sync.BaseTargetInfos
 import org.jetbrains.bazel.sync.scope.FullProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.task.asyncQueryIf
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.task.queryIf
+import org.jetbrains.bazel.target.calculateFileToTarget
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
@@ -57,29 +56,28 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bazel.workspacemodel.entities.includesJava
 import org.jetbrains.bazel.workspacemodel.entities.includesScala
-import org.jetbrains.bazel.workspacemodel.entities.toBuildTargetInfo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import org.jetbrains.kotlin.analysis.api.platform.analysisMessageBus
 import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinModificationTopics
-import java.net.URI
+import java.nio.file.Path
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
-import kotlin.io.path.toPath
 
 class CollectProjectDetailsTask(
-  project: Project,
+  private val project: Project,
   private val taskId: String,
   private val diff: MutableEntityStorage,
-) : BspServerTask<ProjectDetails>("collect project details", project) {
-  private var uniqueJavaHomes: Set<String>? = null
+) {
+  private var uniqueJavaHomes: Set<Path>? = null
 
   private lateinit var javacOptions: Map<String, String>
 
@@ -92,14 +90,14 @@ class CollectProjectDetailsTask(
     server: JoinedBuildServer,
     syncScope: ProjectSyncScope,
     progressReporter: SequentialProgressReporter,
-    baseTargetInfos: BaseTargetInfos,
+    buildTargets: WorkspaceBuildTargetsResult,
   ) {
     val projectDetails =
-      progressReporter.sizedStep(workSize = 50, text = BspPluginBundle.message("progress.bar.collect.project.details")) {
-        collectModel(project, server, baseTargetInfos)
+      progressReporter.sizedStep(workSize = 50, text = BazelPluginBundle.message("progress.bar.collect.project.details")) {
+        collectModel(project, server, buildTargets)
       }
 
-    progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
+    progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.bar.calculate.jdk.infos")) {
       calculateAllUniqueJdkInfosSubtask(projectDetails)
       uniqueJavaHomes.orEmpty().also {
         if (it.isNotEmpty()) {
@@ -118,12 +116,12 @@ class CollectProjectDetailsTask(
     }
 
     if (BazelFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
-      progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
+      progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
         calculateAllAndroidSdkInfosSubtask(projectDetails)
       }
     }
 
-    progressReporter.sizedStep(workSize = 25, text = BspPluginBundle.message("progress.bar.update.internal.model")) {
+    progressReporter.sizedStep(workSize = 25, text = BazelPluginBundle.message("progress.bar.update.internal.model")) {
       updateInternalModelSubtask(projectDetails, syncScope)
     }
   }
@@ -131,20 +129,20 @@ class CollectProjectDetailsTask(
   private suspend fun collectModel(
     project: Project,
     server: JoinedBuildServer,
-    baseTargetInfos: BaseTargetInfos,
+    buildTargets: WorkspaceBuildTargetsResult,
   ): ProjectDetails =
     try {
       project.syncConsole.startSubtask(
         this.taskId,
         IMPORT_SUBTASK_ID,
-        BspPluginBundle.message("console.task.model.collect"),
+        BazelPluginBundle.message("console.task.model.collect"),
       )
 
       val projectDetails =
         calculateProjectDetailsWithCapabilities(
           project = project,
           server = server,
-          baseTargetInfos = baseTargetInfos,
+          buildTargets = buildTargets,
         )
 
       project.syncConsole.finishSubtask(IMPORT_SUBTASK_ID)
@@ -171,7 +169,7 @@ class CollectProjectDetailsTask(
     project.syncConsole.withSubtask(
       taskId = taskId,
       subtaskId = "calculate-all-unique-jdk-infos",
-      message = BspPluginBundle.message("console.task.model.calculate.jdks.infos"),
+      message = BazelPluginBundle.message("console.task.model.calculate.jdks.infos"),
     ) {
       uniqueJavaHomes =
         bspTracer.spanBuilder("calculate.all.unique.jdk.infos.ms").use {
@@ -179,7 +177,7 @@ class CollectProjectDetailsTask(
         }
     }
 
-  private fun calculateAllUniqueJavaHomes(projectDetails: ProjectDetails): Set<String> =
+  private fun calculateAllUniqueJavaHomes(projectDetails: ProjectDetails): Set<Path> =
     projectDetails.targets
       .mapNotNull(::extractJvmBuildTarget)
       .map { it.javaHome }
@@ -189,7 +187,7 @@ class CollectProjectDetailsTask(
     project.syncConsole.withSubtask(
       taskId = taskId,
       subtaskId = "calculate-all-scala-sdk-infos",
-      message = BspPluginBundle.message("console.task.model.calculate.scala.sdk.infos"),
+      message = BazelPluginBundle.message("console.task.model.calculate.scala.sdk.infos"),
     ) {
       scalaSdks =
         bspTracer.spanBuilder("calculate.all.scala.sdk.infos.ms").use {
@@ -217,7 +215,7 @@ class CollectProjectDetailsTask(
     project.syncConsole.withSubtask(
       taskId,
       "calculate-all-android-sdk-infos",
-      BspPluginBundle.message("progress.bar.calculate.android.sdk.infos"),
+      BazelPluginBundle.message("progress.bar.calculate.android.sdk.infos"),
     ) {
       androidSdks =
         bspTracer.spanBuilder("calculate.all.android.sdk.infos.ms").use {
@@ -242,7 +240,7 @@ class CollectProjectDetailsTask(
     project.syncConsole.withSubtask(
       taskId,
       "calculate-project-structure",
-      BspPluginBundle.message("console.task.model.calculate.structure"),
+      BazelPluginBundle.message("console.task.model.calculate.structure"),
     ) {
       coroutineScope {
         val projectBasePath = project.rootDir.toNioPath()
@@ -265,16 +263,12 @@ class CollectProjectDetailsTask(
             projectDetails.targetIds.associateWith { transformer.moduleDetailsForTargetId(it) }
           }
 
+        val fileToTarget: Map<Path, List<Label>> = calculateFileToTarget(targetIdToModuleDetails)
+
         val targetIdToModuleEntitiesMap =
           bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
-            // Filter out non-module targets which cannot be run, as they are just cluttering the ui
-            val usefulNonModuleTargets = projectDetails.nonModuleTargets.filter { it.capabilities.canRun }
-
             val syncedTargetIdToTargetInfo =
-              (projectDetails.targets + usefulNonModuleTargets).associate {
-                it.id to
-                  it.toBuildTargetInfo()
-              }
+              (projectDetails.targets).associateBy { it.id }
 
             val targetIdToTargetInfo =
               if (syncScope is FullProjectSync) {
@@ -288,6 +282,7 @@ class CollectProjectDetailsTask(
                 projectDetails = projectDetails,
                 targetIdToModuleDetails = targetIdToModuleDetails,
                 targetIdToTargetInfo = targetIdToTargetInfo,
+                fileToTarget = fileToTarget,
                 projectBasePath = projectBasePath,
                 project = project,
                 nameProvider = nameProvider,
@@ -298,7 +293,7 @@ class CollectProjectDetailsTask(
               project.targetUtils.saveTargets(
                 targetIdToTargetInfo,
                 targetIdToModuleEntityMap,
-                targetIdToModuleDetails,
+                fileToTarget,
                 projectDetails.libraries,
                 libraryModules,
                 nameProvider,
@@ -307,12 +302,12 @@ class CollectProjectDetailsTask(
             targetIdToModuleEntityMap
           }
 
-        val modulesToLoad = targetIdToModuleEntitiesMap.values.toList()
+        val modulesToLoad = targetIdToModuleEntitiesMap.values.flatten().distinctBy { module -> module.getModuleName() }
 
         val compiledSourceCodeInsideJarToExclude =
           bspTracer.spanBuilder("calculate.non.generated.class.files.to.exclude").use {
             if (BazelFeatureFlags.excludeCompiledSourceCodeInsideJars) {
-              ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(modulesToLoad)
+              ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(targetIdToModuleDetails.values)
             } else {
               null
             }
@@ -369,20 +364,20 @@ class CollectProjectDetailsTask(
 
     VirtualFileManager.getInstance().asyncRefresh()
     project.refreshKotlinHighlighting()
-    checkOverlappingSources()
+    checkSharedSources()
   }
 
   private suspend fun addBspFetchedJdks() =
     project.syncConsole.withSubtask(
       taskId,
       "add-bsp-fetched-jdks",
-      BspPluginBundle.message("console.task.model.add.fetched.jdks"),
+      BazelPluginBundle.message("console.task.model.add.fetched.jdks"),
     ) {
       bspTracer.spanBuilder("add.bsp.fetched.jdks.ms").useWithScope {
         uniqueJavaHomes?.forEach {
           SdkUtils.addJdkIfNeeded(
             projectName = project.bazelProjectName,
-            javaHomeUri = it,
+            javaHome = it,
           )
         }
       }
@@ -393,7 +388,7 @@ class CollectProjectDetailsTask(
       project.syncConsole.withSubtask(
         taskId,
         "add-bsp-fetched-scala-sdks",
-        BspPluginBundle.message("console.task.model.add.scala.fetched.sdks"),
+        BazelPluginBundle.message("console.task.model.add.scala.fetched.sdks"),
       ) {
         val modifiableProvider = IdeModifiableModelsProviderImpl(project)
 
@@ -410,7 +405,7 @@ class CollectProjectDetailsTask(
       project.syncConsole.withSubtask(
         taskId,
         "add-bsp-fetched-android-sdks",
-        BspPluginBundle.message("console.task.model.add.android.fetched.sdks"),
+        BazelPluginBundle.message("console.task.model.add.android.fetched.sdks"),
       ) {
         bspTracer.spanBuilder("add.bsp.fetched.android.sdks.ms").useWithScope {
           androidSdks?.forEach { addAndroidSdkIfNeeded(it, extension) }
@@ -435,15 +430,24 @@ class CollectProjectDetailsTask(
    */
   private suspend fun Project.refreshKotlinHighlighting() =
     writeAction {
-      analysisMessageBus.syncPublisher(KotlinModificationTopics.GLOBAL_MODULE_STATE_MODIFICATION).onModification()
+      try {
+        analysisMessageBus.syncPublisher(KotlinModificationTopics.GLOBAL_MODULE_STATE_MODIFICATION).onModification()
+      } catch (_: NoClassDefFoundError) {
+        // TODO: the above method was removed in 252 master.
+        //  Replace with `project.publishGlobalModuleStateModificationEvent()` once it's available in the next 252 EAP
+        val utilsKt = Class.forName("org.jetbrains.kotlin.analysis.api.platform.modification.UtilsKt")
+        val method = utilsKt.getDeclaredMethod("publishGlobalModuleStateModificationEvent", Project::class.java)
+        method.invoke(utilsKt, project)
+      }
     }
 
-  private fun checkOverlappingSources() {
+  private fun checkSharedSources() {
+    if (project.isSharedSourceSupportEnabled) return
     val fileToTarget = project.targetUtils.fileToTarget
     for ((file, targets) in fileToTarget) {
       if (targets.size <= 1) continue
       if (!file.isSourceFile()) continue
-      if (IGNORED_NAMES_FOR_OVERLAPPING_SOURCES.any { file.path.endsWith(it) }) continue
+      if (IGNORED_NAMES_FOR_OVERLAPPING_SOURCES.any { file.endsWith(it) }) continue
       warnOverlappingSources(targets[0], targets[1], file)
       break
     }
@@ -452,15 +456,15 @@ class CollectProjectDetailsTask(
   private fun warnOverlappingSources(
     firstTarget: Label,
     secondTarget: Label,
-    source: URI,
+    source: Path,
   ) {
     BazelBalloonNotifier.warn(
-      BspPluginBundle.message("widget.collect.targets.overlapping.sources.title"),
-      BspPluginBundle.message(
+      BazelPluginBundle.message("widget.collect.targets.overlapping.sources.title"),
+      BazelPluginBundle.message(
         "widget.collect.targets.overlapping.sources.message",
         firstTarget.toString(),
         secondTarget.toString(),
-        source.toPath().fileName,
+        source.fileName,
       ),
     )
   }
@@ -474,20 +478,15 @@ class CollectProjectDetailsTask(
 suspend fun calculateProjectDetailsWithCapabilities(
   project: Project,
   server: JoinedBuildServer,
-  baseTargetInfos: BaseTargetInfos,
+  buildTargets: WorkspaceBuildTargetsResult,
 ): ProjectDetails =
   coroutineScope {
     try {
-      val javaTargetIds = baseTargetInfos.infos.calculateJavaTargetIds()
-      val scalaTargetIds = baseTargetInfos.infos.calculateScalaTargetIds()
+      val javaTargetIds = buildTargets.targets.calculateJavaTargetIds()
+      val scalaTargetIds = buildTargets.targets.calculateScalaTargetIds()
       val libraries: WorkspaceLibrariesResult =
         query("workspace/libraries") {
           server.workspaceLibraries()
-        }
-
-      val nonModuleTargets =
-        query("workspace/nonModuleTargets") {
-          server.workspaceNonModuleTargets()
         }
 
       val jvmBinaryJarsResult =
@@ -522,15 +521,12 @@ suspend fun calculateProjectDetailsWithCapabilities(
         }
 
       ProjectDetails(
-        targetIds = baseTargetInfos.allTargetIds,
-        targets = baseTargetInfos.infos.map { it.target }.toSet(),
-        sources = baseTargetInfos.infos.flatMap { it.sources },
-        resources = baseTargetInfos.infos.flatMap { it.resources },
+        targetIds = buildTargets.targets.map { it.id },
+        targets = buildTargets.targets.toSet(),
         javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
         // TODO: Son
         scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
         libraries = libraries.libraries,
-        nonModuleTargets = nonModuleTargets.nonModuleTargets,
         jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
       )
     } catch (e: Exception) {
@@ -545,8 +541,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
     }
   }
 
-private fun List<BaseTargetInfo>.calculateJavaTargetIds(): List<Label> =
-  filter { it.target.languageIds.includesJava() }.map { it.target.id }
+private fun List<BuildTarget>.calculateJavaTargetIds(): List<Label> = filter { it.languageIds.includesJava() }.map { it.id }
 
-private fun List<BaseTargetInfo>.calculateScalaTargetIds(): List<Label> =
-  filter { it.target.languageIds.includesScala() }.map { it.target.id }
+private fun List<BuildTarget>.calculateScalaTargetIds(): List<Label> = filter { it.languageIds.includesScala() }.map { it.id }

@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 
 private class BspLineMakerInfo(text: String, actions: List<AnAction>) :
   RunLineMarkerContributor.Info(null, actions.toTypedArray(), { text }) {
@@ -35,13 +35,13 @@ abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
       val targetInfos =
         targetUtils
           .getExecutableTargetsForFile(url)
-          .mapNotNull { targetUtils.getBuildTargetInfoForLabel(it) }
+          .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
       calculateLineMarkerInfo(project, targetInfos, getSingleTestFilter(this))
     }
 
   private fun calculateLineMarkerInfo(
     project: Project,
-    targetInfos: List<BuildTargetInfo>,
+    targetInfos: List<BuildTarget>,
     singleTestFilter: String?,
   ): Info? =
     targetInfos
@@ -54,7 +54,7 @@ abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
         )
       }
 
-  private fun BuildTargetInfo?.calculateEligibleActions(
+  private fun BuildTarget?.calculateEligibleActions(
     project: Project,
     singleTestFilter: String?,
     includeTargetNameInText: Boolean,

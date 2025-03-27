@@ -1,0 +1,7 @@
+directories:
+  src/kotlin/app
+  src/kotlin/utils
+
+targets:
+  //src/kotlin/app/...:all
+  //src/kotlin/utils/...:all

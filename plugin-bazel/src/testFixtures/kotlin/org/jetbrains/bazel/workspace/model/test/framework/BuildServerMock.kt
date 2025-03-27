@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.workspace.model.test.framework
 
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
@@ -12,7 +13,6 @@ import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
-import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
@@ -29,15 +29,11 @@ import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
-import org.jetbrains.bsp.protocol.ResourcesParams
-import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
-import org.jetbrains.bsp.protocol.SourcesParams
-import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
@@ -52,10 +48,8 @@ import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 
 class BuildServerMock(
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
-  private val sourcesResult: SourcesResult? = null,
   private val inverseSourcesResult: InverseSourcesResult? = null,
   private val dependencySourcesResult: DependencySourcesResult? = null,
-  private val resourcesResult: ResourcesResult? = null,
   private val compileResult: CompileResult? = null,
   private val runResult: RunResult? = null,
   private val testResult: TestResult? = null,
@@ -80,28 +74,15 @@ class BuildServerMock(
   private val bazelResolveLocalToRemote: BazelResolveLocalToRemoteResult? = null,
   private val bazelResolveRemoteToLocal: BazelResolveRemoteToLocalResult? = null,
   private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = null,
+  private val workspaceContextResult: WorkspaceContext? = null,
 ) : JoinedBuildServer {
-  override suspend fun buildInitialize(initializeBuildParams: InitializeBuildParams) {}
-
-  override suspend fun onBuildInitialized() { // it's a mock, nothing to do
-  }
-
-  override suspend fun buildShutdown() = wrapInFuture(null)
-
-  override suspend fun onBuildExit() { // it's a mock, nothing to do
-  }
-
   override suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult = wrapInFuture(workspaceBuildTargetsResult)
-
-  override suspend fun buildTargetSources(sourcesParams: SourcesParams): SourcesResult = wrapInFuture(sourcesResult)
 
   override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult =
     wrapInFuture(inverseSourcesResult)
 
   override suspend fun buildTargetDependencySources(dependencySourcesParams: DependencySourcesParams): DependencySourcesResult =
     wrapInFuture(dependencySourcesResult)
-
-  override suspend fun buildTargetResources(resourcesParams: ResourcesParams): ResourcesResult = wrapInFuture(resourcesResult)
 
   override suspend fun buildTargetCompile(compileParams: CompileParams): CompileResult = wrapInFuture(compileResult)
 
@@ -160,6 +141,8 @@ class BuildServerMock(
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = wrapInFuture(workspaceBazelRepoMappingResult)
 
   override suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = WorkspaceBazelBinPathResult("/path/to/bazel-bin")
+
+  override suspend fun workspaceContext(): WorkspaceContext = wrapInFuture(workspaceContextResult)
 
   private fun <T> wrapInFuture(value: T?): T = value ?: error("mock value is null")
 }

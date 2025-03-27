@@ -62,6 +62,9 @@ object GitHub : Project({
         buildType(IdeStarterTests.JarSourceExcludeTestGitHub)
         buildType(IdeStarterTests.BazelProjectModelModifierTestGitHub)
         buildType(IdeStarterTests.BazelCoverageTestGitHub)
+        buildType(IdeStarterTests.TestResultsTreeTestGitHub)
+        buildType(IdeStarterTests.ImportRunConfigurationsTestGitHub)
+        buildType(IdeStarterTests.NonModuleTargetsTestGitHub)
         buildType(ServerE2eTests.SampleRepoGitHub)
         buildType(ServerE2eTests.LocalJdkGitHub)
         buildType(ServerE2eTests.RemoteJdkGitHub)
@@ -123,6 +126,9 @@ object GitHub : Project({
       IdeStarterTests.JarSourceExcludeTestGitHub,
       IdeStarterTests.BazelProjectModelModifierTestGitHub,
       IdeStarterTests.BazelCoverageTestGitHub,
+      IdeStarterTests.TestResultsTreeTestGitHub,
+      IdeStarterTests.ImportRunConfigurationsTestGitHub,
+      IdeStarterTests.NonModuleTargetsTestGitHub,
       ServerE2eTests.SampleRepoGitHub,
       ServerE2eTests.LocalJdkGitHub,
       ServerE2eTests.RemoteJdkGitHub,
@@ -172,6 +178,9 @@ object Space : Project({
         buildType(IdeStarterTests.JarSourceExcludeTestSpace)
         buildType(IdeStarterTests.BazelProjectModelModifierTestSpace)
         buildType(IdeStarterTests.BazelCoverageTestSpace)
+        buildType(IdeStarterTests.TestResultsTreeTestSpace)
+        buildType(IdeStarterTests.ImportRunConfigurationsTestSpace)
+        buildType(IdeStarterTests.NonModuleTargetsTestSpace)
         buildType(ServerE2eTests.SampleRepoSpace)
         buildType(ServerE2eTests.LocalJdkSpace)
         buildType(ServerE2eTests.RemoteJdkSpace)
@@ -233,6 +242,9 @@ object Space : Project({
       IdeStarterTests.JarSourceExcludeTestSpace,
       IdeStarterTests.BazelProjectModelModifierTestSpace,
       IdeStarterTests.BazelCoverageTestSpace,
+      IdeStarterTests.TestResultsTreeTestSpace,
+      IdeStarterTests.ImportRunConfigurationsTestSpace,
+      IdeStarterTests.NonModuleTargetsTestSpace,
       ServerE2eTests.SampleRepoSpace,
       ServerE2eTests.LocalJdkSpace,
       ServerE2eTests.RemoteJdkSpace,

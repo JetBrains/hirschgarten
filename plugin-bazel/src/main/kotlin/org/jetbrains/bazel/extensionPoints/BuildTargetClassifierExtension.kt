@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.extensionPoints
 
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
 public interface BuildTargetClassifierExtension {
   /**
@@ -26,7 +26,7 @@ public interface BuildTargetClassifierExtension {
   public val separator: String?
 
   /**
-   * @param buildTargetInfo an intermediate representation of a BSP build target in `intellij-bsp`
+   * @param buildTarget an intermediate representation of a BSP build target in `intellij-bsp`
    * @return list of directories corresponding to a desired path of the given build target in the tree.
    * For example, path `["aaa", "bbb"]` will render as:
    * ```
@@ -36,13 +36,13 @@ public interface BuildTargetClassifierExtension {
    * ```
    * If an empty list is returned, the build target will be rendered in the tree's top level
    */
-  public fun calculateBuildTargetPath(buildTargetInfo: BuildTargetInfo): List<String>
+  public fun calculateBuildTargetPath(buildTarget: Label): List<String>
 
   /**
-   * @param buildTargetInfo an intermediate representation of a BSP build target in `intellij-bsp`
+   * @param buildTarget an intermediate representation of a BSP build target in `intellij-bsp`
    * @return the name under which the given build target will be rendered in the tree
    */
-  public fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String
+  public fun calculateBuildTargetName(buildTarget: Label): String
 }
 
 /**
@@ -52,18 +52,18 @@ public interface BuildTargetClassifierExtension {
 object DefaultBuildTargetClassifierExtension : BuildTargetClassifierExtension {
   override val separator: String? = null
 
-  override fun calculateBuildTargetPath(buildTargetInfo: BuildTargetInfo): List<String> = emptyList()
+  override fun calculateBuildTargetPath(buildTarget: Label): List<String> = emptyList()
 
-  override fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String = buildTargetInfo.id.toShortString()
+  override fun calculateBuildTargetName(buildTarget: Label): String = buildTarget.toShortString()
 }
 
 object BazelBuildTargetClassifier : BuildTargetClassifierExtension {
   override val separator: String = "/"
 
-  override fun calculateBuildTargetPath(buildTargetInfo: BuildTargetInfo): List<String> =
-    buildTargetInfo.id
+  override fun calculateBuildTargetPath(buildTarget: Label): List<String> =
+    buildTarget
       .let { listOf((it as? ResolvedLabel)?.repoName.orEmpty()) + it.packagePath.pathSegments }
       .filter { pathSegment -> pathSegment.isNotEmpty() }
 
-  override fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String = buildTargetInfo.id.targetName
+  override fun calculateBuildTargetName(buildTarget: Label): String = buildTarget.targetName
 }

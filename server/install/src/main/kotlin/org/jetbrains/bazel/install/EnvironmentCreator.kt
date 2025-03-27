@@ -13,6 +13,7 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.notExists
 import kotlin.io.path.readText
+import kotlin.io.path.writeText
 
 class EnvironmentCreator(private val projectRootDir: Path) {
   fun create() = createDotBazelBsp()
@@ -24,6 +25,7 @@ class EnvironmentCreator(private val projectRootDir: Path) {
   }
 
   private fun createDotBazelBspFiles(dotBazelBspDir: Path) {
+    createGitIgnoreFile(dotBazelBspDir)
     copyAspects(dotBazelBspDir)
     createEmptyBuildFile(dotBazelBspDir)
   }
@@ -38,6 +40,11 @@ class EnvironmentCreator(private val projectRootDir: Path) {
     val destinationWorkspaceFilePath = dotBazelBspDir.resolve(Constants.WORKSPACE_FILE_NAME)
     destinationBuildFilePath.toFile().createNewFile()
     destinationWorkspaceFilePath.toFile().createNewFile()
+  }
+
+  fun createGitIgnoreFile(dotBazelBspDir: Path) {
+    val outputFile = dotBazelBspDir.resolve(".gitignore")
+    outputFile.writeText("*")
   }
 
   private fun copyAspectsFromResources(aspectsJarPath: String, destinationPath: Path) =
@@ -55,8 +62,12 @@ class EnvironmentCreator(private val projectRootDir: Path) {
     } ?: error("Missing aspects resource")
 
   private fun copyFileTree(source: Path, destination: Path) {
-    Files.walk(source).forEach { copyUsingRelativePath(source, it, destination) }
-    Files.walk(destination).forEach { deleteExtraFileUsingRelativePath(source, it, destination) }
+    Files.walk(source).use { sourceFiles ->
+      sourceFiles.forEach { copyUsingRelativePath(source, it, destination) }
+    }
+    Files.walk(destination).use { destinationFiles ->
+      destinationFiles.forEach { deleteExtraFileUsingRelativePath(source, it, destination) }
+    }
   }
 
   private fun copyUsingRelativePath(

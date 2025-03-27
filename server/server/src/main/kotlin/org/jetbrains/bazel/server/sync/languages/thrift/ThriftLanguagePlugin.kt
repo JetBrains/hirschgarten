@@ -5,20 +5,17 @@ import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
-import org.jetbrains.bazel.server.sync.languages.jvm.SourceRootGuesser
 import org.jetbrains.bsp.protocol.BuildTarget
-import java.net.URI
 import java.nio.file.Path
 
 class ThriftLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<ThriftModule>() {
-  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<URI> {
+  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> {
     val transitiveSourceDeps =
       dependencyGraph
         .transitiveDependenciesWithoutRootTargets(targetInfo.label())
         .filter(::isThriftLibrary)
         .flatMap(BspTargetInfo.TargetInfo::getSourcesList)
-        .map(bazelPathsResolver::resolveUri)
+        .map(bazelPathsResolver::resolve)
         .toHashSet()
 
     val directSourceDeps = sourcesFromJvmTargetInfo(targetInfo)
@@ -26,13 +23,13 @@ class ThriftLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
     return transitiveSourceDeps + directSourceDeps
   }
 
-  private fun sourcesFromJvmTargetInfo(targetInfo: BspTargetInfo.TargetInfo): HashSet<URI> =
+  private fun sourcesFromJvmTargetInfo(targetInfo: BspTargetInfo.TargetInfo): HashSet<Path> =
     if (targetInfo.hasJvmTargetInfo()) {
       targetInfo
         .jvmTargetInfo
         .jarsList
         .flatMap { it.sourceJarsList }
-        .map(bazelPathsResolver::resolveUri)
+        .map(bazelPathsResolver::resolve)
         .toHashSet()
     } else {
       HashSet()
@@ -40,10 +37,7 @@ class ThriftLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
 
   private fun isThriftLibrary(target: BspTargetInfo.TargetInfo): Boolean = target.kind == THRIFT_LIBRARY_RULE_NAME
 
-  protected override fun applyModuleData(moduleData: ThriftModule, buildTarget: BuildTarget) {}
-
-  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData =
-    SourceRootAndData(SourceRootGuesser.getSourcesRoot(source))
+  override fun applyModuleData(moduleData: ThriftModule, buildTarget: BuildTarget) {}
 
   companion object {
     private const val THRIFT_LIBRARY_RULE_NAME = "thrift_library"

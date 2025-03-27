@@ -4,5 +4,5 @@ kt_intellij_junit4_test(
     name = "BazelrcQuickFixTest",
     src = "BazelrcQuickFixTest.kt",
     data = ["//plugin-bazel/src/test/testData/bazelrc/quickfix"],
-    deps = ["//plugin-bazel:intellij-bazel"],
+    deps = ["//plugin-bazel"],
 )

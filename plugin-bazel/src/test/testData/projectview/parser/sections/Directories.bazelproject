@@ -1,0 +1,4 @@
+directories:
+  java/com/google/android/myproject
+  javatests/com/google/android/myproject
+  -javatests/com/google/android/myproject/not_this

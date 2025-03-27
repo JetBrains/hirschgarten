@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.server.sync.firstPhase
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
@@ -9,7 +9,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bazel.server.model.FirstPhaseProject
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import java.nio.file.Path
 
 class FirstPhaseProjectResolver(
@@ -19,11 +19,11 @@ class FirstPhaseProjectResolver(
   private val bazelInfo: BazelInfo,
   private val bspClientLogger: BspClientLogger,
 ) {
-  fun resolve(originId: String): FirstPhaseProject =
-    runBlocking {
-      val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
+  suspend fun resolve(originId: String): FirstPhaseProject =
+    coroutineScope {
+      val workspaceContext = workspaceContextProvider.readWorkspaceContext()
       val command =
-        bazelRunner.buildBazelCommand {
+        bazelRunner.buildBazelCommand(workspaceContext) {
           query {
             options.add("--output=streamed_proto")
             options.add(BazelFlag.keepGoing())
@@ -43,10 +43,11 @@ class FirstPhaseProjectResolver(
 
       val project =
         FirstPhaseProject(
-          workspaceRoot = workspaceRoot.toUri(),
+          workspaceRoot = workspaceRoot,
           bazelRelease = bazelInfo.release,
           modules = modules,
           repoMapping = repoMapping,
+          workspaceContext = workspaceContext,
         )
 
       bazelProcess.waitAndGetResult(true)

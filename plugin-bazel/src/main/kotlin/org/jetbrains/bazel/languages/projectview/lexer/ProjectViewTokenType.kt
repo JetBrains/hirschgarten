@@ -12,31 +12,27 @@ import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
  */
 class ProjectViewTokenType private constructor(debugName: String) : IElementType(debugName, ProjectViewLanguage) {
   companion object {
-    /**
-     * A Project View section keyword.
-     *
-     * Defined as a sequence of characters that starts at the beginning of the line that is not a comment.
-     * Its characters neither whitespace nor colons.
-     */
-    val KEYWORD = ProjectViewTokenType("keyword")
-
-    /**
-     * An identifier belonging to a Project View section.
-     *
-     * Cannot start at the beginning of the line.
-     */
-    val IDENTIFIER = ProjectViewTokenType("identifier")
-
     /** The character ':' */
     val COLON = ProjectViewTokenType("colon")
 
     /**
-     * A comment starting with '#'. No non-white characters are present before the comment.
+     * A comment starting with '#'.
+     *
+     * No non-white characters are present before the comment.
      */
     val COMMENT = ProjectViewTokenType("comment")
 
+    /** A sequence of characters that are neither whitespace nor colon nor comment. */
+    val IDENTIFIER = ProjectViewTokenType("identifier")
+
     /** A series of whitespaces at the beginning of a line NOT followed by a comment or '\n'. */
     val INDENT = ProjectViewTokenType("indent")
+
+    /** An identifier that is a section keyword. */
+    val SECTION_KEYWORD = ProjectViewTokenType("section_keyword")
+
+    /** An identifier that is an import keyword. */
+    val IMPORT_KEYWORD = ProjectViewTokenType("import_keyword")
 
     /** The character '\n'. */
     val NEWLINE = ProjectViewTokenType("newline")

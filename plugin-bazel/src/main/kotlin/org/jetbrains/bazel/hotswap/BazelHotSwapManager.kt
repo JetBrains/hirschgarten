@@ -30,6 +30,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
+import com.intellij.util.io.delete
 import com.intellij.util.ui.MessageCategory
 import com.intellij.xdebugger.impl.XDebugSessionImpl
 import kotlinx.coroutines.Dispatchers
@@ -37,9 +38,9 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BazelHotSwapBundle
 import org.jetbrains.bazel.runnerAction.BspJvmApplicationConfiguration
-import java.io.File
 import java.io.IOException
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.util.jar.JarFile
 import kotlin.io.path.createTempDirectory
@@ -94,7 +95,7 @@ object BazelHotSwapManager {
       }
       val localFiles = copyClassFilesLocally(manifestDiff)
       val files =
-        localFiles.mapValues { entry -> HotSwapFile(entry.value) }
+        localFiles.mapValues { entry -> HotSwapFile(entry.value.toFile()) }
 
       if (!files.isEmpty()) {
         progress.setText(BazelHotSwapBundle.message("hotswap.text.reload.in.progress", files.size))
@@ -130,10 +131,11 @@ object BazelHotSwapManager {
    * class name to File, suitable for [HotSwapManager].
    *
    */
-  private fun copyClassFilesLocally(manifestDiff: ClassFileManifest.Diff): Map<String, File> {
-    val tempDir = createTempDirectory("class_files_").toFile().also { it.deleteOnExit() }
+  private fun copyClassFilesLocally(manifestDiff: ClassFileManifest.Diff): Map<String, Path> {
+    val tempDir = createTempDirectory("class_files_")
+    tempDir.toFile().deleteOnExit()
 
-    val map = HashMap<String, File>()
+    val map = HashMap<String, Path>()
     for (jar in manifestDiff.perJarModifiedClasses.keySet()) {
       val classes = manifestDiff.perJarModifiedClasses.get(jar)
       map.putAll(
@@ -148,22 +150,22 @@ object BazelHotSwapManager {
   }
 
   private fun copyClassFilesLocally(
-    destination: File,
-    jar: File,
+    destination: Path,
+    jar: Path,
     classes: Collection<String>,
-  ): Map<String, File> {
-    val map = mutableMapOf<String, File>()
+  ): Map<String, Path> {
+    val map = mutableMapOf<String, Path>()
     try {
-      val jarFile = JarFile(jar)
+      val jarFile = JarFile(jar.toFile())
       for (path in classes) {
         val entry = jarFile.getJarEntry(path)
         if (entry == null) {
           throw ExecutionException("Couldn't find class file $path inside jar $jar.")
         }
-        val f = File(destination, path.replace('/', '-'))
-        f.deleteOnExit()
+        val f = destination.resolve(path.replace('/', '-'))
+        f.toFile().deleteOnExit()
         jarFile.getInputStream(entry).use { inputStream ->
-          Files.copy(inputStream, f.toPath(), StandardCopyOption.REPLACE_EXISTING)
+          Files.copy(inputStream, f, StandardCopyOption.REPLACE_EXISTING)
         }
         map.put(deriveQualifiedClassName(path), f)
       }

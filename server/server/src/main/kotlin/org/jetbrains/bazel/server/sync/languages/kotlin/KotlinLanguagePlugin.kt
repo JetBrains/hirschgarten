@@ -9,9 +9,7 @@ import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
-import java.net.URI
 import java.nio.file.Path
-import kotlin.io.path.toPath
 
 class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
   LanguagePlugin<KotlinModule>() {
@@ -63,11 +61,11 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
   private fun BspTargetInfo.KotlinTargetInfo.toKotlincPluginClasspathArguments(): List<String> =
     kotlincPluginInfosList
       .flatMap { it.pluginJarsList }
-      .map { "-Xplugin=${bazelPathsResolver.resolveUri(it).toPath()}" }
+      .map { "-Xplugin=${bazelPathsResolver.resolve(it)}" }
 
-  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<URI> =
+  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     javaLanguagePlugin.dependencySources(targetInfo, dependencyGraph)
 
-  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData =
+  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData? =
     javaLanguagePlugin.calculateSourceRootAndAdditionalData(source)
 }

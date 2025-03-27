@@ -1,52 +1,83 @@
 package org.jetbrains.bazel.languages.projectview.lexer
 
 import org.jetbrains.bazel.languages.fixtures.LexerTestCase
+import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
+import org.jetbrains.bazel.languages.projectview.language.ProjectViewSyntaxKey
 import org.junit.Test
 
 class ProjectViewLexerTest : LexerTestCase() {
+  sealed interface Section {
+    data class Scalar(val name: String) : Section {
+      override fun getExpectedTokens(): kotlin.collections.List<String> = SCALAR_SECTION
+
+      override fun getExampleCode() = "$name: value"
+    }
+
+    data class List(val name: String) : Section {
+      override fun getExpectedTokens(): kotlin.collections.List<String> = LIST_SECTION
+
+      override fun getExampleCode() = "$name:\n  value"
+    }
+
+    fun getExpectedTokens(): kotlin.collections.List<String>
+
+    fun getExampleCode(): String
+
+    companion object {
+      fun create(key: ProjectViewSyntaxKey, parser: ProjectViewSection.Parser): Section =
+        when (parser) {
+          is ProjectViewSection.Parser.Scalar -> Scalar(key)
+          is ProjectViewSection.Parser.List<*> -> List(key)
+        }
+
+      private val SCALAR_SECTION =
+        listOf(
+          "ProjectView:section_keyword",
+          "ProjectView:colon",
+          "ProjectView:whitespace",
+          "ProjectView:identifier",
+        )
+
+      /** A vector section. */
+      private val LIST_SECTION =
+        listOf(
+          "ProjectView:section_keyword",
+          "ProjectView:colon",
+          "ProjectView:newline",
+          "ProjectView:indent",
+          "ProjectView:identifier",
+        )
+    }
+  }
+
   @Test
-  fun `should lex import`() {
+  fun `should lex import keywords`() {
     // given
-    val code = "import java/com/google/work/.blazeproject"
+    val code =
+      """
+        |import /pathA
+        |try_import /pathB
+      """.trimMargin()
 
     // when & then
     code shouldLexTo
       listOf(
-        "ProjectView:keyword",
+        "ProjectView:import_keyword",
+        "ProjectView:whitespace",
+        "ProjectView:identifier",
+        "ProjectView:newline",
+        "ProjectView:import_keyword",
         "ProjectView:whitespace",
         "ProjectView:identifier",
       )
   }
 
   @Test
-  fun `should not lex indented keywords`() {
-    // given
-    val code = "  shard_sync: true"
-
-    // when & then
-    code shouldLexTo
-      listOf(
-        "ProjectView:indent",
-        "ProjectView:identifier",
-        "ProjectView:colon",
-        "ProjectView:whitespace",
-        "ProjectView:identifier",
-      )
-  }
-
-  @Test
-  fun `should lex scala keyword`() {
-    // given
-    val code = "workspace_type: intellij_plugin"
-
-    // when & then
-    code shouldLexTo
-      listOf(
-        "ProjectView:keyword",
-        "ProjectView:colon",
-        "ProjectView:whitespace",
-        "ProjectView:identifier",
-      )
+  fun `should lex registered sections`() {
+    ProjectViewSection.KEYWORD_MAP.map { (key, parser) -> Section.create(key, parser) }.forEach { section ->
+      section.getExampleCode() shouldLexTo
+        section.getExpectedTokens()
+    }
   }
 
   @Test
@@ -55,7 +86,7 @@ class ProjectViewLexerTest : LexerTestCase() {
     val code =
       """
         |# comment here
-        |import_target_output:
+        |targets:
         |  //java/com/google/work:target
       """.trimMargin()
 
@@ -64,7 +95,7 @@ class ProjectViewLexerTest : LexerTestCase() {
       listOf(
         "ProjectView:comment",
         "ProjectView:newline",
-        "ProjectView:keyword",
+        "ProjectView:section_keyword",
         "ProjectView:colon",
         "ProjectView:newline",
         "ProjectView:indent",
@@ -104,7 +135,7 @@ class ProjectViewLexerTest : LexerTestCase() {
     // when & then
     code shouldLexTo
       listOf(
-        "ProjectView:keyword",
+        "ProjectView:section_keyword",
         "ProjectView:colon",
         "ProjectView:newline",
         "ProjectView:indent",
@@ -114,7 +145,7 @@ class ProjectViewLexerTest : LexerTestCase() {
         "ProjectView:identifier",
         "ProjectView:newline",
         "ProjectView:newline",
-        "ProjectView:keyword",
+        "ProjectView:section_keyword",
         "ProjectView:colon",
         "ProjectView:newline",
         "ProjectView:indent",

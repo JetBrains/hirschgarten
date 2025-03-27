@@ -2,6 +2,8 @@ package org.jetbrains.bazel.server.bsp
 
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectSyncService
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bazel.workspacecontext.provider.DefaultWorkspaceContextProvider
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
@@ -14,12 +16,10 @@ import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
-import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JavacOptionsResult
-import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
@@ -32,15 +32,11 @@ import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
-import org.jetbrains.bsp.protocol.ResourcesParams
-import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
-import org.jetbrains.bsp.protocol.SourcesParams
-import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
@@ -53,41 +49,11 @@ import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 
-class BspServerApi(private val bazelServicesBuilder: suspend (JoinedBuildClient, InitializeBuildParams) -> BazelServices) :
-  JoinedBuildServer {
-  private lateinit var client: JoinedBuildClient
-  private lateinit var serverLifetime: BazelBspServerLifetime
-
-  private lateinit var projectSyncService: ProjectSyncService
-  private lateinit var executeService: ExecuteService
-
-  fun initialize(client: JoinedBuildClient, serverLifetime: BazelBspServerLifetime) {
-    this.client = client
-    this.serverLifetime = serverLifetime
-  }
-
-  private suspend fun initializeServices(initializeBuildParams: InitializeBuildParams) {
-    val serverContainer = bazelServicesBuilder(client, initializeBuildParams)
-    this.projectSyncService = serverContainer.projectSyncService
-    this.executeService = serverContainer.executeService
-  }
-
-  override suspend fun buildInitialize(initializeBuildParams: InitializeBuildParams) {
-    initializeServices(initializeBuildParams)
-  }
-
-  override suspend fun onBuildInitialized() {
-    serverLifetime.initialize()
-  }
-
-  override suspend fun buildShutdown() {
-    serverLifetime.finish()
-  }
-
-  override suspend fun onBuildExit() {
-    serverLifetime.forceFinish()
-  }
-
+class BspServerApi(
+  private val projectSyncService: ProjectSyncService,
+  private val executeService: ExecuteService,
+  val workspaceContextProvider: DefaultWorkspaceContextProvider,
+) : JoinedBuildServer {
   override suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult =
     projectSyncService.workspaceBuildTargets(
       build = false,
@@ -106,15 +72,11 @@ class BspServerApi(private val bazelServicesBuilder: suspend (JoinedBuildClient,
   override suspend fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult =
     projectSyncService.workspaceBuildFirstPhase(params)
 
-  override suspend fun buildTargetSources(params: SourcesParams): SourcesResult = projectSyncService.buildTargetSources(params)
-
   override suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult =
     projectSyncService.buildTargetInverseSources(params)
 
   override suspend fun buildTargetDependencySources(params: DependencySourcesParams): DependencySourcesResult =
     projectSyncService.buildTargetDependencySources(params)
-
-  override suspend fun buildTargetResources(params: ResourcesParams): ResourcesResult = projectSyncService.buildTargetResources(params)
 
   override suspend fun buildTargetCompile(params: CompileParams): CompileResult = executeService.compile(params)
 
@@ -166,4 +128,6 @@ class BspServerApi(private val bazelServicesBuilder: suspend (JoinedBuildClient,
 
   override suspend fun bazelResolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult =
     projectSyncService.resolveRemoteToLocal(params)
+
+  override suspend fun workspaceContext(): WorkspaceContext = projectSyncService.workspaceContext()
 }

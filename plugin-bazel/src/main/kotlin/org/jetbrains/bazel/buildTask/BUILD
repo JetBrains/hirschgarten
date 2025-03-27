@@ -5,12 +5,12 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
         "//commons/src/main/kotlin/org/jetbrains/bazel/performance",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jpsCompilation/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/connection",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/tasks",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
@@ -27,6 +27,5 @@ kt_jvm_library(
         "//rules_intellij/third_party/performance",
         "//rules_intellij/third_party/python",
         "//sdkcompat",
-        "@maven//:com_google_code_gson_gson",
     ],
 )

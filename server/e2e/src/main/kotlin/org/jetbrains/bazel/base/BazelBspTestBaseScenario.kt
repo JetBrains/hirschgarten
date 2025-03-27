@@ -6,13 +6,11 @@ import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.FeatureFlags
-import org.jetbrains.bsp.protocol.InitializeBuildParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
-import org.jetbrains.bsp.testkit.client.BasicTestClient
-import org.jetbrains.bsp.testkit.client.MockClient
 import org.jetbrains.bsp.testkit.client.TestClient
 import org.jetbrains.bsp.testkit.client.bazel.BazelJsonTransformer
 import java.nio.file.Path
+import java.nio.file.Path.of
 import kotlin.io.path.Path
 import kotlin.io.path.name
 import kotlin.system.exitProcess
@@ -39,7 +37,7 @@ abstract class BazelBspTestBaseScenario {
         "k8"
       }
   private val mainBinName = if (majorBazelVersion >= 7) "_main" else "__main__"
-  val bazelBinDirectory get() = "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/$mainBinName/bazel-out/$bazelArch-fastbuild/bin"
+  val bazelBinDirectory get() = "\$BAZEL_OUTPUT_BASE_PATH/execroot/$mainBinName/bazel-out/$bazelArch-fastbuild/bin"
 
   init {
     installServer()
@@ -60,7 +58,6 @@ abstract class BazelBspTestBaseScenario {
     return bazelPart.split("_")[3].toIntOrNull() ?: 100
   }
 
-  // TODO: remove Install.main and run setup methods directly
   protected open fun installServer() {
     Install.runInstall(
       CliOptions(
@@ -141,35 +138,8 @@ abstract class BazelBspTestBaseScenario {
   }
 
   protected fun createTestkitClient(): TestClient {
-    val (initializeBuildParams, bazelJsonTransformer) = createTestClientParams()
-
-    return TestClient(
-      Path.of(workspaceDir),
-      initializeBuildParams,
-      { s: String -> bazelJsonTransformer.transformJson(s) },
-    ).also { println("Created TestClient done.") }
-  }
-
-  protected fun createBazelClient(): BasicTestClient {
-    val (initializeBuildParams, bazelJsonTransformer) = createTestClientParams()
-
-    return BasicTestClient(
-      Path.of(workspaceDir),
-      initializeBuildParams,
-      { s: String -> bazelJsonTransformer.transformJson(s) },
-      MockClient(),
-    ).also { println("Created TestClient done.") }
-  }
-
-  private data class BazelTestClientParams(
-    val initializeBuildParams: InitializeBuildParams,
-    val bazelJsonTransformer: BazelJsonTransformer,
-  )
-
-  private fun createTestClientParams(): BazelTestClientParams {
     println("Testing repo workspace path: $workspaceDir")
     println("Creating TestClient...")
-
     val featureFlags =
       FeatureFlags(
         isPythonSupportEnabled = true,
@@ -177,20 +147,20 @@ abstract class BazelBspTestBaseScenario {
         isGoSupportEnabled = true,
         isPropagateExportsFromDepsEnabled = false,
       )
-
-    val initializeBuildParams =
-      InitializeBuildParams(featureFlags = featureFlags)
-
     val bazelCache = Path(processBazelOutputWithDownloadRetry("info", "execution_root"))
     val bazelOutputBase = Path(processBazelOutput("info", "output_base"))
-
     val bazelJsonTransformer =
       BazelJsonTransformer(
-        Path.of(workspaceDir),
+        of(workspaceDir),
         bazelCache,
         bazelOutputBase,
       )
-    return BazelTestClientParams(initializeBuildParams, bazelJsonTransformer)
+
+    return TestClient(
+      Path.of(workspaceDir),
+      { s: String -> bazelJsonTransformer.transformJson(s) },
+      featureFlags,
+    ).also { println("Created TestClient done.") }
   }
 
   private fun executeScenarioSteps(): Boolean = scenarioSteps().map { it.executeAndReturnResult() }.all { it }

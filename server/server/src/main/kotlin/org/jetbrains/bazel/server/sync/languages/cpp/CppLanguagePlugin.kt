@@ -10,7 +10,7 @@ import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.CppBuildTarget
 import org.jetbrains.bsp.protocol.CppOptionsItem
-import java.net.URI
+import java.nio.file.Path
 
 class CppLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<CppModule>() {
   override fun resolveModule(targetInfo: TargetInfo): CppModule? = null
@@ -29,14 +29,14 @@ class CppLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : La
 
   private fun TargetInfo.getCppTargetInfoOrNull(): BspTargetInfo.CppTargetInfo? = this.takeIf(TargetInfo::hasCppTargetInfo)?.cppTargetInfo
 
-  override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<URI> =
+  override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     targetInfo
       .getCppTargetInfoOrNull()
       ?.run {
         dependencyGraph
           .transitiveDependenciesWithoutRootTargets(targetInfo.label())
           .flatMap(TargetInfo::getSourcesList)
-          .map(bazelPathsResolver::resolveUri)
+          .map(bazelPathsResolver::resolve)
           .toSet()
       }.orEmpty()
 

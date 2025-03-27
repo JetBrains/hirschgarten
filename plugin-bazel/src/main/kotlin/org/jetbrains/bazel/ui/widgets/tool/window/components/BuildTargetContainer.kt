@@ -3,7 +3,7 @@ package org.jetbrains.bazel.ui.widgets.tool.window.components
 import com.intellij.ui.PopupHandler
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.awt.Point
 import javax.swing.JComponent
 
@@ -38,9 +38,9 @@ interface BuildTargetContainer {
    *
    * @return selected build target, or `null` if nothing is selected
    */
-  fun getSelectedBuildTarget(): BuildTargetInfo?
+  fun getSelectedBuildTarget(): BuildTarget?
 
-  fun getSelectedBuildTargetsUnderDirectory(): List<BuildTargetInfo>
+  fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget>
 
   fun getSelectedComponentName(): String
 
@@ -59,5 +59,5 @@ interface BuildTargetContainer {
    * @param newInvalidTargets collection of invalid targets the new container will contain
    * @return the newly created container
    */
-  fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>, newInvalidTargets: List<Label>): BuildTargetContainer
+  fun createNewWithTargets(newTargets: Collection<BuildTarget>, newInvalidTargets: List<Label>): BuildTargetContainer
 }

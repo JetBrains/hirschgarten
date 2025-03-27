@@ -2,10 +2,10 @@ package org.jetbrains.bazel.server.sync
 
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.MavenCoordinates
-import java.net.URI
+import java.nio.file.Path
 
 class MavenCoordinatesResolver {
-  fun resolveMavenCoordinates(libraryLabel: Label, outputJar: URI): MavenCoordinates? {
+  fun resolveMavenCoordinates(libraryLabel: Label, outputJar: Path): MavenCoordinates? {
     /* For example:
      * @@rules_jvm_external~override~maven~maven//:org_apache_commons_commons_lang3
      * @maven//:org_scala_lang_scala_library

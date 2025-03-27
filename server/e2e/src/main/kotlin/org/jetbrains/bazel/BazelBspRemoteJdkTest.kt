@@ -6,7 +6,9 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
+import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 
 object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
@@ -30,10 +32,11 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
   }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val javaHomeBazel5And6 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
+    val javaHomeBazel5And6 = Path("\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/")
     val javaHomeBazel7 =
-      "file://\$BAZEL_OUTPUT_BASE_PATH/external/" +
-        "rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_$javaHomeArchitecture/"
+      Path(
+        "\$BAZEL_OUTPUT_BASE_PATH/external/rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_$javaHomeArchitecture/",
+      )
     val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
 
     val exampleExampleJvmBuildTarget =
@@ -52,11 +55,18 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = true,
-          canDebug = false,
         ),
-        displayName = "//example",
-        baseDirectory = "file://\$WORKSPACE/example/",
+        baseDirectory = Path("\$WORKSPACE/example/"),
         data = exampleExampleJvmBuildTarget,
+        sources =
+          listOf(
+            SourceItem(
+              path = Path("\$WORKSPACE/example/Example.java"),
+              generated = false,
+              jvmPackagePrefix = "example",
+            ),
+          ),
+        resources = emptyList(),
       )
 
     return WorkspaceBuildTargetsResult(

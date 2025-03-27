@@ -28,7 +28,7 @@ class BazelCoverageEngine : CoverageEngine() {
   override fun isApplicableTo(configuration: RunConfigurationBase<*>): Boolean {
     if (configuration !is BazelRunConfiguration) return false
     val targetUtils = configuration.project.targetUtils
-    return configuration.targets.all { targetUtils.getBuildTargetInfoForLabel(it)?.capabilities?.canTest == true }
+    return configuration.targets.all { targetUtils.getBuildTargetForLabel(it)?.capabilities?.canTest == true }
   }
 
   override fun createCoverageEnabledConfiguration(configuration: RunConfigurationBase<*>): CoverageEnabledConfiguration =

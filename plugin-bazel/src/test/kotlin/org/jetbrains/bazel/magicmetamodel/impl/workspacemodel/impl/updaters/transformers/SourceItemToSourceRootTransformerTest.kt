@@ -3,11 +3,9 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.SourceItemKind
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.net.URI
-import kotlin.io.path.toPath
+import kotlin.io.path.Path
 
 @DisplayName("SourceItemToSourceRootTransformer.transform(sourcesItems) tests")
 class SourceItemToSourceRootTransformerTest {
@@ -27,31 +25,14 @@ class SourceItemToSourceRootTransformerTest {
   fun `should return single file for single source file`() {
     testGeneratedAndNotGeneratedSources { generated ->
       // given
-      val sourceItem = SourceItem("file:///example/source/File.java", SourceItemKind.FILE, generated)
+      val sourceItem = SourceItem(Path("/example/source/File.java"), generated)
 
       // when
       val sourceDir = SourceItemToSourceRootTransformer.transform(sourceItem)
 
       // then
-      val expectedSourcePath = URI.create("file:///example/source/File.java").toPath()
-      val expectedSource = SourceRoot(expectedSourcePath, generated, true)
-
-      sourceDir shouldBe expectedSource
-    }
-  }
-
-  @Test
-  fun `should return single dir for single source dir`() {
-    testGeneratedAndNotGeneratedSources { generated ->
-      // given
-      val sourceItem = SourceItem("file:///example/source/", SourceItemKind.DIRECTORY, generated)
-
-      // when
-      val sourceDir = SourceItemToSourceRootTransformer.transform(sourceItem)
-
-      // then
-      val expectedSourcePath = URI.create("file:///example/source/").toPath()
-      val expectedSource = SourceRoot(expectedSourcePath, generated, false)
+      val expectedSourcePath = Path("/example/source/File.java")
+      val expectedSource = SourceRoot(expectedSourcePath, generated)
 
       sourceDir shouldBe expectedSource
     }
@@ -63,58 +44,30 @@ class SourceItemToSourceRootTransformerTest {
       // given
       val sourceItems =
         listOf(
-          SourceItem("file:///example/source1/File1.java", SourceItemKind.FILE, generated),
-          SourceItem("file:///example/source1/File2.java", SourceItemKind.FILE, generated),
-          SourceItem("file:///example/source1/subpackage/File2.java", SourceItemKind.FILE, generated),
-          SourceItem("file:///example/source2/File1.java", SourceItemKind.FILE, generated),
+          SourceItem(Path("/example/source1/File1.java"), generated),
+          SourceItem(Path("/example/source1/File2.java"), generated),
+          SourceItem(Path("/example/source1/subpackage/File2.java"), generated),
+          SourceItem(Path("/example/source2/File1.java"), generated),
         )
 
       // when
       val sourcesDirs = SourceItemToSourceRootTransformer.transform(sourceItems)
 
       // then
-      val expectedSource1PathA = URI.create("file:///example/source1/File1.java").toPath()
-      val expectedSource1A = SourceRoot(expectedSource1PathA, generated, true)
+      val expectedSource1PathA = Path("/example/source1/File1.java")
+      val expectedSource1A = SourceRoot(expectedSource1PathA, generated)
 
-      val expectedSource1PathB = URI.create("file:///example/source1/File2.java").toPath()
-      val expectedSource1B = SourceRoot(expectedSource1PathB, generated, true)
+      val expectedSource1PathB = Path("/example/source1/File2.java")
+      val expectedSource1B = SourceRoot(expectedSource1PathB, generated)
 
-      val expectedSource1SubpackagePath = URI.create("file:///example/source1/subpackage/File2.java").toPath()
-      val expectedSource1Subpackage = SourceRoot(expectedSource1SubpackagePath, generated, true)
+      val expectedSource1SubpackagePath = Path("/example/source1/subpackage/File2.java")
+      val expectedSource1Subpackage = SourceRoot(expectedSource1SubpackagePath, generated)
 
-      val expectedSource2Path = URI.create("file:///example/source2/File1.java").toPath()
-      val expectedSource2 = SourceRoot(expectedSource2Path, generated, true)
+      val expectedSource2Path = Path("/example/source2/File1.java")
+      val expectedSource2 = SourceRoot(expectedSource2Path, generated)
 
       sourcesDirs shouldContainExactlyInAnyOrder
         listOf(expectedSource1A, expectedSource1B, expectedSource1Subpackage, expectedSource2)
-    }
-  }
-
-  @Test
-  fun `should return multiple dirs for multiple source dirs`() {
-    testGeneratedAndNotGeneratedSources { generated ->
-      // given
-      val sourceItems =
-        listOf(
-          SourceItem("file:///example/source1/", SourceItemKind.DIRECTORY, generated),
-          SourceItem("file:///example/source1/subpackage/", SourceItemKind.DIRECTORY, generated),
-          SourceItem("file:///example/source2/", SourceItemKind.DIRECTORY, generated),
-        )
-
-      // when
-      val sourcesDirs = SourceItemToSourceRootTransformer.transform(sourceItems)
-
-      // then
-      val expectedSource1Path = URI.create("file:///example/source1/").toPath()
-      val expectedSource1 = SourceRoot(expectedSource1Path, generated, false)
-
-      val expectedSource1SubpackagePath = URI.create("file:///example/source1/subpackage/").toPath()
-      val expectedSource1Subpackage = SourceRoot(expectedSource1SubpackagePath, generated, false)
-
-      val expectedSource2Path = URI.create("file:///example/source2/").toPath()
-      val expectedSource2 = SourceRoot(expectedSource2Path, generated, false)
-
-      sourcesDirs shouldContainExactlyInAnyOrder listOf(expectedSource1, expectedSource1Subpackage, expectedSource2)
     }
   }
 
@@ -124,30 +77,22 @@ class SourceItemToSourceRootTransformerTest {
       // given
       val sourceItems =
         listOf(
-          SourceItem("file:///example/source1/", SourceItemKind.DIRECTORY, generated),
-          SourceItem("file:///example/source1/subpackage/File1.java", SourceItemKind.FILE, generated),
-          SourceItem("file:///example/source2/", SourceItemKind.DIRECTORY, generated),
-          SourceItem("file:///example/source2/File1.java", SourceItemKind.FILE, generated),
+          SourceItem(Path("/example/source1/subpackage/File1.java"), generated),
+          SourceItem(Path("/example/source2/File1.java"), generated),
         )
 
       // when
       val sourcesDirs = SourceItemToSourceRootTransformer.transform(sourceItems)
 
       // then
-      val expectedSource1Path = URI.create("file:///example/source1/").toPath()
-      val expectedSource1 = SourceRoot(expectedSource1Path, generated, false)
+      val expectedSource1SubpackagePath = Path("/example/source1/subpackage/File1.java")
+      val expectedSource1Subpackage = SourceRoot(expectedSource1SubpackagePath, generated)
 
-      val expectedSource1SubpackagePath = URI.create("file:///example/source1/subpackage/File1.java").toPath()
-      val expectedSource1Subpackage = SourceRoot(expectedSource1SubpackagePath, generated, true)
-
-      val expectedSource2Path = URI.create("file:///example/source2/").toPath()
-      val expectedSource2 = SourceRoot(expectedSource2Path, generated, false)
-
-      val expectedSource2FilePath = URI.create("file:///example/source2/File1.java").toPath()
-      val expectedSource2File = SourceRoot(expectedSource2FilePath, generated, true)
+      val expectedSource2FilePath = Path("/example/source2/File1.java")
+      val expectedSource2File = SourceRoot(expectedSource2FilePath, generated)
 
       sourcesDirs shouldContainExactlyInAnyOrder
-        listOf(expectedSource1, expectedSource1Subpackage, expectedSource2, expectedSource2File)
+        listOf(expectedSource1Subpackage, expectedSource2File)
     }
   }
 

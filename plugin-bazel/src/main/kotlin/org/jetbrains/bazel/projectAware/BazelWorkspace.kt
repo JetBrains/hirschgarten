@@ -4,6 +4,7 @@ import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.externalSystem.service.project.manage.ExternalProjectsManagerImpl
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vcs.BranchChangeListener
@@ -19,17 +20,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.workspace.unregisterProjectExcludesIgnoredFileProvider
-import org.jetbrains.kotlin.tooling.core.Interner
-import org.jetbrains.kotlin.tooling.core.WeakInterner
 
 @Service(Service.Level.PROJECT)
 class BazelWorkspace(val project: Project) : Disposable {
   private var initialized = false
-  val interner: Interner = WeakInterner()
 
   @Synchronized
   fun initialize() {
     if (!initialized) {
+      // store generated IML files outside the project directory
+      ExternalProjectsManagerImpl.getInstance(project).setStoreExternally(true)
       unregisterProjectExcludesIgnoredFileProvider()
       BazelProjectAware.initialize(this)
       BazelProjectModuleBuildTasksTracker.initialize(this)

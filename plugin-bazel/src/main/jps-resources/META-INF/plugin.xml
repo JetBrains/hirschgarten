@@ -174,7 +174,6 @@
         <registryKey defaultValue="false" description="Build project on initial project sync"
                      key="bsp.build.project.on.sync"/>
         <registryKey defaultValue="false" description="Python modules support" key="bsp.python.support"/>
-        <registryKey defaultValue="false" description="Enable JPS compilation" key="bsp.jps.compilation.enable"/>
         <registryKey defaultValue="false" description="Android modules support" key="bsp.android.support"/>
         <registryKey defaultValue="false" description="Go modules support" key="bsp.go.support"/>
         <registryKey defaultValue="true"
@@ -213,11 +212,12 @@
         <consoleFilterProvider
                 implementation="org.jetbrains.bazel.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"/>
 
-        <iconMapper mappingFile="BSPIconMappings.json"/>
-
         <notificationGroup displayType="BALLOON" id="Bazel Plugin"/>
         <editorNotificationProvider
                 implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"/>
+
+        <statistics.projectUsagesCollector implementation="org.jetbrains.plugins.bazel.fus.BazelProjectStatisticsCollector"/>
+
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
@@ -249,13 +249,6 @@
         <action id="Bazel.BuildAndResyncAction"
                 class="org.jetbrains.bazel.action.registered.BuildAndResyncAction"
                 icon="/icons/buildAndResync.svg"/>
-        <action id="Bazel.Compile.CompileProjectWithBazelAction"
-                class="org.jetbrains.bazel.action.registered.CompileProjectWithBazelAction"
-                icon="AllIcons.Actions.Compile"/>
-        <action id="Bazel.Compile.CompileProjectWithJpsAction"
-                class="org.jetbrains.bazel.action.registered.CompileProjectWithJpsAction"
-                icon="AllIcons.Actions.Compile"/>
-
         <action id="Bazel.NewBazelPackageAction"
                 class="org.jetbrains.bazel.action.registered.NewBazelPackageAction"
                 text="New Bazel Package">
@@ -291,12 +284,19 @@
         <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.nonmodule.sync.NonModuleTargetsSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
         <additionalProjectTaskRunnerProvider
                 implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
 
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
+        <disableCompilationDependenciesResolutionTask
+                implementation="org.jetbrains.bazel.jpsCompilation.utils.DisableCompilationDependenciesResolutionImpl"/>
+        <projectService serviceInterface="org.jetbrains.bazel.server.connection.BazelServerService"
+                        serviceImplementation="org.jetbrains.bazel.server.connection.BazelServerServiceImpl"/>
+
         <consoleFilterProvider implementation="org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilterProvider"/>
 
         <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider"/>
@@ -408,6 +408,10 @@
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"/>
 
+        <lang.parserDefinition
+                language="ProjectView"
+                implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"/>
+
         <formattingService
                 implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService"/>
 
@@ -492,7 +496,13 @@
         <registryKey defaultValue="false"
                      description="Enable a custom class finder for Java instead of &quot;dummy&quot; modules"
                      key="bazel.enable.custom.java.class.finder"/>
+        <registryKey defaultValue="true"
+                     description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
+                     key="bazel.merge.source.roots"/>
         <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
+
+        <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelJavaNewProjectWizard"/>
+        <newProjectWizard.kotlin.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelKotlinNewProjectWizard"/>
     </extensions>
 
     <actions>

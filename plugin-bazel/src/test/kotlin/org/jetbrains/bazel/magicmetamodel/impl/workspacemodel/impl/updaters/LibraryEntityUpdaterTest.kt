@@ -12,6 +12,7 @@ import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import kotlin.io.path.Path
 
 @DisplayName("LibraryEntityUpdater.addEntity(entityToAdd) tests")
 internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
@@ -34,8 +35,8 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
     val library =
       Library(
         displayName = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
-        sourceJars = listOf("jar:///dependency/test/1.0.0/test-1.0.0-sources.jar!/"),
-        classJars = listOf("jar:///dependency/test/1.0.0/test-1.0.0.jar!/"),
+        sourceJars = listOf(Path("/dependency/test/1.0.0/test-1.0.0-sources.jar")),
+        classJars = listOf(Path("/dependency/test/1.0.0/test-1.0.0.jar")),
       )
 
     // when
@@ -76,15 +77,15 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
     val library1 =
       Library(
         displayName = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
-        sourceJars = listOf("jar:///dependency/test1/1.0.0/test1-1.0.0-sources.jar!/"),
-        classJars = listOf("jar:///dependency/test1/1.0.0/test1-1.0.0.jar!/"),
+        sourceJars = listOf(Path("/dependency/test1/1.0.0/test1-1.0.0-sources.jar")),
+        classJars = listOf(Path("/dependency/test1/1.0.0/test1-1.0.0.jar")),
       )
 
     val library2 =
       Library(
         displayName = "BSP: file:///dependency/test2/2.0.0/test2-2.0.0.jar",
-        sourceJars = listOf("jar:///dependency/test2/2.0.0/test2-2.0.0-sources.jar!/"),
-        classJars = listOf("jar:///dependency/test2/2.0.0/test2-2.0.0.jar!/"),
+        sourceJars = listOf(Path("/dependency/test2/2.0.0/test2-2.0.0-sources.jar")),
+        classJars = listOf(Path("/dependency/test2/2.0.0/test2-2.0.0.jar")),
       )
 
     val libraries = listOf(library1, library2)
@@ -150,8 +151,8 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
     val library =
       Library(
         displayName = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
-        sourceJars = listOf("jar:///dependency/test/1.0.0/test-1.0.0-sources.jar!/"),
-        classJars = listOf("jar:///dependency/test/1.0.0/test-1.0.0.jar!/"),
+        sourceJars = listOf(Path("/dependency/test/1.0.0/test-1.0.0-sources.jar")),
+        classJars = listOf(Path("/dependency/test/1.0.0/test-1.0.0.jar")),
       )
 
     // when

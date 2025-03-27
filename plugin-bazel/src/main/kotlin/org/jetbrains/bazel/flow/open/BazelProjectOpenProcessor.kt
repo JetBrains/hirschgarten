@@ -38,7 +38,7 @@ val BUILD_FILE_GLOB = "{${BazelPluginConstants.BUILD_FILE_NAMES.joinToString(","
  */
 internal class BazelProjectOpenProcessor : BaseProjectOpenProcessor() {
   override fun calculateProjectFolderToOpen(virtualFile: VirtualFile): VirtualFile =
-    findProjectFolderFromEligibleFile(virtualFile)
+    findProjectFolderFromVFile(virtualFile)
       ?: error("Cannot find the suitable Bazel project folder to open for the given file $virtualFile.")
 
   override val icon: Icon = BazelPluginIcons.bazel
@@ -50,25 +50,10 @@ internal class BazelProjectOpenProcessor : BaseProjectOpenProcessor() {
   override val isStrongProjectInfoHolder: Boolean
     get() = ApplicationManager.getApplication().isHeadlessEnvironment
 
-  override fun canOpenProject(file: VirtualFile): Boolean =
-    when {
-      file.isEligibleFile() -> true
-      else -> file.containsEligibleFile() == true
-    }
-
-  private fun VirtualFile.containsEligibleFile(): Boolean {
-    try {
-      if (!isDirectory) return false
-      val path = toNioPath()
-      return path
-        .listDirectoryEntries(
-          glob = ALL_ELIGIBLE_FILES_GLOB,
-        ).any { it.isRegularFile() }
-    } catch (e: IOException) {
-      log.warn("Cannot check if directory $this contains a Bazel eligible file to open", e)
-      return false
-    }
-  }
+  /**
+   * The project is only eligible to be opened with Bazel Plugin if workspace files can be reached from the given vFile
+   */
+  override fun canOpenProject(file: VirtualFile): Boolean = findProjectFolderFromVFile(file) != null
 
   private fun VirtualFile.isEligibleFile() = isBazelBspConnectionFile() || isWorkspaceFile() || isBuildFile() || isProjectViewFile()
 
@@ -129,11 +114,11 @@ internal class BazelProjectOpenProcessor : BaseProjectOpenProcessor() {
   private fun VirtualFile.isProjectViewFile() = extension == BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION
 }
 
-tailrec fun findProjectFolderFromEligibleFile(vFile: VirtualFile?): VirtualFile? =
+tailrec fun findProjectFolderFromVFile(vFile: VirtualFile?): VirtualFile? =
   when {
     vFile == null -> null
     vFile.isWorkspaceRoot() -> vFile
-    else -> findProjectFolderFromEligibleFile(vFile.parent)
+    else -> findProjectFolderFromVFile(vFile.parent)
   }
 
 private fun VirtualFile.isWorkspaceRoot(): Boolean {

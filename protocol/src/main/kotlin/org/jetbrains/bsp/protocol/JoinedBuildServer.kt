@@ -1,23 +1,13 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+
 interface JoinedBuildServer {
-  suspend fun buildInitialize(params: InitializeBuildParams)
-
-  suspend fun onBuildInitialized()
-
-  suspend fun buildShutdown()
-
-  suspend fun onBuildExit()
-
   suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult
-
-  suspend fun buildTargetSources(params: SourcesParams): SourcesResult
 
   suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult
 
   suspend fun buildTargetDependencySources(params: DependencySourcesParams): DependencySourcesResult
-
-  suspend fun buildTargetResources(params: ResourcesParams): ResourcesResult
 
   suspend fun buildTargetCompile(params: CompileParams): CompileResult
 
@@ -72,4 +62,6 @@ interface JoinedBuildServer {
   suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult
 
   suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult
+
+  suspend fun workspaceContext(): WorkspaceContext
 }

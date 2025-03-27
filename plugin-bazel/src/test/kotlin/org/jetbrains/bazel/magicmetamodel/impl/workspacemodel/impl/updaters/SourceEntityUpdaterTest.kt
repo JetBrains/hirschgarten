@@ -12,8 +12,7 @@ import org.jetbrains.bazel.workspacemodel.entities.GenericSourceRoot
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.net.URI
-import kotlin.io.path.toPath
+import kotlin.io.path.Path
 
 @DisplayName("sourceEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
 class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
@@ -32,7 +31,7 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
   @Test
   fun `should add one python source root to the workspace model`() {
     // given
-    val sourceDir = URI.create("file:///root/dir/example/package/").toPath()
+    val sourceDir = Path("/root/dir/example/package/")
 
     val genericSourceRoot =
       GenericSourceRoot(
@@ -73,7 +72,7 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
   @Test
   fun `should add multiple python source roots to the workspace model`() {
     // given
-    val sourceDir1 = URI.create("file:///root/dir/example/package/").toPath()
+    val sourceDir1 = Path("/root/dir/example/package/")
 
     val genericSourceRoot1 =
       GenericSourceRoot(
@@ -81,7 +80,7 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
         rootType = SourceRootTypeId("python-source"),
       )
 
-    val sourceDir2 = URI.create("file:///another/root/dir/another/example/package/").toPath()
+    val sourceDir2 = Path("/another/root/dir/another/example/package/")
 
     val genericSourceRoot2 =
       GenericSourceRoot(

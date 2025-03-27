@@ -4,67 +4,55 @@ import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.BazelBspServer
-import org.jetbrains.bazel.server.bsp.BazelBspServerLifetime
 import org.jetbrains.bazel.server.bsp.BspServerApi
 import org.jetbrains.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
-import org.jetbrains.bazel.workspacecontext.DefaultWorkspaceContextProvider
-import org.jetbrains.bsp.protocol.InitializeBuildParams
+import org.jetbrains.bazel.workspacecontext.provider.DefaultWorkspaceContextProvider
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.JoinedBuildClient
-import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.nio.file.Path
 
-class Connection(
-  installationDirectory: Path,
-  projectViewFile: Path?,
-  workspace: Path,
+suspend fun startServer(
   client: JoinedBuildClient,
-) {
-  val server =
-    startServer(
-      client,
-      workspace,
-      installationDirectory,
-      projectViewFile,
-    )
-}
-
-private fun startServer(
-  client: JoinedBuildClient,
-  workspace: Path,
-  directory: Path,
+  workspaceRoot: Path,
   projectViewFile: Path?,
-): JoinedBuildServer {
-  val bspInfo = BspInfo(directory)
+  featureFlags: FeatureFlags,
+): BspServerApi {
+  val bspInfo = BspInfo(workspaceRoot)
   val workspaceContextProvider =
     DefaultWorkspaceContextProvider(
-      workspaceRoot = workspace,
-      projectViewPath = projectViewFile ?: directory.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME),
+      workspaceRoot = workspaceRoot,
+      projectViewPath = projectViewFile ?: workspaceRoot.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME),
       dotBazelBspDirPath = bspInfo.bazelBspDir(),
+      featureFlags = featureFlags,
     )
-  val bspServer = BazelBspServer(bspInfo, workspaceContextProvider, workspace)
+  // Run it here to force the workspace context to be initialized
+  // It should download bazelisk if bazel is missing
+  val workspaceContext = workspaceContextProvider.readWorkspaceContext()
+  val bspServer = BazelBspServer(bspInfo, workspaceContextProvider, workspaceRoot)
+  val bspClientLogger = BspClientLogger(client)
+  val bazelRunner = BazelRunner(bspClientLogger, bspServer.workspaceRoot)
+  bspServer.verifyBazelVersion(bazelRunner, workspaceContext)
+  val bazelInfo = bspServer.createBazelInfo(bazelRunner, workspaceContext)
+  bazelRunner.bazelInfo = bazelInfo
+  val bazelPathsResolver = BazelPathsResolver(bazelInfo)
+  val compilationManager =
+    BazelBspCompilationManager(bazelRunner, bazelPathsResolver, client, bspServer.workspaceRoot)
+  val services =
+    bspServer.bspServerData(
+      bspClientLogger,
+      bazelRunner,
+      compilationManager,
+      bazelInfo,
+      bspServer.workspaceContextProvider,
+      bazelPathsResolver,
+    )
   val bspServerApi =
-    BspServerApi { client: JoinedBuildClient, initializeBuildParams: InitializeBuildParams ->
-      val bspClientLogger = BspClientLogger(client)
-      val bazelRunner = BazelRunner(bspServer.workspaceContextProvider, bspClientLogger, bspServer.workspaceRoot)
-      bspServer.verifyBazelVersion(bazelRunner)
-      val bazelInfo = bspServer.createBazelInfo(bazelRunner)
-      bazelRunner.bazelInfo = bazelInfo
-      val bazelPathsResolver = BazelPathsResolver(bazelInfo)
-      val compilationManager =
-        BazelBspCompilationManager(bazelRunner, bazelPathsResolver, client, bspServer.workspaceRoot)
-      bspServer.bspServerData(
-        initializeBuildParams,
-        bspClientLogger,
-        bazelRunner,
-        compilationManager,
-        bazelInfo,
-        bspServer.workspaceContextProvider,
-        bazelPathsResolver,
-      )
-    }
-  val serverLifetime = BazelBspServerLifetime(bspServer.workspaceContextProvider)
-  bspServerApi.initialize(client, serverLifetime)
+    BspServerApi(
+      services.projectSyncService,
+      services.executeService,
+      workspaceContextProvider,
+    )
   return bspServerApi
 }

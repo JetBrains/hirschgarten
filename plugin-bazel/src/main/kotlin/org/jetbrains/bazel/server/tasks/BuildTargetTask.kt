@@ -4,7 +4,6 @@ import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.ide.progress.withBackgroundProgress
@@ -14,28 +13,28 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
-import org.jetbrains.bazel.ui.console.BspConsoleService
+import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileReport
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.StatusCode
+import java.nio.file.Path
 import java.util.UUID
 
 @ApiStatus.Internal
-public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<CompileResult>("build targets", project) {
-  private val log = logger<BuildTargetTask>()
-
-  protected override suspend fun executeWithServer(server: JoinedBuildServer, targetsIds: List<Label>): CompileResult =
+class BuildTargetTask(private val project: Project) {
+  suspend fun execute(server: JoinedBuildServer, targetsIds: List<Label>): CompileResult =
     coroutineScope {
-      val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
+      val bspBuildConsole = ConsoleService.getInstance(project).buildConsole
       val originId = "build-" + UUID.randomUUID().toString()
 
       val taskListener =
@@ -84,7 +83,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
           }
 
           override fun onDiagnostic(
-            textDocument: String,
+            textDocument: Path?,
             buildTarget: Label,
             line: Int,
             character: Int,
@@ -129,7 +128,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
 
     bspBuildConsole.startTask(
       taskId = originId,
-      title = BspPluginBundle.message("console.task.build.title"),
+      title = BazelPluginBundle.message("console.task.build.title"),
       message = startBuildMessage,
       cancelAction = { cs.cancel() },
       redoAction = { BazelCoroutineService.getInstance(project).start { runBuildTargetTask(targetIds, project) } },
@@ -138,19 +137,19 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
 
   private fun calculateStartBuildMessage(targetIds: List<Label>): String =
     when (targetIds.size) {
-      0 -> BspPluginBundle.message("console.task.build.no.targets")
-      1 -> BspPluginBundle.message("console.task.build.in.progress.one", targetIds.first().toShortString())
-      else -> BspPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
+      0 -> BazelPluginBundle.message("console.task.build.no.targets")
+      1 -> BazelPluginBundle.message("console.task.build.in.progress.one", targetIds.first().toShortString())
+      else -> BazelPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
     }
 
   private fun createCompileParams(targetIds: List<Label>, originId: String) =
     CompileParams(targetIds, originId = originId, arguments = listOf("--keep_going"))
 }
 
-public suspend fun runBuildTargetTask(targetIds: List<Label>, project: Project): CompileResult? {
+suspend fun runBuildTargetTask(targetIds: List<Label>, project: Project): CompileResult? {
   saveAllFiles()
   return withBackgroundProgress(project, "Building target(s)...") {
-    BuildTargetTask(project).connectAndExecute(targetIds)
+    project.connection.runWithServer { BuildTargetTask(project).execute(it, targetIds) }
   }.also {
     VirtualFileManager.getInstance().asyncRefresh()
   }

@@ -13,6 +13,7 @@ import org.jetbrains.bazel.server.sync.languages.python.PythonLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.python.PythonModule
 import org.jetbrains.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 class LanguagePluginsService(
   val scalaLanguagePlugin: ScalaLanguagePlugin,
@@ -26,14 +27,14 @@ class LanguagePluginsService(
 ) {
   private val emptyLanguagePlugin: EmptyLanguagePlugin = EmptyLanguagePlugin()
 
-  fun prepareSync(targetInfos: Sequence<BspTargetInfo.TargetInfo>) {
-    scalaLanguagePlugin.prepareSync(targetInfos)
-    javaLanguagePlugin.prepareSync(targetInfos)
-    cppLanguagePlugin.prepareSync(targetInfos)
-    thriftLanguagePlugin.prepareSync(targetInfos)
-    pythonLanguagePlugin.prepareSync(targetInfos)
-    androidLanguagePlugin.prepareSync(targetInfos)
-    goLanguagePlugin.prepareSync(targetInfos)
+  fun prepareSync(targetInfos: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
+    scalaLanguagePlugin.prepareSync(targetInfos, workspaceContext)
+    javaLanguagePlugin.prepareSync(targetInfos, workspaceContext)
+    cppLanguagePlugin.prepareSync(targetInfos, workspaceContext)
+    thriftLanguagePlugin.prepareSync(targetInfos, workspaceContext)
+    pythonLanguagePlugin.prepareSync(targetInfos, workspaceContext)
+    androidLanguagePlugin.prepareSync(targetInfos, workspaceContext)
+    goLanguagePlugin.prepareSync(targetInfos, workspaceContext)
   }
 
   fun getPlugin(languages: Set<Language>): LanguagePlugin<*> =

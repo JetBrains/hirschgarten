@@ -1,4 +1,4 @@
-load("@${rulesetName}//go:def.bzl", "GoArchive", "GoSource", "go_context")
+load("@${rulesetName}//go:def.bzl", "GoArchive", "go_context")
 load("//aspects:utils/utils.bzl", "create_struct", "file_location")
 
 def extract_go_info(target, ctx, **kwargs):
@@ -29,10 +29,10 @@ def _extract_sdk(ctx):
 def _extract_generated_files(target):
     found_direct = [dir for dir in target[GoArchive].direct if dir.data.label == target.label]
     if found_direct:
-        orig_srcs = found_direct[0].data.orig_srcs
+        srcs = found_direct[0].data.srcs
     else:
-        orig_srcs = target[GoArchive].data.orig_srcs
+        srcs = target[GoArchive].data.srcs
     return [
         file_location(t)
-        for t in orig_srcs
+        for t in srcs
     ]

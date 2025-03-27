@@ -11,12 +11,12 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.includesAndroid
+import org.jetbrains.bsp.protocol.BuildTarget
 
 /**
  * Key for storing the target Android device inside an [ExecutionEnvironment]
@@ -33,7 +33,7 @@ class AndroidBazelRunHandler(private val configuration: BazelRunConfiguration) :
 
   override val state: AndroidBazelRunConfigurationState = AndroidBazelRunConfigurationState
 
-  override val name: String = "Android BSP Run Handler"
+  override val name: String = "Android Bazel Run Handler"
 
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     val deployTargetContext = DeployTargetContext()
@@ -41,9 +41,9 @@ class AndroidBazelRunHandler(private val configuration: BazelRunConfiguration) :
 
     val deviceFutures = deployTarget.getDevices(configuration.project).get()
     if (deviceFutures.isEmpty()) {
-      throw ExecutionException(BspPluginBundle.message("console.task.mobile.no.target.device"))
+      throw ExecutionException(BazelPluginBundle.message("console.task.mobile.no.target.device"))
     } else if (deviceFutures.size > 1) {
-      throw ExecutionException(BspPluginBundle.message("console.task.mobile.cannot.run.on.multiple.devices"))
+      throw ExecutionException(BazelPluginBundle.message("console.task.mobile.cannot.run.on.multiple.devices"))
     }
 
     // Store the device inside ExecutionEnvironment, so that MobileInstallBeforeRunTaskProvider can access it.
@@ -54,15 +54,15 @@ class AndroidBazelRunHandler(private val configuration: BazelRunConfiguration) :
     return AndroidConfigurationExecutorRunProfileState(androidConfigurationExecutor)
   }
 
-  class AndroidBspRunHandlerProvider : RunHandlerProvider {
-    override val id: String = "AndroidBspRunHandlerProvider"
+  class Provider : RunHandlerProvider {
+    override val id: String = "AndroidBazelRunHandlerProvider"
 
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = AndroidBazelRunHandler(configuration)
 
-    override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
+    override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       BazelFeatureFlags.isAndroidSupportEnabled &&
         targetInfos.singleOrNull()?.let { it.languageIds.includesAndroid() && !it.capabilities.canTest } ?: false
 
-    override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)
+    override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
   }
 }

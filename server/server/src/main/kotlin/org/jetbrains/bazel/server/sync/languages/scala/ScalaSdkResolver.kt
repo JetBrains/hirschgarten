@@ -23,7 +23,7 @@ class ScalaSdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
       "org.scala-lang",
       version,
       binaryVersion,
-      compilerJars.map(bazelPathsResolver::resolveUri),
+      compilerJars.map(bazelPathsResolver::resolve),
     )
   }
 

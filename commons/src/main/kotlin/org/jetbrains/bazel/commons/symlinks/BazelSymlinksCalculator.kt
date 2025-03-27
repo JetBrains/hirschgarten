@@ -24,7 +24,8 @@ object BazelSymlinksCalculator {
           val resolved = file.toRealPath()
           if (resolved == file) return FileVisitResult.CONTINUE
           // See https://bazel.build/remote/output-directories
-          if (!resolved.invariantSeparatorsPathString.contains("execroot/_main")) return FileVisitResult.SKIP_SUBTREE
+          // This used to be "execroot/_main", but apparently one can configure Bazel such that the path is "execroot/<my-project>"
+          if (!resolved.invariantSeparatorsPathString.contains("/execroot/")) return FileVisitResult.SKIP_SUBTREE
           symlinksToExclude.add(file)
           return FileVisitResult.SKIP_SUBTREE
         }

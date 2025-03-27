@@ -11,7 +11,7 @@ intellij_integration_test_suite(
     ],
     test_package_root = "org.jetbrains",
     runtime_deps = [
-        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel",
     ],
     deps = [
         "//plugin-bazel/src:test_fixtures",

@@ -8,14 +8,10 @@ import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
-import org.jetbrains.bsp.protocol.DidChangeBuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.LogMessageParams
-import org.jetbrains.bsp.protocol.PrintParams
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
-import org.jetbrains.bsp.protocol.ShowMessageParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
-import org.jetbrains.bsp.protocol.TaskProgressParams
 import org.jetbrains.bsp.protocol.TaskStartParams
 
 const val IMPORT_SUBTASK_ID: String = "import-subtask-id"
@@ -28,17 +24,6 @@ class BazelClient(
   private val log = logger<BazelClient>()
 
   private val bazelLogger = bazelLogger<BazelClient>()
-
-  override fun onBuildShowMessage(params: ShowMessageParams) {
-    log.debug("Got show message: $params")
-
-    val originId = params.originId
-    val message = params.message
-
-    BazelTaskEventsService.getInstance(project).withListener(originId) {
-      onShowMessage(message)
-    }
-  }
 
   override fun onBuildLogMessage(params: LogMessageParams) {
     log.debug("Got log message: $params")
@@ -62,21 +47,12 @@ class BazelClient(
 
     log.debug("Got task start: $params")
     val originId = params.originId
-    val maybeParent = params.taskId.parents?.firstOrNull()
+    val maybeParent = params.taskId.parents.firstOrNull()
+
+    val message = params.message ?: return
 
     BazelTaskEventsService.getInstance(project).withListener(originId) {
-      onTaskStart(taskId, maybeParent, params.message.orEmpty(), params.data)
-    }
-  }
-
-  override fun onBuildTaskProgress(params: TaskProgressParams) {
-    log.debug("Got task progress: $params")
-
-    val taskId = params.taskId.id
-    val originId = params.originId
-
-    BazelTaskEventsService.getInstance(project).withListener(originId) {
-      onTaskProgress(taskId, params.message.orEmpty(), null)
+      onTaskStart(taskId, maybeParent, message, params.data)
     }
   }
 
@@ -88,30 +64,10 @@ class BazelClient(
 
     val status = params.status
 
-    BazelTaskEventsService.getInstance(project).withListener(originId) {
-      onTaskFinish(taskId, maybeParent, params.message.orEmpty(), status, params.data)
-    }
-  }
-
-  override fun onRunPrintStdout(params: PrintParams) {
-    log.debug("Got print stdout: $params")
-    val originId = params.originId
-    val taskId = params.task.id
-    val message = params.message
+    val message = params.message ?: return
 
     BazelTaskEventsService.getInstance(project).withListener(originId) {
-      onOutputStream(taskId, message)
-    }
-  }
-
-  override fun onRunPrintStderr(params: PrintParams) {
-    log.debug("Got print stderr: $params")
-    val originId = params.originId
-    val taskId = params.task.id
-    val message = params.message
-
-    BazelTaskEventsService.getInstance(project).withListener(originId) {
-      onErrorStream(taskId, message)
+      onTaskFinish(taskId, maybeParent, message, status, params.data)
     }
   }
 
@@ -123,7 +79,7 @@ class BazelClient(
     }
 
     val originId = params.originId
-    val textDocument = params.textDocument.uri
+    val textDocument = params.textDocument?.path
     val buildTarget = params.buildTarget
 
     BazelTaskEventsService.getInstance(project).withListener(originId) {
@@ -140,9 +96,6 @@ class BazelClient(
     }
   }
 
-  override fun onBuildTargetDidChange(params: DidChangeBuildTarget) {
-  }
-
   private fun addMessageToConsole(originId: String?, message: String) {
     if (originId?.startsWith("build") == true || originId?.startsWith("mobile-install") == true) {
       buildConsole.addMessage(originId, message)
@@ -157,7 +110,7 @@ class BazelClient(
     params.diagnostics.forEach {
       targetConsole.addDiagnosticMessage(
         params.originId ?: PROJECT_SYNC_TASK_ID,
-        params.textDocument.uri,
+        params.textDocument?.path,
         it.range.start.line,
         it.range.start.character,
         it.message,

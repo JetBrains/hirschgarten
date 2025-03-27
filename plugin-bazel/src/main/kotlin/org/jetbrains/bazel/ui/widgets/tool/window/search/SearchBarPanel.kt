@@ -7,7 +7,7 @@ import com.intellij.openapi.observable.properties.AtomicProperty
 import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.fields.ExtendableTextField
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleDocumentListener
@@ -68,7 +68,7 @@ class SearchBarPanel : JPanel(BorderLayout()) {
         valueSetter = { matchCase = it },
         parentComponent = newField,
         tooltip =
-          BspPluginBundle.message(
+          BazelPluginBundle.message(
             "widget.target.search.match.case",
             KeymapUtil.getFirstKeyboardShortcutText(BspShortcuts.matchCase),
           ),
@@ -80,7 +80,7 @@ class SearchBarPanel : JPanel(BorderLayout()) {
         valueGetter = { regexMode },
         valueSetter = { regexMode = it },
         parentComponent = newField,
-        tooltip = BspPluginBundle.message("widget.target.search.regex", KeymapUtil.getFirstKeyboardShortcutText(BspShortcuts.regexMode)),
+        tooltip = BazelPluginBundle.message("widget.target.search.regex", KeymapUtil.getFirstKeyboardShortcutText(BspShortcuts.regexMode)),
       )
     val treeExtension =
       TextComponentExtension.Switch(
@@ -88,17 +88,17 @@ class SearchBarPanel : JPanel(BorderLayout()) {
         valueGetter = { displayAsTree },
         valueSetter = { displayAsTree = it },
         parentComponent = newField,
-        tooltip = BspPluginBundle.message("widget.target.search.display.as.tree"),
+        tooltip = BazelPluginBundle.message("widget.target.search.display.as.tree"),
       )
     val clearExtension =
       TextComponentExtension.Clear(
         isEmpty = { newField.text.isEmpty() },
         clearAction = ::clearQuery,
-        tooltip = BspPluginBundle.message("widget.target.search.clear"),
+        tooltip = BazelPluginBundle.message("widget.target.search.clear"),
       )
     return newField.apply {
       this.emptyText.text =
-        BspPluginBundle.message("widget.target.search.hint", KeymapUtil.getFirstKeyboardShortcutText(CommonShortcuts.getFind()))
+        BazelPluginBundle.message("widget.target.search.hint", KeymapUtil.getFirstKeyboardShortcutText(CommonShortcuts.getFind()))
       addExtension(searchLoadingExtension)
       addExtension(treeExtension)
       addExtension(regexExtension)

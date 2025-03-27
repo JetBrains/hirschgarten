@@ -3,6 +3,7 @@ package org.jetbrains.bazel.server.sync
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.StatusCode
 import java.nio.file.Path
@@ -12,13 +13,14 @@ object InverseSourcesQuery {
     documentRelativePath: Path,
     bazelRunner: BazelRunner,
     bazelInfo: BazelRelease,
+    workspaceContext: WorkspaceContext,
   ): InverseSourcesResult {
     val fileLabel =
-      fileLabel(documentRelativePath, bazelRunner)
+      fileLabel(documentRelativePath, bazelRunner, workspaceContext)
         ?: return InverseSourcesResult(
           emptyList(),
         )
-    val listOfLabels = targetLabels(fileLabel, bazelRunner, bazelInfo)
+    val listOfLabels = targetLabels(fileLabel, bazelRunner, bazelInfo, workspaceContext)
     return InverseSourcesResult(listOfLabels)
   }
 
@@ -29,11 +31,12 @@ object InverseSourcesQuery {
     fileLabel: String,
     bazelRunner: BazelRunner,
     bazelRelease: BazelRelease,
+    workspaceContext: WorkspaceContext,
   ): List<Label> {
     val packageLabel = fileLabel.replace(":.*".toRegex(), ":*")
     val consistentLabelsArg = listOfNotNull(if (bazelRelease.major >= 6) "--consistent_labels" else null) // #bazel5
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(workspaceContext) {
         query {
           options.addAll(consistentLabelsArg)
           options.add("attr('srcs', $fileLabel, $packageLabel)")
@@ -56,8 +59,12 @@ object InverseSourcesQuery {
    * For example when you pass a relative path like "foo/Lib.kt", you will receive "//foo:Lib.kt".
    * Null is returned in case the file does not exist or does not belong to any target's sources list
    */
-  private suspend fun fileLabel(relativePath: Path, bazelRunner: BazelRunner): String? {
-    val command = bazelRunner.buildBazelCommand { fileQuery(relativePath) }
+  private suspend fun fileLabel(
+    relativePath: Path,
+    bazelRunner: BazelRunner,
+    workspaceContext: WorkspaceContext,
+  ): String? {
+    val command = bazelRunner.buildBazelCommand(workspaceContext) { fileQuery(relativePath) }
     val fileLabelResult =
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)

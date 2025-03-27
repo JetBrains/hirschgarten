@@ -22,7 +22,6 @@ data class BazelProjectPropertiesState(
   var rootDirUrl: String? = null,
   var buildToolId: String? = null,
   var defaultJdkName: String? = null,
-  var openedTimesSinceLastStartupResync: Int = 0,
 )
 
 @Service(Service.Level.PROJECT)
@@ -37,19 +36,12 @@ class BazelProjectProperties(private val project: Project) : PersistentStateComp
   var defaultJdkName: String? = null
   var isBrokenBspProject: Boolean = false
 
-  /**
-   * if the opened times since the last startup resync is equal to 1,
-   * it indicates it is the first successful startup project open.
-   */
-  var openedTimesSinceLastStartupResync: Int = 0
-
   override fun getState(): BazelProjectPropertiesState? =
     BazelProjectPropertiesState(
       isInitialized = isInitialized,
       isBazelProject = isBazelProject,
       rootDirUrl = rootDir?.url,
       defaultJdkName = defaultJdkName,
-      openedTimesSinceLastStartupResync = openedTimesSinceLastStartupResync,
     )
 
   override fun loadState(state: BazelProjectPropertiesState) {
@@ -57,7 +49,6 @@ class BazelProjectProperties(private val project: Project) : PersistentStateComp
     isBazelProject = state.isBazelProject
     rootDir = state.rootDirUrl?.let { VirtualFileManager.getInstance().findFileByUrl(it) }
     defaultJdkName = state.defaultJdkName
-    openedTimesSinceLastStartupResync = state.openedTimesSinceLastStartupResync
   }
 
   override fun noStateLoaded() {
@@ -100,12 +91,6 @@ val Project.workspaceModelLoadedFromCache: Boolean
 
 val Project.isBrokenBspProject: Boolean
   get() = bazelProjectProperties.isBrokenBspProject
-
-var Project.openedTimesSinceLastStartupResync: Int
-  get() = bazelProjectProperties.openedTimesSinceLastStartupResync
-  set(value) {
-    bazelProjectProperties.openedTimesSinceLastStartupResync = value
-  }
 
 @PublicApi
 var Project.rootDir: VirtualFile

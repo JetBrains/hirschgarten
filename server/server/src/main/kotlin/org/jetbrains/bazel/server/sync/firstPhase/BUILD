@@ -7,6 +7,7 @@ kt_jvm_library(
     deps = [
         "//protocol",
         "//server/bazelrunner",
+        "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bazel/workspacecontext/provider",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/managers",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/utils",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",

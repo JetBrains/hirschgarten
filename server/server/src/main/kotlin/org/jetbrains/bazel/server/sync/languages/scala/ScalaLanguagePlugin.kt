@@ -9,18 +9,18 @@ import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import org.jetbrains.bsp.protocol.ScalaPlatform
-import java.net.URI
 import java.nio.file.Path
 
 class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
   LanguagePlugin<ScalaModule>() {
   var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
-  var scalaTestJars: Map<Label, Set<URI>> = emptyMap()
+  var scalaTestJars: Map<Label, Set<Path>> = emptyMap()
 
-  override fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>) {
+  override fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
     scalaSdks =
       targets
         .associateBy(
@@ -34,7 +34,7 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
           { it.label() },
           {
             it.scalaTargetInfo.scalatestClasspathList
-              .map(bazelPathsResolver::resolveUri)
+              .map(bazelPathsResolver::resolve)
               .toSet()
           },
         )
@@ -52,7 +52,7 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
     return ScalaModule(sdk, scalacOpts, javaLanguagePlugin.resolveModule(targetInfo))
   }
 
-  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<URI> =
+  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     javaLanguagePlugin.dependencySources(targetInfo, dependencyGraph)
 
   override fun applyModuleData(moduleData: ScalaModule, buildTarget: BuildTarget) {
@@ -63,13 +63,13 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
           version,
           binaryVersion,
           ScalaPlatform.JVM,
-          compilerJars.map { it.toString() }.toList(),
+          compilerJars.toList(),
           jvmBuildTarget = moduleData.javaModule?.let(javaLanguagePlugin::toJvmBuildTarget),
         )
       }
     buildTarget.data = scalaBuildTarget
   }
 
-  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData =
+  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData? =
     JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source, true)
 }

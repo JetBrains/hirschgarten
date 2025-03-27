@@ -3,8 +3,9 @@ package org.jetbrains.bazel.server.sync
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.AspectSyncProject
-import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
@@ -26,12 +27,8 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
-import org.jetbrains.bsp.protocol.ResourcesParams
-import org.jetbrains.bsp.protocol.ResourcesResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
-import org.jetbrains.bsp.protocol.SourcesParams
-import org.jetbrains.bsp.protocol.SourcesResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
@@ -47,13 +44,14 @@ class ProjectSyncService(
   private val firstPhaseTargetToBspMapper: FirstPhaseTargetToBspMapper,
   private val projectProvider: ProjectProvider,
   private val bazelInfo: BazelInfo,
+  private val workspaceContextProvider: WorkspaceContextProvider,
 ) {
-  fun workspaceBuildTargets(build: Boolean): WorkspaceBuildTargetsResult {
+  suspend fun workspaceBuildTargets(build: Boolean): WorkspaceBuildTargetsResult {
     val project = projectProvider.refreshAndGet(build = build)
     return bspMapper.workspaceTargets(project)
   }
 
-  fun workspaceBuildTargetsPartial(targetsToSync: List<Label>): WorkspaceBuildTargetsResult {
+  suspend fun workspaceBuildTargetsPartial(targetsToSync: List<Label>): WorkspaceBuildTargetsResult {
     val project =
       projectProvider.updateAndGet(
         targetsToSync = targetsToSync,
@@ -61,27 +59,27 @@ class ProjectSyncService(
     return bspMapper.workspaceTargets(project)
   }
 
-  fun workspaceBuildFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult {
+  suspend fun workspaceBuildFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult {
     val project = projectProvider.bazelQueryRefreshAndGet(params.originId)
     return firstPhaseTargetToBspMapper.toWorkspaceBuildTargetsResult(project)
   }
 
-  fun workspaceBuildLibraries(): WorkspaceLibrariesResult {
+  suspend fun workspaceBuildLibraries(): WorkspaceLibrariesResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return WorkspaceLibrariesResult(emptyList())
     return bspMapper.workspaceLibraries(project)
   }
 
-  fun workspaceBuildGoLibraries(): WorkspaceGoLibrariesResult {
+  suspend fun workspaceBuildGoLibraries(): WorkspaceGoLibrariesResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return WorkspaceGoLibrariesResult(emptyList())
     return bspMapper.workspaceGoLibraries(project)
   }
 
-  fun workspaceNonModuleTargets(): NonModuleTargetsResult {
+  suspend fun workspaceNonModuleTargets(): NonModuleTargetsResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return NonModuleTargetsResult(emptyList())
     return bspMapper.workspaceNonModuleTargets(project)
   }
 
-  fun workspaceDirectories(): WorkspaceDirectoriesResult {
+  suspend fun workspaceDirectories(): WorkspaceDirectoriesResult {
     val project = projectProvider.get()
     return bspMapper.workspaceDirectories(project)
   }
@@ -93,35 +91,19 @@ class ProjectSyncService(
 //    return bspMapper.workspaceInvalidTargets(project)
   }
 
-  fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult {
+  suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult {
     val project = projectProvider.get()
     return bspMapper.workspaceBazelRepoMapping(project)
   }
 
   fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = WorkspaceBazelBinPathResult(bazelInfo.bazelBin.toString())
 
-  fun buildTargetSources(sourcesParams: SourcesParams): SourcesResult {
-    val project = projectProvider.get()
-    return when (project) {
-      is AspectSyncProject -> bspMapper.sources(project, sourcesParams)
-      is FirstPhaseProject -> firstPhaseTargetToBspMapper.toSourcesResult(project, sourcesParams)
-    }
-  }
-
-  fun buildTargetResources(resourcesParams: ResourcesParams): ResourcesResult {
-    val project = projectProvider.get()
-    return when (project) {
-      is AspectSyncProject -> bspMapper.resources(project, resourcesParams)
-      is FirstPhaseProject -> firstPhaseTargetToBspMapper.toResourcesResult(project, resourcesParams)
-    }
-  }
-
   suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return InverseSourcesResult(emptyList())
     return bspMapper.inverseSources(project, inverseSourcesParams)
   }
 
-  fun buildTargetDependencySources(dependencySourcesParams: DependencySourcesParams): DependencySourcesResult {
+  suspend fun buildTargetDependencySources(dependencySourcesParams: DependencySourcesParams): DependencySourcesResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return DependencySourcesResult(emptyList())
     return bspMapper.dependencySources(project, dependencySourcesParams)
   }
@@ -136,7 +118,7 @@ class ProjectSyncService(
     return bspMapper.jvmTestEnvironment(project, params)
   }
 
-  fun jvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult {
+  suspend fun jvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return JvmBinaryJarsResult(emptyList())
     return bspMapper.jvmBinaryJars(project, params)
   }
@@ -146,12 +128,12 @@ class ProjectSyncService(
     return bspMapper.buildTargetJavacOptions(project, params)
   }
 
-  fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult {
+  suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return CppOptionsResult(emptyList())
     return bspMapper.buildTargetCppOptions(project, params)
   }
 
-  fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult {
+  suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return PythonOptionsResult(emptyList())
     return bspMapper.buildTargetPythonOptions(project, params)
   }
@@ -166,4 +148,7 @@ class ProjectSyncService(
 
   fun resolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult =
     bspMapper.resolveRemoteToLocal(params)
+
+  fun workspaceContext(): WorkspaceContext =
+    projectProvider.getIfLoaded()?.workspaceContext ?: workspaceContextProvider.readWorkspaceContext()
 }
