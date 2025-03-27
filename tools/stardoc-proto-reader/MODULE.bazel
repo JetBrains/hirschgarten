@@ -1,0 +1,24 @@
+bazel_dep(name = "rules_java", version = "8.9.0")
+bazel_dep(name = "rules_jvm_external", version = "6.7")
+bazel_dep(name = "rules_kotlin", version = "2.1.0")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    artifacts = [
+    ],
+    fail_if_repin_required = True,
+    lock_file = "//:maven_install.json",
+)
+
+use_repo(maven, "maven")
+
+bazel_dep(name = "stardoc", version = "0.8.0")
+bazel_dep(name = "protobuf", version = "29.3")
+
+bazel_dep(name = "rules_apple", version = "3.19.1")
+
+# Needed because googleapis transitively pulls in a broken version
+single_version_override(
+    module_name = "rules_apple",
+    version = "3.17.1",
+)
