@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.flow.sync.BazelBinPathService
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.runfiles.RunfilesUtils
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -20,11 +21,10 @@ object PythonDebugUtils {
     file: String,
   ): String {
     val bazelBin = getBazelBinPath(project)
-    val targetPackage = target.packagePath.pathSegments.toTypedArray()
     val filePath = Paths.get(file)
     val possibleRunFileLocations =
       guessPossibleWorkspaceNames(bazelBin)
-        .map { Paths.get(bazelBin, *targetPackage, "${target.targetName}.runfiles", it) }
+        .map { RunfilesUtils.calculateTargetRunfiles(bazelBin, target).resolve(it) }
 
     for (runFileLocation in possibleRunFileLocations) {
       if (filePath.startsWith(runFileLocation)) {
@@ -38,6 +38,8 @@ object PythonDebugUtils {
 
   private fun getBazelBinPath(project: Project): String =
     BazelBinPathService.getInstance(project).bazelBinPath ?: error(BazelPluginBundle.message("bazel.bin.not.found"))
+
+  // TODO: BAZEL-1836
 
   /**
    * This function tries to guess the workspace name (one defined in the `WORKSPACE` file if one exists).

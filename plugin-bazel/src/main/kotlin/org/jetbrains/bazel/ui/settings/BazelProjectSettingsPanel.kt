@@ -37,6 +37,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
     showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
 
+    // TODO: BAZEL-1837
     // experimental features
     useIntellijTestRunnerCheckBox = initUseIntellijTestRunnerCheckBoxBox()
     enableLocalJvmActionsCheckBox = initEnableLocalJvmActionsCheckBox()
@@ -176,9 +177,10 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     val keys =
       listOf(
         "project.settings.plugin.enable.local.jvm.actions.checkbox.text",
-        "project.settings.plugin.title",
         "project.settings.plugin.hotswap.enabled.checkbox.text",
         "project.settings.plugin.show.excluded.directories.as.separate.node.checkbox.text",
+        "project.settings.plugin.title",
+        "project.settings.plugin.use.intellij.test.runner.checkbox.text",
       )
   }
 }

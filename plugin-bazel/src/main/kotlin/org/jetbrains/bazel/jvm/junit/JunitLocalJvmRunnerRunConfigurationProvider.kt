@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.jvm.junit
 
 import com.intellij.execution.PsiLocation
+import com.intellij.execution.ShortenCommandLine
 import com.intellij.execution.configurations.ModuleBasedConfigurationOptions
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.junit.JUnitConfiguration
@@ -10,9 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
-import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.flow.sync.BazelBinPathService
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.runfiles.RunfilesUtils
 import org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
@@ -21,8 +20,6 @@ import org.jetbrains.kotlin.asJava.toLightClass
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 import java.net.URI
-import java.nio.file.Path
-import java.nio.file.Paths
 
 class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurationProvider {
   override fun provideRunConfiguration(
@@ -46,28 +43,17 @@ class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurati
     environment: JvmEnvironmentItem,
   ): JUnitConfiguration =
     JUnitConfiguration(configurationName, project).apply {
-      setModule(module)
       setClassOrMethodConfiguration(callerPsiElement)
       classpathModifications.addAll(
         environment.classpath.map {
           ModuleBasedConfigurationOptions.ClasspathModification(URI.create(it).path, false)
         },
       )
+      setModule(module)
       workingDirectory = environment.workingDirectory
-      vmParameters = environment.jvmOptions.joinToString(" ")
-      envs =
-        environment.environmentVariables +
-        (
-          "TEST_SRCDIR" to
-            Paths
-              .get(
-                PythonDebugUtils.getBazelBinPath(project),
-                *environment.target.packagePath.pathSegments
-                  .toTypedArray(),
-                "${environment.target.targetName}.runfiles",
-              ).toString()
-        ) +
-        ("TEST_WORKSPACE" to "_main")
+      vmParameters += environment.jvmOptions.joinToString(" ", prefix = " ")
+      envs = environment.environmentVariables + defineDefaultBazelEnvs(project, environment)
+      shortenCommandLine = ShortenCommandLine.MANIFEST
     }
 
   private fun JUnitConfiguration.setClassOrMethodConfiguration(psiElement: PsiElement) {
@@ -87,59 +73,11 @@ class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurati
     parent as? PsiClass ?: runReadAction { getParentOfType<KtClass>(false)?.toLightClass() }
 
   private fun PsiElement.getPsiMethodOrNull(): PsiMethod? = parent as? PsiMethod ?: runReadAction { parent.getRepresentativeLightMethod() }
-}
 
-object PythonDebugUtils {
-  fun guessRunScriptName(project: Project, target: Label): Path {
-    val bazelBinPath = getBazelBinPath(project)
-    val targetPackage = target.packagePath.pathSegments.toTypedArray()
-    return Paths.get(bazelBinPath, *targetPackage, target.targetName)
-  }
-
-  fun findRealSourceFile(
-    project: Project,
-    target: Label,
-    file: String,
-  ): String {
-    val bazelBin = getBazelBinPath(project)
-    val targetPackage = target.packagePath.pathSegments.toTypedArray()
-    val filePath = Paths.get(file)
-    val possibleRunFileLocations =
-      guessPossibleWorkspaceNames(bazelBin)
-        .map { Paths.get(bazelBin, *targetPackage, "${target.targetName}.runfiles", it) }
-
-    for (runFileLocation in possibleRunFileLocations) {
-      if (filePath.startsWith(runFileLocation)) {
-        val basePath = project.basePath ?: error(BazelPluginBundle.message("project.base.path.not.found"))
-        val fileRelativePath = filePath.subpath(runFileLocation.nameCount, filePath.nameCount).toString()
-        return Paths.get(basePath, fileRelativePath).toString()
-      }
-    }
-    return file // none of the runfile locations worked, it's probably an external source (that is expected, it's not a failure)
-  }
-
-  fun getBazelBinPath(project: Project): String =
-    BazelBinPathService.getInstance(project).bazelBinPath ?: error(BazelPluginBundle.message("bazel.bin.not.found"))
-
-  /**
-   * This function tries to guess the workspace name (one defined in the `WORKSPACE` file if one exists).
-   * Bazel runfile path contains this name in it,
-   * as mentioned in [Bazel documentation](https://bazel.build/rules/lib/globals/workspace#workspace):
-   *
-   * 1. `"_main"` is the workspace name in all projects with bzlmod enabled
-   * (as per [WorkspaceNameFunction in Bazel code](https://github.com/bazelbuild/bazel/blob/3dcf191b86975577b1643b572d24b0ecebf5bef7/src/main/java/com/google/devtools/build/lib/skyframe/WorkspaceNameFunction.java#L50))
-   * 2. `bazel-out` path usually contains the workspace name
-   */
-  private fun guessPossibleWorkspaceNames(bazelBinPath: String): Sequence<String> =
-    sequence {
-      yield("_main") // lazy sequence is being used, so in many cases nothing else will be calculated
-      val fromBazelBin =
-        "execroot.(?<workspace>.*).bazel-out"
-          .toRegex()
-          .find(bazelBinPath)
-          ?.groups
-          ?.get(1)
-          ?.value
-      fromBazelBin?.let { yield(it) }
-    }
+  private fun defineDefaultBazelEnvs(project: Project, environment: JvmEnvironmentItem): Map<String, String> =
+    mapOf(
+      "TEST_SRCDIR" to RunfilesUtils.calculateTargetRunfiles(project, environment.target).toString(),
+      // TODO: BAZEL-1836
+      ("TEST_WORKSPACE" to "_main"),
+    )
 }
