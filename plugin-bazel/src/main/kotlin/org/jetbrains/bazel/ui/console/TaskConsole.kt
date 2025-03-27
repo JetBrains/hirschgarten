@@ -19,13 +19,13 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.compiler.CompilerManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
+import org.jetbrains.bazel.sync.status.BuildStatusService
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.ui.console.ids.BASE_PROJECT_SYNC_SUBTASK_ID
@@ -453,6 +453,4 @@ class BuildTaskConsole(
     }
 }
 
-fun Project.isBuildInProgress() =
-  CompilerManager.getInstance(this).isCompilationActive ||
-    ConsoleService.getInstance(this).buildConsole.hasTasksInProgress()
+fun Project.isBuildInProgress() = BuildStatusService.getInstance(this).isBuildInProgress
