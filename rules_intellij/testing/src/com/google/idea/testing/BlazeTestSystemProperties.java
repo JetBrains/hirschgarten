@@ -1,7 +1,4 @@
 /*
- * This file is based on Bazel plugin for IntelliJ by The Bazel Authors, licensed under Apache-2.0;
- * It was modified by JetBrains s.r.o. and contributors
- *
  * Copyright 2016 The Bazel Authors. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,22 +16,19 @@
 package com.google.idea.testing;
 
 import com.google.common.io.Files;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.util.BuildNumber;
 import com.intellij.util.PlatformUtils;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 /**
  * Test utilities specific to running IntelliJ integration tests in a blaze/bazel environment. To be
  * used with IntellijIntegrationSuite runner.
  */
-public class BlazeTestSystemProperties {
+class BlazeTestSystemProperties {
 
   private BlazeTestSystemProperties() {}
 
@@ -42,7 +36,7 @@ public class BlazeTestSystemProperties {
   private static final String RUNFILES_PATH = TestUtils.getUserValue("TEST_SRCDIR");
 
   /** Sets up the necessary system properties for running IntelliJ tests via blaze/bazel. */
-  public static void configureSystemProperties(Disposable testSuiteParentDisposable) {
+  public static void configureSystemProperties() {
     File sandbox = new File(TestUtils.getTmpDirFile(), "_intellij_test_sandbox");
 
     setSandboxPath("idea.home.path", new File(sandbox, "home"));
@@ -75,12 +69,9 @@ public class BlazeTestSystemProperties {
     System.setProperty("user.home", new File(sandbox, "userhome").getAbsolutePath());
 
     // Tests fail if they access files outside of the project roots and other system directories.
-    // When the class path contains jars which contain `kotlin` packages the
-    // `BuiltinsVirtualFileProviderBaseImpl`
+    // When the class path contains jars which contain `kotlin` packages the `BuiltinsVirtualFileProviderBaseImpl`
     // also access jars from the class path. Therefore, this checks needs either to be disabled or
     // the specific jars need to be added to the `VfsRootAccess` allow list.
-    // Also, see `com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess#assertAccessInTests` it's known
-    // issue that tests are starting to fail randomly because of the logic there.
     System.setProperty("NO_FS_ROOTS_ACCESS_CHECK", "true");
 
     setIfEmpty("idea.force.use.core.classloader", "true");
@@ -96,10 +87,7 @@ public class BlazeTestSystemProperties {
     } else if (buildNumber.startsWith("CL")) { // CLion
       return "CLion";
     } else {
-      // TODO fix
-      //      throw new RuntimeException("Unable to determine platform prefix for build: " +
-      // buildNumber);
-      return "Idea";
+      throw new RuntimeException("Unable to determine platform prefix for build: " + buildNumber);
     }
   }
 
@@ -153,19 +141,6 @@ public class BlazeTestSystemProperties {
       }
     }
     return null;
-  }
-
-  private static void addArchiveFile(URL url, List<String> files) {
-    if ("jar".equals(url.getProtocol())) {
-      String path = url.getPath();
-      int index = path.indexOf("!/");
-      if (index > 0) {
-        String jarPath = path.substring(0, index);
-        if (jarPath.startsWith("file:")) {
-          files.add(jarPath.substring(5));
-        }
-      }
-    }
   }
 
   private static void setSandboxPath(String property, File path) {

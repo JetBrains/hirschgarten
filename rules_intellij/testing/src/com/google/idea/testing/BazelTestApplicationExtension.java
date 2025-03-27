@@ -16,10 +16,7 @@ public class BazelTestApplicationExtension implements BeforeAllCallback, AfterEa
   @Override
   public void beforeAll(ExtensionContext extensionContext) {
     testApplicationExtension.beforeAll(extensionContext);
-    // Application is a good disposable for tests:
-    // IntelliJ extension will check are there any leaks after disposing application
-    // so it's safe for us to use it as a disposable parent
-    BlazeTestSystemProperties.configureSystemProperties(ApplicationManager.getApplication());
+    BlazeTestSystemProperties.configureSystemProperties();
   }
 
   @Override

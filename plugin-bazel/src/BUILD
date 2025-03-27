@@ -24,10 +24,12 @@ kt_jvm_library(
     testonly = 1,
     srcs = glob([
         "testFixtures/kotlin/**/*.kt",
+        "testFixtures/kotlin/**/*.java",
     ]),
     visibility = ["//visibility:public"],
     deps = [
         ":plugin-bazel-lib",
+        "@bazel_tools//tools/java/runfiles",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
         "//protocol",
         "//rules_intellij/testing:lib",
@@ -36,6 +38,7 @@ kt_jvm_library(
         "@maven//:io_kotest_kotest_assertions_shared_jvm",
         "@maven//:io_kotest_kotest_common_jvm",
         "@maven//:org_junit_jupiter_junit_jupiter",
+        "@maven//:junit_junit",
         "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_test",
     ],
 )

@@ -33,6 +33,7 @@ java_library(
         "@maven//:org_junit_platform_junit_platform_suite_api",
         "@maven//:org_junit_platform_junit_platform_suite_engine",
         "@maven//:org_junit_vintage_junit_vintage_engine",
+        "@maven//:junit_junit",
     ],
 )
 
