@@ -34,7 +34,7 @@ class BazelqueryCommonOptions {
       values = listOf("conservative", "precise", "off")
     ),
     BazelqueryOption(
-      name = "nonodep_deps",
+      name = "nodep_deps",
     ),
     BazelqueryOption(
       name = "consistent_labels",
@@ -47,11 +47,17 @@ class BazelqueryCommonOptions {
       values = listOf("auto", "no", "deps", "full")
     ),
     BazelqueryOption(
-      name = "noimplicit_deps",
+      name = "implicit_deps",
     ),
     BazelqueryOption(
-      name = "nofetch",
-    )
+      name = "fetch",
+    ),
+    BazelqueryOption(
+      name = "experimental_spawn_scheduler"
+    ),
+    BazelqueryOption(
+      name = "host_action_env"
+    ),
   )
 
   fun byName(name: String): BazelqueryOption? = knownFlags.firstOrNull { it.name == name }
