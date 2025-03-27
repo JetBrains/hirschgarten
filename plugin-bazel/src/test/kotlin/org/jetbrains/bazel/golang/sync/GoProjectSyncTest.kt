@@ -29,8 +29,8 @@ import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.net.URI
-import kotlin.io.path.toPath
+import java.nio.file.Path
+import kotlin.io.path.Path
 
 private data class GoTestSet(
   val buildTargets: WorkspaceBuildTargetsResult,
@@ -58,7 +58,7 @@ private data class GeneratedTargetInfo(
   val targetId: Label,
   val type: String,
   val dependencies: List<Label> = listOf(),
-  val resourcesItems: List<String> = listOf(),
+  val resourcesItems: List<Path> = listOf(),
   val importPath: String,
 )
 
@@ -167,7 +167,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     val buildTargets = WorkspaceBuildTargetsResult(targets, false)
     val virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
 
-    val expectedRoot = URI.create("file:///targets_base_dir").toPath().toVirtualFileUrl(virtualFileUrlManager)
+    val expectedRoot = Path("/targets_base_dir").toVirtualFileUrl(virtualFileUrlManager)
     val expectedVgoStandaloneEntities = targetInfos.map { generateVgoStandaloneResult(it, expectedRoot, nameProvider) }
     val expectedVgoDependencyEntities =
       listOf(
@@ -185,14 +185,14 @@ class GoProjectSyncTest : MockProjectBaseTest() {
       listOf("go"),
       info.dependencies,
       BuildTargetCapabilities(),
-      baseDirectory = "file:///targets_base_dir",
+      baseDirectory = Path("/targets_base_dir"),
       data =
         GoBuildTarget(
-          sdkHomePath = URI("file:///go_sdk/"),
+          sdkHomePath = Path("/go_sdk/"),
           importPath = info.importPath,
           generatedLibraries = emptyList(),
         ),
-      sources = listOf(SourceItem("file:///root/${info.importPath}", false)),
+      sources = listOf(SourceItem(Path("/root/${info.importPath}"), false)),
       resources = info.resourcesItems,
     )
 

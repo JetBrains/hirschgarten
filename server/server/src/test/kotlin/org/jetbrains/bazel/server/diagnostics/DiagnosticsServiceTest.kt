@@ -8,6 +8,7 @@ import org.jetbrains.bsp.protocol.Range
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
+import kotlin.io.path.Path
 import org.jetbrains.bsp.protocol.Diagnostic as BspDiagnostic
 import org.jetbrains.bsp.protocol.Position as BspPosition
 
@@ -34,7 +35,7 @@ class DiagnosticsServiceTest {
     val expected =
       listOf(
         publishDiagnosticsParams(
-          TextDocumentIdentifier("file:///user/workspace/path/to/package/BUILD"),
+          TextDocumentIdentifier(Path("/user/workspace/path/to/package/BUILD")),
           Label.parse("@//path/to/package:test"),
           errorDiagnostic(
             Position(12, 37),
@@ -83,7 +84,7 @@ class DiagnosticsServiceTest {
     val expected =
       listOf(
         publishDiagnosticsParams(
-          TextDocumentIdentifier("file:///user/workspace/path/to/package/Test.scala"),
+          TextDocumentIdentifier(Path("/user/workspace/path/to/package/Test.scala")),
           Label.parse("@//path/to/package:test"),
           errorDiagnostic(
             Position(3, 18),
@@ -145,7 +146,7 @@ class DiagnosticsServiceTest {
     val expected =
       listOf(
         publishDiagnosticsParams(
-          TextDocumentIdentifier("file:///user/workspace/path/to/package/Test1.scala"),
+          TextDocumentIdentifier(Path("/user/workspace/path/to/package/Test1.scala")),
           Label.parse("@//path/to/package:test"),
           errorDiagnostic(
             Position(21, 21),
@@ -158,7 +159,7 @@ class DiagnosticsServiceTest {
           ),
         ),
         publishDiagnosticsParams(
-          TextDocumentIdentifier("file:///user/workspace/path/to/package/Test2.scala"),
+          TextDocumentIdentifier(Path("/user/workspace/path/to/package/Test2.scala")),
           Label.parse("@//path/to/package:test"),
           errorDiagnostic(
             Position(37, 18),
@@ -218,7 +219,7 @@ class DiagnosticsServiceTest {
     val expected =
       listOf(
         publishDiagnosticsParams(
-          TextDocumentIdentifier("file:///user/workspace/path/to/package/Test.scala"),
+          TextDocumentIdentifier(Path("/user/workspace/path/to/package/Test.scala")),
           Label.parse("@//path/to/package:test"),
           errorDiagnostic(
             Position(21, 21),
@@ -289,7 +290,7 @@ class DiagnosticsServiceTest {
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier(
-            "file:///user/workspace/server/src/test/java/org/jetbrains/bazel/server/diagnostics/DiagnosticsServiceTest.kt",
+            Path("/user/workspace/server/src/test/java/org/jetbrains/bazel/server/diagnostics/DiagnosticsServiceTest.kt"),
           ),
           Label.parse(label.toString()),
           errorDiagnostic(
@@ -344,7 +345,7 @@ class DiagnosticsServiceTest {
     val expected =
       listOf(
         publishDiagnosticsParams(
-          TextDocumentIdentifier("file:///user/workspace/project/src/main/scala/com/example/project/File1.scala"),
+          TextDocumentIdentifier(Path("/user/workspace/project/src/main/scala/com/example/project/File1.scala")),
           Label.parse(label.toString()),
           errorDiagnostic(
             Position(11, 18),
@@ -364,7 +365,7 @@ class DiagnosticsServiceTest {
           ),
         ),
         publishDiagnosticsParams(
-          TextDocumentIdentifier("file:///user/workspace/project/src/main/scala/com/example/project/File2.scala"),
+          TextDocumentIdentifier(Path("/user/workspace/project/src/main/scala/com/example/project/File2.scala")),
           Label.parse(label.toString()),
           warningDiagnostic(
             Position(26, 24),
@@ -416,7 +417,7 @@ class DiagnosticsServiceTest {
     val expected =
       listOf(
         publishDiagnosticsParams(
-          TextDocumentIdentifier("file:///user/workspace/Hello.scala"),
+          TextDocumentIdentifier(Path("/user/workspace/Hello.scala")),
           Label.parse(label.toString()),
           errorDiagnostic(
             Position(19, 20),
@@ -470,7 +471,7 @@ class DiagnosticsServiceTest {
     val expected =
       listOf(
         publishDiagnosticsParams(
-          TextDocumentIdentifier("file:///user/workspace/Hello.scala"),
+          TextDocumentIdentifier(Path("/user/workspace/Hello.scala")),
           Label.parse(label.toString()),
           errorDiagnostic(
             Position(18, 20),
@@ -524,7 +525,7 @@ class DiagnosticsServiceTest {
     val expected =
       listOf(
         publishDiagnosticsParams(
-          TextDocumentIdentifier("file:///user/workspace/drd/messaging/src/main/scala/bots/Bot.scala"),
+          TextDocumentIdentifier(Path("/user/workspace/drd/messaging/src/main/scala/bots/Bot.scala")),
           Label.parse(label.toString()),
           errorDiagnostic(
             Position(143, 26),
@@ -569,7 +570,7 @@ class DiagnosticsServiceTest {
     val expected =
       listOf(
         publishDiagnosticsParams(
-          TextDocumentIdentifier("file:///user/workspace/path/to/file.scala"),
+          TextDocumentIdentifier(Path("/user/workspace/path/to/file.scala")),
           Label.parse(label.toString()),
           errorDiagnostic(
             Position(27, 10),
@@ -616,7 +617,7 @@ class DiagnosticsServiceTest {
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier(
-            "file:///user/workspace/intellij/release-tool/src/main/scala/com/intellij/releasetool/PluginResolver.scala",
+            Path("/user/workspace/intellij/release-tool/src/main/scala/com/intellij/releasetool/PluginResolver.scala"),
           ),
           Label.parse(label.toString()),
           warningDiagnostic(
@@ -630,7 +631,7 @@ class DiagnosticsServiceTest {
         ),
         publishDiagnosticsParams(
           TextDocumentIdentifier(
-            "file:///user/workspace/intellij/release-tool/src/main/scala/com/intellij/releasetool/Json.scala",
+            Path("/user/workspace/intellij/release-tool/src/main/scala/com/intellij/releasetool/Json.scala"),
           ),
           Label.parse(label.toString()),
           warningDiagnostic(
@@ -675,7 +676,7 @@ class DiagnosticsServiceTest {
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier(
-            "file:///user/workspace/server/src/main/java/org/jetbrains/bazel/server/sync/ProjectResolver.java",
+            Path("/user/workspace/server/src/main/java/org/jetbrains/bazel/server/sync/ProjectResolver.java"),
           ),
           Label.parse(label.toString()),
           errorDiagnostic(
@@ -731,7 +732,7 @@ class DiagnosticsServiceTest {
     val expected =
       listOf(
         publishDiagnosticsParams(
-          TextDocumentIdentifier("file:///user/workspace/server/src/main/java/org/jetbrains/bazel/server/bep/BepServer.java"),
+          TextDocumentIdentifier(Path("/user/workspace/server/src/main/java/org/jetbrains/bazel/server/bep/BepServer.java")),
           Label.parse(label.toString()),
           errorDiagnostic(
             Position(55, 34),

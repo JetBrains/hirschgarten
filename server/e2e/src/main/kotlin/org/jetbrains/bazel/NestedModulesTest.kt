@@ -11,10 +11,8 @@ import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
-import java.net.URI
 import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
-import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.seconds
 
 object NestedModulesTest : BazelBspTestBaseScenario() {
@@ -64,7 +62,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
 
         targetsResult.targets
           .flatMap { it.sources }
-          .map { Path(it.uri.removePrefix("file:")).relativeTo(Path(workspaceDir)).toString() } shouldContainExactlyInAnyOrder
+          .map { it.path.relativeTo(Path(workspaceDir)).toString() } shouldContainExactlyInAnyOrder
           listOf(
             "BinOuter.java",
             "LibOuter.java",
@@ -94,18 +92,19 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
 
         val canonicalMapping = repoMapping.canonicalRepoNameToPath
         canonicalMapping.keys shouldBe repoMapping.apparentRepoNameToCanonicalName.values.toSet()
-        canonicalMapping[""] shouldBe "file://$workspaceDir/"
+        canonicalMapping[""] shouldBe Path("$workspaceDir/")
         canonicalMapping
           .getValue(
             "+_repo_rules+bazelbsp_aspect",
-          ).shouldEndWith("/external/+_repo_rules+bazelbsp_aspect/")
-        canonicalMapping.getValue("local_config_platform").shouldEndWith("/external/local_config_platform/")
-        canonicalMapping.getValue("rules_java+").shouldEndWith("/external/rules_java+/")
-        canonicalMapping["inner+"] shouldBe "file://$workspaceDir/inner/"
-        canonicalMapping["bazel_tools"] shouldEndWith ("/external/bazel_tools/")
+          ).toString()
+          .shouldEndWith("/external/+_repo_rules+bazelbsp_aspect")
+        canonicalMapping.getValue("local_config_platform").toString().shouldEndWith("/external/local_config_platform")
+        canonicalMapping.getValue("rules_java+").toString().shouldEndWith("/external/rules_java+")
+        canonicalMapping["inner+"] shouldBe Path("$workspaceDir/inner/")
+        canonicalMapping["bazel_tools"].toString() shouldEndWith ("/external/bazel_tools")
 
         for (path in canonicalMapping.values) {
-          URI.create(path).toPath().shouldExist()
+          path.shouldExist()
         }
       }
     }

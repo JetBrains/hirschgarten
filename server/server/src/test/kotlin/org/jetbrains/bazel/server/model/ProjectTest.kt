@@ -28,7 +28,6 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.net.URI
 import kotlin.io.path.Path
 
 @DisplayName("Project tests")
@@ -41,7 +40,7 @@ class ProjectTest {
       // given
       val project1 =
         AspectSyncProject(
-          workspaceRoot = URI.create("file:///path/to/workspace"),
+          workspaceRoot = Path("/path/to/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
@@ -53,7 +52,7 @@ class ProjectTest {
 
       val project2 =
         AspectSyncProject(
-          workspaceRoot = URI.create("file:///path/to/another/workspace"),
+          workspaceRoot = Path("/path/to/another/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
@@ -65,7 +64,7 @@ class ProjectTest {
 
       // then
       shouldThrowWithMessage<IllegalStateException>(
-        "Cannot add projects with different workspace roots: file:///path/to/workspace and file:///path/to/another/workspace",
+        "Cannot add projects with different workspace roots: /path/to/workspace and /path/to/another/workspace",
       ) {
         project1 + project2
       }
@@ -76,7 +75,7 @@ class ProjectTest {
       // given
       val project1 =
         AspectSyncProject(
-          workspaceRoot = URI.create("file:///path/to/workspace"),
+          workspaceRoot = Path("/path/to/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
@@ -88,7 +87,7 @@ class ProjectTest {
 
       val project2 =
         AspectSyncProject(
-          workspaceRoot = URI.create("file:///path/to/workspace"),
+          workspaceRoot = Path("/path/to/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
@@ -111,7 +110,7 @@ class ProjectTest {
       // given
       val project1 =
         AspectSyncProject(
-          workspaceRoot = URI.create("file:///path/to/workspace"),
+          workspaceRoot = Path("/path/to/workspace"),
           modules = listOf("//project1:module1".toMockModule(), "//project1:module2".toMockModule(), "//module".toMockModule()),
           libraries =
             mapOf(
@@ -131,7 +130,7 @@ class ProjectTest {
 
       val project2 =
         AspectSyncProject(
-          workspaceRoot = URI.create("file:///path/to/workspace"),
+          workspaceRoot = Path("/path/to/workspace"),
           modules =
             listOf(
               "//project2:module1".toMockModule(),
@@ -158,7 +157,7 @@ class ProjectTest {
       // then
       val expectedNewProject =
         AspectSyncProject(
-          workspaceRoot = URI.create("file:///path/to/workspace"),
+          workspaceRoot = Path("/path/to/workspace"),
           modules =
             listOf(
               "//project1:module1".toMockModule(),
@@ -211,7 +210,7 @@ class ProjectTest {
       directDependencies = emptyList(),
       languages = emptySet(),
       tags = emptySet(),
-      baseDirectory = URI.create("file:///path/to/$this"),
+      baseDirectory = Path("/path/to/$this"),
       sourceSet = SourceSet(emptySet(), emptySet()),
       resources = emptySet(),
       sourceDependencies = emptySet(),
@@ -234,7 +233,7 @@ class ProjectTest {
       label = this.toLabel(),
       languages = emptySet(),
       tags = emptySet(),
-      baseDirectory = URI.create("file:///path/to/$this"),
+      baseDirectory = Path("/path/to/$this"),
     )
 
   private fun String.toLabel(): Label = Label.parse(this)

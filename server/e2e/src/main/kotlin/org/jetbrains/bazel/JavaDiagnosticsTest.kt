@@ -9,6 +9,7 @@ import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.seconds
 
 object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
@@ -27,7 +28,7 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
       `building two targets gives correct diagnostics`(),
     )
 
-  val expectedUnknownFileUri = "file://$workspaceDir/%3Cunknown%3E"
+  val expectedUnknownFileUri = Path("$workspaceDir/%3Cunknown%3E")
   val expectedDeprecatedWarningMessage =
     "[removal] deprecatedMethod() in Library has been deprecated and marked for removal\n    Library.deprecatedMethod();\n           ^"
   val expectedJavacWarningMessage =
@@ -47,7 +48,7 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         )
       val transformedParams = testClient.applyJsonTransform(params)
 
-      val expectedDeprecatedWarningFileUri = "file://$workspaceDir/DeprecatedWarning.java"
+      val expectedDeprecatedWarningFileUri = Path("$workspaceDir/DeprecatedWarning.java")
       testClient.test(60.seconds) { session ->
         session.client.clearDiagnostics()
         val result = session.server.buildTargetCompile(transformedParams)
@@ -56,7 +57,7 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         assertEquals(1, session.client.publishDiagnosticsNotifications.size)
         val deprecatedWarning =
           session.client.publishDiagnosticsNotifications.find {
-            it.textDocument.uri == expectedDeprecatedWarningFileUri
+            it.textDocument?.path == expectedDeprecatedWarningFileUri
           }!!
 
         assertEquals(1, deprecatedWarning.diagnostics.size)
@@ -111,8 +112,8 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         )
       val transformedParams = testClient.applyJsonTransform(params)
 
-      val expectedNoSuchMethodErrorFileUri = "file://$workspaceDir/NoSuchMethodError.java"
-      val expectedWarningAndErrorFileUri = "file://$workspaceDir/WarningAndError.java"
+      val expectedNoSuchMethodErrorFileUri = Path("$workspaceDir/NoSuchMethodError.java")
+      val expectedWarningAndErrorFileUri = Path("$workspaceDir/WarningAndError.java")
 
       testClient.test(60.seconds) { session ->
         session.client.clearDiagnostics()
@@ -122,17 +123,17 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         assertEquals(2, session.client.publishDiagnosticsNotifications.size)
         val noSuchMethodError =
           session.client.publishDiagnosticsNotifications.find {
-            it.textDocument.uri == expectedNoSuchMethodErrorFileUri
+            it.textDocument?.path == expectedNoSuchMethodErrorFileUri
           }!!
         val warningAndError =
           session.client.publishDiagnosticsNotifications.find {
-            it.textDocument.uri == expectedWarningAndErrorFileUri
+            it.textDocument?.path == expectedWarningAndErrorFileUri
           }!!
 
         assertEquals(true, noSuchMethodError.reset)
         assertEquals(params.originId, noSuchMethodError.originId)
         assertEquals(1, noSuchMethodError.diagnostics.size)
-        assertEquals(expectedNoSuchMethodErrorFileUri, noSuchMethodError.textDocument.uri)
+        assertEquals(expectedNoSuchMethodErrorFileUri, noSuchMethodError.textDocument?.path)
         assertEquals(
           "cannot find symbol\n    noSuchMethod();\n    ^\n  symbol:   method noSuchMethod()\n  location: class NoSuchMethodError",
           noSuchMethodError.diagnostics[0].message,
@@ -170,7 +171,7 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         assertEquals(true, warningAndError.reset)
         assertEquals(params.originId, warningAndError.originId)
         assertEquals(2, warningAndError.diagnostics.size)
-        assertEquals(expectedWarningAndErrorFileUri, warningAndError.textDocument.uri)
+        assertEquals(expectedWarningAndErrorFileUri, warningAndError.textDocument?.path)
         val errorDiagnostic = warningAndError.diagnostics.find { it.severity == DiagnosticSeverity.ERROR }!!
         assertEquals(
           "cannot find symbol\n    noSuchMethod();\n    ^\n  symbol:   method noSuchMethod()\n  location: class WarningAndError",

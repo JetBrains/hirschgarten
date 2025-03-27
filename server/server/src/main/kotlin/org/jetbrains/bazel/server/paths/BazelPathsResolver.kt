@@ -3,34 +3,25 @@ package org.jetbrains.bazel.server.paths
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import java.io.File
-import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.exists
-import kotlin.io.path.toPath
 
 private const val BAZEL_COMPONENT_SEPARATOR = "/"
 
 class BazelPathsResolver(private val bazelInfo: BazelInfo) {
-  private val uris = ConcurrentHashMap<Path, URI>()
   private val paths = ConcurrentHashMap<FileLocation, Path>()
 
-  fun resolveUri(path: Path): URI = uris.computeIfAbsent(path, Path::toUri)
+  fun workspaceRoot(): Path = bazelInfo.workspaceRoot
 
-  fun unresolvedWorkspaceRoot(): Path = bazelInfo.workspaceRoot
-
-  fun workspaceRoot(): URI = resolveUri(bazelInfo.workspaceRoot.toAbsolutePath())
-
-  fun resolveUris(fileLocations: List<FileLocation>, shouldFilterExisting: Boolean = false): List<URI> =
+  fun resolvePaths(fileLocations: List<FileLocation>, shouldFilterExisting: Boolean = false): List<Path> =
     fileLocations
-      .map(::resolveUri)
-      .filter { !shouldFilterExisting || it.toPath().exists() }
+      .map(::resolve)
+      .filter { !shouldFilterExisting || it.exists() }
 
   fun resolvePaths(fileLocations: List<FileLocation>): List<Path> = fileLocations.map(::resolve)
-
-  fun resolveUri(fileLocation: FileLocation): URI = resolveUri(resolve(fileLocation))
 
   fun resolve(fileLocation: FileLocation): Path = paths.computeIfAbsent(fileLocation, ::doResolve)
 
@@ -59,7 +50,7 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
       .outputBase
       .resolve(outputBaseRelativePath)
 
-  private fun resolveOutput(fileLocation: FileLocation): Path {
+  fun resolveOutput(fileLocation: FileLocation): Path {
     val execRootRelativePath = Paths.get(fileLocation.rootExecutionPathFragment, fileLocation.relativePath)
     return resolveOutput(execRootRelativePath)
   }
@@ -67,7 +58,7 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
   fun resolveOutput(execRootRelativePath: Path): Path =
     when {
       execRootRelativePath.startsWith("external") -> resolveExternal(execRootRelativePath)
-      else -> Paths.get(bazelInfo.execRoot).resolve(execRootRelativePath)
+      else -> bazelInfo.execRoot.resolve(execRootRelativePath)
     }
 
   private fun resolveSource(fileLocation: FileLocation): Path = bazelInfo.workspaceRoot.resolve(fileLocation.relativePath)
@@ -76,22 +67,21 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
 
   private fun isInExternalWorkspace(fileLocation: FileLocation): Boolean = fileLocation.rootExecutionPathFragment.startsWith("external/")
 
-  fun pathToDirectoryUri(path: String, isWorkspace: Boolean = true): URI {
+  fun pathToDirectoryPath(path: Path, isWorkspace: Boolean = true): Path {
     val absolutePath =
       if (isWorkspace) {
         relativePathToWorkspaceAbsolute(path)
       } else {
         relativePathToExecRootAbsolute(path)
       }
-    return resolveUri(absolutePath)
+    return absolutePath
   }
 
-  fun relativePathToWorkspaceAbsolute(path: String): Path = bazelInfo.workspaceRoot.resolve(path)
+  fun relativePathToWorkspaceAbsolute(path: Path): Path = bazelInfo.workspaceRoot.resolve(path)
 
-  fun relativePathToExecRootAbsolute(path: String): Path = Paths.get(bazelInfo.execRoot, path)
+  fun relativePathToExecRootAbsolute(path: Path): Path = bazelInfo.execRoot.resolve(path)
 
   fun clear() {
-    uris.clear()
     paths.clear()
   }
 
@@ -104,6 +94,14 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
       .toString()
       .replace(File.separator, BAZEL_COMPONENT_SEPARATOR)
 
+  fun resolve(path: Path): Path =
+    when {
+      path.isAbsolute -> path
+      path.startsWith("external/") -> bazelInfo.outputBase.resolve(path)
+      else -> bazelInfo.workspaceRoot.resolve(path)
+    }
+
+  // TODO: it's used only in go plugin but I don't feel competent to change it
   fun resolve(path: String): File =
     when {
       Paths.get(path).isAbsolute -> File(path)

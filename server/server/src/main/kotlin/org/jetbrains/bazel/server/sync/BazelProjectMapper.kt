@@ -37,7 +37,6 @@ import org.jetbrains.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
-import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -47,7 +46,6 @@ import kotlin.io.path.extension
 import kotlin.io.path.inputStream
 import kotlin.io.path.name
 import kotlin.io.path.notExists
-import kotlin.io.path.toPath
 
 private val THIRD_PARTY_LIBRARIES_PATTERN = "external/[^/]+/(.+)/([^/]+)/[^/]+$".toRegex()
 
@@ -277,12 +275,12 @@ class BazelProjectMapper(
             outputs =
               targetInfo.jvmTargetInfo.generatedJarsList
                 .flatMap { it.binaryJarsList }
-                .map { bazelPathsResolver.resolveUri(it) }
+                .map { bazelPathsResolver.resolve(it) }
                 .toSet(),
             sources =
               targetInfo.jvmTargetInfo.generatedJarsList
                 .flatMap { it.sourceJarsList }
-                .map { bazelPathsResolver.resolveUri(it) }
+                .map { bazelPathsResolver.resolve(it) }
                 .toSet(),
             dependencies = emptyList(),
             interfaceJars = emptySet(),
@@ -305,10 +303,8 @@ class BazelProjectMapper(
     // rules_kotlin does not expose source jars for jvm stdlibs, so this is the way they can be retrieved for now
     val inferredSourceJars =
       kotlinStdlibsJars
-        .map { it.toPath() }
         .map { it.parent.resolve(it.fileName.toString().replace(".jar", "-sources.jar")) }
         .filter { it.exists() }
-        .map { it.toUri() }
         .toSet()
 
     return if (kotlinStdlibsJars.isNotEmpty()) {
@@ -323,11 +319,11 @@ class BazelProjectMapper(
     }
   }
 
-  private fun calculateProjectLevelKotlinStdlibsJars(targetsToImport: Sequence<TargetInfo>): Set<URI> =
+  private fun calculateProjectLevelKotlinStdlibsJars(targetsToImport: Sequence<TargetInfo>): Set<Path> =
     targetsToImport
       .filter { it.hasKotlinTargetInfo() }
       .map { it.kotlinTargetInfo.stdlibsList }
-      .flatMap { it.resolveUris() }
+      .flatMap { it.resolvePaths() }
       .toSet()
 
   private fun calculateKotlincPluginLibrariesMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
@@ -344,7 +340,7 @@ class BazelProjectMapper(
           pluginClasspaths.map { classpath ->
             Library(
               label = Label.synthetic(classpath.name),
-              outputs = setOf(classpath.toUri()),
+              outputs = setOf(classpath),
               sources = emptySet(),
               dependencies = emptyList(),
             )
@@ -373,30 +369,30 @@ class BazelProjectMapper(
     }
   }
 
-  private fun calculateProjectLevelScalaSdkLibraries(): Map<URI, Library> =
+  private fun calculateProjectLevelScalaSdkLibraries(): Map<Path, Library> =
     getProjectLevelScalaSdkLibrariesJars().associateWith {
       Library(
-        label = Label.synthetic(Paths.get(it).name),
+        label = Label.synthetic(it.name),
         outputs = setOf(it),
         sources = emptySet(),
         dependencies = emptyList(),
       )
     }
 
-  private fun calculateProjectLevelScalaTestLibraries(): Map<URI, Library> =
+  private fun calculateProjectLevelScalaTestLibraries(): Map<Path, Library> =
     languagePluginsService.scalaLanguagePlugin.scalaTestJars.values
       .flatten()
       .toSet()
       .associateWith {
         Library(
-          label = Label.synthetic(Paths.get(it).name),
+          label = Label.synthetic(it.name),
           outputs = setOf(it),
           sources = emptySet(),
           dependencies = emptyList(),
         )
       }
 
-  private fun getProjectLevelScalaSdkLibrariesJars(): Set<URI> =
+  private fun getProjectLevelScalaSdkLibrariesJars(): Set<Path> =
     languagePluginsService.scalaLanguagePlugin.scalaSdks.values
       .toSet()
       .flatMap {
@@ -421,10 +417,10 @@ class BazelProjectMapper(
       return null
     }
 
-    val outputs = listOf(target.androidTargetInfo.aidlBinaryJar).resolveUris()
+    val outputs = listOf(target.androidTargetInfo.aidlBinaryJar).resolvePaths()
     val sources =
       if (target.androidTargetInfo.hasAidlSourceJar()) {
-        listOf(target.androidTargetInfo.aidlSourceJar).resolveUris()
+        listOf(target.androidTargetInfo.aidlSourceJar).resolvePaths()
       } else {
         emptySet()
       }
@@ -447,7 +443,7 @@ class BazelProjectMapper(
             GoLibrary(
               label = label,
               goImportPath = target.goTargetInfo.importpath,
-              goRoot = bazelPathsResolver.resolve(it).parent.toUri(),
+              goRoot = bazelPathsResolver.resolve(it).parent,
             )
           }
         label to libraries
@@ -465,7 +461,7 @@ class BazelProjectMapper(
     targetsToImport: Map<Label, TargetInfo>,
     libraryDependencies: Map<Label, List<Library>>,
     librariesToImport: Map<Label, Library>,
-    interfacesAndBinariesFromTargetsToImport: Map<Label, Set<URI>>,
+    interfacesAndBinariesFromTargetsToImport: Map<Label, Set<Path>>,
     transitiveCompileTimeJarsTargetKinds: Set<String>,
   ): Map<Label, List<Library>> {
     val targetsToJdepsJars =
@@ -475,18 +471,17 @@ class BazelProjectMapper(
       val interfacesAndBinariesFromTarget =
         interfacesAndBinariesFromTargetsToImport.getOrDefault(target.key, emptySet())
       target.value
-        .map { path -> bazelPathsResolver.resolveUri(path) }
-        .filter { uri -> uri !in interfacesAndBinariesFromTarget }
-        .mapNotNull { uri ->
-          val jarPath = uri.toPath()
-          if (shouldSkipJdepsJar(jarPath)) return@mapNotNull null
-          val label = syntheticLabel(uri)
+        .map { path -> bazelPathsResolver.resolve(path) }
+        .filter { it !in interfacesAndBinariesFromTarget }
+        .mapNotNull {
+          if (shouldSkipJdepsJar(it)) return@mapNotNull null
+          val label = syntheticLabel(it)
           libraryNameToLibraryValueMap.computeIfAbsent(label) { _ ->
             Library(
               label = label,
               dependencies = emptyList(),
               interfaceJars = emptySet(),
-              outputs = setOf(uri),
+              outputs = setOf(it),
               sources = emptySet(),
             )
           }
@@ -555,7 +550,7 @@ class BazelProjectMapper(
       val jarsFromTargets =
         targetsToImport[targetOrLibrary]?.let { getTargetOutputJarsSet(it) + getTargetInterfaceJarsSet(it) }.orEmpty()
       val jarsFromLibraries =
-        librariesToImport[targetOrLibrary]?.let { it.outputs + it.interfaceJars }.orEmpty().map { Paths.get(it) }
+        librariesToImport[targetOrLibrary]?.let { it.outputs + it.interfaceJars }.orEmpty()
       val outputJars =
         listOfNotNull(jarsFromTargets, jarsFromLibraries)
           .asSequence()
@@ -614,7 +609,7 @@ class BazelProjectMapper(
 
   private val replacementRegex = "[^0-9a-zA-Z]".toRegex()
 
-  private fun syntheticLabel(lib: URI): Label {
+  private fun syntheticLabel(lib: Path): Label {
     val shaOfPath =
       Hashing
         .sha256()
@@ -622,8 +617,7 @@ class BazelProjectMapper(
         .toString()
         .take(7) // just in case of a conflict in filename
     return Label.synthetic(
-      Paths
-        .get(lib)
+      lib
         .fileName
         .toString()
         .replace(replacementRegex, "-") + "-" + shaOfPath,
@@ -640,7 +634,7 @@ class BazelProjectMapper(
           label = label,
           languages = inferLanguages(targetInfo, transitiveCompileTimeJarsTargetKinds),
           tags = targetTagsResolver.resolveTags(targetInfo),
-          baseDirectory = label.assumeResolved().toDirectoryUri(),
+          baseDirectory = label.assumeResolved().toDirectoryPath(),
         )
       }
 
@@ -663,9 +657,9 @@ class BazelProjectMapper(
     targetInfo: TargetInfo,
     onlyOutputJars: Boolean = false,
   ): Library? {
-    val outputs = getTargetOutputJarUris(targetInfo) + getAndroidAarUris(targetInfo) + getIntellijPluginJars(targetInfo)
-    val sources = getSourceJarUris(targetInfo)
-    val interfaceJars = getTargetInterfaceJarsSet(targetInfo).map { it.toUri() }.toSet()
+    val outputs = getTargetOutputJarPaths(targetInfo) + getAndroidAarPaths(targetInfo) + getIntellijPluginJars(targetInfo)
+    val sources = getSourceJarPaths(targetInfo)
+    val interfaceJars = getTargetInterfaceJarsSet(targetInfo).toSet()
     val dependencies: List<BspTargetInfo.Dependency> = if (!onlyOutputJars) targetInfo.dependenciesList else emptyList()
     if (!shouldCreateLibrary(
         dependencies = dependencies,
@@ -698,12 +692,12 @@ class BazelProjectMapper(
 
   private fun shouldCreateLibrary(
     dependencies: List<BspTargetInfo.Dependency>,
-    outputs: Collection<URI>,
-    interfaceJars: Collection<URI>,
-    sources: Collection<URI>,
+    outputs: Collection<Path>,
+    interfaceJars: Collection<Path>,
+    sources: Collection<Path>,
   ): Boolean = dependencies.isNotEmpty() || !outputs.isEmptyJarList() || !interfaceJars.isEmptyJarList() || !sources.isEmptyJarList()
 
-  private fun Collection<URI>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.toPath()?.name == "empty.jar"
+  private fun Collection<Path>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.name == "empty.jar"
 
   private fun createGoLibraries(targets: Map<Label, TargetInfo>): Map<Label, GoLibrary> =
     targets
@@ -719,7 +713,7 @@ class BazelProjectMapper(
     GoLibrary(
       label = label,
       goImportPath = targetInfo.goTargetInfo?.importpath,
-      goRoot = getGoRootUri(targetInfo),
+      goRoot = getGoRootPath(targetInfo),
     )
 
   private fun createLibrariesFromTransitiveCompileTimeJars(
@@ -740,18 +734,18 @@ class BazelProjectMapper(
         val explicitlyDefinedThirdPartyLibraries = extractExplicitThirdPartyLibraries(explicitCompileTimeInterfaces)
         targetLabel to
           targetInfo.jvmTargetInfo.transitiveCompileTimeJarsList
-            .map { bazelPathsResolver.resolve(it).toUri() }
-            .filter { uri ->
-              explicitCompileTimeInterfaces.contains(uri) ||
-                jdepsJars.contains(uri) ||
-                matchesExplicitThirdPartyLibrary(uri, explicitlyDefinedThirdPartyLibraries) ||
-                doNotPrune(uri, noPrunePatterns)
-            }.map { uri ->
-              val label = syntheticLabel(uri)
+            .map { bazelPathsResolver.resolve(it) }
+            .filter { path ->
+              explicitCompileTimeInterfaces.contains(path) ||
+                jdepsJars.contains(path) ||
+                matchesExplicitThirdPartyLibrary(path, explicitlyDefinedThirdPartyLibraries) ||
+                doNotPrune(path, noPrunePatterns)
+            }.map { path ->
+              val label = syntheticLabel(path)
               res.computeIfAbsent(label) {
                 Library(
                   label = label,
-                  outputs = setOf(uri),
+                  outputs = setOf(path),
                   sources = setOf(),
                   dependencies = listOf(),
                 )
@@ -768,7 +762,6 @@ class BazelProjectMapper(
       .mapNotNull { targetsMap[it.label()] }
       .filter { !it.isCompilableByJps() }
       .flatMap { getTargetInterfaceJarsList(it) }
-      .map { it.toUri() }
       .toSet()
 
   private fun TargetInfo.isCompilableByJps(): Boolean {
@@ -781,14 +774,14 @@ class BazelProjectMapper(
     targetLabel: Label,
     dependencyGraph: DependencyGraph,
     extraLibrariesFromJdeps: Map<Label, List<Library>>,
-  ): Set<URI> =
+  ): Set<Path> =
     dependencyGraph
       .getReverseDependencies(targetLabel)
       .mapNotNull { extraLibrariesFromJdeps[it] }
       .flatMap { it.flatMap { library -> library.outputs } }
       .toSet()
 
-  private fun extractExplicitThirdPartyLibraries(explicitCompileTimeInterfaces: Set<URI>): Set<String> =
+  private fun extractExplicitThirdPartyLibraries(explicitCompileTimeInterfaces: Set<Path>): Set<String> =
     explicitCompileTimeInterfaces
       .filter { it.toString().contains("/external/") }
       .mapNotNull { jarPath ->
@@ -798,17 +791,17 @@ class BazelProjectMapper(
   /**
    * When pruning transitive compile time jars list, ignore jars that are in the pruning exception list
    */
-  private fun doNotPrune(jar: URI, noPrunePatterns: List<String>): Boolean {
-    val uriString = jar.toString()
-    return noPrunePatterns.any { uriString.contains(it) }
+  private fun doNotPrune(jar: Path, noPrunePatterns: List<String>): Boolean {
+    val pathString = jar.toString()
+    return noPrunePatterns.any { pathString.contains(it) }
   }
 
-  private fun matchesExplicitThirdPartyLibrary(jar: URI, explicitThirdPartyLibraries: Set<String>): Boolean {
-    val uriString = jar.toString()
+  private fun matchesExplicitThirdPartyLibrary(jar: Path, explicitThirdPartyLibraries: Set<String>): Boolean {
+    val pathString = jar.toString()
     // TODO: generalize the logic to support more general cases
     // related ticket: https://youtrack.jetbrains.com/issue/BAZEL-1739/Generalize-logic-to-retrieve-transitive-compile-time-jars-prune-them-better
-    if (uriString.contains("/external/maven") || uriString.contains("/external/multiversion_maven")) {
-      val matcher = THIRD_PARTY_LIBRARIES_PATTERN.find(uriString)
+    if (pathString.contains("/external/maven") || pathString.contains("/external/multiversion_maven")) {
+      val matcher = THIRD_PARTY_LIBRARIES_PATTERN.find(pathString)
       if (matcher != null) {
         // e.g. "com/google/guava/guava"
         val id = matcher.groupValues.getOrNull(1) ?: return false
@@ -818,41 +811,40 @@ class BazelProjectMapper(
     return false
   }
 
-  private fun List<FileLocation>.resolveUris() = map { bazelPathsResolver.resolve(it).toUri() }.toSet()
+  private fun List<FileLocation>.resolvePaths() = map { bazelPathsResolver.resolve(it) }.toSet()
 
-  private fun getTargetOutputJarUris(targetInfo: TargetInfo) =
+  private fun getTargetOutputJarPaths(targetInfo: TargetInfo) =
     getTargetOutputJarsList(targetInfo)
-      .map { it.toUri() }
       .toSet()
 
-  private fun getAndroidAarUris(targetInfo: TargetInfo): Set<URI> {
+  private fun getAndroidAarPaths(targetInfo: TargetInfo): Set<Path> {
     if (!targetInfo.hasAndroidAarImportInfo()) return emptySet()
     val androidAarImportInfo = targetInfo.androidAarImportInfo
 
-    val result = mutableSetOf<URI>()
-    result += bazelPathsResolver.resolve(androidAarImportInfo.manifest).toUri()
+    val result = mutableSetOf<Path>()
+    result.add(bazelPathsResolver.resolve(androidAarImportInfo.manifest))
     if (androidAarImportInfo.hasResourceFolder()) {
-      result += bazelPathsResolver.resolve(androidAarImportInfo.resourceFolder).resolve("res").toUri()
+      result.add(bazelPathsResolver.resolve(androidAarImportInfo.resourceFolder).resolve("res"))
     }
     if (androidAarImportInfo.hasRTxt()) {
-      result += bazelPathsResolver.resolve(targetInfo.androidAarImportInfo.rTxt).toUri()
+      result.add(bazelPathsResolver.resolve(targetInfo.androidAarImportInfo.rTxt))
     }
     return result
   }
 
-  private fun getIntellijPluginJars(targetInfo: TargetInfo): Set<URI> {
+  private fun getIntellijPluginJars(targetInfo: TargetInfo): Set<Path> {
     // _repackaged_files is created upon calling repackaged_files in rules_intellij
     if (targetInfo.kind != "_repackaged_files") return emptySet()
     return targetInfo.generatedSourcesList
-      .resolveUris()
-      .filter { it.path.endsWith(".jar") }
+      .resolvePaths()
+      .filter { it.extension == "jar" }
       .toSet()
   }
 
-  private fun getSourceJarUris(targetInfo: TargetInfo) =
+  private fun getSourceJarPaths(targetInfo: TargetInfo) =
     targetInfo.jvmTargetInfo.jarsList
       .flatMap { it.sourceJarsList }
-      .resolveUris()
+      .resolvePaths()
 
   private fun getTargetOutputJarsSet(targetInfo: TargetInfo) = getTargetOutputJarsList(targetInfo).toSet()
 
@@ -868,7 +860,7 @@ class BazelProjectMapper(
       .flatMap { it.interfaceJarsList }
       .map { bazelPathsResolver.resolve(it) }
 
-  private fun getGoRootUri(targetInfo: TargetInfo): URI = targetInfo.label().assumeResolved().toDirectoryUri()
+  private fun getGoRootPath(targetInfo: TargetInfo): Path = targetInfo.label().assumeResolved().toDirectoryPath()
 
   private fun selectTargetsToImport(
     workspaceContext: WorkspaceContext,
@@ -890,7 +882,6 @@ class BazelProjectMapper(
       .associate { target ->
         target.label() to
           (getTargetInterfaceJarsList(target) + getTargetOutputJarsList(target))
-            .map { it.toUri() }
             .toSet()
       }
 
@@ -999,7 +990,7 @@ class BazelProjectMapper(
     val directDependencies = extraLibraries.map { it.label } + resolvedDependencies
     val languages = inferLanguages(target, transitiveCompileTimeJarsTargetKinds)
     val tags = targetTagsResolver.resolveTags(target)
-    val baseDirectory = label.toDirectoryUri()
+    val baseDirectory = label.toDirectoryPath()
     val languagePlugin = languagePluginsService.getPlugin(languages)
     val sourceSet = resolveSourceSet(target, languagePlugin)
     val resources = resolveResources(target, languagePlugin)
@@ -1029,7 +1020,7 @@ class BazelProjectMapper(
     return languagesForTarget + languagesForSources
   }
 
-  private fun ResolvedLabel.toDirectoryUri(): URI = bazelPathsResolver.pathToDirectoryUri(this.toBazelPath().toString(), isMainWorkspace)
+  private fun ResolvedLabel.toDirectoryPath(): Path = bazelPathsResolver.pathToDirectoryPath(this.toBazelPath(), isMainWorkspace)
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): SourceSet {
     val (sources, nonExistentSources) =
@@ -1054,7 +1045,7 @@ class BazelProjectMapper(
         sourceRootsAndData
           .map {
             SourceWithData(
-              source = it.first.toUri(),
+              source = it.first,
               jvmPackagePrefix = it.second?.jvmPackagePrefix,
             )
           }.toSet(),
@@ -1062,7 +1053,7 @@ class BazelProjectMapper(
         generatedRootsAndData
           .map {
             SourceWithData(
-              source = it.first.toUri(),
+              source = it.first,
               jvmPackagePrefix = it.second?.jvmPackagePrefix,
             )
           }.toSet(),
@@ -1074,8 +1065,8 @@ class BazelProjectMapper(
     bspClientLogger.error(message)
   }
 
-  private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): Set<URI> =
-    bazelPathsResolver.resolveUris(target.resourcesList).toSet() + languagePlugin.resolveAdditionalResources(target)
+  private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): Set<Path> =
+    bazelPathsResolver.resolvePaths(target.resourcesList).toSet() + languagePlugin.resolveAdditionalResources(target)
 
   private fun environmentItem(target: TargetInfo): Map<String, String> {
     val inheritedEnvs = collectInheritedEnvs(target)

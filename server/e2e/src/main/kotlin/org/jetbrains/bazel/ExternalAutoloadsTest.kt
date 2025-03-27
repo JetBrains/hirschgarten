@@ -8,6 +8,7 @@ import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
+import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 
 object ExternalAutoloadsTest : BazelBspTestBaseScenario() {
@@ -32,8 +33,9 @@ object ExternalAutoloadsTest : BazelBspTestBaseScenario() {
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val javaHome =
-      "file://\$BAZEL_OUTPUT_BASE_PATH/external/" +
-        "rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_$javaHomeArchitecture/"
+      Path(
+        "\$BAZEL_OUTPUT_BASE_PATH/external/rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_$javaHomeArchitecture/",
+      )
 
     val exampleExampleJvmBuildTarget =
       JvmBuildTarget(
@@ -52,12 +54,12 @@ object ExternalAutoloadsTest : BazelBspTestBaseScenario() {
           canTest = false,
           canRun = false,
         ),
-        baseDirectory = "file://\$WORKSPACE/src/",
+        baseDirectory = Path("\$WORKSPACE/src/"),
         data = exampleExampleJvmBuildTarget,
         sources =
           listOf(
             SourceItem(
-              uri = "file://\$WORKSPACE/src/Hello.java",
+              path = Path("\$WORKSPACE/src/Hello.java"),
               generated = false,
               jvmPackagePrefix = "src",
             ),

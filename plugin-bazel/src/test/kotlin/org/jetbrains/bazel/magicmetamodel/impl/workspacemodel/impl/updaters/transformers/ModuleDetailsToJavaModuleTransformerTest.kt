@@ -31,6 +31,7 @@ import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
+import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.io.path.name
@@ -43,7 +44,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val projectRoot = createTempDirectory(projectBasePath, "project").toAbsolutePath()
     projectRoot.toFile().deleteOnExit()
 
-    val javaHome = "/fake/path/to/local_jdk"
+    val javaHome = Path("/fake/path/to/local_jdk")
     val javaVersion = "11"
 
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")
@@ -79,24 +80,24 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           Label.parse("@maven//:lib1"),
         ),
         BuildTargetCapabilities(),
-        baseDirectory = projectRoot.toUri().toString(),
+        baseDirectory = projectRoot,
         data = data,
         sources =
           listOf(
             SourceItem(
-              uri = file1APath.toUri().toString(),
+              path = file1APath,
               generated = false,
               jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
             ),
             SourceItem(
-              uri = file2APath.toUri().toString(),
+              path = file2APath,
               generated = false,
               jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
             ),
           ),
         resources =
           listOf(
-            resourceFilePath.toUri().toString(),
+            resourceFilePath,
           ),
       )
 
@@ -185,7 +186,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val projectRoot = createTempDirectory(projectBasePath, "project").toAbsolutePath()
     projectRoot.toFile().deleteOnExit()
 
-    val javaHome = "/fake/path/to/local_jdk"
+    val javaHome = Path("/fake/path/to/local_jdk")
     val javaVersion = "11"
 
     val kotlinBuildTarget =
@@ -217,7 +218,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           Label.parse("@maven//:lib1"),
         ),
         BuildTargetCapabilities(),
-        baseDirectory = projectRoot.toUri().toString(),
+        baseDirectory = projectRoot,
         data = kotlinBuildTarget,
         sources = emptyList(),
         resources = emptyList(),
@@ -325,24 +326,24 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           Label.parse("@maven//:lib1"),
         ),
         BuildTargetCapabilities(),
-        baseDirectory = module1Root.toUri().toString(),
+        baseDirectory = module1Root,
         sources =
           listOf(
             SourceItem(
-              uri = file1APath.toUri().toString(),
+              path = file1APath,
               generated = false,
               jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
             ),
             SourceItem(
-              uri = file2APath.toUri().toString(),
+              path = file2APath,
               generated = false,
               jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
             ),
           ),
         resources =
           listOf(
-            resourceFilePath11.toUri().toString(),
-            resourceFilePath12.toUri().toString(),
+            resourceFilePath11,
+            resourceFilePath12,
           ),
       )
 
@@ -390,18 +391,18 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           Label.parse("@maven//:lib1"),
         ),
         BuildTargetCapabilities(),
-        baseDirectory = module2Root.toUri().toString(),
+        baseDirectory = module2Root,
         sources =
           listOf(
             SourceItem(
-              uri = dir1CPath.toUri().toString(),
+              path = dir1CPath,
               generated = false,
               jvmPackagePrefix = "${packageC1Path.name}.${packageC2Path.name}",
             ),
           ),
         resources =
           listOf(
-            resourceDirPath21.toUri().toString(),
+            resourceDirPath21,
           ),
       )
 
@@ -538,7 +539,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val projectRoot = createTempDirectory(projectBasePath, "project").toAbsolutePath()
     projectRoot.toFile().deleteOnExit()
 
-    val javaHome = "/fake/path/to/local_jdk"
+    val javaHome = Path("/fake/path/to/local_jdk")
     val javaVersion = "11"
 
     val data = JvmBuildTarget(javaHome, javaVersion)
@@ -575,22 +576,22 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           Label.parse("@maven//:lib1"),
         ),
         BuildTargetCapabilities(),
-        baseDirectory = projectRoot.toUri().toString(),
+        baseDirectory = projectRoot,
         data = data,
         sources =
           listOf(
             SourceItem(
-              uri = file1APath.toUri().toString(),
+              path = file1APath,
               generated = false,
               jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
             ),
             SourceItem(
-              uri = file2APath.toUri().toString(),
+              path = file2APath,
               generated = false,
               jvmPackagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
             ),
           ),
-        resources = listOf(resourceFilePath.toUri().toString()),
+        resources = listOf(resourceFilePath),
       )
 
     val javacOptionsItem =
@@ -716,7 +717,7 @@ class ExtractJvmBuildTargetTest {
   fun `extractJvmBuildTarget should return JvmBuildTarget successfully when given non-null jdk information`() {
     // given
     val javaVersion = "17"
-    val javaHome = "/fake/path/to/test/local_jdk"
+    val javaHome = Path("/fake/path/to/test/local_jdk")
     val data = JvmBuildTarget(javaHome, javaVersion)
 
     val buildTarget = buildDummyTarget(data)
@@ -756,9 +757,9 @@ class ExtractJvmBuildTargetTest {
           canTest = false,
           canRun = true,
         ),
-        baseDirectory = "/base/dir",
+        baseDirectory = Path("/base/dir"),
         data = data,
-        sources = listOf(SourceItem("file://\$WORKSPACE/src/Main.java", false)),
+        sources = listOf(SourceItem(Path("\$WORKSPACE/src/Main.java"), false)),
         resources = emptyList(),
       )
     return buildTarget

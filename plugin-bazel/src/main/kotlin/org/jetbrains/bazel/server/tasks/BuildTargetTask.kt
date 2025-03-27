@@ -27,6 +27,7 @@ import org.jetbrains.bsp.protocol.CompileReport
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.StatusCode
+import java.nio.file.Path
 import java.util.UUID
 
 @ApiStatus.Internal
@@ -82,7 +83,7 @@ class BuildTargetTask(private val project: Project) {
           }
 
           override fun onDiagnostic(
-            textDocument: String,
+            textDocument: Path?,
             buildTarget: Label,
             line: Int,
             character: Int,

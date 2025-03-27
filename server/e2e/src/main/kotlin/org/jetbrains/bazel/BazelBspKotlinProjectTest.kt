@@ -40,10 +40,12 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     )
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val workspaceJavaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
+    val workspaceJavaHome = Path("\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/")
     val bzlmodJavaHome =
-      "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java$bzlmodRepoNameSeparator" +
-        "${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_$javaHomeArchitecture/"
+      Path(
+        "\$BAZEL_OUTPUT_BASE_PATH/external/rules_java$bzlmodRepoNameSeparator" +
+          "${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_$javaHomeArchitecture/",
+      )
     val javaHome = if (isBzlmod) bzlmodJavaHome else workspaceJavaHome
     val jvmBuildTargetData =
       JvmBuildTarget(
@@ -95,13 +97,13 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = true,
           ),
-        baseDirectory = "file://\$WORKSPACE/kotlinc_test/",
+        baseDirectory = Path("\$WORKSPACE/kotlinc_test/"),
         data = kotlincTestBuildTargetData,
         sources =
           listOf(
             SourceItem(
               generated = false,
-              uri = "file://\$WORKSPACE/kotlinc_test/Foo.kt",
+              path = Path("\$WORKSPACE/kotlinc_test/Foo.kt"),
             ),
           ),
         resources = emptyList(),
@@ -119,13 +121,13 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = false,
           ),
-        baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
+        baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = kotlinBuildTargetData,
         sources =
           listOf(
             SourceItem(
               generated = false,
-              uri = "file://\$WORKSPACE/plugin_allopen_test/OpenForTesting.kt",
+              path = Path("\$WORKSPACE/plugin_allopen_test/OpenForTesting.kt"),
               jvmPackagePrefix = "plugin.allopen",
             ),
           ),
@@ -191,13 +193,13 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = false,
           ),
-        baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
+        baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = userBuildTargetData,
         sources =
           listOf(
             SourceItem(
               generated = false,
-              uri = "file://\$WORKSPACE/plugin_allopen_test/User.kt",
+              path = Path("\$WORKSPACE/plugin_allopen_test/User.kt"),
               jvmPackagePrefix = "plugin.allopen",
             ),
           ),
@@ -221,13 +223,13 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = false,
           ),
-        baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
+        baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = userOfExportBuildTargetData,
         sources =
           listOf(
             SourceItem(
               generated = false,
-              uri = "file://\$WORKSPACE/plugin_allopen_test/User.kt",
+              path = Path("\$WORKSPACE/plugin_allopen_test/User.kt"),
               jvmPackagePrefix = "plugin.allopen",
             ),
           ),
@@ -250,7 +252,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = false,
           ),
-        baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/",
+        baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = kotlinBuildTargetData,
         sources =
           listOf(),

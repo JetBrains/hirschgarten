@@ -9,7 +9,7 @@ typealias TaskId = String
 
 interface BazelTaskListener {
   fun onDiagnostic(
-    textDocument: String,
+    textDocument: Path?,
     buildTarget: Label,
     line: Int,
     character: Int,

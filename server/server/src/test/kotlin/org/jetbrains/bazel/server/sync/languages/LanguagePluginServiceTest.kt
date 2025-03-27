@@ -42,7 +42,7 @@ class LanguagePluginServiceTest {
     dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp")
     val bazelInfo =
       BazelInfo(
-        execRoot = "",
+        execRoot = Paths.get(""),
         outputBase = Paths.get(""),
         workspaceRoot = Paths.get(""),
         bazelBin = Path("bazel-bin"),

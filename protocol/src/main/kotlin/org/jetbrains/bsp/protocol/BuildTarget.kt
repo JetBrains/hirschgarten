@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.protocol
 import org.jetbrains.bazel.label.Label
-import java.net.URI
+import java.nio.file.Path
 
 data class BuildTarget(
   val id: Label,
@@ -9,8 +9,8 @@ data class BuildTarget(
   val dependencies: List<Label>,
   val capabilities: BuildTargetCapabilities,
   val sources: List<SourceItem>,
-  val resources: List<String>,
-  val baseDirectory: String? = null,
+  val resources: List<Path>,
+  val baseDirectory: Path? = null,
   var data: BuildTargetData? = null,
 ) {
   val displayName: String = id.toShortString()
@@ -26,24 +26,24 @@ public data class KotlinBuildTarget(
   var jvmBuildTarget: JvmBuildTarget? = null,
 ) : BuildTargetData
 
-data class PythonBuildTarget(val version: String?, val interpreter: String?) : BuildTargetData
+data class PythonBuildTarget(val version: String?, val interpreter: Path?) : BuildTargetData
 
 data class ScalaBuildTarget(
   val scalaOrganization: String,
   val scalaVersion: String,
   val scalaBinaryVersion: String,
   val platform: ScalaPlatform,
-  val jars: List<String>,
+  val jars: List<Path>,
   val jvmBuildTarget: JvmBuildTarget? = null,
 ) : BuildTargetData
 
 // TODO: change to interface
-data class JvmBuildTarget(val javaHome: String, val javaVersion: String) : BuildTargetData
+data class JvmBuildTarget(val javaHome: Path, val javaVersion: String) : BuildTargetData
 
 data class GoBuildTarget(
-  val sdkHomePath: URI?,
+  val sdkHomePath: Path?,
   val importPath: String,
-  val generatedLibraries: List<URI>,
+  val generatedLibraries: List<Path>,
 ) : BuildTargetData
 
 data class CppBuildTarget(
@@ -60,14 +60,14 @@ public enum class AndroidTargetType(public val value: Int) {
 }
 
 public data class AndroidBuildTarget(
-  val androidJar: String,
+  val androidJar: Path,
   val androidTargetType: AndroidTargetType,
-  val manifest: String?,
+  val manifest: Path?,
   val manifestOverrides: Map<String, String>,
-  val resourceDirectories: List<String>,
+  val resourceDirectories: List<Path>,
   val resourceJavaPackage: String?,
-  val assetsDirectories: List<String>,
-  val apk: String? = null,
+  val assetsDirectories: List<Path>,
+  val apk: Path? = null,
   var jvmBuildTarget: JvmBuildTarget? = null,
   var kotlinBuildTarget: KotlinBuildTarget? = null,
 ) : BuildTargetData

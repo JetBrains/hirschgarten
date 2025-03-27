@@ -9,20 +9,19 @@ import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.Assertions.assertFalse
-import java.net.URI
+import kotlin.io.path.Path
 import kotlin.io.path.exists
-import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.minutes
 
 object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
   private val testClient = createTestkitClient()
   private val bazelBinResolved = testClient.transformJson(bazelBinDirectory)
 
-  private val javaLibraryJar = URI.create("$bazelBinResolved/src/libjava-lib.jar").toPath()
-  private val javaBinaryJar = URI.create("$bazelBinResolved/src/java-binary.jar").toPath()
+  private val javaLibraryJar = Path("$bazelBinResolved/src/libjava-lib.jar")
+  private val javaBinaryJar = Path("$bazelBinResolved/src/java-binary.jar")
 
-  private val kotlinLibraryJar = URI.create("$bazelBinResolved/src/kt-lib.jar").toPath()
-  private val kotlinBinaryJar = URI.create("$bazelBinResolved/src/kt-binary.jar").toPath()
+  private val kotlinLibraryJar = Path("$bazelBinResolved/src/kt-lib.jar")
+  private val kotlinBinaryJar = Path("$bazelBinResolved/src/kt-binary.jar")
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-95
   @JvmStatic
@@ -65,7 +64,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = false,
           ),
-        sources = listOf(SourceItem("file://\$WORKSPACE/src/Lib.java", false)),
+        sources = listOf(SourceItem(Path("\$WORKSPACE/src/Lib.java"), false)),
         resources = emptyList(),
       )
 
@@ -81,7 +80,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = true,
           ),
-        sources = listOf(SourceItem("file://\$WORKSPACE/src/Main.java", false)),
+        sources = listOf(SourceItem(Path("\$WORKSPACE/src/Main.java"), false)),
         resources = emptyList(),
       )
 
@@ -97,7 +96,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = false,
           ),
-        sources = listOf(SourceItem("file://\$WORKSPACE/src/Lib.kt", false)),
+        sources = listOf(SourceItem(Path("\$WORKSPACE/src/Lib.kt"), false)),
         resources = emptyList(),
       )
 
@@ -113,7 +112,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
             canTest = false,
             canRun = true,
           ),
-        sources = listOf(SourceItem("file://\$WORKSPACE/src/Main.kt", false)),
+        sources = listOf(SourceItem(Path("\$WORKSPACE/src/Main.kt"), false)),
         resources = emptyList(),
       )
 

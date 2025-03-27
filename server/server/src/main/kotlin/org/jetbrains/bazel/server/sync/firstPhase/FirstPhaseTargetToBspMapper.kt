@@ -87,7 +87,7 @@ class FirstPhaseTargetToBspMapper(private val workspaceRoot: Path) {
     val directItems =
       sourceFilesAndData.map {
         SourceItem(
-          it.first.toUri().toString(),
+          it.first,
           false,
           it.second?.jvmPackagePrefix,
         )
@@ -95,8 +95,8 @@ class FirstPhaseTargetToBspMapper(private val workspaceRoot: Path) {
     return (directItems + itemsFromDependencies).distinct()
   }
 
-  private fun Target.calculateResources(project: FirstPhaseProject): List<String> {
-    val directResources = resources.calculateFiles().map { it.toUri().toString() }
+  private fun Target.calculateResources(project: FirstPhaseProject): List<Path> {
+    val directResources = resources.calculateFiles()
     val resourcesFromDependencies = resources.calculateModuleDependencies(project).flatMap { it.calculateResources(project) }
     return (directResources + resourcesFromDependencies).distinct()
   }

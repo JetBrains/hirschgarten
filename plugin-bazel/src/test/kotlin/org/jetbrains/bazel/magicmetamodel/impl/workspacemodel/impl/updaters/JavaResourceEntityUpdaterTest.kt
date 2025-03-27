@@ -14,8 +14,7 @@ import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.net.URI
-import kotlin.io.path.toPath
+import kotlin.io.path.Path
 
 @DisplayName("javaResourceEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
 class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest() {
@@ -34,7 +33,7 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
   @Test
   fun `should add one java resource root to the workspace model`() {
     // given
-    val resourcePath = URI.create("file:///root/dir/example/resource/File.txt").toPath()
+    val resourcePath = Path("/root/dir/example/resource/File.txt")
     val javaResourceRoot = ResourceRoot(resourcePath, SourceRootTypeId("java-resource"))
 
     // when
@@ -81,7 +80,7 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
   @Test
   fun `should add one java test resource root to the workspace model`() {
     // given
-    val resourcePath = URI.create("file:///root/dir/example/resource/File.txt").toPath()
+    val resourcePath = Path("/root/dir/example/resource/File.txt")
     val javaResourceRoot = ResourceRoot(resourcePath, SourceRootTypeId("java-test-resource"))
 
     // when
@@ -128,13 +127,13 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
   @Test
   fun `should add multiple java resource roots to the workspace model`() {
     // given
-    val resourcePath1 = URI.create("file:///root/dir/example/resource/File1.txt").toPath()
+    val resourcePath1 = Path("/root/dir/example/resource/File1.txt")
     val javaResourceRoot1 = ResourceRoot(resourcePath1, SourceRootTypeId("java-resource"))
 
-    val resourcePath2 = URI.create("file:///root/dir/example/resource/File2.txt").toPath()
+    val resourcePath2 = Path("/root/dir/example/resource/File2.txt")
     val javaResourceRoot2 = ResourceRoot(resourcePath2, SourceRootTypeId("java-resource"))
 
-    val resourcePath3 = URI.create("file:///root/dir/example/another/resource/File3.txt").toPath()
+    val resourcePath3 = Path("/root/dir/example/another/resource/File3.txt")
     val javaResourceRoot3 = ResourceRoot(resourcePath3, SourceRootTypeId("java-resource"))
 
     val javaResourceRoots = listOf(javaResourceRoot1, javaResourceRoot2, javaResourceRoot3)

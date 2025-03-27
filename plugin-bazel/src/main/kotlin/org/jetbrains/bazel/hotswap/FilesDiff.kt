@@ -1,7 +1,9 @@
 package org.jetbrains.bazel.hotswap
 
 import org.jetbrains.bazel.hotswap.FilesDiff.Companion.diffFiles
-import java.io.File
+import java.nio.file.Path
+import java.nio.file.attribute.FileTime
+import kotlin.io.path.getLastModifiedTime
 
 /**
  * A data class representing the diff between two sets of files.
@@ -13,18 +15,18 @@ import java.io.File
  * @param removedFiles keeps track of the list of removed jar files, this is used for writing unit test to check for correctness.
  */
 data class FilesDiff(
-  val newFileState: Map<File, Long>,
-  val updatedFiles: List<File>,
-  val removedFiles: Set<File>,
+  val newFileState: Map<Path, FileTime>,
+  val updatedFiles: List<Path>,
+  val removedFiles: Set<Path>,
 ) {
   companion object {
     /** Diffs a collection of files based on timestamps. */
-    fun diffFileTimestamps(oldState: Map<File, Long>?, files: Collection<File>): FilesDiff {
-      val newState = files.associateWith { it.lastModified() }
+    fun diffFileTimestamps(oldState: Map<Path, FileTime>?, files: Collection<Path>): FilesDiff {
+      val newState = files.associateWith { it.getLastModifiedTime() }
       return diffFiles(oldState, newState)
     }
 
-    fun diffFiles(oldState: Map<File, Long>?, newState: Map<File, Long>): FilesDiff {
+    fun diffFiles(oldState: Map<Path, FileTime>?, newState: Map<Path, FileTime>): FilesDiff {
       // Find changed/new files
       val previous = oldState ?: mapOf()
       val updated =

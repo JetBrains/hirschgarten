@@ -16,6 +16,7 @@ import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
+import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -37,10 +38,12 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val architecturePart = if (OsArch.inferFromSystem() == OsArch.ARM64) "aarch64" else "x86_64"
     val osPart = if (OsFamily.inferFromSystem() == OsFamily.MACOS) "apple-darwin" else "unknown-linux-gnu"
-    val workspaceInterpreterPath = "file://\$BAZEL_OUTPUT_BASE_PATH/external/python3_9_$architecturePart-$osPart/bin/python3"
+    val workspaceInterpreterPath = Path("\$BAZEL_OUTPUT_BASE_PATH/external/python3_9_$architecturePart-$osPart/bin/python3")
     val bzlmodInterpreterPath =
-      "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_python${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
-        "python${bzlmodRepoNameSeparator}python_3_9_$architecturePart-$osPart/bin/python3"
+      Path(
+        "\$BAZEL_OUTPUT_BASE_PATH/external/rules_python${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+          "python${bzlmodRepoNameSeparator}python_3_9_$architecturePart-$osPart/bin/python3",
+      )
 
     val interpreterPath = if (isBzlmod) bzlmodInterpreterPath else workspaceInterpreterPath
 
@@ -63,12 +66,12 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           canTest = false,
           canRun = true,
         ),
-        baseDirectory = "file://\$WORKSPACE/example/",
+        baseDirectory = Path("\$WORKSPACE/example/"),
         data = examplePythonBuildTarget,
         sources =
           listOf(
             SourceItem(
-              uri = "file://\$WORKSPACE/example/example.py",
+              path = Path("\$WORKSPACE/example/example.py"),
               generated = false,
             ),
           ),
@@ -91,12 +94,12 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           canTest = false,
           canRun = false,
         ),
-        baseDirectory = "file://\$WORKSPACE/lib/",
+        baseDirectory = Path("\$WORKSPACE/lib/"),
         data = examplePythonBuildTarget,
         sources =
           listOf(
             SourceItem(
-              uri = "file://\$WORKSPACE/lib/example_lib.py",
+              path = Path("\$WORKSPACE/lib/example_lib.py"),
               generated = false,
             ),
           ),
@@ -114,12 +117,12 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           canTest = true,
           canRun = false,
         ),
-        baseDirectory = "file://\$WORKSPACE/test/",
+        baseDirectory = Path("\$WORKSPACE/test/"),
         data = examplePythonBuildTarget,
         sources =
           listOf(
             SourceItem(
-              uri = "file://\$WORKSPACE/test/test.py",
+              path = Path("\$WORKSPACE/test/test.py"),
               generated = false,
             ),
           ),
@@ -147,10 +150,12 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
   }
 
   private fun dependencySourcesResults(): BazelBspTestScenarioStep {
-    val workspacePipPath = "file://\$BAZEL_OUTPUT_BASE_PATH/external/pip_deps_numpy/site-packages/"
+    val workspacePipPath = Path("\$BAZEL_OUTPUT_BASE_PATH/external/pip_deps_numpy/site-packages/")
     val bzlmodPipPath =
-      "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_python${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
-        "pip${bzlmodRepoNameSeparator}pip_deps_39_numpy/site-packages/"
+      Path(
+        "\$BAZEL_OUTPUT_BASE_PATH/external/rules_python${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+          "pip${bzlmodRepoNameSeparator}pip_deps_39_numpy/site-packages/",
+      )
     val pipPath = if (isBzlmod) bzlmodPipPath else workspacePipPath
 
     val expectedPythonDependencySourcesItems =

@@ -1,10 +1,9 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
-import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
-import kotlin.io.path.toPath
+import java.nio.file.Path
 
 internal class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartitionTransformer<BuildTarget, ResourceRoot> {
   override fun transform(inputEntity: BuildTarget): List<ResourceRoot> {
@@ -14,9 +13,9 @@ internal class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntity
       .distinct()
   }
 
-  private fun toJavaResourceRoot(resourcePath: String, rootType: SourceRootTypeId) =
+  private fun toJavaResourceRoot(resourcePath: Path, rootType: SourceRootTypeId) =
     ResourceRoot(
-      resourcePath = resourcePath.safeCastToURI().toPath(),
+      resourcePath = resourcePath,
       rootType = rootType,
     )
 

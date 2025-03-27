@@ -7,7 +7,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.utils.StringUtils
-import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.AndroidAddendum
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
@@ -24,13 +23,11 @@ import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
-import java.net.URI
 import java.nio.file.Path
-import kotlin.io.path.toPath
 
 internal class ModuleDetailsToJavaModuleTransformer(
   targetsMap: Map<Label, BuildTarget>,
-  fileToTarget: Map<URI, List<Label>>,
+  fileToTarget: Map<Path, List<Label>>,
   nameProvider: TargetNameReformatProvider,
   projectBasePath: Path,
   private val project: Project,
@@ -51,7 +48,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
         resourceRoots = toResourceRoots(inputEntity),
         // Any java module must be assigned a jdk if there is any available.
         jvmJdkName = inputEntity.toJdkNameOrDefault(),
-        jvmBinaryJars = inputEntity.jvmBinaryJars.flatMap { it.jars }.map { it.safeCastToURI().toPath() },
+        jvmBinaryJars = inputEntity.jvmBinaryJars.flatMap { it.jars },
         kotlinAddendum = toKotlinAddendum(inputEntity),
         scalaAddendum = toScalaAddendum(inputEntity),
         javaAddendum = toJavaAddendum(inputEntity),
@@ -107,7 +104,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
   private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
     ContentRoot(
       // TODO https://youtrack.jetbrains.com/issue/BAZEL-635
-      path = (inputEntity.target.baseDirectory ?: "file:///todo").safeCastToURI().toPath(),
+      path = (inputEntity.target.baseDirectory ?: error("baseDirectory must not be null")),
     )
 
   private fun ModuleDetails.toJdkNameOrDefault(): String? = toJdkName() ?: defaultJdkName
@@ -153,12 +150,12 @@ internal class ModuleDetailsToJavaModuleTransformer(
       AndroidAddendum(
         androidSdkName = androidJar.androidJarToAndroidSdkName(),
         androidTargetType = androidTargetType,
-        manifest = manifest?.safeCastToURI()?.toPath(),
+        manifest = manifest,
         manifestOverrides = manifestOverrides,
-        resourceDirectories = resourceDirectories.map { it.safeCastToURI().toPath() },
+        resourceDirectories = resourceDirectories,
         resourceJavaPackage = resourceJavaPackage,
-        assetsDirectories = assetsDirectories.map { it.safeCastToURI().toPath() },
-        apk = apk?.safeCastToURI()?.toPath(),
+        assetsDirectories = assetsDirectories,
+        apk = apk,
       )
     }
   }
@@ -176,6 +173,7 @@ fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"
 
 fun String.projectNameToBaseJdkName(): String = "$this-jdk"
 
-fun String.projectNameToJdkName(javaHomeUri: String): String = projectNameToBaseJdkName() + "-" + StringUtils.md5Hash(javaHomeUri, 5)
+fun String.projectNameToJdkName(javaHomeUri: Path): String =
+  projectNameToBaseJdkName() + "-" + StringUtils.md5Hash(javaHomeUri.toString(), 5)
 
-fun String.androidJarToAndroidSdkName(): String = "android-sdk-" + StringUtils.md5Hash(this, 5)
+fun Path.androidJarToAndroidSdkName(): String = "android-sdk-" + StringUtils.md5Hash(this.toString(), 5)

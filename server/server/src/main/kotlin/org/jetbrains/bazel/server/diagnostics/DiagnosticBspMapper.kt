@@ -1,10 +1,8 @@
 package org.jetbrains.bazel.server.diagnostics
 
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import java.nio.file.Path
-import java.nio.file.Paths
 import org.jetbrains.bsp.protocol.Diagnostic as BspDiagnostic
 import org.jetbrains.bsp.protocol.Position as BspPosition
 import org.jetbrains.bsp.protocol.Range as BspRange
@@ -12,12 +10,14 @@ import org.jetbrains.bsp.protocol.Range as BspRange
 class DiagnosticBspMapper(private val workspaceRoot: Path) {
   fun createDiagnostics(diagnostics: List<Diagnostic>, originId: String): List<PublishDiagnosticsParams> =
     diagnostics
-      .groupBy { Pair(it.fileLocation, it.targetLabel) }
-      .map { kv ->
+      .groupBy {
+        val path = it.fileLocation?.let { workspaceRoot.resolve(it) }
+        Pair(path, it.targetLabel)
+      }.map { kv ->
         val bspDiagnostics = kv.value.map { createDiagnostic(it) }
-        val doc = TextDocumentIdentifier(toAbsoluteUri(kv.key.first))
+        val doc = kv.key.first?.let { TextDocumentIdentifier(it) }
         val publishDiagnosticsParams =
-          PublishDiagnosticsParams(doc, Label.parse(kv.key.second.toString()), originId = originId, bspDiagnostics, true)
+          PublishDiagnosticsParams(doc, kv.key.second, originId = originId, bspDiagnostics, true)
         publishDiagnosticsParams
       }
 
@@ -25,13 +25,5 @@ class DiagnosticBspMapper(private val workspaceRoot: Path) {
     val position = BspPosition(it.position.line - 1, it.position.character - 1)
     val range = BspRange(position, position)
     return BspDiagnostic(range, message = it.message, severity = it.level)
-  }
-
-  private fun toAbsoluteUri(rawFileLocation: String): String {
-    var path = Paths.get(rawFileLocation)
-    if (!path.isAbsolute) {
-      path = workspaceRoot.resolve(path)
-    }
-    return path.toUri().toString()
   }
 }

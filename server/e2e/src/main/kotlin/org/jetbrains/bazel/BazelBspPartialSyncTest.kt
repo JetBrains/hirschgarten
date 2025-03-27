@@ -49,10 +49,11 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
         // partial sync
         val partialSyncTargetId = Label.parse("$targetPrefix//java_targets:java_binary")
         val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
-        val javaHomeBazel5And6 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
+        val javaHomeBazel5And6 = Path("\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/")
         val javaHomeBazel7 =
-          "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java" +
-            "${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_\$OS$architecturePart/"
+          Path(
+            "\$BAZEL_OUTPUT_BASE_PATH/external/rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_\$OS$architecturePart/",
+          )
         val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
         val jvmBuildTarget =
           JvmBuildTarget(
@@ -70,9 +71,9 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
               canTest = false,
               canRun = true,
             ),
-            baseDirectory = "file://\$WORKSPACE/java_targets/",
+            baseDirectory = Path("\$WORKSPACE/java_targets/"),
             data = jvmBuildTarget,
-            sources = listOf(SourceItem("file://\$WORKSPACE/java_targets/JavaBinary.java", false, "java_targets")),
+            sources = listOf(SourceItem(Path("\$WORKSPACE/java_targets/JavaBinary.java"), false, "java_targets")),
             resources = emptyList(),
           )
 
@@ -87,10 +88,11 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
-    val javaHomeBazel5And6 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
+    val javaHomeBazel5And6 = Path("\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/")
     val javaHomeBazel7 =
-      "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java" +
-        "${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_\$OS$architecturePart/"
+      Path(
+        "\$BAZEL_OUTPUT_BASE_PATH/external/rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_\$OS$architecturePart/",
+      )
     val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
     val jvmBuildTarget =
       JvmBuildTarget(
@@ -109,9 +111,9 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
           canTest = false,
           canRun = false,
         ),
-        baseDirectory = "file://\$WORKSPACE/java_targets/",
+        baseDirectory = Path("\$WORKSPACE/java_targets/"),
         data = jvmBuildTarget,
-        sources = listOf(SourceItem("file://\$WORKSPACE/java_targets/JavaLibrary.java", false, "java_targets")),
+        sources = listOf(SourceItem(Path("\$WORKSPACE/java_targets/JavaLibrary.java"), false, "java_targets")),
         resources = emptyList(),
       )
 

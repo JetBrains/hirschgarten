@@ -15,7 +15,6 @@ import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bazel.workspacemodel.entities.isJvmOrAndroidTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
-import java.net.URI
 import java.nio.file.Path
 
 object TargetIdToModuleEntitiesMap {
@@ -23,7 +22,7 @@ object TargetIdToModuleEntitiesMap {
     projectDetails: ProjectDetails,
     targetIdToModuleDetails: Map<Label, ModuleDetails>,
     targetIdToTargetInfo: Map<Label, BuildTarget>,
-    fileToTarget: Map<URI, List<Label>>,
+    fileToTarget: Map<Path, List<Label>>,
     projectBasePath: Path,
     project: Project,
     nameProvider: TargetNameReformatProvider,

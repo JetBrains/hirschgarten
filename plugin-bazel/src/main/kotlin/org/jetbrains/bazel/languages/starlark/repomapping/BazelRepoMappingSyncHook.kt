@@ -10,10 +10,8 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.task.query
-import org.jetbrains.bazel.utils.safeCastToURI
-import java.net.URI
 import java.nio.file.Path
-import kotlin.io.path.toPath
+import kotlin.io.path.Path
 
 val Project.apparentRepoNameToCanonicalName: Map<String, String>
   get() = BazelRepoMappingService.getInstance(this).apparentRepoNameToCanonicalName
@@ -35,8 +33,7 @@ class BazelRepoMappingSyncHook : ProjectSyncHook {
         environment.server.workspaceBazelRepoMapping()
       }
     bazelRepoMappingService.apparentRepoNameToCanonicalName = bazelRepoMappingResult.apparentRepoNameToCanonicalName
-    bazelRepoMappingService.canonicalRepoNameToPath =
-      bazelRepoMappingResult.canonicalRepoNameToPath.mapValues { (_, uri) -> uri.safeCastToURI().toPath() }
+    bazelRepoMappingService.canonicalRepoNameToPath = bazelRepoMappingResult.canonicalRepoNameToPath
   }
 }
 
@@ -80,7 +77,7 @@ internal class BazelRepoMappingService : PersistentStateComponent<BazelRepoMappi
 
   override fun loadState(state: BazelRepoMappingServiceState) {
     apparentRepoNameToCanonicalName = state.apparentRepoNameToCanonicalName
-    canonicalRepoNameToPath = state.canonicalRepoNameToPath.mapValues { (_, uri) -> URI.create(uri).toPath() }
+    canonicalRepoNameToPath = state.canonicalRepoNameToPath.mapValues { (_, path) -> Path(path) }
   }
 
   companion object {

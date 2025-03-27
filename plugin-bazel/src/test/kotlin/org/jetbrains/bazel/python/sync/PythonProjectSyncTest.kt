@@ -13,6 +13,7 @@ import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.label.Label
@@ -37,6 +38,8 @@ import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.nio.file.Path
+import kotlin.io.path.Path
 
 private data class PythonTestSet(
   val buildTargets: WorkspaceBuildTargetsResult,
@@ -182,8 +185,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     val target =
       generateTarget(
         pythonBinary,
-        listOf(SourceItem("file:///SomeSourceItemFile", true)),
-        listOf("file:///Resource1", "file:///Resource2", "file:///Resource3"),
+        listOf(SourceItem(Path("/SomeSourceItemFile"), true)),
+        listOf(Path("/Resource1"), Path("/Resource2"), Path("/Resource3")),
       )
 
     val expectedModuleEntity = generateExpectedModuleEntity(pythonBinary, emptyList(), project.findNameProvider().orDefault())
@@ -203,7 +206,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   private fun generateTarget(
     info: GeneratedTargetInfo,
     sources: List<SourceItem>,
-    resources: List<String>,
+    resources: List<Path>,
   ): BuildTarget {
     val target =
       BuildTarget(
@@ -212,11 +215,11 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         listOf("python"),
         info.dependencies,
         BuildTargetCapabilities(),
-        baseDirectory = "file:///targets_base_dir",
+        baseDirectory = Path("/targets_base_dir"),
         data =
           PythonBuildTarget(
             version = "3",
-            interpreter = "file:///path/to/interpreter",
+            interpreter = Path("/path/to/interpreter"),
           ),
         sources = sources,
         resources = resources,
@@ -254,7 +257,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
 
   private fun generateExpectedSourceRootEntities(target: BuildTarget, parentModuleEntity: ModuleEntity): List<ExpectedSourceRootEntity> =
     target.sources.map {
-      val url = virtualFileUrlManager.getOrCreateFromUrl(it.uri)
+      val url = it.path.toVirtualFileUrl(virtualFileUrlManager)
       val sourceRootEntity = SourceRootEntity(url, SourceRootTypeId("python-source"), parentModuleEntity.entitySource)
       val contentRootEntity =
         ContentRootEntity(url, emptyList(), parentModuleEntity.entitySource) {
@@ -264,7 +267,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       ExpectedSourceRootEntity(sourceRootEntity, contentRootEntity, parentModuleEntity)
     } +
       target.resources.map {
-        val url = virtualFileUrlManager.getOrCreateFromUrl(it)
+        val url = it.toVirtualFileUrl(virtualFileUrlManager)
         val sourceRootEntity = SourceRootEntity(url, SourceRootTypeId("python-resource"), parentModuleEntity.entitySource)
         val contentRootEntity =
           ContentRootEntity(url, emptyList(), parentModuleEntity.entitySource) {

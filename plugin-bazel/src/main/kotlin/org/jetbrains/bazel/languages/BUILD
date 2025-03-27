@@ -17,6 +17,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/parser",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/task",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )

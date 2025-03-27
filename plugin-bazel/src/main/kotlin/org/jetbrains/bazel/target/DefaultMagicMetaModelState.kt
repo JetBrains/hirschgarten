@@ -3,6 +3,7 @@ package org.jetbrains.bazel.target
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import kotlin.io.path.Path
 
 data class BuildTargetState(
   var id: String = "",
@@ -18,7 +19,7 @@ data class BuildTargetState(
       capabilities = capabilities,
       tags = tags,
       languageIds = languageIds,
-      baseDirectory = baseDirectory,
+      baseDirectory = baseDirectory?.let { Path(it) },
       dependencies = emptyList(),
       sources = emptyList(),
       resources = emptyList(),
@@ -32,5 +33,5 @@ fun BuildTarget.toState(): BuildTargetState =
     capabilities = capabilities,
     tags = tags,
     languageIds = languageIds,
-    baseDirectory = baseDirectory,
+    baseDirectory = baseDirectory.toString(),
   )

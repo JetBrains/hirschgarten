@@ -59,7 +59,7 @@ val mockContext =
 
 val mockBazelInfo =
   BazelInfo(
-    execRoot = "execRoot",
+    execRoot = Path("execRoot"),
     outputBase = Path("outputBase"),
     workspaceRoot = Path("workspaceRoot"),
     bazelBin = Path("bazel-bin"),

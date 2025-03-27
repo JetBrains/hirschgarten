@@ -18,8 +18,9 @@ package org.jetbrains.bazel.hotswap
 import com.intellij.execution.RunCanceledByUserException
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.util.containers.MultiMap
-import java.io.File
 import java.io.IOException
+import java.nio.file.Path
+import java.nio.file.attribute.FileTime
 import java.util.concurrent.ExecutionException
 import java.util.jar.JarFile
 
@@ -29,19 +30,19 @@ import java.util.jar.JarFile
  * */
 class ClassFileManifest private constructor(
   // jar file timestamps
-  private val jarFileState: Map<File, Long>,
+  private val jarFileState: Map<Path, FileTime>,
   // per-jar manifest of .class file hashes
-  private val jarManifests: Map<File, JarManifest>,
+  private val jarManifests: Map<Path, JarManifest>,
 ) {
   /** A per-jar map of .class files changed between manifests  */
-  data class Diff(val perJarModifiedClasses: MultiMap<File, String>)
+  data class Diff(val perJarModifiedClasses: MultiMap<Path, String>)
 
   /** .class file manifest for a single jar.  */
-  private data class JarManifest(val jar: File, val nameToHash: Map<String, Long>) {
+  private data class JarManifest(val jar: Path, val nameToHash: Map<String, Long>) {
     companion object {
-      fun build(file: File): JarManifest? {
+      fun build(file: Path): JarManifest? {
         try {
-          val jar = JarFile(file)
+          val jar = JarFile(file.toFile())
           return JarManifest(
             file,
             jar
@@ -78,7 +79,7 @@ class ClassFileManifest private constructor(
 
     /** Returns a per-jar map of .class files changed in the new manifest  */
     fun modifiedClasses(oldManifest: ClassFileManifest?, newManifest: ClassFileManifest): Diff {
-      val map = MultiMap<File, String>()
+      val map = MultiMap<Path, String>()
       for (entry in newManifest.jarManifests.entries) {
         // quick test for object equality -- jars are often not rebuilt
         val old = oldManifest?.jarManifests[entry.key]
@@ -97,7 +98,7 @@ class ClassFileManifest private constructor(
       return Diff(map)
     }
 
-    fun build(jars: List<File>, previousManifest: ClassFileManifest?): ClassFileManifest {
+    fun build(jars: List<Path>, previousManifest: ClassFileManifest?): ClassFileManifest {
       try {
         val diff =
           FilesDiff.diffFileTimestamps(
@@ -105,7 +106,7 @@ class ClassFileManifest private constructor(
             jars,
           )
 
-        val jarManifests = mutableMapOf<File, JarManifest>()
+        val jarManifests = mutableMapOf<Path, JarManifest>()
         jars.forEach { file ->
           if (!diff.updatedFiles.contains(file)) {
             previousManifest?.jarManifests?.get(file)?.let { jarManifests.put(file, it) }
@@ -129,6 +130,6 @@ class ClassFileManifest private constructor(
       }
     }
 
-    private fun buildJarManifests(jars: Collection<File>): List<JarManifest> = jars.mapNotNull { jar -> JarManifest.build(jar) }
+    private fun buildJarManifests(jars: Collection<Path>): List<JarManifest> = jars.mapNotNull { jar -> JarManifest.build(jar) }
   }
 }

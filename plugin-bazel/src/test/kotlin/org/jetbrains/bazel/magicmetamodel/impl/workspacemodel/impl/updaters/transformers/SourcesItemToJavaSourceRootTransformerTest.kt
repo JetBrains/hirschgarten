@@ -10,9 +10,7 @@ import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.net.URI
 import kotlin.io.path.Path
-import kotlin.io.path.toPath
 
 @DisplayName("SourcesItemToWorkspaceModelJavaSourceRootTransformer.transform(sourcesItem)")
 class SourcesItemToJavaSourceRootTransformerTest {
@@ -39,7 +37,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val rootDir = "${projectBasePathURIStr}root/dir"
     val sourceItem =
       SourceItem(
-        uri = "$rootDir/example/package/File.java",
+        path = Path("$rootDir/example/package/File.java"),
         generated = false,
         jvmPackagePrefix = "example.package",
       )
@@ -61,7 +59,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     // then
     val expectedJavaSourceRoot =
       JavaSourceRoot(
-        sourcePath = URI.create("$rootDir/example/package/File.java").toPath(),
+        sourcePath = Path("$rootDir/example/package/File.java"),
         generated = false,
         packagePrefix = "example.package",
         rootType = SourceRootTypeId("java-source"),
@@ -76,7 +74,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val rootDir = "${projectBasePathURIStr}root/dir"
     val sourceItem =
       SourceItem(
-        uri = "$rootDir/example/package/File.java",
+        path = Path("$rootDir/example/package/File.java"),
         generated = false,
         jvmPackagePrefix = "example.package",
       )
@@ -98,7 +96,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     // then
     val expectedJavaSourceRoot =
       JavaSourceRoot(
-        sourcePath = URI.create("$rootDir/example/package/File.java").toPath(),
+        sourcePath = Path("$rootDir/example/package/File.java"),
         generated = false,
         packagePrefix = "example.package",
         rootType = SourceRootTypeId("java-test"),
@@ -115,13 +113,13 @@ class SourcesItemToJavaSourceRootTransformerTest {
 
     val sourceItem1 =
       SourceItem(
-        uri = "$rootDir/example/package/File1.java",
+        path = Path("$rootDir/example/package/File1.java"),
         generated = false,
         jvmPackagePrefix = "example.package",
       )
     val sourceItem2 =
       SourceItem(
-        uri = "$rootDir/example/package/File2.java",
+        path = Path("$rootDir/example/package/File2.java"),
         generated = false,
         jvmPackagePrefix = "example.package",
       )
@@ -143,14 +141,14 @@ class SourcesItemToJavaSourceRootTransformerTest {
     // then
     val expectedJavaSourceRoot1 =
       JavaSourceRoot(
-        sourcePath = URI.create("$rootDir/example/package/File1.java").toPath(),
+        sourcePath = Path("$rootDir/example/package/File1.java"),
         generated = false,
         packagePrefix = "example.package",
         rootType = SourceRootTypeId("java-source"),
       )
     val expectedJavaSourceRoot2 =
       JavaSourceRoot(
-        sourcePath = URI.create("$rootDir/example/package/File2.java").toPath(),
+        sourcePath = Path("$rootDir/example/package/File2.java"),
         generated = false,
         packagePrefix = "example.package",
         rootType = SourceRootTypeId("java-source"),
@@ -167,13 +165,13 @@ class SourcesItemToJavaSourceRootTransformerTest {
 
     val sourceItem1 =
       SourceItem(
-        "$rootDir/example/package/File1.java",
+        Path("$rootDir/example/package/File1.java"),
         false,
         jvmPackagePrefix = "example.package",
       )
     val sourceItem2 =
       SourceItem(
-        "$rootDir/example/package/File2.java",
+        Path("$rootDir/example/package/File2.java"),
         false,
         jvmPackagePrefix = "example.package",
       )
@@ -207,14 +205,14 @@ class SourcesItemToJavaSourceRootTransformerTest {
     // then
     val expectedJavaSourceRoot1 =
       JavaSourceRoot(
-        sourcePath = URI.create("$rootDir/example/package/File1.java").toPath(),
+        sourcePath = Path("$rootDir/example/package/File1.java"),
         generated = false,
         packagePrefix = "example.package",
         rootType = SourceRootTypeId("java-source"),
       )
     val expectedJavaSourceRoot2 =
       JavaSourceRoot(
-        sourcePath = URI.create("$rootDir/example/package/File2.java").toPath(),
+        sourcePath = Path("$rootDir/example/package/File2.java"),
         generated = false,
         packagePrefix = "example.package",
         rootType = SourceRootTypeId("java-source"),
@@ -226,17 +224,17 @@ class SourcesItemToJavaSourceRootTransformerTest {
   fun `should return source roots regardless they have source items in project base path or not`() {
     // given
     val rootDir = "${projectBasePathURIStr}root/dir"
-    val anotherRootDir = "file:///var/tmp/another/root/dir"
+    val anotherRootDir = Path("/var/tmp/another/root/dir")
 
     val sourceItem1 =
       SourceItem(
-        uri = "$rootDir/example/package/File1.java",
+        path = Path("$rootDir/example/package/File1.java"),
         generated = false,
         jvmPackagePrefix = "example.package",
       )
     val sourceItem2 =
       SourceItem(
-        uri = "$anotherRootDir/example/package/File2.java",
+        path = Path("$anotherRootDir/example/package/File2.java"),
         generated = false,
         jvmPackagePrefix = "example.package",
       )
@@ -271,14 +269,14 @@ class SourcesItemToJavaSourceRootTransformerTest {
     // then
     val expectedJavaSourceRoot1 =
       JavaSourceRoot(
-        sourcePath = URI.create("$rootDir/example/package/File1.java").toPath(),
+        sourcePath = Path("$rootDir/example/package/File1.java"),
         generated = false,
         packagePrefix = "example.package",
         rootType = SourceRootTypeId("java-source"),
       )
     val expectedJavaSourceRoot2 =
       JavaSourceRoot(
-        sourcePath = URI.create("$anotherRootDir/example/package/File2.java").toPath(),
+        sourcePath = Path("$anotherRootDir/example/package/File2.java"),
         generated = false,
         packagePrefix = "example.package",
         rootType = SourceRootTypeId("java-source"),

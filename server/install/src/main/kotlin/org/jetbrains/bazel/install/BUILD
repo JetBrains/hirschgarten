@@ -8,11 +8,11 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/constants",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
         "//protocol",
         "//server/executioncontext/projectview:generator",
         "//server/executioncontext/projectview:parser",
         "//server/install/src/main/kotlin/org/jetbrains/bazel/install/cli",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/utils:fileutils",
-        "@maven//:com_google_code_gson_gson",
     ],
 )

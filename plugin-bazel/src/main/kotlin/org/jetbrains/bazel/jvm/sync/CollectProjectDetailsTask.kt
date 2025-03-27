@@ -68,17 +68,16 @@ import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import org.jetbrains.kotlin.analysis.api.platform.analysisMessageBus
 import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinModificationTopics
-import java.net.URI
+import java.nio.file.Path
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
-import kotlin.io.path.toPath
 
 class CollectProjectDetailsTask(
   private val project: Project,
   private val taskId: String,
   private val diff: MutableEntityStorage,
 ) {
-  private var uniqueJavaHomes: Set<String>? = null
+  private var uniqueJavaHomes: Set<Path>? = null
 
   private lateinit var javacOptions: Map<String, String>
 
@@ -178,7 +177,7 @@ class CollectProjectDetailsTask(
         }
     }
 
-  private fun calculateAllUniqueJavaHomes(projectDetails: ProjectDetails): Set<String> =
+  private fun calculateAllUniqueJavaHomes(projectDetails: ProjectDetails): Set<Path> =
     projectDetails.targets
       .mapNotNull(::extractJvmBuildTarget)
       .map { it.javaHome }
@@ -264,7 +263,7 @@ class CollectProjectDetailsTask(
             projectDetails.targetIds.associateWith { transformer.moduleDetailsForTargetId(it) }
           }
 
-        val fileToTarget: Map<URI, List<Label>> = calculateFileToTarget(targetIdToModuleDetails)
+        val fileToTarget: Map<Path, List<Label>> = calculateFileToTarget(targetIdToModuleDetails)
 
         val targetIdToModuleEntitiesMap =
           bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
@@ -378,7 +377,7 @@ class CollectProjectDetailsTask(
         uniqueJavaHomes?.forEach {
           SdkUtils.addJdkIfNeeded(
             projectName = project.bazelProjectName,
-            javaHomeUri = it,
+            javaHome = it,
           )
         }
       }
@@ -448,7 +447,7 @@ class CollectProjectDetailsTask(
     for ((file, targets) in fileToTarget) {
       if (targets.size <= 1) continue
       if (!file.isSourceFile()) continue
-      if (IGNORED_NAMES_FOR_OVERLAPPING_SOURCES.any { file.path.endsWith(it) }) continue
+      if (IGNORED_NAMES_FOR_OVERLAPPING_SOURCES.any { file.endsWith(it) }) continue
       warnOverlappingSources(targets[0], targets[1], file)
       break
     }
@@ -457,7 +456,7 @@ class CollectProjectDetailsTask(
   private fun warnOverlappingSources(
     firstTarget: Label,
     secondTarget: Label,
-    source: URI,
+    source: Path,
   ) {
     BazelBalloonNotifier.warn(
       BazelPluginBundle.message("widget.collect.targets.overlapping.sources.title"),
@@ -465,7 +464,7 @@ class CollectProjectDetailsTask(
         "widget.collect.targets.overlapping.sources.message",
         firstTarget.toString(),
         secondTarget.toString(),
-        source.toPath().fileName,
+        source.fileName,
       ),
     )
   }

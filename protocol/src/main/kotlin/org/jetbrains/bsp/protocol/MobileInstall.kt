@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.protocol
 
 import org.jetbrains.bazel.label.Label
+import java.nio.file.Path
 
 /**
  * See [mobile-install docs](https://bazel.build/docs/user-manual#start)
@@ -17,7 +18,7 @@ public data class MobileInstallParams(
   val originId: String,
   val targetDeviceSerialNumber: String,
   val startType: MobileInstallStartType,
-  val adbPath: String?,
+  val adbPath: Path?,
 )
 
 public data class MobileInstallResult(val statusCode: StatusCode, var originId: String? = null)

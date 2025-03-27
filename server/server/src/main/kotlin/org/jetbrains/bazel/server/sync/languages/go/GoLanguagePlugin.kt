@@ -10,9 +10,8 @@ import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
-import java.net.URI
+import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.toPath
 
 class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, private val logger: BspClientLogger? = null) :
   LanguagePlugin<GoModule>() {
@@ -38,20 +37,19 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, priva
     if (!targetInfo.hasGoTargetInfo()) return null
     val goTargetInfo = targetInfo.goTargetInfo
     return GoModule(
-      sdkHomePath = calculateSdkURI(goTargetInfo.sdkHomePath),
+      sdkHomePath = calculateSdkPath(goTargetInfo.sdkHomePath),
       importPath = goTargetInfo.importpath,
-      generatedSources = goTargetInfo.generatedSourcesList.mapNotNull { bazelPathsResolver.resolveUri(it) },
-      generatedLibraries = goTargetInfo.generatedLibrariesList.mapNotNull { bazelPathsResolver.resolveUri(it) },
+      generatedSources = goTargetInfo.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it) },
+      generatedLibraries = goTargetInfo.generatedLibrariesList.mapNotNull { bazelPathsResolver.resolve(it) },
     )
   }
 
-  private fun calculateSdkURI(sdk: BspTargetInfo.FileLocation?): URI? =
+  private fun calculateSdkPath(sdk: BspTargetInfo.FileLocation?): Path? =
     sdk
       ?.takeUnless { it.relativePath.isNullOrEmpty() }
       ?.let {
-        val goBinaryPath = bazelPathsResolver.resolveUri(it).toPath()
-        val goSdkDir = goBinaryPath.parent.parent
-        goSdkDir.toUri()
+        val goBinaryPath = bazelPathsResolver.resolve(it)
+        goBinaryPath.parent.parent
       }
 
   /**
@@ -62,7 +60,7 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, priva
     for (local in params.localPaths) {
       try {
         val localAbs = Paths.get(local).toAbsolutePath().normalize()
-        val workspaceRoot = bazelPathsResolver.unresolvedWorkspaceRoot().toAbsolutePath().normalize()
+        val workspaceRoot = bazelPathsResolver.workspaceRoot()
         if (localAbs.startsWith(workspaceRoot)) {
           // If inside the main workspace, get a relative Bazel path:
           val relative = bazelPathsResolver.getWorkspaceRelativePath(localAbs)

@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.bazelrunner
 
-import com.google.gson.Gson
+import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 sealed interface ShowRepoResult {
@@ -78,7 +78,7 @@ class ModuleResolver(
     return moduleOutputParser.parseShowRepoResult(processResult)
   }
 
-  val gson = Gson()
+  val gson = bazelGson
 
   /**
    * Obtains the mappings from apparent repo names to canonical repo names in the context of `canonicalRepoName`.

@@ -7,8 +7,8 @@ kt_jvm_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
         "//commons/src/main/kotlin/org/jetbrains/bazel/label",
         "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bazel/workspacecontext",
-        "@maven//:com_google_code_gson_gson",
     ],
 )

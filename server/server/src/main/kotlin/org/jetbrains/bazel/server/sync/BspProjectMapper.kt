@@ -62,11 +62,8 @@ import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
-import java.net.URI
 import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.io.path.relativeToOrNull
-import kotlin.io.path.toPath
 
 class BspProjectMapper(
   private val languagePluginsService: LanguagePluginsService,
@@ -88,10 +85,10 @@ class BspProjectMapper(
       project.libraries.values.map {
         LibraryItem(
           id = it.label,
-          dependencies = it.dependencies.map { dep -> Label.parse(dep.toString()) },
-          ijars = it.interfaceJars.map { uri -> uri.toString() },
-          jars = it.outputs.map { uri -> uri.toString() },
-          sourceJars = it.sources.map { uri -> uri.toString() },
+          dependencies = it.dependencies,
+          ijars = it.interfaceJars.toList(),
+          jars = it.outputs.toList(),
+          sourceJars = it.sources.toList(),
           mavenCoordinates = it.mavenCoordinates,
         )
       }
@@ -124,7 +121,7 @@ class BspProjectMapper(
 
     val directoriesSection = project.workspaceContext.directories
 
-    val workspaceRoot = project.workspaceRoot.toPath()
+    val workspaceRoot = project.workspaceRoot
 
     val additionalDirectoriesToExclude = computeAdditionalDirectoriesToExclude(workspaceRoot)
     val directoriesToExclude = directoriesSection.excludedValues + additionalDirectoriesToExclude
@@ -142,10 +139,7 @@ class BspProjectMapper(
       is BzlmodRepoMapping ->
         WorkspaceBazelRepoMappingResult(
           apparentRepoNameToCanonicalName = repoMapping.apparentRepoNameToCanonicalName,
-          canonicalRepoNameToPath =
-            repoMapping.canonicalRepoNameToPath.mapValues { (_, path) ->
-              path.toUri().toString()
-            },
+          canonicalRepoNameToPath = repoMapping.canonicalRepoNameToPath,
         )
     }
   }
@@ -165,7 +159,6 @@ class BspProjectMapper(
     val languages = languages.flatMap(Language::allNames).distinct()
     val capabilities = inferCapabilities(tags)
     val tags = tags.mapNotNull(BspMappings::toBspTag)
-    val baseDirectory = BspMappings.toBspUri(baseDirectory)
     val buildTarget =
       BuildTarget(
         id = label,
@@ -184,7 +177,7 @@ class BspProjectMapper(
     val sourceItems =
       sourceSet.sources.map {
         SourceItem(
-          uri = it.source.toString(),
+          path = it.source,
           generated = false,
           jvmPackagePrefix = it.jvmPackagePrefix,
         )
@@ -192,15 +185,13 @@ class BspProjectMapper(
     val generatedSourceItems =
       sourceSet.generatedSources.map {
         SourceItem(
-          uri = it.source.toString(),
+          path = it.source,
           generated = true,
           jvmPackagePrefix = it.jvmPackagePrefix,
         )
       }
     return sourceItems + generatedSourceItems
   }
-
-  private fun Module.resources(): List<String> = resources.map(URI::toString)
 
   private fun Module.toBuildTarget(): BuildTarget {
     val label = label
@@ -209,7 +200,6 @@ class BspProjectMapper(
     val languages = languages.flatMap(Language::allNames).distinct()
     val capabilities = inferCapabilities(tags)
     val tags = tags.mapNotNull(BspMappings::toBspTag)
-    val baseDirectory = BspMappings.toBspUri(baseDirectory)
 
     val buildTarget =
       BuildTarget(
@@ -220,7 +210,7 @@ class BspProjectMapper(
         capabilities = capabilities,
         baseDirectory = baseDirectory,
         sources = sources(),
-        resources = resources(),
+        resources = resources.toList(),
       )
 
     applyLanguageData(this, buildTarget)
@@ -248,11 +238,9 @@ class BspProjectMapper(
   }
 
   suspend fun inverseSources(project: AspectSyncProject, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
-    val documentUri = BspMappings.toUri(inverseSourcesParams.textDocument)
     val documentRelativePath =
-      documentUri
-        .toPath()
-        .relativeToOrNull(project.workspaceRoot.toPath()) ?: throw RuntimeException("File path outside of project root")
+      inverseSourcesParams.textDocument.path
+        .relativeToOrNull(project.workspaceRoot) ?: throw RuntimeException("File path outside of project root")
     return InverseSourcesQuery.inverseSourcesQuery(documentRelativePath, bazelRunner, project.bazelRelease, project.workspaceContext)
   }
 
@@ -262,7 +250,7 @@ class BspProjectMapper(
         project
           .findModule(label)
           ?.sourceDependencies
-          ?.map(BspMappings::toBspUri)
+          ?.toList()
           .orEmpty()
       return DependencySourcesItem(label, sources)
     }
@@ -285,13 +273,13 @@ class BspProjectMapper(
   }
 
   private suspend fun getJvmEnvironmentItems(project: AspectSyncProject, targets: List<Label>): List<JvmEnvironmentItem> {
-    fun extractJvmEnvironmentItem(module: Module, runtimeClasspath: List<URI>): JvmEnvironmentItem? =
+    fun extractJvmEnvironmentItem(module: Module, runtimeClasspath: List<Path>): JvmEnvironmentItem? =
       module.javaModule?.let { javaModule ->
         JvmEnvironmentItem(
           module.label,
-          runtimeClasspath.map { it.toString() },
+          runtimeClasspath,
           javaModule.jvmOps.toList(),
-          bazelPathsResolver.unresolvedWorkspaceRoot().toString(),
+          bazelPathsResolver.workspaceRoot(),
           module.environmentVariables,
           mainClasses = javaModule.mainClass?.let { listOf(JvmMainClass(it, javaModule.args)) }.orEmpty(),
         )
@@ -308,7 +296,7 @@ class BspProjectMapper(
   fun jvmBinaryJars(project: AspectSyncProject, params: JvmBinaryJarsParams): JvmBinaryJarsResult {
     fun toJvmBinaryJarsItem(module: Module): JvmBinaryJarsItem? =
       module.javaModule?.let { javaModule ->
-        val jars = javaModule.binaryOutputs.map { it.toString() }
+        val jars = javaModule.binaryOutputs
         JvmBinaryJarsItem(module.label, jars)
       }
 
@@ -358,11 +346,10 @@ class BspProjectMapper(
     return ScalacOptionsResult(items)
   }
 
-  private fun resolveClasspath(cqueryResult: List<String>) =
+  private fun resolveClasspath(cqueryResult: List<Path>): List<Path> =
     cqueryResult
-      .map { bazelPathsResolver.resolveOutput(Paths.get(it)) }
+      .map { bazelPathsResolver.resolveOutput(it) }
       .filter { it.toFile().exists() } // I'm surprised this is needed, but we literally test it in e2e tests
-      .map { it.toUri() }
 
   private fun toScalacOptionsItem(module: Module): ScalacOptionsItem? =
     (module.languageData as? ScalaModule)?.let { scalaModule ->

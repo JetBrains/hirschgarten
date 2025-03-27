@@ -108,7 +108,7 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
           sources =
             sourceRoots.map {
               SourceItem(
-                uri = it.sourcePath.toUri().toString(),
+                path = it.sourcePath,
                 generated = false,
                 jvmPackagePrefix = it.packagePrefix,
               )

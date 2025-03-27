@@ -6,11 +6,9 @@ import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
-import java.net.URI
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.name
-import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.minutes
 
 abstract class BazelBspAndroidProjectTestBase : BazelBspTestBaseScenario() {
@@ -65,7 +63,7 @@ abstract class BazelBspAndroidProjectTestBase : BazelBspTestBaseScenario() {
         val result = session.server.workspaceLibraries()
         val appCompatLibrary = result.libraries.first { "androidx_appcompat_appcompat" in it.id.toShortString() }
 
-        val jars = appCompatLibrary.jars.toList().map { URI.create(it).toPath() }
+        val jars = appCompatLibrary.jars.toList()
         for (jar in jars) {
           require(jar.exists()) { "Jar $jar should exist" }
         }

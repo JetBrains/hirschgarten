@@ -12,12 +12,10 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.PythonOptionsItem
-import java.net.URI
 import java.nio.file.Path
-import kotlin.io.path.toPath
 
 class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<PythonModule>() {
-  private var defaultInterpreter: URI? = null
+  private var defaultInterpreter: Path? = null
   private var defaultVersion: String? = null
 
   override fun prepareSync(targets: Sequence<TargetInfo>, workspaceContext: WorkspaceContext) {
@@ -26,7 +24,7 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
       defaultTargetInfo
         ?.interpreter
         ?.takeUnless { it.relativePath.isNullOrEmpty() }
-        ?.let { bazelPathsResolver.resolveUri(it) }
+        ?.let { bazelPathsResolver.resolve(it) }
     defaultVersion = defaultTargetInfo?.version
   }
 
@@ -42,18 +40,18 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
   override fun resolveModule(targetInfo: TargetInfo): PythonModule? =
     targetInfo.pythonTargetInfo?.let { pythonTargetInfo ->
       PythonModule(
-        calculateInterpreterURI(interpreter = pythonTargetInfo.interpreter) ?: defaultInterpreter,
+        calculateInterpreterPath(interpreter = pythonTargetInfo.interpreter) ?: defaultInterpreter,
         pythonTargetInfo.version.takeUnless(String::isNullOrEmpty) ?: defaultVersion,
       )
     }
 
-  private fun calculateInterpreterURI(interpreter: FileLocation?): URI? =
+  private fun calculateInterpreterPath(interpreter: FileLocation?): Path? =
     interpreter
       ?.takeUnless { it.relativePath.isNullOrEmpty() }
-      ?.let { bazelPathsResolver.resolveUri(it) }
+      ?.let { bazelPathsResolver.resolve(it) }
 
   override fun applyModuleData(moduleData: PythonModule, buildTarget: BuildTarget) {
-    val interpreter = moduleData.interpreter?.toString()
+    val interpreter = moduleData.interpreter
     buildTarget.data =
       PythonBuildTarget(
         version = moduleData.version,
@@ -67,7 +65,7 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
       emptyList(),
     )
 
-  override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<URI> =
+  override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     if (targetInfo.hasPythonTargetInfo()) {
       dependencyGraph
         .transitiveDependenciesWithoutRootTargets(targetInfo.label())
@@ -81,9 +79,9 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
   private fun getExternalSources(targetInfo: TargetInfo): List<FileLocation> =
     targetInfo.sourcesList.mapNotNull { it.takeIf { it.isExternal } }
 
-  private fun calculateExternalSourcePath(externalSource: FileLocation): URI {
-    val path = bazelPathsResolver.resolveUri(externalSource).toPath()
-    return bazelPathsResolver.resolveUri(findSitePackagesSubdirectory(path) ?: path)
+  private fun calculateExternalSourcePath(externalSource: FileLocation): Path {
+    val path = bazelPathsResolver.resolve(externalSource)
+    return bazelPathsResolver.resolve(findSitePackagesSubdirectory(path) ?: path)
   }
 
   private tailrec fun findSitePackagesSubdirectory(path: Path?): Path? =

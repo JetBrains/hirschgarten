@@ -2,10 +2,10 @@ package org.jetbrains.bazel.workspacemodel.entities
 
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
-import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import java.nio.file.Path
+import kotlin.io.path.extension
 
 abstract class WorkspaceModelEntity
 
@@ -23,19 +23,19 @@ data class ResourceRoot(val resourcePath: Path, val rootType: SourceRootTypeId) 
 
 data class Library(
   val displayName: String,
-  val iJars: List<String> = listOf(),
-  val sourceJars: List<String> = listOf(),
-  val classJars: List<String> = listOf(),
+  val iJars: List<Path> = listOf(),
+  val sourceJars: List<Path> = listOf(),
+  val classJars: List<Path> = listOf(),
   val mavenCoordinates: MavenCoordinates? = null,
 ) : WorkspaceModelEntity(),
   ResourceRootEntity {
   companion object {
-    fun formatJarString(jar: String): String =
-      if (jar.endsWith(".jar")) {
-        "jar://${jar.safeCastToURI().path}!/"
+    fun formatJarString(jar: Path): String =
+      if (jar.extension == "jar") {
+        "jar://$jar!/"
       } else {
         // There can be other library roots except for jars, e.g., Android resources. Use the file:// scheme then.
-        jar
+        "file://$jar"
       }
   }
 }

@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.references
 
+import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
@@ -9,6 +11,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReferenceBase
+import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
@@ -16,11 +19,13 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.repomapping.apparentRepoNameToCanonicalName
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 import org.jetbrains.bazel.languages.starlark.repomapping.repositoryPaths
+import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.utils.allAncestorsSequence
 import java.nio.file.Path
 
@@ -36,6 +41,28 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
 
     return resolveLabel(project, label, element.containingFile.originalFile.virtualFile, true)
   }
+
+  override fun getVariants(): Array<LookupElement> {
+    val project = element.project
+    if (!project.isBazelProject || isInNameArgument() || !validLabelLocation()) return emptyArray()
+
+    val targetUtils = project.targetUtils
+    return targetUtils
+      .allTargets()
+      .map { targetLookupElement(it.toShortString()) }
+      .toTypedArray()
+  }
+
+  private fun validLabelLocation(): Boolean { // TODO: Correct label location validation.
+    val parent = element.parent ?: return false
+    return parent is StarlarkListLiteralExpression
+  }
+
+  private fun targetLookupElement(name: String): LookupElement =
+    LookupElementBuilder
+      .create("\"" + name + "\"")
+      .withIcon(PlatformIcons.PACKAGE_ICON)
+      .withPresentableText(name)
 
   private fun isInNameArgument(): Boolean {
     val parent = element.parent ?: return false

@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.testkit.client
 
 import kotlinx.coroutines.test.runTest
+import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.server.connection.startServer
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
@@ -24,7 +25,6 @@ import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.testkit.JsonComparator
-import org.jetbrains.bsp.testkit.gsonSealedSupport
 import java.nio.file.Path
 import kotlin.time.Duration
 
@@ -33,7 +33,7 @@ class TestClient(
   val transformJson: (String) -> String,
   val featureFlags: FeatureFlags,
 ) {
-  val gson = gsonSealedSupport
+  val gson = bazelGson
   val client = MockClient()
 
   inline fun <reified T> applyJsonTransform(element: T): T {
