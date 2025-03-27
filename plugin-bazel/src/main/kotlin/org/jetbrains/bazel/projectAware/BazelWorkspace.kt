@@ -20,13 +20,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.workspace.unregisterProjectExcludesIgnoredFileProvider
-import org.jetbrains.kotlin.tooling.core.Interner
-import org.jetbrains.kotlin.tooling.core.WeakInterner
 
 @Service(Service.Level.PROJECT)
 class BazelWorkspace(val project: Project) : Disposable {
   private var initialized = false
-  val interner: Interner = WeakInterner()
 
   @Synchronized
   fun initialize() {
