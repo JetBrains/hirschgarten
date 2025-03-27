@@ -19,7 +19,6 @@ import org.jetbrains.kotlin.asJava.getRepresentativeLightMethod
 import org.jetbrains.kotlin.asJava.toLightClass
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
-import java.net.URI
 
 class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurationProvider {
   override fun provideRunConfiguration(
@@ -46,11 +45,11 @@ class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurati
       setClassOrMethodConfiguration(callerPsiElement)
       classpathModifications.addAll(
         environment.classpath.map {
-          ModuleBasedConfigurationOptions.ClasspathModification(URI.create(it).path, false)
+          ModuleBasedConfigurationOptions.ClasspathModification(it.toString(), false)
         },
       )
       setModule(module)
-      workingDirectory = environment.workingDirectory
+      workingDirectory = environment.workingDirectory.toString()
       vmParameters += environment.jvmOptions.joinToString(" ", prefix = " ")
       envs = environment.environmentVariables + defineDefaultBazelEnvs(project, environment)
       shortenCommandLine = ShortenCommandLine.MANIFEST
