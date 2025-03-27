@@ -53,6 +53,7 @@ java_library(
             ":sdk",
             ":java",
             ":kotlin",
+            ":junit",
             ":platform_images",
         ],
     ),
