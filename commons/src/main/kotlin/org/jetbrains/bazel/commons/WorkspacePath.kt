@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.idea.blaze.base.model.primitives
+package org.jetbrains.bazel.commons
 
+import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
@@ -28,74 +29,82 @@ import kotlin.io.path.Path
  * names.
  */
 data class WorkspacePath private constructor(private val path: Path) {
-    val parent: WorkspacePath?
-        /**
-         * Returns the workspace path of this path's parent directory. Returns null if this is the
-         * workspace root.
-         */
-        get() {
-            if (this.isWorkspaceRoot) {
-                return null
-            }
-            val parentPath = path.parent
-            return parentPath?.let { WorkspacePath(it) }
-        }
+  /**
+   * @param relativePath relative path that must use the Blaze specific separator char to separate
+   * path components
+   * @throws IllegalArgumentException if the path is invalid
+   */
+  constructor(relativePath: String) : this(validateAndCreatePath(relativePath))
 
-    /** Returns this workspace path, relative to the workspace root.  */
-    fun asPath(): Path = path
+  constructor(parentPath: WorkspacePath, childPath: String) : this(
+    if (parentPath.isWorkspaceRoot) {
+      validateAndCreatePath(childPath)
+    } else {
+      validateAndCreatePath(parentPath.relativePath() + BLAZE_COMPONENT_SEPARATOR + childPath)
+    },
+  )
 
-    val isWorkspaceRoot: Boolean
-        get() = path.toString().isEmpty() || path.toString() == "."
-
-    override fun toString(): String {
-        return path.toString()
+  val parent: WorkspacePath?
+    /**
+     * Returns the workspace path of this path's parent directory. Returns null if this is the
+     * workspace root.
+     */
+    get() {
+      if (this.isWorkspaceRoot) {
+        return null
+      }
+      val parentPath = path.parent
+      return parentPath?.let { WorkspacePath(it) }
     }
 
-    fun relativePath(): String {
-        return path.toString()
+  /** Returns this workspace path, relative to the workspace root.  */
+  fun asPath(): Path = path
+
+  val isWorkspaceRoot: Boolean
+    get() = path.toString().isEmpty() || path.toString() == "."
+
+  override fun toString(): String = path.toString()
+
+  fun relativePath(): String = path.toString()
+
+  companion object {
+    /** Silently returns null if this is not a valid workspace path.  */
+    fun createIfValid(relativePath: String): WorkspacePath? = if (isValid(relativePath)) WorkspacePath(Path(relativePath)) else null
+
+    private const val BLAZE_COMPONENT_SEPARATOR = '/'
+
+    private fun normalizePathSeparator(relativePath: String): String =
+      if (SystemInfo.isWindows) relativePath.replace('\\', BLAZE_COMPONENT_SEPARATOR) else relativePath
+
+    private fun validateAndCreatePath(relativePath: String): Path {
+      val normalizedPath = normalizePathSeparator(relativePath)
+      val error = validate(normalizedPath)
+      require(error == null) { "Invalid workspace path '$relativePath': $error" }
+      return Paths.get(normalizedPath)
     }
 
-    companion object {
-        /** Silently returns null if this is not a valid workspace path.  */
-        fun createIfValid(relativePath: String): WorkspacePath? {
-            return if (isValid(relativePath)) WorkspacePath(Path(relativePath)) else null
-        }
+    fun isValid(relativePath: String): Boolean = validate(relativePath) == null
 
-        private const val BLAZE_COMPONENT_SEPARATOR = '/'
+    /** Validates a workspace path. Returns null on success or an error message otherwise.  */
+    fun validate(relativePath: String): String? {
+      if (relativePath.startsWith("/")) {
+        return "Workspace path must be relative; cannot start with '/': " + relativePath
+      }
+      if (relativePath.startsWith("../")) {
+        return (
+          "Workspace path must be inside the workspace; cannot start with '../': " +
+            relativePath
+        )
+      }
+      if (relativePath.endsWith("/")) {
+        return "Workspace path may not end with '/': " + relativePath
+      }
 
-        private fun normalizePathSeparator(relativePath: String): String {
-            return if (SystemInfo.isWindows) relativePath.replace('\\', BLAZE_COMPONENT_SEPARATOR) else relativePath
-        }
+      if (relativePath.indexOf(':') >= 0) {
+        return "Workspace path may not contain ':': " + relativePath
+      }
 
-        private fun validateAndCreatePath(relativePath: String): Path {
-            val normalizedPath = normalizePathSeparator(relativePath)
-            val error = validate(normalizedPath)
-            require(error == null) { "Invalid workspace path '$relativePath': $error" }
-            return Paths.get(normalizedPath)
-        }
-
-        fun isValid(relativePath: String): Boolean {
-            return validate(relativePath) == null
-        }
-
-        /** Validates a workspace path. Returns null on success or an error message otherwise.  */
-        fun validate(relativePath: String): String? {
-            if (relativePath.startsWith("/")) {
-                return "Workspace path must be relative; cannot start with '/': " + relativePath
-            }
-            if (relativePath.startsWith("../")) {
-                return ("Workspace path must be inside the workspace; cannot start with '../': "
-                        + relativePath)
-            }
-            if (relativePath.endsWith("/")) {
-                return "Workspace path may not end with '/': " + relativePath
-            }
-
-            if (relativePath.indexOf(':') >= 0) {
-                return "Workspace path may not contain ':': " + relativePath
-            }
-
-            return null
-        }
+      return null
     }
+  }
 }
