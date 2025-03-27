@@ -42,13 +42,13 @@ class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurati
     environment: JvmEnvironmentItem,
   ): JUnitConfiguration =
     JUnitConfiguration(configurationName, project).apply {
+      setModule(module)
       setClassOrMethodConfiguration(callerPsiElement)
       classpathModifications.addAll(
         environment.classpath.map {
           ModuleBasedConfigurationOptions.ClasspathModification(it.toString(), false)
         },
       )
-      setModule(module)
       workingDirectory = environment.workingDirectory.toString()
       vmParameters += environment.jvmOptions.joinToString(" ", prefix = " ")
       envs = environment.environmentVariables + defineDefaultBazelEnvs(project, environment)
