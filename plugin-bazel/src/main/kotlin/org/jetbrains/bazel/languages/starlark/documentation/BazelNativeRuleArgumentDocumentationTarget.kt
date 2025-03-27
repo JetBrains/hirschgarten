@@ -26,6 +26,6 @@ class BazelNativeRuleArgumentDocumentationTarget(symbol: BazelNativeRuleArgument
         return null
       }
       val html = nativeRuleArgument.docString
-      DocumentationResult.documentation(html.toString())
+      DocumentationResult.documentation(html)
     }
 }

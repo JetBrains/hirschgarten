@@ -9,7 +9,7 @@ data class BazelNativeRuleArgument(
 
 data class BazelNativeRule(
   val name: String,
-  val docsLink: String,
+  val docsLink: String?,
   val arguments: Set<BazelNativeRuleArgument>,
   val docString: String = "",
 )

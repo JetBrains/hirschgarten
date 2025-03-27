@@ -5,7 +5,7 @@ val RULES =
     setOf(
       BazelNativeRule(
         "java_binary",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument(
@@ -400,7 +400,7 @@ java_binary(
       ),
       BazelNativeRule(
         "java_import",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument("data", """[]""", false, """The list of files needed by this rule at runtime."""),
@@ -502,7 +502,7 @@ This corresponds to the javac and JVM --add-opens= flags.""",
       ),
       BazelNativeRule(
         "java_library",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument(
@@ -748,7 +748,7 @@ This corresponds to the javac and JVM --add-opens= flags.""",
       ),
       BazelNativeRule(
         "java_plugin",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument(
@@ -976,7 +976,7 @@ java.util.ServiceLoader.)""",
       ),
       BazelNativeRule(
         "java_test",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument(
@@ -1358,7 +1358,7 @@ java_test(
       ),
       BazelNativeRule(
         "java_package_configuration",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument(
@@ -1415,7 +1415,7 @@ java_toolchain(
       ),
       BazelNativeRule(
         "java_runtime",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument(
@@ -1492,7 +1492,7 @@ java_runtime(
       ),
       BazelNativeRule(
         "java_toolchain",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument(
@@ -1770,7 +1770,7 @@ java_toolchain(
     setOf(
       BazelNativeRule(
         "kt_javac_options",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument("warn", """"report"""", false, """Control warning behaviour."""),
@@ -1785,7 +1785,7 @@ java_toolchain(
       ),
       BazelNativeRule(
         "kt_kotlinc_options",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument("warn", """"report"""", false, """Control warning behaviour."""),
@@ -1926,7 +1926,7 @@ This also sets the value of '-jvm-target' to be equal to the selected JDK versio
       ),
       BazelNativeRule(
         "kt_compiler_plugin",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument("deps", """[]""", false, """The list of libraries to be added to the compiler's plugin classpath"""),
@@ -1992,7 +1992,7 @@ kt_jvm_library(
       ),
       BazelNativeRule(
         "kt_ksp_plugin",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument(
@@ -2045,7 +2045,7 @@ kt_jvm_library(
       ),
       BazelNativeRule(
         "kt_plugin_cfg",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument("plugin", """""""", true, """The plugin to associate with this configuration"""),
@@ -2065,7 +2065,7 @@ This allows setting options and dependencies independently from the initial plug
     setOf(
       BazelNativeRule(
         "kt_javac_options",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument("warn", """"report"""", false, """Control warning behaviour."""),
@@ -2090,7 +2090,7 @@ This allows setting options and dependencies independently from the initial plug
       ),
       BazelNativeRule(
         "kt_jvm_binary",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument(
@@ -2201,7 +2201,7 @@ It is appropriate for building workspace utilities. <code>java_binary</code> sho
       ),
       BazelNativeRule(
         "kt_jvm_import",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument(
@@ -2287,7 +2287,7 @@ kt_jvm_import(
       ),
       BazelNativeRule(
         "kt_jvm_library",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument(
@@ -2405,7 +2405,7 @@ this is not transitive""",
       ),
       BazelNativeRule(
         "kt_jvm_test",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument(
@@ -2529,7 +2529,7 @@ support make variable substitution.""",
     setOf(
       BazelNativeRule(
         "ktlint_fix",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument("srcs", """""""", true, """Source files to review and fix"""),
@@ -2539,7 +2539,7 @@ support make variable substitution.""",
       ),
       BazelNativeRule(
         "ktlint_test",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument("srcs", """""""", true, """Source files to lint"""),
@@ -2549,7 +2549,7 @@ support make variable substitution.""",
       ),
       BazelNativeRule(
         "ktlint_config",
-        "",
+        null,
         setOf(
           BazelNativeRuleArgument("name", """""""", true, """A unique name for this target."""),
           BazelNativeRuleArgument("editorconfig", """None""", false, """Editor config file to use"""),

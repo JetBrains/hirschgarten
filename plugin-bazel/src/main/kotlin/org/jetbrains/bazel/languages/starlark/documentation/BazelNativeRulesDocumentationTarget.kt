@@ -23,7 +23,7 @@ class BazelNativeRulesDocumentationTarget(symbol: BazelNativeRuleDocumentationSy
   override fun computeDocumentation(): DocumentationResult? =
     symbolPtr.dereference().run {
       val html =
-        if (nativeRule.docString != "") {
+        if (nativeRule.docString != null) {
           nativeRule.docString
         } else {
           "External documentation for ${nativeRule.name}: <a href=${nativeRule.docsLink}>${nativeRule.docsLink}</a>"
