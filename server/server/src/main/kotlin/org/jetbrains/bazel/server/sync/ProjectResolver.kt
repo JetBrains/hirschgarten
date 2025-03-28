@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.server.sync
 
+import androidx.compose.runtime.key
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.performance.bspTracer
@@ -134,7 +136,8 @@ class ProjectResolver(
                 v
                   .toBuilder()
                   .apply {
-                    id = label.toString()
+                    val key = BspTargetInfo.TargetKey.newBuilder().setLabel(label.toString()).build()
+                    setKey(key)
                     val canonicalizedDependencies =
                       dependenciesBuilderList.map {
                         it

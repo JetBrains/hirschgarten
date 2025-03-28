@@ -23,8 +23,8 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
 
   override fun resolveModule(targetInfo: TargetInfo): JavaModule? =
     targetInfo.takeIf(TargetInfo::hasJvmTargetInfo)?.jvmTargetInfo?.run {
-      val mainOutput = bazelPathsResolver.resolve(getJars(0).getBinaryJars(0))
-      val binaryOutputs = jarsList.flatMap { it.binaryJarsList }.map(bazelPathsResolver::resolve)
+      val mainOutput = bazelPathsResolver.resolve(getJars(0).binaryJar)
+      val binaryOutputs = jarsList.mapNotNull { it.binaryJar }.map(bazelPathsResolver::resolve)
       val mainClass = getMainClass(this)
       val runtimeJdk = jdkResolver.resolveJdk(targetInfo)
 

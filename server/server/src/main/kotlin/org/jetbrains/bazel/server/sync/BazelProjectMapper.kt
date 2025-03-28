@@ -255,7 +255,7 @@ class BazelProjectMapper(
     targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true)?.let { library ->
+        createLibrary(Label.parse(target.key.label + "_output_jars"), target, onlyOutputJars = true)?.let { library ->
           target.label() to listOf(library)
         }
       }.toMap()
@@ -269,12 +269,12 @@ class BazelProjectMapper(
     targetsToImport
       .filter { it.jvmTargetInfo.generatedJarsList.isNotEmpty() }
       .associate { targetInfo ->
-        targetInfo.id to
+        targetInfo.key.label to
           Library(
-            label = Label.parse(targetInfo.id + "_generated"),
+            label = Label.parse(targetInfo.key.label + "_generated"),
             outputs =
               targetInfo.jvmTargetInfo.generatedJarsList
-                .flatMap { it.binaryJarsList }
+                .mapNotNull { it.binaryJar }
                 .map { bazelPathsResolver.resolve(it) }
                 .toSet(),
             sources =
@@ -411,7 +411,7 @@ class BazelProjectMapper(
     val androidTargetInfo = target.androidTargetInfo
     if (!androidTargetInfo.hasAidlBinaryJar()) return null
 
-    val libraryLabel = Label.parse(target.id + "_aidl")
+    val libraryLabel = Label.parse(target.key.label + "_aidl")
     if (target.sourcesList.isEmpty()) {
       // Bazel doesn't create the AIDL jar if there's no sources, since it'd be the same as the output jar
       return null
@@ -577,8 +577,8 @@ class BazelProjectMapper(
     }
 
   private fun dependencyJarsFromJdepsFiles(targetInfo: TargetInfo): Set<Path> =
-    targetInfo.jvmTargetInfo.jdepsList
-      .flatMap { jdeps ->
+    targetInfo.jvmTargetInfo.jdeps
+      .let { jdeps ->
         val path = bazelPathsResolver.resolve(jdeps)
         if (path.toFile().exists()) {
           val dependencyList =
@@ -848,16 +848,16 @@ class BazelProjectMapper(
 
   private fun getTargetOutputJarsSet(targetInfo: TargetInfo) = getTargetOutputJarsList(targetInfo).toSet()
 
-  private fun getTargetOutputJarsList(targetInfo: TargetInfo) =
+  private fun getTargetOutputJarsList(targetInfo: TargetInfo): List<Path> =
     targetInfo.jvmTargetInfo.jarsList
-      .flatMap { it.binaryJarsList }
+      .mapNotNull { it.binaryJar }
       .map { bazelPathsResolver.resolve(it) }
 
   private fun getTargetInterfaceJarsSet(targetInfo: TargetInfo) = getTargetInterfaceJarsList(targetInfo).toSet()
 
-  private fun getTargetInterfaceJarsList(targetInfo: TargetInfo) =
+  private fun getTargetInterfaceJarsList(targetInfo: TargetInfo): List<Path> =
     targetInfo.jvmTargetInfo.jarsList
-      .flatMap { it.interfaceJarsList }
+      .mapNotNull { it.interfaceJar }
       .map { bazelPathsResolver.resolve(it) }
 
   private fun getGoRootPath(targetInfo: TargetInfo): Path = targetInfo.label().assumeResolved().toDirectoryPath()
@@ -1029,13 +1029,13 @@ class BazelProjectMapper(
         .map(bazelPathsResolver::resolve)
         .partition { it.exists() }
 
-    nonExistentSources.forEach { it.logNonExistingFile(target.id) }
+    nonExistentSources.forEach { it.logNonExistingFile(target.key.label) }
     val generatedSources =
       target.generatedSourcesList
         .toSet()
         .map(bazelPathsResolver::resolve)
         .filter { it.extension != "srcjar" }
-        .onEach { if (it.notExists()) it.logNonExistingFile(target.id) }
+        .onEach { if (it.notExists()) it.logNonExistingFile(target.key.label) }
         .filter { it.exists() }
 
     val sourceRootsAndData = sources.map { it to languagePlugin.calculateSourceRootAndAdditionalData(it) }

@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.sync.dependencygraph
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.Dependency
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
@@ -588,7 +589,7 @@ class DependencyGraphTest {
     val dependencies = dependenciesIds.map(::dependency)
     return TargetInfo
       .newBuilder()
-      .setId(id)
+      .setKey(BspTargetInfo.TargetKey.newBuilder().setLabel(id).build())
       .addAllDependencies(dependencies)
       .build()
   }
@@ -596,5 +597,5 @@ class DependencyGraphTest {
   private fun dependency(id: String): Dependency = Dependency.newBuilder().setId(id).build()
 
   private fun toIdToTargetInfoMap(vararg targetIds: TargetInfo): Map<Label, TargetInfo> =
-    targetIds.associateBy { targetId -> Label.parse(targetId.id) }
+    targetIds.associateBy { targetId -> Label.parse(targetId.key.label) }
 }
