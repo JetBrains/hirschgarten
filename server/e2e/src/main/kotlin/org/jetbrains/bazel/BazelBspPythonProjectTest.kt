@@ -1,9 +1,8 @@
 package org.jetbrains.bazel
 
+import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
-import org.jetbrains.bazel.commons.utils.OsArch
-import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
@@ -36,8 +35,8 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
     )
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val architecturePart = if (OsArch.inferFromSystem() == OsArch.ARM64) "aarch64" else "x86_64"
-    val osPart = if (OsFamily.inferFromSystem() == OsFamily.MACOS) "apple-darwin" else "unknown-linux-gnu"
+    val architecturePart = if (SystemInfo.isAarch64) "aarch64" else "x86_64"
+    val osPart = if (SystemInfo.isMac) "apple-darwin" else "unknown-linux-gnu"
     val workspaceInterpreterPath = Path("\$BAZEL_OUTPUT_BASE_PATH/external/python3_9_$architecturePart-$osPart/bin/python3")
     val bzlmodInterpreterPath =
       Path(

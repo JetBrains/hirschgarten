@@ -1,8 +1,8 @@
 package org.jetbrains.bazel
 
+import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
-import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
@@ -73,7 +73,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     }
 
   private val bazelArch =
-    if (OsFamily.inferFromSystem() == OsFamily.MACOS) {
+    if (SystemInfo.isMac) {
       "darwin_arm64"
     } else {
       "k8"

@@ -1,11 +1,10 @@
 package org.jetbrains.bazel.workspacecontext.provider
 
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.EnvironmentUtil
 import org.apache.commons.io.FileUtils.copyURLToFile
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.commons.FileUtils
-import org.jetbrains.bazel.commons.utils.OsArch
-import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractorException
 import org.jetbrains.bazel.projectview.model.ProjectView
@@ -76,15 +75,14 @@ internal object BazelBinarySpecExtractor : ExecutionContextEntityExtractor<Bazel
 
   private fun calculateBazeliskDownloadLink(): String? {
     val base = "https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-"
-    val os = OsFamily.Companion.inferFromSystem()
-    val arch = OsArch.Companion.inferFromSystem()
+    val isArm = SystemInfo.isAarch64
     val suffix =
-      when (Pair(os, arch)) {
-        Pair(OsFamily.WINDOWS, OsArch.X64) -> "windows-amd64.exe"
-        Pair(OsFamily.LINUX, OsArch.X64) -> "linux-amd64"
-        Pair(OsFamily.LINUX, OsArch.ARM64) -> "linux-arm64"
-        Pair(OsFamily.MACOS, OsArch.X64) -> "darwin"
-        Pair(OsFamily.MACOS, OsArch.ARM64) -> "darwin"
+      when {
+        SystemInfo.isMac -> "darwin"
+        SystemInfo.isWindows && !isArm -> "windows-amd64.exe"
+        SystemInfo.isWindows && isArm -> "windows-arm64.exe"
+        SystemInfo.isLinux && !isArm -> "linux-amd64"
+        SystemInfo.isLinux && isArm -> "linux-arm64"
         else -> null
       }
     if (suffix == null) {
@@ -111,7 +109,7 @@ internal object BazelBinarySpecExtractor : ExecutionContextEntityExtractor<Bazel
 
   private fun calculateExecutableName(name: String): String =
     when {
-      OsFamily.Companion.inferFromSystem() == OsFamily.WINDOWS -> "$name.exe"
+      SystemInfo.isWindows -> "$name.exe"
       else -> name
     }
 }

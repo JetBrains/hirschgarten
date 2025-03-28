@@ -8,7 +8,6 @@ kt_jvm_library(
         "//server/executioncontext/api",
     ],
     deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/utils",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/bazelrunner:params",
         "//server/executioncontext/api",

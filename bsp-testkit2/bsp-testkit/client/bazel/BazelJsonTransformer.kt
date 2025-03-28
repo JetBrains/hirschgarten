@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.testkit.client.bazel
 
-import org.jetbrains.bazel.commons.utils.OsFamily
+import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Path
 
 class BazelJsonTransformer(
@@ -17,9 +17,9 @@ class BazelJsonTransformer(
 
   companion object {
     private val osFamily: String =
-      when (OsFamily.inferFromSystem()) {
-        OsFamily.WINDOWS -> "win"
-        OsFamily.MACOS -> "macos"
+      when {
+        SystemInfo.isWindows -> "win"
+        SystemInfo.isMac -> "macos"
         else -> "linux"
       }
   }

@@ -14,9 +14,9 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.SystemInfo
 import io.kotest.matchers.maps.shouldContainExactly
 import org.jetbrains.bazel.action.SuspendableAction
-import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.Test
@@ -272,9 +272,8 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
   fun `should display diagnostic messages correctly`() {
     val basePath = "/project/"
     val fileURI = Path("/home/directory/project/src/test/Start.kt")
-    val os = OsFamily.inferFromSystem()
     val filePositionPath =
-      if (os == OsFamily.WINDOWS) {
+      if (SystemInfo.isWindows) {
         """C:\home\directory\project\src\test\Start.kt"""
       } else {
         "/home/directory/project/src/test/Start.kt"
