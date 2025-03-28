@@ -19,35 +19,35 @@ import java.nio.file.Paths
 
 /** Represents a blaze-produced artifact.  */
 class ArtifactLocation
-private constructor(
+  private constructor(
     val rootExecutionPathFragment: String,
     /**
      * The root-relative path. For external workspace artifacts, this is relative to the external
      * workspace root.
      */
-    val relativePath: String, val isSource: Boolean, val isExternal: Boolean
-) : Comparable<ArtifactLocation> {
+    val relativePath: String,
+    val isSource: Boolean,
+    val isExternal: Boolean,
+  ) : Comparable<ArtifactLocation> {
     val isGenerated: Boolean
-        get() = !this.isSource
+      get() = !this.isSource
 
     val isMainWorkspaceSourceArtifact: Boolean
-        /** Returns false for generated or external artifacts  */
-        get() = this.isSource && !this.isExternal
+      /** Returns false for generated or external artifacts  */
+      get() = this.isSource && !this.isExternal
 
     val executionRootRelativePath: String
-        /** For main-workspace source artifacts, this is simply the workspace-relative path.  */
-        get() = Paths.get(this.rootExecutionPathFragment, this.relativePath).toString()
+      /** For main-workspace source artifacts, this is simply the workspace-relative path.  */
+      get() = Paths.get(this.rootExecutionPathFragment, this.relativePath).toString()
 
-    override fun toString(): String {
-        return this.executionRootRelativePath
-    }
+    override fun toString(): String = this.executionRootRelativePath
 
-    override fun compareTo(o: ArtifactLocation): Int {
-        return com.google.common.collect.ComparisonChain.start()
-            .compare(this.rootExecutionPathFragment, o.rootExecutionPathFragment)
-            .compare(this.relativePath, o.relativePath)
-            .compareFalseFirst(this.isSource, o.isSource)
-            .compareFalseFirst(this.isExternal, o.isExternal)
-            .result()
-    }
-}
+    override fun compareTo(o: ArtifactLocation): Int =
+      com.google.common.collect.ComparisonChain
+        .start()
+        .compare(this.rootExecutionPathFragment, o.rootExecutionPathFragment)
+        .compare(this.relativePath, o.relativePath)
+        .compareFalseFirst(this.isSource, o.isSource)
+        .compareFalseFirst(this.isExternal, o.isExternal)
+        .result()
+  }
