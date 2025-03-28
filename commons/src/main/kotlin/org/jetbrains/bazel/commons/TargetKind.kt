@@ -19,11 +19,15 @@ import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap
 import com.google.common.collect.Multimaps
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.bazel.info.BspTargetInfo
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
+
+// For compatibility with OG
+typealias Kind = TargetKind
 
 /**
  * A set of recognized blaze rule names, together with [LanguageClass] and [RuleType].
@@ -33,7 +37,7 @@ import java.util.function.Function
  *
  * Each rule name maps to at most one Kind.
  */
-data class Kind(
+data class TargetKind(
   val kindString: String,
   val languageClasses: Set<LanguageClass>,
   val ruleType: RuleType,
@@ -47,9 +51,9 @@ data class Kind(
    */
   interface Provider {
     /** A set of rule names known at compile time.  */
-    val targetKinds: Set<Kind>
+    val targetKinds: Set<TargetKind>
 
-    val targetKindHeuristics: Function<BspTargetInfo.TargetInfo, Kind?>
+    val targetKindHeuristics: Function<BspTargetInfo.TargetInfo, TargetKind?>
       /**
        * A heuristic to identify additional target kinds at runtime which aren't known up-front. For
        * example, any rule name starting with 'kt_jvm_' might be parsed as a kotlin rule of unknown
@@ -68,15 +72,15 @@ data class Kind(
    * application, so for example needs to be reset between unit test runs with manual extension
    * point setup.
    */
-  @com.google.common.annotations.VisibleForTesting
+  @Service
   class ApplicationState {
     /** An internal map of all known rule types.  */
-    val stringToKind: MutableMap<String, Kind> =
+    val stringToKind: MutableMap<String, TargetKind> =
       Collections.synchronizedMap(HashMap())
 
     /** An internal map of all known rule types.  */
-    val perLanguageKinds: Multimap<LanguageClass, Kind> =
-      Multimaps.synchronizedSetMultimap<LanguageClass, Kind>(HashMultimap.create())
+    val perLanguageKinds: Multimap<LanguageClass, TargetKind> =
+      Multimaps.synchronizedSetMultimap<LanguageClass, TargetKind>(HashMultimap.create())
 
     init {
       // initialize the global state
@@ -86,7 +90,7 @@ data class Kind(
     }
 
     /** Add the Kind instance to the global map, or returns an existing kind with this rule name.  */
-    fun cacheIfNecessary(kind: Kind): Kind {
+    fun cacheIfNecessary(kind: TargetKind): TargetKind {
       val existing = stringToKind.putIfAbsent(kind.kindString, kind)
       if (existing != null) {
         return existing
@@ -111,7 +115,7 @@ data class Kind(
     }
   }
 
-  fun isOneOf(vararg kinds: Kind): Boolean = kinds.contains(this)
+  fun isOneOf(vararg kinds: TargetKind): Boolean = kinds.contains(this)
 
   val isWebTest: Boolean
     get() = this.ruleType == RuleType.TEST && this.kindString.endsWith("web_test")
@@ -129,7 +133,7 @@ data class Kind(
      */
     private const val RULE_NAME_PREFIX_TRANSITION = "_transition_"
 
-    fun fromProto(proto: BspTargetInfo.TargetInfo): Kind? {
+    fun fromProto(proto: BspTargetInfo.TargetInfo): TargetKind? {
       val existing = fromRuleName(proto.getKind())
       if (existing != null) {
         return existing
@@ -142,7 +146,7 @@ data class Kind(
       return derived
     }
 
-    fun fromRuleName(ruleName: String): Kind? {
+    fun fromRuleName(ruleName: String): TargetKind? {
       var ruleName = ruleName
       if (ruleName.startsWith(RULE_NAME_PREFIX_TRANSITION)) {
         ruleName = ruleName.substring(RULE_NAME_PREFIX_TRANSITION.length)
@@ -150,7 +154,7 @@ data class Kind(
       return ApplicationState.service.stringToKind[ruleName]
     }
 
-    val perLanguageKinds: Multimap<LanguageClass, Kind>
+    val perLanguageKinds: Multimap<LanguageClass, TargetKind>
       /**
        * Returns a per-language map of rule kinds handled by an available [Provider].
        *
@@ -166,7 +170,7 @@ data class Kind(
         }
       }
 
-    fun getKindsForLanguage(language: LanguageClass): Set<Kind> = perLanguageKinds.get(language).toSet()
+    fun getKindsForLanguage(language: LanguageClass): Set<TargetKind> = perLanguageKinds.get(language).toSet()
 
     /** If rule type isn't recognized, uses a heuristic to guess the rule type.  */
     fun guessRuleType(ruleName: String): RuleType? {
