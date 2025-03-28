@@ -5,8 +5,8 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/utils",
         "//protocol",
+        "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
         "@maven//:commons_io_commons_io",

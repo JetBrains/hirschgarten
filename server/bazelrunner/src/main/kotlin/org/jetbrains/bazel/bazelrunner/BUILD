@@ -7,7 +7,6 @@ kt_jvm_library(
     visibility = ["//server/bazelrunner:__subpackages__"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
-        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/utils",
         "//protocol",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/outputs",

@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.bazelrunner
 
+import com.intellij.openapi.util.SystemInfo
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import java.io.IOException
@@ -287,7 +287,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
 
     private fun excludeManualTargetsQueryString(targetString: String): String =
-      if (OsFamily.inferFromSystem() == OsFamily.WINDOWS) {
+      if (SystemInfo.isWindows) {
         "attr('tags', '^((?!manual).)*$', $targetString)"
       } else {
         "attr(\"tags\", \"^((?!manual).)*$\", $targetString)"

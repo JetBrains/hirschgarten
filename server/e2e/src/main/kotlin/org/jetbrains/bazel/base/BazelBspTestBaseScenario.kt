@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.base
 
-import org.jetbrains.bazel.commons.utils.OsFamily
+import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
@@ -31,7 +31,7 @@ abstract class BazelBspTestBaseScenario {
 
   private val bazelArch
     get() =
-      if (OsFamily.inferFromSystem() == OsFamily.MACOS) {
+      if (SystemInfo.isMac) {
         "darwin_arm64"
       } else {
         "k8"
