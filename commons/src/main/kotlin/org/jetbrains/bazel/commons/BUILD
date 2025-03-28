@@ -15,6 +15,5 @@ kt_jvm_library(
         "//commons/src/main/kotlin/org/jetbrains/bazel/label",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto",
-        "//commons/src/main/kotlin/org/jetbrains/bazel/label",
     ],
 )

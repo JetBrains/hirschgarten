@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.server.sync.firstPhase
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.model.Language
@@ -36,11 +38,19 @@ class FirstPhaseTargetToBspMapper(private val workspaceRoot: Path) {
     BuildTarget(
       id = Label.parse(name),
       tags = inferTags(),
+      kind = ,
       languageIds = inferLanguages().map { it.id }.toList(),
       dependencies = interestingDeps.map { Label.parse(it) },
       capabilities = inferCapabilities(),
       sources = calculateSources(project),
       resources = calculateResources(project),
+    )
+
+  private fun Target.inferKind(): TargetKind =
+    TargetKind(
+      kindString = kind,
+      languageClasses = Language.allOfKind(kind).map { it.id }.toSet(),
+      ruleType = Language.allOfKind(kind).firstOrNull()?.ruleType ?: RuleType.UNKNOWN,
     )
 
   private fun Target.inferTags(): List<String> {

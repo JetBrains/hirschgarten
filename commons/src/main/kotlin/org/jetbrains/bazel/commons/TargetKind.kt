@@ -41,6 +41,8 @@ data class TargetKind(
   val languageClasses: Set<LanguageClass>,
   val ruleType: RuleType,
 ) {
+  val isExecutable: Boolean = ruleType == RuleType.BINARY || ruleType == RuleType.TEST
+
   /**
    * Provides a set of recognized bazel rule names. Individual language-specific sub-plugins can use
    * this EP to register rule types relevant to that language.
