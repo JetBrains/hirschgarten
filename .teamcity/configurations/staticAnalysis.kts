@@ -41,7 +41,9 @@ open class Analyze(
         }
     },
     steps = {
-      Utils.CommonParams.CrossBuildPlatforms.forEach { platform ->
+//      Utils.CommonParams.CrossBuildPlatforms.forEach { platform ->
+        // TO-DO: remove this hardcoded value for platform once we start crossbuild for 252
+        val platform = "251"
         val platformDot = "20${platform.take(2)}.${platform.last()}"
         script {
             name = "add plugins to qodana"
@@ -136,7 +138,7 @@ open class Analyze(
             }
           }
         }
-      }
+//      }
     },
     vcsRoot = vcsRoot,
     params = {
