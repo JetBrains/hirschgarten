@@ -21,7 +21,7 @@ import java.nio.file.Paths
 import kotlin.io.path.Path
 
 /**
- * Represents a path relative to the workspace root. The path component separator is Blaze specific.
+ * Represents a path relative to the workspace root. The path component separator is Bazel specific.
  *
  *
  * A [WorkspacePath] is *not* necessarily a valid package name/path. The primary reason is
@@ -30,7 +30,7 @@ import kotlin.io.path.Path
  */
 data class WorkspacePath private constructor(private val path: Path) {
   /**
-   * @param relativePath relative path that must use the Blaze specific separator char to separate
+   * @param relativePath relative path that must use the Bazel specific separator char to separate
    * path components
    * @throws IllegalArgumentException if the path is invalid
    */
@@ -40,7 +40,7 @@ data class WorkspacePath private constructor(private val path: Path) {
     if (parentPath.isWorkspaceRoot) {
       validateAndCreatePath(childPath)
     } else {
-      validateAndCreatePath(parentPath.relativePath() + BLAZE_COMPONENT_SEPARATOR + childPath)
+      validateAndCreatePath(parentPath.relativePath() + BAZEL_COMPONENT_SEPARATOR + childPath)
     },
   )
 
@@ -71,10 +71,10 @@ data class WorkspacePath private constructor(private val path: Path) {
     /** Silently returns null if this is not a valid workspace path.  */
     fun createIfValid(relativePath: String): WorkspacePath? = if (isValid(relativePath)) WorkspacePath(Path(relativePath)) else null
 
-    private const val BLAZE_COMPONENT_SEPARATOR = '/'
+    private const val BAZEL_COMPONENT_SEPARATOR = '/'
 
     private fun normalizePathSeparator(relativePath: String): String =
-      if (SystemInfo.isWindows) relativePath.replace('\\', BLAZE_COMPONENT_SEPARATOR) else relativePath
+      if (SystemInfo.isWindows) relativePath.replace('\\', BAZEL_COMPONENT_SEPARATOR) else relativePath
 
     private fun validateAndCreatePath(relativePath: String): Path {
       val normalizedPath = normalizePathSeparator(relativePath)

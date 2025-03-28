@@ -22,15 +22,14 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.bazel.info.BspTargetInfo
-import java.util.*
-import java.util.function.Consumer
+import java.util.Collections
 import java.util.function.Function
 
 // For compatibility with OG
 typealias Kind = TargetKind
 
 /**
- * A set of recognized blaze rule names, together with [LanguageClass] and [RuleType].
+ * A set of recognized bazel rule names, together with [LanguageClass] and [RuleType].
  * Language-specific extensions can provide their own set of rule names, as well as heuristics to
  * recognize rule names at runtime.
  *
@@ -43,7 +42,7 @@ data class TargetKind(
   val ruleType: RuleType,
 ) {
   /**
-   * Provides a set of recognized blaze rule names. Individual language-specific sub-plugins can use
+   * Provides a set of recognized bazel rule names. Individual language-specific sub-plugins can use
    * this EP to register rule types relevant to that language.
    *
    *
@@ -63,7 +62,7 @@ data class TargetKind(
 
     companion object {
       val EP_NAME: ExtensionPointName<Provider> =
-        ExtensionPointName.create<Provider>("com.google.idea.blaze.TargetKindProvider")
+        ExtensionPointName.create<Provider>("org.jetbrains.bazel.TargetKindProvider")
     }
   }
 
@@ -73,7 +72,7 @@ data class TargetKind(
    * point setup.
    */
   @Service
-  class ApplicationState {
+  class TargetKindService {
     /** An internal map of all known rule types.  */
     val stringToKind: MutableMap<String, TargetKind> =
       Collections.synchronizedMap(HashMap())
@@ -95,23 +94,21 @@ data class TargetKind(
       if (existing != null) {
         return existing
       }
-      kind.languageClasses.forEach(
-        Consumer { languageClass: LanguageClass? ->
-          perLanguageKinds.put(
-            languageClass,
-            kind,
-          )
-        },
-      )
+      kind.languageClasses.forEach {
+        perLanguageKinds.put(
+          it,
+          kind,
+        )
+      }
       return kind
     }
 
     companion object {
-      val service: ApplicationState
+      val service: TargetKindService
         get() =
           ApplicationManager
             .getApplication()
-            .getService<ApplicationState>(ApplicationState::class.java)
+            .getService<TargetKindService>(TargetKindService::class.java)
     }
   }
 
@@ -141,7 +138,7 @@ data class TargetKind(
       // check provided heuristics
       var derived = Provider.EP_NAME.extensions.firstNotNullOfOrNull { it.targetKindHeuristics.apply(proto) }
       if (derived != null) {
-        derived = ApplicationState.service.cacheIfNecessary(derived)
+        derived = TargetKindService.service.cacheIfNecessary(derived)
       }
       return derived
     }
@@ -151,7 +148,7 @@ data class TargetKind(
       if (ruleName.startsWith(RULE_NAME_PREFIX_TRANSITION)) {
         ruleName = ruleName.substring(RULE_NAME_PREFIX_TRANSITION.length)
       }
-      return ApplicationState.service.stringToKind[ruleName]
+      return TargetKindService.service.stringToKind[ruleName]
     }
 
     val perLanguageKinds: Multimap<LanguageClass, TargetKind>
@@ -164,7 +161,7 @@ data class TargetKind(
        */
       get() {
         val state =
-          ApplicationState.service
+          TargetKindService.service
         synchronized(state.perLanguageKinds) {
           return state.perLanguageKinds
         }
