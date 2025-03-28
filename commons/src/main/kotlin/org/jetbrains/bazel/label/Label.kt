@@ -179,7 +179,7 @@ data class RelativeLabel(override val packagePath: PackageType, override val tar
  * Represents a Bazel label.
  * See https://bazel.build/concepts/labels
  */
-sealed interface Label {
+sealed interface Label : Comparable<Label> {
   val packagePath: PackageType
   val target: TargetType
 
@@ -212,6 +212,8 @@ sealed interface Label {
     get() = (this as? ResolvedLabel)?.repo is Apparent
 
   fun toShortString(): String
+
+  override fun compareTo(other: Label): Int = toShortString().compareTo(other.toShortString())
 
   companion object {
     fun synthetic(targetName: String): Label = SyntheticLabel(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))
