@@ -73,6 +73,7 @@ class AssignFileToModuleListener : BulkFileListener {
 
   private fun Project.processWithDelay(event: VFileEvent) {
     synchronized(pendingEvents) {
+      @Suppress("KotlinUnreachableCode") // it is not unreachable, but IJ erroneously marks it so
       pendingEvents[this]?.let {
         it.add(event)
         return
@@ -125,8 +126,7 @@ private fun Project.doWeCareAboutIt(): Boolean = this.isBazelProject && this.isT
 private fun VFileEvent.process(project: Project) {
   val workspaceModel = WorkspaceModel.getInstance(project)
   val storage = workspaceModel.currentSnapshot
-  val moduleNameProvider = project.findNameProvider() ?: return
-  val file = this.getAffectedFile() ?: return
+  val moduleNameProvider = project.findNameProvider()
   val targetUtils = project.targetUtils
 
   val newFile = this.getNewFile()
@@ -150,7 +150,6 @@ private fun VFileEvent.process(project: Project) {
         newFile = it,
         project = project,
         workspaceModel = workspaceModel,
-        targetUtils = targetUtils,
         storage = storage,
         moduleNameProvider = moduleNameProvider,
       )
@@ -169,18 +168,30 @@ private suspend fun processFileCreated(
   newFile: VirtualFile,
   project: Project,
   workspaceModel: WorkspaceModel,
-  targetUtils: TargetUtils,
   storage: ImmutableEntityStorage,
   moduleNameProvider: TargetNameReformatProvider,
 ) {
-  val existingModule = readAction { ProjectFileIndex.getInstance(project).getModuleForFile(newFile) }
-  if (existingModule != null && existingModule.moduleEntity?.entitySource != BspDummyEntitySource) return
+  // ProjectFileIndex::getModulesForFile is not compatible with IJ 2024, but it's not important enough to bother with SDK-compat
+  // TODO: replace once 243 is dropped
+//  val existingModules =
+//    readAction { ProjectFileIndex.getInstance(project).getModulesForFile(newFile, true) }
+//      .filter { it.moduleEntity?.entitySource != BspDummyEntitySource }
+//      .mapNotNull { it.moduleEntity }
+
+  val existingModule =
+    readAction { ProjectFileIndex.getInstance(project).getModuleForFile(newFile) }.let {
+      if (it?.moduleEntity?.entitySource != BspDummyEntitySource) it else null
+    }
 
   val url = newFile.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   val path = url.toPath()
   queryTargetsForFile(project, url)
     ?.let { targets ->
-      val modules = targets.mapNotNull { it.toModuleEntity(storage, moduleNameProvider) }
+      val modules =
+        targets
+          .mapNotNull { it.toModuleEntity(storage, moduleNameProvider) }
+//          .filter { !existingModules.contains(it) } // 251
+          .filter { it != existingModule } // 243
       modules.forEach { url.addToModule(workspaceModel, it, newFile.extension) }
       project.targetUtils.addFileToTargetIdEntry(path, targets)
     }

@@ -17,6 +17,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.sync.status.BuildStatusService
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
@@ -109,12 +110,13 @@ class BuildTargetTask(private val project: Project) {
 
       startBuildConsoleTask(targetsIds, bspBuildConsole, originId, this)
       val compileParams = createCompileParams(targetsIds, originId)
-
+      BuildStatusService.getInstance(project).startBuild()
       try {
         val buildDeferred = async { server.buildTargetCompile(compileParams) }
         return@coroutineScope BspTaskStatusLogger(buildDeferred, bspBuildConsole, originId) { statusCode }.getResult()
       } finally {
         BazelTaskEventsService.getInstance(project).removeListener(originId)
+        BuildStatusService.getInstance(project).finishBuild()
       }
     }
 
