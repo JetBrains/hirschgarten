@@ -83,7 +83,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   }
 
   fun removeFileToTargetIdEntry(path: Path) {
-    fileToTarget = fileToTarget - path
+    fileToTarget = fileToTarget.toMutableMap().apply { remove(path) }.toMap()
   }
 
   @InternalApi

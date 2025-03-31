@@ -2,14 +2,15 @@
 
 package org.jetbrains.bazel.workspace
 
+import androidx.annotation.VisibleForTesting
 import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.ProjectLocator
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.io.toNioPathOrNull
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent
@@ -29,12 +30,14 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.legacyBridge.impl.java.JAVA_SOURCE_ROOT_ENTITY_TYPE_ID
 import com.intellij.workspaceModel.ide.toPath
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
@@ -55,33 +58,41 @@ class AssignFileToModuleListener : BulkFileListener {
   private val pendingEvents = mutableMapOf<Project, MutableList<VFileEvent>>()
 
   override fun after(events: MutableList<out VFileEvent>) {
+    testableAfter(events)
+  }
+
+  @VisibleForTesting
+  fun testableAfter(events: List<VFileEvent>): Map<Project, Job?> {
     // if the list has multiple events, it means an external operation (like Git) and resync is probably required anyway
     events.singleOrNull()?.let {
-      val file = it.getAffectedFile() ?: return
+      val file = it.getAffectedFile() ?: return emptyMap()
       val isSource =
         if (it is VFileDeleteEvent) {
-          file.extension?.let { SourceType.fromExtension(it) } != null
+          file.extension?.let(SourceType::fromExtension) != null
         } else {
           file.isSourceFile()
         }
       if (isSource) {
-        file.getRelatedProjects().forEach { project -> project.processWithDelay(it) }
+        return file.getRelatedProjects().associateWith { project -> project.processWithDelay(it) }
       }
     }
+    return emptyMap()
   }
 
-  private fun Project.processWithDelay(event: VFileEvent) {
+  private fun Project.processWithDelay(event: VFileEvent): Job? {
     synchronized(pendingEvents) {
       @Suppress("KotlinUnreachableCode") // it is not unreachable, but IJ erroneously marks it so
       pendingEvents[this]?.let {
         it.add(event)
-        return
+        return null
       } ?: pendingEvents.put(this, mutableListOf(event))
     }
-    BazelCoroutineService.getInstance(this).start {
-      delay(PROCESSING_DELAY)
-      synchronized(pendingEvents) { pendingEvents.remove(this)?.singleOrNull() }?.process(this)
-    }
+    return BazelCoroutineService
+      .getInstance(this)
+      .start {
+        delay(PROCESSING_DELAY)
+        synchronized(pendingEvents) { pendingEvents.remove(this)?.singleOrNull() }?.process(this)
+      }.apply { invokeOnCompletion { targetUtils.fireSyncListeners(false) } }
   }
 }
 
@@ -110,62 +121,58 @@ private fun VFileEvent.getOldFilePath(): String? =
     else -> null
   }
 
-private fun VirtualFile.getRelatedProjects(): List<Project> {
-  val projectManager = ProjectManager.getInstance()
-  val projectLocator = ProjectLocator.getInstance()
-  return if (this.isValid) {
-    projectLocator.getProjectsForFile(this).filterNotNull().filter { it.doWeCareAboutIt() }
-  } else {
-    projectManager.openProjects.filter { it.doWeCareAboutIt() } // the project locator would return an empty list
-  }
-}
+private fun VirtualFile.getRelatedProjects(): List<Project> =
+  ProjectManager
+    .getInstance()
+    .openProjects
+    .filter { it.doWeCareAboutIt() && VfsUtil.isAncestor(it.rootDir, this, false) }
 
 private fun Project.doWeCareAboutIt(): Boolean = this.isBazelProject && this.isTrusted()
 
-private fun VFileEvent.process(project: Project) {
+private suspend fun VFileEvent.process(project: Project) {
   val workspaceModel = WorkspaceModel.getInstance(project)
-  val storage = workspaceModel.currentSnapshot
   val targetUtils = project.targetUtils
 
   val newFile = this.getNewFile()
-  val oldFilePath = this.getOldFilePath()
+  val oldFilePath = this.getOldFilePath() // the old file path must be kept as a string, since this file no longer exists
 
-  runInBackgroundWithProgress(project) {
-    oldFilePath?.let {
-      processFileRemoved(
-        oldFilePath = it,
-        newFile = newFile,
-        project = project,
-        workspaceModel = workspaceModel,
-        targetUtils = targetUtils,
-        storage = storage,
-      )
-    }
+  runWithProgress(project) {
+    val modulesToRemoveFrom =
+      oldFilePath
+        ?.let {
+          processFileRemoved(
+            oldFilePath = it,
+            project = project,
+            workspaceModel = workspaceModel,
+            targetUtils = targetUtils,
+          )
+        }?.toMutableList() ?: mutableListOf()
 
-    newFile?.let {
-      processFileCreated(
-        newFile = it,
-        project = project,
-        workspaceModel = workspaceModel,
-        storage = storage,
-      )
-    }
-  }.invokeOnCompletion { targetUtils.fireSyncListeners(false) }
+    val modulesToAddTo =
+      newFile?.let {
+        processFileCreated(
+          newFile = it,
+          project = project,
+          workspaceModel = workspaceModel,
+          modulesToRemoveFrom = modulesToRemoveFrom,
+        )
+      } ?: emptyList()
+    updateContentRoots(newFile, oldFilePath, modulesToRemoveFrom, modulesToAddTo, workspaceModel)
+  }
 }
 
-private fun runInBackgroundWithProgress(project: Project, action: suspend () -> Unit): Job =
-  BazelCoroutineService.getInstance(project).start {
-    withBackgroundProgress(project, BazelPluginBundle.message("file.change.processing.title")) {
-      action()
-    }
+private suspend fun runWithProgress(project: Project, action: suspend () -> Unit) {
+  withBackgroundProgress(project, BazelPluginBundle.message("file.change.processing.title")) {
+    action()
   }
+}
 
 private suspend fun processFileCreated(
   newFile: VirtualFile,
   project: Project,
   workspaceModel: WorkspaceModel,
-  storage: ImmutableEntityStorage,
-) {
+  modulesToRemoveFrom: MutableList<ModuleEntity>,
+): List<ModuleEntity> {
   // ProjectFileIndex::getModulesForFile is not compatible with IJ 2024, but it's not important enough to bother with SDK-compat
   // TODO: replace once 243 is dropped
 //  val existingModules =
@@ -175,43 +182,37 @@ private suspend fun processFileCreated(
 
   val existingModule =
     readAction { ProjectFileIndex.getInstance(project).getModuleForFile(newFile) }.let {
-      if (it?.moduleEntity?.entitySource != BspDummyEntitySource) it else null
+      if (it?.moduleEntity?.entitySource != BspDummyEntitySource) it?.moduleEntity else null
     }
 
   val url = newFile.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   val path = url.toPath()
-  queryTargetsForFile(project, url)
-    ?.let { targets ->
-      val modules =
-        targets
-          .mapNotNull { it.toModuleEntity(storage, project) }
-//          .filter { !existingModules.contains(it) } // 251
-          .filter { it != existingModule } // 243
-      modules.forEach { url.addToModule(workspaceModel, it, newFile.extension) }
-      project.targetUtils.addFileToTargetIdEntry(path, targets)
-    }
+  val contentRootToAdd =
+    queryTargetsForFile(project, url)
+      ?.let { targets ->
+        val modules =
+          targets
+            .mapNotNull { it.toModuleEntity(workspaceModel.currentSnapshot, project) }
+        project.targetUtils.addFileToTargetIdEntry(path, targets)
+        return@let modules
+      } ?: emptyList()
+//  return contentRootToAdd.filter { !modulesToRemoveFrom.remove(it) && !existingModules.contains(it) } // 251
+  return contentRootToAdd.filter { !modulesToRemoveFrom.remove(it) && it != existingModule } // 243
 }
 
-private suspend fun processFileRemoved(
+private fun processFileRemoved(
   oldFilePath: String,
-  newFile: VirtualFile?,
   project: Project,
   workspaceModel: WorkspaceModel,
   targetUtils: TargetUtils,
-  storage: ImmutableEntityStorage,
-) {
-  val oldUrl = workspaceModel.getVirtualFileUrlManager().fromPath(oldFilePath)
+): List<ModuleEntity> {
   val oldUri = oldFilePath.toNioPathOrNull()!!
-  val newUrl = newFile?.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   val modules =
     targetUtils
       .getTargetsForPath(oldUri)
-      .mapNotNull { it.toModuleEntity(storage, project) }
-  modules.forEach {
-    oldUrl.removeFromModule(workspaceModel, it)
-    newUrl?.removeFromModule(workspaceModel, it) // IntelliJ might have already changed the content root's path to the new one
-  }
+      .mapNotNull { it.toModuleEntity(workspaceModel.currentSnapshot, project) }
   project.targetUtils.removeFileToTargetIdEntry(oldUri)
+  return modules
 }
 
 private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<Label>? =
@@ -239,12 +240,34 @@ private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Proje
   return storage.resolve(moduleId)
 }
 
-private suspend fun VirtualFileUrl.addToModule(
+private suspend fun updateContentRoots(
+  newFile: VirtualFile?,
+  oldFilePath: String?,
+  toRemove: List<ModuleEntity>,
+  toAdd: List<ModuleEntity>,
   workspaceModel: WorkspaceModel,
-  module: ModuleEntity,
-  extension: String?,
 ) {
-  if (module.contentRoots.any { it.url == this }) return // we don't want to duplicate content roots
+  val urlManager = workspaceModel.getVirtualFileUrlManager()
+  val oldUrl = oldFilePath?.let { urlManager.fromPath(it) }
+  val newUrl = newFile?.toVirtualFileUrl(urlManager)
+  workspaceModel.update("File changes processing") { storage ->
+    toRemove.forEach { module ->
+      // we check both the old and the new URL, since IJ might have updated the file in the project model, but it is not guaranteed
+      storage.modifyModuleEntity(module) { contentRoots = contentRoots.filter { it.url != oldUrl && it.url != newUrl } }
+    }
+    toAdd.forEach {
+      val contentRoot = newFile?.toNewContentRoot(module = it, virtualFileUrlManager = urlManager)
+      if (contentRoot != null) {
+        storage.modifyModuleEntity(it) { contentRoots = contentRoots + contentRoot }
+      }
+    }
+  }
+}
+
+private fun VirtualFile.toNewContentRoot(module: ModuleEntity, virtualFileUrlManager: VirtualFileUrlManager): ContentRootEntity.Builder? {
+  val url = this.toVirtualFileUrl(virtualFileUrlManager)
+
+  if (module.contentRoots.any { it.url == url }) return null // we don't want to duplicate content roots
 
   val sourceRootType =
     when (extension) {
@@ -259,37 +282,21 @@ private suspend fun VirtualFileUrl.addToModule(
 
   val sourceRoot =
     SourceRootEntity(
-      url = this,
+      url = url,
       entitySource = module.entitySource,
       rootTypeId = sourceRootType,
     )
 
   val contentRootEntity =
     ContentRootEntity(
-      url = this,
+      url = url,
       excludedPatterns = emptyList(),
       entitySource = module.entitySource,
     ) {
       sourceRoots += listOf(sourceRoot)
     }
 
-  updateContentRoots(workspaceModel, module) { it + contentRootEntity }
-}
-
-private suspend fun VirtualFileUrl.removeFromModule(workspaceModel: WorkspaceModel, module: ModuleEntity) {
-  updateContentRoots(workspaceModel, module) { it.filter { contentRoot -> contentRoot.url != this } }
-}
-
-private suspend fun updateContentRoots(
-  workspaceModel: WorkspaceModel,
-  module: ModuleEntity,
-  updater: (List<ContentRootEntity.Builder>) -> List<ContentRootEntity.Builder>,
-) {
-  workspaceModel.update("File changes processing") {
-    it.modifyModuleEntity(module) {
-      contentRoots = updater(contentRoots)
-    }
-  }
+  return contentRootEntity
 }
 
 private const val PROCESSING_DELAY = 250L // no noticeable by the user, but if there are many events simultaneously, we will get them all
