@@ -15,7 +15,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 
 abstract class OutputProcessor(private val process: Process, vararg loggers: OutputHandler) {
   val stdoutCollector = OutputCollector()
@@ -84,10 +83,4 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
       return@coroutineScope exitCode
     }
 
-  private fun CompletableFuture<Long>.getOrNull(): Long? =
-    try {
-      this.get(2, TimeUnit.SECONDS)
-    } catch (_: TimeoutException) {
-      null
-    }
 }
