@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
+import com.intellij.execution.process.OSProcessUtil
 import com.intellij.util.io.awaitExit
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.await
@@ -71,7 +72,7 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
           withTimeoutOrNull(2000) {
             serverPidFuture
               ?.await() // we don't want to wait forever if server never gave us its PID
-              ?.let { Runtime.getRuntime().exec("kill -SIGINT $it").awaitExit() }
+              ?.let { pid -> OSProcessUtil.killProcess(pid.toInt()) }
               ?: logger?.error("Could not cancel the task. Bazel server needs to be interrupted manually.")
           }
         }
