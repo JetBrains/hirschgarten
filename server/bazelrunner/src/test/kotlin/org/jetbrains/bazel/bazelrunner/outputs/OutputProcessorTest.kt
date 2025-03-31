@@ -1,12 +1,10 @@
-package org.jetbrains.bazel.bazelrunner
+package org.jetbrains.bazel.bazelrunner.outputs
 
-import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.bazelrunner.outputs.AsyncOutputProcessor
-import org.jetbrains.bazel.bazelrunner.outputs.OutputCollector
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.testkit.client.MockClient
-import org.junit.jupiter.api.Test
+import org.junit.Test
 import java.util.concurrent.CompletableFuture
 
 class OutputProcessorTest {
@@ -22,7 +20,7 @@ class OutputProcessorTest {
         BspClientLogger(MockClient()),
       )
     }
-    1 shouldBe 1
+    process.isAlive shouldBe false
   }
 
   fun startHangingProcess(): Process {
@@ -42,6 +40,5 @@ class OutputProcessorTest {
         .start()
 
     return process!!
-    return null!!
   }
 }

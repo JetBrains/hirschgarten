@@ -1,4 +1,5 @@
 load("@//rules/testing:junit5.bzl", "kt_junit5_test")
+load("@//rules/testing:intellij.bzl", "kt_intellij_junit4_test")
 
 kt_junit5_test(
     name = "BazelReleaseTest",
@@ -28,13 +29,13 @@ kt_junit5_test(
     ],
 )
 
-kt_junit5_test(
+kt_intellij_junit4_test(
     name = "OutputProcessorTest",
     size = "small",
-    src = "OutputProcessorTest.kt",
+    src = "outputs/OutputProcessorTest.kt",
+    test_class = "org.jetbrains.bazel.bazelrunner.outputs.OutputProcessorTest",
     deps = [
         "//bsp-testkit2/bsp-testkit/client",
-        "//server/bazelrunner",
-        #"//rules_intellij/intellij_platform_sdk:plugin_api_for_tests"
+        "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/outputs",
     ],
 )
