@@ -27,3 +27,14 @@ kt_junit5_test(
         "//server/bazelrunner",
     ],
 )
+
+kt_junit5_test(
+    name = "OutputProcessorTest",
+    size = "small",
+    src = "OutputProcessorTest.kt",
+    deps = [
+        "//bsp-testkit2/bsp-testkit/client",
+        "//server/bazelrunner",
+        #"//rules_intellij/intellij_platform_sdk:plugin_api_for_tests"
+    ],
+)

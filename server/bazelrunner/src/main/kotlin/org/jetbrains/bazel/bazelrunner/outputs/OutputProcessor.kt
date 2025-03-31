@@ -82,5 +82,4 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
       shutdown()
       return@coroutineScope exitCode
     }
-
 }
