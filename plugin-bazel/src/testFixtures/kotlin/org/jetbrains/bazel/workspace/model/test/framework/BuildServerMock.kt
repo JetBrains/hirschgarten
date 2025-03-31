@@ -46,7 +46,7 @@ import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 
-class BuildServerMock(
+open class BuildServerMock(
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
   private val inverseSourcesResult: InverseSourcesResult? = null,
   private val dependencySourcesResult: DependencySourcesResult? = null,
