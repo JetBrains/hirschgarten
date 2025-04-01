@@ -11,7 +11,7 @@ class OutputProcessorTest {
   @Test
   fun `AsyncOutputProcessor waitForExit`() {
     val process = startHangingProcess()
-    val proc = AsyncOutputProcessor(startHangingProcess(), OutputCollector())
+    val proc = AsyncOutputProcessor(process, OutputCollector())
     val pidFuture = CompletableFuture.completedFuture(process.pid())
 
     runBlocking {
