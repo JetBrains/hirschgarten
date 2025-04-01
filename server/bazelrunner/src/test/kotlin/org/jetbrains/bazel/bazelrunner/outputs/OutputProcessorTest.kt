@@ -14,6 +14,7 @@ class OutputProcessorTest {
     val proc = AsyncOutputProcessor(process, OutputCollector())
     val pidFuture = CompletableFuture.completedFuture(process.pid())
 
+    process.isAlive shouldBe true
     runBlocking {
       proc.waitForExit(
         pidFuture,
