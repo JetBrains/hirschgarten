@@ -1,9 +1,11 @@
 package org.jetbrains.bazel.scala.sdk
 
-import java.nio.file.Path
+import org.jetbrains.bazel.annotations.PublicApi
+import java.net.URI
 
+@PublicApi
 data class ScalaSdk(
   val name: String,
   val scalaVersion: String,
-  val sdkJars: List<Path>,
+  val sdkJars: List<URI>,
 )
