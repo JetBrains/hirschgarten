@@ -12,7 +12,9 @@ import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.logger.BspClientLogger
@@ -41,6 +43,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -50,6 +53,7 @@ import kotlin.io.path.notExists
 private val THIRD_PARTY_LIBRARIES_PATTERN = "external/[^/]+/(.+)/([^/]+)/[^/]+$".toRegex()
 
 class BazelProjectMapper(
+  private val bazelInfo: BazelInfo,
   private val languagePluginsService: LanguagePluginsService,
   private val bazelPathsResolver: BazelPathsResolver,
   private val targetTagsResolver: TargetTagsResolver,
@@ -189,6 +193,7 @@ class BazelProjectMapper(
             librariesFromTransitiveCompileTimeJars,
           ),
           transitiveCompileTimeJarsTargetKinds,
+          repoMapping,
         )
       }
     val mergedModulesFromBazel =
@@ -211,7 +216,7 @@ class BazelProjectMapper(
           .flatten()
           .distinct()
           .associateBy { it.label } +
-          createGoLibraries(targetsAsLibraries)
+          createGoLibraries(targetsAsLibraries, repoMapping)
       }
     val invalidTargets =
       measure("Save invalid target labels") {
@@ -227,6 +232,7 @@ class BazelProjectMapper(
             isTargetTreatedAsInternal(it.assumeResolved(), repoMapping)
         },
         transitiveCompileTimeJarsTargetKinds,
+        repoMapping,
       )
 
     return AspectSyncProject(
@@ -627,6 +633,7 @@ class BazelProjectMapper(
   private fun createNonModuleTargets(
     targets: Map<Label, TargetInfo>,
     transitiveCompileTimeJarsTargetKinds: Set<String>,
+    repoMapping: RepoMapping,
   ): List<NonModuleTarget> =
     targets
       .map { (label, targetInfo) ->
@@ -634,7 +641,7 @@ class BazelProjectMapper(
           label = label,
           languages = inferLanguages(targetInfo, transitiveCompileTimeJarsTargetKinds),
           tags = targetTagsResolver.resolveTags(targetInfo),
-          baseDirectory = label.assumeResolved().toDirectoryPath(),
+          baseDirectory = label.assumeResolved().toDirectoryPath(repoMapping),
         )
       }
 
@@ -699,21 +706,25 @@ class BazelProjectMapper(
 
   private fun Collection<Path>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.name == "empty.jar"
 
-  private fun createGoLibraries(targets: Map<Label, TargetInfo>): Map<Label, GoLibrary> =
+  private fun createGoLibraries(targets: Map<Label, TargetInfo>, repoMapping: RepoMapping): Map<Label, GoLibrary> =
     targets
       .mapValues { (targetId, targetInfo) ->
-        createGoLibrary(targetId, targetInfo)
+        createGoLibrary(targetId, targetInfo, repoMapping)
       }.filterValues {
         it.isGoLibrary()
       }
 
   private fun GoLibrary.isGoLibrary(): Boolean = !goImportPath.isNullOrEmpty() && goRoot.toString().isNotEmpty()
 
-  private fun createGoLibrary(label: Label, targetInfo: TargetInfo): GoLibrary =
+  private fun createGoLibrary(
+    label: Label,
+    targetInfo: TargetInfo,
+    repoMapping: RepoMapping,
+  ): GoLibrary =
     GoLibrary(
       label = label,
       goImportPath = targetInfo.goTargetInfo?.importpath,
-      goRoot = getGoRootPath(targetInfo),
+      goRoot = getGoRootPath(targetInfo, repoMapping),
     )
 
   private fun createLibrariesFromTransitiveCompileTimeJars(
@@ -860,7 +871,8 @@ class BazelProjectMapper(
       .flatMap { it.interfaceJarsList }
       .map { bazelPathsResolver.resolve(it) }
 
-  private fun getGoRootPath(targetInfo: TargetInfo): Path = targetInfo.label().assumeResolved().toDirectoryPath()
+  private fun getGoRootPath(targetInfo: TargetInfo, repoMapping: RepoMapping): Path =
+    targetInfo.label().assumeResolved().toDirectoryPath(repoMapping)
 
   private fun selectTargetsToImport(
     workspaceContext: WorkspaceContext,
@@ -961,6 +973,7 @@ class BazelProjectMapper(
     dependencyGraph: DependencyGraph,
     generatedLibraries: Map<Label, Collection<Library>>,
     transitiveCompileTimeJarsTargetKinds: Set<String>,
+    repoMapping: RepoMapping,
   ): List<Module> =
     withContext(Dispatchers.Default) {
       targetsToImport
@@ -972,6 +985,7 @@ class BazelProjectMapper(
               dependencyGraph,
               generatedLibraries[it.label()].orEmpty(),
               transitiveCompileTimeJarsTargetKinds,
+              repoMapping,
             )
           }
         }.awaitAll()
@@ -983,6 +997,7 @@ class BazelProjectMapper(
     dependencyGraph: DependencyGraph,
     extraLibraries: Collection<Library>,
     transitiveCompileTimeJarsTargetKinds: Set<String>,
+    repoMapping: RepoMapping,
   ): Module {
     val label = target.label().assumeResolved()
     val resolvedDependencies = if (target.kind in transitiveCompileTimeJarsTargetKinds) emptyList() else resolveDirectDependencies(target)
@@ -990,7 +1005,7 @@ class BazelProjectMapper(
     val directDependencies = extraLibraries.map { it.label } + resolvedDependencies
     val languages = inferLanguages(target, transitiveCompileTimeJarsTargetKinds)
     val tags = targetTagsResolver.resolveTags(target)
-    val baseDirectory = label.toDirectoryPath()
+    val baseDirectory = label.toDirectoryPath(repoMapping)
     val languagePlugin = languagePluginsService.getPlugin(languages)
     val sourceSet = resolveSourceSet(target, languagePlugin)
     val resources = resolveResources(target, languagePlugin)
@@ -1020,7 +1035,27 @@ class BazelProjectMapper(
     return languagesForTarget + languagesForSources
   }
 
-  private fun ResolvedLabel.toDirectoryPath(): Path = bazelPathsResolver.pathToDirectoryPath(this.toBazelPath(), isMainWorkspace)
+  private fun ResolvedLabel.toDirectoryPath(repoMapping: RepoMapping): Path {
+    val repoPath = (repoMapping as? BzlmodRepoMapping)?.let { toRepoPath(repoMapping) } ?: toRepoPathForBazel7()
+    return repoPath.resolve(packagePath.toString())
+  }
+
+  private fun ResolvedLabel.toRepoPath(repoMapping: BzlmodRepoMapping): Path? {
+    val canonicalName =
+      if (repo is Canonical || repo is Main) {
+        repo.repoName
+      } else {
+        repoMapping.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
+      }
+    return repoMapping.canonicalRepoNameToPath[canonicalName]
+  }
+
+  private fun ResolvedLabel.toRepoPathForBazel7(): Path =
+    if (repo is Main) {
+      bazelInfo.workspaceRoot
+    } else {
+      bazelPathsResolver.relativePathToExecRootAbsolute(Path("external", repo.repoName, *packagePath.pathSegments.toTypedArray()))
+    }
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): SourceSet {
     val (sources, nonExistentSources) =
