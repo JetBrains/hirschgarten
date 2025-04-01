@@ -2,6 +2,7 @@ package org.jetbrains.bazel.bazelrunner.outputs
 
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.testkit.client.MockClient
 import org.junit.Test
@@ -11,17 +12,26 @@ class OutputProcessorTest {
   @Test
   fun `AsyncOutputProcessor waitForExit`() {
     val process = startHangingProcess()
-    val proc = AsyncOutputProcessor(process, OutputCollector())
+    val proc = AsyncOutputProcessor(process, OutputCollector()) // Use the same process
     val pidFuture = CompletableFuture.completedFuture(process.pid())
 
     process.isAlive shouldBe true
-    runBlocking {
-      proc.waitForExit(
-        pidFuture,
-        BspClientLogger(MockClient()),
-      )
+    try {
+      runBlocking {
+        withTimeout(5000) { // Add timeout to prevent test hanging indefinitely
+          proc.waitForExit(
+            pidFuture,
+            BspClientLogger(MockClient()),
+          )
+        }
+      }
+      process.isAlive shouldBe false
+    } finally {
+      // Ensure process is terminated even if test fails
+      if (process.isAlive) {
+        process.destroyForcibly()
+      }
     }
-    process.isAlive shouldBe false
   }
 
   fun startHangingProcess(): Process {
