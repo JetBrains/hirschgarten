@@ -1000,7 +1000,7 @@ class BazelProjectMapper(
     repoMapping: RepoMapping,
   ): Module {
     val label = target.label().assumeResolved()
-    val resolvedDependencies = if (target.kind in transitiveCompileTimeJarsTargetKinds) emptyList() else resolveDirectDependencies(target)
+    val resolvedDependencies = resolveDirectDependencies(target)
     // extra libraries can override some library versions, so they should be put before
     val directDependencies = extraLibraries.map { it.label } + resolvedDependencies
     val languages = inferLanguages(target, transitiveCompileTimeJarsTargetKinds)
