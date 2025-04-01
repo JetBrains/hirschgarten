@@ -69,6 +69,11 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
             "inner/BinInner.java",
             "inner/LibInner.java",
           )
+
+        targetsResult.targets
+          .mapNotNull { it.baseDirectory }
+          .map { it.relativeTo(Path(workspaceDir)).toString() } shouldContainExactlyInAnyOrder
+          listOf("inner", "inner", "", "")
       }
     }
 
