@@ -203,11 +203,11 @@ class CollectProjectDetailsTask(
 
   private fun createScalaSdk(target: BuildTarget): ScalaSdk? =
     extractScalaBuildTarget(target)
-      ?.let {
+      ?.let { scalaBuildTarget ->
         ScalaSdk(
-          name = it.scalaVersion.scalaVersionToScalaSdkName(),
-          scalaVersion = it.scalaVersion,
-          sdkJars = it.jars,
+          name = scalaBuildTarget.scalaVersion.scalaVersionToScalaSdkName(),
+          scalaVersion = scalaBuildTarget.scalaVersion,
+          sdkJars = scalaBuildTarget.jars.map { path -> path.toUri() },
         )
       }
 
