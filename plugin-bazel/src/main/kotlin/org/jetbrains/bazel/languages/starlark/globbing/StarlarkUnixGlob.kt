@@ -40,12 +40,12 @@ import kotlin.concurrent.Volatile
 object StarlarkUnixGlob {
   @Throws(IOException::class, InterruptedException::class)
   private fun globInternal(
-    base: VirtualFile?,
+    base: VirtualFile,
     patterns: MutableCollection<String>,
     excludeDirectories: Boolean,
-    dirPred: Predicate<VirtualFile?>,
+    dirPred: Predicate<VirtualFile>,
     threadPool: ThreadPoolExecutor?,
-  ): MutableSet<VirtualFile?> {
+  ): Set<VirtualFile> {
     val visitor = if (threadPool == null) GlobVisitor() else GlobVisitor(threadPool)
     return visitor.glob(base, patterns, excludeDirectories, dirPred)
   }
@@ -56,7 +56,7 @@ object StarlarkUnixGlob {
    *
    * @return list of segment arrays
    */
-  private fun checkAndSplitPatterns(patterns: MutableCollection<String>): MutableList<Array<String>> {
+  private fun checkAndSplitPatterns(patterns: Collection<String>): List<Array<String>> {
     val list: MutableList<Array<String>> = Lists.newArrayListWithCapacity(patterns.size)
     for (pattern in patterns) {
       val error = GlobPatternValidator.validate(pattern)
@@ -174,14 +174,14 @@ object StarlarkUnixGlob {
     return Pattern.compile(regexp.toString())
   }
 
-  fun forPath(path: VirtualFile?): Builder = Builder(path)
+  fun forPath(path: VirtualFile): Builder = Builder(path)
 
   /** Builder class for UnixGlob.  */
-  class Builder(private val base: VirtualFile?) {
+  class Builder(private val base: VirtualFile) {
     private val patterns: MutableList<String> = ArrayList()
     private val excludes: MutableList<String> = ArrayList()
     private var excludeDirectories = false
-    private var pathFilter: Predicate<VirtualFile?>
+    private var pathFilter: Predicate<VirtualFile>
     private var threadPool: ThreadPoolExecutor? = null
 
     /** Creates a glob builder with the given base path.  */
@@ -197,8 +197,8 @@ object StarlarkUnixGlob {
      */
     @CanIgnoreReturnValue
     @Suppress("unused")
-    fun addPattern(pattern: String?): Builder {
-      this.patterns.add(pattern!!)
+    fun addPattern(pattern: String): Builder {
+      this.patterns.add(pattern)
       return this
     }
 
@@ -209,7 +209,7 @@ object StarlarkUnixGlob {
      * For a description of the syntax of the patterns, see [StarlarkUnixGlob].
      */
     @CanIgnoreReturnValue
-    fun addPatterns(patterns: MutableCollection<String>): Builder {
+    fun addPatterns(patterns: Collection<String>): Builder {
       this.patterns.addAll(patterns)
       return this
     }
@@ -221,7 +221,7 @@ object StarlarkUnixGlob {
      * For a description of the syntax of the patterns, see [StarlarkUnixGlob].
      */
     @CanIgnoreReturnValue
-    fun addExcludes(excludes: MutableCollection<String>): Builder {
+    fun addExcludes(excludes: Collection<String>): Builder {
       this.excludes.addAll(excludes)
       return this
     }
@@ -250,7 +250,7 @@ object StarlarkUnixGlob {
      * either.
      */
     @CanIgnoreReturnValue
-    fun setDirectoryFilter(pathFilter: Predicate<VirtualFile?>): Builder {
+    fun setDirectoryFilter(pathFilter: Predicate<VirtualFile>): Builder {
       this.pathFilter = pathFilter
       return this
     }
@@ -261,30 +261,30 @@ object StarlarkUnixGlob {
      * @throws InterruptedException if the thread is interrupted.
      */
     @Throws(IOException::class, InterruptedException::class)
-    fun glob(): MutableList<VirtualFile?> {
+    fun glob(): List<VirtualFile> {
       val included = globInternal(base, patterns, excludeDirectories, pathFilter, threadPool)
       val excluded = globInternal(base, excludes, excludeDirectories, pathFilter, threadPool)
-      included.removeAll(excluded)
+      val files = included - excluded
       return Ordering
         .from(Comparator.comparing(VirtualFile::getPath))
-        .immutableSortedCopy<VirtualFile>(included.filterNotNull())
+        .immutableSortedCopy<VirtualFile>(files.toList())
     }
   }
 
   /** Adapts the result of the glob visitation as a Future.  */
-  private class GlobFuture(private val visitor: GlobVisitor) : ForwardingListenableFuture<MutableSet<VirtualFile?>?>() {
-    private val delegate: SettableFuture<MutableSet<VirtualFile?>?> = SettableFuture.create()
+  private class GlobFuture(private val visitor: GlobVisitor) : ForwardingListenableFuture<MutableSet<VirtualFile>>() {
+    private val delegate: SettableFuture<MutableSet<VirtualFile>> = SettableFuture.create()
 
     @Throws(InterruptedException::class, ExecutionException::class)
-    override fun get(): MutableSet<VirtualFile?>? = super.get()
+    override fun get(): MutableSet<VirtualFile> = super.get()
 
-    override fun delegate(): ListenableFuture<MutableSet<VirtualFile?>?> = delegate
+    override fun delegate(): ListenableFuture<MutableSet<VirtualFile>> = delegate
 
     fun setException(exception: IOException) {
       delegate.setException(exception)
     }
 
-    fun set(paths: MutableSet<VirtualFile?>?) {
+    fun set(paths: MutableSet<VirtualFile>) {
       delegate.set(paths)
     }
 
@@ -305,7 +305,7 @@ object StarlarkUnixGlob {
    */
   private class GlobVisitor(private val executor: ThreadPoolExecutor? = null) {
     // These collections are used across workers and must therefore be thread-safe.
-    private val results: MutableSet<VirtualFile?> = Sets.newConcurrentHashSet()
+    private val results: MutableSet<VirtualFile> = Sets.newConcurrentHashSet()
     private val cache: Cache<String, Pattern> =
       CacheBuilder
         .newBuilder()
@@ -339,13 +339,13 @@ object StarlarkUnixGlob {
      */
     @Throws(IOException::class, InterruptedException::class)
     fun glob(
-      base: VirtualFile?,
-      patterns: MutableCollection<String>,
+      base: VirtualFile,
+      patterns: Collection<String>,
       excludeDirectories: Boolean,
-      dirPred: Predicate<VirtualFile?>,
-    ): MutableSet<VirtualFile?> {
+      dirPred: Predicate<VirtualFile>,
+    ): Set<VirtualFile> {
       try {
-        return globAsync(base, patterns, excludeDirectories, dirPred)!!.get()!!
+        return globAsync(base, patterns, excludeDirectories, dirPred).get()!!
       } catch (e: ExecutionException) {
         val cause = e.cause
         if (cause != null) {
@@ -357,12 +357,12 @@ object StarlarkUnixGlob {
 
     @Throws(IOException::class)
     fun globAsync(
-      base: VirtualFile?,
-      patterns: MutableCollection<String>,
+      base: VirtualFile,
+      patterns: Collection<String>,
       excludeDirectories: Boolean,
-      dirPred: Predicate<VirtualFile?>,
-    ): Future<MutableSet<VirtualFile?>?>? {
-      if (base == null || !base.exists() || patterns.isEmpty()) {
+      dirPred: Predicate<VirtualFile>,
+    ): Future<MutableSet<VirtualFile>> {
+      if (!base.exists() || patterns.isEmpty()) {
         return Futures.immediateFuture(mutableSetOf())
       }
       val baseIsDirectory = base.isDirectory
@@ -394,14 +394,14 @@ object StarlarkUnixGlob {
 
     @Throws(IOException::class)
     fun queueGlob(
-      base: VirtualFile?,
+      base: VirtualFile,
       baseIsDirectory: Boolean,
       patternParts: Array<String>,
       idx: Int,
       excludeDirectories: Boolean,
-      results: MutableCollection<VirtualFile?>,
+      results: MutableCollection<VirtualFile>,
       cache: Cache<String, Pattern>,
-      dirPred: Predicate<VirtualFile?>,
+      dirPred: Predicate<VirtualFile>,
     ) {
       enqueue {
         try {
@@ -471,14 +471,14 @@ object StarlarkUnixGlob {
      */
     @Throws(IOException::class)
     fun reallyGlob(
-      base: VirtualFile?,
+      base: VirtualFile,
       baseIsDirectory: Boolean,
       patternParts: Array<String>,
       idx: Int,
       excludeDirectories: Boolean,
-      results: MutableCollection<VirtualFile?>,
+      results: MutableCollection<VirtualFile>,
       cache: Cache<String, Pattern>,
-      dirPred: Predicate<VirtualFile?>,
+      dirPred: Predicate<VirtualFile>,
     ) {
       ProgressManager.checkCanceled()
       if (baseIsDirectory && !dirPred.test(base)) {

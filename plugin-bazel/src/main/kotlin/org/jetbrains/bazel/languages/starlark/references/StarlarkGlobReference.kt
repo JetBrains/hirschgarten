@@ -21,7 +21,7 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
     TextRange(0, element.textLength),
   ),
   PsiPolyVariantReference {
-  override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult?> {
+  override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult> {
     val containingDirectory = element.containingFile.parent?.virtualFile
     if (containingDirectory == null) {
       return ResolveResult.EMPTY_ARRAY
@@ -36,7 +36,7 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
     val project = element.getProject()
 
     try {
-      val files: MutableList<VirtualFile?> =
+      val files: List<VirtualFile> =
         StarlarkUnixGlob
           .forPath(containingDirectory)
           .addPatterns(includes)
@@ -45,7 +45,7 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
           .setDirectoryFilter(directoryFilter(containingDirectory.path))
           .glob()
 
-      val results: MutableList<ResolveResult?> = arrayListOf()
+      val results: MutableList<ResolveResult> = arrayListOf()
       for (file in files) {
         val psiFile: PsiFileSystemItem? = resolveFile(file, project)
         if (psiFile != null) {
@@ -59,27 +59,21 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
     }
   }
 
-  fun resolveFile(vf: VirtualFile?, project: Project): PsiFileSystemItem? {
-    if (vf == null) {
-      return null
-    }
+  fun resolveFile(vf: VirtualFile, project: Project): PsiFileSystemItem? {
     val manager = PsiManager.getInstance(project)
     return if (vf.isDirectory) manager.findDirectory(vf) else manager.findFile(vf)
   }
 
   private fun findBuildFile(packageDir: VirtualFile): VirtualFile? = BUILD_FILE_NAMES.mapNotNull { packageDir.findChild(it) }.firstOrNull()
 
-  private fun directoryFilter(base: String): (VirtualFile?) -> Boolean =
+  private fun directoryFilter(base: String): (VirtualFile) -> Boolean =
     { file ->
-      file?.path == base || file == null || findBuildFile(file) == null
+      file.path == base || findBuildFile(file) == null
     }
 
-  private fun resolveListContents(expr: PsiElement?): MutableList<String> {
-    if (expr == null) {
-      return mutableListOf()
-    }
+  private fun resolveListContents(expr: PsiElement?): List<String> {
     if (expr !is StarlarkListLiteralExpression) {
-      return mutableListOf()
+      return listOf()
     }
     val children = expr.getElements()
     val strings: MutableList<String> = mutableListOf()
