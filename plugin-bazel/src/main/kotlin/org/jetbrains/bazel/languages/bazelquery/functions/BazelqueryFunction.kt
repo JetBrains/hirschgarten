@@ -184,5 +184,6 @@ sealed class BazelqueryFunction {
     )
 
     fun byName(name: String): BazelqueryFunction? = knownFunctions.firstOrNull { it.name == name }
+    fun getAll(): List<BazelqueryFunction> = knownFunctions
   }
 }
