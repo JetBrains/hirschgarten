@@ -12,6 +12,7 @@ import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.server.tasks.BspTaskStatusLogger
 import org.jetbrains.bazel.ui.console.ConsoleService
@@ -60,7 +61,7 @@ class MobileInstallTargetTask(
     bspBuildConsole.startTask(
       originId,
       BazelPluginBundle.message("console.task.mobile.install.title"),
-      BazelPluginBundle.message("console.task.mobile.install.in.progress.target", targetId.toShortString()),
+      BazelPluginBundle.message("console.task.mobile.install.in.progress.target", targetId.toShortString(project)),
       { cancelOn.cancel(true) },
     ) {
       BazelCoroutineService.getInstance(project).start {

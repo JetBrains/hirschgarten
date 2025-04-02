@@ -31,7 +31,6 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
-import org.jetbrains.bazel.magicmetamodel.orDefault
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.task.query
@@ -59,7 +58,7 @@ class GoProjectSync : ProjectSyncHook {
     val goTargets = environment.buildTargets.calculateGoTargets()
     val idToGoTargetMap = goTargets.associateBy({ it.id }, { it })
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
-    val moduleNameProvider = environment.project.findNameProvider().orDefault()
+    val moduleNameProvider = environment.project.findNameProvider()
 
     val moduleEntities =
       goTargets.map {

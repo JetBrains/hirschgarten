@@ -1,13 +1,15 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.components
 
+import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.extensionPoints.BazelBuildTargetClassifier
-import org.jetbrains.bazel.extensionPoints.DefaultBuildTargetClassifierExtension
+import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BazelBuildTargetClassifier
+import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.DefaultBuildTargetClassifierExtension
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
@@ -26,6 +28,7 @@ import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
 class BuildTargetTree(
+  private val project: Project,
   private val targetIcon: Icon,
   private val invalidTargetIcon: Icon,
   private val targets: Collection<BuildTarget>,
@@ -41,9 +44,9 @@ class BuildTargetTree(
 
   private val bspBuildTargetClassifier =
     if (showAsList) {
-      DefaultBuildTargetClassifierExtension
+      DefaultBuildTargetClassifierExtension(project)
     } else {
-      BazelBuildTargetClassifier
+      BazelBuildTargetClassifier(project)
     }
 
   override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction.FromContainer(this, treeComponent)
@@ -152,7 +155,7 @@ class BuildTargetTree(
 
   private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode =
     DefaultMutableTreeNode(
-      TargetNodeData(identifier.id, identifier.target, identifier.displayName, identifier.target != null),
+      TargetNodeData(project, identifier.id, identifier.target, identifier.displayName, identifier.target != null),
     )
 
   private fun simplifyNodeIfHasOneChild(
@@ -256,6 +259,7 @@ class BuildTargetTree(
   ): BuildTargetTree {
     val new =
       BuildTargetTree(
+        project = project,
         targetIcon = targetIcon,
         invalidTargetIcon = invalidTargetIcon,
         targets = newTargets,
@@ -275,12 +279,13 @@ private data class DirectoryNodeData(val name: String, val targets: List<BuildTa
 }
 
 private data class TargetNodeData(
+  val project: Project,
   val id: Label,
   val target: BuildTarget?,
   val displayName: String,
   val isValid: Boolean,
 ) : NodeData {
-  override fun toString(): String = target?.displayName ?: id.toShortString()
+  override fun toString(): String = id.toShortString(project)
 }
 
 private data class BuildTargetTreeIdentifier(

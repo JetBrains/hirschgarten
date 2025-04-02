@@ -1,7 +1,10 @@
-package org.jetbrains.bazel.extensionPoints
+package org.jetbrains.bazel.extensionPoints.buildTargetClassifier
 
+import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.languages.starlark.repomapping.toApparentLabel
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 
 public interface BuildTargetClassifierExtension {
   /**
@@ -46,22 +49,23 @@ public interface BuildTargetClassifierExtension {
 }
 
 /**
- * Default implementation of the [BuildTargetClassifierExtension] interface.
+ * Default implementation of the [org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BuildTargetClassifierExtension] interface.
  * It will be used in BSP project and when no other implementation exists.
  */
-object DefaultBuildTargetClassifierExtension : BuildTargetClassifierExtension {
+class DefaultBuildTargetClassifierExtension(private val project: Project) : BuildTargetClassifierExtension {
   override val separator: String? = null
 
   override fun calculateBuildTargetPath(buildTarget: Label): List<String> = emptyList()
 
-  override fun calculateBuildTargetName(buildTarget: Label): String = buildTarget.toShortString()
+  override fun calculateBuildTargetName(buildTarget: Label): String = buildTarget.toShortString(project)
 }
 
-object BazelBuildTargetClassifier : BuildTargetClassifierExtension {
+class BazelBuildTargetClassifier(private val project: Project) : BuildTargetClassifierExtension {
   override val separator: String = "/"
 
   override fun calculateBuildTargetPath(buildTarget: Label): List<String> =
     buildTarget
+      .toApparentLabel(project)
       .let { listOf((it as? ResolvedLabel)?.repoName.orEmpty()) + it.packagePath.pathSegments }
       .filter { pathSegment -> pathSegment.isNotEmpty() }
 

@@ -92,8 +92,17 @@ data object Main : RepoType {
 /**
  * See https://bazel.build/external/overview#canonical-repo-name
  */
-data class Canonical(override val repoName: String) : RepoType {
+@ConsistentCopyVisibility
+data class Canonical internal constructor(override val repoName: String) : RepoType {
+  init {
+    require(repoName.isNotEmpty())
+  }
+
   override fun toString(): String = "@@$repoName"
+
+  companion object {
+    fun createCanonicalOrMain(repoName: String): RepoType = if (repoName.isEmpty()) Main else Canonical(repoName)
+  }
 }
 
 /**
@@ -111,18 +120,6 @@ data class ResolvedLabel(
   val repoName get() = repo.repoName
 
   override fun toString(): String = "$repo//${joinPackagePathAndTarget(packagePath, target)}"
-
-  override fun toShortString(): String {
-    val repoPart = if (repo !is Main) repo.toString() else ""
-    val packagePart = packagePath.toString()
-    val targetPart =
-      when {
-        target is AmbiguousEmptyTarget -> ""
-        target is SingleTarget && target.targetName == (packagePath as? Package)?.name() -> ""
-        else -> ":$target"
-      }
-    return "$repoPart//$packagePart$targetPart"
-  }
 }
 
 /**
@@ -132,14 +129,10 @@ data class SyntheticLabel(override val target: TargetType) : Label {
   override val packagePath: PackageType = Package(listOf())
 
   override fun toString(): String = "$target$SYNTHETIC_TAG"
-
-  override fun toShortString(): String = toString()
 }
 
 data class RelativeLabel(override val packagePath: PackageType, override val target: TargetType) : Label {
   override fun toString(): String = joinPackagePathAndTarget(packagePath, target)
-
-  override fun toShortString(): String = toString()
 
   fun resolve(base: ResolvedLabel): ResolvedLabel {
     val repo = base.repo
@@ -194,9 +187,7 @@ sealed interface Label : Comparable<Label> {
   val isApparent: Boolean
     get() = (this as? ResolvedLabel)?.repo is Apparent
 
-  fun toShortString(): String
-
-  override fun compareTo(other: Label): Int = toShortString().compareTo(other.toShortString())
+  override fun compareTo(other: Label): Int = toString().compareTo(other.toString())
 
   companion object {
     fun synthetic(targetName: String): Label = SyntheticLabel(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))

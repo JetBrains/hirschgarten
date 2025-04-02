@@ -23,14 +23,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.label.Apparent
-import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
-import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToApparentName
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
@@ -109,7 +107,7 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
 
     try {
       WriteCommandAction.runWriteCommandAction(from.project) {
-        depsList.insertString(labelToInsert.convertToApparentLabel().toShortString())
+        depsList.insertString(labelToInsert.toShortString(project))
         insertSuccessful = true
       }
     } catch (e: Exception) {
@@ -121,13 +119,6 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
       }
     }
     return insertSuccessful
-  }
-
-  private fun Label.convertToApparentLabel(): Label {
-    if (this !is ResolvedLabel) return this
-    if (this.repo !is Canonical) return this
-    val apparentRepoName = project.canonicalRepoNameToApparentName[this.repo.repoName] ?: return this
-    return this.copy(repo = Apparent(apparentRepoName))
   }
 
   private suspend fun formatBuildFile(buildFile: StarlarkFile) {

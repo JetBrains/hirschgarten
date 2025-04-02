@@ -14,6 +14,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.projectAware.BazelProjectModuleBuildTasksTracker
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.target.getModule
@@ -57,7 +58,7 @@ abstract class LocalJvmRunnerAction(
       environment.mainClasses?.firstOrNull() ?: return null // TODO https://youtrack.jetbrains.com/issue/BAZEL-626
     val configuration =
       BspJvmApplicationConfiguration(
-        calculateConfigurationName(targetInfo),
+        calculateConfigurationName(project, targetInfo),
         project,
       ).apply {
         setModule(module)
@@ -72,8 +73,8 @@ abstract class LocalJvmRunnerAction(
     return RunnerAndConfigurationSettingsImpl(runManager, configuration)
   }
 
-  private fun calculateConfigurationName(targetInfo: BuildTarget): String {
-    val targetDisplayName = targetInfo.displayName
+  private fun calculateConfigurationName(project: Project, targetInfo: BuildTarget): String {
+    val targetDisplayName = targetInfo.id.toShortString(project)
     val actionNameKey =
       when {
         isDebugMode -> "target.debug.with.jvm.runner.config.name"

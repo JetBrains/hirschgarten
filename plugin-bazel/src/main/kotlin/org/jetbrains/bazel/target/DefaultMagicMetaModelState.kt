@@ -7,7 +7,6 @@ import kotlin.io.path.Path
 
 data class BuildTargetState(
   var id: String = "",
-  var displayName: String? = null,
   var capabilities: BuildTargetCapabilities = BuildTargetCapabilities(),
   var tags: List<String> = emptyList(),
   var languageIds: List<String> = emptyList(),
@@ -29,7 +28,6 @@ data class BuildTargetState(
 fun BuildTarget.toState(): BuildTargetState =
   BuildTargetState(
     id = id.toString(),
-    displayName = displayName,
     capabilities = capabilities,
     tags = tags,
     languageIds = languageIds,

@@ -2,7 +2,6 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.DefaultNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -73,8 +72,8 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
       )
     val allTargets =
       setOf(
-        "//target1",
-        "//target2",
+        "@//target1",
+        "@//target2",
       )
 
     val targetsMap = allTargets.toDefaultTargetsMap()
@@ -87,7 +86,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
     // then
     val expectedIntermediateModuleDependency =
       IntermediateModuleDependency(
-        moduleName = "//target2",
+        moduleName = "@//target2",
       )
 
     moduleDependencies shouldBe listOf(expectedIntermediateModuleDependency)
@@ -114,11 +113,11 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
       )
     val allTargets =
       setOf(
-        "//target1",
-        "//target2",
-        "//target3",
-        "//target4",
-        "//target5",
+        "@//target1",
+        "@//target2",
+        "@//target3",
+        "@//target4",
+        "@//target5",
       )
 
     val targetsMap = allTargets.toDefaultTargetsMap()
@@ -131,15 +130,15 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
     // then
     val expectedIntermediateModuleDependency1 =
       IntermediateModuleDependency(
-        moduleName = "//target2",
+        moduleName = "@//target2",
       )
     val expectedIntermediateModuleDependency2 =
       IntermediateModuleDependency(
-        moduleName = "//target3",
+        moduleName = "@//target3",
       )
     val expectedIntermediateModuleDependency3 =
       IntermediateModuleDependency(
-        moduleName = "//target4",
+        moduleName = "@//target4",
       )
 
     moduleDependencies shouldBe
@@ -181,11 +180,11 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
 
     val allTargets =
       setOf(
-        "//target1",
-        "//target2",
-        "//target3",
-        "//target4",
-        "//target5",
+        "@//target1",
+        "@//target2",
+        "@//target3",
+        "@//target4",
+        "@//target5",
       )
 
     val buildTargets = listOf(buildTarget1, buildTarget2)
@@ -200,15 +199,15 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
     // then
     val expectedIntermediateModuleDependency1 =
       IntermediateModuleDependency(
-        moduleName = "//target2",
+        moduleName = "@//target2",
       )
     val expectedIntermediateModuleDependency2 =
       IntermediateModuleDependency(
-        moduleName = "//target3",
+        moduleName = "@//target3",
       )
     val expectedIntermediateModuleDependency3 =
       IntermediateModuleDependency(
-        moduleName = "//target4",
+        moduleName = "@//target4",
       )
 
     moduleDependencies shouldBe

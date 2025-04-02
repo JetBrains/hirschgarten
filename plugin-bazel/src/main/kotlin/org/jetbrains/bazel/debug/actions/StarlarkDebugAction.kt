@@ -14,6 +14,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.debug.configuration.StarlarkDebugConfiguration
 import org.jetbrains.bazel.debug.configuration.StarlarkDebugConfigurationType
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bsp.protocol.BuildTarget
 
 class StarlarkDebugAction(private val targetId: Label) :
@@ -30,7 +31,7 @@ class StarlarkDebugAction(private val targetId: Label) :
 
   private fun createConfigSettings(project: Project): RunnerAndConfigurationSettings {
     val runManager = RunManager.getInstance(project)
-    val configName = BazelPluginBundle.message("starlark.debug.config.template", targetId.toShortString())
+    val configName = BazelPluginBundle.message("starlark.debug.config.template", targetId.toShortString(project))
     val factory = StarlarkDebugConfigurationType().configurationFactories.first()
     return runManager.createConfiguration(configName, factory).withTarget(targetId)
   }

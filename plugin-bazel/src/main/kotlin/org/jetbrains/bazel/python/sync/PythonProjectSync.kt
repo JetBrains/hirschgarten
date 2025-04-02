@@ -36,7 +36,6 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
-import org.jetbrains.bazel.magicmetamodel.orDefault
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
@@ -63,7 +62,7 @@ class PythonProjectSync : ProjectSyncHook {
 
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     val pythonTargets = environment.buildTargets.calculatePythonTargets()
-    val moduleNameProvider = environment.project.findNameProvider().orDefault()
+    val moduleNameProvider = environment.project.findNameProvider()
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
 
     val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
@@ -180,7 +179,7 @@ class PythonProjectSync : ProjectSyncHook {
       }
     return if (roots.isNotEmpty()) {
       LibraryEntity(
-        name = target.toShortString(),
+        name = target.toString(),
         tableId = LibraryTableId.ProjectLibraryTableId,
         roots = roots,
         entitySource = entitySource,

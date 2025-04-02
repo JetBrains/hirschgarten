@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.search
 
+import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.panels.VerticalLayout
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BuildTargetTree
@@ -8,7 +9,11 @@ import java.awt.Point
 import javax.swing.Icon
 import javax.swing.JPanel
 
-class LazySearchDisplay(icon: Icon, showAsTree: Boolean) {
+class LazySearchDisplay(
+  project: Project,
+  icon: Icon,
+  showAsTree: Boolean,
+) {
   private val component: JPanel = JPanel(VerticalLayout(0))
 
   private var targets: List<BuildTarget> = emptyList()
@@ -21,6 +26,7 @@ class LazySearchDisplay(icon: Icon, showAsTree: Boolean) {
   init {
     targetTree =
       BuildTargetTree(
+        project = project,
         targetIcon = icon,
         invalidTargetIcon = icon,
         targets = emptyList(),

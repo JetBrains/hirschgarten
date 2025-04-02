@@ -77,7 +77,7 @@ class BazelRunConfigurationEditor(private val runConfiguration: BazelRunConfigur
       },
       { JBTextField().apply { isEditable = false } },
       { s, c ->
-        c.text = s.targets.joinToString(", ") { it.toShortString() }
+        c.text = s.targets.joinToString(", ") { it.toString() }
       },
       { _, _ ->
         {}

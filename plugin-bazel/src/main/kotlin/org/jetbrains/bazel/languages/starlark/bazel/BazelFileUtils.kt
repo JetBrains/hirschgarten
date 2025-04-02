@@ -1,28 +1,25 @@
 package org.jetbrains.bazel.languages.starlark.bazel
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.rootDir
-import java.io.File
+import org.jetbrains.bazel.label.Main
+import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.languages.starlark.repomapping.calculateLabel
+import org.jetbrains.bazel.languages.starlark.repomapping.toApparentLabel
 
 private const val MAX_PATH_LENGTH = 25
 private const val MIN_SEGMENTS_NUMBER = 1
 
 object BazelFileUtils {
   fun getContainingDirectoryPresentablePath(project: Project, file: VirtualFile): String? {
-    val relativeDir = getBazelFilePathFromRoot(project, file)?.removeSuffix(file.name)?.removeSuffix(File.separator)
-    if (relativeDir.isNullOrBlank()) return null
+    val relativeDir = calculateLabel(project, file.toNioPath())?.toApparentLabel(project) as? ResolvedLabel ?: return null
+    if (relativeDir.repo is Main && relativeDir.packagePath.pathSegments.isEmpty()) return null
     val presentablePath = truncatePathHead(relativeDir)
     return "${file.nameWithoutExtension} ($presentablePath)"
   }
 
-  private fun getBazelFilePathFromRoot(project: Project, file: VirtualFile): String? =
-    if (project.isBazelProject) VfsUtilCore.getRelativePath(file, project.rootDir) else null
-
-  private fun truncatePathHead(relativeDir: String): String {
-    val segments = relativeDir.split(File.separator)
+  private fun truncatePathHead(relativeDir: ResolvedLabel): String {
+    val segments = relativeDir.packagePath.pathSegments
     var takenSegments = 0
     var length = 0
     val tailSegments =
@@ -32,6 +29,8 @@ object BazelFileUtils {
         length <= MAX_PATH_LENGTH || takenSegments <= MIN_SEGMENTS_NUMBER
       }
     val tailString = tailSegments.joinToString("/")
-    return if (tailSegments.size == segments.size) "//$tailString" else "//.../$tailString"
+    val repo = relativeDir.repo
+    val repoString = if (repo is Main) "" else repo.toString()
+    return if (tailSegments.size == segments.size) "$repoString//$tailString" else "$repoString//.../$tailString"
   }
 }
