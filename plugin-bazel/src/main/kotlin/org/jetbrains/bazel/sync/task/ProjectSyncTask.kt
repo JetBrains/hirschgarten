@@ -36,10 +36,10 @@ import org.jetbrains.bazel.sync.projectPreSyncHooks
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectSyncHooks
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
-import org.jetbrains.bazel.sync.status.BspSyncStatusService
 import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
 import org.jetbrains.bazel.sync.status.SyncFatalFailureException
 import org.jetbrains.bazel.sync.status.SyncPartialFailureException
+import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bazel.ui.console.syncConsole
 import java.util.concurrent.CancellationException
@@ -58,7 +58,7 @@ class ProjectSyncTask(private val project: Project) {
             title = BazelPluginBundle.message("console.task.sync.title"),
             message = BazelPluginBundle.message("console.task.sync.in.progress"),
             cancelAction = {
-              BspSyncStatusService.getInstance(project).cancel()
+              SyncStatusService.getInstance(project).cancel()
               coroutineContext.cancel()
             },
             redoAction = { sync(syncScope, buildProject) },
@@ -111,7 +111,7 @@ class ProjectSyncTask(private val project: Project) {
   private suspend fun preSync() {
     log.debug("Running pre sync tasks")
     saveAllFiles()
-    BspSyncStatusService.getInstance(project).startSync()
+    SyncStatusService.getInstance(project).startSync()
   }
 
   private suspend fun doSync(syncScope: ProjectSyncScope, buildProject: Boolean) {
@@ -221,7 +221,7 @@ class ProjectSyncTask(private val project: Project) {
   }
 
   private suspend fun postSync() {
-    BspSyncStatusService.getInstance(project).finishSync()
+    SyncStatusService.getInstance(project).finishSync()
     withContext(Dispatchers.EDT) {
       ProjectView.getInstance(project).refresh()
     }
