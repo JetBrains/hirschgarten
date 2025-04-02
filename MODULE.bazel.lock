@@ -1777,7 +1777,7 @@
     },
     "@@rules_python+//python/extensions:pip.bzl%pip": {
       "general": {
-        "bzlTransitiveDigest": "bTfGOq0/Tn4W42RrqAokqDSksEPcMUaO0U4dmGdwLsQ=",
+        "bzlTransitiveDigest": "pnYoALBIt96YH307NWk40QCBGe/eyXwTJ34EEy0/xZs=",
         "usagesDigest": "ROHNDcOQKN8nNOjUpJIkghvNXaifnCP76Jj3r0UWLfY=",
         "recordedFileInputs": {
           "@@grpc+//requirements.bazel.txt": "4c8c19a2a8f22108bf29feb5cc2694eb0c7e0c82ba0364df27fe5f5e4d7936e5",
