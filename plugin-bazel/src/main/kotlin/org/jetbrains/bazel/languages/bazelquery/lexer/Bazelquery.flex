@@ -15,7 +15,7 @@ import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenTypes;
 %type IElementType
 
 NL=[\r\n]
-SOFT_NL=\\\r?\n              // potrzebne????
+SOFT_NL=\\\r?\n
 SPACE=[\ \t]
 
 SQ=[']
@@ -74,14 +74,11 @@ OPTION_REQ_VALUE="--loading_phase_threads" |
                  "--package_path"
 
 
-COMMENT=#({SOFT_NL} | [^\r\n])*     // potrzebne????
+COMMENT=#({SOFT_NL} | [^\r\n])*
 COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" | "kind" | "labels" | "loadfiles" | "rdeps" | "allrdeps" | "same_pkg_direct_rdeps" | "siblings" | "some" | "somepath" | "tests" | "visible"
 
 // lexing states:
 %xstate EXPR
-%xstate EXPR_DQ
-%xstate EXPR_SQ
-
 %xstate WORD_DQ
 %xstate WORD_SQ
 
@@ -106,24 +103,9 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
 
     {HYP}                             { yybegin(FLAG);  yypushback(1); }
 
-//    {SQ}                              { yybegin(EXPR_SQ); return BazelqueryTokenTypes.SINGLE_QUOTE; }
-//    {DQ}                              { yybegin(EXPR_DQ); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
-
     ([A-Za-z0-9/@._:$~\[\]] | {SQ} | {DQ})           { yybegin(EXPR); yypushback(1); }
     [^]                               { yybegin(FLAG);  yypushback(1); }
 }
-
-
-
-//<EXPR_DQ> {
-//    ({SOFT_NL} | [{SPACE}{NL}])+      { return TokenType.WHITE_SPACE; }
-//    {DQ}                              { yybegin(YYINITIAL); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
-//    //{SQ}                              { yybegin(WORD_SQ); yypushback(1); return BazelqueryTokenTypes.SINGLE_QUOTE; }
-//    // {SQ} ([{QUOTED_WORD}{ESQ}{EDQ}])+ {SQ}       { return BazelqueryTokenTypes.SQ_WORD; }
-//    {SQ}                              { yybegin(WORD_SQ); yypushback(1); }
-//    //{SQ_WORD}                         { return BazelqueryTokenTypes.SQ_WORD; }
-//   //  [^]                              {}
-//}
 
 <WORD_SQ> {
      {SQ}{SQ}                          { yybegin(EXPR); return BazelqueryTokenTypes.SQ_EMPTY; }
@@ -132,18 +114,6 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
      {SQ}                              { return BazelqueryTokenTypes.SQ_UNFINISHED; }
      [^]                               { yybegin(EXPR); yypushback(1); }
  }
-
-
-
-//<EXPR_SQ> {
-//    ({SOFT_NL} | [{SPACE}{NL}])+      { return TokenType.WHITE_SPACE; }
-//    {SQ}                              { yybegin(YYINITIAL); return BazelqueryTokenTypes.SINGLE_QUOTE; }
-//    //{DQ}                              { yybegin(WORD_DQ); yypushback(1); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
-//    // {DQ} ({QUOTED_WORD} | {ESQ} | {EDQ})+ {DQ}        { return BazelqueryTokenTypes.DQ_WORD; }
-//    {DQ}                              { yybegin(WORD_DQ); yypushback(1); }
-//   // {DQ_WORD}                         { return BazelqueryTokenTypes.DQ_WORD; }
-// //   [^]                                {}
-//}
 
 <WORD_DQ> {
       {DQ}{DQ}                          { yybegin(EXPR); return BazelqueryTokenTypes.DQ_EMPTY; }
@@ -154,17 +124,11 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
   }
 
 
-
 <EXPR> {
     ({SOFT_NL} | [{SPACE}{NL}])+      { return TokenType.WHITE_SPACE; }
     {DQ}                              { yybegin(WORD_DQ); yypushback(1); }
     {SQ}                              { yybegin(WORD_SQ); yypushback(1); }
-    //({SOFT_NL} | [{SPACE}{NL}])      { yybegin(YYINITIAL); return BazelqueryTokenTypes.WHITE_SPACE; }
-}
 
-
-
-<EXPR, EXPR_DQ, EXPR_SQ> {
     {LEFT_PAREN}                      { return BazelqueryTokenTypes.LEFT_PAREN; }
     {RIGHT_PAREN}                     { return BazelqueryTokenTypes.RIGHT_PAREN; }
 
@@ -176,7 +140,6 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
     "="                               { return BazelqueryTokenTypes.EQUALS; }
     "set"                             { return BazelqueryTokenTypes.SET; }
 
-    //{COMMAND}                         { return BazelqueryTokenTypes.COMMAND; }
     "allpaths"                        { return BazelqueryTokenTypes.ALLPATHS; }
     "attr"                            { return BazelqueryTokenTypes.ATTR; }
     "buildfiles"                      { return BazelqueryTokenTypes.BUILDFILES; }
@@ -227,14 +190,12 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
 
 <VALUE> {
     ({SOFT_NL} | [{SPACE}{NL}])+      { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
-    //{SQ_WORD}                 { yybegin(YYINITIAL); return BazelqueryTokenTypes.SQ_VAL; }
-   // {DQ_WORD}                 { yybegin(YYINITIAL); return BazelqueryTokenTypes.DQ_VAL; }
     {SQ}                              { yybegin(VALUE_SQ); yypushback(1); }
     {DQ}                              { yybegin(VALUE_DQ); yypushback(1); }
 
     {UNQUOTED_WORD}                   { yybegin(SPACE_NEEDED); return BazelqueryTokenTypes.UNQUOTED_VAL; }
 
-    [^]                               { yybegin(YYINITIAL); yypushback(1); } // return UNEXPECTED???
+    [^]                               { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <VALUE_SQ> {

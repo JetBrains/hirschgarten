@@ -38,7 +38,6 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
   private val targetFilter = TargetFilter { rerenderComponents() }
   private val searchBarPanel = SearchBarPanel()
   private var loadedTargetsPanel: BspPanelComponent
-  // Dodajemy panel Bazel Query jako zakładkę
   private val bazelQueryDialogWindow = BazelQueryDialogWindow(project)
 
 
@@ -73,8 +72,6 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
       addTab("Bazel Query", bazelQueryDialogWindow)
     }
     setContent(tabbedPane)
-
-    //setContent(loadedTargetsPanel.withScrollAndSearch())
 
     targetUtils.registerSyncListener { targetListChanged ->
       if (targetListChanged) {

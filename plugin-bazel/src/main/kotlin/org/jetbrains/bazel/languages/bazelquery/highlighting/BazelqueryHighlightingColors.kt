@@ -9,7 +9,6 @@ object BazelqueryHighlightingColors {
   val PROMPT = createTextAttributesKey("BAZELQUERY_PROMPT", DefaultLanguageHighlighterColors.KEYWORD)
   val COMMENT = createTextAttributesKey("BAZELQUERY_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
   val OPERATION = createTextAttributesKey("BAZELQUERY_OPERATION", DefaultLanguageHighlighterColors.IDENTIFIER)
-//STATIC_METHOD
   val FLAG = createTextAttributesKey("BAZELQUERY_FLAG", DefaultLanguageHighlighterColors.LINE_COMMENT)
   val FLAG_VAL = createTextAttributesKey("BAZELQUERY_FLAG_VAL", DefaultLanguageHighlighterColors.CONSTANT)
 
