@@ -1,13 +1,16 @@
 package org.jetbrains.bazel.runnerAction
 
 import com.intellij.execution.RunnerAndConfigurationSettings
+import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasTestFilter
 import org.jetbrains.bsp.protocol.BuildTarget
 
 class TestTargetAction(
+  project: Project,
   targetInfos: List<BuildTarget>,
   text: ((includeTargetNameInText: Boolean) -> String)? = null,
   isDebugAction: Boolean = false,
@@ -21,13 +24,25 @@ class TestTargetAction(
       } else if (isDebugAction) {
         BazelPluginBundle.message(
           "target.debug.test.action.text",
-          if (includeTargetNameInTextParam || includeTargetNameInText) targetInfos.joinToString(";") { it.displayName } else "",
+          if (includeTargetNameInTextParam ||
+            includeTargetNameInText
+          ) {
+            targetInfos.joinToString(";") { it.id.toShortString(project) }
+          } else {
+            ""
+          },
           BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       } else {
         BazelPluginBundle.message(
           "target.test.action.text",
-          if (includeTargetNameInTextParam || includeTargetNameInText) targetInfos.joinToString(";") { it.displayName } else "",
+          if (includeTargetNameInTextParam ||
+            includeTargetNameInText
+          ) {
+            targetInfos.joinToString(";") { it.id.toShortString(project) }
+          } else {
+            ""
+          },
           BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       }

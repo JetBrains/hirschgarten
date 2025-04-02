@@ -21,6 +21,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.runnerAction.BuildTargetAction
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.target.targetUtils
@@ -69,9 +70,8 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
     return state
   }
 
-  // TODO: https://youtrack.jetbrains.com/issue/BAZEL-988
   private fun activeWidgetState(loadedTarget: Label?, icon: Icon): WidgetState {
-    val text = loadedTarget?.toString() ?: ""
+    val text = loadedTarget?.toShortString(project) ?: ""
     val state = WidgetState(BazelPluginBundle.message("widget.tooltip.text.active"), text, true)
     state.icon = icon
 
@@ -105,7 +105,7 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
   private fun List<Label>.getTargetInfos(): List<BuildTarget> = this.mapNotNull { project.targetUtils.getBuildTargetForLabel(it) }
 
   private fun BuildTarget.calculatePopupGroup(): ActionGroup =
-    DefaultActionGroup(id.toShortString(), true).also {
+    DefaultActionGroup(id.toShortString(project), true).also {
       ResyncTargetAction.createIfEnabled(id)?.let { resyncTargetAction -> it.add(resyncTargetAction) }
       it.add(CopyTargetIdAction.FromTargetInfo(this))
       it.addSeparator()

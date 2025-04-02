@@ -22,7 +22,7 @@ import javax.swing.Icon
 internal open class RunAllTestsBaseAction(
   text: () -> String,
   icon: Icon,
-  private val createAction: (targets: List<BuildTarget>, directoryName: String) -> SuspendableAction,
+  private val createAction: (project: Project, targets: List<BuildTarget>, directoryName: String) -> SuspendableAction,
 ) : SuspendableAction(
     text = text,
     icon = icon,
@@ -30,6 +30,7 @@ internal open class RunAllTestsBaseAction(
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val action =
       createAction(
+        project,
         readAction { getAllTestTargetInfos(project, e) },
         e.getCurrentPath()?.name.orEmpty(),
       )
@@ -74,10 +75,14 @@ internal class RunAllTestsAction :
   RunAllTestsBaseAction(
     text = { BazelPluginBundle.message("action.run.all.tests") },
     icon = AllIcons.Actions.Execute,
-    createAction = { targets, directoryName ->
-      TestTargetAction(targets, text = {
-        BazelPluginBundle.message("action.run.all.tests.under", directoryName)
-      })
+    createAction = { project, targets, directoryName ->
+      TestTargetAction(
+        project,
+        targets,
+        text = {
+          BazelPluginBundle.message("action.run.all.tests.under", directoryName)
+        },
+      )
     },
   )
 
@@ -85,8 +90,8 @@ internal class RunAllTestsWithCoverageAction :
   RunAllTestsBaseAction(
     text = { BazelPluginBundle.message("action.run.all.tests.with.coverage") },
     icon = AllIcons.General.RunWithCoverage,
-    createAction = { targets, directoryName ->
-      RunWithCoverageAction(targets, text = {
+    createAction = { project, targets, directoryName ->
+      RunWithCoverageAction(project, targets, text = {
         BazelPluginBundle.message("action.run.all.tests.under.with.coverage", directoryName)
       })
     },

@@ -34,7 +34,6 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tran
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.androidJarToAndroidSdkName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
-import org.jetbrains.bazel.magicmetamodel.orDefault
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
@@ -244,7 +243,7 @@ class CollectProjectDetailsTask(
     ) {
       coroutineScope {
         val projectBasePath = project.rootDir.toNioPath()
-        val nameProvider = project.findNameProvider().orDefault()
+        val nameProvider = project.findNameProvider()
         val libraryGraph = LibraryGraph(projectDetails.libraries.orEmpty())
 
         val libraries =

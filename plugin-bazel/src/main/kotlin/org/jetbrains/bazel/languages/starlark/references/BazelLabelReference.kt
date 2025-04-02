@@ -24,10 +24,9 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLite
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.repomapping.apparentRepoNameToCanonicalName
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
-import org.jetbrains.bazel.languages.starlark.repomapping.repositoryPaths
+import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRepo
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.utils.allAncestorsSequence
-import java.nio.file.Path
 
 public val BUILD_FILE_NAMES = sequenceOf("BUILD.bazel", "BUILD")
 
@@ -49,7 +48,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     val targetUtils = project.targetUtils
     return targetUtils
       .allTargets()
-      .map { targetLookupElement(it.toShortString()) }
+      .map { targetLookupElement(it.toShortString(project)) }
       .toTypedArray()
   }
 
@@ -161,7 +160,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     ): VirtualFile? {
       val foundRepoRoot =
         if (label.repoName.isEmpty() && containingFile != null) {
-          findContainingBazelRepo(project, containingFile)
+          findContainingBazelRepo(project, containingFile.toNioPath())
         } else if (label.isApparent) {
           project.apparentRepoNameToCanonicalName[label.repoName]?.let { canonicalRepoName ->
             project.canonicalRepoNameToPath[canonicalRepoName]
@@ -180,12 +179,6 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
         }
 
       return repoRoot.findFileByRelativePath(label.packagePath.toString())
-    }
-
-    private fun findContainingBazelRepo(project: Project, file: VirtualFile): Path? {
-      val path = file.toNioPath()
-      val repositoryPaths = project.repositoryPaths
-      return path.allAncestorsSequence().firstOrNull { it in repositoryPaths }
     }
 
     private fun findBuildFile(packageDir: VirtualFile): VirtualFile? =

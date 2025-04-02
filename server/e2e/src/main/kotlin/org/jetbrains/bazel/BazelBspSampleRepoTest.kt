@@ -767,7 +767,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val expectedResult =
       CompileResult(StatusCode.OK)
 
-    return BazelBspTestScenarioStep("build ${targetId.toShortString()} with origin id: $originId") {
+    return BazelBspTestScenarioStep("build $targetId with origin id: $originId") {
       testClient.testCompile(
         20.seconds,
         params = params,

@@ -16,6 +16,7 @@ import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.status.BuildStatusService
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
@@ -140,7 +141,7 @@ class BuildTargetTask(private val project: Project) {
   private fun calculateStartBuildMessage(targetIds: List<Label>): String =
     when (targetIds.size) {
       0 -> BazelPluginBundle.message("console.task.build.no.targets")
-      1 -> BazelPluginBundle.message("console.task.build.in.progress.one", targetIds.first().toShortString())
+      1 -> BazelPluginBundle.message("console.task.build.in.progress.one", targetIds.first().toShortString(project))
       else -> BazelPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
     }
 

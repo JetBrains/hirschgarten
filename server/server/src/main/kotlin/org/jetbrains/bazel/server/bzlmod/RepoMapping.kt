@@ -41,7 +41,7 @@ fun Label.canonicalize(repoMapping: RepoMapping): Label =
               val apparentRepoName = this.repoName
               val canonicalRepoName =
                 repoMapping.apparentRepoNameToCanonicalName[apparentRepoName] ?: error("No canonical name found for $this")
-              this.copy(repo = Canonical(canonicalRepoName))
+              this.copy(repo = Canonical.createCanonicalOrMain(canonicalRepoName))
             }
           }
         }

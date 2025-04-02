@@ -21,7 +21,6 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
-import org.jetbrains.bazel.magicmetamodel.orDefault
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
@@ -162,7 +161,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
 
     val targetInfos = listOf(pythonLibrary1, pythonLibrary2, pythonBinary)
     val targets = targetInfos.map { generateTarget(it, emptyList(), emptyList()) }
-    val nameProvider = project.findNameProvider().orDefault()
+    val nameProvider = project.findNameProvider()
 
     val expectedModuleEntity1 = generateExpectedModuleEntity(pythonBinary, listOf(pythonLibrary1, pythonLibrary2), nameProvider)
     val expectedModuleEntity2 = generateExpectedModuleEntity(pythonLibrary1, emptyList(), nameProvider)
@@ -192,7 +191,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         listOf(Path("/Resource1"), Path("/Resource2"), Path("/Resource3")),
       )
 
-    val expectedModuleEntity = generateExpectedModuleEntity(pythonBinary, emptyList(), project.findNameProvider().orDefault())
+    val expectedModuleEntity = generateExpectedModuleEntity(pythonBinary, emptyList(), project.findNameProvider())
 
     val expectedContentRootEntities =
       generateExpectedSourceRootEntities(target, expectedModuleEntity.moduleEntity)
