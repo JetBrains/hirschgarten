@@ -16,7 +16,7 @@ import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 class ProjectViewLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider() {
   override fun getLanguage(): Language = ProjectViewLanguage
 
-  override fun getIndentOptionsEditor(): IndentOptionsEditor? = SmartIndentOptionsEditor()
+  override fun getIndentOptionsEditor(): IndentOptionsEditor = SmartIndentOptionsEditor()
 
   override fun getCodeSample(settingsType: SettingsType): String? =
     """
