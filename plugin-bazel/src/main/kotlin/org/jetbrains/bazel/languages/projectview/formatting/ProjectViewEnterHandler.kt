@@ -16,6 +16,7 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.impl.source.tree.injected.InjectedLanguageEditorUtil
+import com.intellij.psi.util.elementType
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
 
@@ -48,6 +49,22 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
     return prev?.elementType == ProjectViewTokenType.SECTION_KEYWORD
   }
 
+  fun isBlankLine(file: PsiFile, caretOffset: Int): Boolean {
+    val start = file.findElementAt(caretOffset - 1)
+    var left = start
+    while (left != null && left is PsiWhiteSpace) {
+      left = left.prevSibling
+    }
+
+    var right = file.findElementAt(caretOffset)
+    while (right != null && right is PsiWhiteSpace) {
+      right = right.nextSibling
+    }
+
+    return (left == null || left.elementType == ProjectViewTokenType.NEWLINE) &&
+      (right == null || right.elementType == ProjectViewTokenType.NEWLINE)
+  }
+
   override fun preprocessEnter(
     file: PsiFile,
     editor: Editor,
@@ -66,8 +83,17 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
       offset = editor.caretModel.offset
     }
 
-    if (!isApplicable(file, dataContext) || !insertIndent(file, offset)) {
-      return EnterHandlerDelegate.Result.Continue
+    if (!isApplicable(file, dataContext)) {
+      return EnterHandlerDelegate.Result.Default
+    }
+    // remove indent if enter is pressed on the blank line
+    if (isBlankLine(file, offset)) {
+      editor.document.insertString(offset, "\n")
+      editor.caretModel.moveToOffset(offset + 1)
+      return EnterHandlerDelegate.Result.Stop
+    }
+    if (!insertIndent(file, offset)) {
+      return EnterHandlerDelegate.Result.Default
     }
 
     editor.caretModel.moveToOffset(offset)
