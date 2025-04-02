@@ -19,26 +19,30 @@ import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.JBUI
+import kotlinx.coroutines.Job
+import org.jdesktop.swingx.VerticalLayout
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.coroutines.CoroutineService
 import org.jetbrains.bazel.languages.bazelquery.BazelqueryFlagsLanguage
 import org.jetbrains.bazel.languages.bazelquery.BazelqueryLanguage
+import org.jetbrains.bazel.languages.bazelquery.options.BazelqueryCommonOptions
 import org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilter
 import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
 import java.awt.BorderLayout
+import java.awt.Dimension
+import java.io.OutputStreamWriter
+import java.util.concurrent.atomic.AtomicReference
+import javax.swing.Box
 import javax.swing.BoxLayout
+import javax.swing.ButtonGroup
+import javax.swing.ImageIcon
 import javax.swing.JButton
 import javax.swing.JCheckBox
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.JRadioButton
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingUtilities
-import java.io.OutputStreamWriter
-import javax.swing.ImageIcon
-
-import org.jetbrains.bazel.languages.bazelquery.options.BazelqueryCommonOptions
-import javax.swing.ButtonGroup
-import javax.swing.JRadioButton
 
 private class QueryFlagField(
   val flag: String,
@@ -92,6 +96,7 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
 
   // Bazel Runner
   private val queryEvaluator = QueryEvaluator()
+  private val evaluatorJob = AtomicReference<Job?>(null)
 
   // Graph Window Manager
   private val graphWindowManager = GraphWindowManager()
@@ -101,15 +106,20 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
   private val editorTextField = LanguageTextField(BazelqueryLanguage, project, "")
   private val directoryField = JBTextField().apply { isEditable = false }
   private val flagTextField = LanguageTextField(BazelqueryFlagsLanguage, project, "")
-  private val flagsPanel = JPanel().apply {
-    layout = BoxLayout(this, BoxLayout.Y_AXIS)
+  private val buttonsPanel = JPanel().apply {
+    layout = BoxLayout(this, BoxLayout.X_AXIS)
+    maximumSize = Dimension(Int.MAX_VALUE, 40)
+  }
+  private val flagsPanel = JPanel(VerticalLayout()).apply {
     defaultFlags.forEach {
       it.addToPanel(this)
     }
     add(flagTextField)
   }
   private val bazelFilter = BazelBuildTargetConsoleFilter(project)
-  private val resultField: ConsoleView = ConsoleViewImpl(project, false)
+  private val resultField: ConsoleView = ConsoleViewImpl(project, false).apply {
+
+  }
 
   init {
     layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -159,16 +169,22 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
   }
 
   private fun initializeUI() {
-    fun createDirectorySelectionPanel() = JPanel(BorderLayout()).apply {
+    fun createDirectorySelectionPanel() = JPanel().apply {
+      layout = BoxLayout(this, BoxLayout.X_AXIS)
       val directoryButton = JButton("Select").apply { addActionListener { chooseDirectory() } }
 
-      add(JLabel("Selected Directory: "), BorderLayout.WEST)
-      add(directoryField, BorderLayout.CENTER)
-      add(directoryButton, BorderLayout.EAST)
+      add(JLabel("Selected Directory: "))
+      add(directoryField)
+      add(directoryButton)
+
+      maximumSize = Dimension(Int.MAX_VALUE, 40)
     }
 
-    fun createQueryPanel() = JPanel(BorderLayout()).apply {
-      add(editorTextField, BorderLayout.CENTER)
+    fun createQueryPanel() = JPanel().apply {
+      layout = BoxLayout(this, BoxLayout.X_AXIS)
+      add(editorTextField)
+
+      maximumSize = Dimension(Int.MAX_VALUE, 40)
     }
 
     fun createFlagsPanel() = CollapsiblePanel(
@@ -186,16 +202,44 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
       add(resultField.component, BorderLayout.CENTER)
     }
 
-    fun createButtonsPanel() = JPanel(BorderLayout()).apply {
-      val evaluateButton = JButton("Evaluate").apply { addActionListener { evaluate() } }
-      add(evaluateButton, BorderLayout.CENTER)
-    }
-
     add(createDirectorySelectionPanel())
     add(createQueryPanel())
-    add(createFlagsPanel())
-    add(createResultPanel())
-    add(createButtonsPanel())
+    setButtonsPanelToEvaluate()
+    add(buttonsPanel)
+    add(JBScrollPane(
+      JPanel(VerticalLayout()).apply {
+        add(createFlagsPanel())
+        add(createResultPanel())
+      }
+    ))
+  }
+
+  private fun setButtonsPanelToEvaluate() {
+    SwingUtilities.invokeLater {
+      with(buttonsPanel) {
+        removeAll()
+        add(Box.createHorizontalGlue())
+        val evaluateButton = JButton("Evaluate").apply {
+          addActionListener { evaluate() }
+        }
+        add(evaluateButton)
+        updateUI()
+      }
+    }
+  }
+
+  private fun setButtonsPanelToCancel() {
+    SwingUtilities.invokeLater {
+      with(buttonsPanel) {
+        removeAll()
+        add(Box.createHorizontalGlue())
+        val evaluateButton = JButton("Cancel").apply {
+          addActionListener { cancelEvaluate() }
+        }
+        add(evaluateButton)
+        updateUI()
+      }
+    }
   }
 
   // Directory selection
@@ -258,9 +302,13 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
     showInConsole("Bazel Query in progress...")
 
     var commandResults: BazelProcessResult? = null
-    CoroutineService.getInstance(project).start {
+    val job = CoroutineService.getInstance(project).start {
       commandResults = queryEvaluator.evaluate(editorTextField.text, flagsToRun, flagTextField.text)
-    }.invokeOnCompletion {
+    }
+    job.invokeOnCompletion {
+      val finishedJob = evaluatorJob.getAndSet(null)
+      if (finishedJob == null) return@invokeOnCompletion
+      if (finishedJob.isCancelled) return@invokeOnCompletion
       SwingUtilities.invokeLater {
         if (commandResults!!.isSuccess) {
           val res = commandResults.stdout
@@ -282,15 +330,25 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
         } else {
           showInConsole("Command execution failed:\n" + commandResults.stderr)
         }
+        setButtonsPanelToEvaluate()
         updateUI()
       }
     }
+    evaluatorJob.set(job)
+
+    setButtonsPanelToCancel()
   }
 
-  private fun clear() {
-    editorTextField.text = ""
-    showInConsole("")
+  private fun cancelEvaluate() {
+    val job = evaluatorJob.getAndSet(null)
+    if (job != null) {
+      job.cancel()
+        setButtonsPanelToEvaluate()
+        showInConsole("Query cancelled")
+        updateUI()
+    }
   }
+
 
   private fun showInConsole(
     text: String,
@@ -318,5 +376,7 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
       val normalText = text.substring(lastIndex)
       resultField.print(normalText, ConsoleViewContentType.NORMAL_OUTPUT)
     }
+
+    updateUI()
   }
 }

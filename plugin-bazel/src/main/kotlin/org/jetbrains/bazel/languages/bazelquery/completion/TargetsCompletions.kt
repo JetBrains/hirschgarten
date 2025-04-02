@@ -25,7 +25,7 @@ fun generateTargetCompletions(prefix: String, directory: String = ""): List<Stri
   val currentDir = directory.removePrefix(projectDir).removePrefix(separator)
   val prefixPath = "$startPathSign$currentDir"
 
-  val allTargets: MutableSet<String> =  targets?.toMutableSet() ?: mutableSetOf()
+  val allTargets: MutableSet<String> = targets?.toMutableSet() ?: mutableSetOf()
   val allTargetsDirDepFormat =
     if (currentDir.isNotEmpty())
       allTargets
@@ -77,44 +77,35 @@ fun generateTargetCompletions(prefix: String, directory: String = ""): List<Stri
 
 private fun generateTargetPatterns(prefix: String, suggestions: List<String>): List<String> {
   val patterns = mutableListOf<String>()
-
-  val availablePathsSet = mutableSetOf<String>()
   val availableSuggestions = suggestions.toMutableList()
-  var isProjectRootDependentFormat = false
-  var prefixSegments = 0
-
-  if (prefix.isNotEmpty()) {
-    isProjectRootDependentFormat = prefix[0] == separator[0]
-    prefixSegments += prefix
+  val prefixSegments =
+    if (prefix.isEmpty()) 0
+    else prefix
       .removePrefix(separator).removePrefix(separator).split(":")[0]
       .split(separator).size
-  }
 
-  // Add all subpaths to use with wildcards
   availableSuggestions
     .forEach { s ->
-      patterns.add(s)
+      patterns.add(s) // add single target suggestion
+      val isProjectRootDependentFormat = s.startsWith(startPathSign)
       val suggestionSegments = s.removePrefix(startPathSign).split(":")[0].split(separator)
       suggestionSegments.indices.reversed()
         .filter { it + 1 >= prefixSegments }
         .forEach { i ->
-          availablePathsSet.add(suggestionSegments.subList(0, i + 1).joinToString(separator))
+          // add wildcard patterns for the subpath of target suggestion
+          if (isProjectRootDependentFormat) {
+            val path = startPathSign + suggestionSegments.subList(0, i + 1).joinToString(separator)
+            patterns.add("$path:all")
+            patterns.add("$path$separator...:all-targets")
+            patterns.add("$path$separator...:all")
+          }
+          else {
+            val path = suggestionSegments.subList(0, i + 1).joinToString(separator)
+            patterns.add("$path:all")
+            patterns.add("$path$separator...:all")
+          }
         }
     }
-
-  if (isProjectRootDependentFormat) {
-    availablePathsSet.forEach { path ->
-      patterns.add("$startPathSign$path:all")
-      patterns.add("$startPathSign$path$separator...:all-targets")
-      patterns.add("$startPathSign$path$separator...:all")
-    }
-  }
-  else {
-    availablePathsSet.forEach { path ->
-      patterns.add("$path:all")
-      patterns.add("$path$separator...:all")
-    }
-  }
 
   return patterns
 }

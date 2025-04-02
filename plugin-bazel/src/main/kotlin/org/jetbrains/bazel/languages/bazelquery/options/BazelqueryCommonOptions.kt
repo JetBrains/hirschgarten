@@ -6,7 +6,6 @@ class BazelqueryCommonOptions {
     val name: String,
     val values: List<String> = emptyList()
   )
-
   companion object {
     // Default value is always first in the list
     private val knownFlags = listOf(
@@ -35,7 +34,7 @@ class BazelqueryCommonOptions {
         values = listOf("conservative", "precise", "off")
       ),
       BazelqueryOption(
-        name = "nodep_deps",
+        name = "nonodep_deps",
       ),
       BazelqueryOption(
         name = "consistent_labels",
@@ -48,24 +47,14 @@ class BazelqueryCommonOptions {
         values = listOf("auto", "no", "deps", "full")
       ),
       BazelqueryOption(
-        name = "implicit_deps",
+        name = "noimplicit_deps",
       ),
       BazelqueryOption(
-        name = "fetch",
-      ),
-      BazelqueryOption(
-        name = "experimental_spawn_scheduler"
-      ),
-      BazelqueryOption(
-        name = "host_action_env"
-      ),
-      BazelqueryOption(
-        name = "graph:conditional_edges_limit"
-      ),
+        name = "nofetch",
+      )
     )
 
     fun byName(name: String): BazelqueryOption? = knownFlags.firstOrNull { it.name == name }
     fun getAll(): List<BazelqueryOption> = knownFlags
   }
-
 }
