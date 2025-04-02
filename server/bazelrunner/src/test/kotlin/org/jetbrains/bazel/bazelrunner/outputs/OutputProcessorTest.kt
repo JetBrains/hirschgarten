@@ -18,7 +18,8 @@ class OutputProcessorTest {
     process.isAlive shouldBe true
     try {
       runBlocking {
-        withTimeout(5000) { // Add timeout to prevent test hanging indefinitely
+        withTimeout(5000) {
+          // Add timeout to prevent test hanging indefinitely
           proc.waitForExit(
             pidFuture,
             BspClientLogger(MockClient()),
