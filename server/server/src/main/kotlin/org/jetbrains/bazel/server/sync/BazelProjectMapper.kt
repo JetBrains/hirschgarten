@@ -235,6 +235,8 @@ class BazelProjectMapper(
         repoMapping,
       )
 
+    val workspaceName = targets.values.map { it.workspaceName }.firstOrNull() ?: "_main"
+
     return AspectSyncProject(
       workspaceRoot = workspaceRoot,
       bazelRelease = bazelInfo.release,
@@ -245,6 +247,7 @@ class BazelProjectMapper(
       nonModuleTargets = nonModuleTargets,
       repoMapping = repoMapping,
       hasError = hasError,
+      workspaceName = workspaceName,
       workspaceContext = workspaceContext,
     )
   }

@@ -8,6 +8,7 @@ import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.bazel.config.workspaceName
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.task.query
 
@@ -18,6 +19,10 @@ class BazelBinPathSyncHook : ProjectSyncHook {
       val bazelBinPathResult =
         query("workspace/bazelBinPath") { environment.server.workspaceBazelBinPath() }
       bazelBinPathService.bazelBinPath = bazelBinPathResult.path
+      val bazelWorkspaceResult =
+        query("workspace/bazelWorkspaceName") { environment.server.workspaceName() }
+
+      environment.project.workspaceName = bazelWorkspaceResult.workspaceName
     }
 }
 

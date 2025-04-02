@@ -143,6 +143,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
         env = env,
         env_inherit = getattr(rule_attrs, "env_inherit", []),
         executable = executable,
+        workspace_name = ctx.workspace_name,
     )
 
     exported_properties = dict(

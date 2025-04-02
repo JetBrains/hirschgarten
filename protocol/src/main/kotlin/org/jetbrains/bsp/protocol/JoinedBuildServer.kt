@@ -63,5 +63,7 @@ interface JoinedBuildServer {
 
   suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult
 
+  suspend fun workspaceName(): WorkspaceNameResult
+
   suspend fun workspaceContext(): WorkspaceContext
 }
