@@ -130,6 +130,7 @@ fun ShellCommandContext.allOptions(context: ShellRuntimeContext) {
 
         is Flag.OneOf -> {
           option(flagNameDD) {
+            description(flagDescriptionHtml(flag, context.project))
             argument {
               suggestions { queryFlag.values.map {
                 ShellCompletionSuggestion(it)
@@ -139,11 +140,13 @@ fun ShellCommandContext.allOptions(context: ShellRuntimeContext) {
         }
 
         is Flag.Unknown -> {
-          option(flagNameDD)
+          option(flagNameDD) {
+            description(flagDescriptionHtml(flag, context.project))
+          }
         }
 
         else -> {
-          optionWithUnknownArgs(flagNameDD)
+          optionWithUnknownArgs(flag, context.project)
         }
       }
     }
@@ -151,8 +154,9 @@ fun ShellCommandContext.allOptions(context: ShellRuntimeContext) {
 }
 
 @Suppress("UnstableApiUsage")
-fun ShellCommandContext.optionWithUnknownArgs(name: String) {
-  option(name) {
+fun ShellCommandContext.optionWithUnknownArgs(flag: Flag, project: Project) {
+  option("--${flag.option.name}") {
+    description(flagDescriptionHtml(flag, project))
     argument {
       isOptional = true
       suggestions {
