@@ -71,6 +71,7 @@ class BazelProjectProperties(private val project: Project) : PersistentStateComp
 val Project.bazelProjectProperties: BazelProjectProperties
   get() = service<BazelProjectProperties>()
 
+@PublicApi
 var Project.isBazelProject: Boolean
   get() = bazelProjectProperties.isBazelProject
   set(value) {
