@@ -6,11 +6,13 @@ import com.intellij.ide.DataManager
 import com.intellij.injected.editor.EditorWindow
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.editor.actionSystem.EditorActionHandler
 import com.intellij.openapi.editor.actions.SplitLineAction
 import com.intellij.openapi.util.Ref
+import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
@@ -18,8 +20,6 @@ import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.impl.source.tree.injected.InjectedLanguageEditorUtil
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewPsiFile
-import com.intellij.openapi.editor.Document
-import com.intellij.openapi.util.TextRange
 
 class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
   companion object {
@@ -50,7 +50,11 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
     return prev?.elementType == ProjectViewTokenType.SECTION_KEYWORD
   }
 
-  fun isBlankLine(file: PsiFile, caretOffset: Int, document: Document): Boolean {
+  fun isBlankLine(
+    file: PsiFile,
+    caretOffset: Int,
+    document: Document,
+  ): Boolean {
     val lineNumber = document.getLineNumber(caretOffset)
 
     val lineStart = document.getLineStartOffset(lineNumber)
@@ -95,7 +99,6 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
     if (!insertIndent(file, offset)) {
       return EnterHandlerDelegate.Result.Default
     }
-
 
     originalHandler?.execute(editor, editor.caretModel.currentCaret, dataContext)
     val position = editor.caretModel.logicalPosition
