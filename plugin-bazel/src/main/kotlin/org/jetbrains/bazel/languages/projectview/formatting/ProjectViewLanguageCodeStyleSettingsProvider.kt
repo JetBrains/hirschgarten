@@ -36,7 +36,7 @@ class ProjectViewLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsPr
 
   override fun createCustomSettings(settings: CodeStyleSettings): CustomCodeStyleSettings? = ProjectViewCodeStyleSettings(settings)
 
-  override fun getConfigurableDisplayName() = "ProjectView"
+  override fun getConfigurableDisplayName() = "Bazel ProjectView"
 
   override fun createConfigurable(settings: CodeStyleSettings, modelSettings: CodeStyleSettings): CodeStyleConfigurable =
     object : CodeStyleAbstractConfigurable(settings, modelSettings, this.configurableDisplayName) {
