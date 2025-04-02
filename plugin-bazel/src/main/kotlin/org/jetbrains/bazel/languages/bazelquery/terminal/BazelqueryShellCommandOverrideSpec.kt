@@ -35,6 +35,7 @@ TODO
   *  In options we don't have them, so we can only provide static suggestions.
   *  We can treat options as arguments, so we can provide suggestions based on context, (add TerminalIcons.Option to make it appear as options),
   but we would not be able to exclude used options (for now, an issue was submitted).
+  *  TODO Some options-args should be separated with space or =, we cannot do with both 2 for now, =sign alone not working for now
 */
 @Suppress("UnstableApiUsage")
 internal fun bazelQueryCommandSpec(): ShellCommandSpec = ShellCommandSpec("bazel") {
@@ -59,7 +60,7 @@ internal fun bazelQueryCommandSpec(): ShellCommandSpec = ShellCommandSpec("bazel
 @Suppress("UnstableApiUsage")
 fun ShellCommandContext.dummyArgs() {
   argument {
-    displayName("options")
+    displayName("option")
     isVariadic = true
     isOptional = true
     suggestions(ShellRuntimeDataGenerator { context ->
@@ -135,14 +136,6 @@ fun ShellCommandContext.allOptions(context: ShellRuntimeContext) {
               } }
             }
           }
-          option(flagNameDD) {
-            separator = "="
-            argument {
-              suggestions { queryFlag.values.map {
-                ShellCompletionSuggestion(it)
-              } }
-            }
-          }
         }
 
         is Flag.Unknown -> {
@@ -162,12 +155,9 @@ fun ShellCommandContext.optionWithUnknownArgs(name: String) {
   option(name) {
     argument {
       isOptional = true
-    }
-  }
-  option(name) {
-    separator = "="
-    argument {
-      isOptional = true
+      suggestions {
+        listOf(ShellCompletionSuggestion(name = "", isHidden = true))
+      }
     }
   }
 }
@@ -179,7 +169,6 @@ fun ShellCommandContext.booleanAndTriStateFlagSuggestion(flag: Flag, context: Sh
 
   option(trueFlag) {
     description(flagDescriptionHtml(flag, context.project))
-    separator = "="
     argument {
       if (flag is Flag.Boolean) {
         isOptional = true
@@ -248,4 +237,4 @@ private fun BazelqueryFunction.argumentsMarkdown(): String =
     "- `${arg.name}` (${arg.type}${if (arg.optional) ", optional" else ""}): ${arg.description}"
   }
 
-val knownOptions = BazelqueryCommonOptions().getAll()
+val knownOptions = BazelqueryCommonOptions.getAll()
