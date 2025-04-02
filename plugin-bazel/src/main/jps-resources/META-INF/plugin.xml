@@ -410,6 +410,8 @@
         <lang.commenter
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.commenter.ProjectViewCommenter"/>
+        <langCodeStyleSettingsProvider
+                implementation="org.jetbrains.bazel.languages.projectview.formatting.ProjectViewLanguageCodeStyleSettingsProvider"/>
         <lang.parserDefinition
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"/>
