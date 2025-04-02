@@ -83,7 +83,7 @@ private class QueryFlagField(
 
 // TODO: Rename to something else than window and move to correct directory
 class BazelQueryDialogWindow(private val project: Project) : JPanel() {
-  private val defaultFlags = BazelqueryCommonOptions().getAll().map { option ->
+  private val defaultFlags = BazelqueryCommonOptions.getAll().map { option ->
     QueryFlagField(
       flag = option.name,
       values = option.values
