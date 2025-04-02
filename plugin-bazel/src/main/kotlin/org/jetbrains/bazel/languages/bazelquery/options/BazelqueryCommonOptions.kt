@@ -54,13 +54,10 @@ class BazelqueryCommonOptions {
         name = "fetch",
       ),
       BazelqueryOption(
-        name = "experimental_spawn_scheduler"
-      ),
-      BazelqueryOption(
-        name = "host_action_env"
-      ),
-      BazelqueryOption(
         name = "graph:conditional_edges_limit"
+      ),
+      BazelqueryOption(
+        name = "universe_scope"
       ),
     )
 
