@@ -34,7 +34,7 @@ class ProjectViewLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsPr
     indentOptions.CONTINUATION_INDENT_SIZE = 2
   }
 
-  override fun createCustomSettings(settings: CodeStyleSettings): CustomCodeStyleSettings? = ProjectViewCodeStyleSettings(settings)
+  override fun createCustomSettings(settings: CodeStyleSettings): CustomCodeStyleSettings = ProjectViewCodeStyleSettings(settings)
 
   override fun getConfigurableDisplayName() = "Bazel ProjectView"
 
