@@ -10,7 +10,7 @@ class SyncFatalFailureException : IllegalStateException()
 class SyncPartialFailureException : IllegalStateException()
 
 @Service(Service.Level.PROJECT)
-class BspSyncStatusService(private val project: Project) {
+class SyncStatusService(private val project: Project) {
   private var isCanceled = false
 
   private var _isSyncInProgress: Boolean = false
@@ -39,8 +39,8 @@ class BspSyncStatusService(private val project: Project) {
 
   companion object {
     @JvmStatic
-    fun getInstance(project: Project): BspSyncStatusService = project.getService(BspSyncStatusService::class.java)
+    fun getInstance(project: Project): SyncStatusService = project.getService(SyncStatusService::class.java)
   }
 }
 
-fun Project.isSyncInProgress() = BspSyncStatusService.getInstance(this).isSyncInProgress
+fun Project.isSyncInProgress() = SyncStatusService.getInstance(this).isSyncInProgress
