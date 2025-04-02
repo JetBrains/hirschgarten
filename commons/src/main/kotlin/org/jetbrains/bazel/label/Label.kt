@@ -110,23 +110,6 @@ data class ResolvedLabel(
 ) : Label {
   val repoName get() = repo.repoName
 
-  /**
-   * Returns a path to the corresponding folder in the `bazel-(project)` directory.
-   * Warning: this works on label with apparent repo names only if bzlmod is not used.
-   * If bzlmod is used, you need to use canonical form to resolve the path.
-   */
-  fun toBazelPath(): Path =
-    if (packagePath !is Package) {
-      error("Cannot convert wildcard package to path")
-    } else {
-      when (repo) {
-        is Main -> Path(packagePath.toString())
-        is Canonical -> Path("external", repo.repoName, *packagePath.pathSegments.toTypedArray())
-        /** This works only without bzlmod... (with bzlmod you need a canonical form to resolve this path */
-        is Apparent -> Path("external", repo.repoName, *packagePath.pathSegments.toTypedArray())
-      }
-    }
-
   override fun toString(): String = "$repo//${joinPackagePathAndTarget(packagePath, target)}"
 
   override fun toShortString(): String {
@@ -179,7 +162,7 @@ data class RelativeLabel(override val packagePath: PackageType, override val tar
  * Represents a Bazel label.
  * See https://bazel.build/concepts/labels
  */
-sealed interface Label {
+sealed interface Label : Comparable<Label> {
   val packagePath: PackageType
   val target: TargetType
 
@@ -212,6 +195,8 @@ sealed interface Label {
     get() = (this as? ResolvedLabel)?.repo is Apparent
 
   fun toShortString(): String
+
+  override fun compareTo(other: Label): Int = toShortString().compareTo(other.toShortString())
 
   companion object {
     fun synthetic(targetName: String): Label = SyntheticLabel(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))
