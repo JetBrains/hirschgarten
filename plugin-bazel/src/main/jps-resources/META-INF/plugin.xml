@@ -407,7 +407,9 @@
         <lang.syntaxHighlighterFactory
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"/>
-
+        <lang.commenter
+                language="ProjectView"
+                implementationClass="org.jetbrains.bazel.languages.projectview.commenter.ProjectViewCommenter"/>
         <lang.parserDefinition
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"/>
