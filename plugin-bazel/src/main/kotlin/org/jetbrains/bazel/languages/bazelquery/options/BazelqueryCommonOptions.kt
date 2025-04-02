@@ -58,6 +58,9 @@ class BazelqueryCommonOptions {
     BazelqueryOption(
       name = "host_action_env"
     ),
+    BazelqueryOption(
+      name = "graph:conditional_edges_limit"
+    ),
   )
 
   fun byName(name: String): BazelqueryOption? = knownFlags.firstOrNull { it.name == name }

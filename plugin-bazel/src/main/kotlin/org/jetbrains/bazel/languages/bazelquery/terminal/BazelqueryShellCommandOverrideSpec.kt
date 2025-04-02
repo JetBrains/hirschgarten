@@ -21,27 +21,50 @@ import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentatio
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.plugins.terminal.block.completion.spec.*
 import org.jetbrains.plugins.terminal.block.completion.spec.dsl.ShellCommandContext
-import kotlin.collections.plus
 
 /*
 TODO
 - flags
 - expressions
  */
+
+/*
+  *  All tokens must be treated as known by parser. The terminal stops suggesting if a token is unknown.
+  *  Make token known by providing suggestion for it (sometimes we must provide empty suggestion like in ShellDataGenerators#getFileSuggestions).
+  *  In arguments we can have context (typed prefix, project, shell name).
+  *  In options we don't have them, so we can only provide static suggestions.
+  *  We can treat options as arguments, so we can provide suggestions based on context, (add TerminalIcons.Option to make it appear as options),
+  but we would not be able to exclude used options (for now, an issue was submitted).
+*/
 @Suppress("UnstableApiUsage")
 internal fun bazelQueryCommandSpec(): ShellCommandSpec = ShellCommandSpec("bazel") {
   subcommands { context: ShellRuntimeContext ->
 
     subcommand("query") {
+      parserOptions = ShellCommandParserOptions.create(optionArgSeparators = listOf("=", " "))
       description("Executes a dependency graph query.")
 
-      parserOptions = ShellCommandParserOptions.create(optionArgSeparators = listOf("="))
+      allOptions(context)
+
+      // This surrounding is to make terminal still suggests even if we typed 'unknown tokens', e.g. options arguments like integer or comma-seperated
+      dummyArgs()
 
       queryCompletion()
 
-      bazelOptions(context)
-
+      dummyArgs()
     }
+  }
+}
+
+@Suppress("UnstableApiUsage")
+fun ShellCommandContext.dummyArgs() {
+  argument {
+    displayName("options")
+    isVariadic = true
+    isOptional = true
+    suggestions(ShellRuntimeDataGenerator { context ->
+      listOf(ShellCompletionSuggestion(name = context.typedPrefix, isHidden = true))
+    })
   }
 }
 
@@ -87,7 +110,7 @@ fun ShellCommandContext.queryCompletion() {
 }
 
 @Suppress("UnstableApiUsage")
-fun ShellCommandContext.bazelOptions(context: ShellRuntimeContext) {
+fun ShellCommandContext.allOptions(context: ShellRuntimeContext) {
   knownOptions.forEach { queryFlag ->
     val flagNameDD = "--${queryFlag.name}"
     val flag = Flag.byName(flagNameDD)
@@ -97,45 +120,78 @@ fun ShellCommandContext.bazelOptions(context: ShellRuntimeContext) {
         // Should be done with `separator = "="` and arguments, but currently not working IJPL-150188
         // Cannot hide options
         is Flag.Boolean -> {
-          booleanFlagSuggestion(flag, context)
+          booleanAndTriStateFlagSuggestion(flag, context)
         }
 
         is Flag.TriState -> {
-
+          booleanAndTriStateFlagSuggestion(flag, context)
         }
-        else -> {}
+
+        is Flag.OneOf -> {
+          option(flagNameDD) {
+            argument {
+              suggestions { queryFlag.values.map {
+                ShellCompletionSuggestion(it)
+              } }
+            }
+          }
+          option(flagNameDD) {
+            separator = "="
+            argument {
+              suggestions { queryFlag.values.map {
+                ShellCompletionSuggestion(it)
+              } }
+            }
+          }
+        }
+
+        is Flag.Unknown -> {
+          option(flagNameDD)
+        }
+
+        else -> {
+          optionWithUnknownArgs(flagNameDD)
+        }
       }
     }
   }
 }
 
 @Suppress("UnstableApiUsage")
-fun ShellCommandContext.booleanFlagSuggestion(flag: Flag, context: ShellRuntimeContext) {
-  val preferedTrueFlag = "--${flag.option.name}"
-  val trueFlags = listOf("${flag.option.name}=true", "${flag.option.name}=yes", "${flag.option.name}=1")
-  val trueFlagsPriority = if (flag.option.defaultValue == "\"true\"") 1 else 50 // Default priority is 50
-
-  val preferedFalseFlag = "--no${flag.option.name}"
-  val falseFlags = listOf("${flag.option.name}=false", "${flag.option.name}=no", "${flag.option.name}=0")
-  val falseFlagsPriority = 50 - trueFlagsPriority + 1
-  // Preferred flags have priority 50 or 1, non-preferred 49 or 0
-  val allFlags = trueFlags + preferedTrueFlag + falseFlags + preferedFalseFlag
-
-  generateFlags(preferedTrueFlag, trueFlags, allFlags, trueFlagsPriority, flag, context)
-  generateFlags(preferedFalseFlag, falseFlags, allFlags, falseFlagsPriority, flag, context)
+fun ShellCommandContext.optionWithUnknownArgs(name: String) {
+  option(name) {
+    argument {
+      isOptional = true
+    }
+  }
+  option(name) {
+    separator = "="
+    argument {
+      isOptional = true
+    }
+  }
 }
 
 @Suppress("UnstableApiUsage")
-fun ShellCommandContext.generateFlags(preferedFlag: String, remainingFlags: List<String>, allFlags: List<String>, prio: Int, flag: Flag, context: ShellRuntimeContext) {
-  option(preferedFlag) {
-    description(flagDescriptionHtml(flag,context.project))
-    priority = prio
-    exclusiveOn = allFlags
+fun ShellCommandContext.booleanAndTriStateFlagSuggestion(flag: Flag, context: ShellRuntimeContext) {
+  val trueFlag = "--${flag.option.name}"
+  val falseFlag = "--no${flag.option.name}"
+
+  option(trueFlag) {
+    description(flagDescriptionHtml(flag, context.project))
+    separator = "="
+    argument {
+      if (flag is Flag.Boolean) {
+        isOptional = true
+      }
+      suggestions("true", "yes", "1", "false", "no", "0")
+    }
+    exclusiveOn = listOf(falseFlag)
   }
-  option(*remainingFlags.toTypedArray()) {
-    description(flagDescriptionHtml(flag,context.project))
-    priority = prio - 1
-    exclusiveOn = allFlags
+
+  option(falseFlag) {
+    description(flagDescriptionHtml(flag, context.project))
+    exclusiveOn = listOf(trueFlag)
   }
 }
 
