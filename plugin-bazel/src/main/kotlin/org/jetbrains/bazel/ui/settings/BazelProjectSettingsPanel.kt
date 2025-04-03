@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.ui.settings
 
+import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.ide.projectView.ProjectView
+import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.observable.util.whenTextChanged
 import com.intellij.openapi.options.Configurable
@@ -22,23 +24,23 @@ import kotlin.io.path.pathString
 
 class BazelProjectSettingsConfigurable(private val project: Project) : SearchableConfigurable {
   private val projectViewPathField: TextFieldWithBrowseButton
-  private val hotswapEnabledCheckBox: JBCheckBox
+  private val hotswapEnabledCheckBox: JBCheckBox?
   private val showExcludedDirectoriesAsSeparateNodeCheckBox: JBCheckBox
 
   // experimental features
-  private val enableLocalJvmActionsCheckBox: JBCheckBox
-  private val enableBuildWithJpsCheckBox: JBCheckBox
+  private val enableLocalJvmActionsCheckBox: JBCheckBox?
+  private val enableBuildWithJpsCheckBox: JBCheckBox?
 
   private var currentProjectSettings = project.bazelProjectSettings
 
   init {
     projectViewPathField = initProjectViewFileField()
-    hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
+    hotswapEnabledCheckBox = if (javaPluginPresent()) initHotSwapEnabledCheckBox() else null
     showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
 
     // experimental features
-    enableLocalJvmActionsCheckBox = initEnableLocalJvmActionsCheckBox()
-    enableBuildWithJpsCheckBox = initEnableBuildWithJpsCheckBox()
+    enableLocalJvmActionsCheckBox = if (javaPluginPresent()) initEnableLocalJvmActionsCheckBox() else null
+    enableBuildWithJpsCheckBox = if (javaPluginPresent()) initEnableBuildWithJpsCheckBox() else null
   }
 
   private fun initEnableLocalJvmActionsCheckBox(): JBCheckBox =
@@ -95,12 +97,13 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     panel {
       group(BazelPluginBundle.message("project.settings.general.settings")) {
         row(BazelPluginBundle.message("project.settings.project.view.label")) { cell(projectViewPathField).align(Align.FILL) }
-        row { cell(hotswapEnabledCheckBox).align(Align.FILL) }
+        hotswapEnabledCheckBox?.let { row { cell(it).align(Align.FILL) } }
         row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
       }
+
       group(BazelPluginBundle.message("project.settings.experimental.settings")) {
-        row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
-        row { cell(enableBuildWithJpsCheckBox).align(Align.FILL) }
+        enableLocalJvmActionsCheckBox?.let { row { cell(it).align(Align.FILL) } }
+        enableBuildWithJpsCheckBox?.let { row { cell(it).align(Align.FILL) } }
       }
     }
 
@@ -161,6 +164,8 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
         "project.settings.plugin.show.excluded.directories.as.separate.node.checkbox.text",
       )
   }
+
+  fun javaPluginPresent() = PluginManagerCore.getPlugin(PluginId.findId("com.intellij.java")) != null
 }
 
 internal class BazelProjectSettingsConfigurableProvider(private val project: Project) : ConfigurableProvider() {
