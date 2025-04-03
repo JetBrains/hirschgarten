@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.ui.dialogs.queryTab
 
 import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.bazel.bazelrunner.BazelProcess
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.RelativeLabel
@@ -11,10 +13,15 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextConstructor
 import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 internal class QueryEvaluator {
   private var currentRunnerDirFile: VirtualFile? = null
   private var bazelRunner: BazelRunner? = null
+
+  private var currentProcess = AtomicReference<BazelProcess?>(null)
+  private var currentProcessCancelled = AtomicBoolean(false)
 
   val isDirectorySet: Boolean get() = bazelRunner != null
 
@@ -35,14 +42,17 @@ internal class QueryEvaluator {
     currentRunnerDirFile = directoryFile
   }
 
-
-  suspend fun evaluate(
+  // Starts a process which evaluates given query.
+  // Result is valid for one call of waitAndGetResult() and another evaluation cannot be called
+  // before result of previous is received.
+  fun orderEvaluation(
     command: String,
     flags: List<String>,
     additionalFlags: String,
     flagsAlreadyPrefixedWithDoubleHyphen: Boolean = false
-  ): BazelProcessResult {
+  ) {
     if (!isDirectorySet) throw IllegalStateException("Directory to run query from is not set")
+    if (currentProcess.get() != null) throw IllegalStateException("Trying to start new process before result of previous is received")
 
     // TODO: add proper way to add raw query to evaluation
     val label = RelativeLabel(Package(listOf(command)), AmbiguousEmptyTarget)
@@ -61,8 +71,35 @@ internal class QueryEvaluator {
       }
     }
 
-    return bazelRunner!!
-      .runBazelCommand(commandToRun, serverPidFuture = null)
-      .waitAndGetResult()
+    val startedProcess = bazelRunner!!.runBazelCommand(commandToRun, serverPidFuture = null)
+    currentProcessCancelled.set(false)
+    currentProcess.set(startedProcess)
+  }
+
+  // Cancels currently running process
+  fun cancelEvaluation() {
+    val retrievedProcess = currentProcess.get()
+    if (retrievedProcess != null) {     // Cancellation might be called before UI changes state but after process is finished
+      if (currentProcessCancelled.compareAndSet(false, true)) {
+        retrievedProcess.process.destroy() // seems like it calls SIGTERM
+      }
+    }
+  }
+
+  // Returns process results if process was not cancelled, null otherwise
+  suspend fun waitAndGetResults(): BazelProcessResult? {
+    val retrievedProcess = currentProcess.get()
+    return if (retrievedProcess != null) {
+      val result = retrievedProcess.waitAndGetResult()
+      currentProcess.set(null)
+      retrievedProcess.process.destroy()
+      if (currentProcessCancelled.get()) null else result
+      // There exists an exit code in bazel (8) which would result with .bazelStatus in return value being BazelStatus.CANCEL,
+      // but with SIGTERM being called on the process return value is 143, which results in BazelStatus.FATAL_ERROR.
+      // Having a boolean which explicitely tells us if process was cancelled, while not ideal, works.
+    } else {
+      throw IllegalStateException("No command to get result from")
+    }
+
   }
 }

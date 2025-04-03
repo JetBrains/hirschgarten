@@ -19,7 +19,6 @@ import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.JBUI
-import kotlinx.coroutines.Job
 import org.jdesktop.swingx.VerticalLayout
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.coroutines.CoroutineService
@@ -31,7 +30,6 @@ import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.io.OutputStreamWriter
-import java.util.concurrent.atomic.AtomicReference
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.ButtonGroup
@@ -96,7 +94,6 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
 
   // Bazel Runner
   private val queryEvaluator = QueryEvaluator()
-  private val evaluatorJob = AtomicReference<Job?>(null)
 
   // Graph Window Manager
   private val graphWindowManager = GraphWindowManager()
@@ -301,52 +298,49 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
     }
     showInConsole("Bazel Query in progress...")
 
+    queryEvaluator.orderEvaluation(editorTextField.text, flagsToRun, flagTextField.text)
+    SwingUtilities.invokeLater { setButtonsPanelToCancel() }
     var commandResults: BazelProcessResult? = null
-    val job = CoroutineService.getInstance(project).start {
-      commandResults = queryEvaluator.evaluate(editorTextField.text, flagsToRun, flagTextField.text)
-    }
-    job.invokeOnCompletion {
-      val finishedJob = evaluatorJob.getAndSet(null)
-      if (finishedJob == null) return@invokeOnCompletion
-      if (finishedJob.isCancelled) return@invokeOnCompletion
+    CoroutineService.getInstance(project).start {
+      commandResults = queryEvaluator.waitAndGetResults()
+    }.invokeOnCompletion {
       SwingUtilities.invokeLater {
-        if (commandResults!!.isSuccess) {
-          val res = commandResults.stdout
-          if (res.isEmpty()) {
-            showInConsole("Nothing found")
-          } else {
-            val hyperlinkInfoList = mutableListOf<Pair<IntRange, HyperlinkInfo>>()
-            addLinksToResult(res, hyperlinkInfoList)
-            showInConsole(res, hyperlinkInfoList)
-            if (res.startsWith("digraph")) {
-              val imageIcon = convertDotToImageIcon(res)
-              if (imageIcon != null) {
-                graphWindowManager.openImageInNewWindow(imageIcon)
-              } else {
-                System.err.println("Failed to generate graph visualization")
+        if (commandResults == null) {
+          showInConsole("Query cancelled")
+        } else {
+          if (commandResults!!.isSuccess) {
+            val res = commandResults!!.stdout
+            if (res.isEmpty()) {
+              showInConsole("Nothing found")
+            } else {
+                val hyperlinkInfoList = mutableListOf<Pair<IntRange, HyperlinkInfo>>()
+                addLinksToResult(res, hyperlinkInfoList)
+                showInConsole(res, hyperlinkInfoList)
+              if (res.startsWith("digraph")) {
+                val imageIcon = convertDotToImageIcon(res)
+                if (imageIcon != null) {
+                  graphWindowManager.openImageInNewWindow(imageIcon)
+                } else {
+                  //System.err.println("Failed to generate graph visualization")
+                  NotificationGroupManager.getInstance()
+                    .getNotificationGroup("Bazel")
+                    .createNotification("Failed to generate graph visualization", NotificationType.ERROR)
+                    .notify(project)
+                }
               }
             }
+          } else {
+            showInConsole("Command execution failed:\n" + commandResults!!.stderr)
           }
-        } else {
-          showInConsole("Command execution failed:\n" + commandResults.stderr)
         }
+
         setButtonsPanelToEvaluate()
-        updateUI()
       }
     }
-    evaluatorJob.set(job)
-
-    setButtonsPanelToCancel()
   }
 
   private fun cancelEvaluate() {
-    val job = evaluatorJob.getAndSet(null)
-    if (job != null) {
-      job.cancel()
-        setButtonsPanelToEvaluate()
-        showInConsole("Query cancelled")
-        updateUI()
-    }
+    queryEvaluator.cancelEvaluation()
   }
 
 
