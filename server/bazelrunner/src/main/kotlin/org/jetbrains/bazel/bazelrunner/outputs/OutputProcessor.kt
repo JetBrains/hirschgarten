@@ -67,7 +67,7 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
   suspend fun waitForExit(serverPidFuture: CompletableFuture<Long>?, logger: BspClientLogger?): Int {
     // Get the current job from the coroutine context
     val parentJob = currentCoroutineContext()[Job]
-    
+
     try {
       var isFinished = false
       while (!isFinished) {
@@ -83,13 +83,13 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
           shutdown()
           throw CancellationException("Parent job was cancelled")
         }
-        
+
         isFinished = process.waitFor(100, TimeUnit.MILLISECONDS)
         yield()
         // Check again after yield
         ensureActive()
       }
-      
+
       val exitCode = process.awaitExit()
       shutdown()
       return exitCode
@@ -105,6 +105,4 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
       throw e // Re-throw to signal cancellation
     }
   }
-
-
 }

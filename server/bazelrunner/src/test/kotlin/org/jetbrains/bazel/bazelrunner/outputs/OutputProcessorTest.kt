@@ -22,15 +22,16 @@ class OutputProcessorTest {
     process.isAlive shouldBe true
     try {
       runBlocking {
-        val job = async {
-          proc.waitForExit(pidFuture, BspClientLogger(MockClient()))
-        }
-        
+        val job =
+          async {
+            proc.waitForExit(pidFuture, BspClientLogger(MockClient()))
+          }
+
         delay(600) // wait for one iteration
         job.cancel("Test cancellation") // trigger cancellation path
-        
+
         try {
-          job.join() 
+          job.join()
         } catch (e: CancellationException) {
           // Expected behavior - cancellation was propagated
         }
