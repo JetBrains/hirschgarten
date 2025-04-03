@@ -130,4 +130,5 @@ class BspServerApi(
     projectSyncService.resolveRemoteToLocal(params)
 
   override suspend fun workspaceContext(): WorkspaceContext = projectSyncService.workspaceContext()
+  override suspend fun jvmToolchainInfo() = projectSyncService.buildJvmToolchainInfo()
 }

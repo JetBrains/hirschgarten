@@ -377,4 +377,8 @@ class BspProjectMapper(
     val resolve = languagePluginsService.goLanguagePlugin::resolveRemoteToLocal
     return resolve(params)
   }
+
+  suspend fun jvmBuilderParams(project: Project): JvmToolchainQuery.JvmToolchainInfo {
+    return JvmToolchainQuery.jvmToolchainQuery(bspInfo, bazelRunner, project.workspaceContext)
+  }
 }

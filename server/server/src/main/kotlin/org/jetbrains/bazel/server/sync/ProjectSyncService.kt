@@ -24,6 +24,7 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
+import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
@@ -141,6 +142,11 @@ class ProjectSyncService(
   suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return ScalacOptionsResult(emptyList())
     return bspMapper.buildTargetScalacOptions(project, params)
+  }
+
+  suspend fun buildJvmToolchainInfo(): JvmToolchainInfo {
+    val project = projectProvider.get() as? AspectSyncProject ?: TODO()
+    return bspMapper.jvmBuilderParams(project)
   }
 
   fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
