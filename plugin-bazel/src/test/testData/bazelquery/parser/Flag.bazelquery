@@ -1,1 +1,0 @@
-bazel query --output=proto --experimental_explicit_aspects deps(//path/to:my_target1) -k --aspect_deps "conservative"

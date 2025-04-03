@@ -1,1 +1,0 @@
-bazel query 'filter("target", rdeps(//path/to:my_target1, "//path/to:my_target 2",3)) + //path/to:my_target3'
