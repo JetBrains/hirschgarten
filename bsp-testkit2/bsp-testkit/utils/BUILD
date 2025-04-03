@@ -6,23 +6,12 @@ kt_jvm_library(
 )
 
 kt_jvm_library(
-    name = "GsonSealedSupport",
-    srcs = ["GsonSealedSupport.kt"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "@maven//:com_google_code_gson_gson",
-        "@rules_kotlin//kotlin/compiler:kotlin-reflect",
-    ],
-)
-
-kt_jvm_library(
     name = "JsonComparator",
     srcs = ["JsonComparator.kt"],
     visibility = ["//visibility:public"],
     deps = [
         "FlatMapUtils",
-        "GsonSealedSupport",
-        "@maven//:com_google_code_gson_gson",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
         "@maven//:com_google_guava_guava",
         "@maven//:org_junit_jupiter_junit_jupiter_api",
     ],

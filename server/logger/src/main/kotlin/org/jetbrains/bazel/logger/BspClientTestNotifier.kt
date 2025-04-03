@@ -35,6 +35,7 @@ class BspClientTestNotifier(private val bspClient: JoinedBuildClient, private va
         taskId,
         originId = originId,
         data = testStart,
+        message = "Test $displayName started",
       )
     bspClient.onBuildTaskStart(taskStartParams)
   }
@@ -74,6 +75,7 @@ class BspClientTestNotifier(private val bspClient: JoinedBuildClient, private va
         status = StatusCode.OK,
         originId = originId,
         data = testFinish,
+        message = "Test $displayName finished",
       )
     bspClient.onBuildTaskFinish(taskFinishParams)
   }
@@ -91,6 +93,7 @@ class BspClientTestNotifier(private val bspClient: JoinedBuildClient, private va
         taskId,
         originId = originId,
         data = testingBegin,
+        message = "Test started for target $targetIdentifier",
       )
     bspClient.onBuildTaskStart(taskStartParams)
   }
@@ -123,6 +126,7 @@ class BspClientTestNotifier(private val bspClient: JoinedBuildClient, private va
         originId = originId,
         status = StatusCode.OK,
         data = testReport,
+        message = "Test finished for target $targetIdentifier",
       )
     bspClient.onBuildTaskFinish(taskFinishParams)
   }

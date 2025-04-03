@@ -17,15 +17,14 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
-import org.jetbrains.bazel.run.BspCommandLineStateBase
-import org.jetbrains.bazel.run.BspProcessHandler
+import org.jetbrains.bazel.run.BazelCommandLineStateBase
+import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
-import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.GenericRunState
-import org.jetbrains.bazel.run.task.BspRunTaskListener
-import org.jetbrains.bazel.target.TargetUtils
-import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.taskEvents.BspTaskListener
+import org.jetbrains.bazel.run.task.BazelRunTaskListener
+import org.jetbrains.bazel.sync.status.BuildStatusService
+import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -34,14 +33,14 @@ class PythonDebugCommandLineState(
   env: ExecutionEnvironment,
   originId: OriginId,
   private val settings: GenericRunState,
-) : BspCommandLineStateBase(env, originId) {
-  val target: Label? = (env.runProfile as? BspRunConfiguration)?.targets?.singleOrNull()
+) : BazelCommandLineStateBase(env, originId) {
+  val target: Label? = (env.runProfile as? BazelRunConfiguration)?.targets?.singleOrNull()
   private val scriptName = target?.let { PythonDebugUtils.guessRunScriptName(env.project, it) }
 
-  override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspRunTaskListener(handler)
+  override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
   override suspend fun startBsp(server: JoinedBuildServer) {
-    val configuration = environment.runProfile as BspRunConfiguration
+    val configuration = environment.runProfile as BazelRunConfiguration
     val targetId = configuration.targets.single()
     val buildParams =
       CompileParams(
@@ -49,8 +48,9 @@ class PythonDebugCommandLineState(
         originId = originId,
         arguments = transformProgramArguments(settings.programArguments),
       )
-
-    server.buildTargetCompile(buildParams)
+    BuildStatusService.getInstance(environment.project).withBuildInProgress {
+      server.buildTargetCompile(buildParams)
+    }
   }
 
   fun asPythonState(): PythonCommandLineState = PythonScriptCommandLineState(pythonConfig(), environment)
@@ -76,10 +76,9 @@ class PythonDebugCommandLineState(
 
 private fun getSdkForTarget(project: Project, target: Label): Sdk {
   val storage = WorkspaceModel.getInstance(project).currentSnapshot
-  val targetUtils = project.targetUtils
   val moduleNameProvider = project.findNameProvider()
   return moduleNameProvider
-    ?.let { target.toModuleEntity(storage, it, targetUtils) } // module
+    .let { target.toModuleEntity(storage, it) } // module
     ?.dependencies // module's dependencies
     ?.firstNotNullOfOrNull { it as? SdkDependency } // first SDK dependency
     ?.sdk
@@ -88,13 +87,8 @@ private fun getSdkForTarget(project: Project, target: Label): Sdk {
     ?: error(BazelPluginBundle.message("python.debug.error.no.sdk", target))
 }
 
-private fun Label.toModuleEntity(
-  storage: ImmutableEntityStorage,
-  moduleNameProvider: TargetNameReformatProvider,
-  targetUtils: TargetUtils,
-): ModuleEntity? {
-  val targetInfo = targetUtils.getBuildTargetInfoForLabel(this) ?: return null
-  val moduleName = moduleNameProvider(targetInfo)
+private fun Label.toModuleEntity(storage: ImmutableEntityStorage, moduleNameProvider: TargetNameReformatProvider): ModuleEntity? {
+  val moduleName = moduleNameProvider(this)
   val moduleId = ModuleId(moduleName)
   return storage.resolve(moduleId)
 }

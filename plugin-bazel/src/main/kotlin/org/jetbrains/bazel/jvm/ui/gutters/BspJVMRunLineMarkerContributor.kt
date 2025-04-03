@@ -21,11 +21,30 @@ class BspJVMRunLineMarkerContributor : BspRunLineMarkerContributor() {
   private fun PsiElement.isInsideJar() = containingFile.virtualFile?.fileSystem is JarFileSystem
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1316
-  override fun getSingleTestFilter(element: PsiElement): String? =
-    element.getStrictParentOfType<PsiNameIdentifierOwner>()?.getFunctionName()
+  override fun getSingleTestFilter(element: PsiElement): String? {
+    val psiIdentifier = element.getStrictParentOfType<PsiNameIdentifierOwner>()
+    val functionName = psiIdentifier?.getFunctionName()
+    if (psiIdentifier?.isMethod() == true) {
+      val className = psiIdentifier.getClassName() ?: return functionName
+      return "$className.$functionName"
+    }
+    return "$functionName"
+  }
 
-  private fun PsiNameIdentifierOwner.getFunctionName(): String? = if (this.isClassOrMethod()) this.name else null
+  private fun PsiNameIdentifierOwner.getFunctionName(): String? = if (this.isClassOrMethod()) tryGetFQN() else null
+
+  private fun PsiNameIdentifierOwner.getClassName(): String? =
+    this.getStrictParentOfType<KtClassOrObject>()?.name ?: this.getStrictParentOfType<PsiClass>()?.name
+
+  private fun PsiNameIdentifierOwner.tryGetFQN(): String? =
+    if (this is PsiClass) {
+      qualifiedName
+    } else {
+      name
+    }
 
   private fun PsiNameIdentifierOwner.isClassOrMethod(): Boolean =
     this is KtClassOrObject || this is KtNamedFunction || this is PsiClass || this is PsiMethod
+
+  private fun PsiNameIdentifierOwner.isMethod(): Boolean = this is KtNamedFunction || this is PsiMethod
 }

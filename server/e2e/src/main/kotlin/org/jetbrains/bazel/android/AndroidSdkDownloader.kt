@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.android
 
+import com.intellij.openapi.util.SystemInfo
 import org.apache.commons.io.FileUtils.copyURLToFile
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.commons.FileUtils
-import org.jetbrains.bazel.commons.utils.OsFamily
 import java.net.URI
 import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermission
@@ -53,12 +53,11 @@ object AndroidSdkDownloader {
   }
 
   private fun getCommandLineToolsDownloadLink(): String {
-    val os = OsFamily.inferFromSystem()
     val osPart =
-      when (os) {
-        OsFamily.LINUX -> "linux"
-        OsFamily.MACOS -> "mac"
-        else -> error("Can't download the Android SDK on OS $os. Set the \$ANDROID_HOME environment variable manually.")
+      when {
+        SystemInfo.isLinux -> "linux"
+        SystemInfo.isMac -> "mac"
+        else -> error("Can't download the Android SDK on OS ${SystemInfo.OS_NAME}. Set the \$ANDROID_HOME environment variable manually.")
       }
     return "https://dl.google.com/android/repository/commandlinetools-$osPart-11076708_latest.zip"
   }

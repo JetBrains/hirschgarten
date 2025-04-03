@@ -6,7 +6,6 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.target.addLibraryModulePrefix
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
@@ -81,7 +80,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
     libraries
       .map {
         Library(
-          displayName = nameProvider(BuildTargetInfo(id = it.id)),
+          displayName = nameProvider(it.id),
           iJars = it.ijars,
           classJars = it.jars,
           sourceJars = it.sourceJars,
@@ -94,7 +93,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
 
     return libraries
       .map { library ->
-        val libraryName = nameProvider(BuildTargetInfo(id = library.id))
+        val libraryName = nameProvider(library.id)
         val libraryModuleName = libraryName.addLibraryModulePrefix()
         JavaModule(
           genericModuleInfo =
@@ -104,7 +103,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
               librariesDependencies = listOf(IntermediateLibraryDependency(libraryName, true)),
               modulesDependencies =
                 library.dependencies.map { targetId ->
-                  val rawId = nameProvider(BuildTargetInfo(id = targetId))
+                  val rawId = nameProvider(targetId)
                   val id = if (targetId.isLibraryId()) rawId.addLibraryModulePrefix() else rawId
                   IntermediateModuleDependency(id)
                 },
@@ -113,7 +112,6 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
             ),
           jvmJdkName = defaultJdkName,
           baseDirContentRoot = null,
-          moduleLevelLibraries = null,
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
         )

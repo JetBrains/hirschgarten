@@ -18,6 +18,7 @@ package org.jetbrains.bazel.server.sync.sharding
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.toPath
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.io.File
@@ -48,7 +49,7 @@ internal object PackageLister {
     return wildcardPatterns
       .filter { it.isRecursive }
       .mapNotNull { pattern ->
-        val dir = pathResolver.relativePathToWorkspaceAbsolute(pattern.packagePath.pathSegments.joinToString(File.separator))
+        val dir = pathResolver.relativePathToWorkspaceAbsolute(pattern.packagePath.toPath())
         if (!dir.isDirectory()) return@mapNotNull null
 
         val expandedTargets = mutableListOf<Label>()

@@ -6,7 +6,7 @@ kt_junit5_test(
     src = "BazelBspLanguageExtensionsGeneratorTest.kt",
     deps = [
         "//server/commons",
-        "//server/install:install-lib",
+        "//server/install/src/main/kotlin/org/jetbrains/bazel/install",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/managers",
     ],
 )

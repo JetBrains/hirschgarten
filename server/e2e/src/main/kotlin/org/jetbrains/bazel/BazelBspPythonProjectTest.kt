@@ -1,9 +1,8 @@
 package org.jetbrains.bazel
 
+import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
-import org.jetbrains.bazel.commons.utils.OsArch
-import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
@@ -14,10 +13,9 @@ import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.PythonOptionsItem
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
-import org.jetbrains.bsp.protocol.ResourcesItem
-import org.jetbrains.bsp.protocol.ResourcesParams
-import org.jetbrains.bsp.protocol.ResourcesResult
+import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
+import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -34,16 +32,17 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
       workspaceBuildTargets(),
       dependencySourcesResults(),
       pythonOptionsResults(),
-      resourcesResults(),
     )
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val architecturePart = if (OsArch.inferFromSystem() == OsArch.ARM64) "aarch64" else "x86_64"
-    val osPart = if (OsFamily.inferFromSystem() == OsFamily.MACOS) "apple-darwin" else "unknown-linux-gnu"
-    val workspaceInterpreterPath = "file://\$BAZEL_OUTPUT_BASE_PATH/external/python3_9_$architecturePart-$osPart/bin/python3"
+    val architecturePart = if (SystemInfo.isAarch64) "aarch64" else "x86_64"
+    val osPart = if (SystemInfo.isMac) "apple-darwin" else "unknown-linux-gnu"
+    val workspaceInterpreterPath = Path("\$BAZEL_OUTPUT_BASE_PATH/external/python3_9_$architecturePart-$osPart/bin/python3")
     val bzlmodInterpreterPath =
-      "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_python${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
-        "python${bzlmodRepoNameSeparator}python_3_9_$architecturePart-$osPart/bin/python3"
+      Path(
+        "\$BAZEL_OUTPUT_BASE_PATH/external/rules_python${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+          "python${bzlmodRepoNameSeparator}python_3_9_$architecturePart-$osPart/bin/python3",
+      )
 
     val interpreterPath = if (isBzlmod) bzlmodInterpreterPath else workspaceInterpreterPath
 
@@ -65,11 +64,17 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = true,
-          canDebug = false,
         ),
-        displayName = "//example",
-        baseDirectory = "file://\$WORKSPACE/example/",
+        baseDirectory = Path("\$WORKSPACE/example/"),
         data = examplePythonBuildTarget,
+        sources =
+          listOf(
+            SourceItem(
+              path = Path("\$WORKSPACE/example/example.py"),
+              generated = false,
+            ),
+          ),
+        resources = listOf(),
       )
 
     val workspacePipDepId = "${externalRepoPrefix}pip_deps_numpy//:pkg"
@@ -87,11 +92,17 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
         ),
-        displayName = "//lib:example_library",
-        baseDirectory = "file://\$WORKSPACE/lib/",
+        baseDirectory = Path("\$WORKSPACE/lib/"),
         data = examplePythonBuildTarget,
+        sources =
+          listOf(
+            SourceItem(
+              path = Path("\$WORKSPACE/lib/example_lib.py"),
+              generated = false,
+            ),
+          ),
+        resources = listOf(),
       )
 
     val exampleExampleTestBuildTarget =
@@ -104,11 +115,17 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = true,
           canRun = false,
-          canDebug = false,
         ),
-        displayName = "//test",
-        baseDirectory = "file://\$WORKSPACE/test/",
+        baseDirectory = Path("\$WORKSPACE/test/"),
         data = examplePythonBuildTarget,
+        sources =
+          listOf(
+            SourceItem(
+              path = Path("\$WORKSPACE/test/test.py"),
+              generated = false,
+            ),
+          ),
+        resources = listOf(),
       )
 
     return WorkspaceBuildTargetsResult(
@@ -132,10 +149,12 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
   }
 
   private fun dependencySourcesResults(): BazelBspTestScenarioStep {
-    val workspacePipPath = "file://\$BAZEL_OUTPUT_BASE_PATH/external/pip_deps_numpy/site-packages/"
+    val workspacePipPath = Path("\$BAZEL_OUTPUT_BASE_PATH/external/pip_deps_numpy/site-packages/")
     val bzlmodPipPath =
-      "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_python${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
-        "pip${bzlmodRepoNameSeparator}pip_deps_39_numpy/site-packages/"
+      Path(
+        "\$BAZEL_OUTPUT_BASE_PATH/external/rules_python${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+          "pip${bzlmodRepoNameSeparator}pip_deps_39_numpy/site-packages/",
+      )
     val pipPath = if (isBzlmod) bzlmodPipPath else workspacePipPath
 
     val expectedPythonDependencySourcesItems =
@@ -175,19 +194,6 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
       "pythonOptions results",
     ) {
       testClient.testPythonOptions(30.seconds, pythonOptionsParams, expectedPythonOptionsResult)
-    }
-  }
-
-  private fun resourcesResults(): BazelBspTestScenarioStep {
-    val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it != Label.synthetic("bsp-workspace-root") }
-    val expectedResourcesItems = expectedTargetIdentifiers.map { ResourcesItem(it, emptyList()) }
-    val expectedResourcesResult = ResourcesResult(expectedResourcesItems)
-    val resourcesParams = ResourcesParams(expectedTargetIdentifiers)
-
-    return BazelBspTestScenarioStep(
-      "resources results",
-    ) {
-      testClient.testResources(30.seconds, resourcesParams, expectedResourcesResult)
     }
   }
 }

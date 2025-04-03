@@ -11,9 +11,9 @@ import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.python.PythonLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.python.PythonModule
-import org.jetbrains.bazel.server.sync.languages.rust.RustLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 class LanguagePluginsService(
   val scalaLanguagePlugin: ScalaLanguagePlugin,
@@ -22,21 +22,19 @@ class LanguagePluginsService(
   private val kotlinLanguagePlugin: KotlinLanguagePlugin,
   private val thriftLanguagePlugin: ThriftLanguagePlugin,
   val pythonLanguagePlugin: PythonLanguagePlugin,
-  val rustLanguagePlugin: RustLanguagePlugin,
   private val androidLanguagePlugin: AndroidLanguagePlugin,
   val goLanguagePlugin: GoLanguagePlugin,
 ) {
   private val emptyLanguagePlugin: EmptyLanguagePlugin = EmptyLanguagePlugin()
 
-  fun prepareSync(targetInfos: Sequence<BspTargetInfo.TargetInfo>) {
-    scalaLanguagePlugin.prepareSync(targetInfos)
-    javaLanguagePlugin.prepareSync(targetInfos)
-    cppLanguagePlugin.prepareSync(targetInfos)
-    thriftLanguagePlugin.prepareSync(targetInfos)
-    pythonLanguagePlugin.prepareSync(targetInfos)
-    rustLanguagePlugin.prepareSync(targetInfos)
-    androidLanguagePlugin.prepareSync(targetInfos)
-    goLanguagePlugin.prepareSync(targetInfos)
+  fun prepareSync(targetInfos: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
+    scalaLanguagePlugin.prepareSync(targetInfos, workspaceContext)
+    javaLanguagePlugin.prepareSync(targetInfos, workspaceContext)
+    cppLanguagePlugin.prepareSync(targetInfos, workspaceContext)
+    thriftLanguagePlugin.prepareSync(targetInfos, workspaceContext)
+    pythonLanguagePlugin.prepareSync(targetInfos, workspaceContext)
+    androidLanguagePlugin.prepareSync(targetInfos, workspaceContext)
+    goLanguagePlugin.prepareSync(targetInfos, workspaceContext)
   }
 
   fun getPlugin(languages: Set<Language>): LanguagePlugin<*> =
@@ -48,7 +46,6 @@ class LanguagePluginsService(
       languages.contains(Language.CPP) -> cppLanguagePlugin
       languages.contains(Language.THRIFT) -> thriftLanguagePlugin
       languages.contains(Language.PYTHON) -> pythonLanguagePlugin
-      languages.contains(Language.RUST) -> rustLanguagePlugin
       languages.contains(Language.GO) -> goLanguagePlugin
       else -> emptyLanguagePlugin
     }

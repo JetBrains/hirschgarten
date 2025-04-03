@@ -1,11 +1,7 @@
 derive_targets_from_directories: true
 
-workspace_type: intellij_plugin
-
 targets:
   //commons/...
-  //plugin-bazel/...
-  //plugin-bazel/...
   //plugin-bazel/...
   //protocol/...
   //tools/format
@@ -13,12 +9,5 @@ targets:
 directories:
   .
   -out
-
-build_flags:
-  --define=ij_product=intellij-latest
-
-additional_languages:
-  kotlin
-  python
 
 allow_manual_targets_sync: true

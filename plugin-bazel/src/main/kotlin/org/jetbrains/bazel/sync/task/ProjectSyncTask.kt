@@ -2,6 +2,7 @@ package org.jetbrains.bazel.sync.task
 
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
+import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.ide.impl.isTrusted
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.application.EDT
@@ -23,8 +24,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.saveAllFiles
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.BspPluginBundle
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
@@ -35,8 +36,10 @@ import org.jetbrains.bazel.sync.projectPreSyncHooks
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectSyncHooks
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
-import org.jetbrains.bazel.sync.status.BspSyncStatusService
 import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
+import org.jetbrains.bazel.sync.status.SyncFatalFailureException
+import org.jetbrains.bazel.sync.status.SyncPartialFailureException
+import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bazel.ui.console.syncConsole
 import java.util.concurrent.CancellationException
@@ -52,10 +55,10 @@ class ProjectSyncTask(private val project: Project) {
           log.debug("Starting sync project task")
           project.syncConsole.startTask(
             taskId = PROJECT_SYNC_TASK_ID,
-            title = BspPluginBundle.message("console.task.sync.title"),
-            message = BspPluginBundle.message("console.task.sync.in.progress"),
+            title = BazelPluginBundle.message("console.task.sync.title"),
+            message = BazelPluginBundle.message("console.task.sync.in.progress"),
             cancelAction = {
-              BspSyncStatusService.getInstance(project).cancel()
+              SyncStatusService.getInstance(project).cancel()
               coroutineContext.cancel()
             },
             redoAction = { sync(syncScope, buildProject) },
@@ -64,23 +67,38 @@ class ProjectSyncTask(private val project: Project) {
           preSync()
           doSync(syncScope, buildProject)
 
-          project.syncConsole.finishTask(PROJECT_SYNC_TASK_ID, BspPluginBundle.message("console.task.sync.success"))
+          project.syncConsole.finishTask(PROJECT_SYNC_TASK_ID, BazelPluginBundle.message("console.task.sync.success"))
         } catch (e: CancellationException) {
           project.syncConsole.finishTask(
             PROJECT_SYNC_TASK_ID,
-            BspPluginBundle.message("console.task.sync.cancelled"),
+            BazelPluginBundle.message("console.task.sync.cancelled"),
             SkippedResultImpl(),
           )
           throw e
         } catch (_: SyncAlreadyInProgressException) {
           syncAlreadyInProgress = true
+        } catch (_: SyncPartialFailureException) {
+          project.syncConsole.addWarnMessage(
+            PROJECT_SYNC_TASK_ID,
+            BazelPluginBundle.message("console.task.sync.partialsuccess"),
+          )
+          project.syncConsole.finishTask(
+            PROJECT_SYNC_TASK_ID,
+            BazelPluginBundle.message("console.task.sync.partialsuccess"),
+            SuccessResultImpl(true),
+          )
+        } catch (_: SyncFatalFailureException) {
+          project.syncConsole.finishTask(
+            PROJECT_SYNC_TASK_ID,
+            BazelPluginBundle.message("console.task.sync.fatalfailure"),
+            FailureResultImpl(),
+          )
         } catch (e: Exception) {
           project.syncConsole.finishTask(
             PROJECT_SYNC_TASK_ID,
-            BspPluginBundle.message("console.task.sync.failed"),
+            BazelPluginBundle.message("console.task.sync.failed"),
             FailureResultImpl(e),
           )
-          throw e
         } finally {
           if (!syncAlreadyInProgress) {
             postSync()
@@ -93,12 +111,12 @@ class ProjectSyncTask(private val project: Project) {
   private suspend fun preSync() {
     log.debug("Running pre sync tasks")
     saveAllFiles()
-    BspSyncStatusService.getInstance(project).startSync()
+    SyncStatusService.getInstance(project).startSync()
   }
 
   private suspend fun doSync(syncScope: ProjectSyncScope, buildProject: Boolean) {
     val syncActivityName =
-      BspPluginBundle.message(
+      BazelPluginBundle.message(
         "console.task.sync.activity.name",
         BazelPluginConstants.BAZEL_DISPLAY_NAME,
       )
@@ -106,8 +124,13 @@ class ProjectSyncTask(private val project: Project) {
       withBackgroundProgress(project, "Syncing project...", true) {
         reportSequentialProgress {
           executePreSyncHooks(it)
-          executeSyncHooks(it, syncScope, buildProject)
+          val syncResult = executeSyncHooks(it, syncScope, buildProject)
           executePostSyncHooks(it)
+          when (syncResult) {
+            SyncResultStatus.FAILURE -> throw SyncFatalFailureException()
+            SyncResultStatus.PARTIAL_SUCCESS -> throw SyncPartialFailureException()
+            else -> Unit
+          }
         }
       }
     }
@@ -142,29 +165,46 @@ class ProjectSyncTask(private val project: Project) {
     progressReporter: SequentialProgressReporter,
     syncScope: ProjectSyncScope,
     buildProject: Boolean,
-  ) {
+  ): SyncResultStatus {
     val diff = AllProjectStructuresProvider(project).newDiff()
-    project.connection.runWithServer { server ->
-      bspTracer.spanBuilder("collect.project.details.ms").use {
-        val baseTargetInfos = BaseProjectSync(project).execute(syncScope, buildProject, server, PROJECT_SYNC_TASK_ID)
-        val environment =
-          ProjectSyncHookEnvironment(
-            project = project,
-            server = server,
-            diff = diff,
-            taskId = PROJECT_SYNC_TASK_ID,
-            progressReporter = progressReporter,
-            baseTargetInfos = baseTargetInfos,
-            syncScope = syncScope,
-          )
+    val hasError =
+      project.connection.runWithServer { server ->
+        bspTracer.spanBuilder("collect.project.details.ms").use {
+          // if this bazel build fails, we still want the sync hooks to be executed
+          val buildTargets = BaseProjectSync(project).execute(syncScope, buildProject, server, PROJECT_SYNC_TASK_ID)
+          val environment =
+            ProjectSyncHookEnvironment(
+              project = project,
+              server = server,
+              diff = diff,
+              taskId = PROJECT_SYNC_TASK_ID,
+              progressReporter = progressReporter,
+              buildTargets = buildTargets,
+              syncScope = syncScope,
+            )
 
-        project.projectSyncHooks.forEach {
-          it.onSync(environment)
+          project.projectSyncHooks.forEach {
+            it.onSync(environment)
+          }
+          buildTargets.hasError
         }
       }
-    }
 
-    diff.applyAll(syncScope, PROJECT_SYNC_TASK_ID)
+    val syncStatus =
+      if (hasError) {
+        if (diff.isInvalid()) {
+          SyncResultStatus.FAILURE
+        } else {
+          SyncResultStatus.PARTIAL_SUCCESS
+        }
+      } else {
+        SyncResultStatus.SUCCESS
+      }
+
+    if (syncStatus != SyncResultStatus.FAILURE) {
+      diff.applyAll(syncScope, PROJECT_SYNC_TASK_ID)
+    }
+    return syncStatus
   }
 
   private suspend fun executePostSyncHooks(progressReporter: SequentialProgressReporter) {
@@ -181,7 +221,7 @@ class ProjectSyncTask(private val project: Project) {
   }
 
   private suspend fun postSync() {
-    BspSyncStatusService.getInstance(project).finishSync()
+    SyncStatusService.getInstance(project).finishSync()
     withContext(Dispatchers.EDT) {
       ProjectView.getInstance(project).refresh()
     }
@@ -213,3 +253,9 @@ suspend fun <Result> query(queryName: String, doQuery: suspend () -> Result): Re
     }
     throw e
   }
+
+enum class SyncResultStatus {
+  SUCCESS,
+  PARTIAL_SUCCESS,
+  FAILURE,
+}

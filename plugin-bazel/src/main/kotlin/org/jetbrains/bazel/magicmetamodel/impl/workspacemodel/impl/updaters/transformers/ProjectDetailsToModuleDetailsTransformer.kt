@@ -4,13 +4,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 
-private const val WORKSPACE_MODEL_ENTITIES_FOLDER_MARKER = "workspace-model-entities-folder-marker"
-
 class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: ProjectDetails, private val libraryGraph: LibraryGraph) {
   private val targetsIndex = projectDetails.targets.associateBy { it.id }
-  private val sourcesIndex = projectDetails.sources.groupBy { it.target }
-  private val resourcesIndex = projectDetails.resources.groupBy { it.target }
-  private val dependenciesSourcesIndex = projectDetails.dependenciesSources.groupBy { it.target }
   private val javacOptionsIndex = projectDetails.javacOptions.associateBy { it.target }
   private val scalacOptionsIndex = projectDetails.scalacOptions.associateBy { it.target }
   private val jvmBinaryJarsIndex = projectDetails.jvmBinaryJars.groupBy { it.target }
@@ -20,18 +15,12 @@ class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: Proje
     val allDependencies = libraryGraph.calculateAllDependencies(target)
     return ModuleDetails(
       target = target,
-      sources = sourcesIndex[target.id].orEmpty(),
-      resources = resourcesIndex[targetId].orEmpty(),
-      dependenciesSources = dependenciesSourcesIndex[targetId].orEmpty(),
       javacOptions = javacOptionsIndex[targetId],
       scalacOptions = scalacOptionsIndex[targetId],
-      outputPathUris = emptyList(),
       libraryDependencies = allDependencies.libraryDependencies.takeIf { projectDetails.libraries != null }?.toList(),
       moduleDependencies = allDependencies.moduleDependencies.toList(),
       defaultJdkName = projectDetails.defaultJdkName,
       jvmBinaryJars = jvmBinaryJarsIndex[targetId].orEmpty(),
-      workspaceModelEntitiesFolderMarker =
-        resourcesIndex[targetId].orEmpty().flatMap { it.resources }.any { it.endsWith(WORKSPACE_MODEL_ENTITIES_FOLDER_MARKER) },
     )
   }
 }

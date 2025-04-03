@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.server.model
 
 import org.jetbrains.bazel.label.Label
-import java.net.URI
+import java.nio.file.Path
 
 data class Module(
   val label: Label,
@@ -9,11 +9,10 @@ data class Module(
   val directDependencies: List<Label>,
   val languages: Set<Language>,
   val tags: Set<Tag>,
-  val baseDirectory: URI,
+  val baseDirectory: Path,
   val sourceSet: SourceSet,
-  val resources: Set<URI>,
-  val outputs: Set<URI>,
-  val sourceDependencies: Set<URI>,
+  val resources: Set<Path>,
+  val sourceDependencies: Set<Path>,
   val languageData: LanguageData?,
   val environmentVariables: Map<String, String>,
 )

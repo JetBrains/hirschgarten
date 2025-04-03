@@ -8,6 +8,6 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         "//protocol",
-        "@rules_intellij//intellij_platform_sdk:plugin_api",
+        "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )

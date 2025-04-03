@@ -8,6 +8,7 @@ import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
@@ -25,21 +26,21 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.bazel.magicmetamodel.orDefault
-import org.jetbrains.bazel.utils.safeCastToURI
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.LibraryItem
-import java.net.URI
+import org.jetbrains.bsp.protocol.isExecutable
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.to
 
 private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
 @ApiStatus.Internal
 data class TargetUtilsState(
-  var labelToTargetInfo: Map<String, BuildTargetInfoState> = emptyMap(),
+  var labelToTargetInfo: Map<String, BuildTargetState> = emptyMap(),
   var moduleIdToTarget: Map<String, String> = emptyMap(),
   var libraryIdToTarget: Map<String, String> = emptyMap(),
   var fileToTarget: Map<String, List<String>> = emptyMap(),
@@ -54,75 +55,66 @@ data class TargetUtilsState(
 )
 class TargetUtils(private val project: Project) : PersistentStateComponent<TargetUtilsState> {
   @ApiStatus.Internal
-  var labelToTargetInfo: Map<Label, BuildTargetInfo> = emptyMap()
+  var labelToTargetInfo: Map<Label, BuildTarget> = emptyMap()
     private set
   private var moduleIdToTarget: Map<String, Label> = emptyMap()
 
   private var libraryIdToTarget: Map<String, Label> = emptyMap()
 
-  // we must use URI as comparing URI path strings is susceptible to errors.
-  // e.g., file:/test and file:///test should be similar in the URI world
-  var fileToTarget: Map<URI, List<Label>> = hashMapOf()
+  var fileToTarget: Map<Path, List<Label>> = hashMapOf()
     private set
 
-  private var fileToExecutableTargets: Map<URI, List<Label>> = hashMapOf()
+  private var fileToExecutableTargets: Map<Path, List<Label>> = hashMapOf()
 
   // Not persisted!
   private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
 
   private var listeners: List<(Boolean) -> Unit> = emptyList()
 
-  fun addFileToTargetIdEntry(uri: URI, targets: List<Label>) {
-    fileToTarget = fileToTarget + (uri to targets)
+  fun addFileToTargetIdEntry(path: Path, targets: List<Label>) {
+    fileToTarget = fileToTarget + (path to targets)
   }
 
-  fun removeFileToTargetIdEntry(uri: URI) {
-    fileToTarget = fileToTarget - uri
+  fun removeFileToTargetIdEntry(path: Path) {
+    fileToTarget = fileToTarget - path
   }
 
   @ApiStatus.Internal
   suspend fun saveTargets(
-    targetIdToTargetInfo: Map<Label, BuildTargetInfo>,
-    targetIdToModuleEntity: Map<Label, Module>,
-    targetIdToModuleDetails: Map<Label, ModuleDetails>,
+    targetIdToTargetInfo: Map<Label, BuildTarget>,
+    targetIdToModuleEntity: Map<Label, List<Module>>,
+    fileToTarget: Map<Path, List<Label>>,
     libraryItems: List<LibraryItem>?,
     libraryModules: List<JavaModule>,
     nameProvider: TargetNameReformatProvider,
   ) {
     this.labelToTargetInfo = targetIdToTargetInfo.mapKeys { it.key }
     moduleIdToTarget =
-      targetIdToModuleEntity.entries.associate { (targetId, module) ->
-        module.getModuleName() to targetId
+      targetIdToModuleEntity.entries.associate { (targetId, modules) ->
+        modules.first().getModuleName() to targetId
       }
     libraryIdToTarget =
       libraryItems
         ?.associate { library ->
-          nameProvider.invoke(BuildTargetInfo(id = library.id)) to library.id
+          nameProvider.invoke(library.id) to library.id
         }.orEmpty()
 
-    fileToTarget =
-      targetIdToModuleDetails.values
-        .flatMap { it.toPairsUrlToId() }
-        .groupBy { it.first }
-        .mapValues { it.value.map { pair -> pair.second } }
+    this.fileToTarget = fileToTarget
     fileToExecutableTargets = calculateFileToExecutableTargets(libraryItems)
 
     this.libraryModulesLookupTable = createLibraryModulesLookupTable(libraryModules)
   }
 
-  private fun ModuleDetails.toPairsUrlToId(): List<Pair<URI, Label>> =
-    sources.flatMap { sources ->
-      sources.sources.mapNotNull { it.uri.processUriString().safeCastToURI() }.map { it to target.id }
-    }
+  fun addTargets(targetInfos: List<BuildTarget>) {
+    labelToTargetInfo = labelToTargetInfo + targetInfos.associateBy { it.id }
+  }
 
-  private fun String.processUriString() = this.trimEnd('/')
-
-  private suspend fun calculateFileToExecutableTargets(libraryItems: List<LibraryItem>?): Map<URI, List<Label>> =
+  private suspend fun calculateFileToExecutableTargets(libraryItems: List<LibraryItem>?): Map<Path, List<Label>> =
     withContext(Dispatchers.Default) {
       val targetDependentsGraph = TargetDependentsGraph(labelToTargetInfo, libraryItems)
       val targetToTransitiveRevertedDependenciesCache = ConcurrentHashMap<Label, Set<Label>>()
       fileToTarget
-        .map { (uri, targets) ->
+        .map { (path, targets) ->
           async {
             val dependents =
               targets
@@ -133,7 +125,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
                     label,
                   )
                 }.distinct()
-            uri to dependents
+            path to dependents
           }
         }.awaitAll()
         .filter { it.second.isNotEmpty() } // Avoid excessive memory consumption
@@ -147,7 +139,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   ): Set<Label> =
     resultCache.getOrPut(target) {
       val targetInfo = labelToTargetInfo[target]
-      if (targetInfo?.capabilities?.isExecutable() == true) {
+      if (targetInfo?.capabilities?.isExecutable == true) {
         return@getOrPut setOf(target)
       }
 
@@ -176,18 +168,18 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   fun allTargets(): List<Label> = labelToTargetInfo.keys.toList()
 
-  fun getTargetsForURI(uri: URI): List<Label> = fileToTarget[uri] ?: emptyList()
+  fun getTargetsForPath(path: Path): List<Label> = fileToTarget[path] ?: emptyList()
 
   fun getTargetsForFile(file: VirtualFile): List<Label> =
-    fileToTarget[file.url.processUriString().safeCastToURI()]
+    fileToTarget[file.toNioPath()]
       ?: getTargetsFromAncestorsForFile(file)
 
   @ApiStatus.Internal
   fun getExecutableTargetsForFile(file: VirtualFile): List<Label> {
     val executableDirectTargets =
-      getTargetsForFile(file).filter { label -> labelToTargetInfo[label]?.capabilities?.isExecutable() == true }
+      getTargetsForFile(file).filter { label -> labelToTargetInfo[label]?.capabilities?.isExecutable == true }
     if (executableDirectTargets.isEmpty()) {
-      return fileToExecutableTargets.getOrDefault(file.url.processUriString().safeCastToURI(), emptySet()).toList()
+      return fileToExecutableTargets.getOrDefault(file.toNioPath(), emptySet()).toList()
     }
     return executableDirectTargets
   }
@@ -197,7 +189,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       val rootDir = project.rootDir
       var iter = file.parent
       while (iter != null && VfsUtil.isAncestor(rootDir, iter, false)) {
-        val key = iter.url.processUriString().safeCastToURI()
+        val key = iter.toNioPath()
         if (key in fileToTarget) return fileToTarget[key]!!
         iter = iter.parent
       }
@@ -209,7 +201,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   @PublicApi // // https://youtrack.jetbrains.com/issue/BAZEL-1632
   @Suppress("UNUSED")
-  fun isLibrary(target: Label): Boolean = BuildTargetTag.LIBRARY in getBuildTargetInfoForLabel(target)?.tags.orEmpty()
+  fun isLibrary(target: Label): Boolean = BuildTargetTag.LIBRARY in getBuildTargetForLabel(target)?.tags.orEmpty()
 
   @PublicApi
   fun getTargetForModuleId(moduleId: String): Label? = moduleIdToTarget[moduleId]
@@ -218,11 +210,11 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   fun getTargetForLibraryId(libraryId: String): Label? = libraryIdToTarget[libraryId]
 
   @ApiStatus.Internal
-  fun getBuildTargetInfoForLabel(label: Label): BuildTargetInfo? = labelToTargetInfo[label]
+  fun getBuildTargetForLabel(label: Label): BuildTarget? = labelToTargetInfo[label]
 
   @ApiStatus.Internal
-  fun getBuildTargetInfoForModule(module: com.intellij.openapi.module.Module): BuildTargetInfo? =
-    getTargetForModuleId(module.name)?.let { getBuildTargetInfoForLabel(it) }
+  fun getBuildTargetForModule(module: com.intellij.openapi.module.Module): BuildTarget? =
+    getTargetForModuleId(module.name)?.let { getBuildTargetForLabel(it) }
 
   /**
    * [libraryModulesLookupTable] is not persisted between IDE restarts, use this method with caution.
@@ -249,9 +241,9 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     moduleIdToTarget = state.moduleIdToTarget.mapValues { Label.parse(it.value) }
     libraryIdToTarget = state.libraryIdToTarget.mapValues { Label.parse(it.value) }
     fileToTarget =
-      state.fileToTarget.mapKeys { o -> o.key.safeCastToURI() }.mapValues { o -> o.value.map { Label.parse(it) } }
+      state.fileToTarget.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
     fileToExecutableTargets =
-      state.fileToExecutableTargets.mapKeys { o -> o.key.safeCastToURI() }.mapValues { o -> o.value.map { Label.parse(it) } }
+      state.fileToExecutableTargets.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
   }
 }
 
@@ -264,7 +256,7 @@ val Project.targetUtils: TargetUtils
 
 @PublicApi
 fun Label.getModule(project: Project): com.intellij.openapi.module.Module? =
-  project.service<TargetUtils>().getBuildTargetInfoForLabel(this)?.getModule(project)
+  project.service<TargetUtils>().getBuildTargetForLabel(this)?.getModule(project)
 
 @PublicApi
 fun Label.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity
@@ -277,8 +269,17 @@ val com.intellij.openapi.module.Module.moduleEntity: ModuleEntity?
   }
 
 @ApiStatus.Internal
-fun BuildTargetInfo.getModule(project: Project): com.intellij.openapi.module.Module? {
-  val moduleNameProvider = project.findNameProvider().orDefault()
-  val moduleName = moduleNameProvider(this)
+fun BuildTarget.getModule(project: Project): com.intellij.openapi.module.Module? {
+  val moduleNameProvider = project.findNameProvider()
+  val moduleName = moduleNameProvider(this.id)
   return ModuleManager.getInstance(project).findModuleByName(moduleName)
 }
+
+@ApiStatus.Internal
+fun calculateFileToTarget(targetIdToModuleDetails: Map<Label, ModuleDetails>): Map<Path, List<Label>> =
+  targetIdToModuleDetails.values
+    .flatMap { it.toPairsPathToId() }
+    .groupBy { it.first }
+    .mapValues { it.value.map { pair -> pair.second } }
+
+private fun ModuleDetails.toPairsPathToId(): List<Pair<Path, Label>> = target.sources.map { it.path }.map { it to target.id }

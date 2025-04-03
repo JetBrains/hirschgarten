@@ -5,10 +5,30 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
+import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
+import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
+import org.jetbrains.bazel.workspacecontext.BuildFlagsSpec
+import org.jetbrains.bazel.workspacecontext.DirectoriesSpec
+import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
+import org.jetbrains.bazel.workspacecontext.EnableNativeAndroidRules
+import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
+import org.jetbrains.bazel.workspacecontext.ExperimentalAddTransitiveCompileTimeJars
+import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
+import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
+import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
+import org.jetbrains.bazel.workspacecontext.NoPruneTransitiveCompileTimeJarsPatternsSpec
+import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
+import org.jetbrains.bazel.workspacecontext.ShardingApproachSpec
+import org.jetbrains.bazel.workspacecontext.SyncFlagsSpec
+import org.jetbrains.bazel.workspacecontext.TargetShardSizeSpec
+import org.jetbrains.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bazel.workspacecontext.TransitiveCompileTimeJarsTargetKindsSpec
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.net.URI
+import kotlin.io.path.Path
 
 @DisplayName("Project tests")
 class ProjectTest {
@@ -20,29 +40,31 @@ class ProjectTest {
       // given
       val project1 =
         AspectSyncProject(
-          workspaceRoot = URI.create("file:///path/to/workspace"),
+          workspaceRoot = Path("/path/to/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
           invalidTargets = emptyList(),
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(0),
+          workspaceContext = createMockWorkspaceContext(),
         )
 
       val project2 =
         AspectSyncProject(
-          workspaceRoot = URI.create("file:///path/to/another/workspace"),
+          workspaceRoot = Path("/path/to/another/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
           invalidTargets = emptyList(),
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(0),
+          workspaceContext = createMockWorkspaceContext(),
         )
 
       // then
       shouldThrowWithMessage<IllegalStateException>(
-        "Cannot add projects with different workspace roots: file:///path/to/workspace and file:///path/to/another/workspace",
+        "Cannot add projects with different workspace roots: /path/to/workspace and /path/to/another/workspace",
       ) {
         project1 + project2
       }
@@ -53,24 +75,26 @@ class ProjectTest {
       // given
       val project1 =
         AspectSyncProject(
-          workspaceRoot = URI.create("file:///path/to/workspace"),
+          workspaceRoot = Path("/path/to/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
           invalidTargets = emptyList(),
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(21),
+          workspaceContext = createMockWorkspaceContext(),
         )
 
       val project2 =
         AspectSyncProject(
-          workspaceRoot = URI.create("file:///path/to/workspace"),
+          workspaceRoot = Path("/path/to/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
           invalidTargets = emptyList(),
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(37),
+          workspaceContext = createMockWorkspaceContext(),
         )
 
       // then
@@ -86,7 +110,7 @@ class ProjectTest {
       // given
       val project1 =
         AspectSyncProject(
-          workspaceRoot = URI.create("file:///path/to/workspace"),
+          workspaceRoot = Path("/path/to/workspace"),
           modules = listOf("//project1:module1".toMockModule(), "//project1:module2".toMockModule(), "//module".toMockModule()),
           libraries =
             mapOf(
@@ -101,11 +125,12 @@ class ProjectTest {
           invalidTargets = listOf("//invalid1".toLabel()),
           nonModuleTargets = listOf("//nonmodule1".toMockNonModuleTarget(), "//nonmodule2".toMockNonModuleTarget()),
           bazelRelease = BazelRelease(1),
+          workspaceContext = createMockWorkspaceContext(targetsPattern = "//..."),
         )
 
       val project2 =
         AspectSyncProject(
-          workspaceRoot = URI.create("file:///path/to/workspace"),
+          workspaceRoot = Path("/path/to/workspace"),
           modules =
             listOf(
               "//project2:module1".toMockModule(),
@@ -126,12 +151,13 @@ class ProjectTest {
           invalidTargets = listOf("//invalid2".toLabel()),
           nonModuleTargets = listOf("//nonmodule3".toMockNonModuleTarget()),
           bazelRelease = BazelRelease(1),
+          workspaceContext = createMockWorkspaceContext(targetsPattern = "//other/..."),
         )
 
       // then
       val expectedNewProject =
         AspectSyncProject(
-          workspaceRoot = URI.create("file:///path/to/workspace"),
+          workspaceRoot = Path("/path/to/workspace"),
           modules =
             listOf(
               "//project1:module1".toMockModule(),
@@ -163,6 +189,7 @@ class ProjectTest {
               "//nonmodule2".toMockNonModuleTarget(),
             ),
           bazelRelease = BazelRelease(1),
+          workspaceContext = createMockWorkspaceContext(targetsPattern = "//other/..."),
         )
       val newProject = project1 + project2
 
@@ -183,10 +210,9 @@ class ProjectTest {
       directDependencies = emptyList(),
       languages = emptySet(),
       tags = emptySet(),
-      baseDirectory = URI.create("file:///path/to/$this"),
-      sourceSet = SourceSet(emptySet(), emptySet(), emptySet()),
+      baseDirectory = Path("/path/to/$this"),
+      sourceSet = SourceSet(emptySet(), emptySet()),
       resources = emptySet(),
-      outputs = emptySet(),
       sourceDependencies = emptySet(),
       languageData = null,
       environmentVariables = emptyMap(),
@@ -207,8 +233,31 @@ class ProjectTest {
       label = this.toLabel(),
       languages = emptySet(),
       tags = emptySet(),
-      baseDirectory = URI.create("file:///path/to/$this"),
+      baseDirectory = Path("/path/to/$this"),
     )
 
   private fun String.toLabel(): Label = Label.parse(this)
+
+  private fun createMockWorkspaceContext(targetsPattern: String = "//..."): WorkspaceContext =
+    WorkspaceContext(
+      targets = TargetsSpec(listOf(Label.parse(targetsPattern)), emptyList()),
+      directories = DirectoriesSpec(listOf(Path(".")), emptyList()),
+      buildFlags = BuildFlagsSpec(emptyList()),
+      syncFlags = SyncFlagsSpec(emptyList()),
+      bazelBinary = BazelBinarySpec(Path("bazel")),
+      allowManualTargetsSync = AllowManualTargetsSyncSpec(true),
+      dotBazelBspDirPath = DotBazelBspDirPathSpec(Path(".bazelbsp")),
+      importDepth = ImportDepthSpec(-1),
+      enabledRules = EnabledRulesSpec(emptyList()),
+      ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpec(Path("java_home")),
+      experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJars(false),
+      experimentalTransitiveCompileTimeJarsTargetKinds = TransitiveCompileTimeJarsTargetKindsSpec(emptyList()),
+      experimentalNoPruneTransitiveCompileTimeJarsPatterns = NoPruneTransitiveCompileTimeJarsPatternsSpec(emptyList()),
+      enableNativeAndroidRules = EnableNativeAndroidRules(false),
+      androidMinSdkSpec = AndroidMinSdkSpec(null),
+      shardSync = ShardSyncSpec(false),
+      targetShardSize = TargetShardSizeSpec(1000),
+      shardingApproachSpec = ShardingApproachSpec(null),
+      importRunConfigurations = ImportRunConfigurationsSpec(emptyList()),
+    )
 }

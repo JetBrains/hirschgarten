@@ -1,34 +1,24 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
-import org.jetbrains.bazel.utils.safeCastToURI
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.ResourcesItem
-import kotlin.io.path.toPath
+import java.nio.file.Path
 
-internal data class BuildTargetAndResourcesItem(val buildTarget: BuildTarget, val resourcesItem: ResourcesItem)
-
-internal class ResourcesItemToJavaResourceRootTransformer :
-  WorkspaceModelEntityPartitionTransformer<BuildTargetAndResourcesItem, ResourceRoot> {
-  override fun transform(inputEntity: BuildTargetAndResourcesItem): List<ResourceRoot> {
-    val rootType = inputEntity.buildTarget.inferRootType()
-    return inputEntity.resourcesItem.resources
+internal class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartitionTransformer<BuildTarget, ResourceRoot> {
+  override fun transform(inputEntity: BuildTarget): List<ResourceRoot> {
+    val rootType = inputEntity.inferRootType()
+    return inputEntity.resources
       .map { toJavaResourceRoot(it, rootType) }
       .distinct()
   }
 
-  private fun toJavaResourceRoot(resourcePath: String, rootType: SourceRootTypeId) =
+  private fun toJavaResourceRoot(resourcePath: Path, rootType: SourceRootTypeId) =
     ResourceRoot(
-      resourcePath = resourcePath.safeCastToURI().toPath(),
+      resourcePath = resourcePath,
       rootType = rootType,
     )
 
   private fun BuildTarget.inferRootType(): SourceRootTypeId =
     if (tags.contains("test")) JAVA_TEST_RESOURCE_ROOT_TYPE else JAVA_RESOURCE_ROOT_TYPE
-
-  companion object {
-    private val JAVA_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-resource")
-    private val JAVA_TEST_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-test-resource")
-  }
 }

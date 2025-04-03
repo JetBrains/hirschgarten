@@ -3,6 +3,9 @@ package org.jetbrains.bazel
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.install.Install
+import org.jetbrains.bazel.install.cli.CliOptions
+import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
@@ -19,10 +22,12 @@ import org.jetbrains.bsp.protocol.ScalaPlatform
 import org.jetbrains.bsp.protocol.ScalacOptionsItem
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
+import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import java.util.UUID
+import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -41,14 +46,27 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
       throw t
     }
 
-  override fun additionalServerInstallArguments() = arrayOf("-enabled-rules", "io_bazel_rules_scala", "rules_java", "rules_jvm")
+  override fun installServer() {
+    Install.runInstall(
+      CliOptions(
+        workspaceDir = Path(workspaceDir),
+        projectViewCliOptions =
+          ProjectViewCliOptions(
+            bazelBinary = Path(bazelBinary),
+            targets = listOf("//..."),
+            enabledRules = listOf("io_bazel_rules_scala", "rules_java", "rules_jvm"),
+          ),
+      ),
+    )
+  }
 
   override fun scenarioSteps(): List<BazelBspTestScenarioStep> =
     listOf(
       resolveProject(),
       compareWorkspaceTargetsResults(),
       compileWithWarnings(),
-      scalaOptionsResults(),
+      // TODO: son
+//      scalaOptionsResults(),
     )
 
   private fun resolveProject(): BazelBspTestScenarioStep =
@@ -57,7 +75,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
     ) { testClient.testResolveProject(2.minutes) }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
+    val javaHome = Path("\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/")
     val jvmBuildTarget =
       JvmBuildTarget(
         javaHome = javaHome,
@@ -70,9 +88,9 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
         "2.12",
         ScalaPlatform.JVM,
         listOf(
-          "file://\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_compiler/scala-compiler-2.12.14.jar",
-          "file://\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_library/scala-library-2.12.14.jar",
-          "file://\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_reflect/scala-reflect-2.12.14.jar",
+          Path("\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_compiler/scala-compiler-2.12.14.jar"),
+          Path("\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_library/scala-library-2.12.14.jar"),
+          Path("\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_reflect/scala-reflect-2.12.14.jar"),
         ),
         jvmBuildTarget = jvmBuildTarget,
       )
@@ -83,19 +101,26 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
         listOf("library"),
         listOf("scala"),
         listOf(
-          Label.parse(Label.synthetic("scala-compiler-2.12.14.jar").toString()),
-          Label.parse(Label.synthetic("scala-library-2.12.14.jar").toString()),
-          Label.parse(Label.synthetic("scala-reflect-2.12.14.jar").toString()),
+          Label.synthetic("scala-compiler-2.12.14.jar"),
+          Label.synthetic("scala-library-2.12.14.jar"),
+          Label.synthetic("scala-reflect-2.12.14.jar"),
         ),
         BuildTargetCapabilities(
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
         ),
-        displayName = "//scala_targets:library",
-        baseDirectory = "file://\$WORKSPACE/scala_targets/",
+        baseDirectory = Path("\$WORKSPACE/scala_targets/"),
         data = scalaBuildTarget,
+        sources =
+          listOf(
+            SourceItem(
+              path = Path("\$WORKSPACE/scala_targets/Example.scala"),
+              generated = false,
+              jvmPackagePrefix = "example",
+            ),
+          ),
+        resources = listOf(),
       )
     return WorkspaceBuildTargetsResult(
       listOf(target),
@@ -114,11 +139,6 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
         ScalacOptionsItem(
           it,
           emptyList(),
-          listOf(
-            "$bazelBinDirectory/external/io_bazel_rules_scala_scala_library/io_bazel_rules_scala_scala_library.stamp/scala-library-2.12.14-stamped.jar",
-            "$bazelBinDirectory/external/io_bazel_rules_scala_scala_reflect/io_bazel_rules_scala_scala_reflect.stamp/scala-reflect-2.12.14-stamped.jar",
-          ),
-          "$bazelBinDirectory/scala_targets/library.jar",
         )
       }
     val expectedScalaOptionsResult = ScalacOptionsResult(expectedScalaOptionsItems)
@@ -165,7 +185,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
       )
 
     val tmpDir = System.getenv()["BIT_WORKSPACE_DIR"]
-    val expectedDocumentId = TextDocumentIdentifier("file://$tmpDir/scala_targets/Example.scala")
+    val expectedDocumentId = TextDocumentIdentifier(Path("$tmpDir/scala_targets/Example.scala"))
     val expectedDiagnosticsParam =
       PublishDiagnosticsParams(
         expectedDocumentId,

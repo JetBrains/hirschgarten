@@ -5,24 +5,27 @@ import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
-import java.net.URI
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import java.nio.file.Path
 
 sealed interface Project {
-  val workspaceRoot: URI
+  val workspaceRoot: Path
   val bazelRelease: BazelRelease
   val repoMapping: RepoMapping
+  val workspaceContext: WorkspaceContext
 }
 
 data class FirstPhaseProject(
-  override val workspaceRoot: URI,
+  override val workspaceRoot: Path,
   override val bazelRelease: BazelRelease,
   override val repoMapping: RepoMapping,
+  override val workspaceContext: WorkspaceContext,
   val modules: Map<Label, Target>,
 ) : Project
 
 /** Project is the internal model of the project. Bazel/Aspect Model -> Project -> BSP Model  */
 data class AspectSyncProject(
-  override val workspaceRoot: URI,
+  override val workspaceRoot: Path,
   override val bazelRelease: BazelRelease,
   val modules: List<Module>,
   val libraries: Map<Label, Library>,
@@ -30,6 +33,8 @@ data class AspectSyncProject(
   val invalidTargets: List<Label>,
   val nonModuleTargets: List<NonModuleTarget>, // targets that should be displayed in the project view but are neither modules nor libraries
   override val repoMapping: RepoMapping = RepoMappingDisabled,
+  override val workspaceContext: WorkspaceContext,
+  val hasError: Boolean = false,
 ) : Project {
   private val moduleMap: Map<Label, Module> = modules.associateBy(Module::label)
 
@@ -55,6 +60,7 @@ data class AspectSyncProject(
       goLibraries = newGoLibraries,
       invalidTargets = newInvalidTargets.toList(),
       nonModuleTargets = newNonModuleTargets.toList(),
+      workspaceContext = project.workspaceContext,
     )
   }
 }

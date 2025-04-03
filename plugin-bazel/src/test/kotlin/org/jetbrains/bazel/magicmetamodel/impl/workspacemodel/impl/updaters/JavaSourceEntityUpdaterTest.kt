@@ -14,8 +14,7 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.net.URI
-import kotlin.io.path.toPath
+import kotlin.io.path.Path
 
 @DisplayName("javaSourceEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
 class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest() {
@@ -34,7 +33,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
   @Test
   fun `should add one java source root to the workspace model`() {
     // given
-    val sourceDir = URI.create("file:///root/dir/example/package/").toPath()
+    val sourceDir = Path("/root/dir/example/package/")
     val generated = false
     val packagePrefix = "example.package"
 
@@ -87,7 +86,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
   @Test
   fun `should add multiple java source roots to the workspace model`() {
     // given
-    val sourceDir1 = URI.create("file:///root/dir/example/package/").toPath()
+    val sourceDir1 = Path("/root/dir/example/package/")
     val generated1 = false
     val packagePrefix1 = "example.package"
 
@@ -99,7 +98,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
         packagePrefix = packagePrefix1,
       )
 
-    val sourceDir2 = URI.create("file:///another/root/dir/another/example/package/").toPath()
+    val sourceDir2 = Path("/another/root/dir/another/example/package/")
     val generated2 = true
     val packagePrefix2 = "another.example.package"
 

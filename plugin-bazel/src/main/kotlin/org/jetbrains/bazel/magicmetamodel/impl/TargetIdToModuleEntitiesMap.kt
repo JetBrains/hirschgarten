@@ -11,24 +11,27 @@ import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bazel.workspacemodel.entities.isJvmOrAndroidTarget
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import java.nio.file.Path
 
 object TargetIdToModuleEntitiesMap {
   suspend operator fun invoke(
     projectDetails: ProjectDetails,
     targetIdToModuleDetails: Map<Label, ModuleDetails>,
-    targetIdToTargetInfo: Map<Label, BuildTargetInfo>,
+    targetIdToTargetInfo: Map<Label, BuildTarget>,
+    fileToTarget: Map<Path, List<Label>>,
     projectBasePath: Path,
     project: Project,
     nameProvider: TargetNameReformatProvider,
     isAndroidSupportEnabled: Boolean,
-  ): Map<Label, Module> {
+  ): Map<Label, List<Module>> {
     val moduleDetailsToJavaModuleTransformer =
       ModuleDetailsToJavaModuleTransformer(
         targetIdToTargetInfo,
+        fileToTarget,
         nameProvider,
         projectBasePath,
         project,
@@ -57,8 +60,18 @@ object TargetIdToModuleEntitiesMap {
 }
 
 @TestOnly
-fun Collection<String>.toDefaultTargetsMap(): Map<Label, BuildTargetInfo> =
+fun Collection<String>.toDefaultTargetsMap(): Map<Label, BuildTarget> =
   associateBy(
     keySelector = { Label.parse(it) },
-    valueTransform = { BuildTargetInfo(id = Label.parse(it)) },
+    valueTransform = {
+      BuildTarget(
+        id = Label.parse(it),
+        tags = listOf(),
+        languageIds = listOf(),
+        dependencies = listOf(),
+        capabilities = BuildTargetCapabilities(),
+        sources = listOf(),
+        resources = listOf(),
+      )
+    },
   )

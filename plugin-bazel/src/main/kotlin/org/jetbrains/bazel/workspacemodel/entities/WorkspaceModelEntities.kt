@@ -2,49 +2,20 @@ package org.jetbrains.bazel.workspacemodel.entities
 
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
-import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.utils.safeCastToURI
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import java.nio.file.Path
-
-data class BuildTargetInfo(
-  val id: Label,
-  val displayName: String? = null,
-  val dependencies: List<Label> = emptyList(),
-  val capabilities: ModuleCapabilities = ModuleCapabilities(),
-  val tags: List<String> = emptyList(),
-  val languageIds: LanguageIds = emptyList(),
-  val baseDirectory: String? = null,
-) {
-  val buildTargetName: String = this.displayName ?: this.id.toShortString()
-}
-
-fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
-  BuildTargetInfo(
-    id = id,
-    displayName = displayName,
-    dependencies = dependencies,
-    capabilities = capabilities.toModuleCapabilities(),
-    tags = tags,
-    languageIds = languageIds,
-    baseDirectory = baseDirectory,
-  )
+import kotlin.io.path.extension
 
 abstract class WorkspaceModelEntity
 
-data class ContentRoot(val path: Path, val excludedPaths: List<Path> = ArrayList()) : WorkspaceModelEntity()
+data class ContentRoot(val path: Path) : WorkspaceModelEntity()
 
 interface ResourceRootEntity
 
 interface EntityDependency
 
-data class GenericSourceRoot(
-  val sourcePath: Path,
-  val rootType: SourceRootTypeId,
-  val excludedPaths: List<Path> = ArrayList(),
-) : WorkspaceModelEntity()
+data class GenericSourceRoot(val sourcePath: Path, val rootType: SourceRootTypeId) : WorkspaceModelEntity()
 
 data class ResourceRoot(val resourcePath: Path, val rootType: SourceRootTypeId) :
   WorkspaceModelEntity(),
@@ -52,19 +23,19 @@ data class ResourceRoot(val resourcePath: Path, val rootType: SourceRootTypeId) 
 
 data class Library(
   val displayName: String,
-  val iJars: List<String> = listOf(),
-  val sourceJars: List<String> = listOf(),
-  val classJars: List<String> = listOf(),
+  val iJars: List<Path> = listOf(),
+  val sourceJars: List<Path> = listOf(),
+  val classJars: List<Path> = listOf(),
   val mavenCoordinates: MavenCoordinates? = null,
 ) : WorkspaceModelEntity(),
   ResourceRootEntity {
   companion object {
-    fun formatJarString(jar: String): String =
-      if (jar.endsWith(".jar")) {
-        "jar://${jar.safeCastToURI().path}!/"
+    fun formatJarString(jar: Path): String =
+      if (jar.extension == "jar") {
+        "jar://$jar!/"
       } else {
         // There can be other library roots except for jars, e.g., Android resources. Use the file:// scheme then.
-        jar
+        "file://$jar"
       }
   }
 }
@@ -129,19 +100,16 @@ data class ModuleCapabilities(
   val canRun: Boolean = false,
   val canTest: Boolean = false,
   val canCompile: Boolean = false,
-  val canDebug: Boolean = false,
 ) {
   fun asMap(): Map<String, String> =
     mapOf(
       KEYS.CAN_RUN.name to canRun.toString(),
-      KEYS.CAN_DEBUG.name to canDebug.toString(),
       KEYS.CAN_TEST.name to canTest.toString(),
       KEYS.CAN_COMPILE.name to canCompile.toString(),
     )
 
   private enum class KEYS {
     CAN_RUN,
-    CAN_DEBUG,
     CAN_TEST,
     CAN_COMPILE,
   }
@@ -149,8 +117,7 @@ data class ModuleCapabilities(
   fun isExecutable(): Boolean = canRun || canTest
 }
 
-fun BuildTargetCapabilities.toModuleCapabilities() =
-  ModuleCapabilities(canRun == true, canTest == true, canCompile == true, canDebug == true)
+fun BuildTargetCapabilities.toModuleCapabilities() = ModuleCapabilities(canRun == true, canTest == true, canCompile == true)
 
 interface Module {
   fun getModuleName(): String

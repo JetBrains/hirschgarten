@@ -13,9 +13,9 @@ import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.EditorNotifications
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.config.isBspProject
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
@@ -31,7 +31,7 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotification
   private val disableNotificationForFile = mutableSetOf<VirtualFile>()
 
   override fun collectNotificationData(project: Project, file: VirtualFile): Function<in FileEditor, out JComponent?>? {
-    if (!project.isBspProject) return null
+    if (!project.isBazelProject) return null
     if (file in disableNotificationForFile) return null
     if (project.isSyncInProgress()) return null
     if (BazelFeatureFlags.isBuildProjectOnSyncEnabled) return null
@@ -79,10 +79,10 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotification
   private inner class BuildAndResyncOnUnresolvedImportEditorPanel(project: Project, fileEditor: FileEditor) :
     EditorNotificationPanel(fileEditor, Status.Warning) {
     init {
-      text = BspPluginBundle.message("notification.unresolved.imports")
+      text = BazelPluginBundle.message("notification.unresolved.imports")
 
-      createActionLabel(BspPluginBundle.message("build.and.resync.action.text")) {
-        BspCoroutineService.getInstance(project).start {
+      createActionLabel(BazelPluginBundle.message("build.and.resync.action.text")) {
+        BazelCoroutineService.getInstance(project).start {
           ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = true)
         }
       }

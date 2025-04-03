@@ -23,7 +23,7 @@ import com.intellij.ui.components.fields.ExtendableTextField
 import com.intellij.util.ThrowableRunnable
 import com.intellij.util.xmlb.annotations.Tag
 import com.intellij.util.xmlb.annotations.XMap
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import java.nio.file.Files
 import java.nio.file.InvalidPathException
 import java.nio.file.Paths
@@ -189,7 +189,7 @@ interface HasBazelParams {
 fun <T : HasBazelParams> bazelParamsFragment(): SettingsEditorFragment<T, RawCommandLineEditor> {
   val bazelParams = RawCommandLineEditor()
   CommandLinePanel.setMinimumWidth(bazelParams, 400)
-  val message = BspPluginBundle.message("runconfig.bazel.params")
+  val message = BazelPluginBundle.message("runconfig.bazel.params")
   bazelParams.editorField.emptyText.text = message
   bazelParams.editorField.accessibleContext.accessibleName = message
   TextComponentEmptyText.setupPlaceholderVisibility(bazelParams.editorField)
@@ -201,7 +201,7 @@ fun <T : HasBazelParams> bazelParamsFragment(): SettingsEditorFragment<T, RawCom
   val parameters: SettingsEditorFragment<T, RawCommandLineEditor> =
     SettingsEditorFragment(
       "bazelParameters",
-      BspPluginBundle.message("runconfig.bazel.params"),
+      BazelPluginBundle.message("runconfig.bazel.params"),
       null,
       bazelParams,
       100,
@@ -215,7 +215,7 @@ fun <T : HasBazelParams> bazelParamsFragment(): SettingsEditorFragment<T, RawCom
     )
   parameters.isRemovable = false
   parameters.setEditorGetter { editor: RawCommandLineEditor -> editor.editorField }
-  parameters.setHint(BspPluginBundle.message("runconfig.bazel.params"))
+  parameters.setHint(BazelPluginBundle.message("runconfig.bazel.params"))
 
   return parameters
 }

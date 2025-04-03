@@ -1,15 +1,16 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.components
 
+import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.Icon
@@ -22,6 +23,7 @@ import javax.swing.SwingConstants
  * `BspPanelComponent` extends [JPanel], which makes it possible to use it directly as a UI component
  */
 class BspPanelComponent private constructor(
+  private val project: Project,
   private val targetIcon: Icon,
   private val toolName: String,
   private val targetTree: BuildTargetTree,
@@ -29,32 +31,26 @@ class BspPanelComponent private constructor(
 ) : JPanel(VerticalLayout(0)) {
   private val emptyTreeMessage =
     JBLabel(
-      BspPluginBundle.message("widget.no.targets.message"),
+      BazelPluginBundle.message("widget.no.targets.message"),
       SwingConstants.CENTER,
     )
 
   private var currentContainer: BuildTargetContainer? = null
 
-  /**
-   * @param targetIcon icon which will be shown next to valid build targets in this panel
-   * @param invalidTargetIcon icon which will be shown next to invalid build targets in this panel
-   * @param toolName name of the tool providing the build targets
-   * @param targets collection of build targets this panel will contain
-   * @param invalidTargets collection of invalid targets this panel will contain
-   * @param searchBarPanel searchbar panel responsible for providing user's search queries
-   */
   constructor(
+    project: Project,
     targetIcon: Icon,
     invalidTargetIcon: Icon,
     toolName: String,
-    targets: Collection<BuildTargetInfo>,
+    targets: Collection<BuildTarget>,
     invalidTargets: List<Label>,
     searchBarPanel: SearchBarPanel,
   ) : this(
+    project = project,
     targetIcon = targetIcon,
     toolName = toolName,
-    targetTree = BuildTargetTree(targetIcon, invalidTargetIcon, targets, invalidTargets),
-    targetSearch = BuildTargetSearch(targetIcon, toolName, targets, searchBarPanel),
+    targetTree = BuildTargetTree(project, targetIcon, invalidTargetIcon, targets, invalidTargets),
+    targetSearch = BuildTargetSearch(project, targetIcon, toolName, targets, searchBarPanel),
   )
 
   init {
@@ -124,8 +120,9 @@ class BspPanelComponent private constructor(
    * @param targets collection of build targets which the new panel will contain
    * @return newly created panel
    */
-  fun createNewWithTargets(targets: Collection<BuildTargetInfo>, invalidTargets: List<Label>): BspPanelComponent =
+  fun createNewWithTargets(targets: Collection<BuildTarget>, invalidTargets: List<Label>): BspPanelComponent =
     BspPanelComponent(
+      project,
       targetIcon,
       toolName,
       targetTree.createNewWithTargets(targets, invalidTargets),

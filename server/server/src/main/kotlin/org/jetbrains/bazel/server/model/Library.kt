@@ -2,19 +2,19 @@ package org.jetbrains.bazel.server.model
 
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.MavenCoordinates
-import java.net.URI
+import java.nio.file.Path
 
 data class Library(
   val label: Label,
-  val outputs: Set<URI>,
-  val sources: Set<URI>,
+  val outputs: Set<Path>,
+  val sources: Set<Path>,
   val dependencies: List<Label>,
-  val interfaceJars: Set<URI> = emptySet(),
+  val interfaceJars: Set<Path> = emptySet(),
   val mavenCoordinates: MavenCoordinates? = null,
 )
 
 data class GoLibrary(
   val label: Label,
   val goImportPath: String? = null,
-  val goRoot: URI? = null,
+  val goRoot: Path? = null,
 )

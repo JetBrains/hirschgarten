@@ -19,9 +19,9 @@ class RunTestWithCoverageCommand(text: String, line: Int) : PlaybackCommandCorou
     val project = context.project
     val virtualFile = readAction { checkNotNull(FileEditorManager.getInstance(project).selectedTextEditor?.virtualFile) }
     val target = checkNotNull(project.targetUtils.getTargetsForFile(virtualFile).singleOrNull()) { "Expected one target for $virtualFile" }
-    val targetInfo = checkNotNull(project.targetUtils.getBuildTargetInfoForLabel(target))
+    val targetInfo = checkNotNull(project.targetUtils.getBuildTargetForLabel(target))
 
-    RunWithCoverageAction(listOf(targetInfo)).doPerformAction(project)
+    RunWithCoverageAction(project, listOf(targetInfo)).doPerformAction(project)
 
     val coverageDataManager = CoverageDataManager.getInstance(project)
     withTimeoutOrNull(60000) {

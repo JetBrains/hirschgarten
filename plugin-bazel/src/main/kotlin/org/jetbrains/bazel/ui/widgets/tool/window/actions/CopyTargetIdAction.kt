@@ -5,22 +5,25 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonShortcuts
 import com.intellij.openapi.ide.CopyPasteManager
+import com.intellij.openapi.project.Project
 import com.intellij.util.ui.TextTransferable
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BuildTargetContainer
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.JComponent
 
-sealed class CopyTargetIdAction : AnAction({ BspPluginBundle.message("widget.copy.target.id") }, AllIcons.Actions.Copy) {
+sealed class CopyTargetIdAction : AnAction({ BazelPluginBundle.message("widget.copy.target.id") }, AllIcons.Actions.Copy) {
   override fun actionPerformed(e: AnActionEvent) {
-    getTargetInfo()?.copyIdToClipboard()
+    val project = e.project ?: return
+    getTargetInfo()?.copyIdToClipboard(project)
   }
 
-  protected abstract fun getTargetInfo(): BuildTargetInfo?
+  protected abstract fun getTargetInfo(): BuildTarget?
 
-  private fun BuildTargetInfo.copyIdToClipboard() {
+  private fun BuildTarget.copyIdToClipboard(project: Project) {
     val clipboard = CopyPasteManager.getInstance()
-    val transferable = TextTransferable(this.id.toShortString() as CharSequence)
+    val transferable = TextTransferable(this.id.toShortString(project) as CharSequence)
     clipboard.setContents(transferable)
   }
 
@@ -29,10 +32,10 @@ sealed class CopyTargetIdAction : AnAction({ BspPluginBundle.message("widget.cop
       registerCustomShortcutSet(CommonShortcuts.getCopy(), component)
     }
 
-    override fun getTargetInfo(): BuildTargetInfo? = container.getSelectedBuildTarget()
+    override fun getTargetInfo(): BuildTarget? = container.getSelectedBuildTarget()
   }
 
-  class FromTargetInfo(private val targetInfo: BuildTargetInfo) : CopyTargetIdAction() {
-    override fun getTargetInfo(): BuildTargetInfo = targetInfo
+  class FromTargetInfo(private val targetInfo: BuildTarget) : CopyTargetIdAction() {
+    override fun getTargetInfo(): BuildTarget = targetInfo
   }
 }

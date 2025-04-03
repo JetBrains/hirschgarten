@@ -97,14 +97,14 @@
     </extensionPoints>
 
     <extensions defaultExtensionNs="org.jetbrains.bazel">
-        <runHandlerProvider implementation="org.jetbrains.bazel.jvm.run.JvmBspRunHandler$JvmBspRunHandlerProvider"
+        <runHandlerProvider implementation="org.jetbrains.bazel.jvm.run.JvmRunHandler$JvmRunHandlerProvider"
                             id="JvmRunHandlerProvider"/>
         <runHandlerProvider
-                implementation="org.jetbrains.bazel.jvm.run.JvmBspTestHandler$JvmBspTestHandlerProvider"
+                implementation="org.jetbrains.bazel.jvm.run.JvmTestHandler$JvmTestHandlerProvider"
                 id="JvmTestHandlerProvider"/>
-        <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericBspRunHandlerProvider"
+        <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericRunHandlerProvider"
                             order="last"/>
-        <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericBspTestHandlerProvider"
+        <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericTestHandlerProvider"
                             order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.BazelBinPathSyncHook"/>
@@ -116,49 +116,45 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
-        <activityTracker implementation="org.jetbrains.bazel.startup.BspStartupActivityTracker"/>
+        <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker"/>
 
         <projectService serviceInterface="com.intellij.openapi.project.BaseProjectDirectories"
-                        serviceImplementation="org.jetbrains.bazel.services.BspBaseProjectDirectories"
+                        serviceImplementation="org.jetbrains.bazel.services.BazelBaseProjectDirectories"
                         overrides="true"/>
         <projectService serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
-                        serviceImplementation="org.jetbrains.bazel.services.BspExternalAnnotationsManager"
+                        serviceImplementation="org.jetbrains.bazel.services.BazelExternalAnnotationsManager"
                         overrides="true"/>
         <moduleService serviceInterface="com.intellij.openapi.roots.ModuleFileIndex"
-                       serviceImplementation="org.jetbrains.bazel.services.BspModuleFileIndex"
+                       serviceImplementation="org.jetbrains.bazel.services.BazelModuleFileIndex"
                        overrides="true"/>
 
         <commandLineInspectionProjectConfigurator
-                implementation="org.jetbrains.bazel.startup.BspCommandLineInspectionConfigurator"/>
+                implementation="org.jetbrains.bazel.startup.BazelCommandLineInspectionConfigurator"/>
         <configurationType implementation="org.jetbrains.bazel.run.config.BazelRunConfigurationType"/>
 
         <notificationGroup id="Bazel" displayType="STICKY_BALLOON"/>
 
         <workspaceModel.fileIndexContributor
-                implementation="org.jetbrains.bazel.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
-        <!--        <workspaceModel.fileIndexContributor-->
-        <!--                implementation="org.jetbrains.bazel.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"/>-->
-        <fileTypeOverrider
-                implementation="org.jetbrains.bazel.workspace.DummyModuleSourcePlainTextTypeOverrider"/>
-        <fileType name="BSP_PLAIN_TEXT"
-                  language="TEXT"
-                  implementationClass="org.jetbrains.bazel.workspace.BspPlainTextFileType"
-                  fieldName="INSTANCE"/>
+                implementation="org.jetbrains.bazel.workspace.BazelProjectDirectoriesWorkspaceFileIndexContributor"/>
+        <workspaceModel.fileIndexContributor
+                implementation="org.jetbrains.bazel.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"/>
+        <ignoredFileProvider implementation="org.jetbrains.bazel.workspace.BazelProjectExcludesIgnoredFileProvider"/>
         <workspaceModel.fileIndexContributor
                 implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
 
-        <java.programPatcher implementation="org.jetbrains.bazel.jvm.run.BspJvmEnvironmentProgramPatcher"/>
-        <java.elementFinder implementation="org.jetbrains.bazel.services.GeneratedClassFinder"/>
+        <java.programPatcher implementation="org.jetbrains.bazel.jvm.run.BazelJvmEnvironmentProgramPatcher"/>
+        <java.elementFinder implementation="org.jetbrains.bazel.services.BazelJavaClassFinder"/>
+        <useScopeEnlarger implementation="org.jetbrains.bazel.services.BazelJavaUseScopeEnlarger"/>
 
         <postStartupActivity
-                implementation="org.jetbrains.bazel.startup.BspStartupActivity"/>
+                implementation="org.jetbrains.bazel.startup.BazelStartupActivity"/>
 
-        <treeStructureProvider implementation="org.jetbrains.bazel.ui.projectTree.BspTreeStructureProvider"/>
+        <treeStructureProvider implementation="org.jetbrains.bazel.ui.projectTree.BazelTreeStructureProvider"/>
         <projectViewNodeDecorator
-                implementation="org.jetbrains.bazel.ui.projectTree.BspProjectViewNodeDecorator"/>
+                implementation="org.jetbrains.bazel.ui.projectTree.BazelProjectViewNodeDecorator"/>
         <projectTaskRunner
-                implementation="org.jetbrains.bazel.buildTask.BspProjectTaskRunner"/>
-        <programRunner implementation="org.jetbrains.bazel.jvm.run.BspJvmDebugRunner"/>
+                implementation="org.jetbrains.bazel.buildTask.BazelProjectTaskRunner"/>
+        <programRunner implementation="org.jetbrains.bazel.jvm.run.BazelJvmDebugRunner"/>
 
         <programRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageProgramRunner"/>
         <coverageRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageRunner"/>
@@ -179,7 +175,6 @@
         <registryKey defaultValue="false" description="Build project on initial project sync"
                      key="bsp.build.project.on.sync"/>
         <registryKey defaultValue="false" description="Python modules support" key="bsp.python.support"/>
-        <registryKey defaultValue="false" description="Enable JPS compilation" key="bsp.jps.compilation.enable"/>
         <registryKey defaultValue="false" description="Android modules support" key="bsp.android.support"/>
         <registryKey defaultValue="false" description="Go modules support" key="bsp.go.support"/>
         <registryKey defaultValue="true"
@@ -208,26 +203,27 @@
                      description="Enable partial sync action for a target."
                      key="bsp.enable.partial.sync"/>
 
-        <statusBarWidgetFactory id="BspFileTargetsWidget"
-                                implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BspFileTargetsWidgetFactory"/>
+        <statusBarWidgetFactory id="BazelFileTargetsWidget"
+                                implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetFactory"/>
 
-        <toolWindowAllowlist id="BSP"/>
+        <toolWindowAllowlist id="Bazel"/>
         <toolWindowExtractor
-                implementation="org.jetbrains.bazel.ui.widgets.tool.window.all.targets.BspToolWindowViewModelExtractor"/>
+                implementation="org.jetbrains.bazel.ui.widgets.tool.window.all.targets.BazelToolWindowViewModelExtractor"/>
 
         <consoleFilterProvider
                 implementation="org.jetbrains.bazel.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"/>
 
-        <iconMapper mappingFile="BSPIconMappings.json"/>
-
-        <notificationGroup displayType="BALLOON" id="BSP Plugin"/>
+        <notificationGroup displayType="BALLOON" id="Bazel Plugin"/>
         <editorNotificationProvider
                 implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"/>
+
+        <statistics.projectUsagesCollector implementation="org.jetbrains.plugins.bazel.fus.BazelProjectStatisticsCollector"/>
+
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
         <projectConfigurator
-                implementation="org.jetbrains.bazel.kotlin.BspKotlinProjectConfigurator"
+                implementation="org.jetbrains.bazel.kotlin.BazelKotlinProjectConfigurator"
                 order="first"
         />
 
@@ -249,27 +245,20 @@
             <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="BazelRunAllTestsAction"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="BazelRunAllTestsAction"/>
         </action>
-        <action id="Bsp.ResyncAction" class="org.jetbrains.bazel.action.registered.ResyncAction"
+        <action id="Bazel.ResyncAction" class="org.jetbrains.bazel.action.registered.ResyncAction"
                 icon="/icons/resync.svg"/>
-        <action id="Bsp.BuildAndResyncAction"
+        <action id="Bazel.BuildAndResyncAction"
                 class="org.jetbrains.bazel.action.registered.BuildAndResyncAction"
                 icon="/icons/buildAndResync.svg"/>
-        <action id="Bsp.Compile.CompileProjectWithBspAction"
-                class="org.jetbrains.bazel.action.registered.CompileProjectWithBspAction"
-                icon="AllIcons.Actions.Compile"/>
-        <action id="Bsp.Compile.CompileProjectWithJpsAction"
-                class="org.jetbrains.bazel.action.registered.CompileProjectWithJpsAction"
-                icon="AllIcons.Actions.Compile"/>
-
         <action id="Bazel.NewBazelPackageAction"
                 class="org.jetbrains.bazel.action.registered.NewBazelPackageAction"
                 text="New Bazel Package">
             <add-to-group group-id="NewGroup" relative-to-action="NewDir" anchor="after"/>
         </action>
 
-        <group id="Bsp.ActionsToolbar">
-            <reference id="Bsp.ResyncAction"/>
-            <reference id="Bsp.BuildAndResyncAction"/>
+        <group id="Bazel.ActionsToolbar">
+            <reference id="Bazel.ResyncAction"/>
+            <reference id="Bazel.BuildAndResyncAction"/>
         </group>
 
     </actions>
@@ -288,7 +277,7 @@
                 implementation="org.jetbrains.bazel.extension.BazelProjectModelExternalSourceExtension"/>
 
         <projectAwareExtension
-                implementation="org.jetbrains.bazel.flow.open.BazelBspProjectAwareExtension"/>
+                implementation="org.jetbrains.bazel.flow.open.BazelProjectAwareExtension"/>
 
         <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook"/>
 
@@ -296,17 +285,24 @@
         <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.nonmodule.sync.NonModuleTargetsSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
         <additionalProjectTaskRunnerProvider
                 implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
 
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
+        <disableCompilationDependenciesResolutionTask
+                implementation="org.jetbrains.bazel.jpsCompilation.utils.DisableCompilationDependenciesResolutionImpl"/>
+        <projectService serviceInterface="org.jetbrains.bazel.server.connection.BazelServerService"
+                        serviceImplementation="org.jetbrains.bazel.server.connection.BazelServerServiceImpl"/>
+
         <consoleFilterProvider implementation="org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilterProvider"/>
 
         <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider"/>
         <projectOpenProcessor
-                implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessor"/>
+                implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor"/>
         <postStartupActivity
                 implementation="org.jetbrains.bazel.flow.open.SuggestEnableK2StartupActivity"/>
         <postStartupActivity
@@ -316,12 +312,12 @@
 
         <externalSystemUnlinkedProjectAware
                 id="Bazel"
-                implementation="org.jetbrains.bazel.flow.open.BazelBspUnlinkedProjectAware"/>
+                implementation="org.jetbrains.bazel.flow.open.BazelUnlinkedProjectAware"/>
         <directoryProjectConfigurator
                 implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"
                 order="after PlatformProjectConfigurator"/>
         <externalIconProvider
-                key="bazelbsp"
+                key="bazel"
                 implementationClass="org.jetbrains.bazel.flow.open.BazelExternalSystemIconProvider"/>
         <projectModelModifier implementation="org.jetbrains.bazel.flow.modify.BazelProjectModelModifier"/>
 
@@ -393,6 +389,12 @@
         <completion.contributor
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"/>
+        <completion.contributor
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesCompletionContributor"/>
+        <completion.contributor
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesArgumentCompletionContributor"/>
         <editorTabTitleProvider
                 implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider"/>
         <extendWordSelectionHandler
@@ -406,6 +408,10 @@
         <lang.syntaxHighlighterFactory
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"/>
+
+        <lang.parserDefinition
+                language="ProjectView"
+                implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"/>
 
         <formattingService
                 implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService"/>
@@ -532,7 +538,16 @@
         <registryKey defaultValue="true"
                      description="Force Bazel to shut down before each shard build to prevent Bazel memory leak issue"
                      key="bazel.shutdown.before.shard.build"/>
+        <registryKey defaultValue="false"
+                     description="Enable a custom class finder for Java instead of &quot;dummy&quot; modules"
+                     key="bazel.enable.custom.java.class.finder"/>
+        <registryKey defaultValue="true"
+                     description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
+                     key="bazel.merge.source.roots"/>
         <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
+
+        <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelJavaNewProjectWizard"/>
+        <newProjectWizard.kotlin.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelKotlinNewProjectWizard"/>
     </extensions>
 
     <actions>
@@ -549,7 +564,7 @@
             <keyboard-shortcut first-keystroke="control alt G" second-keystroke="H" keymap="$default"/>
         </action>
 
-        <action class="org.jetbrains.bazel.ui.widgets.BazelBspJumpToBuildFileAction">
+        <action class="org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction">
             <add-to-group group-id="EditorPopupMenu"/>
             <keyboard-shortcut first-keystroke="control alt G" second-keystroke="J" keymap="$default"/>
         </action>

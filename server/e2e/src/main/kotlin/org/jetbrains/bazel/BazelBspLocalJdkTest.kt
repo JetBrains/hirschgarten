@@ -6,7 +6,9 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
+import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.seconds
 
 object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
@@ -39,7 +41,7 @@ object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
 
     val exampleExampleJvmBuildTarget =
       JvmBuildTarget(
-        javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/${javaHomePrefix}local_jdk/",
+        javaHome = Path("\$BAZEL_OUTPUT_BASE_PATH/external/${javaHomePrefix}local_jdk/"),
         javaVersion = "17",
       )
 
@@ -53,11 +55,18 @@ object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
           canCompile = true,
           canTest = false,
           canRun = true,
-          canDebug = false,
         ),
-        displayName = "//example",
-        baseDirectory = "file://\$WORKSPACE/example/",
-        exampleExampleJvmBuildTarget,
+        baseDirectory = Path("\$WORKSPACE/example/"),
+        data = exampleExampleJvmBuildTarget,
+        sources =
+          listOf(
+            SourceItem(
+              path = Path("\$WORKSPACE/example/Example.java"),
+              generated = false,
+              jvmPackagePrefix = "example",
+            ),
+          ),
+        resources = emptyList(),
       )
 
     return WorkspaceBuildTargetsResult(

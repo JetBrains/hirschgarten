@@ -8,37 +8,35 @@ import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinModule
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
 import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.bsp.protocol.BuildTarget
-import java.net.URI
 import java.nio.file.Path
 
 class AndroidLanguagePlugin(
-  private val workspaceContextProvider: WorkspaceContextProvider,
   private val javaLanguagePlugin: JavaLanguagePlugin,
   private val kotlinLanguagePlugin: KotlinLanguagePlugin,
   private val bazelPathsResolver: BazelPathsResolver,
 ) : LanguagePlugin<AndroidModule>() {
   private var androidMinSdkOverride: Int? = null
 
-  override fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>) {
-    androidMinSdkOverride = workspaceContextProvider.currentWorkspaceContext().androidMinSdkSpec.value
+  override fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>, workspaceContext: WorkspaceContext) {
+    androidMinSdkOverride = workspaceContext.androidMinSdkSpec.value
   }
 
   override fun applyModuleData(moduleData: AndroidModule, buildTarget: BuildTarget) {
     val androidBuildTarget =
       with(moduleData) {
         AndroidBuildTarget(
-          androidJar = androidJar.toString(),
+          androidJar = androidJar,
           androidTargetType = androidTargetType,
-          manifest = manifest?.toString(),
+          manifest = manifest,
           manifestOverrides = manifestOverrides,
-          resourceDirectories = resourceDirectories.map { it.toString() },
+          resourceDirectories = resourceDirectories,
           resourceJavaPackage = resourceJavaPackage,
-          assetsDirectories = assetsDirectories.map { it.toString() },
-          apk = apk?.toString(),
+          assetsDirectories = assetsDirectories,
+          apk = apk,
         )
       }
     moduleData.javaModule?.let { javaLanguagePlugin.toJvmBuildTarget(it) }?.let {
@@ -55,10 +53,10 @@ class AndroidLanguagePlugin(
     if (!targetInfo.hasAndroidTargetInfo()) return null
 
     val androidTargetInfo = targetInfo.androidTargetInfo
-    val androidJar = bazelPathsResolver.resolveUri(androidTargetInfo.androidJar)
+    val androidJar = bazelPathsResolver.resolve(androidTargetInfo.androidJar)
     val manifest =
       if (androidTargetInfo.hasManifest()) {
-        bazelPathsResolver.resolveUri(androidTargetInfo.manifest)
+        bazelPathsResolver.resolve(androidTargetInfo.manifest)
       } else {
         null
       }
@@ -68,12 +66,12 @@ class AndroidLanguagePlugin(
           this + ("minSdkVersion" to androidMinSdkOverride.toString())
         } ?: this
       }
-    val resourceDirectories = bazelPathsResolver.resolveUris(androidTargetInfo.resourceDirectoriesList)
+    val resourceDirectories = bazelPathsResolver.resolvePaths(androidTargetInfo.resourceDirectoriesList)
     val resourceJavaPackage = androidTargetInfo.resourceJavaPackage.takeIf { it.isNotEmpty() }
-    val assetsDirectories = bazelPathsResolver.resolveUris(androidTargetInfo.assetsDirectoriesList)
+    val assetsDirectories = bazelPathsResolver.resolvePaths(androidTargetInfo.assetsDirectoriesList)
     val apk =
       if (androidTargetInfo.hasApk()) {
-        bazelPathsResolver.resolveUri(androidTargetInfo.apk)
+        bazelPathsResolver.resolve(androidTargetInfo.apk)
       } else {
         null
       }
@@ -103,19 +101,19 @@ class AndroidLanguagePlugin(
       else -> AndroidTargetType.LIBRARY
     }
 
-  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<URI> =
+  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     javaLanguagePlugin.dependencySources(targetInfo, dependencyGraph)
 
-  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData =
+  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData? =
     javaLanguagePlugin.calculateSourceRootAndAdditionalData(source)
 
-  override fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<URI> {
+  override fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<Path> {
     if (!targetInfo.hasAndroidTargetInfo()) return emptySet()
     val androidTargetInfo = targetInfo.androidTargetInfo
     if (!androidTargetInfo.hasManifest()) return emptySet()
 
     return bazelPathsResolver
-      .resolveUris(listOf(targetInfo.androidTargetInfo.manifest) + targetInfo.androidTargetInfo.resourceDirectoriesList)
+      .resolvePaths(listOf(targetInfo.androidTargetInfo.manifest) + targetInfo.androidTargetInfo.resourceDirectoriesList)
       .toSet()
   }
 }

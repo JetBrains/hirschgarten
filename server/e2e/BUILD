@@ -52,7 +52,6 @@ bazel_integration_test_all_versions(
 bazel_integration_test_all_versions(
     name = "kotlin_project_test",
     bzlmod_project_path = "test-projects/bzlmod/kotlin-project",
-    exclude_bazel_5 = True,  # bazel 5 will be deprecated soon, project fails to build with bazel 5 so let's just skip it
     project_path = "test-projects/workspace/kotlin-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspKotlinProjectTest",
 )
@@ -60,7 +59,6 @@ bazel_integration_test_all_versions(
 bazel_integration_test_all_versions(
     name = "kotlin_project_with_enabled_rules_test",
     bzlmod_project_path = "test-projects/bzlmod/kotlin-project",
-    exclude_bazel_5 = True,  # bazel 5 will be deprecated soon, project fails to build with bazel 5 so let's just skip it
     project_path = "test-projects/workspace/kotlin-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspKotlinProjectWithEnabledRulesTest",
 )
@@ -80,12 +78,6 @@ bazel_integration_test(
     },
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:ServerDownloadsBazeliskTest",
     workspace_path = "test-projects/workspace/sample-repo",
-)
-
-bazel_integration_test_all_versions(
-    name = "rust_project_test",
-    project_path = "test-projects/workspace/rust-project",
-    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bazel:BazelBspRustProjectTest",
 )
 
 bazel_integration_test_current_version(
@@ -172,7 +164,6 @@ test_suite(
         ":partial_sync_test",
         ":python_project_test",
         ":remote_jdk_test",
-        ":rust_project_test",
         ":sample_repo_test",
         ":server_downloads_bazelisk_test",
     ],

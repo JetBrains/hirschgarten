@@ -6,7 +6,7 @@ import kotlin.io.path.isReadable
 import kotlin.io.path.readText
 
 data class BazelInfo(
-  val execRoot: String,
+  val execRoot: Path,
   val outputBase: Path,
   val workspaceRoot: Path,
   val bazelBin: Path,

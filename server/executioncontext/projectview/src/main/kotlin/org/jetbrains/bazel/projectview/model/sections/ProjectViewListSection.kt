@@ -35,3 +35,9 @@ data class ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection(override 
     const val SECTION_NAME = "experimental_no_prune_transitive_compile_time_jars_patterns"
   }
 }
+
+data class ImportRunConfigurationsSection(override val values: List<String>) : ProjectViewListSection<String>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "import_run_configurations"
+  }
+}

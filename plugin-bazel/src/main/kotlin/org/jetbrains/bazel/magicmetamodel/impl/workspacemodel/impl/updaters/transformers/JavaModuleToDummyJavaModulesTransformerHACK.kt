@@ -3,10 +3,13 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
-import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
-import org.jetbrains.bazel.config.bspProjectName
+import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.config.bazelProjectName
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.BazelJavaSourceRootEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
+import org.jetbrains.bazel.sdkcompat.isSharedSourceSupportEnabled
 import org.jetbrains.bazel.utils.allAncestorsSequence
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
@@ -14,49 +17,158 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import java.io.File
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
+import kotlin.io.path.name
 import kotlin.io.path.notExists
 import kotlin.io.path.pathString
 
-internal data class DummySourceRootWithPackagePrefix(val sourcePath: Path, val packagePrefix: String = "")
+private val RELEVANT_EXTENSIONS = listOf("java", "kt", "scala")
 
 /**
  * This is a HACK for letting single source Java files to be resolved normally
  * Should remove soon and replace with a more robust solution
  */
-internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBasePath: Path, private val project: Project) :
-  WorkspaceModelEntityPartitionTransformer<JavaModule, JavaModule> {
-  internal companion object {
-    val DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE = SourceRootTypeId("java-source")
-    val DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE = SourceRootTypeId("java-resource")
-  }
+internal class JavaModuleToDummyJavaModulesTransformerHACK(
+  private val projectBasePath: Path,
+  private val fileToTarget: Map<Path, List<Label>>,
+  private val project: Project,
+) {
+  sealed interface Result
 
-  override fun transform(inputEntity: JavaModule): List<JavaModule> {
-    val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity.sourceRoots)
-    val dummyJavaModuleNames = calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath)
-    val dummyJavaResourcePath = calculateDummyResourceRootPath(inputEntity, dummyJavaModuleSourceRoots, projectBasePath, project)
-    return if (dummyJavaModuleNames.isEmpty() && dummyJavaResourcePath != null) {
-      val dummyModuleName = calculateDummyJavaModuleName(dummyJavaResourcePath, projectBasePath)
-      calculateDummyJavaSourceModuleWithOnlyResources(
-        name = dummyModuleName,
-        javaModule = inputEntity,
+  class DummyModulesToAdd(val dummyModules: List<JavaModule>) : Result
+
+  class MergedSourceRoots(val mergedSourceRoots: List<JavaSourceRoot>) : Result
+
+  fun transform(inputEntity: JavaModule): Result {
+    if (!BazelFeatureFlags.addDummyModules && !BazelFeatureFlags.mergeSourceRoots) return DummyModulesToAdd(emptyList())
+
+    val buildFileDirectory = inputEntity.baseDirContentRoot?.path
+    val (relevantSourceRoots, irrelevantSourceRoots) = inputEntity.sourceRoots.partition { it.isRelevant() }
+    val sourceRootsForParentDirs = calculateSourceRootsForParentDirs(relevantSourceRoots)
+    val mergedSourceRootVotes = sourceRootsForParentDirs.restoreSourceRootFromPackagePrefix(limit = buildFileDirectory)
+    val dummyJavaResourcePath = calculateDummyResourceRootPath(inputEntity, mergedSourceRootVotes.keys.toList(), projectBasePath, project)
+
+    if (BazelFeatureFlags.mergeSourceRoots) {
+      tryMergeSources(
+        relevantSourceRoots,
+        mergedSourceRootVotes,
+        sourceRootsForParentDirs,
         dummyJavaResourcePath,
-      )?.let { listOf(it) } ?: emptyList()
+      )?.let { mergedSourceRoots ->
+        return MergedSourceRoots(mergedSourceRoots + irrelevantSourceRoots)
+      }
+    }
+    return if (!BazelFeatureFlags.addDummyModules) {
+      DummyModulesToAdd(emptyList())
+    } else if (mergedSourceRootVotes.isEmpty() && dummyJavaResourcePath != null) {
+      val dummyModuleName = calculateDummyJavaModuleName(dummyJavaResourcePath, projectBasePath)
+      DummyModulesToAdd(
+        calculateDummyJavaSourceModuleWithOnlyResources(
+          name = dummyModuleName,
+          javaModule = inputEntity,
+          dummyJavaResourcePath,
+        )?.let { listOf(it) } ?: emptyList(),
+      )
     } else {
-      dummyJavaModuleSourceRoots
-        .zip(dummyJavaModuleNames)
-        .mapNotNull {
-          calculateDummyJavaSourceModule(
-            name = it.second,
-            sourceRootWithPackagePrefix = it.first,
-            javaModule = inputEntity,
-            resourceRootPath = dummyJavaResourcePath,
-          )
-        }.distinctBy { it.genericModuleInfo.name }
+      val dummySourceRoots =
+        if (buildFileDirectory == null) {
+          mergedSourceRootVotes
+        } else {
+          mergedSourceRootVotes.restoreSourceRootFromPackagePrefix(limit = null)
+        }.keys.toList()
+      DummyModulesToAdd(
+        dummySourceRoots
+          .zip(calculateDummyJavaModuleNames(dummySourceRoots, projectBasePath))
+          .mapNotNull {
+            calculateDummyJavaSourceModule(
+              name = it.second,
+              sourceRoot = it.first,
+              javaModule = inputEntity,
+              resourceRootPath = dummyJavaResourcePath,
+            )
+          }.distinctBy { it.genericModuleInfo.name },
+      )
     }
   }
+
+  private fun JavaSourceRoot.isRelevant(): Boolean = this.sourcePath.extension in RELEVANT_EXTENSIONS || this.sourcePath.isDirectory()
+
+  private fun tryMergeSources(
+    sourceRoots: List<JavaSourceRoot>,
+    mergeSourceRootVotes: Map<JavaSourceRoot, Int>,
+    sourceRootsForParentDirsVotes: Map<JavaSourceRoot, Int>,
+    dummyJavaResourcePath: Path?,
+  ): List<JavaSourceRoot>? {
+    if (dummyJavaResourcePath != null) return null
+
+    val originalSourceRoots: Set<Path> = sourceRoots.map { it.sourcePath }.toSet()
+    if (!project.isSharedSourceSupportEnabled &&
+      originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }
+    ) {
+      return null
+    }
+
+    return tryMergeSources(originalSourceRoots, mergeSourceRootVotes) ?: tryMergeSources(originalSourceRoots, sourceRootsForParentDirsVotes)
+  }
+
+  private fun tryMergeSources(originalSourceRoots: Set<Path>, mergeSourceRootVotes: Map<JavaSourceRoot, Int>): List<JavaSourceRoot>? {
+    val sourceRootsSortedByVotes: List<JavaSourceRoot> =
+      mergeSourceRootVotes.entries
+        // Prefer test roots over production roots, e.g., if some utility target is in the same package as a java_test
+        .sortedBy { (sourceRoot, _) -> sourceRoot.rootType != JAVA_TEST_SOURCE_ROOT_TYPE }
+        // Sort by the number of segments in the source root path, so that if two source roots have the same number of votes,
+        // then we choose the root that's higher in the tree to break the tie.
+        .sortedBy { (sourceRoot, _) -> sourceRoot.sourcePath.nameCount }
+        // Finally, sort by votes as the main criterion. This "reverse" order of sorts is intended:
+        // See https://en.wikipedia.org/wiki/Sorting_algorithm#Stability:~:text=primary%20and%20secondary%20key
+        .sortedByDescending { (_, votes) -> votes }
+        .map { (sourceRoot, _) -> sourceRoot }
+    val mergedSourceRoots = mutableListOf<JavaSourceRoot>()
+    val mergedSourceRootPaths = mutableSetOf<Path>()
+    val parentsOfMergedSourceRoots = mutableSetOf<Path>()
+
+    for (sourceRoot in sourceRootsSortedByVotes) {
+      val sourcePath = sourceRoot.sourcePath
+      // Make sure no source path is a parent of another one
+      if (sourcePath.isUnder(mergedSourceRootPaths)) continue
+      if (sourcePath in parentsOfMergedSourceRoots) continue
+
+      mergedSourceRoots.add(sourceRoot)
+      mergedSourceRootPaths.add(sourcePath)
+      parentsOfMergedSourceRoots.addAll(sourcePath.allAncestorsSequence())
+    }
+
+    if (originalSourceRoots.any { !it.isUnder(mergedSourceRootPaths) }) return null
+
+    for (mergedSourceRoot in mergedSourceRootPaths) {
+      Files.walk(mergedSourceRoot).use { children ->
+        for (fileUnderRoot in children) {
+          if (fileUnderRoot.isDirectory()) continue
+          val extension = fileUnderRoot.extension
+          if (extension != "java" && extension != "kt" && extension != "scala") continue
+          val newSourceFileAdded = fileUnderRoot !in originalSourceRoots
+          if (newSourceFileAdded) return null
+        }
+      }
+    }
+
+    return mergedSourceRoots
+  }
+
+  /**
+   * We don't really support shared sources anyway, but adding whole directories if some of the source files
+   * are contained in several targets can cause red code on https://github.com/bazelbuild/bazel
+   */
+  private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTarget[this]?.size ?: 0) > 1
+
+  /**
+   * See [com.intellij.openapi.vfs.VfsUtilCore.isUnder]
+   */
+  private fun Path.isUnder(ancestors: Set<Path>): Boolean = this.allAncestorsSequence().any { it in ancestors }
 
   private fun calculateDummyJavaSourceModuleWithOnlyResources(
     name: String,
@@ -81,10 +193,9 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
         listOf(
           ResourceRoot(
             resourcePath = resourcesPath,
-            rootType = DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
+            rootType = JAVA_RESOURCE_ROOT_TYPE,
           ),
         ),
-      moduleLevelLibraries = listOf(),
       jvmJdkName = javaModule.jvmJdkName,
       kotlinAddendum = javaModule.kotlinAddendum,
       javaAddendum = javaModule.javaAddendum,
@@ -93,7 +204,7 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
 
   private fun calculateDummyJavaSourceModule(
     name: String,
-    sourceRootWithPackagePrefix: DummySourceRootWithPackagePrefix,
+    sourceRoot: JavaSourceRoot,
     javaModule: JavaModule,
     resourceRootPath: Path? = null,
   ) = if (name.isEmpty()) {
@@ -109,28 +220,20 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
           isDummy = true,
           languageIds = listOf("java", "scala", "kotlin"),
         ),
-      baseDirContentRoot = ContentRoot(path = sourceRootWithPackagePrefix.sourcePath),
-      sourceRoots =
-        listOf(
-          JavaSourceRoot(
-            sourcePath = sourceRootWithPackagePrefix.sourcePath,
-            generated = false,
-            packagePrefix = sourceRootWithPackagePrefix.packagePrefix,
-            rootType = DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
-          ),
-        ),
+      baseDirContentRoot = ContentRoot(path = sourceRoot.sourcePath),
+      // For some reason allowing dummy modules to be JAVA_TEST_SOURCE_ROOT_TYPE causes red code on https://github.com/bazelbuild/bazel
+      sourceRoots = listOf(sourceRoot.copy(rootType = JAVA_SOURCE_ROOT_TYPE)),
       resourceRoots =
         if (resourceRootPath != null) {
           listOf(
             ResourceRoot(
               resourcePath = resourceRootPath,
-              rootType = DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
+              rootType = JAVA_RESOURCE_ROOT_TYPE,
             ),
           )
         } else {
           listOf()
         },
-      moduleLevelLibraries = listOf(),
       jvmJdkName = javaModule.jvmJdkName,
       kotlinAddendum = javaModule.kotlinAddendum,
       javaAddendum = javaModule.javaAddendum,
@@ -140,12 +243,11 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
 
 private fun calculateDummyResourceRootPath(
   entity: JavaModule,
-  dummySources: List<DummySourceRootWithPackagePrefix>,
+  dummySources: List<JavaSourceRoot>,
   projectBasePath: Path,
   project: Project,
 ): Path? {
-  if (!project.bspProjectName.startsWith("hirschgarten")) return null
-  if (entity.androidAddendum != null) return null // Resource roots are handled already for Android
+  if (!project.bazelProjectName.startsWith("hirschgarten")) return null
   val resourceRoots = entity.resourceRoots
   if (entity.resourceRoots.isEmpty()) return null
   val moduleRoot = entity.baseDirContentRoot?.path ?: return null
@@ -197,29 +299,56 @@ private fun calculateDummyResourceRootPath(
   }
 }
 
-internal fun calculateDummyJavaSourceRoots(sourceRoots: List<JavaSourceRoot>): List<DummySourceRootWithPackagePrefix> =
+/**
+ * Returns a map from a restored source root to the number of "votes", i.e., the number of original source files that "voted" for that root.
+ */
+private fun calculateSourceRootsForParentDirs(sourceRoots: List<JavaSourceRoot>): Map<JavaSourceRoot, Int> =
   sourceRoots
     .asSequence()
-    .filter { !it.generated }
+    .filter { !BazelJavaSourceRootEntityUpdater.shouldAddBazelJavaSourceRootEntity(it) }
     .mapNotNull {
-      restoreSourceRootFromPackagePrefix(it)
-    }.distinct()
-    .toList()
+      sourceRootForParentDir(it)
+    }.groupingBy { it }
+    .eachCount()
 
-private fun restoreSourceRootFromPackagePrefix(sourceRoot: JavaSourceRoot): DummySourceRootWithPackagePrefix? {
+private fun sourceRootForParentDir(sourceRoot: JavaSourceRoot): JavaSourceRoot? {
   if (sourceRoot.sourcePath.notExists() || sourceRoot.sourcePath.isDirectory()) return null
-  val packagePrefixPath = sourceRoot.packagePrefix.replace('.', File.separatorChar)
   val sourceParent = sourceRoot.sourcePath.parent.pathString
-  val sourceRootString = sourceParent.removeSuffix(packagePrefixPath)
-  val sourceRootPath = Path(sourceRootString)
-  if (sourceParent == sourceRootString) return DummySourceRootWithPackagePrefix(sourceRootPath, sourceRoot.packagePrefix)
-  return DummySourceRootWithPackagePrefix(sourceRootPath)
+  val sourceRootPath = Path(sourceParent)
+  val packagePrefix = sourceRoot.packagePrefix
+  return JavaSourceRoot(
+    sourcePath = sourceRootPath,
+    generated = false,
+    packagePrefix = packagePrefix,
+    rootType = sourceRoot.rootType,
+  )
 }
 
-internal fun calculateDummyJavaModuleNames(
-  dummyJavaModuleSourceRoots: List<DummySourceRootWithPackagePrefix>,
-  projectBasePath: Path,
-): List<String> = dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it.sourcePath, projectBasePath) }
+private fun Map<JavaSourceRoot, Int>.restoreSourceRootFromPackagePrefix(limit: Path?): Map<JavaSourceRoot, Int> =
+  map { (sourceRoot, votes) ->
+    sourceRoot.restoreSourceRootFromPackagePrefix(limit) to votes
+  }.sumUpVotes()
+
+private fun JavaSourceRoot.restoreSourceRootFromPackagePrefix(limit: Path?): JavaSourceRoot {
+  val segments = this.packagePrefix.split('.').toMutableList()
+  var sourcePath: Path = this.sourcePath
+  while (sourcePath != limit && segments.lastOrNull() == sourcePath.name) {
+    sourcePath = sourcePath.parent ?: break
+    segments.removeLast()
+  }
+  return copy(sourcePath = sourcePath, packagePrefix = segments.joinToString("."))
+}
+
+private fun Iterable<Pair<JavaSourceRoot, Int>>.sumUpVotes(): Map<JavaSourceRoot, Int> {
+  val result = mutableMapOf<JavaSourceRoot, Int>()
+  for ((sourceRoot, votes) in this) {
+    result[sourceRoot] = votes + result.getOrDefault(sourceRoot, 0)
+  }
+  return result
+}
+
+private fun calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots: List<JavaSourceRoot>, projectBasePath: Path): List<String> =
+  dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it.sourcePath, projectBasePath) }
 
 internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {
   val absoluteSourceRoot = sourceRoot.toAbsolutePath().toString()

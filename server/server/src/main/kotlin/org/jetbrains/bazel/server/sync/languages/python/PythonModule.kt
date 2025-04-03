@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.server.sync.languages.python
 
 import org.jetbrains.bazel.server.model.LanguageData
-import java.net.URI
+import java.nio.file.Path
 
-data class PythonModule(val interpreter: URI?, val version: String?) : LanguageData
+data class PythonModule(val interpreter: Path?, val version: String?) : LanguageData

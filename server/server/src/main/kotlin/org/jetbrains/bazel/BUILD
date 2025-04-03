@@ -3,7 +3,7 @@ java_library(
     visibility = ["//visibility:public"],
     exports = [
         "//server/commons",
-        "//server/install:install-lib",
+        "//server/install/src/main/kotlin/org/jetbrains/bazel/install",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server",
     ],
 )

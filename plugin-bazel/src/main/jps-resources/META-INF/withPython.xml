@@ -1,14 +1,15 @@
 <idea-plugin>
-  <extensions defaultExtensionNs="com.intellij">
-    <programRunner implementation="org.jetbrains.bazel.python.PythonBspDebugRunner"/>
-  </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <programRunner implementation="org.jetbrains.bazel.python.PythonBspDebugRunner"/>
+    </extensions>
 
-  <extensions defaultExtensionNs="org.jetbrains.bazel">
-    <projectSyncHook implementation="org.jetbrains.bazel.python.sync.PythonProjectSync"/>
+    <extensions defaultExtensionNs="org.jetbrains.bazel">
+        <projectSyncHook implementation="org.jetbrains.bazel.python.sync.PythonProjectSync"/>
 
-    <sourceTypeIconProvider
-            implementation="org.jetbrains.bazel.python.sync.PythonSourceIconProvider"/>
+        <sourceTypeIconProvider
+                implementation="org.jetbrains.bazel.python.sync.PythonSourceIconProvider"/>
 
-    <runHandlerProvider implementation="org.jetbrains.bazel.python.PythonBspRunHandler$Provider" id="PythonBspRunHandlerProvider"/>
-  </extensions>
+        <runHandlerProvider implementation="org.jetbrains.bazel.python.PythonBazelRunHandler$Provider"
+                            id="PythonBazelRunHandlerProvider"/>
+    </extensions>
 </idea-plugin>

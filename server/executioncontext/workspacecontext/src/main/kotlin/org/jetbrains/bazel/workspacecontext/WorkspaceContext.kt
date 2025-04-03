@@ -1,12 +1,7 @@
 package org.jetbrains.bazel.workspacecontext
 
-import org.apache.logging.log4j.LogManager
-import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.executioncontext.api.ExecutionContext
-import org.jetbrains.bazel.executioncontext.api.ExecutionContextConstructor
 import org.jetbrains.bazel.label.assumeResolved
-import org.jetbrains.bazel.projectview.model.ProjectView
-import java.nio.file.Path
 
 /**
  * Representation of `ExecutionContext` used during server lifetime.
@@ -85,6 +80,7 @@ data class WorkspaceContext(
   val shardSync: ShardSyncSpec,
   val targetShardSize: TargetShardSizeSpec,
   val shardingApproachSpec: ShardingApproachSpec,
+  val importRunConfigurations: ImportRunConfigurationsSpec,
 ) : ExecutionContext()
 
 /**
@@ -93,58 +89,10 @@ data class WorkspaceContext(
  */
 val WorkspaceContext.externalRepositoriesTreatedAsInternal: List<String>
   get() =
-    targets.values.mapNotNull {
-      it
-        .assumeResolved()
-        .repo.repoName
-        .takeIf { it.isNotEmpty() }
-    }
-
-class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDirPath: Path) :
-  ExecutionContextConstructor<WorkspaceContext> {
-  private val directoriesSpecExtractor = DirectoriesSpecExtractor(workspaceRoot)
-
-  private val log = LogManager.getLogger(WorkspaceContextConstructor::class.java)
-
-  override fun construct(projectView: ProjectView): WorkspaceContext {
-    log.info("Constructing workspace context for: {}.", projectView)
-
-    return WorkspaceContext(
-      targets = TargetsSpecExtractor.fromProjectView(projectView),
-      directories = directoriesSpecExtractor.fromProjectView(projectView),
-      buildFlags = BuildFlagsSpecExtractor.fromProjectView(projectView),
-      syncFlags = SyncFlagsSpecExtractor.fromProjectView(projectView),
-      bazelBinary = BazelBinarySpecExtractor.fromProjectView(projectView),
-      allowManualTargetsSync = AllowManualTargetsSyncSpecExtractor.fromProjectView(projectView),
-      dotBazelBspDirPath = DotBazelBspDirPathSpec(dotBazelBspDirPath),
-      importDepth = ImportDepthSpecExtractor.fromProjectView(projectView),
-      enabledRules = EnabledRulesSpecExtractor.fromProjectView(projectView),
-      ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpecExtractor.fromProjectView(projectView),
-      experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsExtractor.fromProjectView(projectView),
-      experimentalTransitiveCompileTimeJarsTargetKinds =
-        ExperimentalTransitiveCompileTimeJarsTargetKindsExtractor.fromProjectView(
-          projectView,
-        ),
-      experimentalNoPruneTransitiveCompileTimeJarsPatterns =
-        ExperimentalNoPruneTransitiveCompileTimeJarsPatternsExtractor.fromProjectView(
-          projectView,
-        ),
-      enableNativeAndroidRules = EnableNativeAndroidRulesExtractor.fromProjectView(projectView),
-      androidMinSdkSpec = AndroidMinSdkSpecExtractor.fromProjectView(projectView),
-      shardSync = ShardSyncSpecExtractor.fromProjectView(projectView),
-      targetShardSize = TargetShardSizeSpecExtractor.fromProjectView(projectView),
-      shardingApproachSpec = ShardingApproachSpecExtractor.fromProjectView(projectView),
-    )
-  }
-}
-
-val WorkspaceContext.extraFlags: List<String>
-  get() =
-    if (enableNativeAndroidRules.value) {
-      listOf(
-        BazelFlag.experimentalGoogleLegacyApi(),
-        BazelFlag.experimentalEnableAndroidMigrationApis(),
-      )
-    } else {
-      emptyList()
-    }
+    targets.values
+      .mapNotNull {
+        it
+          .assumeResolved()
+          .repo.repoName
+          .takeIf { repoName -> repoName.isNotEmpty() }
+      }.distinct()

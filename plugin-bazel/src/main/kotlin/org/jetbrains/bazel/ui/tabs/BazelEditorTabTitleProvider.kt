@@ -4,7 +4,7 @@ import com.intellij.openapi.fileEditor.impl.EditorTabTitleProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.isBspProject
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileUtils
 
 class BazelEditorTabTitleProvider : EditorTabTitleProvider {
@@ -16,5 +16,5 @@ class BazelEditorTabTitleProvider : EditorTabTitleProvider {
     }
 
   private fun requiresDecoration(project: Project, fileName: String): Boolean =
-    project.isBspProject && (fileName in BazelPluginConstants.BUILD_FILE_NAMES || fileName in BazelPluginConstants.WORKSPACE_FILE_NAMES)
+    project.isBazelProject && (fileName in BazelPluginConstants.BUILD_FILE_NAMES || fileName in BazelPluginConstants.WORKSPACE_FILE_NAMES)
 }

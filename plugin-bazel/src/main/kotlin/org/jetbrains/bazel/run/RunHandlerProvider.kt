@@ -5,9 +5,9 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.TargetUtils
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 
 interface RunHandlerProvider {
   /**
@@ -19,24 +19,24 @@ interface RunHandlerProvider {
   /**
    * Creates a {@link BspRunHandler} for the given configuration.
    */
-  fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler
+  fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler
 
   /**
    * Returns true if this provider can create a {@link BspRunHandler} for running the given targets.
    */
-  fun canRun(targetInfos: List<BuildTargetInfo>): Boolean
+  fun canRun(targetInfos: List<BuildTarget>): Boolean
 
   /**
    * Returns true if this provider can create a {@link BspRunHandler} for debugging the given targets.
    */
-  fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean
+  fun canDebug(targetInfos: List<BuildTarget>): Boolean
 
   companion object {
     val ep: ExtensionPointName<RunHandlerProvider> =
       ExtensionPointName.create("org.jetbrains.bazel.runHandlerProvider")
 
     /** Finds a BspRunHandlerProvider that will be able to create a BspRunHandler for the given targets */
-    fun getRunHandlerProvider(targetInfos: List<BuildTargetInfo>, isDebug: Boolean = false): RunHandlerProvider? =
+    fun getRunHandlerProvider(targetInfos: List<BuildTarget>, isDebug: Boolean = false): RunHandlerProvider? =
       ep.extensionList.firstOrNull {
         if (isDebug) {
           it.canDebug(targetInfos)
@@ -50,11 +50,13 @@ interface RunHandlerProvider {
     fun getRunHandlerProvider(project: Project, targets: List<Label>): RunHandlerProvider {
       val targetInfos =
         targets.mapNotNull {
-          project.service<TargetUtils>().getBuildTargetInfoForLabel(it)
+          project.service<TargetUtils>().getBuildTargetForLabel(it)
         }
       if (targetInfos.size != targets.size) {
         thisLogger().warn("Some targets could not be found: ${targets - targetInfos.map { it.id }.toSet()}")
       }
+
+      require(targetInfos.isNotEmpty()) { "targetInfos should not be empty" }
 
       return getRunHandlerProvider(targetInfos)
         ?: throw IllegalArgumentException("No BspRunHandlerProvider found for targets: $targets")

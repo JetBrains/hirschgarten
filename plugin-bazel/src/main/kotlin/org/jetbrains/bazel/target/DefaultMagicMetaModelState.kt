@@ -1,61 +1,35 @@
 package org.jetbrains.bazel.target
 
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.bazel.workspacemodel.entities.ModuleCapabilities
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import kotlin.io.path.Path
 
-interface ConvertableFromState<out T> {
-  fun fromState(): T
-}
-
-data class BuildTargetInfoState(
+data class BuildTargetState(
   var id: String = "",
-  var displayName: String? = null,
-  var capabilities: ModuleCapabilitiesState = ModuleCapabilitiesState(),
+  var capabilities: BuildTargetCapabilities = BuildTargetCapabilities(),
   var tags: List<String> = emptyList(),
   var languageIds: List<String> = emptyList(),
   var baseDirectory: String? = null,
-) : ConvertableFromState<BuildTargetInfo> {
-  override fun fromState(): BuildTargetInfo =
-    BuildTargetInfo(
+) {
+  fun fromState(): BuildTarget =
+    BuildTarget(
       id = Label.parse(id),
-      displayName = displayName,
-      capabilities = capabilities.fromState(),
+      capabilities = capabilities,
       tags = tags,
       languageIds = languageIds,
-      baseDirectory = baseDirectory,
+      baseDirectory = baseDirectory?.let { Path(it) },
+      dependencies = emptyList(),
+      sources = emptyList(),
+      resources = emptyList(),
     )
 }
 
-fun BuildTargetInfo.toState(): BuildTargetInfoState =
-  BuildTargetInfoState(
+fun BuildTarget.toState(): BuildTargetState =
+  BuildTargetState(
     id = id.toString(),
-    displayName = displayName,
-    capabilities = capabilities.toState(),
+    capabilities = capabilities,
     tags = tags,
     languageIds = languageIds,
-    baseDirectory = baseDirectory,
-  )
-
-data class ModuleCapabilitiesState(
-  var canRun: Boolean = false,
-  var canTest: Boolean = false,
-  var canCompile: Boolean = false,
-  var canDebug: Boolean = false,
-) : ConvertableFromState<ModuleCapabilities> {
-  override fun fromState(): ModuleCapabilities =
-    ModuleCapabilities(
-      canRun = canRun,
-      canTest = canTest,
-      canCompile = canCompile,
-      canDebug = canDebug,
-    )
-}
-
-fun ModuleCapabilities.toState(): ModuleCapabilitiesState =
-  ModuleCapabilitiesState(
-    canRun = canRun,
-    canTest = canTest,
-    canCompile = canCompile,
-    canDebug = canDebug,
+    baseDirectory = baseDirectory.toString(),
   )

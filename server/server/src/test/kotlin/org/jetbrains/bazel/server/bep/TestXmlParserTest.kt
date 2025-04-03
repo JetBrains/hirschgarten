@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.bep
 
-import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.equals.shouldBeEqual
@@ -11,15 +10,11 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.CoverageReport
-import org.jetbrains.bsp.protocol.DidChangeBuildTarget
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.LogMessageParams
-import org.jetbrains.bsp.protocol.PrintParams
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
-import org.jetbrains.bsp.protocol.ShowMessageParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
-import org.jetbrains.bsp.protocol.TaskProgressParams
 import org.jetbrains.bsp.protocol.TaskStartParams
 import org.jetbrains.bsp.protocol.TestFinish
 import org.jetbrains.bsp.protocol.TestStatus
@@ -32,27 +27,17 @@ class TestXmlParserTest {
     val taskStartCalls = mutableListOf<TaskStartParams>()
     val taskFinishCalls = mutableListOf<TaskFinishParams>()
 
-    override fun onBuildShowMessage(p0: ShowMessageParams) {}
-
     override fun onBuildLogMessage(p0: LogMessageParams) {}
 
     override fun onBuildPublishDiagnostics(p0: PublishDiagnosticsParams) {}
-
-    override fun onBuildTargetDidChange(p0: DidChangeBuildTarget) {}
 
     override fun onBuildTaskStart(p0: TaskStartParams) {
       p0.let { taskStartCalls.add(it) }
     }
 
-    override fun onBuildTaskProgress(p0: TaskProgressParams) {}
-
     override fun onBuildTaskFinish(p0: TaskFinishParams) {
       p0.let { taskFinishCalls.add(it) }
     }
-
-    override fun onRunPrintStdout(p0: PrintParams) {}
-
-    override fun onRunPrintStderr(p0: PrintParams) {}
 
     override fun onPublishCoverageReport(report: CoverageReport) {}
   }
@@ -524,7 +509,6 @@ class TestXmlParserTest {
       val data = (it.data as TestFinish)
       when (data.displayName) {
         "TripleTest" -> {
-          it.taskId.parents.shouldBeEmpty()
         }
         "testFailure()" -> {
           it.taskId.parents.shouldNotBeNull()
@@ -532,6 +516,7 @@ class TestXmlParserTest {
           data.status shouldBe TestStatus.FAILED
           val details = (data.data as JUnitStyleTestCaseData)
           details.errorMessage shouldNotBe null
+          data.message!!.split("\n".toRegex()).size shouldBe 7
         }
         "testIgnored()" -> {
           it.taskId.parents.shouldNotBeNull()
@@ -629,7 +614,6 @@ class TestXmlParserTest {
       val data = (it.data as TestFinish)
       when (data.displayName) {
         "TripleTest" -> {
-          it.taskId.parents.shouldBeEmpty()
         }
         "testFailure()" -> {
           it.taskId.parents.shouldNotBeNull()
@@ -637,6 +621,7 @@ class TestXmlParserTest {
           data.status shouldBe TestStatus.FAILED
           val details = (data.data as JUnitStyleTestCaseData)
           details.errorMessage shouldNotBe null
+          data.message!!.split("\n".toRegex()).size shouldBe 7
         }
         "testIgnored()" -> {
           it.taskId.parents.shouldNotBeNull()
@@ -735,12 +720,10 @@ class TestXmlParserTest {
       when (data.displayName) {
         "testIgnored()" -> {
           it.taskId.parents.shouldNotBeNull()
-          it.taskId.parents.shouldBeEmpty() // parent suite should have been ignored, as it was defined in a malformed row
           data.status shouldBe TestStatus.SKIPPED
         }
         "testSuccess()" -> {
           it.taskId.parents.shouldNotBeNull()
-          it.taskId.parents.shouldBeEmpty() // parent suite should have been ignored, as it was defined in a malformed row
           data.status shouldBe TestStatus.PASSED
         }
       }

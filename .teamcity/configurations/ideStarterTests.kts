@@ -95,6 +95,30 @@ sealed class BazelCoverageTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/run/coverage:BazelCoverageTest"
 )
 
+sealed class TestResultsTreeTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Test Results Tree test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testResultsTree"
+)
+
+sealed class ImportRunConfigurationsTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Import run configurations test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/run/import:ImportRunConfigurationsSyncHookTest"
+)
+
+sealed class NonModuleTargetsTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Sync non module targets test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/nonmodule/sync:NonModuleTargetsTest"
+)
+
 object HotswapTestGitHub : HotswapTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
@@ -132,5 +156,29 @@ object BazelCoverageTestGitHub : BazelCoverageTest(
 )
 
 object BazelCoverageTestSpace : BazelCoverageTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object TestResultsTreeTestGitHub : TestResultsTreeTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object TestResultsTreeTestSpace : TestResultsTreeTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object ImportRunConfigurationsTestGitHub : ImportRunConfigurationsTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object ImportRunConfigurationsTestSpace : ImportRunConfigurationsTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object NonModuleTargetsTestGitHub : NonModuleTargetsTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object NonModuleTargetsTestSpace : NonModuleTargetsTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )

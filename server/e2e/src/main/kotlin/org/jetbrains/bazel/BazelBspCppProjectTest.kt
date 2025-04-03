@@ -12,6 +12,7 @@ import org.jetbrains.bsp.protocol.CppOptionsItem
 import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
+import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.seconds
 
 object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
@@ -50,11 +51,11 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
             canCompile = true,
             canTest = false,
             canRun = true,
-            canDebug = false,
           ),
-        displayName = "//example",
-        baseDirectory = "file://\$WORKSPACE/example/",
+        baseDirectory = Path("\$WORKSPACE/example/"),
         data = exampleExampleCppBuildTarget,
+        sources = emptyList(),
+        resources = emptyList(),
       )
 
     val bspWorkspaceRootExampleBuildTarget =
@@ -68,10 +69,11 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
             canCompile = false,
             canTest = false,
             canRun = false,
-            canDebug = false,
           ),
-        baseDirectory = "file://\$WORKSPACE/",
-        displayName = "bsp-workspace-root",
+        baseDirectory = Path("\$WORKSPACE/"),
+        data = null,
+        sources = emptyList(),
+        resources = emptyList(),
       )
     return WorkspaceBuildTargetsResult(ImmutableList.of(exampleExampleBuildTarget, bspWorkspaceRootExampleBuildTarget))
   }

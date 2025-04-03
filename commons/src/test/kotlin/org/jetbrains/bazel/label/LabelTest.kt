@@ -302,30 +302,6 @@ class LabelTest {
   }
 
   @Test
-  fun `toShortString should not include @ if not needed`() {
-    val label = Label.parse("@@//path/to/target")
-    label.assumeResolved().toShortString() shouldBe "//path/to/target"
-  }
-
-  @Test
-  fun `toShortString should include @ if needed`() {
-    val label = Label.parse("@rules_blah//path/to/target:targetName")
-    label.assumeResolved().toShortString() shouldBe "@rules_blah//path/to/target:targetName"
-  }
-
-  @Test
-  fun `toShortString should not include the target twice`() {
-    val label = Label.parse("@//path/to/target:target")
-    label.assumeResolved().toShortString() shouldBe "//path/to/target"
-  }
-
-  @Test
-  fun `toShortString should work for AmbiguousEmptyTarget`() {
-    val label = Label.parse("@//path/to/target")
-    label.assumeResolved().toShortString() shouldBe "//path/to/target"
-  }
-
-  @Test
   fun `three dots can only be used with wildcard targets`() {
     shouldThrow<IllegalArgumentException> {
       Label.parse("@//path/to/...:target")

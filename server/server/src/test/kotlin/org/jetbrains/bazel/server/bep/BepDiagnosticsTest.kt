@@ -7,14 +7,10 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.protocol.CoverageReport
-import org.jetbrains.bsp.protocol.DidChangeBuildTarget
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.LogMessageParams
-import org.jetbrains.bsp.protocol.PrintParams
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
-import org.jetbrains.bsp.protocol.ShowMessageParams
 import org.jetbrains.bsp.protocol.TaskFinishParams
-import org.jetbrains.bsp.protocol.TaskProgressParams
 import org.jetbrains.bsp.protocol.TaskStartParams
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -27,25 +23,15 @@ class BepDiagnosticsTest {
   private class MockBuildClient : JoinedBuildClient {
     val buildPublishDiagnostics: MutableList<PublishDiagnosticsParams> = mutableListOf()
 
-    override fun onBuildShowMessage(p0: ShowMessageParams) {}
-
     override fun onBuildLogMessage(p0: LogMessageParams) {}
 
     override fun onBuildPublishDiagnostics(p0: PublishDiagnosticsParams) {
       buildPublishDiagnostics.add(p0)
     }
 
-    override fun onBuildTargetDidChange(p0: DidChangeBuildTarget) {}
-
     override fun onBuildTaskStart(p0: TaskStartParams) {}
 
-    override fun onBuildTaskProgress(p0: TaskProgressParams) {}
-
     override fun onBuildTaskFinish(p0: TaskFinishParams) {}
-
-    override fun onRunPrintStdout(p0: PrintParams) {}
-
-    override fun onRunPrintStderr(p0: PrintParams) {}
 
     override fun onPublishCoverageReport(report: CoverageReport) {}
   }
@@ -54,7 +40,7 @@ class BepDiagnosticsTest {
     val workspaceRoot = Path("workspaceRoot")
     val bazelInfo =
       BazelInfo(
-        execRoot = "execRoot",
+        execRoot = Path("execRoot"),
         outputBase = Path("outputBase"),
         workspaceRoot = workspaceRoot,
         bazelBin = Path("bazel-bin"),

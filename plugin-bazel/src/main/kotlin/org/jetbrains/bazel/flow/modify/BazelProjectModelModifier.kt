@@ -22,18 +22,16 @@ import com.intellij.pom.java.LanguageLevel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.coroutines.BspCoroutineService
-import org.jetbrains.bazel.label.Apparent
-import org.jetbrains.bazel.label.Canonical
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
-import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToApparentName
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
+import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bazel.ui.widgets.findBuildFile
 import org.jetbrains.bazel.ui.widgets.jumpToBuildFile
 import org.jetbrains.concurrency.AsyncPromise
@@ -92,9 +90,9 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
 
   private suspend fun tryAddingModuleDependencyToBuildFile(from: Module, labelToInsert: Label?): Boolean {
     if (labelToInsert !is ResolvedLabel) return false
-    val fromBuildTargetInfo = from.project.targetUtils.getBuildTargetInfoForModule(from) ?: return false
-    val targetBuildFile = readAction { findBuildFile(from.project, fromBuildTargetInfo) } ?: return false
-    val targetRuleLabel = fromBuildTargetInfo.id
+    val fromBuildTarget = from.project.targetUtils.getBuildTargetForModule(from) ?: return false
+    val targetBuildFile = readAction { findBuildFile(from.project, fromBuildTarget) } ?: return false
+    val targetRuleLabel = fromBuildTarget.id
     val ruleTarget = readAction { targetBuildFile.findRuleTarget(targetRuleLabel.targetName) } ?: return false
     val depsList =
       readAction {
@@ -109,25 +107,18 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
 
     try {
       WriteCommandAction.runWriteCommandAction(from.project) {
-        depsList.insertString(labelToInsert.convertToApparentLabel().toShortString())
+        depsList.insertString(labelToInsert.toShortString(project))
         insertSuccessful = true
       }
     } catch (e: Exception) {
       log.warn("Failed to insert target $labelToInsert as a dependency for target $targetRuleLabel", e)
     }
     if (insertSuccessful) {
-      BspCoroutineService.getInstance(from.project).start {
+      BazelCoroutineService.getInstance(from.project).start {
         formatBuildFile(targetBuildFile)
       }
     }
     return insertSuccessful
-  }
-
-  private fun Label.convertToApparentLabel(): Label {
-    if (this !is ResolvedLabel) return this
-    if (this.repo !is Canonical) return this
-    val apparentRepoName = project.canonicalRepoNameToApparentName[this.repo.repoName] ?: return this
-    return this.copy(repo = Apparent(apparentRepoName))
   }
 
   private suspend fun formatBuildFile(buildFile: StarlarkFile) {
@@ -140,7 +131,7 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
   }
 
   private fun notifyAutomaticDependencyAdditionFailure() {
-    BspBalloonNotifier.warn(
+    BazelBalloonNotifier.warn(
       BazelPluginBundle.message("balloon.add.target.dependency.to.build.file.failed.title"),
       BazelPluginBundle.message("balloon.add.target.dependency.to.build.file.failed.message"),
     )
@@ -178,13 +169,13 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
     }
 
   private suspend fun Module.jumpToBuildFile() {
-    val buildTargetInfo = project.targetUtils.getBuildTargetInfoForModule(this) ?: return
-    jumpToBuildFile(project, buildTargetInfo)
+    val buildTarget = project.targetUtils.getBuildTargetForModule(this) ?: return
+    jumpToBuildFile(project, buildTarget)
   }
 
   private fun asyncPromise(callable: suspend () -> Unit): Promise<Void> =
     AsyncPromise<Void>().also { promise ->
-      BspCoroutineService.getInstance(project).startAsync(callable = callable).invokeOnCompletion { throwable ->
+      BazelCoroutineService.getInstance(project).startAsync(callable = callable).invokeOnCompletion { throwable ->
         if (throwable != null) {
           promise.setError(throwable)
         } else {

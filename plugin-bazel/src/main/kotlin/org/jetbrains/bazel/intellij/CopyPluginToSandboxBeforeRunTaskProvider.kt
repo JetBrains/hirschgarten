@@ -9,14 +9,15 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.util.Key
-import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.getModule
-import org.jetbrains.bazel.ui.notifications.BspBalloonNotifier
+import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import java.io.IOException
 import java.net.URI
 import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
@@ -30,10 +31,10 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
 
   override fun getId(): Key<Task> = PROVIDER_ID
 
-  override fun getName(): String = BspPluginBundle.message("console.task.copy.plugin.to.sandbox")
+  override fun getName(): String = BazelPluginBundle.message("console.task.copy.plugin.to.sandbox")
 
   override fun createTask(configuration: RunConfiguration): Task? =
-    if (configuration is BspRunConfiguration) {
+    if (configuration is BazelRunConfiguration) {
       Task()
     } else {
       null
@@ -45,7 +46,7 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
     environment: ExecutionEnvironment,
     task: Task,
   ): Boolean {
-    val runConfiguration = environment.runProfile as? BspRunConfiguration ?: return false
+    val runConfiguration = environment.runProfile as? BazelRunConfiguration ?: return false
     if (runConfiguration.handler !is IntellijPluginRunHandler) return false
     val pluginSandbox =
       checkNotNull(environment.getUserData(INTELLIJ_PLUGIN_SANDBOX_KEY)) {
@@ -55,7 +56,7 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
     val pluginJars = mutableListOf<Path>()
 
     for (target in runConfiguration.targets) {
-      val targetInfo = configuration.project.service<TargetUtils>().getBuildTargetInfoForLabel(target)
+      val targetInfo = configuration.project.service<TargetUtils>().getBuildTargetForLabel(target)
       val module = targetInfo?.getModule(environment.project) ?: continue
       OrderEnumerator.orderEntries(module).librariesOnly().recursively().withoutSdk().forEachLibrary { library ->
         // Use URLs directly because getFiles will be empty until VFS refresh.
@@ -69,12 +70,12 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
     }
 
     if (pluginJars.isEmpty()) {
-      showError(BspPluginBundle.message("console.task.exception.no.plugin.jars"))
+      showError(BazelPluginBundle.message("console.task.exception.no.plugin.jars"))
       return false
     }
     for (pluginJar in pluginJars) {
       if (!pluginJar.exists()) {
-        showError(BspPluginBundle.message("console.task.exception.plugin.jar.not.found", pluginJar))
+        showError(BazelPluginBundle.message("console.task.exception.plugin.jar.not.found", pluginJar))
         return false
       }
       try {
@@ -82,7 +83,7 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
         pluginJar.copyTo(pluginSandbox.resolve(pluginJar.name), overwrite = true)
       } catch (e: IOException) {
         val errorMessage =
-          BspPluginBundle.message(
+          BazelPluginBundle.message(
             "console.task.exception.plugin.jar.could.not.copy",
             pluginJar,
             pluginSandbox,
@@ -98,7 +99,7 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
 
   // Throwing an ExecutionException doesn't work from before run tasks, so we have to show the notification ourselves.
   private fun showError(message: String) {
-    val title = BspPluginBundle.message("console.task.exception.copy.plugin.to.sandbox")
-    BspBalloonNotifier.warn(title, message)
+    val title = BazelPluginBundle.message("console.task.exception.copy.plugin.to.sandbox")
+    BazelBalloonNotifier.warn(title, message)
   }
 }

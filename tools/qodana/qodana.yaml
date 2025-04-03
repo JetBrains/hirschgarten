@@ -26,6 +26,7 @@ exclude:
       - server/resources/aspects/rules/jvm/jvm_info.bzl.template
       - server/resources/aspects/utils/utils.bzl.template
       - server/resources/aspects/core.bzl.template
+      - server/executioncontext/projectview/src/test/resources/projectview
   - name: CheckDependencyLicenses
   - name: UnnecessaryUnicodeEscape
   - name: UnstableApiUsage

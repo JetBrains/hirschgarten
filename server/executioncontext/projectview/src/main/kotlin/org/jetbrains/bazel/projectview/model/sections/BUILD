@@ -7,11 +7,7 @@ kt_jvm_library(
         "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/model:__pkg__",
         "//server/executioncontext/projectview/src/test/kotlin/org/jetbrains/bazel/projectview/model/sections:__pkg__",
     ],
-    exports = [
-        "//protocol",
-    ],
     deps = [
-        "//protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
     ],
 )

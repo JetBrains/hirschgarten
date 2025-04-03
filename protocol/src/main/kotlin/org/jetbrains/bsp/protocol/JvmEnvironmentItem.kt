@@ -1,12 +1,13 @@
 package org.jetbrains.bsp.protocol
 
 import org.jetbrains.bazel.label.Label
+import java.nio.file.Path
 
 data class JvmEnvironmentItem(
   val target: Label,
-  val classpath: List<String>,
+  val classpath: List<Path>,
   val jvmOptions: List<String>,
-  val workingDirectory: String,
+  val workingDirectory: Path,
   val environmentVariables: Map<String, String>,
-  val mainClasses: List<JvmMainClass>? = null,
+  val mainClasses: List<JvmMainClass>? = emptyList(),
 )

@@ -6,8 +6,9 @@ kt_jvm_library(
     resources = ["//server/log4j_config"],
     visibility = ["//server/bazelrunner:__subpackages__"],
     deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/utils",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
         "//protocol",
+        "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/outputs",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/params",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/utils",
@@ -18,9 +19,7 @@ kt_jvm_library(
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_fasterxml_jackson_module_jackson_module_kotlin",
-        "@maven//:com_google_code_gson_gson",
         "@maven//:org_apache_logging_log4j_log4j_api",
         "@maven//:org_apache_logging_log4j_log4j_core",
-        "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

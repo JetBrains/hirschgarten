@@ -1,13 +1,14 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import com.intellij.platform.workspace.jps.entities.ModuleTypeId
-import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import java.nio.file.Path
 import kotlin.io.path.Path
 
 @DisplayName("ModulesToCompiledSourceCodeInsideJarExcludeTransformer.transform(modules) tests")
@@ -19,27 +20,19 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
       listOf(
         JavaSourceRoot(
           sourcePath = Path("/src/Cat.java"),
-          generated = false,
           packagePrefix = "com.example.cat",
-          rootType = SourceRootTypeId("java-source"),
         ),
         JavaSourceRoot(
           sourcePath = Path("/src/EmptyPackage.java"),
-          generated = false,
           packagePrefix = "",
-          rootType = SourceRootTypeId("java-source"),
         ),
         JavaSourceRoot(
           sourcePath = Path("/src/weird_casing.java"),
-          generated = false,
           packagePrefix = "com.example",
-          rootType = SourceRootTypeId("java-source"),
         ),
         JavaSourceRoot(
           sourcePath = Path("/src/example.py"),
-          generated = false,
           packagePrefix = "",
-          rootType = SourceRootTypeId("python-source"),
         ),
       )
     val module = createModuleWithSourceRoots(sourceRoots)
@@ -66,27 +59,19 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
       listOf(
         JavaSourceRoot(
           sourcePath = Path("/src/Cat.kt"),
-          generated = false,
           packagePrefix = "com.example.cat",
-          rootType = SourceRootTypeId("java-source"),
         ),
         JavaSourceRoot(
           sourcePath = Path("/src/EmptyPackage.kt"),
-          generated = false,
           packagePrefix = "",
-          rootType = SourceRootTypeId("java-source"),
         ),
         JavaSourceRoot(
           sourcePath = Path("/src/weird_casing.kt"),
-          generated = false,
           packagePrefix = "com.example",
-          rootType = SourceRootTypeId("java-source"),
         ),
         JavaSourceRoot(
           sourcePath = Path("/src/example.py"),
-          generated = false,
           packagePrefix = "",
-          rootType = SourceRootTypeId("python-source"),
         ),
       )
     val module = createModuleWithSourceRoots(sourceRoots)
@@ -109,18 +94,32 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
       )
   }
 
-  private fun createModuleWithSourceRoots(sourceRoots: List<JavaSourceRoot>): JavaModule =
-    JavaModule(
-      genericModuleInfo =
-        GenericModuleInfo(
-          name = "//target",
-          type = ModuleTypeId("JAVA_MODULE"),
-          modulesDependencies = emptyList(),
-          librariesDependencies = emptyList(),
+  private data class JavaSourceRoot(val sourcePath: Path, val packagePrefix: String = "")
+
+  private fun createModuleWithSourceRoots(sourceRoots: List<JavaSourceRoot>): ModuleDetails =
+    ModuleDetails(
+      target =
+        BuildTarget(
+          Label.parse("target"),
+          listOf("library"),
+          listOf("java"),
+          emptyList(),
+          BuildTargetCapabilities(),
+          sources =
+            sourceRoots.map {
+              SourceItem(
+                path = it.sourcePath,
+                generated = false,
+                jvmPackagePrefix = it.packagePrefix,
+              )
+            },
+          resources = emptyList(),
         ),
-      baseDirContentRoot = null,
-      sourceRoots = sourceRoots,
-      resourceRoots = emptyList(),
-      moduleLevelLibraries = emptyList(),
+      javacOptions = null,
+      scalacOptions = null,
+      libraryDependencies = null,
+      moduleDependencies = emptyList(),
+      defaultJdkName = null,
+      jvmBinaryJars = emptyList(),
     )
 }

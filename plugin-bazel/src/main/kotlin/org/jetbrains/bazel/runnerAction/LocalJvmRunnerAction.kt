@@ -6,38 +6,38 @@ import com.intellij.execution.ShortenCommandLine
 import com.intellij.execution.application.ApplicationConfiguration
 import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.projectAware.BspProjectModuleBuildTasksTracker
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
+import org.jetbrains.bazel.projectAware.BazelProjectModuleBuildTasksTracker
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.target.getModule
-import org.jetbrains.bazel.ui.console.BspConsoleService
+import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 import org.jetbrains.bsp.protocol.StatusCode
 import javax.swing.Icon
 import kotlin.coroutines.cancellation.CancellationException
 
 abstract class LocalJvmRunnerAction(
-  protected val targetInfo: BuildTargetInfo,
+  protected val targetInfo: BuildTarget,
   text: () -> String,
   icon: Icon? = null,
   private val isDebugMode: Boolean = false,
 ) : BaseRunnerAction(listOf(targetInfo), text, icon, isDebugMode) {
   abstract suspend fun getEnvironment(project: Project): JvmEnvironmentItem?
 
-  override suspend fun getRunnerSettings(project: Project, buildTargetInfos: List<BuildTargetInfo>): RunnerAndConfigurationSettings? {
+  override suspend fun getRunnerSettings(project: Project, buildTargets: List<BuildTarget>): RunnerAndConfigurationSettings? {
     val module = targetInfo.getModule(project) ?: return null
 
-    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+    val bspSyncConsole = ConsoleService.getInstance(project).syncConsole
     if (!preBuild(project)) return null
     val environment = queryJvmEnvironment(project, bspSyncConsole) ?: return null
     return calculateConfigurationSettings(environment, module, project, targetInfo)
@@ -52,13 +52,13 @@ abstract class LocalJvmRunnerAction(
     environment: JvmEnvironmentItem,
     module: Module,
     project: Project,
-    targetInfo: BuildTargetInfo,
+    targetInfo: BuildTarget,
   ): RunnerAndConfigurationSettings? {
     val mainClass =
       environment.mainClasses?.firstOrNull() ?: return null // TODO https://youtrack.jetbrains.com/issue/BAZEL-626
     val configuration =
       BspJvmApplicationConfiguration(
-        calculateConfigurationName(targetInfo),
+        calculateConfigurationName(project, targetInfo),
         project,
       ).apply {
         setModule(module)
@@ -66,22 +66,22 @@ abstract class LocalJvmRunnerAction(
         programParameters = mainClass.arguments.joinToString(" ")
         putUserData(jvmEnvironment, environment)
         putUserData(targetsToPreBuild, listOf(targetInfo.id))
-        putUserData(includeJpsClassPaths, BspProjectModuleBuildTasksTracker.getInstance(project).lastBuiltByJps)
+        putUserData(includeJpsClassPaths, BazelProjectModuleBuildTasksTracker.getInstance(project).lastBuiltByJps)
         shortenCommandLine = ShortenCommandLine.MANIFEST
       }
     val runManager = RunManagerImpl.getInstanceImpl(project)
     return RunnerAndConfigurationSettingsImpl(runManager, configuration)
   }
 
-  private fun calculateConfigurationName(targetInfo: BuildTargetInfo): String {
-    val targetDisplayName = targetInfo.buildTargetName
+  private fun calculateConfigurationName(project: Project, targetInfo: BuildTarget): String {
+    val targetDisplayName = targetInfo.id.toShortString(project)
     val actionNameKey =
       when {
         isDebugMode -> "target.debug.with.jvm.runner.config.name"
         this is TestWithLocalJvmRunnerAction -> "target.test.with.jvm.runner.config.name"
         else -> "target.run.with.jvm.runner.config.name"
       }
-    return BspPluginBundle.message(actionNameKey, targetDisplayName)
+    return BazelPluginBundle.message(actionNameKey, targetDisplayName)
   }
 
   private suspend fun queryJvmEnvironment(project: Project, bspSyncConsole: TaskConsole) =
@@ -90,14 +90,14 @@ abstract class LocalJvmRunnerAction(
         val job = async { getEnvironment(project) }
         bspSyncConsole.startTask(
           RETRIEVE_JVM_ENVIRONMENT_ID,
-          BspPluginBundle.message("console.task.query.jvm.environment.title"),
-          BspPluginBundle.message("console.task.query.jvm.environment.in.progress"),
+          BazelPluginBundle.message("console.task.query.jvm.environment.title"),
+          BazelPluginBundle.message("console.task.query.jvm.environment.in.progress"),
           { job.cancel() },
         )
         val env = job.await()
         bspSyncConsole.finishTask(
           RETRIEVE_JVM_ENVIRONMENT_ID,
-          BspPluginBundle.message("console.task.query.jvm.environment.success"),
+          BazelPluginBundle.message("console.task.query.jvm.environment.success"),
         )
         env
       }
@@ -105,13 +105,13 @@ abstract class LocalJvmRunnerAction(
       if (e is CancellationException) {
         bspSyncConsole.finishTask(
           RETRIEVE_JVM_ENVIRONMENT_ID,
-          BspPluginBundle.message("console.task.query.jvm.environment.cancel"),
+          BazelPluginBundle.message("console.task.query.jvm.environment.cancel"),
           FailureResultImpl(),
         )
       } else {
         bspSyncConsole.finishTask(
           RETRIEVE_JVM_ENVIRONMENT_ID,
-          BspPluginBundle.message("console.task.query.jvm.environment.failed"),
+          BazelPluginBundle.message("console.task.query.jvm.environment.failed"),
           FailureResultImpl(e),
         )
       }
@@ -124,8 +124,6 @@ abstract class LocalJvmRunnerAction(
     val includeJpsClassPaths: Key<Boolean> = Key<Boolean>("includeJpsClassPaths")
   }
 }
-
-private val log = logger<LocalJvmRunnerAction>()
 
 private const val RETRIEVE_JVM_ENVIRONMENT_ID = "bsp-retrieve-jvm-environment"
 

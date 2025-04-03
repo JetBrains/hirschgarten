@@ -1,15 +1,14 @@
-load("@rules_intellij//testing:test_defs_kt.bzl", "intellij_integration_test_suite")
+load("//rules_intellij/testing:test_defs_kt.bzl", "intellij_integration_test_suite")
 
 intellij_integration_test_suite(
     name = "task",
     srcs = glob(["*.kt"]),
-    associates = ["//plugin-bazel/src:intellij-bsp"],
+    associates = ["//plugin-bazel/src:plugin-bazel-lib"],
     test_package_root = "org.jetbrains",
     runtime_deps = [
-        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel",
     ],
     deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/utils",
         "//plugin-bazel/src:test_fixtures",
         "//protocol",
         "@maven//:io_kotest_kotest_assertions_api_jvm",

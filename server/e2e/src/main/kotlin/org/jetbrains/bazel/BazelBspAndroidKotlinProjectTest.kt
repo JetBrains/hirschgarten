@@ -9,6 +9,7 @@ import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
+import kotlin.io.path.Path
 
 object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
   @JvmStatic
@@ -19,7 +20,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val javaHome =
-      "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java~~toolchains~remotejdk17_$javaHomeArchitecture/"
+      Path("\$BAZEL_OUTPUT_BASE_PATH/external/rules_java~~toolchains~remotejdk17_$javaHomeArchitecture/")
     val jvmBuildTargetData =
       JvmBuildTarget(
         javaHome = javaHome,
@@ -35,13 +36,13 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
         jvmBuildTarget = jvmBuildTargetData,
       )
 
-    val androidJar = "file://\$BAZEL_OUTPUT_BASE_PATH/external/androidsdk/platforms/android-34/android.jar"
+    val androidJar = Path("\$BAZEL_OUTPUT_BASE_PATH/external/androidsdk/platforms/android-34/android.jar")
 
     val appAndroidBuildTargetData =
       AndroidBuildTarget(
         androidJar = androidJar,
         androidTargetType = AndroidTargetType.APP,
-        manifest = "file://\$WORKSPACE/src/main/AndroidManifest.xml",
+        manifest = Path("\$WORKSPACE/src/main/AndroidManifest.xml"),
         manifestOverrides = emptyMap(),
         resourceDirectories = emptyList(),
         resourceJavaPackage = null,
@@ -54,9 +55,9 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
       AndroidBuildTarget(
         androidJar = androidJar,
         androidTargetType = AndroidTargetType.LIBRARY,
-        manifest = "file://\$WORKSPACE/src/main/java/com/example/myapplication/AndroidManifest.xml",
+        manifest = Path("\$WORKSPACE/src/main/java/com/example/myapplication/AndroidManifest.xml"),
         manifestOverrides = emptyMap(),
-        resourceDirectories = listOf("file://\$WORKSPACE/src/main/java/com/example/myapplication/res/"),
+        resourceDirectories = listOf(Path("\$WORKSPACE/src/main/java/com/example/myapplication/res/")),
         resourceJavaPackage = null,
         assetsDirectories = emptyList(),
         jvmBuildTarget = jvmBuildTargetData,
@@ -67,7 +68,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
       AndroidBuildTarget(
         androidJar = androidJar,
         androidTargetType = AndroidTargetType.TEST,
-        manifest = "file://\$WORKSPACE/src/test/java/com/example/myapplication/AndroidManifest.xml",
+        manifest = Path("\$WORKSPACE/src/test/java/com/example/myapplication/AndroidManifest.xml"),
         manifestOverrides = emptyMap(),
         resourceDirectories = emptyList(),
         resourceJavaPackage = null,
@@ -92,11 +93,11 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
           canCompile = true,
           canTest = true,
           canRun = true,
-          canDebug = false,
         ),
-        displayName = "//src/main:app",
-        baseDirectory = "file://\$WORKSPACE/src/main/",
+        baseDirectory = Path("\$WORKSPACE/src/main/"),
         data = appAndroidBuildTargetData,
+        sources = emptyList(),
+        resources = listOf(Path("\$WORKSPACE/src/main/AndroidManifest.xml")),
       )
 
     val libBuildTarget =
@@ -106,17 +107,21 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
         listOf("android", "java", "kotlin"),
         listOf(
           Label.parse("@@rules_jvm_external~~maven~maven//:androidx_appcompat_appcompat"),
-          Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
+          Label.synthetic("rules_kotlin_kotlin-stdlibs"),
         ),
         BuildTargetCapabilities(
           canCompile = true,
           canTest = false,
           canRun = false,
-          canDebug = false,
         ),
-        displayName = "//src/main/java/com/example/myapplication:lib",
-        baseDirectory = "file://\$WORKSPACE/src/main/java/com/example/myapplication/",
+        baseDirectory = Path("\$WORKSPACE/src/main/java/com/example/myapplication/"),
         data = libAndroidBuildTargetData,
+        sources = emptyList(),
+        resources =
+          listOf(
+            Path("\$WORKSPACE/src/main/java/com/example/myapplication/AndroidManifest.xml"),
+            Path("\$WORKSPACE/src/main/java/com/example/myapplication/res/"),
+          ),
       )
 
     val libTestBuildTarget =
@@ -131,16 +136,17 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
           Label.parse("@@rules_jvm_external~~maven~maven//:junit_junit"),
           Label.parse("@@rules_jvm_external~~maven~maven//:org_robolectric_robolectric"),
           Label.parse("@@rules_robolectric~//bazel:android-all"),
-          Label.parse(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
+          Label.synthetic("rules_kotlin_kotlin-stdlibs"),
         ),
         BuildTargetCapabilities(
           canCompile = true,
           canRun = false,
           canTest = true,
         ),
-        displayName = "//src/test/java/com/example/myapplication:lib_test",
-        baseDirectory = "file://\$WORKSPACE/src/test/java/com/example/myapplication/",
+        baseDirectory = Path("\$WORKSPACE/src/test/java/com/example/myapplication/"),
         data = libTestAndroidBuildTargetData,
+        sources = emptyList(),
+        resources = listOf(Path("\$WORKSPACE/src/test/java/com/example/myapplication/AndroidManifest.xml")),
       )
 
     return WorkspaceBuildTargetsResult(listOf(appBuildTarget, libBuildTarget, libTestBuildTarget))

@@ -7,6 +7,7 @@ kt_jvm_library(
     ]),
     visibility = ["//server/server:__subpackages__"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
         "//server/bazelrunner",
         "//server/commons",
         "//server/executioncontext/workspacecontext",
@@ -16,7 +17,6 @@ kt_jvm_library(
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bzlmod",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/diagnostics",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
-        "@maven//:com_google_code_gson_gson",
         "@maven//:com_google_guava_guava",
         "@maven//:io_grpc_grpc_protobuf",
         "@maven//:org_apache_logging_log4j_log4j_api",

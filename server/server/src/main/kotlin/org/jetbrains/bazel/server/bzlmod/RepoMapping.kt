@@ -41,7 +41,7 @@ fun Label.canonicalize(repoMapping: RepoMapping): Label =
               val apparentRepoName = this.repoName
               val canonicalRepoName =
                 repoMapping.apparentRepoNameToCanonicalName[apparentRepoName] ?: error("No canonical name found for $this")
-              this.copy(repo = Canonical(canonicalRepoName))
+              this.copy(repo = Canonical.createCanonicalOrMain(canonicalRepoName))
             }
           }
         }
@@ -63,7 +63,7 @@ suspend fun calculateRepoMapping(
   if (!bazelInfo.isBzlModEnabled) {
     return RepoMappingDisabled
   }
-  val moduleResolver = ModuleResolver(bazelRunner, ModuleOutputParser())
+  val moduleResolver = ModuleResolver(bazelRunner, ModuleOutputParser(), workspaceContext)
   val moduleCanonicalNameToLocalPath = mutableMapOf<String, Path>()
   val moduleApparentNameToCanonicalName =
     try {

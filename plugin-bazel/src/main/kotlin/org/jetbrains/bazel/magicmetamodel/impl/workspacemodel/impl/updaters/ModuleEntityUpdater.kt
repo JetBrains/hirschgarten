@@ -17,9 +17,9 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.bazel.jpsCompilation.utils.JpsConstants
-import org.jetbrains.bazel.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
-import org.jetbrains.bazel.projectAware.BspWorkspace
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleEntityUpdater.Companion.interner
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BspDummyEntitySource
@@ -27,6 +27,8 @@ import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
+import org.jetbrains.kotlin.tooling.core.Interner
+import org.jetbrains.kotlin.tooling.core.WeakInterner
 
 internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -86,7 +88,7 @@ internal class ModuleEntityUpdater(
   private fun toEntitySource(entityToAdd: GenericModuleInfo): EntitySource =
     when {
       entityToAdd.isDummy -> BspDummyEntitySource
-      !JpsFeatureFlags.isJpsCompilationEnabled ||
+      !workspaceModelEntityUpdaterConfig.project.bazelProjectSettings.enableBuildWithJps ||
         entityToAdd.languageIds.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspModuleEntitySource(entityToAdd.name)
 
       else ->
@@ -102,21 +104,25 @@ internal class ModuleEntityUpdater(
     intermediateModuleDependency: IntermediateModuleDependency,
     project: Project = workspaceModelEntityUpdaterConfig.project,
   ): ModuleDependency =
-    BspWorkspace.getInstance(project).interner.getOrPut(
+    interner.getOrPut(
       ModuleDependency(
-        module = BspWorkspace.getInstance(project).interner.getOrPut(ModuleId(intermediateModuleDependency.moduleName)),
+        module = interner.getOrPut(ModuleId(intermediateModuleDependency.moduleName)),
         exported = true,
         scope = DependencyScope.COMPILE,
         productionOnTest = true,
       ),
     )
+
+  companion object {
+    val interner: Interner = WeakInterner()
+  }
 }
 
 internal fun toLibraryDependency(intermediateLibraryDependency: IntermediateLibraryDependency, project: Project): LibraryDependency =
-  BspWorkspace.getInstance(project).interner.getOrPut(
+  interner.getOrPut(
     LibraryDependency(
       library =
-        BspWorkspace.getInstance(project).interner.getOrPut(
+        interner.getOrPut(
           LibraryId(
             name = intermediateLibraryDependency.libraryName,
             tableId = LibraryTableId.ProjectLibraryTableId, // treat all libraries as project-level libraries

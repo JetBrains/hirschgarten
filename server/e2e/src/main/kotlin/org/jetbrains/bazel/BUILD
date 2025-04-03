@@ -7,8 +7,8 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/utils",
         "//protocol",
+        "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
@@ -115,19 +115,6 @@ kt_jvm_binary(
     name = "ServerDownloadsBazeliskTest",
     srcs = ["ServerDownloadsBazeliskTest.kt"],
     main_class = "org.jetbrains.bazel.ServerDownloadsBazeliskTest",
-    resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
-    visibility = ["//server/e2e:__subpackages__"],
-    deps = [
-        "//protocol",
-        "//server/commons",
-        "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
-    ],
-)
-
-kt_jvm_binary(
-    name = "BazelBspRustProjectTest",
-    srcs = ["BazelBspRustProjectTest.kt"],
-    main_class = "org.jetbrains.bazel.BazelBspRustProjectTest",
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [

@@ -24,13 +24,13 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.jdom.Element
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.coroutines.BspCoroutineService
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.connector.StarlarkDebugSessionManager
 import org.jetbrains.bazel.debug.connector.StarlarkSocketConnector
 import org.jetbrains.bazel.debug.console.StarlarkDebugTaskListener
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.connection
-import org.jetbrains.bazel.taskEvents.BspTaskEventsService
+import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -49,7 +49,7 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
 
   override fun execute(environment: ExecutionEnvironment, state: RunProfileState): Promise<RunContentDescriptor?> {
     val promise = AsyncPromise<RunContentDescriptor?>()
-    BspCoroutineService.getInstance(environment.project).start {
+    BazelCoroutineService.getInstance(environment.project).start {
       executeAndCompletePromise(environment, state, promise)
     }
     return promise
@@ -106,7 +106,7 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
     futureProxy: CompletableDeferred<AnalysisDebugResult>,
   ): Job =
     project.connection.runWithServer { server ->
-      BspCoroutineService.getInstance(project).start {
+      BazelCoroutineService.getInstance(project).start {
         analysisDebug(project, port, taskListener, target, server, futureProxy)
       }
     }
@@ -121,7 +121,7 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
   ) {
     coroutineScope {
       val originId = "analysis-debug-" + UUID.randomUUID().toString()
-      BspTaskEventsService.getInstance(project).saveListener(originId, taskListener)
+      BazelTaskEventsService.getInstance(project).saveListener(originId, taskListener)
       val params = AnalysisDebugParams(originId, port, listOf(target))
 
       val buildDeferred = async { server.buildTargetAnalysisDebug(params) }
@@ -132,7 +132,7 @@ class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
         buildDeferred.cancel()
         futureProxy.completeExceptionally(e)
       } finally {
-        BspTaskEventsService.getInstance(project).removeListener(originId)
+        BazelTaskEventsService.getInstance(project).removeListener(originId)
       }
     }
   }

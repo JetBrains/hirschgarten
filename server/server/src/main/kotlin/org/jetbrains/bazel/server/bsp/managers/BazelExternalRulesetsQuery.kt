@@ -1,14 +1,15 @@
 package org.jetbrains.bazel.server.bsp.managers
 
-import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
 import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.w3c.dom.Document
 import org.w3c.dom.NodeList
 import javax.xml.xpath.XPathConstants
@@ -31,18 +32,19 @@ class BazelExternalRulesetsQueryImpl(
   private val bazelRunner: BazelRunner,
   private val isBzlModEnabled: Boolean,
   private val isWorkspaceEnabled: Boolean,
-  private val enabledRules: EnabledRulesSpec,
   private val bspClientLogger: BspClientLogger,
+  private val workspaceContext: WorkspaceContext,
 ) : BazelExternalRulesetsQuery {
   override suspend fun fetchExternalRulesetNames(): List<String> =
     when {
-      enabledRules.isNotEmpty() -> BazelEnabledRulesetsQueryImpl(enabledRules).fetchExternalRulesetNames()
+      workspaceContext.enabledRules.isNotEmpty() -> BazelEnabledRulesetsQueryImpl(workspaceContext.enabledRules).fetchExternalRulesetNames()
       else ->
-        BazelBzlModExternalRulesetsQueryImpl(bazelRunner, isBzlModEnabled, bspClientLogger).fetchExternalRulesetNames() +
+        BazelBzlModExternalRulesetsQueryImpl(bazelRunner, isBzlModEnabled, bspClientLogger, workspaceContext).fetchExternalRulesetNames() +
           BazelWorkspaceExternalRulesetsQueryImpl(
             bazelRunner,
             isWorkspaceEnabled,
             bspClientLogger,
+            workspaceContext,
           ).fetchExternalRulesetNames()
     }
 }
@@ -51,6 +53,7 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
   private val bazelRunner: BazelRunner,
   private val isWorkspaceEnabled: Boolean,
   private val bspClientLogger: BspClientLogger,
+  private val workspaceContext: WorkspaceContext,
 ) : BazelExternalRulesetsQuery {
   override suspend fun fetchExternalRulesetNames(): List<String> =
     if (!isWorkspaceEnabled) {
@@ -58,7 +61,7 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
     } else {
       bazelRunner.run {
         val command =
-          buildBazelCommand {
+          buildBazelCommand(workspaceContext) {
             query {
               targets.add(Label.parse("//external:*"))
               options.addAll(listOf("--output=xml", "--order_output=no"))
@@ -108,13 +111,14 @@ class BazelBzlModExternalRulesetsQueryImpl(
   private val bazelRunner: BazelRunner,
   private val isBzlModEnabled: Boolean,
   private val bspClientLogger: BspClientLogger,
+  private val workspaceContext: WorkspaceContext,
 ) : BazelExternalRulesetsQuery {
-  private val gson = Gson()
+  private val gson = bazelGson
 
   override suspend fun fetchExternalRulesetNames(): List<String> {
     if (!isBzlModEnabled) return emptyList()
     val command =
-      bazelRunner.buildBazelCommand {
+      bazelRunner.buildBazelCommand(workspaceContext) {
         graph { options.add("--output=json") }
       }
     val bzlmodGraphJson =

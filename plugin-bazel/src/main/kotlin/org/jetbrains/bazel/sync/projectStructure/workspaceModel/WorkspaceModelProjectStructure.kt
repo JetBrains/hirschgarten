@@ -9,11 +9,12 @@ import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.workspace.jps.JpsFileDependentEntitySource
 import com.intellij.platform.workspace.jps.JpsFileEntitySource
 import com.intellij.platform.workspace.jps.JpsGlobalFileEntitySource
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import org.jetbrains.bazel.config.BspPluginBundle
+import com.intellij.platform.workspace.storage.entities
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
-import org.jetbrains.bazel.magicmetamodel.orDefault
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.projectStructure.ProjectStructureDiff
@@ -25,7 +26,6 @@ import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BspEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
 
 class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntityStorage) : ProjectStructureDiff {
   private val postApplyActions = mutableListOf<suspend () -> Unit>()
@@ -42,7 +42,7 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
     project.syncConsole.withSubtask(
       taskId = taskId,
       subtaskId = "apply-changes-on-workspace-model",
-      message = BspPluginBundle.message("console.task.model.apply.changes"),
+      message = BazelPluginBundle.message("console.task.model.apply.changes"),
     ) {
       bspTracer.spanBuilder("apply.changes.on.workspace.model.ms").useWithScope {
         val workspaceModel = WorkspaceModel.getInstance(project) as WorkspaceModelInternal
@@ -66,6 +66,8 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
     postApplyActions.forEach { it() }
   }
 
+  override fun isInvalid(): Boolean = mutableEntityStorage.entities<ModuleEntity>().none()
+
   private fun EntitySource.isBspRelevant(project: Project, syncScope: ProjectSyncScope): Boolean =
     when (syncScope) {
       is FullProjectSync -> isBspRelevantForFullSync()
@@ -73,8 +75,8 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
     }
 
   private fun EntitySource.isBspRelevantForPartialSync(project: Project, syncScope: PartialProjectSync): Boolean {
-    val moduleNameProvider = project.findNameProvider().orDefault()
-    val targetsToSyncNames = syncScope.targetsToSync.map { moduleNameProvider(BuildTargetInfo(id = it)) }
+    val moduleNameProvider = project.findNameProvider()
+    val targetsToSyncNames = syncScope.targetsToSync.map { moduleNameProvider(it) }
 
     if (this is BspModuleEntitySource) {
       return moduleName in targetsToSyncNames

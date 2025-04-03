@@ -22,7 +22,7 @@ import com.intellij.util.ui.JBUI
 import kotlinx.coroutines.Job
 import org.jdesktop.swingx.VerticalLayout
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
-import org.jetbrains.bazel.coroutines.CoroutineService
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.languages.bazelquery.BazelqueryFlagsLanguage
 import org.jetbrains.bazel.languages.bazelquery.BazelqueryLanguage
 import org.jetbrains.bazel.languages.bazelquery.options.BazelqueryCommonOptions
@@ -302,7 +302,7 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
     showInConsole("Bazel Query in progress...")
 
     var commandResults: BazelProcessResult? = null
-    val job = CoroutineService.getInstance(project).start {
+    val job = BazelCoroutineService.getInstance(project).start {
       commandResults = queryEvaluator.evaluate(editorTextField.text, flagsToRun, flagTextField.text)
     }
     job.invokeOnCompletion {

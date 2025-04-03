@@ -23,7 +23,7 @@ class JVMLanguagePluginParserTest {
   }
 
   @Test
-  fun `should return source dir for empty package`() {
+  fun `should return null for empty package`() {
     // given
     val fileContent =
       """
@@ -43,7 +43,7 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData(sourceDir)
+    calculatedSourceRoot shouldBe null
   }
 
   @Test
@@ -69,7 +69,7 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData(sourceRoot, packageName)
+    calculatedSourceRoot shouldBe SourceRootAndData(packageName)
   }
 
   @Test
@@ -95,7 +95,7 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData(sourceDir, packageName)
+    calculatedSourceRoot shouldBe SourceRootAndData(packageName)
   }
 
   @Test
@@ -121,7 +121,7 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData(sourceDir, "com.example")
+    calculatedSourceRoot shouldBe SourceRootAndData("com.example")
   }
 
   @Test
@@ -147,7 +147,7 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData(sourceRoot, "com.example")
+    calculatedSourceRoot shouldBe SourceRootAndData("com.example")
   }
 
   @Test
@@ -174,6 +174,6 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData(sourceRoot, packageName)
+    calculatedSourceRoot shouldBe SourceRootAndData(packageName)
   }
 }

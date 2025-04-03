@@ -56,6 +56,8 @@ sealed interface PackageType {
   val pathSegments: List<String>
 }
 
+fun PackageType.toPath(): Path = Path(pathSegments.joinToString(PATH_SEGMENT_SEPARATOR))
+
 data class Package(override val pathSegments: List<String>) : PackageType {
   override fun toString(): String = pathSegments.joinToString(PATH_SEGMENT_SEPARATOR)
 
@@ -90,8 +92,17 @@ data object Main : RepoType {
 /**
  * See https://bazel.build/external/overview#canonical-repo-name
  */
-data class Canonical(override val repoName: String) : RepoType {
+@ConsistentCopyVisibility
+data class Canonical internal constructor(override val repoName: String) : RepoType {
+  init {
+    require(repoName.isNotEmpty())
+  }
+
   override fun toString(): String = "@@$repoName"
+
+  companion object {
+    fun createCanonicalOrMain(repoName: String): RepoType = if (repoName.isEmpty()) Main else Canonical(repoName)
+  }
 }
 
 /**
@@ -108,36 +119,7 @@ data class ResolvedLabel(
 ) : Label {
   val repoName get() = repo.repoName
 
-  /**
-   * Returns a path to the corresponding folder in the `bazel-(project)` directory.
-   * Warning: this works on label with apparent repo names only if bzlmod is not used.
-   * If bzlmod is used, you need to use canonical form to resolve the path.
-   */
-  fun toBazelPath(): Path =
-    if (packagePath !is Package) {
-      error("Cannot convert wildcard package to path")
-    } else {
-      when (repo) {
-        is Main -> Path(packagePath.toString())
-        is Canonical -> Path("external", repo.repoName, *packagePath.pathSegments.toTypedArray())
-        /** This works only without bzlmod... (with bzlmod you need a canonical form to resolve this path */
-        is Apparent -> Path("external", repo.repoName, *packagePath.pathSegments.toTypedArray())
-      }
-    }
-
   override fun toString(): String = "$repo//${joinPackagePathAndTarget(packagePath, target)}"
-
-  override fun toShortString(): String {
-    val repoPart = if (repo !is Main) repo.toString() else ""
-    val packagePart = packagePath.toString()
-    val targetPart =
-      when {
-        target is AmbiguousEmptyTarget -> ""
-        target is SingleTarget && target.targetName == (packagePath as? Package)?.name() -> ""
-        else -> ":$target"
-      }
-    return "$repoPart//$packagePart$targetPart"
-  }
 }
 
 /**
@@ -147,14 +129,10 @@ data class SyntheticLabel(override val target: TargetType) : Label {
   override val packagePath: PackageType = Package(listOf())
 
   override fun toString(): String = "$target$SYNTHETIC_TAG"
-
-  override fun toShortString(): String = toString()
 }
 
 data class RelativeLabel(override val packagePath: PackageType, override val target: TargetType) : Label {
   override fun toString(): String = joinPackagePathAndTarget(packagePath, target)
-
-  override fun toShortString(): String = toString()
 
   fun resolve(base: ResolvedLabel): ResolvedLabel {
     val repo = base.repo
@@ -177,7 +155,7 @@ data class RelativeLabel(override val packagePath: PackageType, override val tar
  * Represents a Bazel label.
  * See https://bazel.build/concepts/labels
  */
-sealed interface Label {
+sealed interface Label : Comparable<Label> {
   val packagePath: PackageType
   val target: TargetType
 
@@ -209,7 +187,7 @@ sealed interface Label {
   val isApparent: Boolean
     get() = (this as? ResolvedLabel)?.repo is Apparent
 
-  fun toShortString(): String
+  override fun compareTo(other: Label): Int = toString().compareTo(other.toString())
 
   companion object {
     fun synthetic(targetName: String): Label = SyntheticLabel(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))

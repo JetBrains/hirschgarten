@@ -7,32 +7,29 @@ import io.kotest.matchers.string.shouldEndWith
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.install.Install
+import org.jetbrains.bazel.install.cli.CliOptions
+import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.SourcesParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
-import java.net.URI
 import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
-import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.seconds
 
 object NestedModulesTest : BazelBspTestBaseScenario() {
-  private val testClient = createBazelClient()
+  private val testClient = createTestkitClient()
 
   @JvmStatic
   fun main(args: Array<String>) = executeScenario()
 
   override fun installServer() {
-    Install.main(
-      arrayOf(
-        "-d",
-        workspaceDir,
-        "-b",
-        bazelBinary,
-        "-t",
-        "@//...",
-        "-t",
-        "@inner//...",
+    Install.runInstall(
+      CliOptions(
+        workspaceDir = Path(workspaceDir),
+        projectViewCliOptions =
+          ProjectViewCliOptions(
+            bazelBinary = Path(bazelBinary),
+            targets = listOf("@//...", "@inner//..."),
+          ),
       ),
     )
   }
@@ -63,24 +60,20 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
             Label.parse("@//:bin_outer"),
           )
 
-        val sourcesResult =
-          session.server
-            .buildTargetSources(
-              SourcesParams(targetsResult.targets.map { it.id }),
-            )
-
-        sourcesResult.items.size shouldBe 4
-
-        sourcesResult.items
-          .flatMap {
-            it.sources
-          }.map { Path(it.uri.removePrefix("file:")).relativeTo(Path(workspaceDir)).toString() } shouldContainExactlyInAnyOrder
+        targetsResult.targets
+          .flatMap { it.sources }
+          .map { it.path.relativeTo(Path(workspaceDir)).toString() } shouldContainExactlyInAnyOrder
           listOf(
             "BinOuter.java",
             "LibOuter.java",
             "inner/BinInner.java",
             "inner/LibInner.java",
           )
+
+        targetsResult.targets
+          .mapNotNull { it.baseDirectory }
+          .map { it.relativeTo(Path(workspaceDir)).toString() } shouldContainExactlyInAnyOrder
+          listOf("inner", "inner", "", "")
       }
     }
 
@@ -104,18 +97,19 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
 
         val canonicalMapping = repoMapping.canonicalRepoNameToPath
         canonicalMapping.keys shouldBe repoMapping.apparentRepoNameToCanonicalName.values.toSet()
-        canonicalMapping[""] shouldBe "file://$workspaceDir/"
+        canonicalMapping[""] shouldBe Path("$workspaceDir/")
         canonicalMapping
           .getValue(
             "+_repo_rules+bazelbsp_aspect",
-          ).shouldEndWith("/external/+_repo_rules+bazelbsp_aspect/")
-        canonicalMapping.getValue("local_config_platform").shouldEndWith("/external/local_config_platform/")
-        canonicalMapping.getValue("rules_java+").shouldEndWith("/external/rules_java+/")
-        canonicalMapping["inner+"] shouldBe "file://$workspaceDir/inner/"
-        canonicalMapping["bazel_tools"] shouldEndWith ("/external/bazel_tools/")
+          ).toString()
+          .shouldEndWith("/external/+_repo_rules+bazelbsp_aspect")
+        canonicalMapping.getValue("local_config_platform").toString().shouldEndWith("/external/local_config_platform")
+        canonicalMapping.getValue("rules_java+").toString().shouldEndWith("/external/rules_java+")
+        canonicalMapping["inner+"] shouldBe Path("$workspaceDir/inner/")
+        canonicalMapping["bazel_tools"].toString() shouldEndWith ("/external/bazel_tools")
 
         for (path in canonicalMapping.values) {
-          URI.create(path).toPath().shouldExist()
+          path.shouldExist()
         }
       }
     }

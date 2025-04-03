@@ -12,17 +12,17 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.backend.workspace.virtualFile
 import org.jetbrains.bazel.action.SuspendableAction
-import org.jetbrains.bazel.config.BspPluginBundle
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.Icon
 
 internal open class RunAllTestsBaseAction(
   text: () -> String,
   icon: Icon,
-  private val createAction: (targets: List<BuildTargetInfo>, directoryName: String) -> SuspendableAction,
+  private val createAction: (project: Project, targets: List<BuildTarget>, directoryName: String) -> SuspendableAction,
 ) : SuspendableAction(
     text = text,
     icon = icon,
@@ -30,6 +30,7 @@ internal open class RunAllTestsBaseAction(
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val action =
       createAction(
+        project,
         readAction { getAllTestTargetInfos(project, e) },
         e.getCurrentPath()?.name.orEmpty(),
       )
@@ -40,7 +41,7 @@ internal open class RunAllTestsBaseAction(
     e.presentation.isEnabledAndVisible = runReadAction { shouldShowAction(project, e) }
   }
 
-  private fun getAllTestTargetInfos(project: Project, e: AnActionEvent): List<BuildTargetInfo> =
+  private fun getAllTestTargetInfos(project: Project, e: AnActionEvent): List<BuildTarget> =
     e
       .getCurrentPath()
       ?.toSubFilesInTestSourceContent(project)
@@ -53,7 +54,7 @@ internal open class RunAllTestsBaseAction(
 
   private fun AnActionEvent.getCurrentPath(): VirtualFile? = getData(PlatformDataKeys.VIRTUAL_FILE)
 
-  private fun VirtualFile.toSubFilesInTestSourceContent(project: Project): Sequence<BuildTargetInfo> {
+  private fun VirtualFile.toSubFilesInTestSourceContent(project: Project): Sequence<BuildTarget> {
     val pfIndex = ProjectFileIndex.getInstance(project)
     val vfsManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
     val targetUtilService = project.targetUtils
@@ -66,28 +67,32 @@ internal open class RunAllTestsBaseAction(
       .filter { pfIndex.isInTestSourceContent(it) }
       .flatMap { targetUtilService.getExecutableTargetsForFile(it) }
       .distinct()
-      .mapNotNull { targetUtilService.getBuildTargetInfoForLabel(it) }
+      .mapNotNull { targetUtilService.getBuildTargetForLabel(it) }
   }
 }
 
 internal class RunAllTestsAction :
   RunAllTestsBaseAction(
-    text = { BspPluginBundle.message("action.run.all.tests") },
+    text = { BazelPluginBundle.message("action.run.all.tests") },
     icon = AllIcons.Actions.Execute,
-    createAction = { targets, directoryName ->
-      TestTargetAction(targets, text = {
-        BspPluginBundle.message("action.run.all.tests.under", directoryName)
-      })
+    createAction = { project, targets, directoryName ->
+      TestTargetAction(
+        project,
+        targets,
+        text = {
+          BazelPluginBundle.message("action.run.all.tests.under", directoryName)
+        },
+      )
     },
   )
 
 internal class RunAllTestsWithCoverageAction :
   RunAllTestsBaseAction(
-    text = { BspPluginBundle.message("action.run.all.tests.with.coverage") },
+    text = { BazelPluginBundle.message("action.run.all.tests.with.coverage") },
     icon = AllIcons.General.RunWithCoverage,
-    createAction = { targets, directoryName ->
-      RunWithCoverageAction(targets, text = {
-        BspPluginBundle.message("action.run.all.tests.under.with.coverage", directoryName)
+    createAction = { project, targets, directoryName ->
+      RunWithCoverageAction(project, targets, text = {
+        BazelPluginBundle.message("action.run.all.tests.under.with.coverage", directoryName)
       })
     },
   )

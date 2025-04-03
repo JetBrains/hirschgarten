@@ -5,7 +5,6 @@ kt_intellij_junit4_test(
     src = "BazelqueryParsingTest.kt",
     data = ["//plugin-bazel/src/test/testData/bazelquery/parser"],
     deps = [
-        "//plugin-bazel:intellij-bazel",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/bazelquery/fixtures",
     ],
 )

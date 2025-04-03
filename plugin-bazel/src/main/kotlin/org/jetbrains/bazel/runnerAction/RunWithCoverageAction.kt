@@ -1,26 +1,35 @@
 package org.jetbrains.bazel.runnerAction
 
 import com.intellij.execution.RunnerAndConfigurationSettings
+import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.run.config.BspRunConfiguration
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasTestFilter
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bsp.protocol.BuildTarget
 
 class RunWithCoverageAction(
-  targetInfos: List<BuildTargetInfo>,
+  project: Project,
+  targetInfos: List<BuildTarget>,
   text: ((includeTargetNameInText: Boolean) -> String)? = null,
   includeTargetNameInText: Boolean = false,
   private val singleTestFilter: String? = null,
-) : BspRunnerAction(
+) : BazelRunnerAction(
     targetInfos = targetInfos,
     text = { includeTargetNameInTextParam ->
       if (text != null) {
         text(includeTargetNameInTextParam || includeTargetNameInText)
       } else {
-        BspPluginBundle.message(
+        BazelPluginBundle.message(
           "target.run.with.coverage.action.text",
-          if (includeTargetNameInTextParam || includeTargetNameInText) targetInfos.joinToString(";") { it.buildTargetName } else "",
+          if (includeTargetNameInTextParam ||
+            includeTargetNameInText
+          ) {
+            targetInfos.joinToString(";") { it.id.toShortString(project) }
+          } else {
+            ""
+          },
           BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       }
@@ -29,6 +38,6 @@ class RunWithCoverageAction(
     isCoverageAction = true,
   ) {
   override fun RunnerAndConfigurationSettings.customizeRunConfiguration() {
-    (configuration as BspRunConfiguration).handler?.apply { (state as? HasTestFilter)?.testFilter = singleTestFilter }
+    (configuration as BazelRunConfiguration).handler?.apply { (state as? HasTestFilter)?.testFilter = singleTestFilter }
   }
 }

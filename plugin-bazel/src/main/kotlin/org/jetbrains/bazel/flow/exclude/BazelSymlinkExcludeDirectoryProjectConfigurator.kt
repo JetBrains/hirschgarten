@@ -9,8 +9,8 @@ import com.intellij.openapi.util.Ref
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.DirectoryProjectConfigurator
-import org.jetbrains.bazel.config.isBspProject
-import org.jetbrains.bazel.flow.open.findProjectFolderFromEligibleFile
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.flow.open.findProjectFolderFromVFile
 
 /**
  * Adds Bazel excludes to the fake module created by platform.
@@ -25,10 +25,10 @@ internal class BazelSymlinkExcludeDirectoryProjectConfigurator : DirectoryProjec
     isProjectCreatedWithWizard: Boolean,
   ) {
     // Fake Module is going to be removed by CounterPlatformProjectConfigurator anyway
-    if (project.isBspProject) return
+    if (project.isBazelProject) return
     val module = moduleRef.get() ?: return
 
-    val bazelWorkspace = findProjectFolderFromEligibleFile(baseDir) ?: return
+    val bazelWorkspace = findProjectFolderFromVFile(baseDir) ?: return
     val symlinksToExclude = BazelSymlinkExcludeService.getInstance(project).getBazelSymlinksToExclude(bazelWorkspace.toNioPath())
     if (symlinksToExclude.isEmpty()) return
 

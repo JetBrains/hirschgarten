@@ -17,6 +17,8 @@ private const val EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS = "bsp.exclude.compil
 private const val ENABLE_PARTIAL_SYNC = "bsp.enable.partial.sync"
 private const val SYMLINK_SCAN_MAX_DEPTH = "bazel.symlink.scan.max.depth"
 private const val SHUTDOWN_BEFORE_SHARD_BUILD = "bazel.shutdown.before.shard.build"
+private const val ENABLE_BAZEL_JAVA_CLASS_FINDER = "bazel.enable.custom.java.class.finder"
+private const val MERGE_SOURCE_ROOTS = "bazel.merge.source.roots"
 
 object BazelFeatureFlags {
   val isPythonSupportEnabled: Boolean
@@ -50,7 +52,7 @@ object BazelFeatureFlags {
     get() = isPhasedSync && Registry.`is`(EXECUTE_SECOND_PHASE_ON_SYNC)
 
   val addDummyModules: Boolean
-    get() = Registry.`is`(ADD_DUMMY_MODULES)
+    get() = Registry.`is`(ADD_DUMMY_MODULES) && !enableBazelJavaClassFinder
 
   val excludeCompiledSourceCodeInsideJars: Boolean
     get() = Registry.`is`(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS)
@@ -63,6 +65,12 @@ object BazelFeatureFlags {
 
   val shutDownBeforeShardBuild: Boolean
     get() = Registry.`is`(SHUTDOWN_BEFORE_SHARD_BUILD)
+
+  val enableBazelJavaClassFinder: Boolean
+    get() = Registry.`is`(ENABLE_BAZEL_JAVA_CLASS_FINDER)
+
+  val mergeSourceRoots: Boolean
+    get() = Registry.`is`(MERGE_SOURCE_ROOTS)
 }
 
 object FeatureFlagsProvider {
@@ -72,7 +80,6 @@ object FeatureFlagsProvider {
         isPythonSupportEnabled = isPythonSupportEnabled,
         isAndroidSupportEnabled = isAndroidSupportEnabled,
         isGoSupportEnabled = isGoSupportEnabled,
-        isRustSupportEnabled = false, // No corresponding registry key for now
         isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
         bazelSymlinksScanMaxDepth = symlinkScanMaxDepth,
         bazelShutDownBeforeShardBuild = shutDownBeforeShardBuild,

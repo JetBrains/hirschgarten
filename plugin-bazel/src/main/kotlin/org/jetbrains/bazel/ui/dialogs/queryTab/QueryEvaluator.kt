@@ -8,13 +8,15 @@ import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.RelativeLabel
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextConstructor
-import org.jetbrains.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextConstructor
+import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
+import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
 
 internal class QueryEvaluator {
   private var currentRunnerDirFile: VirtualFile? = null
   private var bazelRunner: BazelRunner? = null
+  private var wcp: WorkspaceContextProvider? = null
 
   val isDirectorySet: Boolean get() = bazelRunner != null
 
@@ -25,12 +27,15 @@ internal class QueryEvaluator {
 
     val wcc = WorkspaceContextConstructor(directoryFile.toNioPath(), Path.of(""))
     val pv = ProjectView.Builder().build()
-    val wcp =
+    wcp =
       object : WorkspaceContextProvider {
         private val wc = wcc.construct(pv)
-        override fun currentWorkspaceContext(): WorkspaceContext = wc
+        override fun readWorkspaceContext(): WorkspaceContext = wc
+        override fun currentFeatureFlags(): FeatureFlags {
+          return FeatureFlags()
+        }
       }
-    bazelRunner = BazelRunner(wcp, null, directoryFile.toNioPath())
+    bazelRunner = BazelRunner(null, directoryFile.toNioPath())
 
     currentRunnerDirFile = directoryFile
   }
@@ -46,7 +51,7 @@ internal class QueryEvaluator {
 
     // TODO: add proper way to add raw query to evaluation
     val label = RelativeLabel(Package(listOf(command)), AmbiguousEmptyTarget)
-    val commandToRun = bazelRunner!!.buildBazelCommand {
+    val commandToRun = bazelRunner!!.buildBazelCommand(wcp!!.readWorkspaceContext()) {
       query { targets.add(label) }
     }
 

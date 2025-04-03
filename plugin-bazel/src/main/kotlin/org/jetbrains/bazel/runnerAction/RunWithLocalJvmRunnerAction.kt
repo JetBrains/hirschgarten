@@ -1,13 +1,17 @@
 package org.jetbrains.bazel.runnerAction
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.config.BspPluginBundle
-import org.jetbrains.bazel.server.tasks.JvmRunEnvironmentTask
-import org.jetbrains.bazel.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
+import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
+import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 
 class RunWithLocalJvmRunnerAction(
-  targetInfo: BuildTargetInfo,
+  project: Project,
+  targetInfo: BuildTarget,
   text: (() -> String)? = null,
   isDebugMode: Boolean = false,
   includeTargetNameInText: Boolean = false,
@@ -17,19 +21,26 @@ class RunWithLocalJvmRunnerAction(
       if (text != null) {
         text()
       } else if (isDebugMode) {
-        BspPluginBundle.message(
+        BazelPluginBundle.message(
           "target.debug.with.jvm.runner.action.text",
-          if (includeTargetNameInText) targetInfo.buildTargetName else "",
+          if (includeTargetNameInText) targetInfo.id.toShortString(project) else "",
         )
       } else {
-        BspPluginBundle.message(
+        BazelPluginBundle.message(
           "target.run.with.jvm.runner.action.text",
-          if (includeTargetNameInText) targetInfo.buildTargetName else "",
+          if (includeTargetNameInText) targetInfo.id.toShortString(project) else "",
         )
       }
     },
     isDebugMode = isDebugMode,
   ) {
-  override suspend fun getEnvironment(project: Project): JvmEnvironmentItem? =
-    JvmRunEnvironmentTask(project).connectAndExecute(targetInfo.id)?.items?.first()
+  override suspend fun getEnvironment(project: Project): JvmEnvironmentItem? {
+    val params = createJvmRunEnvironmentParams(targetInfo.id)
+    return project.connection
+      .runWithServer { it.buildTargetJvmRunEnvironment(params) }
+      .items
+      .firstOrNull()
+  }
+
+  private fun createJvmRunEnvironmentParams(targetId: Label) = JvmRunEnvironmentParams(listOf(targetId))
 }
