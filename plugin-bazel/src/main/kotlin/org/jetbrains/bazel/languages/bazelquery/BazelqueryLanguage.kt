@@ -12,7 +12,7 @@ object BazelqueryFileType : LanguageFileType(BazelqueryLanguage) {
 
   override fun getDescription(): String = "Bazelquery language"
 
-  override fun getDefaultExtension(): String = "org/jetbrains/bazel/languages/bazelquery"
+  override fun getDefaultExtension(): String = ".bazelquery"
 
   override fun getIcon(): Icon = BazelPluginIcons.bazel
 }

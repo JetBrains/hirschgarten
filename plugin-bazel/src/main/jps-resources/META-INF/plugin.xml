@@ -34,7 +34,7 @@
     <depends optional="true" config-file="withGo.xml">org.jetbrains.plugins.go</depends>
     <depends optional="true" config-file="withIdeStarter.xml">com.jetbrains.performancePlugin</depends>
     <depends optional="true" config-file="withPython.xml">com.intellij.modules.python</depends>
-    <depends optional="true" config-file="terminal-plugin.xml">org.jetbrains.plugins.terminal</depends>
+    <depends optional="true" config-file="withTerminal.xml">org.jetbrains.plugins.terminal</depends>
 
     <extensionPoints>
         <extensionPoint qualifiedName="org.jetbrains.bazel.sourceTypeIconProvider"

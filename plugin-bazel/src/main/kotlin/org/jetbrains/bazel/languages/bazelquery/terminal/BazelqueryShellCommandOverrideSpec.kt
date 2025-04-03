@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.bazelquery.terminal
 
+import com.intellij.execution.configurations.ParameterTargetValuePart.Path
 import com.intellij.markdown.utils.doc.DocMarkdownToHtmlConverter
 import com.intellij.openapi.project.Project
 import com.intellij.terminal.completion.spec.ShellCommandParserOptions
@@ -7,7 +8,7 @@ import com.intellij.terminal.completion.spec.ShellCommandSpec
 import com.intellij.terminal.completion.spec.ShellCompletionSuggestion
 import com.intellij.terminal.completion.spec.ShellRuntimeContext
 import org.jetbrains.bazel.assets.BazelPluginIcons
-import org.jetbrains.bazel.languages.bazelquery.completion.generateTargetCompletions
+import org.jetbrains.bazel.languages.bazelquery.completion.TargetCompletionsGenerator
 import org.jetbrains.bazel.languages.bazelquery.functions.BazelqueryFunction
 import org.jetbrains.bazel.languages.bazelquery.options.BazelqueryCommonOptions
 import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget.Companion.allowMultiple
@@ -78,7 +79,9 @@ fun ShellCommandContext.queryCompletion() {
       ShellRuntimeDataGenerator { context: ShellRuntimeContext ->
         val offset = context.typedPrefix.lastIndexOfAny(charArrayOf('\'', '"', '(', ',', ' ')) + 1
         val typedPrefix = context.typedPrefix.substring(offset)
-        val targets = generateTargetCompletions(typedPrefix, context.currentDirectory)
+        val targets =
+          TargetCompletionsGenerator(context.project)
+            .getTargetsList(typedPrefix, Path(context.currentDirectory))
         val suggestions: MutableList<ShellCompletionSuggestion> =
           targets
             .map { target ->

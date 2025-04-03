@@ -9,6 +9,7 @@ import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.execution.configurations.ParameterTargetValuePart.Path
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.tree.TokenSet
@@ -81,7 +82,10 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
         .removePrefix("\"")
         .removePrefix("'")
     val currentDirectory = BazelWorkingDirectoryManager.getWorkingDirectory()
-    val targetSuggestions = generateTargetCompletions(prefix, currentDirectory)
+    val project = parameters.editor.project ?: return
+    val targetSuggestions =
+      TargetCompletionsGenerator(project)
+        .getTargetsList(prefix, Path(currentDirectory))
 
     result.withPrefixMatcher(BazelqueryPrefixMatcher(prefix)).run {
       addAllElements(
