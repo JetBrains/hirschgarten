@@ -40,7 +40,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.server.connection.connection
-import org.jetbrains.bazel.sync.status.BspSyncStatusService
+import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
@@ -221,7 +221,7 @@ private suspend fun processFileRemoved(
 }
 
 private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<Label>? =
-  if (!BspSyncStatusService.getInstance(project).isSyncInProgress) {
+  if (!SyncStatusService.getInstance(project).isSyncInProgress) {
     try {
       askForInverseSources(project, fileUrl)
         .targets

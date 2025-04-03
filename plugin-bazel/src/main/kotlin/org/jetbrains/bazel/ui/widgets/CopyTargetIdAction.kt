@@ -7,7 +7,6 @@ import com.intellij.openapi.application.readAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.elementType
@@ -17,12 +16,13 @@ import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.action.getEditor
 import org.jetbrains.bazel.action.getPsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
+import org.jetbrains.bazel.languages.starlark.repomapping.calculateLabel
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
 
 // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1158
@@ -64,17 +64,14 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
       return psiFile.project.targetUtils
         .getTargetsForFile(virtualFile)
         .chooseTarget(editor)
-        ?.toShortString()
+        ?.toShortString(psiFile.project)
     }
   }
 
   private fun StarlarkCallExpression.calculateTargetId(): String? {
     val targetName = getTargetName() ?: return null
-    val projectBaseDirectory = project.rootDir
-    val targetBaseDirectory = containingFile?.virtualFile?.parent ?: return null
-    val relativeTargetBaseDirectory = VfsUtilCore.getRelativePath(targetBaseDirectory, projectBaseDirectory) ?: return null
-
-    return "//$relativeTargetBaseDirectory:$targetName"
+    val containingFile = containingFile?.virtualFile?.toNioPath() ?: return null
+    return calculateLabel(project, containingFile, targetName)?.toShortString(project)
   }
 
   override fun update(project: Project, e: AnActionEvent) {

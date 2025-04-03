@@ -364,10 +364,10 @@ class FirstPhaseTargetToBspMapperTest {
       val result = mapper.toWorkspaceBuildTargetsResult(project)
 
       // then
-      result.targets.map { it.id.toShortString() } shouldContainExactlyInAnyOrder
+      result.targets.map { it.id.toString() } shouldContainExactlyInAnyOrder
         listOf(
-          "//target1",
-          "//manual_target",
+          "@//target1",
+          "@//manual_target",
         )
     }
   }

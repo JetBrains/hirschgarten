@@ -13,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
-import org.jetbrains.bazel.magicmetamodel.orDefault
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
@@ -76,7 +75,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     // given
     val server = BuildServerMock(workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()))
     val diff = AllProjectStructuresProvider(project).newDiff()
-    val goTestTargets = generateTestSet(project.findNameProvider().orDefault())
+    val goTestTargets = generateTestSet(project.findNameProvider())
 
     // when
     runBlocking {
@@ -111,7 +110,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     // given
     val server = BuildServerMock(workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()))
     val diff = AllProjectStructuresProvider(project).newDiff()
-    val goTestTargets = generateTestSet(project.findNameProvider().orDefault())
+    val goTestTargets = generateTestSet(project.findNameProvider())
 
     // when
     runBlocking {

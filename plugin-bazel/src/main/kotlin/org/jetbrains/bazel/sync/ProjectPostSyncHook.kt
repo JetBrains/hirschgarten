@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
+import org.jetbrains.bazel.annotations.PublicApi
 
 /**
  * Represents a post-sync hook which will be executed after each sync (if `isEnabled` returns true).
@@ -10,6 +11,7 @@ import com.intellij.platform.util.progress.SequentialProgressReporter
  * It should be used to perform post-sync actions, e.g., code cleanup after sync.
  * It's guaranteed that hook will be called *after* all [ProjectSyncHook] calls.
  */
+@PublicApi
 interface ProjectPostSyncHook {
   /**
    * Tells the sync mechanism whatever this hook should be executed after a sync.

@@ -281,7 +281,7 @@ class ExecuteService(
 
 private fun <T> List<T>.singleOrResponseError(requestedTarget: Label): T =
   when {
-    this.isEmpty() -> error("No supported target found for ${requestedTarget.toShortString()}")
+    this.isEmpty() -> error("No supported target found for $requestedTarget")
     this.size == 1 -> this.single()
-    else -> error("More than one supported target found for ${requestedTarget.toShortString()}")
+    else -> error("More than one supported target found for $requestedTarget")
   }

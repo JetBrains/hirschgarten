@@ -89,9 +89,10 @@ data class WorkspaceContext(
  */
 val WorkspaceContext.externalRepositoriesTreatedAsInternal: List<String>
   get() =
-    targets.values.mapNotNull {
-      it
-        .assumeResolved()
-        .repo.repoName
-        .takeIf { it.isNotEmpty() }
-    }
+    targets.values
+      .mapNotNull {
+        it
+          .assumeResolved()
+          .repo.repoName
+          .takeIf { repoName -> repoName.isNotEmpty() }
+      }.distinct()

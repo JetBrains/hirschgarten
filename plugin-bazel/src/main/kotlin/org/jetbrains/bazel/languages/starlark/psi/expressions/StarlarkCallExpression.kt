@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
+import com.intellij.model.psi.PsiSymbolReference
+import com.intellij.model.psi.PsiSymbolService
 import com.intellij.psi.PsiReference
 import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRules
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
@@ -31,9 +33,12 @@ class StarlarkCallExpression(node: ASTNode) : StarlarkBaseElement(node) {
 
   fun getArgumentList(): StarlarkArgumentList? = findChildrenByClass(StarlarkArgumentList::class.java).firstOrNull()
 
-  override fun getOwnReferences(): Collection<BazelNativeRuleReference> {
+  override fun getOwnReferences(): Collection<PsiSymbolReference> {
     val name = name ?: return emptyList()
     val nativeRule = BazelNativeRules.getRuleByName(name) ?: return emptyList()
-    return listOf(BazelNativeRuleReference(this, nativeRule))
+    return listOfNotNull(
+      BazelNativeRuleReference(this, nativeRule),
+      reference?.let { PsiSymbolService.getInstance().asSymbolReference(it) },
+    )
   }
 }

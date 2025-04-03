@@ -2,14 +2,18 @@ package org.jetbrains.bazel.magicmetamodel
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.extensionPoints.BazelBuildTargetClassifier
+import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BazelBuildTargetClassifier
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.utils.StringUtils
+
+typealias TargetNameReformatProvider = (Label) -> String
 
 fun Project.findNameProvider(): TargetNameReformatProvider =
   { buildTarget ->
-    val targetName = BazelBuildTargetClassifier.calculateBuildTargetName(buildTarget).sanitizeName()
+    val bazelBuildTargetClassifier = BazelBuildTargetClassifier(this)
+    val targetName = bazelBuildTargetClassifier.calculateBuildTargetName(buildTarget).sanitizeName()
     val prefix =
-      BazelBuildTargetClassifier
+      bazelBuildTargetClassifier
         .calculateBuildTargetPath(buildTarget)
         .shortenTargetPath(targetName.length)
         .joinToString(".") { pathElement -> pathElement.sanitizeName() }
@@ -49,5 +53,3 @@ fun String.shortenTargetPath(): String =
   } else {
     this
   }
-
-fun TargetNameReformatProvider?.orDefault(): TargetNameReformatProvider = this ?: DefaultNameProvider

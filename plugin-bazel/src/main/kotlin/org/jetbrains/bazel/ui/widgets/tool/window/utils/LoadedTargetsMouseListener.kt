@@ -100,8 +100,8 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
   private fun onDoubleClick() {
     container.getSelectedBuildTarget()?.also {
       when {
-        it.capabilities.canTest -> TestTargetAction(targetInfos = listOf(it)).prepareAndPerform(project)
-        it.capabilities.canRun -> RunTargetAction(targetInfo = it).prepareAndPerform(project)
+        it.capabilities.canTest -> TestTargetAction(project = project, targetInfos = listOf(it)).prepareAndPerform(project)
+        it.capabilities.canRun -> RunTargetAction(project, targetInfo = it).prepareAndPerform(project)
         it.capabilities.canCompile -> BuildTargetAction.buildTarget(project, it.id)
       }
     }
@@ -123,17 +123,25 @@ fun DefaultActionGroup.fillWithEligibleActions(
 ): DefaultActionGroup {
   val canBeDebugged = RunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
   if (target.capabilities.canRun) {
-    addAction(RunTargetAction(target, includeTargetNameInText = includeTargetNameInText))
+    addAction(RunTargetAction(project, target, includeTargetNameInText = includeTargetNameInText))
     if (canBeDebugged) {
-      addAction(RunTargetAction(target, isDebugAction = true, includeTargetNameInText = includeTargetNameInText))
+      addAction(RunTargetAction(project, target, isDebugAction = true, includeTargetNameInText = includeTargetNameInText))
     }
   }
 
   if (target.capabilities.canTest) {
-    addAction(TestTargetAction(listOf(target), includeTargetNameInText = includeTargetNameInText, singleTestFilter = singleTestFilter))
+    addAction(
+      TestTargetAction(
+        project,
+        listOf(target),
+        includeTargetNameInText = includeTargetNameInText,
+        singleTestFilter = singleTestFilter,
+      ),
+    )
     if (canBeDebugged) {
       addAction(
         TestTargetAction(
+          project,
           listOf(target),
           isDebugAction = true,
           includeTargetNameInText = includeTargetNameInText,
@@ -141,17 +149,24 @@ fun DefaultActionGroup.fillWithEligibleActions(
         ),
       )
     }
-    addAction(RunWithCoverageAction(listOf(target), includeTargetNameInText = includeTargetNameInText, singleTestFilter = singleTestFilter))
+    addAction(
+      RunWithCoverageAction(
+        project,
+        listOf(target),
+        includeTargetNameInText = includeTargetNameInText,
+        singleTestFilter = singleTestFilter,
+      ),
+    )
   }
 
   if (project.bazelProjectSettings.enableLocalJvmActions && target.languageIds.isJvmTarget()) {
     if (target.capabilities.canRun) {
-      addAction(RunWithLocalJvmRunnerAction(target, includeTargetNameInText = includeTargetNameInText))
-      addAction(RunWithLocalJvmRunnerAction(target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
+      addAction(RunWithLocalJvmRunnerAction(project, target, includeTargetNameInText = includeTargetNameInText))
+      addAction(RunWithLocalJvmRunnerAction(project, target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
     }
     if (target.capabilities.canTest) {
-      addAction(TestWithLocalJvmRunnerAction(target, includeTargetNameInText = includeTargetNameInText))
-      addAction(TestWithLocalJvmRunnerAction(target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
+      addAction(TestWithLocalJvmRunnerAction(project, target, includeTargetNameInText = includeTargetNameInText))
+      addAction(TestWithLocalJvmRunnerAction(project, target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
     }
   }
   return this
@@ -164,6 +179,7 @@ internal class RunAllTestsActionInTargetTreeAction(private val targets: List<Bui
   ) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     TestTargetAction(
+      project,
       targets,
       text = {
         BazelPluginBundle.message("action.run.all.tests.under", directoryName)
@@ -179,6 +195,7 @@ internal class RunAllTestsActionWithCoverageInTargetTreeAction(private val targe
   ) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     RunWithCoverageAction(
+      project,
       targets,
       text = {
         BazelPluginBundle.message("action.run.all.tests.under.with.coverage", directoryName)

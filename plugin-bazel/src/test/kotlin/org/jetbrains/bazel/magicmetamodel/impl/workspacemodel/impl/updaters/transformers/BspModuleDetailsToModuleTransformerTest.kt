@@ -7,7 +7,6 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.DefaultNameProvider
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
@@ -42,7 +41,7 @@ class BspModuleDetailsToModuleTransformerTest {
   @Test
   fun `should return java module with dependencies to other targets and libraries`() {
     // given
-    val targetName = "//target1"
+    val targetName = "@//target1"
     val targetId = Label.parse(targetName)
 
     val target =
@@ -52,8 +51,8 @@ class BspModuleDetailsToModuleTransformerTest {
         listOf("java"),
         listOf(
           Label.parse("@maven//:test"),
-          Label.parse("//target2"),
-          Label.parse("//target3"),
+          Label.parse("@//target2"),
+          Label.parse("@//target3"),
         ),
         BuildTargetCapabilities(),
         sources = emptyList(),
@@ -73,14 +72,14 @@ class BspModuleDetailsToModuleTransformerTest {
         type = ModuleTypeId("JAVA_MODULE"),
         moduleDependencies =
           listOf(
-            Label.parse("//target2"),
-            Label.parse("//target3"),
+            Label.parse("@//target2"),
+            Label.parse("@//target3"),
           ),
         libraryDependencies = null,
         scalacOptions = null,
       )
 
-    val targetsMap = listOf("//target1", "//target2", "//target3").toDefaultTargetsMap()
+    val targetsMap = listOf("@//target1", "@//target2", "@//target3").toDefaultTargetsMap()
 
     // when
     val module =
@@ -99,10 +98,10 @@ class BspModuleDetailsToModuleTransformerTest {
         modulesDependencies =
           listOf(
             IntermediateModuleDependency(
-              moduleName = "//target2",
+              moduleName = "@//target2",
             ),
             IntermediateModuleDependency(
-              moduleName = "//target3",
+              moduleName = "@//target3",
             ),
           ),
         librariesDependencies = emptyList(),
@@ -114,7 +113,7 @@ class BspModuleDetailsToModuleTransformerTest {
   @Test
   fun `should return module with associates when specified in BspModuleDetails`() {
     // given
-    val targetName = "//target1"
+    val targetName = "@//target1"
     val targetId = Label.parse(targetName)
     val target =
       BuildTarget(
@@ -123,8 +122,8 @@ class BspModuleDetailsToModuleTransformerTest {
         emptyList(),
         listOf(
           Label.parse("@maven//:test"),
-          Label.parse("//target2"),
-          Label.parse("//target3"),
+          Label.parse("@//target2"),
+          Label.parse("@//target3"),
         ),
         BuildTargetCapabilities(),
         sources = emptyList(),
@@ -137,13 +136,13 @@ class BspModuleDetailsToModuleTransformerTest {
         javacOptions = null,
         associates =
           listOf(
-            Label.parse("//target4"),
-            Label.parse("//target5"),
+            Label.parse("@//target4"),
+            Label.parse("@//target5"),
           ),
         moduleDependencies =
           listOf(
-            Label.parse("//target2"),
-            Label.parse("//target3"),
+            Label.parse("@//target2"),
+            Label.parse("@//target3"),
           ),
         libraryDependencies =
           listOf(
@@ -152,7 +151,7 @@ class BspModuleDetailsToModuleTransformerTest {
         scalacOptions = null,
       )
 
-    val targetsMap = listOf("//target1", "//target2", "//target3", "//target4", "//target5").toDefaultTargetsMap()
+    val targetsMap = listOf("@//target1", "@//target2", "@//target3", "@//target4", "@//target5").toDefaultTargetsMap()
 
     // when
     val module =
@@ -171,10 +170,10 @@ class BspModuleDetailsToModuleTransformerTest {
         modulesDependencies =
           listOf(
             IntermediateModuleDependency(
-              moduleName = "//target2",
+              moduleName = "@//target2",
             ),
             IntermediateModuleDependency(
-              moduleName = "//target3",
+              moduleName = "@//target3",
             ),
           ),
         librariesDependencies =
@@ -184,10 +183,10 @@ class BspModuleDetailsToModuleTransformerTest {
         associates =
           listOf(
             IntermediateModuleDependency(
-              moduleName = "//target4",
+              moduleName = "@//target4",
             ),
             IntermediateModuleDependency(
-              moduleName = "//target5",
+              moduleName = "@//target5",
             ),
           ),
       )
@@ -198,7 +197,7 @@ class BspModuleDetailsToModuleTransformerTest {
   @Test
   fun `should return multiple java modules with dependencies to other targets and libraries`() {
     // given
-    val target1Name = "//target1"
+    val target1Name = "@//target1"
     val target1Id = Label.parse(target1Name)
 
     val target1 =
@@ -236,7 +235,7 @@ class BspModuleDetailsToModuleTransformerTest {
         scalacOptions = null,
       )
 
-    val target2Name = "//target2"
+    val target2Name = "@//target2"
     val target2Id = Label.parse(target2Name)
 
     val target2 =
@@ -271,7 +270,7 @@ class BspModuleDetailsToModuleTransformerTest {
         scalacOptions = null,
       )
 
-    val targetsMap = listOf("//target1", "//target2", "//target3").toDefaultTargetsMap()
+    val targetsMap = listOf("@//target1", "@//target2", "@//target3").toDefaultTargetsMap()
 
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
     // when
@@ -291,10 +290,10 @@ class BspModuleDetailsToModuleTransformerTest {
         modulesDependencies =
           listOf(
             IntermediateModuleDependency(
-              moduleName = "//target2",
+              moduleName = "@//target2",
             ),
             IntermediateModuleDependency(
-              moduleName = "//target3",
+              moduleName = "@//target3",
             ),
           ),
         librariesDependencies = emptyList(),
@@ -307,7 +306,7 @@ class BspModuleDetailsToModuleTransformerTest {
         modulesDependencies =
           listOf(
             IntermediateModuleDependency(
-              moduleName = "//target3",
+              moduleName = "@//target3",
             ),
           ),
         librariesDependencies = emptyList(),
@@ -324,7 +323,7 @@ class BspModuleDetailsToModuleTransformerTest {
   @Test
   fun `should rename module using the given provider`() {
     // given
-    val targetName = "//target1"
+    val targetName = "@//target1"
     val targetId = Label.parse(targetName)
 
     val target =
@@ -357,7 +356,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val targetsMap = listOf("//target1").toDefaultTargetsMap()
 
     // when
-    val nameProvider: TargetNameReformatProvider = { "${it.toShortString()}${it.toShortString()}" }
+    val nameProvider: TargetNameReformatProvider = { "$it$it" }
     val transformer =
       BspModuleDetailsToModuleTransformer(
         targetsMap,

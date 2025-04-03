@@ -5,22 +5,25 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonShortcuts
 import com.intellij.openapi.ide.CopyPasteManager
+import com.intellij.openapi.project.Project
 import com.intellij.util.ui.TextTransferable
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.JComponent
 
 sealed class CopyTargetIdAction : AnAction({ BazelPluginBundle.message("widget.copy.target.id") }, AllIcons.Actions.Copy) {
   override fun actionPerformed(e: AnActionEvent) {
-    getTargetInfo()?.copyIdToClipboard()
+    val project = e.project ?: return
+    getTargetInfo()?.copyIdToClipboard(project)
   }
 
   protected abstract fun getTargetInfo(): BuildTarget?
 
-  private fun BuildTarget.copyIdToClipboard() {
+  private fun BuildTarget.copyIdToClipboard(project: Project) {
     val clipboard = CopyPasteManager.getInstance()
-    val transferable = TextTransferable(this.id.toShortString() as CharSequence)
+    val transferable = TextTransferable(this.id.toShortString(project) as CharSequence)
     clipboard.setContents(transferable)
   }
 

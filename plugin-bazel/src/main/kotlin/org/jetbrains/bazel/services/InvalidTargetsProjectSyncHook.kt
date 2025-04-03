@@ -44,7 +44,7 @@ internal class BazelInvalidTargetsService : PersistentStateComponent<BazelInvali
   internal var invalidTargets: List<Label> = emptyList()
 
   override fun getState(): BazelInvalidTargetsServiceState? =
-    BazelInvalidTargetsServiceState(invalidTargets.map { it.toShortString() })
+    BazelInvalidTargetsServiceState(invalidTargets.map { it.toString() })
       .takeIf { it.invalidTargets.isNotEmpty() }
 
   override fun loadState(state: BazelInvalidTargetsServiceState) {

@@ -61,7 +61,7 @@ abstract class BazelBspAndroidProjectTestBase : BazelBspTestBaseScenario() {
         // Make sure Bazel unpacks all the dependent AARs
         session.server.workspaceBuildAndGetBuildTargets()
         val result = session.server.workspaceLibraries()
-        val appCompatLibrary = result.libraries.first { "androidx_appcompat_appcompat" in it.id.toShortString() }
+        val appCompatLibrary = result.libraries.first { "androidx_appcompat_appcompat" in it.id.toString() }
 
         val jars = appCompatLibrary.jars.toList()
         for (jar in jars) {

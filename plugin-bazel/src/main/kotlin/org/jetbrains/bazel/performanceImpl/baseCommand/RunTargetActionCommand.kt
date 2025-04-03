@@ -17,9 +17,9 @@ abstract class RunTargetActionCommand(text: String, line: Int) : PlaybackCommand
     val id = getTargetId(project) ?: return
     val targetInfo = project.targetUtils.getBuildTargetForLabel(id) ?: return
     if (targetInfo.capabilities.canTest) {
-      TestTargetAction(listOf(targetInfo), isDebugAction = false).doPerformAction(project)
+      TestTargetAction(project, listOf(targetInfo)).doPerformAction(project)
     } else {
-      RunTargetAction(targetInfo, isDebugAction = false).doPerformAction(project)
+      RunTargetAction(project, targetInfo).doPerformAction(project)
     }
   }
 

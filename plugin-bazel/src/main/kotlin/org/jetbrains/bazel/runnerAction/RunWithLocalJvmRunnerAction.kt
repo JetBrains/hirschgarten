@@ -3,12 +3,14 @@ package org.jetbrains.bazel.runnerAction
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 
 class RunWithLocalJvmRunnerAction(
+  project: Project,
   targetInfo: BuildTarget,
   text: (() -> String)? = null,
   isDebugMode: Boolean = false,
@@ -21,12 +23,12 @@ class RunWithLocalJvmRunnerAction(
       } else if (isDebugMode) {
         BazelPluginBundle.message(
           "target.debug.with.jvm.runner.action.text",
-          if (includeTargetNameInText) targetInfo.displayName else "",
+          if (includeTargetNameInText) targetInfo.id.toShortString(project) else "",
         )
       } else {
         BazelPluginBundle.message(
           "target.run.with.jvm.runner.action.text",
-          if (includeTargetNameInText) targetInfo.displayName else "",
+          if (includeTargetNameInText) targetInfo.id.toShortString(project) else "",
         )
       }
     },

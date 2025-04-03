@@ -155,6 +155,7 @@ class BazelBspServer(
     val kotlinAndroidModulesMerger = KotlinAndroidModulesMerger()
     val bazelProjectMapper =
       BazelProjectMapper(
+        bazelInfo,
         languagePluginsService,
         bazelPathsResolver,
         targetTagsResolver,

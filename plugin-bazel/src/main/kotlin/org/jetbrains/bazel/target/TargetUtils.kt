@@ -26,7 +26,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.bazel.magicmetamodel.orDefault
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -271,7 +270,7 @@ val com.intellij.openapi.module.Module.moduleEntity: ModuleEntity?
 
 @ApiStatus.Internal
 fun BuildTarget.getModule(project: Project): com.intellij.openapi.module.Module? {
-  val moduleNameProvider = project.findNameProvider().orDefault()
+  val moduleNameProvider = project.findNameProvider()
   val moduleName = moduleNameProvider(this.id)
   return ModuleManager.getInstance(project).findModuleByName(moduleName)
 }

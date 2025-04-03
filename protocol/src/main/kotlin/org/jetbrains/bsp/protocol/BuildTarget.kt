@@ -12,9 +12,7 @@ data class BuildTarget(
   val resources: List<Path>,
   val baseDirectory: Path? = null,
   var data: BuildTargetData? = null,
-) {
-  val displayName: String = id.toShortString()
-}
+)
 
 sealed interface BuildTargetData
 

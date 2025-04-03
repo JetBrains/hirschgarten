@@ -2,7 +2,9 @@ package org.jetbrains.bazel.scala.sdk
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProvider
+import org.jetbrains.bazel.annotations.PublicApi
 
+@PublicApi
 interface ScalaSdkExtension {
   fun addScalaSdk(scalaSdk: ScalaSdk, modelsProvider: IdeModifiableModelsProvider)
 }

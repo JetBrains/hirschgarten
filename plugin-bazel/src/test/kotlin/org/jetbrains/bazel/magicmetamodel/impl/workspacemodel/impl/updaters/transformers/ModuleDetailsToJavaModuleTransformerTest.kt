@@ -8,7 +8,6 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.DefaultNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
@@ -122,7 +121,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         jvmBinaryJars = emptyList(),
       )
 
-    val targetsMap = listOf(buildTargetId.toShortString(), "module2", "module3").toDefaultTargetsMap()
+    val targetsMap = listOf(buildTargetId.toString(), "module2", "module3").toDefaultTargetsMap()
     // when
     val javaModule =
       ModuleDetailsToJavaModuleTransformer(
@@ -241,7 +240,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         jvmBinaryJars = emptyList(),
       )
 
-    val targetsMap = listOf(buildTargetId.toShortString(), "module2", "module3").toDefaultTargetsMap()
+    val targetsMap = listOf(buildTargetId.toString(), "module2", "module3").toDefaultTargetsMap()
 
     // when
     val javaModule =
@@ -615,7 +614,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         jvmBinaryJars = emptyList(),
       )
 
-    val targetsMap = listOf(buildTargetId.toShortString(), "module2", "module3").toDefaultTargetsMap()
+    val targetsMap = listOf(buildTargetId.toString(), "module2", "module3").toDefaultTargetsMap()
     // when
     val javaModules =
       ModuleDetailsToJavaModuleTransformer(

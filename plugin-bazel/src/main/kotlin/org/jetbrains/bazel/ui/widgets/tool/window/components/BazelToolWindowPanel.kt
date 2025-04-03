@@ -74,6 +74,7 @@ class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, t
 
   private fun createLoadedTargetsPanel(project: Project, targetUtils: TargetUtils): BspPanelComponent =
     BspPanelComponent(
+      project = project,
       targetIcon = BazelPluginIcons.bazel,
       invalidTargetIcon = BazelPluginIcons.bazelError,
       toolName = BazelPluginConstants.BAZEL_DISPLAY_NAME,

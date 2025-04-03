@@ -15,11 +15,12 @@ import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
-import org.jetbrains.bazel.magicmetamodel.orDefault
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
@@ -101,6 +102,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         .filter { it.type == ModuleTypeId("PYTHON_MODULE") }
 
     actualModuleEntities shouldContainExactlyInAnyOrder pythonTestTargets.expectedModuleEntities
+    actualModuleEntities.shouldAllHaveTheSameSDK()
   }
 
   @Test
@@ -159,7 +161,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
 
     val targetInfos = listOf(pythonLibrary1, pythonLibrary2, pythonBinary)
     val targets = targetInfos.map { generateTarget(it, emptyList(), emptyList()) }
-    val nameProvider = project.findNameProvider().orDefault()
+    val nameProvider = project.findNameProvider()
 
     val expectedModuleEntity1 = generateExpectedModuleEntity(pythonBinary, listOf(pythonLibrary1, pythonLibrary2), nameProvider)
     val expectedModuleEntity2 = generateExpectedModuleEntity(pythonLibrary1, emptyList(), nameProvider)
@@ -189,7 +191,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         listOf(Path("/Resource1"), Path("/Resource2"), Path("/Resource3")),
       )
 
-    val expectedModuleEntity = generateExpectedModuleEntity(pythonBinary, emptyList(), project.findNameProvider().orDefault())
+    val expectedModuleEntity = generateExpectedModuleEntity(pythonBinary, emptyList(), project.findNameProvider())
 
     val expectedContentRootEntities =
       generateExpectedSourceRootEntities(target, expectedModuleEntity.moduleEntity)
@@ -219,7 +221,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         data =
           PythonBuildTarget(
             version = "3",
-            interpreter = Path("/path/to/interpreter"),
+            interpreter = Path(PYTHON_INTERPRETER),
           ),
         sources = sources,
         resources = resources,
@@ -233,7 +235,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     dependenciesTargetInfo: List<GeneratedTargetInfo>,
     nameProvider: TargetNameReformatProvider,
   ): ExpectedModuleEntity {
-    val sdkDependency: ModuleDependencyItem = SdkDependency(SdkId("${targetInfo.targetId.toShortString()}-3", "PythonSDK"))
+    val sdkDependency: ModuleDependencyItem = SdkDependency(SdkId("${project.name}-python-$PYTHON_INTERPRETER_MD5", "PythonSDK"))
     val moduleDependencies: List<ModuleDependencyItem> =
       dependenciesTargetInfo.map {
         ModuleDependency(
@@ -276,4 +278,13 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
           }
         ExpectedSourceRootEntity(sourceRootEntity, contentRootEntity, parentModuleEntity)
       }
+
+  private fun List<ModuleEntity>.shouldAllHaveTheSameSDK() {
+    val sdks = this.map { module -> module.dependencies.firstNotNullOfOrNull { it as? SdkDependency } }
+    sdks.any { it == null }.shouldBeFalse()
+    sdks.distinct().size shouldBe 1
+  }
 }
+
+private const val PYTHON_INTERPRETER = "/path/to/interpreter"
+private const val PYTHON_INTERPRETER_MD5 = "efdb3"

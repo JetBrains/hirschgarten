@@ -2,12 +2,14 @@ package org.jetbrains.bazel.ui.widgets.tool.window.components
 
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.search.LazySearchDisplay
 import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
@@ -20,6 +22,7 @@ import javax.swing.JPanel
 import javax.swing.SwingConstants
 
 class BuildTargetSearch(
+  private val project: Project,
   private val targetIcon: Icon,
   private val toolName: String,
   targets: Collection<BuildTarget>,
@@ -29,8 +32,8 @@ class BuildTargetSearch(
 
   override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction.FromContainer(this, targetSearchPanel)
 
-  private val searchListDisplay = LazySearchDisplay(targetIcon, showAsTree = false)
-  private val searchTreeDisplay = LazySearchDisplay(targetIcon, showAsTree = true)
+  private val searchListDisplay = LazySearchDisplay(project, targetIcon, showAsTree = false)
+  private val searchTreeDisplay = LazySearchDisplay(project, targetIcon, showAsTree = true)
 
   private var displayedSearchPanel: JPanel? = null
   private val noResultsInfoComponent =
@@ -39,7 +42,7 @@ class BuildTargetSearch(
       SwingConstants.CENTER,
     )
 
-  private val targets = targets.sortedBy { it.displayName }
+  private val targets = targets.sortedBy { it.id.toShortString(project) }
 
   private var popupHandlerBuilder: ((BuildTargetContainer) -> PopupHandler)? = null
   private val queryChangeListeners = mutableSetOf<() -> Unit>()
@@ -71,7 +74,7 @@ class BuildTargetSearch(
       noResultsInfoComponent.isVisible = false
       searchBarPanel.inProgress = true
       ReadAction
-        .nonBlocking(SearchCallable(query, targets))
+        .nonBlocking(SearchCallable(project, query, targets))
         .finishOnUiThread(ModalityState.defaultModalityState()) { displaySearchResultsUnlessOutdated(it) }
         .coalesceBy(this)
         .submit(NonUrgentExecutor.getInstance())
@@ -132,7 +135,7 @@ class BuildTargetSearch(
   override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget> =
     listOfNotNull(chooseTargetSearchPanel().getSelectedBuildTarget())
 
-  override fun getSelectedComponentName(): String = chooseTargetSearchPanel().getSelectedBuildTarget()?.displayName ?: ""
+  override fun getSelectedComponentName(): String = chooseTargetSearchPanel().getSelectedBuildTarget()?.id?.toShortString(project) ?: ""
 
   override fun isPointSelectable(point: Point): Boolean = chooseTargetSearchPanel().isPointSelectable(point)
 
@@ -141,16 +144,20 @@ class BuildTargetSearch(
   }
 
   override fun createNewWithTargets(newTargets: Collection<BuildTarget>, newInvalidTargets: List<Label>): BuildTargetSearch {
-    val new = BuildTargetSearch(targetIcon, toolName, newTargets, searchBarPanel)
+    val new = BuildTargetSearch(project, targetIcon, toolName, newTargets, searchBarPanel)
     popupHandlerBuilder?.let { new.registerPopupHandler(it) }
     return new
   }
 
-  private class SearchCallable(private val query: Regex, private val targets: Collection<BuildTarget>) : Callable<SearchResults> {
+  private class SearchCallable(
+    private val project: Project,
+    private val query: Regex,
+    private val targets: Collection<BuildTarget>,
+  ) : Callable<SearchResults> {
     override fun call(): SearchResults =
       SearchResults(
         query,
-        targets.filter { query.containsMatchIn(it.displayName) },
+        targets.filter { query.containsMatchIn(it.id.toShortString(project)) },
       )
   }
 }

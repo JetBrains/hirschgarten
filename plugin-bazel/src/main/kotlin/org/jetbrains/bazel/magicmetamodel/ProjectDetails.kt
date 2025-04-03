@@ -7,12 +7,6 @@ import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.ScalacOptionsItem
 
-typealias TargetNameReformatProvider = (Label) -> String
-
-object DefaultNameProvider : TargetNameReformatProvider {
-  override fun invoke(targetInfo: Label): String = targetInfo.toShortString()
-}
-
 data class ProjectDetails(
   val targetIds: List<Label>,
   val targets: Set<BuildTarget>,

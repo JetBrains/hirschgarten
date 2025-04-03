@@ -1,12 +1,20 @@
 package org.jetbrains.bazel.extension
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.extensionPoints.BazelBuildTargetClassifier
+import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BazelBuildTargetClassifier
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class BazelBuildTargetClassifierTest {
-  private val classifier = BazelBuildTargetClassifier
+class BazelBuildTargetClassifierTest : WorkspaceModelBaseTest() {
+  lateinit var classifier: BazelBuildTargetClassifier
+
+  @BeforeEach
+  override fun beforeEach() {
+    super.beforeEach()
+    classifier = BazelBuildTargetClassifier(project)
+  }
 
   @Test
   fun mainRepoTest() {

@@ -124,7 +124,7 @@ class BazelRunConfiguration internal constructor(
 
     for (target in targets) {
       val targetElement = Element(TARGET_TAG)
-      targetElement.text = target.toShortString()
+      targetElement.text = target.toString()
       bspElementState.addContent(targetElement)
     }
 
