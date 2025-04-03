@@ -183,7 +183,7 @@ class ProjectResolver(
               targetsSpec = targetsToSync,
               aspect = ASPECT_NAME,
               outputGroups = outputGroups,
-              shouldLogInvocation = false,
+              shouldLogInvocation = true,
               workspaceContext = workspaceContext,
             ).also {
               if (it.status == BazelStatus.OOM_ERROR) {
