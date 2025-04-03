@@ -4,9 +4,7 @@ object BazelWorkingDirectoryManager {
   @Volatile
   private var workingDirectory: String = ""
 
-  fun getWorkingDirectory(): String {
-    return workingDirectory
-  }
+  fun getWorkingDirectory(): String = workingDirectory
 
   fun setWorkingDirectory(directory: String) {
     workingDirectory = directory

@@ -4,8 +4,8 @@ import com.intellij.model.Symbol
 import com.intellij.model.psi.PsiSymbolReference
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
-import org.jetbrains.bazel.languages.bazelquery.functions.BazelqueryFunctionSymbol
 import org.jetbrains.bazel.languages.bazelquery.functions.BazelqueryFunction
+import org.jetbrains.bazel.languages.bazelquery.functions.BazelqueryFunctionSymbol
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryCommand
 
 @Suppress("UnstableApiUsage")

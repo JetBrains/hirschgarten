@@ -12,5 +12,5 @@ class BazelqueryCommand(node: ASTNode) : BazelqueryBaseElement(node) {
     get() = findChildByType(BazelqueryTokenSets.COMMANDS)
 
   override fun getOwnReferences(): Collection<BazelqueryFunctionReference> =
-      name?.let { listOf(BazelqueryFunctionReference(this)) } ?: emptyList()
+    name?.let { listOf(BazelqueryFunctionReference(this)) } ?: emptyList()
 }

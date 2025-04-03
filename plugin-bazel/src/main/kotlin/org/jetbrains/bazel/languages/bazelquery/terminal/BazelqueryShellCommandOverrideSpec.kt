@@ -19,43 +19,41 @@ import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentatio
 import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget.Companion.oldName
 import org.jetbrains.bazel.languages.bazelrc.documentation.BazelFlagDocumentationTarget.Companion.type
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
-import org.jetbrains.plugins.terminal.block.completion.spec.*
+import org.jetbrains.plugins.terminal.block.completion.spec.ShellCommandSpec
+import org.jetbrains.plugins.terminal.block.completion.spec.ShellCompletionSuggestion
+import org.jetbrains.plugins.terminal.block.completion.spec.ShellRuntimeDataGenerator
 import org.jetbrains.plugins.terminal.block.completion.spec.dsl.ShellCommandContext
+import org.jetbrains.plugins.terminal.block.completion.spec.project
 
 /*
-TODO
-- flags
-- expressions
- */
-
-/*
-  *  All tokens must be treated as known by parser. The terminal stops suggesting if a token is unknown.
-  *  Make token known by providing suggestion for it (sometimes we must provide empty suggestion like in ShellDataGenerators#getFileSuggestions).
-  *  In arguments we can have context (typed prefix, project, shell name).
-  *  In options we don't have them, so we can only provide static suggestions.
-  *  We can treat options as arguments, so we can provide suggestions based on context, (add TerminalIcons.Option to make it appear as options),
+ *  All tokens must be treated as known by parser. The terminal stops suggesting if a token is unknown.
+ *  Make token known by providing suggestion for it (sometimes we must provide empty suggestion like in ShellDataGenerators#getFileSuggestions).
+ *  In arguments we can have context (typed prefix, project, shell name).
+ *  In options we don't have them, so we can only provide static suggestions.
+ *  We can treat options as arguments, so we can provide suggestions based on context, (add TerminalIcons.Option to make it appear as options),
   but we would not be able to exclude used options (for now, an issue was submitted).
-  *  TODO Some options-args should be separated with space or =, we cannot do with both 2 for now, =sign alone not working for now
+ *  TODO Some options-args should be separated with space or =, we cannot do with both 2 for now, =sign alone not working for now
 */
 @Suppress("UnstableApiUsage")
-internal fun bazelQueryCommandSpec(): ShellCommandSpec = ShellCommandSpec("bazel") {
-  subcommands { context: ShellRuntimeContext ->
+internal fun bazelQueryCommandSpec(): ShellCommandSpec =
+  ShellCommandSpec("bazel") {
+    subcommands { context: ShellRuntimeContext ->
 
-    subcommand("query") {
-      parserOptions = ShellCommandParserOptions.create(optionArgSeparators = listOf("=", " "))
-      description("Executes a dependency graph query.")
+      subcommand("query") {
+        parserOptions = ShellCommandParserOptions.create(optionArgSeparators = listOf("=", " "))
+        description("Executes a dependency graph query.")
 
-      allOptions(context)
+        allOptions(context)
 
-      // This surrounding is to make terminal still suggests even if we typed 'unknown tokens', e.g. options arguments like integer or comma-seperated
-      dummyArgs()
+        // This surrounding is to make terminal still suggests even if we typed 'unknown tokens', e.g. options arguments like integer or comma-seperated
+        dummyArgs()
 
-      queryCompletion()
+        queryCompletion()
 
-      dummyArgs()
+        dummyArgs()
+      }
     }
   }
-}
 
 @Suppress("UnstableApiUsage")
 fun ShellCommandContext.dummyArgs() {
@@ -63,9 +61,11 @@ fun ShellCommandContext.dummyArgs() {
     displayName("option")
     isVariadic = true
     isOptional = true
-    suggestions(ShellRuntimeDataGenerator { context ->
-      listOf(ShellCompletionSuggestion(name = context.typedPrefix, isHidden = true))
-    })
+    suggestions(
+      ShellRuntimeDataGenerator { context ->
+        listOf(ShellCompletionSuggestion(name = context.typedPrefix, isHidden = true))
+      },
+    )
   }
 }
 
@@ -74,39 +74,43 @@ fun ShellCommandContext.queryCompletion() {
   argument {
     displayName("query expression")
     val targetPriority = 40 // The greater, the closer to the first place, default is 50
-    suggestions(ShellRuntimeDataGenerator { context: ShellRuntimeContext ->
-      val offset = context.typedPrefix.lastIndexOfAny(charArrayOf('\'', '"', '(', ',', ' ')) + 1
-      val typedPrefix = context.typedPrefix.substring(offset)
-      val targets = generateTargetCompletions(typedPrefix, context.currentDirectory)
-      val suggestions : MutableList<ShellCompletionSuggestion> = targets.map { target ->
-        ShellCompletionSuggestion(
-          name = target,
-          icon = BazelPluginIcons.bazel,
-          prefixReplacementIndex = offset,
-          priority = targetPriority
+    suggestions(
+      ShellRuntimeDataGenerator { context: ShellRuntimeContext ->
+        val offset = context.typedPrefix.lastIndexOfAny(charArrayOf('\'', '"', '(', ',', ' ')) + 1
+        val typedPrefix = context.typedPrefix.substring(offset)
+        val targets = generateTargetCompletions(typedPrefix, context.currentDirectory)
+        val suggestions: MutableList<ShellCompletionSuggestion> =
+          targets
+            .map { target ->
+              ShellCompletionSuggestion(
+                name = target,
+                icon = BazelPluginIcons.bazel,
+                prefixReplacementIndex = offset,
+                priority = targetPriority,
+              )
+            }.toMutableList()
+        suggestions.addAll(
+          knownCommands.map {
+            ShellCompletionSuggestion(
+              name = "${it.name}()",
+              description = functionDescriptionHtml(it, context.project),
+              icon = BazelPluginIcons.bazel,
+              prefixReplacementIndex = offset,
+              insertValue = "${it.name}({cursor})",
+            )
+          },
         )
-      }.toMutableList()
-      suggestions.addAll(
-        knownCommands.map {
-          ShellCompletionSuggestion(
-            name = "${it.name}()",
-            description = functionDescriptionHtml(it, context.project),
-            icon = BazelPluginIcons.bazel,
-            prefixReplacementIndex = offset,
-            insertValue = "${it.name}({cursor})",
-          )
+
+        // Empty suggestion for the parser to consider quoted expression as valid argument, so flags will be suggested after the argument.
+        // Inspired from ShellDataGenerators#getFileSuggestions.
+        if (isStartAndEndWithQuote(context.typedPrefix)) {
+          val emptySuggestion = ShellCompletionSuggestion(name = "", prefixReplacementIndex = offset, isHidden = true)
+          suggestions.add(emptySuggestion)
         }
-      )
 
-      // Empty suggestion for the parser to consider quoted expression as valid argument, so flags will be suggested after the argument.
-      // Inspired from ShellDataGenerators#getFileSuggestions.
-      if (isStartAndEndWithQuote(context.typedPrefix)) {
-        val emptySuggestion = ShellCompletionSuggestion(name = "", prefixReplacementIndex = offset, isHidden = true)
-        suggestions.add(emptySuggestion)
-      }
-
-      suggestions
-    })
+        suggestions
+      },
+    )
   }
 }
 
@@ -132,9 +136,11 @@ fun ShellCommandContext.allOptions(context: ShellRuntimeContext) {
           option(flagNameDD) {
             description(flagDescriptionHtml(flag, context.project))
             argument {
-              suggestions { queryFlag.values.map {
-                ShellCompletionSuggestion(it)
-              } }
+              suggestions {
+                queryFlag.values.map {
+                  ShellCompletionSuggestion(it)
+                }
+              }
             }
           }
         }
@@ -188,7 +194,7 @@ fun ShellCommandContext.booleanAndTriStateFlagSuggestion(flag: Flag, context: Sh
   }
 }
 
-fun flagDescriptionHtml(flag: Flag,project: Project): String {
+fun flagDescriptionHtml(flag: Flag, project: Project): String {
   // TODO not this copy paste from BazelFlagDocumentationTarget
   val markdownText =
     """
@@ -213,7 +219,7 @@ fun flagDescriptionHtml(flag: Flag,project: Project): String {
   return DocMarkdownToHtmlConverter.convert(project, markdownText)
 }
 
-fun functionDescriptionHtml(function: BazelqueryFunction,project: Project): String {
+fun functionDescriptionHtml(function: BazelqueryFunction, project: Project): String {
   // TODO not this copy paste from functions
   val markdownText =
     """
@@ -230,9 +236,9 @@ fun functionDescriptionHtml(function: BazelqueryFunction,project: Project): Stri
   return DocMarkdownToHtmlConverter.convert(project, markdownText)
 }
 
-fun isStartAndEndWithQuote(expression: String) : Boolean {
-  return expression.length >= 2 && ((expression.startsWith('\'') && expression.endsWith('\'')) || (expression.startsWith('"') && expression.endsWith('"')))
-}
+fun isStartAndEndWithQuote(expression: String): Boolean =
+  expression.length >= 2 &&
+    ((expression.startsWith('\'') && expression.endsWith('\'')) || (expression.startsWith('"') && expression.endsWith('"')))
 
 val knownCommands = BazelqueryFunction.getAll()
 

@@ -17,24 +17,24 @@ import org.jetbrains.bazel.languages.bazelquery.lexer.BazelqueryLexer
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryFile
 
 class BazelqueryParserDefinition : ParserDefinition {
-    private val file = IFileElementType(BazelqueryLanguage)
+  private val file = IFileElementType(BazelqueryLanguage)
 
-    override fun createLexer(project: Project?): Lexer = BazelqueryLexer()
+  override fun createLexer(project: Project?): Lexer = BazelqueryLexer()
 
-    override fun createParser(project: Project?): PsiParser =
-        PsiParser { root, builder ->
-            Parsing(root, builder).parseFile()
-        }
+  override fun createParser(project: Project?): PsiParser =
+    PsiParser { root, builder ->
+      ParsingNoFlags(root, builder).parseFile()
+    }
 
-    override fun getFileNodeType(): IFileElementType = file
+  override fun getFileNodeType(): IFileElementType = file
 
-    override fun getWhitespaceTokens(): TokenSet = BazelqueryTokenSets.WHITE_SPACES
+  override fun getWhitespaceTokens(): TokenSet = BazelqueryTokenSets.WHITE_SPACES
 
-    override fun getCommentTokens(): TokenSet = BazelqueryTokenSets.COMMENTS
+  override fun getCommentTokens(): TokenSet = BazelqueryTokenSets.COMMENTS
 
-    override fun getStringLiteralElements(): TokenSet = TokenSet.EMPTY
+  override fun getStringLiteralElements(): TokenSet = TokenSet.EMPTY
 
-    override fun createElement(node: ASTNode): PsiElement = BazelqueryElementTypes.createElement(node)
+  override fun createElement(node: ASTNode): PsiElement = BazelqueryElementTypes.createElement(node)
 
-    override fun createFile(viewProvider: FileViewProvider): PsiFile = BazelqueryFile(viewProvider)
+  override fun createFile(viewProvider: FileViewProvider): PsiFile = BazelqueryFile(viewProvider)
 }

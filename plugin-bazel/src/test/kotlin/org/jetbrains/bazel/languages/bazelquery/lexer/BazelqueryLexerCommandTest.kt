@@ -72,18 +72,19 @@ class BazelqueryLexerCommandTest : LexerTestCase() {
     val code1 = "bazel query 'buildfiles(//...)'"
     val code2 = "bazel query 'rbuildfiles(//...)'"
 
-    val list = listOf(
-      "Bazelquery:BAZEL",
-      "WHITE_SPACE",
-      "Bazelquery:QUERY",
-      "WHITE_SPACE",
-      "Bazelquery:'",
-      "Bazelquery:COMMAND",
-      "Bazelquery:(",
-      "Bazelquery:UNQUOTED_WORD",
-      "Bazelquery:)",
-      "Bazelquery:'",
-    )
+    val list =
+      listOf(
+        "Bazelquery:BAZEL",
+        "WHITE_SPACE",
+        "Bazelquery:QUERY",
+        "WHITE_SPACE",
+        "Bazelquery:'",
+        "Bazelquery:COMMAND",
+        "Bazelquery:(",
+        "Bazelquery:UNQUOTED_WORD",
+        "Bazelquery:)",
+        "Bazelquery:'",
+      )
 
     code1 shouldLexTo list
     code2 shouldLexTo list
@@ -198,40 +199,42 @@ class BazelqueryLexerCommandTest : LexerTestCase() {
     val code1 = "bazel query 'rdeps(//path/to:my_target, //...)'"
     val code2 = "bazel query 'rdeps(//path/to:my_target, //..., 1)'"
 
-    code1 shouldLexTo listOf(
-      "Bazelquery:BAZEL",
-      "WHITE_SPACE",
-      "Bazelquery:QUERY",
-      "WHITE_SPACE",
-      "Bazelquery:'",
-      "Bazelquery:COMMAND",
-      "Bazelquery:(",
-      "Bazelquery:UNQUOTED_WORD",
-      "Bazelquery:,",
-      "WHITE_SPACE",
-      "Bazelquery:UNQUOTED_WORD",
-      "Bazelquery:)",
-      "Bazelquery:'",
-    )
+    code1 shouldLexTo
+      listOf(
+        "Bazelquery:BAZEL",
+        "WHITE_SPACE",
+        "Bazelquery:QUERY",
+        "WHITE_SPACE",
+        "Bazelquery:'",
+        "Bazelquery:COMMAND",
+        "Bazelquery:(",
+        "Bazelquery:UNQUOTED_WORD",
+        "Bazelquery:,",
+        "WHITE_SPACE",
+        "Bazelquery:UNQUOTED_WORD",
+        "Bazelquery:)",
+        "Bazelquery:'",
+      )
 
-    code2 shouldLexTo listOf(
-      "Bazelquery:BAZEL",
-      "WHITE_SPACE",
-      "Bazelquery:QUERY",
-      "WHITE_SPACE",
-      "Bazelquery:'",
-      "Bazelquery:COMMAND",
-      "Bazelquery:(",
-      "Bazelquery:UNQUOTED_WORD",
-      "Bazelquery:,",
-      "WHITE_SPACE",
-      "Bazelquery:UNQUOTED_WORD",
-      "Bazelquery:,",
-      "WHITE_SPACE",
-      "Bazelquery:UNQUOTED_WORD",
-      "Bazelquery:)",
-      "Bazelquery:'",
-    )
+    code2 shouldLexTo
+      listOf(
+        "Bazelquery:BAZEL",
+        "WHITE_SPACE",
+        "Bazelquery:QUERY",
+        "WHITE_SPACE",
+        "Bazelquery:'",
+        "Bazelquery:COMMAND",
+        "Bazelquery:(",
+        "Bazelquery:UNQUOTED_WORD",
+        "Bazelquery:,",
+        "WHITE_SPACE",
+        "Bazelquery:UNQUOTED_WORD",
+        "Bazelquery:,",
+        "WHITE_SPACE",
+        "Bazelquery:UNQUOTED_WORD",
+        "Bazelquery:)",
+        "Bazelquery:'",
+      )
   }
 
   @Test
@@ -239,34 +242,36 @@ class BazelqueryLexerCommandTest : LexerTestCase() {
     val code1 = "bazel query 'allrdeps(//path/to:my_target)'"
     val code2 = "bazel query 'allrdeps(//path/to:my_target, 2)'"
 
-    code1 shouldLexTo listOf(
-      "Bazelquery:BAZEL",
-      "WHITE_SPACE",
-      "Bazelquery:QUERY",
-      "WHITE_SPACE",
-      "Bazelquery:'",
-      "Bazelquery:COMMAND",
-      "Bazelquery:(",
-      "Bazelquery:UNQUOTED_WORD",
-      "Bazelquery:)",
-      "Bazelquery:'",
-    )
+    code1 shouldLexTo
+      listOf(
+        "Bazelquery:BAZEL",
+        "WHITE_SPACE",
+        "Bazelquery:QUERY",
+        "WHITE_SPACE",
+        "Bazelquery:'",
+        "Bazelquery:COMMAND",
+        "Bazelquery:(",
+        "Bazelquery:UNQUOTED_WORD",
+        "Bazelquery:)",
+        "Bazelquery:'",
+      )
 
-    code2 shouldLexTo listOf(
-      "Bazelquery:BAZEL",
-      "WHITE_SPACE",
-      "Bazelquery:QUERY",
-      "WHITE_SPACE",
-      "Bazelquery:'",
-      "Bazelquery:COMMAND",
-      "Bazelquery:(",
-      "Bazelquery:UNQUOTED_WORD",
-      "Bazelquery:,",
-      "WHITE_SPACE",
-      "Bazelquery:UNQUOTED_WORD",
-      "Bazelquery:)",
-      "Bazelquery:'",
-    )
+    code2 shouldLexTo
+      listOf(
+        "Bazelquery:BAZEL",
+        "WHITE_SPACE",
+        "Bazelquery:QUERY",
+        "WHITE_SPACE",
+        "Bazelquery:'",
+        "Bazelquery:COMMAND",
+        "Bazelquery:(",
+        "Bazelquery:UNQUOTED_WORD",
+        "Bazelquery:,",
+        "WHITE_SPACE",
+        "Bazelquery:UNQUOTED_WORD",
+        "Bazelquery:)",
+        "Bazelquery:'",
+      )
   }
 
   @Test
@@ -312,34 +317,36 @@ class BazelqueryLexerCommandTest : LexerTestCase() {
     val code1 = "bazel query 'some(//...)'"
     val code2 = "bazel query 'some(//..., 3)'"
 
-    code1 shouldLexTo listOf(
-      "Bazelquery:BAZEL",
-      "WHITE_SPACE",
-      "Bazelquery:QUERY",
-      "WHITE_SPACE",
-      "Bazelquery:'",
-      "Bazelquery:COMMAND",
-      "Bazelquery:(",
-      "Bazelquery:UNQUOTED_WORD",
-      "Bazelquery:)",
-      "Bazelquery:'",
-    )
+    code1 shouldLexTo
+      listOf(
+        "Bazelquery:BAZEL",
+        "WHITE_SPACE",
+        "Bazelquery:QUERY",
+        "WHITE_SPACE",
+        "Bazelquery:'",
+        "Bazelquery:COMMAND",
+        "Bazelquery:(",
+        "Bazelquery:UNQUOTED_WORD",
+        "Bazelquery:)",
+        "Bazelquery:'",
+      )
 
-    code2 shouldLexTo listOf(
-      "Bazelquery:BAZEL",
-      "WHITE_SPACE",
-      "Bazelquery:QUERY",
-      "WHITE_SPACE",
-      "Bazelquery:'",
-      "Bazelquery:COMMAND",
-      "Bazelquery:(",
-      "Bazelquery:UNQUOTED_WORD",
-      "Bazelquery:,",
-      "WHITE_SPACE",
-      "Bazelquery:UNQUOTED_WORD",
-      "Bazelquery:)",
-      "Bazelquery:'",
-    )
+    code2 shouldLexTo
+      listOf(
+        "Bazelquery:BAZEL",
+        "WHITE_SPACE",
+        "Bazelquery:QUERY",
+        "WHITE_SPACE",
+        "Bazelquery:'",
+        "Bazelquery:COMMAND",
+        "Bazelquery:(",
+        "Bazelquery:UNQUOTED_WORD",
+        "Bazelquery:,",
+        "WHITE_SPACE",
+        "Bazelquery:UNQUOTED_WORD",
+        "Bazelquery:)",
+        "Bazelquery:'",
+      )
   }
 
   @Test
@@ -347,21 +354,22 @@ class BazelqueryLexerCommandTest : LexerTestCase() {
     val code1 = "bazel query 'somepath(//set1, //set2)'"
     val code2 = "bazel query 'allpaths(//set1, //set2)'"
 
-    val list = listOf(
-      "Bazelquery:BAZEL",
-      "WHITE_SPACE",
-      "Bazelquery:QUERY",
-      "WHITE_SPACE",
-      "Bazelquery:'",
-      "Bazelquery:COMMAND",
-      "Bazelquery:(",
-      "Bazelquery:UNQUOTED_WORD",
-      "Bazelquery:,",
-      "WHITE_SPACE",
-      "Bazelquery:UNQUOTED_WORD",
-      "Bazelquery:)",
-      "Bazelquery:'",
-    )
+    val list =
+      listOf(
+        "Bazelquery:BAZEL",
+        "WHITE_SPACE",
+        "Bazelquery:QUERY",
+        "WHITE_SPACE",
+        "Bazelquery:'",
+        "Bazelquery:COMMAND",
+        "Bazelquery:(",
+        "Bazelquery:UNQUOTED_WORD",
+        "Bazelquery:,",
+        "WHITE_SPACE",
+        "Bazelquery:UNQUOTED_WORD",
+        "Bazelquery:)",
+        "Bazelquery:'",
+      )
 
     code1 shouldLexTo list
     code2 shouldLexTo list
@@ -433,7 +441,6 @@ class BazelqueryLexerCommandTest : LexerTestCase() {
         "Bazelquery:'",
       )
   }
-
 
   private infix fun String.shouldLexTo(expectedTokens: List<String>) {
     doLexerTest(this, BazelqueryLexer(), expectedTokens)

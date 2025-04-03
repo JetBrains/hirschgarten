@@ -19,15 +19,13 @@ import org.jetbrains.bazel.languages.bazelquery.functions.BazelqueryFunctionSymb
 class BazelqueryFunctionDocumentationTarget(symbol: BazelqueryFunctionSymbol) :
   DocumentationTarget,
   Pointer<BazelqueryFunctionDocumentationTarget> {
-
   private val function = symbol.function
 
   override fun createPointer() = this
 
   override fun dereference(): BazelqueryFunctionDocumentationTarget? = this
 
-  override fun computePresentation(): TargetPresentation =
-    TargetPresentation.builder(function.name).presentation()
+  override fun computePresentation(): TargetPresentation = TargetPresentation.builder(function.name).presentation()
 
   override fun computeDocumentation(): DocumentationResult? =
     DocumentationResult.asyncDocumentation {
@@ -44,19 +42,21 @@ class BazelqueryFunctionDocumentationTarget(symbol: BazelqueryFunctionSymbol) :
           ```
         """.trimMargin()
 
-      val body = raw(
-        DocMarkdownToHtmlConverter.convert(ProjectManager.getInstance().openProjects.first(), markdownText)
-      )
-      val fragment = fragment(
-        text(function.name).bold().wrapWith(head()),
-        body.wrapWith(body())
-      )
+      val body =
+        raw(
+          DocMarkdownToHtmlConverter.convert(ProjectManager.getInstance().openProjects.first(), markdownText),
+        )
+      val fragment =
+        fragment(
+          text(function.name).bold().wrapWith(head()),
+          body.wrapWith(body()),
+        )
 
       DocumentationResult.documentation(fragment.wrapWith(html()).toString())
     }
 
-    private fun BazelqueryFunction.argumentsMarkdown(): String =
-      arguments.joinToString(separator = "\n") { arg ->
-        "- `${arg.name}` (${arg.type}${if (arg.optional) ", optional" else ""}): ${arg.description}"
-      }
+  private fun BazelqueryFunction.argumentsMarkdown(): String =
+    arguments.joinToString(separator = "\n") { arg ->
+      "- `${arg.name}` (${arg.type}${if (arg.optional) ", optional" else ""}): ${arg.description}"
+    }
 }

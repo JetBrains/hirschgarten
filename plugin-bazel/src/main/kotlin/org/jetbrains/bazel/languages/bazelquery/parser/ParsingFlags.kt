@@ -4,8 +4,8 @@ import com.intellij.lang.ASTNode
 import com.intellij.lang.PsiBuilder
 import com.intellij.psi.tree.IElementType
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryElementTypes
-import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenTypes
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenSets
+import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenTypes
 
 open class ParsingFlags(private val root: IElementType, val builder: PsiBuilder) : PsiBuilder by builder {
   private val utils = ParsingUtils(builder)
@@ -28,18 +28,21 @@ open class ParsingFlags(private val root: IElementType, val builder: PsiBuilder)
     if (utils.atToken(BazelqueryTokenTypes.UNFINISHED_FLAG)) {
       utils.advanceError("unfinished flag")
       utils.expectToken(BazelqueryTokenTypes.WHITE_SPACE)
-    }
-    else if (utils.atToken(BazelqueryTokenTypes.FLAG)) {
+    } else if (utils.atToken(BazelqueryTokenTypes.FLAG)) {
       advanceLexer()
 
-      if (!utils.matchToken(BazelqueryTokenTypes.EQUALS)) utils.advanceError("expected flag value")
-      else {
-        if (utils.matchToken(BazelqueryTokenTypes.UNFINISHED_VAL)) error("<quote> expected")
-        else if (!utils.matchAnyToken(BazelqueryTokenSets.FLAG_VALS)) error("expected flag value")
-        else if (!eof()) utils.expectToken(BazelqueryTokenTypes.WHITE_SPACE)
+      if (!utils.matchToken(BazelqueryTokenTypes.EQUALS)) {
+        utils.advanceError("expected flag value")
+      } else {
+        if (utils.matchToken(BazelqueryTokenTypes.UNFINISHED_VAL)) {
+          error("<quote> expected")
+        } else if (!utils.matchAnyToken(BazelqueryTokenSets.FLAG_VALS)) {
+          error("expected flag value")
+        } else if (!eof()) {
+          utils.expectToken(BazelqueryTokenTypes.WHITE_SPACE)
+        }
       }
-    }
-    else {
+    } else {
       advanceLexer()
       while (utils.matchToken(BazelqueryTokenTypes.MISSING_SPACE)) {
         utils.advanceError("<space> expected")
@@ -50,4 +53,3 @@ open class ParsingFlags(private val root: IElementType, val builder: PsiBuilder)
     flag.done(BazelqueryElementTypes.FLAG)
   }
 }
-

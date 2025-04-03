@@ -11,16 +11,15 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.patterns.PlatformPatterns.psiElement
+import com.intellij.psi.tree.TokenSet
+import com.intellij.psi.util.startOffset
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.languages.bazelquery.BazelqueryLanguage
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenType
-import com.intellij.psi.tree.TokenSet
-import com.intellij.psi.util.startOffset
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryFile
 import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
-
 
 class BazelqueryCompletionContributor : CompletionContributor() {
   init {
@@ -29,44 +28,42 @@ class BazelqueryCompletionContributor : CompletionContributor() {
 }
 
 val knownCommands =
-  BazelqueryTokenSets.COMMANDS.types.map { tokenType ->
-    tokenType as BazelqueryTokenType
-    tokenType.completionText() + "()"
-  }.toList()
+  BazelqueryTokenSets.COMMANDS.types
+    .map { tokenType ->
+      tokenType as BazelqueryTokenType
+      tokenType.completionText() + "()"
+    }.toList()
 
 val knownOperations =
-  BazelqueryTokenSets.OPERATIONS.types.map { tokenType ->
-    tokenType as BazelqueryTokenType
-    tokenType.completionText()
-  }.toList()
+  BazelqueryTokenSets.OPERATIONS.types
+    .map { tokenType ->
+      tokenType as BazelqueryTokenType
+      tokenType.completionText()
+    }.toList()
 
 class BazelqueryPrefixMatcher(prefix: String) : PrefixMatcher(prefix) {
+  override fun prefixMatches(name: String): Boolean = name.startsWith(prefix, ignoreCase = true)
 
-  override fun prefixMatches(name: String): Boolean {
-    return name.startsWith(prefix, ignoreCase = true)
-  }
-
-  override fun cloneWithPrefix(newPrefix: String): PrefixMatcher {
-    return BazelqueryPrefixMatcher(newPrefix)
-  }
+  override fun cloneWithPrefix(newPrefix: String): PrefixMatcher = BazelqueryPrefixMatcher(newPrefix)
 }
 
-private val wordsOrCommandsTokens = TokenSet.create(
-  *BazelqueryTokenSets.WORDS.types,
-  *BazelqueryTokenSets.COMMANDS.types,
-)
+private val wordsOrCommandsTokens =
+  TokenSet.create(
+    *BazelqueryTokenSets.WORDS.types,
+    *BazelqueryTokenSets.COMMANDS.types,
+  )
 
 private class BazelWordCompletionProvider : CompletionProvider<CompletionParameters>() {
   private val separator = if (SystemInfo.isWindows) "\\" else "/"
   private val startPathSign = "$separator$separator"
+
   companion object {
     val psiPattern =
       psiElement()
         .withLanguage(BazelqueryLanguage)
         .and(
-          psiElement().inside(psiElement(BazelqueryFile::class.java))
-        )
-        .andOr(
+          psiElement().inside(psiElement(BazelqueryFile::class.java)),
+        ).andOr(
           psiElement().withElementType(wordsOrCommandsTokens),
           psiElement().atStartOf(psiElement().withElementType(wordsOrCommandsTokens)),
         )
@@ -77,14 +74,14 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
-    val prefix = parameters.position.text
-      .take(parameters.offset - parameters.position.startOffset)
-      .trim()
-      .removePrefix("\"")
-      .removePrefix("'")
+    val prefix =
+      parameters.position.text
+        .take(parameters.offset - parameters.position.startOffset)
+        .trim()
+        .removePrefix("\"")
+        .removePrefix("'")
     val currentDirectory = BazelWorkingDirectoryManager.getWorkingDirectory()
     val targetSuggestions = generateTargetCompletions(prefix, currentDirectory)
-
 
     result.withPrefixMatcher(BazelqueryPrefixMatcher(prefix)).run {
       addAllElements(
@@ -107,7 +104,7 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
                 (it.endsWith(":all") || it.endsWith(":all-targets")) -> 0.2
 
               else -> 0.4
-            }
+            },
           )
         },
       )
@@ -127,6 +124,6 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
             editor.caretModel.moveToOffset(caretOffset - 1)
           }
         },
-      priority
+      priority,
     )
 }

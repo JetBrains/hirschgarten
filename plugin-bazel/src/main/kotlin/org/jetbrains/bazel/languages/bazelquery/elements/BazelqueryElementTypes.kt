@@ -2,11 +2,9 @@ package org.jetbrains.bazel.languages.bazelquery.elements
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-
-import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryWord
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryCommand
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryFlag
-
+import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryWord
 
 object BazelqueryElementTypes {
   val COMMAND = BazelqueryElementType("COMMAND")

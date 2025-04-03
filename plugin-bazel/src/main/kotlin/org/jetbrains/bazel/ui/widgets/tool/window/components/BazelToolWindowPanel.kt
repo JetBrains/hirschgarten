@@ -39,7 +39,6 @@ class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, t
   private var loadedTargetsPanel: BspPanelComponent
   private val bazelQueryDialogWindow = BazelQueryDialogWindow(project)
 
-
   init {
     val actionManager = ActionManager.getInstance()
     val targetUtils = project.targetUtils
@@ -66,10 +65,11 @@ class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, t
 
     this.toolbar = actionToolbar.component
 
-    val tabbedPane = JBTabbedPane().apply {
-      addTab("Loaded Targets", loadedTargetsPanel.withScrollAndSearch())
-      addTab("Bazel Query", bazelQueryDialogWindow)
-    }
+    val tabbedPane =
+      JBTabbedPane().apply {
+        addTab("Loaded Targets", loadedTargetsPanel.withScrollAndSearch())
+        addTab("Bazel Query", bazelQueryDialogWindow)
+      }
     setContent(tabbedPane)
 
     targetUtils.registerSyncListener { targetListChanged ->

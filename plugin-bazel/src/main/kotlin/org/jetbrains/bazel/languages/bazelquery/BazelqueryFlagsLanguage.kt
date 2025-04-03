@@ -7,9 +7,6 @@ import javax.swing.Icon
 
 object BazelqueryFlagsLanguage : Language("BazelqueryFlags")
 
-
-
-
 object BazelqueryFlagsFileType : LanguageFileType(BazelqueryFlagsLanguage) {
   override fun getName(): String = "BazelqueryFlags"
 

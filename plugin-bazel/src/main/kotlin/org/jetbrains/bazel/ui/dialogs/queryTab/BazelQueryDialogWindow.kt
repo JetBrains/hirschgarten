@@ -49,16 +49,19 @@ private class QueryFlagField(
   checked: Boolean = false,
   val values: List<String> = emptyList(),
 ) {
-  val checkBox = JCheckBox(flag, checked).apply {
-    addActionListener {
-      updateFlagCount(isSelected)
-      valuesButtons.forEach { it.isVisible = isSelected }
+  val checkBox =
+    JCheckBox(flag, checked).apply {
+      addActionListener {
+        updateFlagCount(isSelected)
+        valuesButtons.forEach { it.isVisible = isSelected }
+      }
     }
-  }
-  val valuesButtons: List<JRadioButton> = values.map {
-    JRadioButton(it).apply { border = JBUI.Borders.emptyLeft(25) }
-  }
+  val valuesButtons: List<JRadioButton> =
+    values.map {
+      JRadioButton(it).apply { border = JBUI.Borders.emptyLeft(25) }
+    }
   val valuesGroup: ButtonGroup = ButtonGroup()
+
   init {
     valuesButtons.forEach {
       valuesGroup.add(it)
@@ -87,12 +90,13 @@ private class QueryFlagField(
 
 // TODO: Rename to something else than window and move to correct directory
 class BazelQueryDialogWindow(private val project: Project) : JPanel() {
-  private val defaultFlags = BazelqueryCommonOptions.getAll().map { option ->
-    QueryFlagField(
-      flag = option.name,
-      values = option.values
-    )
-  }
+  private val defaultFlags =
+    BazelqueryCommonOptions.getAll().map { option ->
+      QueryFlagField(
+        flag = option.name,
+        values = option.values,
+      )
+    }
 
   // Bazel Runner
   private val queryEvaluator = QueryEvaluator()
@@ -101,25 +105,26 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
   // Graph Window Manager
   private val graphWindowManager = GraphWindowManager()
 
-
   // UI elements
   private val editorTextField = LanguageTextField(BazelqueryLanguage, project, "")
   private val directoryField = JBTextField().apply { isEditable = false }
   private val flagTextField = LanguageTextField(BazelqueryFlagsLanguage, project, "")
-  private val buttonsPanel = JPanel().apply {
-    layout = BoxLayout(this, BoxLayout.X_AXIS)
-    maximumSize = Dimension(Int.MAX_VALUE, 40)
-  }
-  private val flagsPanel = JPanel(VerticalLayout()).apply {
-    defaultFlags.forEach {
-      it.addToPanel(this)
+  private val buttonsPanel =
+    JPanel().apply {
+      layout = BoxLayout(this, BoxLayout.X_AXIS)
+      maximumSize = Dimension(Int.MAX_VALUE, 40)
     }
-    add(flagTextField)
-  }
+  private val flagsPanel =
+    JPanel(VerticalLayout()).apply {
+      defaultFlags.forEach {
+        it.addToPanel(this)
+      }
+      add(flagTextField)
+    }
   private val bazelFilter = BazelBuildTargetConsoleFilter(project)
-  private val resultField: ConsoleView = ConsoleViewImpl(project, false).apply {
-
-  }
+  private val resultField: ConsoleView =
+    ConsoleViewImpl(project, false).apply {
+    }
 
   init {
     layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -128,28 +133,26 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
   }
 
   // Clickable targets in output
-  private fun addLinksToResult(
-    text: String,
-    hyperlinkInfoList: MutableList<Pair<IntRange, HyperlinkInfo>>
-  ) {
+  private fun addLinksToResult(text: String, hyperlinkInfoList: MutableList<Pair<IntRange, HyperlinkInfo>>) {
     val filterResult = bazelFilter.applyFilter(text, text.length)
 
     filterResult?.resultItems?.forEachIndexed { index, item ->
       hyperlinkInfoList.add(
         Pair(
           IntRange(item.highlightStartOffset, item.highlightEndOffset),
-          item.hyperlinkInfo as HyperlinkInfo
-        )
+          item.hyperlinkInfo as HyperlinkInfo,
+        ),
       )
     }
   }
 
   // Graph visualization
-  private fun convertDotToImageIcon(dotContent: String): ImageIcon? {
-    return try {
-      val process = ProcessBuilder("dot", "-Tpng")
-        .redirectErrorStream(true)
-        .start()
+  private fun convertDotToImageIcon(dotContent: String): ImageIcon? =
+    try {
+      val process =
+        ProcessBuilder("dot", "-Tpng")
+          .redirectErrorStream(true)
+          .start()
 
       OutputStreamWriter(process.outputStream).use { writer ->
         writer.write(dotContent)
@@ -158,60 +161,66 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
 
       val pngBytes = process.inputStream.readBytes()
       val exitCode = process.waitFor()
-      if (exitCode == 0)
+      if (exitCode == 0) {
         ImageIcon(pngBytes)
-      else
+      } else {
         null
+      }
     } catch (e: Exception) {
       e.printStackTrace()
       null
     }
-  }
 
   private fun initializeUI() {
-    fun createDirectorySelectionPanel() = JPanel().apply {
-      layout = BoxLayout(this, BoxLayout.X_AXIS)
-      val directoryButton = JButton("Select").apply { addActionListener { chooseDirectory() } }
+    fun createDirectorySelectionPanel() =
+      JPanel().apply {
+        layout = BoxLayout(this, BoxLayout.X_AXIS)
+        val directoryButton = JButton("Select").apply { addActionListener { chooseDirectory() } }
 
-      add(JLabel("Selected Directory: "))
-      add(directoryField)
-      add(directoryButton)
+        add(JLabel("Selected Directory: "))
+        add(directoryField)
+        add(directoryButton)
 
-      maximumSize = Dimension(Int.MAX_VALUE, 40)
-    }
+        maximumSize = Dimension(Int.MAX_VALUE, 40)
+      }
 
-    fun createQueryPanel() = JPanel().apply {
-      layout = BoxLayout(this, BoxLayout.X_AXIS)
-      add(editorTextField)
+    fun createQueryPanel() =
+      JPanel().apply {
+        layout = BoxLayout(this, BoxLayout.X_AXIS)
+        add(editorTextField)
 
-      maximumSize = Dimension(Int.MAX_VALUE, 40)
-    }
+        maximumSize = Dimension(Int.MAX_VALUE, 40)
+      }
 
-    fun createFlagsPanel() = CollapsiblePanel(
-      JBScrollPane(flagsPanel).apply {
-        verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
-      },
-      true,
-      true,
-      AllIcons.General.ChevronUp,
-      AllIcons.General.ChevronDown,
-      "Flags"
-    )
+    fun createFlagsPanel() =
+      CollapsiblePanel(
+        JBScrollPane(flagsPanel).apply {
+          verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
+        },
+        true,
+        true,
+        AllIcons.General.ChevronUp,
+        AllIcons.General.ChevronDown,
+        "Flags",
+      )
 
-    fun createResultPanel() = JPanel(BorderLayout()).apply {
-      add(resultField.component, BorderLayout.CENTER)
-    }
+    fun createResultPanel() =
+      JPanel(BorderLayout()).apply {
+        add(resultField.component, BorderLayout.CENTER)
+      }
 
     add(createDirectorySelectionPanel())
     add(createQueryPanel())
     setButtonsPanelToEvaluate()
     add(buttonsPanel)
-    add(JBScrollPane(
-      JPanel(VerticalLayout()).apply {
-        add(createFlagsPanel())
-        add(createResultPanel())
-      }
-    ))
+    add(
+      JBScrollPane(
+        JPanel(VerticalLayout()).apply {
+          add(createFlagsPanel())
+          add(createResultPanel())
+        },
+      ),
+    )
   }
 
   private fun setButtonsPanelToEvaluate() {
@@ -219,9 +228,10 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
       with(buttonsPanel) {
         removeAll()
         add(Box.createHorizontalGlue())
-        val evaluateButton = JButton("Evaluate").apply {
-          addActionListener { evaluate() }
-        }
+        val evaluateButton =
+          JButton("Evaluate").apply {
+            addActionListener { evaluate() }
+          }
         add(evaluateButton)
         updateUI()
       }
@@ -233,9 +243,10 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
       with(buttonsPanel) {
         removeAll()
         add(Box.createHorizontalGlue())
-        val evaluateButton = JButton("Cancel").apply {
-          addActionListener { cancelEvaluate() }
-        }
+        val evaluateButton =
+          JButton("Cancel").apply {
+            addActionListener { cancelEvaluate() }
+          }
         add(evaluateButton)
         updateUI()
       }
@@ -245,28 +256,32 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
   // Directory selection
   private fun chooseDirectory(dirFile: VirtualFile? = null) {
     // If argument not passed (or passed as null) display window for user to choose from:
-    val chosenDir = if (dirFile != null) {
-      if (!dirFile.isDirectory) throw IllegalArgumentException("$dirFile is not a directory")
-      dirFile
-    } else {
-      val descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor().apply {
-        title = "Select Directory"
-        description = "Choose a directory within the project."
+    val chosenDir =
+      if (dirFile != null) {
+        if (!dirFile.isDirectory) throw IllegalArgumentException("$dirFile is not a directory")
+        dirFile
+      } else {
+        val descriptor =
+          FileChooserDescriptorFactory.createSingleFolderDescriptor().apply {
+            title = "Select Directory"
+            description = "Choose a directory within the project."
+          }
+        FileChooser.chooseFile(descriptor, project, null)
       }
-      FileChooser.chooseFile(descriptor, project, null)
-    }
 
     if (chosenDir != null) {
-      val relativePath = VfsUtilCore.getRelativePath(
-        chosenDir,
-        project.baseDir ?: chosenDir,
-        '/'
-      )
+      val relativePath =
+        VfsUtilCore.getRelativePath(
+          chosenDir,
+          project.baseDir ?: chosenDir,
+          '/',
+        )
 
       if (relativePath == null) {
         if (dirFile != null) throw IllegalArgumentException("$dirFile is not in project")
 
-        NotificationGroupManager.getInstance()
+        NotificationGroupManager
+          .getInstance()
           .getNotificationGroup("Bazel")
           .createNotification("Selected directory is outside of current project", NotificationType.ERROR)
           .notify(project)
@@ -277,7 +292,6 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
       BazelWorkingDirectoryManager.setWorkingDirectory(chosenDir.path)
       queryEvaluator.setEvaluationDirectory(chosenDir)
     }
-
   }
 
   private fun evaluate() {
@@ -293,7 +307,11 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
       if (flag.isSelected) {
         var option = flag.flag
         if (flag.values.isNotEmpty()) {
-          val selectedValue = flag.valuesGroup.elements.toList().find { it.isSelected }?.text
+          val selectedValue =
+            flag.valuesGroup.elements
+              .toList()
+              .find { it.isSelected }
+              ?.text
           option += "=$selectedValue"
         }
         flagsToRun.add(option)
@@ -302,9 +320,10 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
     showInConsole("Bazel Query in progress...")
 
     var commandResults: BazelProcessResult? = null
-    val job = BazelCoroutineService.getInstance(project).start {
-      commandResults = queryEvaluator.evaluate(editorTextField.text, flagsToRun, flagTextField.text)
-    }
+    val job =
+      BazelCoroutineService.getInstance(project).start {
+        commandResults = queryEvaluator.evaluate(editorTextField.text, flagsToRun, flagTextField.text)
+      }
     job.invokeOnCompletion {
       val finishedJob = evaluatorJob.getAndSet(null)
       if (finishedJob == null) return@invokeOnCompletion
@@ -343,17 +362,13 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
     val job = evaluatorJob.getAndSet(null)
     if (job != null) {
       job.cancel()
-        setButtonsPanelToEvaluate()
-        showInConsole("Query cancelled")
-        updateUI()
+      setButtonsPanelToEvaluate()
+      showInConsole("Query cancelled")
+      updateUI()
     }
   }
 
-
-  private fun showInConsole(
-    text: String,
-    hyperlinkInfoList: List<Pair<IntRange, HyperlinkInfo?>> = emptyList()
-  ) {
+  private fun showInConsole(text: String, hyperlinkInfoList: List<Pair<IntRange, HyperlinkInfo?>> = emptyList()) {
     resultField.clear()
 
     var lastIndex = 0
@@ -363,11 +378,14 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
         resultField.print(normalText, ConsoleViewContentType.NORMAL_OUTPUT)
       }
       val hyperlinkText = text.substring(range.first, range.last)
-      resultField.printHyperlink(hyperlinkText, object : HyperlinkInfoBase() {
-        override fun navigate(project: Project, hyperlinkLocationPoint: RelativePoint?) {
-          hyperlinkInfo?.navigate(project)
-        }
-      })
+      resultField.printHyperlink(
+        hyperlinkText,
+        object : HyperlinkInfoBase() {
+          override fun navigate(project: Project, hyperlinkLocationPoint: RelativePoint?) {
+            hyperlinkInfo?.navigate(project)
+          }
+        },
+      )
 
       lastIndex = range.last
     }
