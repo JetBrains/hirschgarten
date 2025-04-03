@@ -11,6 +11,7 @@ interface JvmBinaryJarsExtension {
   fun shouldImportJvmBinaryJars(project: Project): Boolean
 
   companion object {
+    @JvmField
     val EP_NAME: ExtensionPointName<JvmBinaryJarsExtension> = create("org.jetbrains.bazel.jvmBinaryJarsExtension")
   }
 }
