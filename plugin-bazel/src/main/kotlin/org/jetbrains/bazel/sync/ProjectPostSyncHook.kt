@@ -25,6 +25,7 @@ interface ProjectPostSyncHook {
   suspend fun onPostSync(environment: ProjectPostSyncHookEnvironment)
 
   companion object {
+    @JvmField
     val ep = ExtensionPointName.create<ProjectPostSyncHook>("org.jetbrains.bazel.projectPostSyncHook")
   }
 
