@@ -11,7 +11,6 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.references.BazelNativeRuleReference
 import org.jetbrains.bazel.languages.starlark.references.StarlarkFunctionCallReference
-import org.jetbrains.kotlin.idea.base.psi.relativeTo
 
 @Suppress("UnstableApiUsage")
 class StarlarkCallExpression(node: ASTNode) : StarlarkBaseElement(node) {
