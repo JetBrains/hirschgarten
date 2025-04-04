@@ -47,6 +47,7 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
+import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.PythonOptionsItem
@@ -378,7 +379,7 @@ class BspProjectMapper(
     return resolve(params)
   }
 
-  suspend fun jvmBuilderParams(project: Project): JvmToolchainQuery.JvmToolchainInfo {
+  suspend fun jvmBuilderParams(project: Project): JvmToolchainInfo {
     return JvmToolchainQuery.jvmToolchainQuery(bspInfo, bazelRunner, project.workspaceContext)
   }
 }

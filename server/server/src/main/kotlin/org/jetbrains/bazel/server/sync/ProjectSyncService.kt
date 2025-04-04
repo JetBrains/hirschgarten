@@ -30,7 +30,7 @@ import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
-import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
+import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -97,7 +97,7 @@ class ProjectSyncService(
     return bspMapper.workspaceBazelRepoMapping(project)
   }
 
-  fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = WorkspaceBazelBinPathResult(bazelInfo.bazelBin.toString())
+  fun workspaceBazelPaths(): WorkspaceBazelPathsResult = WorkspaceBazelPathsResult(bazelInfo.bazelBin.toString(), bazelInfo.execRoot.toString())
 
   suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return InverseSourcesResult(emptyList())

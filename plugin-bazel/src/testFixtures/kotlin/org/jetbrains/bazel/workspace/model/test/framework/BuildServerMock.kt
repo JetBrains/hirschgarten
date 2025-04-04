@@ -24,6 +24,7 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
+import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
@@ -36,7 +37,7 @@ import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
-import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
+import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
@@ -140,9 +141,10 @@ class BuildServerMock(
 
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = wrapInFuture(workspaceBazelRepoMappingResult)
 
-  override suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = WorkspaceBazelBinPathResult("/path/to/bazel-bin")
+  override suspend fun workspaceBazelBinPath(): WorkspaceBazelPathsResult = WorkspaceBazelPathsResult("/path/to/bazel-bin", "/path/to/bazel-out/exec")
 
   override suspend fun workspaceContext(): WorkspaceContext = wrapInFuture(workspaceContextResult)
+  override suspend fun jvmToolchainInfo() = JvmToolchainInfo("/path/to/java/home", "/path/to/bazel/toolchain", emptyList())
 
   private fun <T> wrapInFuture(value: T?): T = value ?: error("mock value is null")
 }

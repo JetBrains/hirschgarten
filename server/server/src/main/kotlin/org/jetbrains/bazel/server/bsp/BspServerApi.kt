@@ -39,7 +39,7 @@ import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
-import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
+import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
@@ -121,7 +121,7 @@ class BspServerApi(
 
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = projectSyncService.workspaceBazelRepoMapping()
 
-  override suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = projectSyncService.workspaceBazelBinPath()
+  override suspend fun workspaceBazelBinPath(): WorkspaceBazelPathsResult = projectSyncService.workspaceBazelPaths()
 
   override suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
     projectSyncService.resolveLocalToRemote(params)

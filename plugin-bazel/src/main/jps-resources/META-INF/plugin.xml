@@ -152,7 +152,10 @@
         <projectViewNodeDecorator
                 implementation="org.jetbrains.bazel.ui.projectTree.BazelProjectViewNodeDecorator"/>
         <projectTaskRunner
+                id="bsp.BazelProjectTaskRunner"
                 implementation="org.jetbrains.bazel.buildTask.BazelProjectTaskRunner"/>
+        <projectTaskRunner implementation="org.jetbrains.bazel.fastbuild.BazelFastBuildProjectTaskRunner"
+                           order="before bsp.BazelProjectTaskRunner"/>
         <programRunner implementation="org.jetbrains.bazel.jvm.run.BazelJvmDebugRunner"/>
 
         <programRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageProgramRunner"/>
@@ -201,6 +204,10 @@
         <registryKey defaultValue="false"
                      description="Enable partial sync action for a target."
                      key="bsp.enable.partial.sync"/>
+
+        <registryKey defaultValue="false"
+                     description="Enables a fast compile mechanism for JVM languages by delegating directly to the bazel builder"
+                     key="bsp.enable.jvm.fastbuild" />
 
         <statusBarWidgetFactory id="BazelFileTargetsWidget"
                                 implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetFactory"/>
@@ -286,6 +293,7 @@
         <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.nonmodule.sync.NonModuleTargetsSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.fastbuild.ToolchainInfoSyncHook"/>
         <additionalProjectTaskRunnerProvider
                 implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
 

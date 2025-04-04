@@ -17,7 +17,8 @@ class BazelBinPathSyncHook : ProjectSyncHook {
       val bazelBinPathService = BazelBinPathService.getInstance(environment.project)
       val bazelBinPathResult =
         query("workspace/bazelBinPath") { environment.server.workspaceBazelBinPath() }
-      bazelBinPathService.bazelBinPath = bazelBinPathResult.path
+      bazelBinPathService.bazelBinPath = bazelBinPathResult.bazelBin
+      bazelBinPathService.bazelExecPath = bazelBinPathResult.executionRoot
     }
 }
 
@@ -29,16 +30,23 @@ class BazelBinPathSyncHook : ProjectSyncHook {
 @Service(Service.Level.PROJECT)
 class BazelBinPathService : PersistentStateComponent<BazelBinPathService.State> {
   var bazelBinPath: String? = null
+  var bazelExecPath: String? = null
 
-  override fun getState(): State? = bazelBinPath?.let { State(it) }
+  override fun getState(): State? {
+    if (bazelBinPath != null && bazelExecPath != null) {
+      return State(bazelBinPath, bazelExecPath)
+    }
+    return null
+  }
 
   override fun loadState(state: State) {
-    bazelBinPath = state.path
+    bazelBinPath = state.bazelBin
+    bazelExecPath = state.execRoot
   }
 
   companion object {
     fun getInstance(project: Project): BazelBinPathService = project.service<BazelBinPathService>()
   }
 
-  data class State(var path: String? = null)
+  data class State(var bazelBin: String? = null, var execRoot: String?)
 }

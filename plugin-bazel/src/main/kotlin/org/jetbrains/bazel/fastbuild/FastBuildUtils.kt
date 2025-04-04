@@ -33,15 +33,16 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.io.toCanonicalPath
-import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
-import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.StatusCode
-import io.opentelemetry.context.Context
+import com.intellij.util.io.delete
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.flow.sync.BazelBinPathService
 import org.jetbrains.bazel.target.TargetUtils
+import org.jetbrains.concurrency.AsyncPromise
+import org.jetbrains.concurrency.Promise
 import java.io.File
 import java.io.OutputStreamWriter
 import java.nio.file.Files
@@ -59,14 +60,17 @@ object FastBuildUtils {
 
   private val logger = Logger.getInstance(FastBuildUtils::class.java)
 
-  suspend fun fastBuildFiles(project: Project, files: Array<VirtualFile>) {
+  const val fastBuildEnabledKey = "bsp.enable.jvm.fastbuild"
+
+  fun fastBuildFiles(project: Project, files: List<VirtualFile>): Promise<ProjectTaskRunner.Result> {
+    val promise = AsyncPromise<ProjectTaskRunner.Result>()
     val workspaceRoot = project.rootDir.toNioPath()
 
     val targetUtils = project.service<TargetUtils>()
     val virtualFileManager = VirtualFileManager.getInstance()
     val buildInfos = files
       .mapNotNull { file ->
-        targetUtils.getBuildTargetInfoForLabel(
+        targetUtils.getBuildTargetForLabel(
           targetUtils.getTargetsForFile(file).first()
         )?.let {
           file to it
@@ -104,10 +108,11 @@ object FastBuildUtils {
         continue
       }
       val relativePath = entry.value.baseDirectory?.let {
-        virtualFileManager.findFileByUrl(it)?.toNioPath()?.relativeTo(workspaceRoot)
+        virtualFileManager.findFileByNioPath(it)?.toNioPath()?.relativeTo(workspaceRoot)
       } ?: continue
       val isLib = targetUtils.isLibrary(entry.value.id)
-      val targetJar = workspaceRoot.resolve("bazel-bin/${relativePath}/${if (isLib) "lib" else ""}${entry.value.id.targetName}.jar")
+      val bazelBin = BazelBinPathService.getInstance(project).bazelBinPath ?: TODO()
+      val targetJar = Path.of("$bazelBin/${relativePath}/${if (isLib) "lib" else ""}${entry.value.id.targetName}.jar")
 
       val originalParamsFile = targetJar.parent.resolve(targetJar.fileName.name + "-0.params")
       val originalParamsFile1 = targetJar.parent.resolve(targetJar.fileName.name + "-1.params")
@@ -162,7 +167,7 @@ object FastBuildUtils {
           add("@${originalParamsFile1.pathString}")
         }
         val command = GeneralCommandLine(arguments).apply {
-          workDirectory = info.executionRoot.toFile() //TODO
+          workDirectory = File(BazelBinPathService.getInstance(project).bazelExecPath ?: TODO())
         }
 
         try {
@@ -205,21 +210,13 @@ object FastBuildUtils {
               }
             }
           })
-          span.addEvent("fast compile")
           handler.startNotify()
           if (!handler.waitFor() || handler.exitCode != 0) {
             compileTask.setEndCompilationStamp(ExitStatus.ERRORS, System.currentTimeMillis())
-            if (Registry.`is`(CompileUtils.cleanupKey)) {
-              tempDir
-            }
-            span.addEvent("fast compile failed")
-            span.end()
+            tempDir.delete()
             return@start
           }
         } catch (e: ExecutionException) {
-          span.recordException(e)
-          span.setStatus(StatusCode.ERROR)
-          span.end()
 
           compileContext.addMessage(
             CompilerMessageImpl(
@@ -233,10 +230,11 @@ object FastBuildUtils {
         }
         compileTask.setEndCompilationStamp(ExitStatus.SUCCESS, System.currentTimeMillis())
 
-        processAndHotswapOutput(tempDir, outputJar, project, span)
+        processAndHotswapOutput(tempDir, outputJar, project)
         promise.setResult(TaskRunnerResults.SUCCESS)
       }, null)
     }
+    return promise
   }
 
   /**
@@ -332,10 +330,9 @@ object FastBuildUtils {
   /**
    * Unzips the jar and uses the files within to hotswap
    */
-  fun processAndHotswapOutput(tempDir: Path, outputJar: Path, project: Project, span: Span) {
+  fun processAndHotswapOutput(tempDir: Path, outputJar: Path, project: Project) {
     ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Hotswapping", true) {
       override fun run(indicator: ProgressIndicator) {
-        span.addEvent("unzipping jar")
         val unzip = tempDir.resolve("unzip").also { it.toFile().mkdir() }
         val files = buildList<String> {
           ZipFile(outputJar.toFile()).use { zipFile ->
@@ -359,18 +356,16 @@ object FastBuildUtils {
         }
 
         indicator.checkCanceled()
-        span.end()
+//        span.end()
 
-        hotswapFile(project, files, tempDir.toFile(), span)
+        hotswapFile(project, files, tempDir.toFile())
       }
     })
 
   }
 
-  fun hotswapFile(project: Project, hotswapMap: Map<String, HotSwapFile>, tempDir: File, span: Span) {
-    val hotswapSpan = Tracing.getSpanBuilder("hotswapping", project)
-      .setParent(Context.current().with(span))
-      .startSpan()
+  fun hotswapFile(project: Project, hotswapMap: Map<String, HotSwapFile>, tempDir: File) {
+
     ApplicationManager.getApplication().invokeLater {
       val sessionsToHotswap = getSessionsToHotswap(project)
       val progress = HotSwapProgressImpl(project)
@@ -381,18 +376,16 @@ object FastBuildUtils {
             HotSwapManager.reloadModifiedClasses(sessionMap, progress)
           }, progress.progressIndicator)
         } finally {
-          triggerHotswapSuccessNotification(project, progress, hotswapSpan)
+          triggerHotswapSuccessNotification(project, progress)
           progress.finished()
-          if (Registry.`is`(cleanupKey)) {
-            tempDir.delete()
-          }
-          hotswapSpan.end()
+          tempDir.delete()
+//          hotswapSpan.end()
         }
       }
     }
   }
 
-  private fun triggerHotswapSuccessNotification(project: Project, progress: HotSwapProgressImpl, span: Span) {
+  private fun triggerHotswapSuccessNotification(project: Project, progress: HotSwapProgressImpl) {
     try {
       val hasErrorsMethod = HotSwapProgressImpl::class.java.getDeclaredMethod("hasErrors")
       hasErrorsMethod.setAccessible(true)
@@ -406,7 +399,7 @@ object FastBuildUtils {
         ).setImportant(false).notify(project)
       }
     } catch (e: Exception) {
-      span.recordException(e)
+//      span.recordException(e)
       logger.warn("Failed to trigger hotswap completed notification", e)
     }
   }

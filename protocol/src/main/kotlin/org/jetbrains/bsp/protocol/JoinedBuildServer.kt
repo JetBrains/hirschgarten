@@ -61,7 +61,7 @@ interface JoinedBuildServer {
 
   suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult
 
-  suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult
+  suspend fun workspaceBazelBinPath(): WorkspaceBazelPathsResult
 
   suspend fun workspaceContext(): WorkspaceContext
 
