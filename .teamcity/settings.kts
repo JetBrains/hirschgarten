@@ -58,6 +58,7 @@ object GitHub : Project({
         buildType(PluginBenchmark.BenchmarkDefaultGitHub)
         buildType(PluginBenchmark.BenchmarkWithVersionGitHub)
         buildType(IdeStarterTests.HotswapTestGitHub)
+        buildType(IdeStarterTests.RunLineMarkerTestGitHub)
         buildType(IdeStarterTests.ExternalRepoResolveTestGitHub)
         buildType(IdeStarterTests.JarSourceExcludeTestGitHub)
         buildType(IdeStarterTests.BazelProjectModelModifierTestGitHub)
@@ -122,6 +123,7 @@ object GitHub : Project({
       PluginBenchmark.BenchmarkDefaultGitHub,
       PluginBenchmark.BenchmarkWithVersionGitHub,
       IdeStarterTests.HotswapTestGitHub,
+      IdeStarterTests.RunLineMarkerTestGitHub,
       IdeStarterTests.ExternalRepoResolveTestGitHub,
       IdeStarterTests.JarSourceExcludeTestGitHub,
       IdeStarterTests.BazelProjectModelModifierTestGitHub,
@@ -174,6 +176,7 @@ object Space : Project({
         buildType(PluginBenchmark.SpaceBenchmarkDefault)
         buildType(PluginBenchmark.SpaceBenchmarkWithVersion)
         buildType(IdeStarterTests.HotswapTestSpace)
+        buildType(IdeStarterTests.RunLineMarkerTestSpace)
         buildType(IdeStarterTests.ExternalRepoResolveTestSpace)
         buildType(IdeStarterTests.JarSourceExcludeTestSpace)
         buildType(IdeStarterTests.BazelProjectModelModifierTestSpace)
@@ -238,6 +241,7 @@ object Space : Project({
       PluginBenchmark.SpaceBenchmarkDefault,
       PluginBenchmark.SpaceBenchmarkWithVersion,
       IdeStarterTests.HotswapTestSpace,
+      IdeStarterTests.RunLineMarkerTestSpace,
       IdeStarterTests.ExternalRepoResolveTestSpace,
       IdeStarterTests.JarSourceExcludeTestSpace,
       IdeStarterTests.BazelProjectModelModifierTestSpace,
