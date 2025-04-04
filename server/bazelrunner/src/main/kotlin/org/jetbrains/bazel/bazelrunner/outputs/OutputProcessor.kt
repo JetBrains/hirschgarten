@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
+import com.intellij.execution.process.OSProcessUtil
 import com.intellij.util.io.awaitExit
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.await
@@ -14,7 +15,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 
 abstract class OutputProcessor(private val process: Process, vararg loggers: OutputHandler) {
   val stdoutCollector = OutputCollector()
@@ -71,7 +71,7 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
           withTimeoutOrNull(2000) {
             serverPidFuture
               ?.await() // we don't want to wait forever if server never gave us its PID
-              ?.let { Runtime.getRuntime().exec("kill -SIGINT $it").awaitExit() }
+              ?.let { pid -> OSProcessUtil.killProcess(pid.toInt()) }
               ?: logger?.error("Could not cancel the task. Bazel server needs to be interrupted manually.")
           }
         }
@@ -81,12 +81,5 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
       val exitCode = process.awaitExit()
       shutdown()
       return@coroutineScope exitCode
-    }
-
-  private fun CompletableFuture<Long>.getOrNull(): Long? =
-    try {
-      this.get(2, TimeUnit.SECONDS)
-    } catch (_: TimeoutException) {
-      null
     }
 }
