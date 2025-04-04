@@ -2,7 +2,7 @@ package org.jetbrains.bazel.annotation
 
 import com.google.common.reflect.ClassPath
 import io.kotest.matchers.shouldBe
-import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.resourceUtil.ResourceUtil
 import org.junit.jupiter.api.Test
@@ -22,7 +22,7 @@ private const val PACKAGE_PREFIX = "org.jetbrains.bazel"
  *
  * If this test fails because you annotated a new class or member with [PublicApi], open the `test.log`, search for `but was:`,
  * and use that to add the new fields the corresponding list (`public-api-classes.txt`, `public-api-methods.txt`, `public-api-fields.txt`).
- * You can also add [ApiStatus.Internal] on methods or fields of public classes that you don't want to be public.
+ * You can also add [InternalApi] on methods or fields of public classes that you don't want to be public.
  */
 class PublicApiCheckTest {
   @Test
@@ -44,14 +44,14 @@ class PublicApiCheckTest {
       val fields = classes.flatMap { it.declaredFields.toList() }
 
       val publicApiAnnotationClass = PublicApi::class.java
-      val internalApiAnnotationClass = ApiStatus.Internal::class.java
+      val internalApiAnnotationClass = InternalApi::class.java
       val publicApiClasses = classes.filter { it.isAnnotationPresent(publicApiAnnotationClass) }
       val publicApiClassesWithoutAdditionalAnnotationsForMembers =
         publicApiClasses.filter { publicApiClass ->
           publicApiClass.declaredMethods.none { it.isAnnotationPresent(publicApiAnnotationClass) } &&
             publicApiClass.declaredMethods.none { it.isAnnotationPresent(internalApiAnnotationClass) } &&
-            publicApiClass.declaredFields.none { it.isAnnotationPresent(publicApiAnnotationClass) }
-          publicApiClass.declaredFields.none { it.isAnnotationPresent(internalApiAnnotationClass) }
+            publicApiClass.declaredFields.none { it.isAnnotationPresent(publicApiAnnotationClass) } &&
+            publicApiClass.declaredFields.none { it.isAnnotationPresent(internalApiAnnotationClass) }
         }
       val publicApiMethods =
         methods.filter { it.isAnnotationPresent(publicApiAnnotationClass) } +

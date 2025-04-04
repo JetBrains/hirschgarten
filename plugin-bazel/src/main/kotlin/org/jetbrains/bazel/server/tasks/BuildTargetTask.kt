@@ -11,8 +11,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
+import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
@@ -32,7 +32,7 @@ import org.jetbrains.bsp.protocol.StatusCode
 import java.nio.file.Path
 import java.util.UUID
 
-@ApiStatus.Internal
+@InternalApi
 class BuildTargetTask(private val project: Project) {
   suspend fun execute(server: JoinedBuildServer, targetsIds: List<Label>): CompileResult =
     coroutineScope {
