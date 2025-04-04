@@ -7,7 +7,6 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.references.StarlarkNamedArgumentReference
-import org.jetbrains.kotlin.idea.base.psi.relativeTo
 
 class StarlarkNamedArgumentExpression(node: ASTNode) :
   StarlarkBaseElement(node),

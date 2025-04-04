@@ -79,6 +79,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/intellij",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jpsCompilation/utils",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jvm/junit",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jvm/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jvm/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jvm/ui/gutters",

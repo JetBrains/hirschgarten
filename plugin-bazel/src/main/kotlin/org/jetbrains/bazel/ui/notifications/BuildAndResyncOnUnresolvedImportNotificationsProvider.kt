@@ -20,8 +20,6 @@ import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.kotlin.idea.references.mainReference
-import org.jetbrains.kotlin.idea.util.isJavaFileType
-import org.jetbrains.kotlin.idea.util.isKotlinFileType
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.psiUtil.getQualifiedElementSelector
 import java.util.function.Function
@@ -55,6 +53,10 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotification
       else -> false
     }
   }
+
+  private fun VirtualFile.isKotlinFileType(): Boolean = extension == "kt"
+
+  private fun VirtualFile.isJavaFileType(): Boolean = extension == "java"
 
   private fun hasUnresolvedImport(psiFile: KtFile): Boolean {
     val importList = psiFile.importList ?: return false

@@ -11,14 +11,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.bazel.action.saveAllFiles
+import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.server.connection.connection
-import org.jetbrains.bazel.sync.status.BuildStatusService
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
@@ -32,7 +31,7 @@ import org.jetbrains.bsp.protocol.StatusCode
 import java.nio.file.Path
 import java.util.UUID
 
-@ApiStatus.Internal
+@InternalApi
 class BuildTargetTask(private val project: Project) {
   suspend fun execute(server: JoinedBuildServer, targetsIds: List<Label>): CompileResult =
     coroutineScope {
@@ -111,13 +110,11 @@ class BuildTargetTask(private val project: Project) {
 
       startBuildConsoleTask(targetsIds, bspBuildConsole, originId, this)
       val compileParams = createCompileParams(targetsIds, originId)
-      BuildStatusService.getInstance(project).startBuild()
       try {
         val buildDeferred = async { server.buildTargetCompile(compileParams) }
         return@coroutineScope BspTaskStatusLogger(buildDeferred, bspBuildConsole, originId) { statusCode }.getResult()
       } finally {
         BazelTaskEventsService.getInstance(project).removeListener(originId)
-        BuildStatusService.getInstance(project).finishBuild()
       }
     }
 

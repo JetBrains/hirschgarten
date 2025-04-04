@@ -103,6 +103,14 @@ sealed class TestResultsTreeTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testResultsTree"
 )
 
+sealed class RunLineMarkerTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Run Line Marker test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testRunLineMarker"
+)
+
 sealed class ImportRunConfigurationsTest(
   vcsRoot: GitVcsRoot,
 ) : IdeStarterTests(
@@ -164,6 +172,14 @@ object TestResultsTreeTestGitHub : TestResultsTreeTest(
 )
 
 object TestResultsTreeTestSpace : TestResultsTreeTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object RunLineMarkerTestGitHub : RunLineMarkerTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object RunLineMarkerTestSpace : RunLineMarkerTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )
 

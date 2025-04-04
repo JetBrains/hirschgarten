@@ -27,6 +27,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
 
   // experimental features
   private val enableLocalJvmActionsCheckBox: JBCheckBox
+  private val useIntellijTestRunnerCheckBox: JBCheckBox
   private val enableBuildWithJpsCheckBox: JBCheckBox
 
   private var currentProjectSettings = project.bazelProjectSettings
@@ -36,8 +37,11 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
     showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
 
+    // TODO: BAZEL-1837
     // experimental features
+    useIntellijTestRunnerCheckBox = initUseIntellijTestRunnerCheckBoxBox()
     enableLocalJvmActionsCheckBox = initEnableLocalJvmActionsCheckBox()
+
     enableBuildWithJpsCheckBox = initEnableBuildWithJpsCheckBox()
   }
 
@@ -46,6 +50,16 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
       isSelected = currentProjectSettings.enableLocalJvmActions
       addItemListener {
         currentProjectSettings = currentProjectSettings.copy(enableLocalJvmActions = isSelected)
+        useIntellijTestRunnerCheckBox.isEnabled = isSelected
+      }
+    }
+
+  private fun initUseIntellijTestRunnerCheckBoxBox(): JBCheckBox =
+    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.use.intellij.test.runner.checkbox.text")).apply {
+      isSelected = currentProjectSettings.useIntellijTestRunner
+      isEnabled = currentProjectSettings.enableLocalJvmActions
+      addItemListener {
+        currentProjectSettings = currentProjectSettings.copy(useIntellijTestRunner = isSelected)
       }
     }
 
@@ -99,7 +113,14 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
         row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
       }
       group(BazelPluginBundle.message("project.settings.experimental.settings")) {
-        row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
+        group(BazelPluginBundle.message("project.settings.local.runner.settings")) {
+          row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
+          row {
+            cell(useIntellijTestRunnerCheckBox).align(Align.FILL)
+            contextHelp(BazelPluginBundle.message("project.settings.plugin.use.intellij.test.runner.help.text"))
+          }
+        }
+
         row { cell(enableBuildWithJpsCheckBox).align(Align.FILL) }
       }
     }
@@ -156,9 +177,10 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     val keys =
       listOf(
         "project.settings.plugin.enable.local.jvm.actions.checkbox.text",
-        "project.settings.plugin.title",
         "project.settings.plugin.hotswap.enabled.checkbox.text",
         "project.settings.plugin.show.excluded.directories.as.separate.node.checkbox.text",
+        "project.settings.plugin.title",
+        "project.settings.plugin.use.intellij.test.runner.checkbox.text",
       )
   }
 }

@@ -1,6 +1,6 @@
-// Do not change this package, see https://youtrack.jetbrains.com/issue/BAZEL-1632
 package org.jetbrains.bazel.label
 
+import org.jetbrains.bazel.annotations.PublicApi
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -52,6 +52,7 @@ data object AmbiguousEmptyTarget : TargetType {
   override fun toString(): String = ""
 }
 
+@PublicApi
 sealed interface PackageType {
   val pathSegments: List<String>
 }
@@ -156,6 +157,7 @@ data class RelativeLabel(override val packagePath: PackageType, override val tar
  * See https://bazel.build/concepts/labels
  */
 sealed interface Label : Comparable<Label> {
+  @PublicApi
   val packagePath: PackageType
   val target: TargetType
 
