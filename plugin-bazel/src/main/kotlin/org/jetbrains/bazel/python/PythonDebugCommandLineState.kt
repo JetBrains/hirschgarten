@@ -23,7 +23,6 @@ import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
-import org.jetbrains.bazel.sync.status.BuildStatusService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.CompileParams
@@ -48,9 +47,8 @@ class PythonDebugCommandLineState(
         originId = originId,
         arguments = transformProgramArguments(settings.programArguments),
       )
-    BuildStatusService.getInstance(environment.project).withBuildInProgress {
-      server.buildTargetCompile(buildParams)
-    }
+
+    server.buildTargetCompile(buildParams)
   }
 
   fun asPythonState(): PythonCommandLineState = PythonScriptCommandLineState(pythonConfig(), environment)
