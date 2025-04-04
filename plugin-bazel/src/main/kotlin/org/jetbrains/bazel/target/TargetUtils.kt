@@ -18,7 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
-import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
@@ -38,7 +38,7 @@ import kotlin.to
 
 private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
-@ApiStatus.Internal
+@InternalApi
 data class TargetUtilsState(
   var labelToTargetInfo: Map<String, BuildTargetState> = emptyMap(),
   var moduleIdToTarget: Map<String, String> = emptyMap(),
@@ -54,7 +54,7 @@ data class TargetUtilsState(
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
 class TargetUtils(private val project: Project) : PersistentStateComponent<TargetUtilsState> {
-  @ApiStatus.Internal
+  @InternalApi
   var labelToTargetInfo: Map<Label, BuildTarget> = emptyMap()
     private set
   private var moduleIdToTarget: Map<String, Label> = emptyMap()
@@ -79,7 +79,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     fileToTarget = fileToTarget - path
   }
 
-  @ApiStatus.Internal
+  @InternalApi
   suspend fun saveTargets(
     targetIdToTargetInfo: Map<Label, BuildTarget>,
     targetIdToModuleEntity: Map<Label, List<Module>>,
@@ -156,12 +156,12 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   private fun createLibraryModulesLookupTable(libraryModules: List<JavaModule>) =
     libraryModules.map { it.genericModuleInfo.name }.toHashSet()
 
-  @ApiStatus.Internal
+  @InternalApi
   fun fireSyncListeners(targetListChanged: Boolean) {
     listeners.forEach { it(targetListChanged) }
   }
 
-  @ApiStatus.Internal
+  @InternalApi
   fun registerSyncListener(listener: (targetListChanged: Boolean) -> Unit) {
     listeners += listener
   }
@@ -174,7 +174,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     fileToTarget[file.toNioPath()]
       ?: getTargetsFromAncestorsForFile(file)
 
-  @ApiStatus.Internal
+  @InternalApi
   fun getExecutableTargetsForFile(file: VirtualFile): List<Label> {
     val executableDirectTargets =
       getTargetsForFile(file).filter { label -> labelToTargetInfo[label]?.capabilities?.isExecutable == true }
@@ -209,20 +209,20 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   @PublicApi
   fun getTargetForLibraryId(libraryId: String): Label? = libraryIdToTarget[libraryId]
 
-  @ApiStatus.Internal
+  @InternalApi
   fun getBuildTargetForLabel(label: Label): BuildTarget? = labelToTargetInfo[label]
 
-  @ApiStatus.Internal
+  @InternalApi
   fun getBuildTargetForModule(module: com.intellij.openapi.module.Module): BuildTarget? =
     getTargetForModuleId(module.name)?.let { getBuildTargetForLabel(it) }
 
   /**
    * [libraryModulesLookupTable] is not persisted between IDE restarts, use this method with caution.
    */
-  @ApiStatus.Internal
+  @InternalApi
   fun isLibraryModule(name: String): Boolean = name.addLibraryModulePrefix() in libraryModulesLookupTable
 
-  @ApiStatus.Internal
+  @InternalApi
   override fun getState(): TargetUtilsState =
     TargetUtilsState(
       labelToTargetInfo = labelToTargetInfo.mapKeys { it.key.toString() }.mapValues { it.value.toState() },
@@ -232,7 +232,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       fileToExecutableTargets = fileToExecutableTargets.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.toString() } },
     )
 
-  @ApiStatus.Internal
+  @InternalApi
   override fun loadState(state: TargetUtilsState) {
     labelToTargetInfo =
       state.labelToTargetInfo
@@ -247,7 +247,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   }
 }
 
-@ApiStatus.Internal
+@InternalApi
 fun String.addLibraryModulePrefix() = "_aux.libraries.$this"
 
 @PublicApi
@@ -262,20 +262,20 @@ fun Label.getModule(project: Project): com.intellij.openapi.module.Module? =
 fun Label.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity
 
 val com.intellij.openapi.module.Module.moduleEntity: ModuleEntity?
-  @ApiStatus.Internal
+  @InternalApi
   get() {
     val bridge = this as? ModuleBridge ?: return null
     return bridge.findModuleEntity(bridge.entityStorage.current)
   }
 
-@ApiStatus.Internal
+@InternalApi
 fun BuildTarget.getModule(project: Project): com.intellij.openapi.module.Module? {
   val moduleNameProvider = project.findNameProvider()
   val moduleName = moduleNameProvider(this.id)
   return ModuleManager.getInstance(project).findModuleByName(moduleName)
 }
 
-@ApiStatus.Internal
+@InternalApi
 fun calculateFileToTarget(targetIdToModuleDetails: Map<Label, ModuleDetails>): Map<Path, List<Label>> =
   targetIdToModuleDetails.values
     .flatMap { it.toPairsPathToId() }
