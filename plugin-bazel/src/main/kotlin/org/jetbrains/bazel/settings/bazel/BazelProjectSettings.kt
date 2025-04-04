@@ -16,6 +16,7 @@ data class BazelProjectSettings(
   val hotSwapEnabled: Boolean = true,
   val showExcludedDirectoriesAsSeparateNode: Boolean = true,
   val enableLocalJvmActions: Boolean = false,
+  val useIntellijTestRunner: Boolean = false,
   val enableBuildWithJps: Boolean = false,
 ) {
   fun withNewProjectViewPath(newProjectViewFilePath: Path): BazelProjectSettings = copy(projectViewPath = newProjectViewFilePath)
@@ -28,6 +29,7 @@ internal data class BazelProjectSettingsState(
   var hotSwapEnabled: Boolean = true,
   var showExcludedDirectoriesAsSeparateNode: Boolean = true,
   var enableLocalJvmActions: Boolean = false,
+  var useIntellijTestRunner: Boolean = false,
   var enableBuildWithJps: Boolean = false,
 ) {
   fun isEmptyState(): Boolean = this == BazelProjectSettingsState()
@@ -50,6 +52,7 @@ internal class BazelProjectSettingsService :
       hotSwapEnabled = settings.hotSwapEnabled,
       showExcludedDirectoriesAsSeparateNode = settings.showExcludedDirectoriesAsSeparateNode,
       enableLocalJvmActions = settings.enableLocalJvmActions,
+      useIntellijTestRunner = settings.useIntellijTestRunner,
       enableBuildWithJps = settings.enableBuildWithJps,
     )
 
@@ -66,6 +69,7 @@ internal class BazelProjectSettingsService :
           hotSwapEnabled = settingsState.hotSwapEnabled,
           showExcludedDirectoriesAsSeparateNode = settingsState.showExcludedDirectoriesAsSeparateNode,
           enableLocalJvmActions = settingsState.enableLocalJvmActions,
+          useIntellijTestRunner = settingsState.useIntellijTestRunner,
           enableBuildWithJps = settingsState.enableBuildWithJps,
         )
     }

@@ -55,6 +55,11 @@ filegroup(
 )
 
 java_import(
+    name = "junit",
+    jars = glob(["plugins/junit/lib/*.jar"]),
+)
+
+java_import(
     name = "bundled_plugins",
     jars = glob([
         "plugins/java-i18n/lib/*.jar",
