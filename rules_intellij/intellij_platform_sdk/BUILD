@@ -53,6 +53,7 @@ java_library(
             ":sdk",
             ":java",
             ":kotlin",
+            ":junit",
             ":platform_images",
         ],
     ),
@@ -100,6 +101,28 @@ java_library(
         android_studio = [":kotlin"],
         clion = [],
         intellij = [":kotlin"],
+    ),
+)
+
+# IntelliJ JUnit plugin
+java_library(
+    name = "junit",
+    neverlink = 1,
+    exports = select_from_plugin_api_directory(
+        android_studio = [],
+        clion = [],
+        intellij = [":junit"],
+    ),
+)
+
+# IntelliJ JUnit plugin
+java_library(
+    name = "junit_for_tests",
+    testonly = 1,
+    exports = select_from_plugin_api_directory(
+        android_studio = [],
+        clion = [],
+        intellij = [":junit"],
     ),
 )
 

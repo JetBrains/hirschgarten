@@ -36,16 +36,17 @@ abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
         targetUtils
           .getExecutableTargetsForFile(url)
           .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
-      calculateLineMarkerInfo(project, targetInfos, getSingleTestFilter(this))
+      calculateLineMarkerInfo(project, targetInfos, getSingleTestFilter(this), this)
     }
 
   private fun calculateLineMarkerInfo(
     project: Project,
     targetInfos: List<BuildTarget>,
     singleTestFilter: String?,
+    psiElement: PsiElement,
   ): Info? =
     targetInfos
-      .flatMap { it.calculateEligibleActions(project, singleTestFilter, targetInfos.size > 1) }
+      .flatMap { it.calculateEligibleActions(project, singleTestFilter, targetInfos.size > 1, psiElement) }
       .takeIf { it.isNotEmpty() }
       ?.let {
         BspLineMakerInfo(
@@ -58,10 +59,19 @@ abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
     project: Project,
     singleTestFilter: String?,
     includeTargetNameInText: Boolean,
+    psiElement: PsiElement,
   ): List<AnAction> =
     if (this == null) {
       emptyList()
     } else {
-      DefaultActionGroup().fillWithEligibleActions(project, this, includeTargetNameInText, singleTestFilter).childActionsOrStubs.toList()
+      DefaultActionGroup()
+        .fillWithEligibleActions(
+          project,
+          this,
+          includeTargetNameInText,
+          singleTestFilter,
+          psiElement,
+        ).childActionsOrStubs
+        .toList()
     }
 }
