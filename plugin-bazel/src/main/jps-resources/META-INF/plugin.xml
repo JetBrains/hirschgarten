@@ -461,10 +461,6 @@
                 displayName="Bazel"
                 instance="org.jetbrains.bazel.ui.settings.BazelProjectSettingsConfigurable"
                 provider="org.jetbrains.bazel.ui.settings.BazelProjectSettingsConfigurableProvider">
-            <configurable
-                    instance="org.jetbrains.bazel.languages.starlark.formatting.configuration.BuildifierConfigurable"
-                    provider="org.jetbrains.bazel.languages.starlark.formatting.configuration.BuildifierConfigurableProvider"
-                    displayName="Buildifier"/>
         </projectConfigurable>
 
         <applicationConfigurable

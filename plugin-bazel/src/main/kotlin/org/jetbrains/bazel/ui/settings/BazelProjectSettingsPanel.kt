@@ -1,18 +1,21 @@
 package org.jetbrains.bazel.ui.settings
 
 import com.intellij.ide.projectView.ProjectView
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.observable.util.whenTextChanged
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurableProvider
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
+import com.intellij.openapi.ui.ValidationInfo
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
+import org.jetbrains.bazel.buildifier.BuildifierUtil
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.sdkcompat.FileChooserDescriptorFactoryCompat
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
@@ -22,6 +25,7 @@ import kotlin.io.path.pathString
 
 class BazelProjectSettingsConfigurable(private val project: Project) : SearchableConfigurable {
   private val projectViewPathField: TextFieldWithBrowseButton
+  private val buildifierExecutablePathField: TextFieldWithBrowseButton
   private val hotswapEnabledCheckBox: JBCheckBox
   private val showExcludedDirectoriesAsSeparateNodeCheckBox: JBCheckBox
 
@@ -34,6 +38,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
 
   init {
     projectViewPathField = initProjectViewFileField()
+    buildifierExecutablePathField = initBuildifierExecutablePathField()
     hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
     showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
 
@@ -72,22 +77,45 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     }
 
   private fun initProjectViewFileField(): TextFieldWithBrowseButton =
-    TextFieldWithBrowseButton().also { textField ->
+    TextFieldWithBrowseButton().apply {
       val title = "Select Path"
       val description = "Select the path for your project view file."
-      textField.addBrowseFolderListener(
+      addBrowseFolderListener(
         project,
-        FileChooserDescriptorFactory
+        FileChooserDescriptorFactoryCompat
           .createSingleFileDescriptor()
-          .withTitle(
-            title,
-          ).withDescription(description),
+          .withTitle(title)
+          .withDescription(description),
       )
-      textField.whenTextChanged {
-        val newPath = Path(textField.text)
-        currentProjectSettings = currentProjectSettings.withNewProjectViewPath(newPath)
+      whenTextChanged {
+        if (text.isNotBlank()) {
+          val newPath = Path(text)
+          currentProjectSettings = currentProjectSettings.withNewProjectViewPath(newPath)
+        }
       }
     }
+
+  private fun initBuildifierExecutablePathField(): TextFieldWithBrowseButton =
+    TextFieldWithBrowseButton().apply {
+      val title = BazelPluginBundle.message("buildifier.select.path.to.executable")
+      addBrowseFolderListener(
+        project,
+        FileChooserDescriptorFactoryCompat
+          .createSingleFileDescriptor()
+          .withTitle(title),
+      )
+      whenTextChanged {
+        if (text.isNotBlank()) {
+          val newPath = Path(text)
+          currentProjectSettings = currentProjectSettings.withNewProjectViewPath(newPath)
+        }
+      }
+    }
+
+  private fun buildifierExecutableValidationInfo(): ValidationInfo? =
+    BuildifierUtil.validateBuildifierExecutable(
+      buildifierExecutablePathField.text.takeIf { it.isNotBlank() } ?: BuildifierUtil.detectBuildifierExecutable()?.absolutePath,
+    )
 
   private fun initHotSwapEnabledCheckBox(): JBCheckBox =
     JBCheckBox(BazelPluginBundle.message("project.settings.plugin.hotswap.enabled.checkbox.text")).apply {
@@ -109,6 +137,9 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     panel {
       group(BazelPluginBundle.message("project.settings.general.settings")) {
         row(BazelPluginBundle.message("project.settings.project.view.label")) { cell(projectViewPathField).align(Align.FILL) }
+        row(BazelPluginBundle.message("project.settings.buildifier.label")) {
+          cell(buildifierExecutablePathField).align(Align.FILL).validationInfo { buildifierExecutableValidationInfo() }
+        }
         row { cell(hotswapEnabledCheckBox).align(Align.FILL) }
         row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
       }
@@ -148,13 +179,18 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
   override fun reset() {
     super.reset()
     projectViewPathField.text = savedProjectViewPath()
+    buildifierExecutablePathField.text = getBuildifierExecPathPlaceholderMessage()
 
     showExcludedDirectoriesAsSeparateNodeCheckBox.isSelected = project.bazelProjectSettings.showExcludedDirectoriesAsSeparateNode
 
     currentProjectSettings = project.bazelProjectSettings
   }
 
-  private fun savedProjectViewPath(): String =
+  private fun getBuildifierExecPathPlaceholderMessage(): String =
+    currentProjectSettings.getBuildifierPathString()
+      ?: BazelPluginBundle.message("buildifier.executable.not.found", if (SystemInfo.isWindows) 0 else 1)
+
+  private fun savedProjectViewPath() =
     project.bazelProjectSettings.projectViewPath
       ?.pathString
       .orEmpty()
@@ -176,6 +212,8 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
   object SearchIndex { // the companion object of a Configurable is not allowed to have non-const members
     val keys =
       listOf(
+        "project.settings.buildifier.label",
+        "project.settings.project.view.label",
         "project.settings.plugin.enable.local.jvm.actions.checkbox.text",
         "project.settings.plugin.hotswap.enabled.checkbox.text",
         "project.settings.plugin.show.excluded.directories.as.separate.node.checkbox.text",
