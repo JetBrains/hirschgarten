@@ -37,6 +37,7 @@ import org.jetbrains.bazel.ui.widgets.jumpToBuildFile
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.await
+import org.jetbrains.kotlin.idea.kdoc.insert
 
 private val log = logger<BazelProjectModelModifier>()
 
@@ -94,15 +95,18 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
     val targetBuildFile = readAction { findBuildFile(from.project, fromBuildTarget) } ?: return false
     val targetRuleLabel = fromBuildTarget.id
     val ruleTarget = readAction { targetBuildFile.findRuleTarget(targetRuleLabel.targetName) } ?: return false
-    val depsList =
-      readAction {
-        ruleTarget
-          .getArgumentList()
-          ?.getDepsArgument()
-          ?.children
-          ?.first { it is StarlarkListLiteralExpression } as? StarlarkListLiteralExpression
+    val argList = readAction { ruleTarget.getArgumentList() } ?: return false
+    val depsArg = readAction { argList.getDepsArgument() }
+    if (depsArg == null) {
+      WriteCommandAction.runWriteCommandAction(from.project) {
+        // create the depsArgument here
       }
-        ?: return false
+    }
+    val depsList = readAction {
+      depsArg?.children?.firstOrNull { it is StarlarkListLiteralExpression } as? StarlarkListLiteralExpression
+    }
+
+
     var insertSuccessful = false
 
     try {
@@ -120,6 +124,7 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
     }
     return insertSuccessful
   }
+
 
   private suspend fun formatBuildFile(buildFile: StarlarkFile) {
     val formattingService = StarlarkFormattingService()
