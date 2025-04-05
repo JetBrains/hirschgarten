@@ -101,11 +101,9 @@ internal class ModuleDetailsToJavaModuleTransformer(
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
   }
 
-  private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
-    ContentRoot(
-      // TODO https://youtrack.jetbrains.com/issue/BAZEL-635
-      path = (inputEntity.target.baseDirectory ?: error("baseDirectory must not be null")),
-    )
+  private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot? =
+    // TODO https://youtrack.jetbrains.com/issue/BAZEL-635
+    inputEntity.target.baseDirectory?.let { ContentRoot(it) }
 
   private fun ModuleDetails.toJdkNameOrDefault(): String? = toJdkName() ?: defaultJdkName
 
