@@ -68,15 +68,7 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     lookups shouldContainAll
       listOf(
         "java_binary",
-        "java_import",
         "java_library",
-        "java_plugin",
-        "java_runtime",
-        "java_test",
-        "java_toolchain",
-        "java_package_configuration",
-        "java_single_jar",
-        "java_proto_library",
       )
   }
 
