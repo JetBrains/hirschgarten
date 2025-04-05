@@ -7,6 +7,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PatternCondition
@@ -61,6 +62,8 @@ class BazelNativeRulesArgumentCompletionContributor : CompletionContributor() {
     }
 
   private class BazelBuildNativeRulesArgumentCompletionProvider : CompletionProvider<CompletionParameters>() {
+    private val parameterPriority = 1.0
+
     override fun addCompletions(
       parameters: CompletionParameters,
       context: ProcessingContext,
@@ -76,7 +79,9 @@ class BazelNativeRulesArgumentCompletionContributor : CompletionContributor() {
           !argumentListText.contains(it.name)
         }
 
-      filtered.forEach { result.addElement(functionLookupElement(it)) }
+      filtered.forEach {
+        result.addElement(PrioritizedLookupElement.withPriority(functionLookupElement(it), parameterPriority))
+      }
     }
 
     private class ArgumentInsertHandler<T : LookupElement>(val default: String) : InsertHandler<T> {
