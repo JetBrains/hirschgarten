@@ -46,3 +46,9 @@ kt_intellij_junit4_test(
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
     ],
 )
+
+kt_intellij_junit4_test(
+    name = "BazelTargetCompletionTest",
+    src = "BazelTargetCompletionTest.kt",
+    deps = ["//plugin-bazel"],
+)
