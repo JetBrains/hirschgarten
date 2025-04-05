@@ -19,6 +19,7 @@ import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
 import com.intellij.openapi.util.TextRange
 import com.intellij.pom.java.LanguageLevel
+import com.intellij.psi.PsiElement
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -28,6 +29,7 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
+import org.jetbrains.bazel.languages.starlark.rename.StarlarkElementGenerator
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.target.targetUtils
@@ -97,21 +99,26 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
     val ruleTarget = readAction { targetBuildFile.findRuleTarget(targetRuleLabel.targetName) } ?: return false
     val argList = readAction { ruleTarget.getArgumentList() } ?: return false
     val depsArg = readAction { argList.getDepsArgument() }
+    var updatedDepsArg = depsArg
     if (depsArg == null) {
       WriteCommandAction.runWriteCommandAction(from.project) {
-        // create the depsArgument here
+        // Create a new deps argument with an empty list
+        val emptyDepsList = "deps = [],"
+        val node = StarlarkElementGenerator(this.project).createNamedArgument(emptyDepsList)
+        argList.addBefore(node.psi, argList.lastChild)
       }
+      // After creating the deps argument, we need to re-fetch it
+      updatedDepsArg = readAction { argList.getDepsArgument() }
     }
     val depsList = readAction {
-      depsArg?.children?.firstOrNull { it is StarlarkListLiteralExpression } as? StarlarkListLiteralExpression
+      updatedDepsArg?.children?.firstOrNull { it is StarlarkListLiteralExpression } as? StarlarkListLiteralExpression
     }
-
 
     var insertSuccessful = false
 
     try {
       WriteCommandAction.runWriteCommandAction(from.project) {
-        depsList.insertString(labelToInsert.toShortString(project))
+        depsList?.insertString(labelToInsert.toShortString(project))
         insertSuccessful = true
       }
     } catch (e: Exception) {
