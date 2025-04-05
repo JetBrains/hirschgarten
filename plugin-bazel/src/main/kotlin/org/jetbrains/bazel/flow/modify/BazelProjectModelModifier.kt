@@ -28,6 +28,7 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
+import org.jetbrains.bazel.languages.starlark.rename.StarlarkElementGenerator
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.target.targetUtils
@@ -94,20 +95,29 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
     val targetBuildFile = readAction { findBuildFile(from.project, fromBuildTarget) } ?: return false
     val targetRuleLabel = fromBuildTarget.id
     val ruleTarget = readAction { targetBuildFile.findRuleTarget(targetRuleLabel.targetName) } ?: return false
+    val argList = readAction { ruleTarget.getArgumentList() } ?: return false
+    val depsArg = readAction { argList.getDepsArgument() }
+    var updatedDepsArg = depsArg
+    if (depsArg == null) {
+      WriteCommandAction.runWriteCommandAction(from.project) {
+        // Create a new deps argument with an empty list
+        val emptyDepsList = "deps = [],"
+        val node = StarlarkElementGenerator(this.project).createNamedArgument(emptyDepsList)
+        argList.addBefore(node.psi, argList.lastChild)
+      }
+      // After creating the deps argument, we need to re-fetch it
+      updatedDepsArg = readAction { argList.getDepsArgument() }
+    }
     val depsList =
       readAction {
-        ruleTarget
-          .getArgumentList()
-          ?.getDepsArgument()
-          ?.children
-          ?.first { it is StarlarkListLiteralExpression } as? StarlarkListLiteralExpression
+        updatedDepsArg?.children?.filterIsInstance<StarlarkListLiteralExpression>()?.firstOrNull()
       }
-        ?: return false
+
     var insertSuccessful = false
 
     try {
       WriteCommandAction.runWriteCommandAction(from.project) {
-        depsList.insertString(labelToInsert.toShortString(project))
+        depsList?.insertString(labelToInsert.toShortString(project))
         insertSuccessful = true
       }
     } catch (e: Exception) {

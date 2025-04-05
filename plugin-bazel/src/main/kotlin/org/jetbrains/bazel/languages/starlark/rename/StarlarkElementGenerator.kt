@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.rename
 
 import com.intellij.lang.ASTNode
+import com.intellij.lang.tree.util.children
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileFactory
@@ -42,6 +43,22 @@ class StarlarkElementGenerator(val project: Project) {
       error("Expected elementType to be STRING_LITERAL_EXPRESSION")
     }
     return stringNode
+  }
+
+  /**
+   * You want to be passing contents sort of in the form
+   *     `deps = [],`
+   */
+  fun createNamedArgument(contents: String): ASTNode {
+    val dummyFile = createDummyFile("dummy($contents)")
+    val argumentNode =
+      dummyFile.node.firstChildNode.firstChildNode.lastChildNode
+        .children()
+        .elementAt(1)
+    if (argumentNode.elementType !== StarlarkElementTypes.NAMED_ARGUMENT_EXPRESSION) {
+      error("Expected elementType to be NAMED_ARGUMENT_EXPRESSION")
+    }
+    return argumentNode
   }
 
   private fun createDummyFile(contents: String): PsiFile {
