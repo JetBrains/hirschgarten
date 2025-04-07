@@ -379,7 +379,8 @@ class BspProjectMapper(
     return resolve(params)
   }
 
-  suspend fun jvmBuilderParams(project: Project): JvmToolchainInfo {
-    return JvmToolchainQuery.jvmToolchainQuery(bspInfo, bazelRunner, project.workspaceContext)
+  fun jvmBuilderParams(project: AspectSyncProject, label: Label): JvmToolchainInfo? {
+    val module = project.findModule(label) ?: return null
+    return JvmToolchainInfo(module.builderPath, module.builderArgs)
   }
 }

@@ -16,9 +16,9 @@ class ToolchainInfoSyncHook: ProjectSyncHook {
   }
 
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
-    environment.server.jvmToolchainInfo().also {
-      JvmToolchainInfoService.getInstance(environment.project).jvmToolchainInfo = it
-    }
+//    environment.server.jvmToolchainInfo().also {
+//      JvmToolchainInfoService.getInstance(environment.project).jvmToolchainInfo = it
+//    }
   }
 
 

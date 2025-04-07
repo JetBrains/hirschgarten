@@ -53,6 +53,20 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
     buildTarget.data = jvmBuildTarget
   }
 
+  override fun resolveBuilderPath(targetInfo: TargetInfo): String? {
+    if (targetInfo.hasJvmTargetInfo()) {
+      return targetInfo.jvmTargetInfo.builderScript
+    }
+    return null
+  }
+
+  override fun resolveBuilderArgs(targetInfo: TargetInfo): List<String> {
+    if (targetInfo.hasJvmTargetInfo()) {
+      return targetInfo.jvmTargetInfo.builderArgsList
+    }
+    return emptyList()
+  }
+
   private fun javaVersionFromJavacOpts(javacOpts: List<String>): String? =
     javacOpts.firstNotNullOfOrNull {
       val flagName = it.substringBefore(' ')

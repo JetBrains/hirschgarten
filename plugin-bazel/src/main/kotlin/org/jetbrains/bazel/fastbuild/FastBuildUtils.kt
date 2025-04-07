@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.fastbuild
 
+import com.android.tools.idea.projectsystem.gradle.findModule
 import com.intellij.compiler.CompilerMessageImpl
 import com.intellij.compiler.impl.CompileContextImpl
 import com.intellij.compiler.impl.ExitStatus
@@ -40,6 +41,7 @@ import com.intellij.task.TaskRunnerResults
 import com.intellij.util.io.delete
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.sync.BazelBinPathService
+import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
@@ -48,6 +50,7 @@ import java.io.OutputStreamWriter
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.zip.ZipFile
+import kotlin.io.path.exists
 import kotlin.io.path.name
 import kotlin.io.path.notExists
 import kotlin.io.path.outputStream
@@ -62,7 +65,7 @@ object FastBuildUtils {
 
   const val fastBuildEnabledKey = "bsp.enable.jvm.fastbuild"
 
-  fun fastBuildFiles(project: Project, files: List<VirtualFile>): Promise<ProjectTaskRunner.Result> {
+  suspend fun fastBuildFiles(project: Project, files: List<VirtualFile>): Promise<ProjectTaskRunner.Result> {
     val promise = AsyncPromise<ProjectTaskRunner.Result>()
     val workspaceRoot = project.rootDir.toNioPath()
 
@@ -82,6 +85,10 @@ object FastBuildUtils {
       TODO()
     }
     for (entry in buildInfos) {
+      val toolchainInfo = project.connection.runWithServer { it.jvmToolchainInfo(entry.value.id) }
+      if (toolchainInfo == null) {
+        TODO()
+      }
       val inputFile = entry.key
       val filePath = inputFile.path
       val canonicalFilePath = inputFile.canonicalPath
@@ -156,15 +163,14 @@ object FastBuildUtils {
 
         indicator.checkCanceled()
 
-        val toolchainInfo = ToolchainInfoSyncHook.JvmToolchainInfoService.getInstance(project).jvmToolchainInfo ?: return@start
 
         val arguments = buildList {
-          add(toolchainInfo.java_home + "/bin/java")
-          toolchainInfo.jvm_opts.forEach { add(it) }
-          add("-jar")
-          add(toolchainInfo.toolchain_path)
+          add(toolchainInfo.builder_script)
+          addAll(toolchainInfo.builder_args)
           add("@${paramsFile.pathString}")
-          add("@${originalParamsFile1.pathString}")
+          if (originalParamsFile1.exists()) {
+            add("@${originalParamsFile1.pathString}")
+          }
         }
         val command = GeneralCommandLine(arguments).apply {
           workDirectory = File(BazelBinPathService.getInstance(project).bazelExecPath ?: TODO())

@@ -48,6 +48,20 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
     )
   }
 
+  override fun resolveBuilderPath(targetInfo: BspTargetInfo.TargetInfo): String? {
+    if (targetInfo.hasKotlinTargetInfo()) {
+      return targetInfo.kotlinTargetInfo.builderScript
+    }
+    return null
+  }
+
+  override fun resolveBuilderArgs(targetInfo: BspTargetInfo.TargetInfo): List<String> {
+    if (targetInfo.hasKotlinTargetInfo()) {
+      return targetInfo.kotlinTargetInfo.builderArgsList
+    }
+    return emptyList()
+  }
+
   private fun BspTargetInfo.KotlinTargetInfo.toKotlincOptArguments(): List<String> = kotlincOptsList + additionalKotlinOpts()
 
   private fun BspTargetInfo.KotlinTargetInfo.additionalKotlinOpts(): List<String> =

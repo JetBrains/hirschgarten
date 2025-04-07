@@ -71,6 +71,8 @@ def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
         kotlinc_opts = kotlinc_options_to_flags(create_struct(**kotlinc_opts_dict)),
         stdlibs = stdlibs,
         kotlinc_plugin_infos = kt_compiler_plugin_infos,
+        builder_script = kotlin_toolchain.kotlinbuilder.files_to_run.executable.path,
+        builder_args = kotlin_toolchain.builder_args,
     )
 
     info_file = dict(kotlin_target_info = kotlin_target_info)

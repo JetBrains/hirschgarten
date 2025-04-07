@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 interface JoinedBuildServer {
@@ -65,5 +66,5 @@ interface JoinedBuildServer {
 
   suspend fun workspaceContext(): WorkspaceContext
 
-  suspend fun jvmToolchainInfo(): JvmToolchainInfo
+  suspend fun jvmToolchainInfo(label: Label): JvmToolchainInfo?
 }

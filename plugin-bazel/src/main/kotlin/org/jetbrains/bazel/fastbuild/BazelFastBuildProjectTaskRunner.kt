@@ -9,6 +9,7 @@ import com.intellij.task.ProjectTask
 import com.intellij.task.ProjectTaskContext
 import com.intellij.task.ProjectTaskRunner
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
@@ -38,6 +39,11 @@ class BazelFastBuildProjectTaskRunner: ProjectTaskRunner() {
     vararg tasks: ProjectTask?
   ): Promise<Result> {
     val moduleBuildTasks = tasks.filterIsInstance<ModuleFilesBuildTask>()
-    return FastBuildUtils.fastBuildFiles(project, moduleBuildTasks.flatMap { it.files.toList() })
+    val result = AsyncPromise<Result>()
+    BazelCoroutineService.getInstance(project).startAsync {
+      FastBuildUtils.fastBuildFiles(project, moduleBuildTasks.flatMap { it.files.toList() })
+        .onProcessed { result.setResult(it) }
+    }
+    return result
   }
 }

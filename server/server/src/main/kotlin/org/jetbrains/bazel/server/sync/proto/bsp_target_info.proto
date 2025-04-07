@@ -36,6 +36,8 @@ message JvmTargetInfo {
   repeated string args = 9;
   repeated FileLocation jdeps = 10;
   repeated FileLocation transitive_compile_time_jars = 11;
+  string builder_script = 12;
+  repeated string builder_args = 13;
 }
 
 message JavaToolchainInfo {
@@ -92,6 +94,8 @@ message KotlinTargetInfo {
   repeated string kotlinc_opts = 400;
   repeated FileLocation stdlibs = 500;
   repeated KotlincPluginInfo kotlinc_plugin_infos = 600;
+  string builder_script = 700;
+  repeated string builder_args = 800;
 }
 
 message PythonTargetInfo {

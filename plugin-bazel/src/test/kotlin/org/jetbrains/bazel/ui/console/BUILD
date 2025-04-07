@@ -7,5 +7,6 @@ kt_intellij_junit4_test(
     deps = [
         "//plugin-bazel",
         "//plugin-bazel/src:test_fixtures",
+
     ],
 )

@@ -144,9 +144,9 @@ class ProjectSyncService(
     return bspMapper.buildTargetScalacOptions(project, params)
   }
 
-  suspend fun buildJvmToolchainInfo(): JvmToolchainInfo {
+  suspend fun buildJvmToolchainInfo(label: Label): JvmToolchainInfo? {
     val project = projectProvider.get() as? AspectSyncProject ?: TODO()
-    return bspMapper.jvmBuilderParams(project)
+    return bspMapper.jvmBuilderParams(project, label)
   }
 
   fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =

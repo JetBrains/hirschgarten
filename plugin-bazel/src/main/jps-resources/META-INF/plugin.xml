@@ -293,7 +293,7 @@
         <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.nonmodule.sync.NonModuleTargetsSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
-        <projectSyncHook implementation="org.jetbrains.bazel.fastbuild.ToolchainInfoSyncHook"/>
+<!--        <projectSyncHook implementation="org.jetbrains.bazel.fastbuild.ToolchainInfoSyncHook"/>-->
         <additionalProjectTaskRunnerProvider
                 implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
 

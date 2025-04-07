@@ -22,6 +22,10 @@ abstract class LanguagePlugin<T : LanguageData> {
 
   open fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> = emptySet()
 
+  open fun resolveBuilderPath(targetInfo: BspTargetInfo.TargetInfo): String? = null
+
+  open fun resolveBuilderArgs(targetInfo: BspTargetInfo.TargetInfo): List<String> = emptyList()
+
   @Suppress("UNCHECKED_CAST")
   fun setModuleData(moduleData: LanguageData, buildTarget: BuildTarget) = applyModuleData(moduleData as T, buildTarget)
 

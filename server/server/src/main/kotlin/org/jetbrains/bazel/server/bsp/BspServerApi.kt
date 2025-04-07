@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.bsp
 
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -130,5 +131,5 @@ class BspServerApi(
     projectSyncService.resolveRemoteToLocal(params)
 
   override suspend fun workspaceContext(): WorkspaceContext = projectSyncService.workspaceContext()
-  override suspend fun jvmToolchainInfo() = projectSyncService.buildJvmToolchainInfo()
+  override suspend fun jvmToolchainInfo(label: Label) = projectSyncService.buildJvmToolchainInfo(label)
 }

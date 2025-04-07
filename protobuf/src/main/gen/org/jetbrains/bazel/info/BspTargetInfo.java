@@ -3235,6 +3235,43 @@ public final class BspTargetInfo {
      */
     org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getTransitiveCompileTimeJarsOrBuilder(
         int index);
+
+    /**
+     * <code>string builder_script = 12;</code>
+     * @return The builderScript.
+     */
+    java.lang.String getBuilderScript();
+    /**
+     * <code>string builder_script = 12;</code>
+     * @return The bytes for builderScript.
+     */
+    com.google.protobuf.ByteString
+        getBuilderScriptBytes();
+
+    /**
+     * <code>repeated string builder_args = 13;</code>
+     * @return A list containing the builderArgs.
+     */
+    java.util.List<java.lang.String>
+        getBuilderArgsList();
+    /**
+     * <code>repeated string builder_args = 13;</code>
+     * @return The count of builderArgs.
+     */
+    int getBuilderArgsCount();
+    /**
+     * <code>repeated string builder_args = 13;</code>
+     * @param index The index of the element to return.
+     * @return The builderArgs at the given index.
+     */
+    java.lang.String getBuilderArgs(int index);
+    /**
+     * <code>repeated string builder_args = 13;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the builderArgs at the given index.
+     */
+    com.google.protobuf.ByteString
+        getBuilderArgsBytes(int index);
   }
   /**
    * Protobuf type {@code bazelbsp.JvmTargetInfo}
@@ -3269,6 +3306,9 @@ public final class BspTargetInfo {
           com.google.protobuf.LazyStringArrayList.emptyList();
       jdeps_ = java.util.Collections.emptyList();
       transitiveCompileTimeJars_ = java.util.Collections.emptyList();
+      builderScript_ = "";
+      builderArgs_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
@@ -3598,6 +3638,82 @@ public final class BspTargetInfo {
       return transitiveCompileTimeJars_.get(index);
     }
 
+    public static final int BUILDER_SCRIPT_FIELD_NUMBER = 12;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object builderScript_ = "";
+    /**
+     * <code>string builder_script = 12;</code>
+     * @return The builderScript.
+     */
+    @java.lang.Override
+    public java.lang.String getBuilderScript() {
+      java.lang.Object ref = builderScript_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        builderScript_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string builder_script = 12;</code>
+     * @return The bytes for builderScript.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getBuilderScriptBytes() {
+      java.lang.Object ref = builderScript_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        builderScript_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int BUILDER_ARGS_FIELD_NUMBER = 13;
+    @SuppressWarnings("serial")
+    private com.google.protobuf.LazyStringArrayList builderArgs_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+    /**
+     * <code>repeated string builder_args = 13;</code>
+     * @return A list containing the builderArgs.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getBuilderArgsList() {
+      return builderArgs_;
+    }
+    /**
+     * <code>repeated string builder_args = 13;</code>
+     * @return The count of builderArgs.
+     */
+    public int getBuilderArgsCount() {
+      return builderArgs_.size();
+    }
+    /**
+     * <code>repeated string builder_args = 13;</code>
+     * @param index The index of the element to return.
+     * @return The builderArgs at the given index.
+     */
+    public java.lang.String getBuilderArgs(int index) {
+      return builderArgs_.get(index);
+    }
+    /**
+     * <code>repeated string builder_args = 13;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the builderArgs at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getBuilderArgsBytes(int index) {
+      return builderArgs_.getByteString(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -3635,6 +3751,12 @@ public final class BspTargetInfo {
       }
       for (int i = 0; i < transitiveCompileTimeJars_.size(); i++) {
         output.writeMessage(11, transitiveCompileTimeJars_.get(i));
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(builderScript_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 12, builderScript_);
+      }
+      for (int i = 0; i < builderArgs_.size(); i++) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 13, builderArgs_.getRaw(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -3688,6 +3810,17 @@ public final class BspTargetInfo {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(11, transitiveCompileTimeJars_.get(i));
       }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(builderScript_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(12, builderScript_);
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < builderArgs_.size(); i++) {
+          dataSize += computeStringSizeNoTag(builderArgs_.getRaw(i));
+        }
+        size += dataSize;
+        size += 1 * getBuilderArgsList().size();
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -3719,6 +3852,10 @@ public final class BspTargetInfo {
           .equals(other.getJdepsList())) return false;
       if (!getTransitiveCompileTimeJarsList()
           .equals(other.getTransitiveCompileTimeJarsList())) return false;
+      if (!getBuilderScript()
+          .equals(other.getBuilderScript())) return false;
+      if (!getBuilderArgsList()
+          .equals(other.getBuilderArgsList())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -3759,6 +3896,12 @@ public final class BspTargetInfo {
       if (getTransitiveCompileTimeJarsCount() > 0) {
         hash = (37 * hash) + TRANSITIVE_COMPILE_TIME_JARS_FIELD_NUMBER;
         hash = (53 * hash) + getTransitiveCompileTimeJarsList().hashCode();
+      }
+      hash = (37 * hash) + BUILDER_SCRIPT_FIELD_NUMBER;
+      hash = (53 * hash) + getBuilderScript().hashCode();
+      if (getBuilderArgsCount() > 0) {
+        hash = (37 * hash) + BUILDER_ARGS_FIELD_NUMBER;
+        hash = (53 * hash) + getBuilderArgsList().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -3926,6 +4069,9 @@ public final class BspTargetInfo {
           transitiveCompileTimeJarsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000080);
+        builderScript_ = "";
+        builderArgs_ =
+            com.google.protobuf.LazyStringArrayList.emptyList();
         return this;
       }
 
@@ -4013,6 +4159,13 @@ public final class BspTargetInfo {
         if (((from_bitField0_ & 0x00000020) != 0)) {
           args_.makeImmutable();
           result.args_ = args_;
+        }
+        if (((from_bitField0_ & 0x00000100) != 0)) {
+          result.builderScript_ = builderScript_;
+        }
+        if (((from_bitField0_ & 0x00000200) != 0)) {
+          builderArgs_.makeImmutable();
+          result.builderArgs_ = builderArgs_;
         }
       }
 
@@ -4167,6 +4320,21 @@ public final class BspTargetInfo {
             }
           }
         }
+        if (!other.getBuilderScript().isEmpty()) {
+          builderScript_ = other.builderScript_;
+          bitField0_ |= 0x00000100;
+          onChanged();
+        }
+        if (!other.builderArgs_.isEmpty()) {
+          if (builderArgs_.isEmpty()) {
+            builderArgs_ = other.builderArgs_;
+            bitField0_ |= 0x00000200;
+          } else {
+            ensureBuilderArgsIsMutable();
+            builderArgs_.addAll(other.builderArgs_);
+          }
+          onChanged();
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -4268,6 +4436,17 @@ public final class BspTargetInfo {
                 }
                 break;
               } // case 90
+              case 98: {
+                builderScript_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000100;
+                break;
+              } // case 98
+              case 106: {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureBuilderArgsIsMutable();
+                builderArgs_.add(s);
+                break;
+              } // case 106
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -5648,6 +5827,189 @@ public final class BspTargetInfo {
           transitiveCompileTimeJars_ = null;
         }
         return transitiveCompileTimeJarsBuilder_;
+      }
+
+      private java.lang.Object builderScript_ = "";
+      /**
+       * <code>string builder_script = 12;</code>
+       * @return The builderScript.
+       */
+      public java.lang.String getBuilderScript() {
+        java.lang.Object ref = builderScript_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          builderScript_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string builder_script = 12;</code>
+       * @return The bytes for builderScript.
+       */
+      public com.google.protobuf.ByteString
+          getBuilderScriptBytes() {
+        java.lang.Object ref = builderScript_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          builderScript_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string builder_script = 12;</code>
+       * @param value The builderScript to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBuilderScript(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        builderScript_ = value;
+        bitField0_ |= 0x00000100;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string builder_script = 12;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearBuilderScript() {
+        builderScript_ = getDefaultInstance().getBuilderScript();
+        bitField0_ = (bitField0_ & ~0x00000100);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string builder_script = 12;</code>
+       * @param value The bytes for builderScript to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBuilderScriptBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        builderScript_ = value;
+        bitField0_ |= 0x00000100;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.LazyStringArrayList builderArgs_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+      private void ensureBuilderArgsIsMutable() {
+        if (!builderArgs_.isModifiable()) {
+          builderArgs_ = new com.google.protobuf.LazyStringArrayList(builderArgs_);
+        }
+        bitField0_ |= 0x00000200;
+      }
+      /**
+       * <code>repeated string builder_args = 13;</code>
+       * @return A list containing the builderArgs.
+       */
+      public com.google.protobuf.ProtocolStringList
+          getBuilderArgsList() {
+        builderArgs_.makeImmutable();
+        return builderArgs_;
+      }
+      /**
+       * <code>repeated string builder_args = 13;</code>
+       * @return The count of builderArgs.
+       */
+      public int getBuilderArgsCount() {
+        return builderArgs_.size();
+      }
+      /**
+       * <code>repeated string builder_args = 13;</code>
+       * @param index The index of the element to return.
+       * @return The builderArgs at the given index.
+       */
+      public java.lang.String getBuilderArgs(int index) {
+        return builderArgs_.get(index);
+      }
+      /**
+       * <code>repeated string builder_args = 13;</code>
+       * @param index The index of the value to return.
+       * @return The bytes of the builderArgs at the given index.
+       */
+      public com.google.protobuf.ByteString
+          getBuilderArgsBytes(int index) {
+        return builderArgs_.getByteString(index);
+      }
+      /**
+       * <code>repeated string builder_args = 13;</code>
+       * @param index The index to set the value at.
+       * @param value The builderArgs to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBuilderArgs(
+          int index, java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        ensureBuilderArgsIsMutable();
+        builderArgs_.set(index, value);
+        bitField0_ |= 0x00000200;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string builder_args = 13;</code>
+       * @param value The builderArgs to add.
+       * @return This builder for chaining.
+       */
+      public Builder addBuilderArgs(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        ensureBuilderArgsIsMutable();
+        builderArgs_.add(value);
+        bitField0_ |= 0x00000200;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string builder_args = 13;</code>
+       * @param values The builderArgs to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllBuilderArgs(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureBuilderArgsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, builderArgs_);
+        bitField0_ |= 0x00000200;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string builder_args = 13;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearBuilderArgs() {
+        builderArgs_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000200);;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string builder_args = 13;</code>
+       * @param value The bytes of the builderArgs to add.
+       * @return This builder for chaining.
+       */
+      public Builder addBuilderArgsBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        ensureBuilderArgsIsMutable();
+        builderArgs_.add(value);
+        bitField0_ |= 0x00000200;
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:bazelbsp.JvmTargetInfo)
@@ -14290,6 +14652,43 @@ public final class BspTargetInfo {
      */
     org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfoOrBuilder getKotlincPluginInfosOrBuilder(
         int index);
+
+    /**
+     * <code>string builder_script = 700;</code>
+     * @return The builderScript.
+     */
+    java.lang.String getBuilderScript();
+    /**
+     * <code>string builder_script = 700;</code>
+     * @return The bytes for builderScript.
+     */
+    com.google.protobuf.ByteString
+        getBuilderScriptBytes();
+
+    /**
+     * <code>repeated string builder_args = 800;</code>
+     * @return A list containing the builderArgs.
+     */
+    java.util.List<java.lang.String>
+        getBuilderArgsList();
+    /**
+     * <code>repeated string builder_args = 800;</code>
+     * @return The count of builderArgs.
+     */
+    int getBuilderArgsCount();
+    /**
+     * <code>repeated string builder_args = 800;</code>
+     * @param index The index of the element to return.
+     * @return The builderArgs at the given index.
+     */
+    java.lang.String getBuilderArgs(int index);
+    /**
+     * <code>repeated string builder_args = 800;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the builderArgs at the given index.
+     */
+    com.google.protobuf.ByteString
+        getBuilderArgsBytes(int index);
   }
   /**
    * Protobuf type {@code bazelbsp.KotlinTargetInfo}
@@ -14321,6 +14720,9 @@ public final class BspTargetInfo {
           com.google.protobuf.LazyStringArrayList.emptyList();
       stdlibs_ = java.util.Collections.emptyList();
       kotlincPluginInfos_ = java.util.Collections.emptyList();
+      builderScript_ = "";
+      builderArgs_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
@@ -14570,6 +14972,82 @@ public final class BspTargetInfo {
       return kotlincPluginInfos_.get(index);
     }
 
+    public static final int BUILDER_SCRIPT_FIELD_NUMBER = 700;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object builderScript_ = "";
+    /**
+     * <code>string builder_script = 700;</code>
+     * @return The builderScript.
+     */
+    @java.lang.Override
+    public java.lang.String getBuilderScript() {
+      java.lang.Object ref = builderScript_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        builderScript_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string builder_script = 700;</code>
+     * @return The bytes for builderScript.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getBuilderScriptBytes() {
+      java.lang.Object ref = builderScript_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        builderScript_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int BUILDER_ARGS_FIELD_NUMBER = 800;
+    @SuppressWarnings("serial")
+    private com.google.protobuf.LazyStringArrayList builderArgs_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+    /**
+     * <code>repeated string builder_args = 800;</code>
+     * @return A list containing the builderArgs.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getBuilderArgsList() {
+      return builderArgs_;
+    }
+    /**
+     * <code>repeated string builder_args = 800;</code>
+     * @return The count of builderArgs.
+     */
+    public int getBuilderArgsCount() {
+      return builderArgs_.size();
+    }
+    /**
+     * <code>repeated string builder_args = 800;</code>
+     * @param index The index of the element to return.
+     * @return The builderArgs at the given index.
+     */
+    public java.lang.String getBuilderArgs(int index) {
+      return builderArgs_.get(index);
+    }
+    /**
+     * <code>repeated string builder_args = 800;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the builderArgs at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getBuilderArgsBytes(int index) {
+      return builderArgs_.getByteString(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -14601,6 +15079,12 @@ public final class BspTargetInfo {
       }
       for (int i = 0; i < kotlincPluginInfos_.size(); i++) {
         output.writeMessage(600, kotlincPluginInfos_.get(i));
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(builderScript_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 700, builderScript_);
+      }
+      for (int i = 0; i < builderArgs_.size(); i++) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 800, builderArgs_.getRaw(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -14641,6 +15125,17 @@ public final class BspTargetInfo {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(600, kotlincPluginInfos_.get(i));
       }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(builderScript_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(700, builderScript_);
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < builderArgs_.size(); i++) {
+          dataSize += computeStringSizeNoTag(builderArgs_.getRaw(i));
+        }
+        size += dataSize;
+        size += 2 * getBuilderArgsList().size();
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -14668,6 +15163,10 @@ public final class BspTargetInfo {
           .equals(other.getStdlibsList())) return false;
       if (!getKotlincPluginInfosList()
           .equals(other.getKotlincPluginInfosList())) return false;
+      if (!getBuilderScript()
+          .equals(other.getBuilderScript())) return false;
+      if (!getBuilderArgsList()
+          .equals(other.getBuilderArgsList())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -14698,6 +15197,12 @@ public final class BspTargetInfo {
       if (getKotlincPluginInfosCount() > 0) {
         hash = (37 * hash) + KOTLINC_PLUGIN_INFOS_FIELD_NUMBER;
         hash = (53 * hash) + getKotlincPluginInfosList().hashCode();
+      }
+      hash = (37 * hash) + BUILDER_SCRIPT_FIELD_NUMBER;
+      hash = (53 * hash) + getBuilderScript().hashCode();
+      if (getBuilderArgsCount() > 0) {
+        hash = (37 * hash) + BUILDER_ARGS_FIELD_NUMBER;
+        hash = (53 * hash) + getBuilderArgsList().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -14850,6 +15355,9 @@ public final class BspTargetInfo {
           kotlincPluginInfosBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000020);
+        builderScript_ = "";
+        builderArgs_ =
+            com.google.protobuf.LazyStringArrayList.emptyList();
         return this;
       }
 
@@ -14918,6 +15426,13 @@ public final class BspTargetInfo {
         if (((from_bitField0_ & 0x00000008) != 0)) {
           kotlincOpts_.makeImmutable();
           result.kotlincOpts_ = kotlincOpts_;
+        }
+        if (((from_bitField0_ & 0x00000040) != 0)) {
+          result.builderScript_ = builderScript_;
+        }
+        if (((from_bitField0_ & 0x00000080) != 0)) {
+          builderArgs_.makeImmutable();
+          result.builderArgs_ = builderArgs_;
         }
       }
 
@@ -15015,6 +15530,21 @@ public final class BspTargetInfo {
             }
           }
         }
+        if (!other.getBuilderScript().isEmpty()) {
+          builderScript_ = other.builderScript_;
+          bitField0_ |= 0x00000040;
+          onChanged();
+        }
+        if (!other.builderArgs_.isEmpty()) {
+          if (builderArgs_.isEmpty()) {
+            builderArgs_ = other.builderArgs_;
+            bitField0_ |= 0x00000080;
+          } else {
+            ensureBuilderArgsIsMutable();
+            builderArgs_.addAll(other.builderArgs_);
+          }
+          onChanged();
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -15089,6 +15619,17 @@ public final class BspTargetInfo {
                 }
                 break;
               } // case 4802
+              case 5602: {
+                builderScript_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000040;
+                break;
+              } // case 5602
+              case 6402: {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureBuilderArgsIsMutable();
+                builderArgs_.add(s);
+                break;
+              } // case 6402
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -15950,6 +16491,189 @@ public final class BspTargetInfo {
           kotlincPluginInfos_ = null;
         }
         return kotlincPluginInfosBuilder_;
+      }
+
+      private java.lang.Object builderScript_ = "";
+      /**
+       * <code>string builder_script = 700;</code>
+       * @return The builderScript.
+       */
+      public java.lang.String getBuilderScript() {
+        java.lang.Object ref = builderScript_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          builderScript_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string builder_script = 700;</code>
+       * @return The bytes for builderScript.
+       */
+      public com.google.protobuf.ByteString
+          getBuilderScriptBytes() {
+        java.lang.Object ref = builderScript_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          builderScript_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string builder_script = 700;</code>
+       * @param value The builderScript to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBuilderScript(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        builderScript_ = value;
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string builder_script = 700;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearBuilderScript() {
+        builderScript_ = getDefaultInstance().getBuilderScript();
+        bitField0_ = (bitField0_ & ~0x00000040);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string builder_script = 700;</code>
+       * @param value The bytes for builderScript to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBuilderScriptBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        builderScript_ = value;
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.LazyStringArrayList builderArgs_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+      private void ensureBuilderArgsIsMutable() {
+        if (!builderArgs_.isModifiable()) {
+          builderArgs_ = new com.google.protobuf.LazyStringArrayList(builderArgs_);
+        }
+        bitField0_ |= 0x00000080;
+      }
+      /**
+       * <code>repeated string builder_args = 800;</code>
+       * @return A list containing the builderArgs.
+       */
+      public com.google.protobuf.ProtocolStringList
+          getBuilderArgsList() {
+        builderArgs_.makeImmutable();
+        return builderArgs_;
+      }
+      /**
+       * <code>repeated string builder_args = 800;</code>
+       * @return The count of builderArgs.
+       */
+      public int getBuilderArgsCount() {
+        return builderArgs_.size();
+      }
+      /**
+       * <code>repeated string builder_args = 800;</code>
+       * @param index The index of the element to return.
+       * @return The builderArgs at the given index.
+       */
+      public java.lang.String getBuilderArgs(int index) {
+        return builderArgs_.get(index);
+      }
+      /**
+       * <code>repeated string builder_args = 800;</code>
+       * @param index The index of the value to return.
+       * @return The bytes of the builderArgs at the given index.
+       */
+      public com.google.protobuf.ByteString
+          getBuilderArgsBytes(int index) {
+        return builderArgs_.getByteString(index);
+      }
+      /**
+       * <code>repeated string builder_args = 800;</code>
+       * @param index The index to set the value at.
+       * @param value The builderArgs to set.
+       * @return This builder for chaining.
+       */
+      public Builder setBuilderArgs(
+          int index, java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        ensureBuilderArgsIsMutable();
+        builderArgs_.set(index, value);
+        bitField0_ |= 0x00000080;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string builder_args = 800;</code>
+       * @param value The builderArgs to add.
+       * @return This builder for chaining.
+       */
+      public Builder addBuilderArgs(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        ensureBuilderArgsIsMutable();
+        builderArgs_.add(value);
+        bitField0_ |= 0x00000080;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string builder_args = 800;</code>
+       * @param values The builderArgs to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllBuilderArgs(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureBuilderArgsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, builderArgs_);
+        bitField0_ |= 0x00000080;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string builder_args = 800;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearBuilderArgs() {
+        builderArgs_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000080);;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string builder_args = 800;</code>
+       * @param value The bytes of the builderArgs to add.
+       * @return This builder for chaining.
+       */
+      public Builder addBuilderArgsBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        ensureBuilderArgsIsMutable();
+        builderArgs_.add(value);
+        bitField0_ |= 0x00000080;
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:bazelbsp.KotlinTargetInfo)
@@ -27048,93 +27772,96 @@ java.lang.String defaultValue) {
       "utputs\022+\n\013binary_jars\030\001 \003(\0132\026.bazelbsp.F" +
       "ileLocation\022.\n\016interface_jars\030\002 \003(\0132\026.ba" +
       "zelbsp.FileLocation\022+\n\013source_jars\030\003 \003(\013" +
-      "2\026.bazelbsp.FileLocation\"\217\002\n\rJvmTargetIn" +
+      "2\026.bazelbsp.FileLocation\"\275\002\n\rJvmTargetIn" +
       "fo\022\"\n\004jars\030\001 \003(\0132\024.bazelbsp.JvmOutputs\022," +
       "\n\016generated_jars\030\002 \003(\0132\024.bazelbsp.JvmOut" +
       "puts\022\022\n\njavac_opts\030\006 \003(\t\022\021\n\tjvm_flags\030\007 " +
       "\003(\t\022\022\n\nmain_class\030\010 \001(\t\022\014\n\004args\030\t \003(\t\022%\n" +
       "\005jdeps\030\n \003(\0132\026.bazelbsp.FileLocation\022<\n\034" +
       "transitive_compile_time_jars\030\013 \003(\0132\026.baz" +
-      "elbsp.FileLocation\"n\n\021JavaToolchainInfo\022" +
-      "\026\n\016source_version\030\001 \001(\t\022\026\n\016target_versio" +
-      "n\030\002 \001(\t\022)\n\tjava_home\030\003 \001(\0132\026.bazelbsp.Fi" +
-      "leLocation\"<\n\017JavaRuntimeInfo\022)\n\tjava_ho" +
-      "me\030\001 \001(\0132\026.bazelbsp.FileLocation\"\217\001\n\017Sca" +
-      "laTargetInfo\022\023\n\013scalac_opts\030\001 \003(\t\0222\n\022com" +
-      "piler_classpath\030\002 \003(\0132\026.bazelbsp.FileLoc" +
-      "ation\0223\n\023scalatest_classpath\030\003 \003(\0132\026.baz" +
-      "elbsp.FileLocation\"\310\002\n\rCppTargetInfo\022\r\n\005" +
-      "copts\030\001 \003(\t\022\'\n\007headers\030\002 \003(\0132\026.bazelbsp." +
-      "FileLocation\022/\n\017textual_headers\030\003 \003(\0132\026." +
-      "bazelbsp.FileLocation\022$\n\034transitive_incl" +
-      "ude_directory\030\006 \003(\t\022*\n\"transitive_quote_" +
-      "include_directory\030\007 \003(\t\022\031\n\021transitive_de" +
-      "fine\030\010 \003(\t\022+\n#transitive_system_include_" +
-      "directory\030\t \003(\t\022\026\n\016include_prefix\030\n \001(\t\022" +
-      "\034\n\024strip_include_prefix\030\013 \001(\t\"\231\001\n\016CToolc" +
-      "hainInfo\022\023\n\013target_name\030\001 \001(\t\022\022\n\ncpp_opt" +
-      "ion\030\002 \003(\t\022\020\n\010c_option\030\003 \003(\t\022\022\n\nc_compile" +
-      "r\030\004 \001(\t\022\024\n\014cpp_compiler\030\005 \001(\t\022\"\n\032built_i" +
-      "n_include_directory\030\006 \003(\t\"?\n\023KotlincPlug" +
-      "inOption\022\021\n\tplugin_id\030d \001(\t\022\025\n\014option_va" +
-      "lue\030\310\001 \001(\t\"\200\001\n\021KotlincPluginInfo\022+\n\013plug" +
-      "in_jars\030d \003(\0132\026.bazelbsp.FileLocation\022>\n" +
-      "\026kotlinc_plugin_options\030\310\001 \003(\0132\035.bazelbs" +
-      "p.KotlincPluginOption\"\324\001\n\020KotlinTargetIn" +
-      "fo\022\030\n\020language_version\030d \001(\t\022\024\n\013api_vers" +
-      "ion\030\310\001 \001(\t\022\023\n\nassociates\030\254\002 \003(\t\022\025\n\014kotli" +
-      "nc_opts\030\220\003 \003(\t\022(\n\007stdlibs\030\364\003 \003(\0132\026.bazel" +
-      "bsp.FileLocation\022:\n\024kotlinc_plugin_infos" +
-      "\030\330\004 \003(\0132\033.bazelbsp.KotlincPluginInfo\"P\n\020" +
-      "PythonTargetInfo\022+\n\013interpreter\030\001 \001(\0132\026." +
-      "bazelbsp.FileLocation\022\017\n\007version\030\002 \001(\t\"\214" +
-      "\004\n\021AndroidTargetInfo\022+\n\013android_jar\030d \001(" +
-      "\0132\026.bazelbsp.FileLocation\022)\n\010manifest\030\310\001" +
-      " \001(\0132\026.bazelbsp.FileLocation\022O\n\022manifest" +
-      "_overrides\030\372\001 \003(\01322.bazelbsp.AndroidTarg" +
-      "etInfo.ManifestOverridesEntry\0225\n\024resourc" +
-      "e_directories\030\254\002 \003(\0132\026.bazelbsp.FileLoca" +
-      "tion\022\036\n\025resource_java_package\030\220\003 \001(\t\0223\n\022" +
-      "assets_directories\030\302\003 \003(\0132\026.bazelbsp.Fil" +
-      "eLocation\0220\n\017aidl_binary_jar\030\364\003 \001(\0132\026.ba" +
-      "zelbsp.FileLocation\0220\n\017aidl_source_jar\030\330" +
-      "\004 \001(\0132\026.bazelbsp.FileLocation\022$\n\003apk\030\274\005 " +
-      "\001(\0132\026.bazelbsp.FileLocation\0328\n\026ManifestO" +
-      "verridesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(" +
-      "\t:\0028\001\"\230\001\n\024AndroidAarImportInfo\022(\n\010manife" +
-      "st\030\001 \001(\0132\026.bazelbsp.FileLocation\022/\n\017reso" +
-      "urce_folder\030\002 \001(\0132\026.bazelbsp.FileLocatio" +
-      "n\022%\n\005r_txt\030\003 \001(\0132\026.bazelbsp.FileLocation" +
-      "\"\271\001\n\014GoTargetInfo\022\022\n\nimportpath\030\001 \001(\t\022-\n" +
-      "\rsdk_home_path\030\002 \001(\0132\026.bazelbsp.FileLoca" +
-      "tion\0221\n\021generated_sources\030\003 \003(\0132\026.bazelb" +
-      "sp.FileLocation\0223\n\023generated_libraries\030\004" +
-      " \003(\0132\026.bazelbsp.FileLocation\"\314\007\n\nTargetI" +
-      "nfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030\024 \001(\t\022\014\n\004tags\030\036 " +
-      "\003(\t\022*\n\014dependencies\030( \003(\0132\024.bazelbsp.Dep" +
-      "endency\022\'\n\007sources\0302 \003(\0132\026.bazelbsp.File" +
-      "Location\0221\n\021generated_sources\0303 \003(\0132\026.ba" +
-      "zelbsp.FileLocation\022)\n\tresources\030< \003(\0132\026" +
-      ".bazelbsp.FileLocation\022*\n\003env\030F \003(\0132\035.ba" +
-      "zelbsp.TargetInfo.EnvEntry\022\023\n\013env_inheri" +
-      "t\030P \003(\t\022\022\n\nexecutable\030Z \001(\010\0221\n\017jvm_targe" +
-      "t_info\030\350\007 \001(\0132\027.bazelbsp.JvmTargetInfo\0229" +
-      "\n\023java_toolchain_info\030\320\017 \001(\0132\033.bazelbsp." +
-      "JavaToolchainInfo\0225\n\021java_runtime_info\030\270" +
-      "\027 \001(\0132\031.bazelbsp.JavaRuntimeInfo\0225\n\021scal" +
-      "a_target_info\030\240\037 \001(\0132\031.bazelbsp.ScalaTar" +
-      "getInfo\0221\n\017cpp_target_info\030\360. \001(\0132\027.baze" +
-      "lbsp.CppTargetInfo\0227\n\022kotlin_target_info" +
-      "\030\3306 \001(\0132\032.bazelbsp.KotlinTargetInfo\0227\n\022p" +
-      "ython_target_info\030\300> \001(\0132\032.bazelbsp.Pyth" +
-      "onTargetInfo\0229\n\023android_target_info\030\220N \001" +
-      "(\0132\033.bazelbsp.AndroidTargetInfo\022@\n\027andro" +
-      "id_aar_import_info\030\370U \001(\0132\036.bazelbsp.And" +
-      "roidAarImportInfo\022/\n\016go_target_info\030\340] \001" +
-      "(\0132\026.bazelbsp.GoTargetInfo\0223\n\020c_toolchai" +
-      "n_info\030\310e \001(\0132\030.bazelbsp.CToolchainInfo\032" +
-      "*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:" +
-      "\0028\001B\032\n\030org.jetbrains.bazel.infob\006proto3"
+      "elbsp.FileLocation\022\026\n\016builder_script\030\014 \001" +
+      "(\t\022\024\n\014builder_args\030\r \003(\t\"n\n\021JavaToolchai" +
+      "nInfo\022\026\n\016source_version\030\001 \001(\t\022\026\n\016target_" +
+      "version\030\002 \001(\t\022)\n\tjava_home\030\003 \001(\0132\026.bazel" +
+      "bsp.FileLocation\"<\n\017JavaRuntimeInfo\022)\n\tj" +
+      "ava_home\030\001 \001(\0132\026.bazelbsp.FileLocation\"\217" +
+      "\001\n\017ScalaTargetInfo\022\023\n\013scalac_opts\030\001 \003(\t\022" +
+      "2\n\022compiler_classpath\030\002 \003(\0132\026.bazelbsp.F" +
+      "ileLocation\0223\n\023scalatest_classpath\030\003 \003(\013" +
+      "2\026.bazelbsp.FileLocation\"\310\002\n\rCppTargetIn" +
+      "fo\022\r\n\005copts\030\001 \003(\t\022\'\n\007headers\030\002 \003(\0132\026.baz" +
+      "elbsp.FileLocation\022/\n\017textual_headers\030\003 " +
+      "\003(\0132\026.bazelbsp.FileLocation\022$\n\034transitiv" +
+      "e_include_directory\030\006 \003(\t\022*\n\"transitive_" +
+      "quote_include_directory\030\007 \003(\t\022\031\n\021transit" +
+      "ive_define\030\010 \003(\t\022+\n#transitive_system_in" +
+      "clude_directory\030\t \003(\t\022\026\n\016include_prefix\030" +
+      "\n \001(\t\022\034\n\024strip_include_prefix\030\013 \001(\t\"\231\001\n\016" +
+      "CToolchainInfo\022\023\n\013target_name\030\001 \001(\t\022\022\n\nc" +
+      "pp_option\030\002 \003(\t\022\020\n\010c_option\030\003 \003(\t\022\022\n\nc_c" +
+      "ompiler\030\004 \001(\t\022\024\n\014cpp_compiler\030\005 \001(\t\022\"\n\032b" +
+      "uilt_in_include_directory\030\006 \003(\t\"?\n\023Kotli" +
+      "ncPluginOption\022\021\n\tplugin_id\030d \001(\t\022\025\n\014opt" +
+      "ion_value\030\310\001 \001(\t\"\200\001\n\021KotlincPluginInfo\022+" +
+      "\n\013plugin_jars\030d \003(\0132\026.bazelbsp.FileLocat" +
+      "ion\022>\n\026kotlinc_plugin_options\030\310\001 \003(\0132\035.b" +
+      "azelbsp.KotlincPluginOption\"\204\002\n\020KotlinTa" +
+      "rgetInfo\022\030\n\020language_version\030d \001(\t\022\024\n\013ap" +
+      "i_version\030\310\001 \001(\t\022\023\n\nassociates\030\254\002 \003(\t\022\025\n" +
+      "\014kotlinc_opts\030\220\003 \003(\t\022(\n\007stdlibs\030\364\003 \003(\0132\026" +
+      ".bazelbsp.FileLocation\022:\n\024kotlinc_plugin" +
+      "_infos\030\330\004 \003(\0132\033.bazelbsp.KotlincPluginIn" +
+      "fo\022\027\n\016builder_script\030\274\005 \001(\t\022\025\n\014builder_a" +
+      "rgs\030\240\006 \003(\t\"P\n\020PythonTargetInfo\022+\n\013interp" +
+      "reter\030\001 \001(\0132\026.bazelbsp.FileLocation\022\017\n\007v" +
+      "ersion\030\002 \001(\t\"\214\004\n\021AndroidTargetInfo\022+\n\013an" +
+      "droid_jar\030d \001(\0132\026.bazelbsp.FileLocation\022" +
+      ")\n\010manifest\030\310\001 \001(\0132\026.bazelbsp.FileLocati" +
+      "on\022O\n\022manifest_overrides\030\372\001 \003(\01322.bazelb" +
+      "sp.AndroidTargetInfo.ManifestOverridesEn" +
+      "try\0225\n\024resource_directories\030\254\002 \003(\0132\026.baz" +
+      "elbsp.FileLocation\022\036\n\025resource_java_pack" +
+      "age\030\220\003 \001(\t\0223\n\022assets_directories\030\302\003 \003(\0132" +
+      "\026.bazelbsp.FileLocation\0220\n\017aidl_binary_j" +
+      "ar\030\364\003 \001(\0132\026.bazelbsp.FileLocation\0220\n\017aid" +
+      "l_source_jar\030\330\004 \001(\0132\026.bazelbsp.FileLocat" +
+      "ion\022$\n\003apk\030\274\005 \001(\0132\026.bazelbsp.FileLocatio" +
+      "n\0328\n\026ManifestOverridesEntry\022\013\n\003key\030\001 \001(\t" +
+      "\022\r\n\005value\030\002 \001(\t:\0028\001\"\230\001\n\024AndroidAarImport" +
+      "Info\022(\n\010manifest\030\001 \001(\0132\026.bazelbsp.FileLo" +
+      "cation\022/\n\017resource_folder\030\002 \001(\0132\026.bazelb" +
+      "sp.FileLocation\022%\n\005r_txt\030\003 \001(\0132\026.bazelbs" +
+      "p.FileLocation\"\271\001\n\014GoTargetInfo\022\022\n\nimpor" +
+      "tpath\030\001 \001(\t\022-\n\rsdk_home_path\030\002 \001(\0132\026.baz" +
+      "elbsp.FileLocation\0221\n\021generated_sources\030" +
+      "\003 \003(\0132\026.bazelbsp.FileLocation\0223\n\023generat" +
+      "ed_libraries\030\004 \003(\0132\026.bazelbsp.FileLocati" +
+      "on\"\314\007\n\nTargetInfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030\024 " +
+      "\001(\t\022\014\n\004tags\030\036 \003(\t\022*\n\014dependencies\030( \003(\0132" +
+      "\024.bazelbsp.Dependency\022\'\n\007sources\0302 \003(\0132\026" +
+      ".bazelbsp.FileLocation\0221\n\021generated_sour" +
+      "ces\0303 \003(\0132\026.bazelbsp.FileLocation\022)\n\tres" +
+      "ources\030< \003(\0132\026.bazelbsp.FileLocation\022*\n\003" +
+      "env\030F \003(\0132\035.bazelbsp.TargetInfo.EnvEntry" +
+      "\022\023\n\013env_inherit\030P \003(\t\022\022\n\nexecutable\030Z \001(" +
+      "\010\0221\n\017jvm_target_info\030\350\007 \001(\0132\027.bazelbsp.J" +
+      "vmTargetInfo\0229\n\023java_toolchain_info\030\320\017 \001" +
+      "(\0132\033.bazelbsp.JavaToolchainInfo\0225\n\021java_" +
+      "runtime_info\030\270\027 \001(\0132\031.bazelbsp.JavaRunti" +
+      "meInfo\0225\n\021scala_target_info\030\240\037 \001(\0132\031.baz" +
+      "elbsp.ScalaTargetInfo\0221\n\017cpp_target_info" +
+      "\030\360. \001(\0132\027.bazelbsp.CppTargetInfo\0227\n\022kotl" +
+      "in_target_info\030\3306 \001(\0132\032.bazelbsp.KotlinT" +
+      "argetInfo\0227\n\022python_target_info\030\300> \001(\0132\032" +
+      ".bazelbsp.PythonTargetInfo\0229\n\023android_ta" +
+      "rget_info\030\220N \001(\0132\033.bazelbsp.AndroidTarge" +
+      "tInfo\022@\n\027android_aar_import_info\030\370U \001(\0132" +
+      "\036.bazelbsp.AndroidAarImportInfo\022/\n\016go_ta" +
+      "rget_info\030\340] \001(\0132\026.bazelbsp.GoTargetInfo" +
+      "\0223\n\020c_toolchain_info\030\310e \001(\0132\030.bazelbsp.C" +
+      "ToolchainInfo\032*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r" +
+      "\n\005value\030\002 \001(\t:\0028\001B\032\n\030org.jetbrains.bazel" +
+      ".infob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -27163,7 +27890,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_JvmTargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_bazelbsp_JvmTargetInfo_descriptor,
-        new java.lang.String[] { "Jars", "GeneratedJars", "JavacOpts", "JvmFlags", "MainClass", "Args", "Jdeps", "TransitiveCompileTimeJars", });
+        new java.lang.String[] { "Jars", "GeneratedJars", "JavacOpts", "JvmFlags", "MainClass", "Args", "Jdeps", "TransitiveCompileTimeJars", "BuilderScript", "BuilderArgs", });
     internal_static_bazelbsp_JavaToolchainInfo_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_bazelbsp_JavaToolchainInfo_fieldAccessorTable = new
@@ -27211,7 +27938,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_KotlinTargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_bazelbsp_KotlinTargetInfo_descriptor,
-        new java.lang.String[] { "LanguageVersion", "ApiVersion", "Associates", "KotlincOpts", "Stdlibs", "KotlincPluginInfos", });
+        new java.lang.String[] { "LanguageVersion", "ApiVersion", "Associates", "KotlincOpts", "Stdlibs", "KotlincPluginInfos", "BuilderScript", "BuilderArgs", });
     internal_static_bazelbsp_PythonTargetInfo_descriptor =
       getDescriptor().getMessageTypes().get(12);
     internal_static_bazelbsp_PythonTargetInfo_fieldAccessorTable = new
