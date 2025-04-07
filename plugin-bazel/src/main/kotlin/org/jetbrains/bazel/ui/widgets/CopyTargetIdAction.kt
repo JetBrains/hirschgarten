@@ -131,4 +131,5 @@ private val ALLOWED_ACTION_PLACES =
     ActionPlaces.EDITOR_POPUP,
     ActionPlaces.KEYBOARD_SHORTCUT,
     ActionPlaces.ACTION_SEARCH,
+    ActionPlaces.EDITOR_TAB_POPUP,
   )

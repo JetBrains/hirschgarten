@@ -31,13 +31,17 @@ class BazelJumpToBuildFileAction(private val buildTarget: BuildTarget?) :
   constructor() : this(null)
 
   override fun update(project: Project, e: AnActionEvent) {
-    // buildTarget is provided for the target widget, but not if the action is invoked via the popup menu on a source file
-    if (buildTarget != null) return
+    e.presentation.isEnabledAndVisible = shouldBeEnabledAndVisible(project, e)
+  }
 
-    e.presentation.isEnabledAndVisible = (e.place == ActionPlaces.EDITOR_POPUP || e.place == ActionPlaces.KEYBOARD_SHORTCUT) &&
-      e.getPsiFile()?.virtualFile?.let {
-        project.targetUtils.getTargetsForFile(it).isNotEmpty()
-      } == true
+  private fun shouldBeEnabledAndVisible(project: Project, e: AnActionEvent): Boolean {
+    if (buildTarget != null) return false
+    return (
+      ALLOWED_ACTION_PLACES.contains(e.place) &&
+        e.getPsiFile()?.virtualFile?.let {
+          project.targetUtils.getTargetsForFile(it).isNotEmpty()
+        } == true
+    )
   }
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
@@ -94,3 +98,10 @@ fun findBuildFile(project: Project, buildTarget: BuildTarget): StarlarkFile? {
       ?: return null
   return PsiManager.getInstance(project).findFile(virtualFile) as? StarlarkFile
 }
+
+private val ALLOWED_ACTION_PLACES =
+  listOf(
+    ActionPlaces.EDITOR_POPUP,
+    ActionPlaces.KEYBOARD_SHORTCUT,
+    ActionPlaces.EDITOR_TAB_POPUP,
+  )
