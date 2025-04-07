@@ -35,7 +35,10 @@ class BazelJumpToBuildFileAction(private val buildTarget: BuildTarget?) :
   }
 
   private fun shouldBeEnabledAndVisible(project: Project, e: AnActionEvent): Boolean {
-    if (buildTarget != null) return false
+    if (buildTarget != null) {
+      // Action was created via BazelFileTargetsWidget. In this case `e.getPsiFile()` is `null`, but we should enable the action regardless.
+      return true
+    }
     return (
       ALLOWED_ACTION_PLACES.contains(e.place) &&
         e.getPsiFile()?.virtualFile?.let {
