@@ -44,37 +44,10 @@ class BazelTargetCompletionTest : BasePlatformTestCase() {
       kt_jvm_library(
         name = "test",
         srcs = glob(["*.kt",]),
-        visible = [],
+        visibility = [],
         deps = [
           "//another_test_target",
           <caret>
-        ],
-      )
-      """.trimMargin(),
-    )
-    myFixture.type("\"")
-    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
-
-    // then
-    lookups shouldContainExactlyInAnyOrder listOf("\"//target1\"", "\"//target2\"")
-  }
-
-  @Test
-  fun `should complete in visible`() {
-    // given
-    setTargets(listOf("//target1", "//target2"))
-
-    // when
-    myFixture.configureByText(
-      "BUILD",
-      """
-      load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
-      kt_jvm_library(
-        name = "test",
-        srcs = glob(["*.kt",]),
-        visible = [<caret>],
-        deps = [
-          "//another_test_target",
         ],
       )
       """.trimMargin(),
