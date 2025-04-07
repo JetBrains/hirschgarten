@@ -17,6 +17,7 @@ import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import kotlin.io.path.Path
 
 @DisplayName("BspModuleDetailsToModuleTransformer.transform(bspModuleDetails) tests")
 class BspModuleDetailsToModuleTransformerTest {
@@ -57,6 +58,7 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetCapabilities(),
         sources = emptyList(),
         resources = emptyList(),
+        baseDirectory = Path("base/dir"),
       )
 
     val javacOptions =
@@ -128,6 +130,7 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetCapabilities(),
         sources = emptyList(),
         resources = emptyList(),
+        baseDirectory = Path("base/dir"),
       )
     val bspModuleDetails =
       BspModuleDetails(
@@ -213,6 +216,7 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetCapabilities(),
         sources = emptyList(),
         resources = emptyList(),
+        baseDirectory = Path("base/dir"),
       )
 
     val javacOptionsItem1 =
@@ -250,6 +254,7 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetCapabilities(),
         sources = emptyList(),
         resources = emptyList(),
+        baseDirectory = Path("base/dir"),
       )
 
     val javacOptionsItem2 =
@@ -335,6 +340,7 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetCapabilities(),
         sources = emptyList(),
         resources = emptyList(),
+        baseDirectory = Path("base/dir"),
       )
 
     val javacOptions =

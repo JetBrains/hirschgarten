@@ -196,7 +196,7 @@ class GoProjectSync : ProjectSyncHook {
               isMainModule = false,
               internal = true,
             ) {
-              this.root = dependencyTargetInfo.baseDirectory?.toVirtualFileUrl(virtualFileUrlManager)
+              this.root = dependencyTargetInfo.baseDirectory.toVirtualFileUrl(virtualFileUrlManager)
             }
           }
         }
@@ -218,7 +218,7 @@ class GoProjectSync : ProjectSyncHook {
       moduleId = moduleId,
       entitySource = entitySource,
       importPath = goBuildInfo?.importPath ?: "",
-      root = inputEntity.baseDirectory!!.toVirtualFileUrl(virtualFileUrlManager),
+      root = inputEntity.baseDirectory.toVirtualFileUrl(virtualFileUrlManager),
     ) {
       this.dependencies = vgoModuleDependencies + vgoModuleLibraries
     }

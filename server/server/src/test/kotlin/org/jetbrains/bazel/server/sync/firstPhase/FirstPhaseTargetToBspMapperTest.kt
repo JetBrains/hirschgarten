@@ -2,10 +2,13 @@ package org.jetbrains.bazel.server.sync.firstPhase
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.bazelrunner.utils.orLatestSupported
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bazel.server.model.FirstPhaseProject
+import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
@@ -36,6 +39,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.io.path.createFile
 import kotlin.io.path.createParentDirectories
@@ -89,10 +93,24 @@ private fun Path.createMockSourceFile(relativePath: String, fullPackage: String)
 
 class FirstPhaseTargetToBspMapperTest {
   private lateinit var workspaceRoot: Path
+  private lateinit var bazelInfo: BazelInfo
+  private lateinit var bazelPathsResolver: BazelPathsResolver
 
   @BeforeEach
   fun beforeEach() {
     workspaceRoot = createTempDirectory("workspaceRoot").also { it.toFile().deleteOnExit() }
+    bazelInfo =
+      BazelInfo(
+        execRoot = Paths.get(""),
+        outputBase = Paths.get(""),
+        workspaceRoot = workspaceRoot,
+        bazelBin = Path("bazel-bin"),
+        release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
+        false,
+        true,
+        emptyList(),
+      )
+    bazelPathsResolver = BazelPathsResolver(bazelInfo)
   }
 
   @Nested
@@ -204,7 +222,7 @@ class FirstPhaseTargetToBspMapperTest {
       val fgRes1 = workspaceRoot.resolve("filegroupResources/file1.txt").createParentDirectories().createFile()
       val fgRes2 = workspaceRoot.resolve("filegroupResources/file2.txt").createParentDirectories().createFile()
 
-      val mapper = FirstPhaseTargetToBspMapper(workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(bazelPathsResolver)
 
       // when
       val result: WorkspaceBuildTargetsResult = mapper.toWorkspaceBuildTargetsResult(project)
@@ -229,6 +247,7 @@ class FirstPhaseTargetToBspMapperTest {
                 target1Resource1,
                 target1Resource2,
               ),
+            baseDirectory = workspaceRoot.resolve(Path("target1")),
           ),
           // target2: now merges its declared language with those inferred from its .kt sources
           BuildTarget(
@@ -243,6 +262,7 @@ class FirstPhaseTargetToBspMapperTest {
                 SourceItem(target2Src2, false, "com.example"),
               ),
             resources = emptyList(),
+            baseDirectory = workspaceRoot.resolve(Path("target2")),
           ),
           // target3
           BuildTarget(
@@ -257,6 +277,7 @@ class FirstPhaseTargetToBspMapperTest {
                 target3Resource1,
                 target3Resource2,
               ),
+            baseDirectory = workspaceRoot.resolve(Path("target3")),
           ),
           // target4
           BuildTarget(
@@ -267,6 +288,7 @@ class FirstPhaseTargetToBspMapperTest {
             capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false),
             sources = emptyList(),
             resources = emptyList(),
+            baseDirectory = workspaceRoot.resolve(Path("target4")),
           ),
           // target5
           BuildTarget(
@@ -277,6 +299,7 @@ class FirstPhaseTargetToBspMapperTest {
             capabilities = BuildTargetCapabilities(canCompile = true, canRun = true, canTest = false),
             sources = emptyList(),
             resources = emptyList(),
+            baseDirectory = workspaceRoot.resolve(Path("target5")),
           ),
           // target6
           BuildTarget(
@@ -287,6 +310,7 @@ class FirstPhaseTargetToBspMapperTest {
             capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = true),
             sources = emptyList(),
             resources = emptyList(),
+            baseDirectory = workspaceRoot.resolve(Path("target6")),
           ),
           // target7: now with its created source files
           BuildTarget(
@@ -301,6 +325,7 @@ class FirstPhaseTargetToBspMapperTest {
                 SourceItem(target7Src2, false, "com.example.a"),
               ),
             resources = emptyList(),
+            baseDirectory = workspaceRoot.resolve(Path("target7")),
           ),
           // target8: merging its own source and the sources from filegroupSources dependency
           BuildTarget(
@@ -324,6 +349,7 @@ class FirstPhaseTargetToBspMapperTest {
                 workspaceRoot.resolve("filegroupResources/file1.txt"),
                 workspaceRoot.resolve("filegroupResources/file2.txt"),
               ),
+            baseDirectory = workspaceRoot.resolve(Path("target8")),
           ),
           BuildTarget(
             id = Label.parse("//filegroupSources"),
@@ -337,6 +363,7 @@ class FirstPhaseTargetToBspMapperTest {
                 SourceItem(fgSrc2, false, "com.fg"),
               ),
             resources = emptyList(),
+            baseDirectory = workspaceRoot.resolve(Path("filegroupSources")),
           ),
         )
     }
@@ -358,7 +385,7 @@ class FirstPhaseTargetToBspMapperTest {
         )
       val project = createMockProject(targets, allowManualTargetsSync = true)
 
-      val mapper = FirstPhaseTargetToBspMapper(workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(bazelPathsResolver)
 
       // when
       val result = mapper.toWorkspaceBuildTargetsResult(project)

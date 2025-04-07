@@ -101,9 +101,10 @@ internal class ModuleDetailsToJavaModuleTransformer(
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
   }
 
-  private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot? =
-    // TODO https://youtrack.jetbrains.com/issue/BAZEL-635
-    inputEntity.target.baseDirectory?.let { ContentRoot(it) }
+  private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
+    ContentRoot(
+      path = inputEntity.target.baseDirectory,
+    )
 
   private fun ModuleDetails.toJdkNameOrDefault(): String? = toJdkName() ?: defaultJdkName
 
