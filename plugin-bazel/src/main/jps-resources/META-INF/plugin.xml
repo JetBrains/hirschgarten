@@ -461,6 +461,11 @@
                 displayName="Bazel"
                 instance="org.jetbrains.bazel.ui.settings.BazelProjectSettingsConfigurable"
                 provider="org.jetbrains.bazel.ui.settings.BazelProjectSettingsConfigurableProvider">
+            <configurable
+                    id="bazel.experimental.project.settings"
+                    displayName="Experimental Settings"
+                    instance="org.jetbrains.bazel.ui.settings.BazelExperimentalProjectSettingsConfigurable"
+                    provider="org.jetbrains.bazel.ui.settings.BazelExperimentalProjectSettingsConfigurableProvider"/>
         </projectConfigurable>
 
         <applicationConfigurable
