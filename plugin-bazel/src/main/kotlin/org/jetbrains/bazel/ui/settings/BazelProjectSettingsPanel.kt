@@ -23,16 +23,11 @@ import javax.swing.JComponent
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
-class BazelProjectSettingsConfigurable(private val project: Project) : SearchableConfigurable {
+internal class BazelProjectSettingsConfigurable(private val project: Project) : SearchableConfigurable {
   private val projectViewPathField: TextFieldWithBrowseButton
   private val buildifierExecutablePathField: TextFieldWithBrowseButton
   private val hotswapEnabledCheckBox: JBCheckBox
   private val showExcludedDirectoriesAsSeparateNodeCheckBox: JBCheckBox
-
-  // experimental features
-  private val enableLocalJvmActionsCheckBox: JBCheckBox
-  private val useIntellijTestRunnerCheckBox: JBCheckBox
-  private val enableBuildWithJpsCheckBox: JBCheckBox
 
   private var currentProjectSettings = project.bazelProjectSettings
 
@@ -41,40 +36,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     buildifierExecutablePathField = initBuildifierExecutablePathField()
     hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
     showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
-
-    // TODO: BAZEL-1837
-    // experimental features
-    useIntellijTestRunnerCheckBox = initUseIntellijTestRunnerCheckBoxBox()
-    enableLocalJvmActionsCheckBox = initEnableLocalJvmActionsCheckBox()
-
-    enableBuildWithJpsCheckBox = initEnableBuildWithJpsCheckBox()
   }
-
-  private fun initEnableLocalJvmActionsCheckBox(): JBCheckBox =
-    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.enable.local.jvm.actions.checkbox.text")).apply {
-      isSelected = currentProjectSettings.enableLocalJvmActions
-      addItemListener {
-        currentProjectSettings = currentProjectSettings.copy(enableLocalJvmActions = isSelected)
-        useIntellijTestRunnerCheckBox.isEnabled = isSelected
-      }
-    }
-
-  private fun initUseIntellijTestRunnerCheckBoxBox(): JBCheckBox =
-    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.use.intellij.test.runner.checkbox.text")).apply {
-      isSelected = currentProjectSettings.useIntellijTestRunner
-      isEnabled = currentProjectSettings.enableLocalJvmActions
-      addItemListener {
-        currentProjectSettings = currentProjectSettings.copy(useIntellijTestRunner = isSelected)
-      }
-    }
-
-  private fun initEnableBuildWithJpsCheckBox(): JBCheckBox =
-    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.enable.build.with.jps.checkbox.text")).apply {
-      isSelected = currentProjectSettings.enableBuildWithJps
-      addItemListener {
-        currentProjectSettings = currentProjectSettings.copy(enableBuildWithJps = isSelected)
-      }
-    }
 
   private fun initProjectViewFileField(): TextFieldWithBrowseButton =
     TextFieldWithBrowseButton().apply {
@@ -135,38 +97,24 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
 
   override fun createComponent(): JComponent =
     panel {
-      group(BazelPluginBundle.message("project.settings.general.settings")) {
-        row(BazelPluginBundle.message("project.settings.project.view.label")) { cell(projectViewPathField).align(Align.FILL) }
-        row(BazelPluginBundle.message("project.settings.buildifier.label")) {
-          cell(buildifierExecutablePathField).align(Align.FILL).validationInfo { buildifierExecutableValidationInfo() }
-        }
-        row { cell(hotswapEnabledCheckBox).align(Align.FILL) }
-        row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
+      row(BazelPluginBundle.message("project.settings.project.view.label")) { cell(projectViewPathField).align(Align.FILL) }
+      row(BazelPluginBundle.message("project.settings.buildifier.label")) {
+        cell(buildifierExecutablePathField).align(Align.FILL).validationInfo { buildifierExecutableValidationInfo() }
       }
-      group(BazelPluginBundle.message("project.settings.experimental.settings")) {
-        group(BazelPluginBundle.message("project.settings.local.runner.settings")) {
-          row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
-          row {
-            cell(useIntellijTestRunnerCheckBox).align(Align.FILL)
-            contextHelp(BazelPluginBundle.message("project.settings.plugin.use.intellij.test.runner.help.text"))
-          }
-        }
-
-        row { cell(enableBuildWithJpsCheckBox).align(Align.FILL) }
-      }
+      row { cell(hotswapEnabledCheckBox).align(Align.FILL) }
+      row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
     }
 
   override fun isModified(): Boolean = currentProjectSettings != project.bazelProjectSettings
 
   override fun apply() {
     val isProjectViewPathChanged = currentProjectSettings.projectViewPath != project.bazelProjectSettings.projectViewPath
-    val isEnableBuildWithJpsChanged = currentProjectSettings.enableBuildWithJps != project.bazelProjectSettings.enableBuildWithJps
     val showExcludedDirectoriesAsSeparateNodeChanged =
       currentProjectSettings.showExcludedDirectoriesAsSeparateNode != project.bazelProjectSettings.showExcludedDirectoriesAsSeparateNode
 
     project.bazelProjectSettings = currentProjectSettings
 
-    if (isProjectViewPathChanged || isEnableBuildWithJpsChanged) {
+    if (isProjectViewPathChanged) {
       BazelCoroutineService.getInstance(project).start {
         ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
       }
@@ -214,11 +162,8 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
       listOf(
         "project.settings.buildifier.label",
         "project.settings.project.view.label",
-        "project.settings.plugin.enable.local.jvm.actions.checkbox.text",
-        "project.settings.plugin.hotswap.enabled.checkbox.text",
         "project.settings.plugin.show.excluded.directories.as.separate.node.checkbox.text",
         "project.settings.plugin.title",
-        "project.settings.plugin.use.intellij.test.runner.checkbox.text",
       )
   }
 }

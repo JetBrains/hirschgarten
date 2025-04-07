@@ -18,6 +18,7 @@ data class BazelProjectSettings(
   val buildifierExecutablePath: Path? = null,
   val hotSwapEnabled: Boolean = true,
   val showExcludedDirectoriesAsSeparateNode: Boolean = true,
+  // experimental settings
   val enableLocalJvmActions: Boolean = false,
   val useIntellijTestRunner: Boolean = false,
   val enableBuildWithJps: Boolean = false,
