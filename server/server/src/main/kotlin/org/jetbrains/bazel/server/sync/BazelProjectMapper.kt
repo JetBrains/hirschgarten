@@ -12,9 +12,7 @@ import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
-import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.logger.BspClientLogger
@@ -43,7 +41,6 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -53,7 +50,6 @@ import kotlin.io.path.notExists
 private val THIRD_PARTY_LIBRARIES_PATTERN = "external/[^/]+/(.+)/([^/]+)/[^/]+$".toRegex()
 
 class BazelProjectMapper(
-  private val bazelInfo: BazelInfo,
   private val languagePluginsService: LanguagePluginsService,
   private val bazelPathsResolver: BazelPathsResolver,
   private val targetTagsResolver: TargetTagsResolver,
@@ -641,7 +637,7 @@ class BazelProjectMapper(
           label = label,
           languages = inferLanguages(targetInfo, transitiveCompileTimeJarsTargetKinds),
           tags = targetTagsResolver.resolveTags(targetInfo),
-          baseDirectory = label.assumeResolved().toDirectoryPath(repoMapping),
+          baseDirectory = bazelPathsResolver.toDirectoryPath(label.assumeResolved(), repoMapping),
         )
       }
 
@@ -872,7 +868,7 @@ class BazelProjectMapper(
       .map { bazelPathsResolver.resolve(it) }
 
   private fun getGoRootPath(targetInfo: TargetInfo, repoMapping: RepoMapping): Path =
-    targetInfo.label().assumeResolved().toDirectoryPath(repoMapping)
+    bazelPathsResolver.toDirectoryPath(targetInfo.label().assumeResolved(), repoMapping)
 
   private fun selectTargetsToImport(
     workspaceContext: WorkspaceContext,
@@ -1005,7 +1001,7 @@ class BazelProjectMapper(
     val directDependencies = extraLibraries.map { it.label } + resolvedDependencies
     val languages = inferLanguages(target, transitiveCompileTimeJarsTargetKinds)
     val tags = targetTagsResolver.resolveTags(target)
-    val baseDirectory = label.toDirectoryPath(repoMapping)
+    val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
     val languagePlugin = languagePluginsService.getPlugin(languages)
     val sourceSet = resolveSourceSet(target, languagePlugin)
     val resources = resolveResources(target, languagePlugin)
@@ -1034,28 +1030,6 @@ class BazelProjectMapper(
     val languagesForSources = target.sourcesList.flatMap { Language.allOfSource(it.relativePath) }.toHashSet()
     return languagesForTarget + languagesForSources
   }
-
-  private fun ResolvedLabel.toDirectoryPath(repoMapping: RepoMapping): Path {
-    val repoPath = (repoMapping as? BzlmodRepoMapping)?.let { toRepoPath(repoMapping) } ?: toRepoPathForBazel7()
-    return repoPath.resolve(packagePath.toString())
-  }
-
-  private fun ResolvedLabel.toRepoPath(repoMapping: BzlmodRepoMapping): Path? {
-    val canonicalName =
-      if (repo is Canonical || repo is Main) {
-        repo.repoName
-      } else {
-        repoMapping.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
-      }
-    return repoMapping.canonicalRepoNameToPath[canonicalName]
-  }
-
-  private fun ResolvedLabel.toRepoPathForBazel7(): Path =
-    if (repo is Main) {
-      bazelInfo.workspaceRoot
-    } else {
-      bazelPathsResolver.relativePathToExecRootAbsolute(Path("external", repo.repoName, *packagePath.pathSegments.toTypedArray()))
-    }
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): SourceSet {
     val (sources, nonExistentSources) =

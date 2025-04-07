@@ -114,6 +114,7 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
               )
             },
           resources = emptyList(),
+          baseDirectory = Path("base/dir"),
         ),
       javacOptions = null,
       scalacOptions = null,

@@ -66,6 +66,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
           ),
         sources = listOf(SourceItem(Path("\$WORKSPACE/src/Lib.java"), false)),
         resources = emptyList(),
+        baseDirectory = Path("\$WORKSPACE/src"),
       )
 
     val srcJavaBinaryTarget =
@@ -82,6 +83,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
           ),
         sources = listOf(SourceItem(Path("\$WORKSPACE/src/Main.java"), false)),
         resources = emptyList(),
+        baseDirectory = Path("\$WORKSPACE/src"),
       )
 
     val srcKotlinLibTarget =
@@ -98,6 +100,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
           ),
         sources = listOf(SourceItem(Path("\$WORKSPACE/src/Lib.kt"), false)),
         resources = emptyList(),
+        baseDirectory = Path("\$WORKSPACE/src"),
       )
 
     val srcKotlinBinaryTarget =
@@ -114,6 +117,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
           ),
         sources = listOf(SourceItem(Path("\$WORKSPACE/src/Main.kt"), false)),
         resources = emptyList(),
+        baseDirectory = Path("\$WORKSPACE/src"),
       )
 
     return WorkspaceBuildTargetsResult(listOf(srcJavaLibTarget, srcJavaBinaryTarget, srcKotlinLibTarget, srcKotlinBinaryTarget))

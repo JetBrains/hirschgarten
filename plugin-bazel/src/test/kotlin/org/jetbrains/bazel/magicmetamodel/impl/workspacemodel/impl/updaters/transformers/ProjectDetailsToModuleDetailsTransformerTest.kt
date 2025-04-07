@@ -27,6 +27,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         BuildTargetCapabilities(),
         emptyList(),
         emptyList(),
+        baseDirectory = Path("base/dir"),
       )
     val projectDetails =
       ProjectDetails(
@@ -69,6 +70,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         BuildTargetCapabilities(),
         listOf(SourceItem(Path("/root/dir/example/package/File1.java"), false)),
         listOf(Path("/root/dir/resource/File.txt")),
+        baseDirectory = Path("base/dir"),
       )
 
     val javacOptions =
@@ -119,6 +121,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         BuildTargetCapabilities(),
         listOf(SourceItem(Path("/root/dir1/example/package/File1.java"), false)),
         listOf(Path("/root/dir1/resource/File.txt")),
+        baseDirectory = Path("base/dir"),
       )
     val target1JavacOptionsItem =
       JavacOptionsItem(
@@ -138,6 +141,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
           SourceItem(Path("/root/dir2/example/package/File2.java"), false),
         ),
         listOf(Path("/root/dir2/resource/File.txt")),
+        baseDirectory = Path("base/dir"),
       )
     val target3Id = Label.parse("target3")
     val target3 =
@@ -149,6 +153,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         BuildTargetCapabilities(),
         emptyList(),
         emptyList(),
+        baseDirectory = Path("base/dir"),
       )
     val target3JavacOptionsItem =
       JavacOptionsItem(
@@ -168,6 +173,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
           SourceItem(Path("/root/dir2/example/package/file.py"), false),
         ),
         emptyList(),
+        baseDirectory = Path("base/dir"),
       )
     val projectDetails =
       ProjectDetails(

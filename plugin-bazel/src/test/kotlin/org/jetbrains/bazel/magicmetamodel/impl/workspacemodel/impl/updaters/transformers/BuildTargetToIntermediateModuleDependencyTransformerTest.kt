@@ -8,6 +8,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import kotlin.io.path.Path
 
 @DisplayName("buildTargetToModuleDependencyTransformer.transform(buildTarget) tests")
 class BuildTargetToIntermediateModuleDependencyTransformerTest {
@@ -42,6 +43,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
         BuildTargetCapabilities(),
         sources = emptyList(),
         resources = emptyList(),
+        baseDirectory = Path("base/dir"),
       )
     val allTargets = setOf<Label>()
 
@@ -69,6 +71,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
         BuildTargetCapabilities(),
         sources = emptyList(),
         resources = emptyList(),
+        baseDirectory = Path("base/dir"),
       )
     val allTargets =
       setOf(
@@ -110,6 +113,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
         BuildTargetCapabilities(),
         sources = emptyList(),
         resources = emptyList(),
+        baseDirectory = Path("base/dir"),
       )
     val allTargets =
       setOf(
@@ -162,6 +166,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
         BuildTargetCapabilities(),
         sources = emptyList(),
         resources = emptyList(),
+        baseDirectory = Path("base/dir"),
       )
     val buildTarget2 =
       BuildTarget(
@@ -176,6 +181,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
         BuildTargetCapabilities(),
         sources = emptyList(),
         resources = emptyList(),
+        baseDirectory = Path("base/dir"),
       )
 
     val allTargets =

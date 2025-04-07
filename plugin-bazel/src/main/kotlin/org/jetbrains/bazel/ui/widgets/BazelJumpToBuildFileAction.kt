@@ -89,11 +89,10 @@ private fun findBuildFileTarget(project: Project, buildTarget: BuildTarget): Psi
 }
 
 fun findBuildFile(project: Project, buildTarget: BuildTarget): StarlarkFile? {
-  val baseDirectoryPath = buildTarget.baseDirectory ?: return null
   // Sometimes a project can contain a directory named "build" (which on case-insensitive filesystems is the same as BUILD).
   // Try with BUILD.bazel first to avoid this case.
-  val buildBazelFilePath = baseDirectoryPath.resolve("BUILD.bazel")
-  val buildFilePath = baseDirectoryPath.resolve("BUILD")
+  val buildBazelFilePath = buildTarget.baseDirectory.resolve("BUILD.bazel")
+  val buildFilePath = buildTarget.baseDirectory.resolve("BUILD")
   val virtualFileManager = VirtualFileManager.getInstance()
   val virtualFile =
     virtualFileManager.findFileByNioPath(buildBazelFilePath)?.takeIf { it.isFile }
