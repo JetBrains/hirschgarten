@@ -9,6 +9,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadValue
 import org.jetbrains.bazel.languages.starlark.references.BazelLabelReference
+import org.jetbrains.bazel.languages.starlark.references.StarlarkClassnameReference
 import org.jetbrains.bazel.languages.starlark.references.StarlarkLoadReference
 import org.jetbrains.bazel.languages.starlark.references.StarlarkVisibilityReference
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
@@ -23,6 +24,7 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
   fun getQuote(): StarlarkQuote = StarlarkQuote.ofString(text)
 
   override fun getReference(): PsiReference? {
+    if (isClassnameValue()) return StarlarkClassnameReference(this)
     if (isInVisibilityList()) return StarlarkVisibilityReference(this)
     val loadAncestor = findLoadStatement() ?: return BazelLabelReference(this, true)
     val loadedFileNamePsi = loadAncestor.getLoadedFileNamePsi() ?: return null
@@ -37,4 +39,6 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
 
   private fun isInVisibilityList(): Boolean =
     (parent is StarlarkListLiteralExpression && (parent.parent as? StarlarkNamedArgumentExpression)?.name == "visibility")
+
+  private fun isClassnameValue(): Boolean = (parent as? StarlarkNamedArgumentExpression)?.name == "classname"
 }
