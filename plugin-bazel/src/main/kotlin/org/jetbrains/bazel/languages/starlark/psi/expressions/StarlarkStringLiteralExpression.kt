@@ -5,10 +5,12 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiReference
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
+import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadValue
 import org.jetbrains.bazel.languages.starlark.references.BazelLabelReference
 import org.jetbrains.bazel.languages.starlark.references.StarlarkLoadReference
+import org.jetbrains.bazel.languages.starlark.references.StarlarkVisibilityReference
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 
 class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node) {
@@ -21,6 +23,7 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
   fun getQuote(): StarlarkQuote = StarlarkQuote.ofString(text)
 
   override fun getReference(): PsiReference? {
+    if (isInVisibilityList()) return StarlarkVisibilityReference(this)
     val loadAncestor = findLoadStatement() ?: return BazelLabelReference(this, true)
     val loadedFileNamePsi = loadAncestor.getLoadedFileNamePsi() ?: return null
     val loadedFileReference = BazelLabelReference(loadedFileNamePsi, true)
@@ -31,4 +34,7 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
   }
 
   private fun findLoadStatement(): StarlarkLoadStatement? = (parent as? StarlarkLoadValue)?.getLoadStatement()
+
+  private fun isInVisibilityList(): Boolean =
+    (parent is StarlarkListLiteralExpression && (parent.parent as? StarlarkNamedArgumentExpression)?.name == "visibility")
 }
