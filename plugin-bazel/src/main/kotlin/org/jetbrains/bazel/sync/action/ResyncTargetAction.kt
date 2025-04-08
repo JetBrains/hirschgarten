@@ -8,7 +8,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
@@ -22,7 +22,7 @@ class ResyncTargetAction private constructor(private val targetId: Label) :
 
     override fun update(project: Project, e: AnActionEvent) {
       // for now we dont support jps modules (TODO: https://youtrack.jetbrains.com/issue/BAZEL-1238)
-      val isJpsDisabled = !project.bazelProjectSettings.enableBuildWithJps
+      val isJpsDisabled = !project.bazelJVMProjectSettings.enableBuildWithJps
       e.presentation.isVisible = BazelFeatureFlags.enablePartialSync && project.isBazelProject && isJpsDisabled
       e.presentation.isEnabled = !project.isSyncInProgress()
     }

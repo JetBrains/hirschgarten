@@ -1,0 +1,66 @@
+package org.jetbrains.bazel.settings.bazel
+
+import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.State
+import com.intellij.openapi.components.Storage
+import com.intellij.openapi.components.StoragePathMacros
+import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.Project
+
+data class BazelJVMProjectSettings(
+  val hotSwapEnabled: Boolean = true,
+  val enableLocalJvmActions: Boolean = false,
+  val enableBuildWithJps: Boolean = false,
+  val useIntellijTestRunner: Boolean = false,
+) {
+  fun withNewHotSwapEnabled(newHotSwapEnabled: Boolean): BazelJVMProjectSettings = copy(hotSwapEnabled = newHotSwapEnabled)
+}
+
+internal data class BazelJVMProjectSettingsState(
+  var hotSwapEnabled: Boolean = true,
+  var enableLocalJvmActions: Boolean = false,
+  var enableBuildWithJps: Boolean = false,
+  var useIntellijTestRunner: Boolean = false,
+)
+
+@State(
+  name = "BazelJVMProjectSettingsService",
+  storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
+  reportStatistic = true,
+)
+@Service(Service.Level.PROJECT)
+internal class BazelJVMProjectSettingsService :
+  DumbAware,
+  PersistentStateComponent<BazelJVMProjectSettingsState> {
+  var settings: BazelJVMProjectSettings = BazelJVMProjectSettings()
+
+  override fun getState(): BazelJVMProjectSettingsState =
+    BazelJVMProjectSettingsState(
+      hotSwapEnabled = settings.hotSwapEnabled,
+      enableLocalJvmActions = settings.enableLocalJvmActions,
+      enableBuildWithJps = settings.enableBuildWithJps,
+      useIntellijTestRunner = settings.useIntellijTestRunner,
+    )
+
+  override fun loadState(settingsState: BazelJVMProjectSettingsState) {
+    this.settings =
+      BazelJVMProjectSettings(
+        hotSwapEnabled = settingsState.hotSwapEnabled,
+        enableLocalJvmActions = settingsState.enableLocalJvmActions,
+        enableBuildWithJps = settingsState.enableBuildWithJps,
+        useIntellijTestRunner = settingsState.useIntellijTestRunner,
+      )
+  }
+
+  companion object {
+    @JvmStatic
+    fun getInstance(project: Project): BazelJVMProjectSettingsService = project.getService(BazelJVMProjectSettingsService::class.java)
+  }
+}
+
+var Project.bazelJVMProjectSettings: BazelJVMProjectSettings
+  get() = BazelJVMProjectSettingsService.getInstance(this).settings.copy()
+  set(value) {
+    BazelJVMProjectSettingsService.getInstance(this).settings = value.copy()
+  }

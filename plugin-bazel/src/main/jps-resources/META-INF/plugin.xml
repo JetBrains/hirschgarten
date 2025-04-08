@@ -101,6 +101,10 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
                         interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bazel.bazelSettingsProvider"
+                        area="IDEA_PROJECT"
+                        interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -271,6 +275,9 @@
         <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
         <additionalProjectTaskRunnerProvider
                 implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
+
+        <bazelSettingsProvider implementation="org.jetbrains.bazel.ui.settings.BazelJVMSettingsProvider"/>
+
 
     </extensions>
 
