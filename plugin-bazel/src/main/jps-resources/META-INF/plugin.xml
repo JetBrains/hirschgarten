@@ -411,7 +411,12 @@
         <lang.syntaxHighlighterFactory
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"/>
-
+        <lang.commenter
+                language="ProjectView"
+                implementationClass="org.jetbrains.bazel.languages.projectview.commenter.ProjectViewCommenter"/>
+        <langCodeStyleSettingsProvider
+                implementation="org.jetbrains.bazel.languages.projectview.formatting.ProjectViewLanguageCodeStyleSettingsProvider"/>
+        <enterHandlerDelegate implementation="org.jetbrains.bazel.languages.projectview.formatting.ProjectViewEnterHandler" />
         <lang.parserDefinition
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"/>
