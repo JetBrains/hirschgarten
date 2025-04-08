@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.bazelquery.terminal
 
-import com.intellij.execution.configurations.ParameterTargetValuePart.Path
 import com.intellij.markdown.utils.doc.DocMarkdownToHtmlConverter
 import com.intellij.openapi.project.Project
 import com.intellij.terminal.completion.spec.ShellCommandParserOptions
@@ -25,6 +24,7 @@ import org.jetbrains.plugins.terminal.block.completion.spec.ShellCompletionSugge
 import org.jetbrains.plugins.terminal.block.completion.spec.ShellRuntimeDataGenerator
 import org.jetbrains.plugins.terminal.block.completion.spec.dsl.ShellCommandContext
 import org.jetbrains.plugins.terminal.block.completion.spec.project
+import java.nio.file.Path
 
 /*
  *  All tokens must be treated as known by parser. The terminal stops suggesting if a token is unknown.
@@ -81,7 +81,7 @@ fun ShellCommandContext.queryCompletion() {
         val typedPrefix = context.typedPrefix.substring(offset)
         val targets =
           TargetCompletionsGenerator(context.project)
-            .getTargetsList(typedPrefix, Path(context.currentDirectory))
+            .getTargetsList(typedPrefix, Path.of(context.currentDirectory))
         val suggestions: MutableList<ShellCompletionSuggestion> =
           targets
             .map { target ->

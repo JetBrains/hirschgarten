@@ -1,16 +1,15 @@
 package org.jetbrains.bazel.languages.bazelquery.completion
 
-import com.intellij.execution.configurations.ParameterTargetValuePart.Path
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
+import java.nio.file.Path
 import kotlin.text.removePrefix
 import kotlin.text.startsWith
 
 class TargetCompletionsGenerator(private val project: Project) {
-  private val separator = if (SystemInfo.isWindows) "\\" else "/"
-  private val startPathSign = "$separator$separator"
+  private val separator = "/"
+  private val startTargetSign = "//"
   private val allTargets =
     project.targetUtils
       .allTargets()
@@ -21,10 +20,11 @@ class TargetCompletionsGenerator(private val project: Project) {
     // Note: project root dependent format - starts with "//",
     // directory dependent format - starts with a letter or ":"
     val suggestions = mutableListOf<String>()
-    val projectDir = project.basePath ?: return suggestions
-    if (directory != null && !directory.pathToUpload.startsWith(projectDir)) return suggestions
-    val currentDir = directory?.pathToUpload?.removePrefix(projectDir)?.removePrefix(separator) ?: ""
-    val prefixPath = "$startPathSign$currentDir"
+    val projectPath = Path.of(project.basePath ?: return suggestions)
+    if (directory != null && !directory.startsWith(projectPath)) return suggestions
+
+    val currentDir = directory?.let { projectPath.relativize(it).toString() } ?: ""
+    val prefixPath = "$startTargetSign$currentDir"
 
     val allTargetsDirDepFormat =
       if (currentDir.isNotEmpty()) {
@@ -32,7 +32,7 @@ class TargetCompletionsGenerator(private val project: Project) {
           .filter { it.startsWith("$prefixPath$separator") }
           .map { it.removePrefix("$prefixPath$separator") }
       } else {
-        allTargets.map { it.removePrefix(startPathSign) }
+        allTargets.map { it.removePrefix(startTargetSign) }
       }
     allTargets.addAll(allTargetsDirDepFormat)
 
@@ -41,9 +41,9 @@ class TargetCompletionsGenerator(private val project: Project) {
 
     if (prefix.startsWith(separator) || prefix.isEmpty()) {
       // All rule targets in packages in the main repository. Does not include targets from external repositories.
-      suggestions.add("$startPathSign...")
+      suggestions.add("$startTargetSign...")
       // All rule targets in the top-level package, if there is a `BUILD` file at the root of the workspace.
-      suggestions.add("$startPathSign:all")
+      suggestions.add("$startTargetSign:all")
     }
     if (prefix.startsWith(":") || prefix.isEmpty()) {
       // All rule targets in the working directory.
@@ -95,15 +95,15 @@ class TargetCompletionsGenerator(private val project: Project) {
     availableSuggestions
       .forEach { s ->
         patterns.add(s) // add single target suggestion
-        val isProjectRootDependentFormat = s.startsWith(startPathSign)
-        val suggestionSegments = s.removePrefix(startPathSign).split(":")[0].split(separator)
+        val isProjectRootDependentFormat = s.startsWith(startTargetSign)
+        val suggestionSegments = s.removePrefix(startTargetSign).split(":")[0].split(separator)
         suggestionSegments.indices
           .reversed()
           .filter { it + 1 >= prefixSegments }
           .forEach { i ->
             // add wildcard patterns for the subpath of target suggestion
             if (isProjectRootDependentFormat) {
-              val path = startPathSign + suggestionSegments.subList(0, i + 1).joinToString(separator)
+              val path = startTargetSign + suggestionSegments.subList(0, i + 1).joinToString(separator)
               patterns.add("$path:all")
               patterns.add("$path$separator...:all-targets")
               patterns.add("$path$separator...:all")

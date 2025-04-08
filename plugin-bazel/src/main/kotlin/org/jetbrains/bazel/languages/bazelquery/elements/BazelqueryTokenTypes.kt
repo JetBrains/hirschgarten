@@ -86,9 +86,6 @@ object BazelqueryTokenTypes {
   val COMMA = BazelqueryTokenType(",")
 
   @JvmField
-  val DOUBLE_HYPHEN = BazelqueryTokenType("--")
-
-  @JvmField
   val FLAG = BazelqueryTokenType("FLAG")
 
   @JvmField
@@ -96,10 +93,6 @@ object BazelqueryTokenTypes {
 
   @JvmField
   val UNFINISHED_FLAG = BazelqueryTokenType("UNFINISHED_FLAG")
-/*
-    @JvmField
-    val VALUE = BazelqueryTokenType("VALUE")
-*/
 
   @JvmField
   val UNQUOTED_VAL = BazelqueryTokenType("UNQUOTED_VAL")
@@ -148,9 +141,6 @@ object BazelqueryTokenTypes {
 
   @JvmField
   val WHITE_SPACE = BazelqueryTokenType("WHITE_SPACE")
-
-  @JvmField
-  val SPACE = BazelqueryTokenType("SPACE")
 
   @JvmField
   val UNEXPECTED = BazelqueryTokenType("UNEXPECTED")

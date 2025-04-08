@@ -13,5 +13,5 @@ class BazelqueryFunctionSymbol(val function: BazelqueryFunction, val project: Pr
 
   override fun dereference() = this
 
-  override fun getDocumentationTarget() = BazelqueryFunctionDocumentationTarget(this)
+  override fun getDocumentationTarget() = BazelqueryFunctionDocumentationTarget(this, project)
 }

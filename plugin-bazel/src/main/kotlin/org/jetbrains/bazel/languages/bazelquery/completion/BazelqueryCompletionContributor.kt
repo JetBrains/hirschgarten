@@ -9,7 +9,6 @@ import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
-import com.intellij.execution.configurations.ParameterTargetValuePart.Path
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.tree.TokenSet
@@ -21,6 +20,7 @@ import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenType
 import org.jetbrains.bazel.languages.bazelquery.psi.BazelqueryFile
 import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
+import java.nio.file.Path
 
 class BazelqueryCompletionContributor : CompletionContributor() {
   init {
@@ -85,7 +85,7 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
     val project = parameters.editor.project ?: return
     val targetSuggestions =
       TargetCompletionsGenerator(project)
-        .getTargetsList(prefix, Path(currentDirectory))
+        .getTargetsList(prefix, Path.of(currentDirectory))
 
     result.withPrefixMatcher(BazelqueryPrefixMatcher(prefix)).run {
       addAllElements(

@@ -3,28 +3,34 @@ package org.jetbrains.bazel.languages.bazelquery.functions
 sealed class BazelqueryFunction {
   abstract val name: String
   abstract val description: String
-  abstract val arguments: List<FunctionArgument>
+  abstract val arguments: List<StandardFunctionArgument>
   abstract val varArguments: VarArgFunctionArgument?
   abstract val exampleUsage: String
 
-  data class FunctionArgument(
-    val name: String,
-    val type: String,
+  sealed interface BazelqueryFunctionArgument {
+    val name: String
+    val type: String
+    val description: String
+  }
+
+  data class StandardFunctionArgument(
+    override val name: String,
+    override val type: String,
     val optional: Boolean,
-    val description: String,
-  )
+    override val description: String,
+  ) : BazelqueryFunctionArgument
 
   data class VarArgFunctionArgument(
-    val name: String,
-    val type: String,
-    val description: String,
-  )
+    override val name: String,
+    override val type: String,
+    override val description: String,
+  ) : BazelqueryFunctionArgument
 
   data class SimpleFunction(
     override val name: String,
     override val description: String,
     override val exampleUsage: String,
-    override val arguments: List<FunctionArgument> = emptyList(),
+    override val arguments: List<StandardFunctionArgument> = emptyList(),
     override val varArguments: VarArgFunctionArgument? = null,
   ) : BazelqueryFunction()
 
@@ -37,8 +43,8 @@ sealed class BazelqueryFunction {
           exampleUsage = "allpaths(//foo:bar, //baz:qux)",
           arguments =
             listOf(
-              FunctionArgument("start", "expr", false, "Set of starting points."),
-              FunctionArgument("end", "expr", false, "Set of ending points."),
+              StandardFunctionArgument("start", "expr", false, "Set of starting points."),
+              StandardFunctionArgument("end", "expr", false, "Set of ending points."),
             ),
         ),
         SimpleFunction(
@@ -47,8 +53,8 @@ sealed class BazelqueryFunction {
           exampleUsage = "allrdeps(//foo:bar, 2)",
           arguments =
             listOf(
-              FunctionArgument("expr", "expr", false, "The input set of targets."),
-              FunctionArgument("depth", "int", true, "Maximum depth for reverse dependencies."),
+              StandardFunctionArgument("expr", "expr", false, "The input set of targets."),
+              StandardFunctionArgument("depth", "int", true, "Maximum depth for reverse dependencies."),
             ),
         ),
         SimpleFunction(
@@ -57,9 +63,9 @@ sealed class BazelqueryFunction {
           exampleUsage = "attr(\"tags\", \"[feature]\", deps(//foo:bar))",
           arguments =
             listOf(
-              FunctionArgument("name", "word", false, "The attribute name."),
-              FunctionArgument("pattern", "word", false, "Regular expression for attribute values."),
-              FunctionArgument("input", "expr", false, "The input set of targets."),
+              StandardFunctionArgument("name", "word", false, "The attribute name."),
+              StandardFunctionArgument("pattern", "word", false, "Regular expression for attribute values."),
+              StandardFunctionArgument("input", "expr", false, "The input set of targets."),
             ),
         ),
         SimpleFunction(
@@ -68,7 +74,7 @@ sealed class BazelqueryFunction {
           exampleUsage = "buildfiles(deps(//foo:bar))",
           arguments =
             listOf(
-              FunctionArgument("expr", "expr", false, "The input set of targets."),
+              StandardFunctionArgument("expr", "expr", false, "The input set of targets."),
             ),
         ),
         SimpleFunction(
@@ -77,8 +83,8 @@ sealed class BazelqueryFunction {
           exampleUsage = "deps(//target:foo) or deps(//target:foo, 2)",
           arguments =
             listOf(
-              FunctionArgument("expr", "expr", false, "The input set of targets."),
-              FunctionArgument("depth", "int", true, "Maximum depth of dependency graph traversal."),
+              StandardFunctionArgument("expr", "expr", false, "The input set of targets."),
+              StandardFunctionArgument("depth", "int", true, "Maximum depth of dependency graph traversal."),
             ),
         ),
         SimpleFunction(
@@ -87,8 +93,8 @@ sealed class BazelqueryFunction {
           exampleUsage = "filter(\"//foo\", deps(//bar:baz))",
           arguments =
             listOf(
-              FunctionArgument("pattern", "word", false, "Regular expression for the target name."),
-              FunctionArgument("input", "expr", false, "The input set of targets to filter."),
+              StandardFunctionArgument("pattern", "word", false, "Regular expression for the target name."),
+              StandardFunctionArgument("input", "expr", false, "The input set of targets to filter."),
             ),
         ),
         SimpleFunction(
@@ -97,8 +103,8 @@ sealed class BazelqueryFunction {
           exampleUsage = "kind(\"source file\", deps(//foo:bar))",
           arguments =
             listOf(
-              FunctionArgument("pattern", "word", false, "Regular expression for the target type."),
-              FunctionArgument("input", "expr", false, "The input set of targets."),
+              StandardFunctionArgument("pattern", "word", false, "Regular expression for the target type."),
+              StandardFunctionArgument("input", "expr", false, "The input set of targets."),
             ),
         ),
         SimpleFunction(
@@ -107,8 +113,8 @@ sealed class BazelqueryFunction {
           exampleUsage = "labels(\"srcs\", deps(//foo:bar))",
           arguments =
             listOf(
-              FunctionArgument("attribute", "word", false, "The name of the attribute."),
-              FunctionArgument("input", "expr", false, "The input set of targets."),
+              StandardFunctionArgument("attribute", "word", false, "The name of the attribute."),
+              StandardFunctionArgument("input", "expr", false, "The input set of targets."),
             ),
         ),
         SimpleFunction(
@@ -117,14 +123,14 @@ sealed class BazelqueryFunction {
           exampleUsage = "loadfiles(deps(//foo:bar))",
           arguments =
             listOf(
-              FunctionArgument("expr", "expr", false, "The input set of targets."),
+              StandardFunctionArgument("expr", "expr", false, "The input set of targets."),
             ),
         ),
         SimpleFunction(
           name = "rbuildfiles",
           description = "Returns the BUILD files that transitively depend on given path fragments.",
           exampleUsage = "rbuildfiles(foo/BUILD, bar/file.bzl)",
-          arguments = listOf(FunctionArgument("path", "word", false, "A list of path fragments (variable number of arguments).")),
+          arguments = listOf(StandardFunctionArgument("path", "word", false, "A list of path fragments (variable number of arguments).")),
           varArguments =
             VarArgFunctionArgument(
               name = "path",
@@ -138,9 +144,9 @@ sealed class BazelqueryFunction {
           exampleUsage = "rdeps(//foo/..., //bar:baz, 1)",
           arguments =
             listOf(
-              FunctionArgument("universe", "expr", false, "The universe set."),
-              FunctionArgument("input", "expr", false, "The input set."),
-              FunctionArgument("depth", "int", true, "Maximum depth for reverse dependencies."),
+              StandardFunctionArgument("universe", "expr", false, "The universe set."),
+              StandardFunctionArgument("input", "expr", false, "The input set."),
+              StandardFunctionArgument("depth", "int", true, "Maximum depth for reverse dependencies."),
             ),
         ),
         SimpleFunction(
@@ -149,7 +155,7 @@ sealed class BazelqueryFunction {
           exampleUsage = "same_pkg_direct_rdeps(//foo:bar)",
           arguments =
             listOf(
-              FunctionArgument("expr", "expr", false, "The input set of targets."),
+              StandardFunctionArgument("expr", "expr", false, "The input set of targets."),
             ),
         ),
         SimpleFunction(
@@ -158,7 +164,7 @@ sealed class BazelqueryFunction {
           exampleUsage = "siblings(//foo:bar)",
           arguments =
             listOf(
-              FunctionArgument("expr", "expr", false, "The input set of targets."),
+              StandardFunctionArgument("expr", "expr", false, "The input set of targets."),
             ),
         ),
         SimpleFunction(
@@ -167,8 +173,8 @@ sealed class BazelqueryFunction {
           exampleUsage = "some(deps(//foo:bar), 2)",
           arguments =
             listOf(
-              FunctionArgument("expr", "expr", false, "The input set of targets."),
-              FunctionArgument("count", "int", true, "The maximum number of targets to select."),
+              StandardFunctionArgument("expr", "expr", false, "The input set of targets."),
+              StandardFunctionArgument("count", "int", true, "The maximum number of targets to select."),
             ),
         ),
         SimpleFunction(
@@ -177,8 +183,8 @@ sealed class BazelqueryFunction {
           exampleUsage = "somepath(//foo:bar, //baz:qux)",
           arguments =
             listOf(
-              FunctionArgument("start", "expr", false, "Set of starting points."),
-              FunctionArgument("end", "expr", false, "Set of ending points."),
+              StandardFunctionArgument("start", "expr", false, "Set of starting points."),
+              StandardFunctionArgument("end", "expr", false, "Set of ending points."),
             ),
         ),
         SimpleFunction(
@@ -187,7 +193,7 @@ sealed class BazelqueryFunction {
           exampleUsage = "tests(deps(//foo:bar))",
           arguments =
             listOf(
-              FunctionArgument("expr", "expr", false, "The input set of targets."),
+              StandardFunctionArgument("expr", "expr", false, "The input set of targets."),
             ),
         ),
         SimpleFunction(
@@ -196,8 +202,8 @@ sealed class BazelqueryFunction {
           exampleUsage = "visible(//foo, deps(//bar:qux))",
           arguments =
             listOf(
-              FunctionArgument("predicate", "expr", false, "The predicate target set."),
-              FunctionArgument("input", "expr", false, "The input set of targets."),
+              StandardFunctionArgument("predicate", "expr", false, "The predicate target set."),
+              StandardFunctionArgument("input", "expr", false, "The input set of targets."),
             ),
         ),
       )

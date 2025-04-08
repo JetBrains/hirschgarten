@@ -2,7 +2,7 @@ package org.jetbrains.bazel.languages.bazelquery.documentation
 
 import com.intellij.markdown.utils.doc.DocMarkdownToHtmlConverter
 import com.intellij.model.Pointer
-import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.HtmlChunk.body
 import com.intellij.openapi.util.text.HtmlChunk.fragment
 import com.intellij.openapi.util.text.HtmlChunk.head
@@ -16,7 +16,7 @@ import org.jetbrains.bazel.languages.bazelquery.functions.BazelqueryFunction
 import org.jetbrains.bazel.languages.bazelquery.functions.BazelqueryFunctionSymbol
 
 @Suppress("UnstableApiUsage")
-class BazelqueryFunctionDocumentationTarget(symbol: BazelqueryFunctionSymbol) :
+class BazelqueryFunctionDocumentationTarget(symbol: BazelqueryFunctionSymbol, val project: Project) :
   DocumentationTarget,
   Pointer<BazelqueryFunctionDocumentationTarget> {
   private val function = symbol.function
@@ -44,7 +44,7 @@ class BazelqueryFunctionDocumentationTarget(symbol: BazelqueryFunctionSymbol) :
 
       val body =
         raw(
-          DocMarkdownToHtmlConverter.convert(ProjectManager.getInstance().openProjects.first(), markdownText),
+          DocMarkdownToHtmlConverter.convert(project, markdownText),
         )
       val fragment =
         fragment(
