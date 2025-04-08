@@ -15,6 +15,33 @@ import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
+internal class BazelFlag(value: String) {
+  val value = withDoubleHyphen(value)
+
+  companion object {
+    fun withDoubleHyphen(flagToParse: String): String {
+      val flag = flagToParse.trim()
+      val initialHyphens = flag.indexOfFirst { it != '-' }
+      return when {
+        initialHyphens < 2 -> {"-".repeat(2 - initialHyphens) + flag}
+        initialHyphens > 2 -> flag.substring(2 - initialHyphens)
+        else -> flag
+      }
+    }
+
+    fun fromTextField(textFieldContents: String): MutableList<BazelFlag> {
+      val result = mutableListOf<BazelFlag>()
+      if (textFieldContents.isNotEmpty()) {
+        for (flag in textFieldContents.trim().split(" -")) {
+          val option = flag.trim().replace(" ", "=")
+          result.add(BazelFlag(option))
+        }
+      }
+      return result
+    }
+  }
+}
+
 internal class QueryEvaluator(
   private var currentRunnerDirFile: VirtualFile,
 ) {
@@ -55,9 +82,7 @@ internal class QueryEvaluator(
   // before result of previous is received.
   fun orderEvaluation(
     command: String,
-    flags: List<String>,
-    additionalFlags: String,
-    flagsAlreadyPrefixedWithDoubleHyphen: Boolean = false
+    flags: List<BazelFlag>
   ) {
     if (currentProcess.get() != null) throw IllegalStateException("Trying to start new process before result of previous is received")
 
@@ -69,13 +94,7 @@ internal class QueryEvaluator(
 
     commandToRun.options.clear()
     for (flag in flags) {
-      commandToRun.options.add((if (flagsAlreadyPrefixedWithDoubleHyphen) "" else "--") + flag)
-    }
-    if (additionalFlags.isNotEmpty()) {
-      for (flag in additionalFlags.trim().split(" -")) {
-        val option = flag.trim().replace(" ", "=")
-        commandToRun.options.add(if (flag.startsWith("--")) option else "-${option}")
-      }
+      commandToRun.options.add(flag.value)
     }
 
     val startedProcess = bazelRunner.runBazelCommand(commandToRun, serverPidFuture = null)

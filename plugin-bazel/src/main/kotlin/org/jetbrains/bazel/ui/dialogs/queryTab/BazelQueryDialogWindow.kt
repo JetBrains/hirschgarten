@@ -49,7 +49,6 @@ private class QueryFlagField(
 ) {
   val checkBox = JCheckBox(flag, checked).apply {
     addActionListener {
-      updateFlagCount(isSelected)
       valuesButtons.forEach { it.isVisible = isSelected }
     }
   }
@@ -63,14 +62,6 @@ private class QueryFlagField(
       it.isVisible = false
     }
     valuesButtons.firstOrNull()?.isSelected = true
-  }
-
-  companion object {
-    var selectedFlagCount = 0
-
-    private fun updateFlagCount(isSelected: Boolean) {
-      selectedFlagCount += if (isSelected) 1 else -1
-    }
   }
 
   fun addToPanel(panel: JPanel) {
@@ -278,7 +269,7 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
   }
 
   private fun evaluate() {
-    val flagsToRun = mutableListOf<String>()
+    val flagsToRun = mutableListOf<BazelFlag>()
     for (flag in defaultFlags) {
       if (flag.isSelected) {
         var option = flag.flag
@@ -286,12 +277,14 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
           val selectedValue = flag.valuesGroup.elements.toList().find { it.isSelected }?.text
           option += "=$selectedValue"
         }
-        flagsToRun.add(option)
+        flagsToRun.add(BazelFlag(option))
       }
     }
+    flagsToRun.addAll(BazelFlag.fromTextField(flagTextField.text))
+
     showInConsole("Bazel Query in progress...")
 
-    queryEvaluator.orderEvaluation(editorTextField.text, flagsToRun, flagTextField.text)
+    queryEvaluator.orderEvaluation(editorTextField.text, flagsToRun)
     SwingUtilities.invokeLater { setButtonsPanelToCancel() }
     var commandResults: BazelProcessResult? = null
     CoroutineService.getInstance(project).start {
