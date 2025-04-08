@@ -7,6 +7,7 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImport
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionItem
 import org.jetbrains.kotlin.idea.base.codeInsight.handlers.fixers.range
@@ -38,6 +39,8 @@ class ProjectViewAnnotator : Annotator {
             createErrorAnnotation(holder, res.message, element.range)
         }
       }
+    } else if (element is ProjectViewPsiImport && element.lastChild.firstChild == null) {
+      createErrorAnnotation(holder, "No import path!", element.range)
     }
   }
 
