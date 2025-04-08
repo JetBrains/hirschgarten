@@ -11,6 +11,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.LogicalPosition
 import com.intellij.openapi.editor.actionSystem.EditorActionHandler
 import com.intellij.openapi.editor.actions.SplitLineAction
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.text.StringUtil
@@ -50,10 +51,7 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
     return prev?.elementType == ProjectViewTokenType.SECTION_KEYWORD
   }
 
-  fun isBlankLine(
-    caretOffset: Int,
-    document: Document,
-  ): Boolean {
+  fun isBlankLine(caretOffset: Int, document: Document): Boolean {
     val lineNumber = document.getLineNumber(caretOffset)
 
     val lineStart = document.getLineStartOffset(lineNumber)
@@ -91,9 +89,7 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
 
     // remove indent if enter is pressed on the blank line
     if (isBlankLine(offset, document)) {
-      val lineSeparator = document.text.lineSequence().firstOrNull { it.isNotEmpty() }?.let {
-        if (it.endsWith("\r\n")) "\r\n" else "\n"
-      } ?: System.lineSeparator()
+      val lineSeparator = FileDocumentManager.getInstance().getLineSeparator(file.virtualFile, file.project)
       editor.document.insertString(offset, lineSeparator)
       editor.caretModel.moveToOffset(offset + lineSeparator.length)
       return EnterHandlerDelegate.Result.Stop
