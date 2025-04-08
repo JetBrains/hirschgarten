@@ -3,10 +3,7 @@ package org.jetbrains.bazel.languages.projectview.language
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
 
-data class ProjectViewSection(
-  val item: ProjectViewSectionItem,
-  val isList: Boolean,
-) {
+data class ProjectViewSection(val item: ProjectViewSectionItem, val isList: Boolean) {
   fun parseItem(text: String) = item.parse(text)
 
   fun getHighlightColor() = item.getHighlightColor()
@@ -62,7 +59,7 @@ data class ProjectViewSection(
     val Identifier = ProjectViewSection(ProjectViewSectionItem.Identifier, false)
     val Path = ProjectViewSection(ProjectViewSectionItem.Path, false)
 
-    val ListIdentifier = ProjectViewSection(ProjectViewSectionItem.Identifier,  true)
+    val ListIdentifier = ProjectViewSection(ProjectViewSectionItem.Identifier, true)
     val ListPath = ProjectViewSection(ProjectViewSectionItem.Path, true)
 
     /** A map of registered section keywords. */

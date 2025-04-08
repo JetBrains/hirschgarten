@@ -17,11 +17,12 @@ class ProjectViewAnnotator : Annotator {
     if (element is ProjectViewPsiSection) {
       // Check if the section is empty.
       ProjectViewSection.KEYWORD_MAP[element.firstChild.text]?.let { section ->
-        val isSectionEmpty: Boolean = if (section.isList) {
-          element.children.isEmpty()
-        } else {
-          element.lastChild.firstChild == null
-        }
+        val isSectionEmpty: Boolean =
+          if (section.isList) {
+            element.children.isEmpty()
+          } else {
+            element.lastChild.firstChild == null
+          }
 
         if (isSectionEmpty) {
           createErrorAnnotation(holder, "No items!", element.range)
@@ -44,12 +45,24 @@ class ProjectViewAnnotator : Annotator {
     }
   }
 
-  private fun createErrorAnnotation(holder: AnnotationHolder, message: String, range: TextRange) {
+  private fun createErrorAnnotation(
+    holder: AnnotationHolder,
+    message: String,
+    range: TextRange,
+  ) {
     holder.newAnnotation(HighlightSeverity.ERROR, message).range(range).create()
   }
 
-  private fun createHighlightAnnotation(holder: AnnotationHolder, textAttributesKey: TextAttributesKey, range: TextRange) {
-    holder.newSilentAnnotation(HighlightSeverity.INFORMATION).textAttributes(textAttributesKey).range(range).create()
+  private fun createHighlightAnnotation(
+    holder: AnnotationHolder,
+    textAttributesKey: TextAttributesKey,
+    range: TextRange,
+  ) {
+    holder
+      .newSilentAnnotation(HighlightSeverity.INFORMATION)
+      .textAttributes(textAttributesKey)
+      .range(range)
+      .create()
   }
 
   data class Annotation(
