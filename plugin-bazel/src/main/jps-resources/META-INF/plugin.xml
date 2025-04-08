@@ -109,7 +109,8 @@
                             order="last"/>
         <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericTestHandlerProvider"
                             order="last"/>
-        <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"/>
+        <!-- Dependency: JvmSyncHook -> TargetUtils#updateComputedFields -> toShortString -> BazelRepoMappingService -->
+        <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook" order="after BazelRepoMappingSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.BazelBinPathSyncHook"/>
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
@@ -287,7 +288,7 @@
         <projectSyncHook implementation="org.jetbrains.bazel.services.InvalidTargetsProjectSyncHook"/>
         <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
-        <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook" id="BazelRepoMappingSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.nonmodule.sync.NonModuleTargetsSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
         <additionalProjectTaskRunnerProvider
