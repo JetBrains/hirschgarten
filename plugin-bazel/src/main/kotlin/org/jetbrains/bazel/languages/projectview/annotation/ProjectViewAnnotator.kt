@@ -31,10 +31,10 @@ class ProjectViewAnnotator : Annotator {
       ProjectViewSection.KEYWORD_MAP[element.parent.firstChild.text]?.let { section ->
         val res = section.parseItem(element.text)
         when (res) {
-          is ProjectViewSection.ItemParser.ParsingResult.OK -> {
-            createHighlightAnnotation(holder, section.highlightColor, element.range)
+          is ProjectViewSection.ParsingResult.OK -> {
+            createHighlightAnnotation(holder, section.getHighlightColor(), element.range)
           }
-          is ProjectViewSection.ItemParser.ParsingResult.Error ->
+          is ProjectViewSection.ParsingResult.Error ->
             createErrorAnnotation(holder, res.message, element.range)
         }
       }
