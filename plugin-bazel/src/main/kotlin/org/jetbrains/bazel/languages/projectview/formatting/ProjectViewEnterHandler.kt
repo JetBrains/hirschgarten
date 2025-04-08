@@ -91,8 +91,11 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
 
     // remove indent if enter is pressed on the blank line
     if (isBlankLine(offset, document)) {
-      editor.document.insertString(offset, "\n")
-      editor.caretModel.moveToOffset(offset + 1)
+      val lineSeparator = document.text.lineSequence().firstOrNull { it.isNotEmpty() }?.let {
+        if (it.endsWith("\r\n")) "\r\n" else "\n"
+      } ?: System.lineSeparator()
+      editor.document.insertString(offset, lineSeparator)
+      editor.caretModel.moveToOffset(offset + lineSeparator.length)
       return EnterHandlerDelegate.Result.Stop
     }
     if (!insertIndent(file, offset)) {
