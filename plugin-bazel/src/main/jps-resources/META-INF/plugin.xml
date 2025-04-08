@@ -97,6 +97,10 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.localJvmRunnerRunConfigurationProvider"
                         interface="org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bazel.bazelSettingsProvider"
+                        area="IDEA_PROJECT"
+                        interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="org.jetbrains.bazel">
@@ -293,6 +297,9 @@
         <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
         <additionalProjectTaskRunnerProvider
                 implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
+
+        <bazelSettingsProvider implementation="org.jetbrains.bazel.ui.settings.BazelJVMSettingsProvider"/>
+
 
     </extensions>
 
