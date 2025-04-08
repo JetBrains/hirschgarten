@@ -4,6 +4,7 @@ import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.ShortenCommandLine
 import com.intellij.execution.application.ApplicationConfiguration
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
 import com.intellij.openapi.module.Module
@@ -54,13 +55,23 @@ abstract class LocalJvmRunnerAction(
     project: Project,
     targetInfo: BuildTarget,
   ): RunnerAndConfigurationSettings? {
+    val configurationName = calculateConfigurationName(project, targetInfo)
+    val configuration = calculateConfiguration(configurationName, environment, module, project, targetInfo) ?: return null
+    val runManager = RunManagerImpl.getInstanceImpl(project)
+    return RunnerAndConfigurationSettingsImpl(runManager, configuration)
+  }
+
+  protected open fun calculateConfiguration(
+    configurationName: String,
+    environment: JvmEnvironmentItem,
+    module: Module,
+    project: Project,
+    targetInfo: BuildTarget,
+  ): RunConfiguration? {
     val mainClass =
       environment.mainClasses?.firstOrNull() ?: return null // TODO https://youtrack.jetbrains.com/issue/BAZEL-626
     val configuration =
-      BspJvmApplicationConfiguration(
-        calculateConfigurationName(project, targetInfo),
-        project,
-      ).apply {
+      BspJvmApplicationConfiguration(configurationName, project).apply {
         setModule(module)
         mainClassName = mainClass.className
         programParameters = mainClass.arguments.joinToString(" ")
@@ -69,8 +80,7 @@ abstract class LocalJvmRunnerAction(
         putUserData(includeJpsClassPaths, BazelProjectModuleBuildTasksTracker.getInstance(project).lastBuiltByJps)
         shortenCommandLine = ShortenCommandLine.MANIFEST
       }
-    val runManager = RunManagerImpl.getInstanceImpl(project)
-    return RunnerAndConfigurationSettingsImpl(runManager, configuration)
+    return configuration
   }
 
   private fun calculateConfigurationName(project: Project, targetInfo: BuildTarget): String {

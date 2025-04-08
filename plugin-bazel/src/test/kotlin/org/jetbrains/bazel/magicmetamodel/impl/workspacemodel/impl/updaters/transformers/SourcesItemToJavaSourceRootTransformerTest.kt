@@ -51,6 +51,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
         BuildTargetCapabilities(),
         listOf(sourceItem),
         emptyList(),
+        baseDirectory = Path("base/dir"),
       )
 
     // when
@@ -88,6 +89,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
         BuildTargetCapabilities(),
         listOf(sourceItem),
         emptyList(),
+        baseDirectory = Path("base/dir"),
       )
 
     // when
@@ -133,6 +135,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
         BuildTargetCapabilities(),
         listOf(sourceItem1, sourceItem2),
         emptyList(),
+        baseDirectory = Path("base/dir"),
       )
 
     // when
@@ -185,6 +188,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
         BuildTargetCapabilities(),
         listOf(sourceItem1),
         emptyList(),
+        baseDirectory = Path("base/dir"),
       )
     val buildTargetAndSourceItem2 =
       BuildTarget(
@@ -195,6 +199,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
         BuildTargetCapabilities(),
         listOf(sourceItem2),
         emptyList(),
+        baseDirectory = Path("base/dir"),
       )
 
     val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)
@@ -248,6 +253,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
         BuildTargetCapabilities(),
         listOf(sourceItem1),
         emptyList(),
+        baseDirectory = Path("base/dir"),
       )
 
     val buildTargetAndSourceItem2 =
@@ -259,6 +265,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
         BuildTargetCapabilities(),
         listOf(sourceItem2),
         emptyList(),
+        baseDirectory = Path("base/dir"),
       )
 
     val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)

@@ -16,6 +16,7 @@ import org.jetbrains.bazel.workspacemodel.entities.isJvmOrAndroidTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import java.nio.file.Path
+import kotlin.io.path.Path
 
 object TargetIdToModuleEntitiesMap {
   suspend operator fun invoke(
@@ -72,6 +73,7 @@ fun Collection<String>.toDefaultTargetsMap(): Map<Label, BuildTarget> =
         capabilities = BuildTargetCapabilities(),
         sources = listOf(),
         resources = listOf(),
+        baseDirectory = Path("base/dir"),
       )
     },
   )

@@ -103,8 +103,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
     ContentRoot(
-      // TODO https://youtrack.jetbrains.com/issue/BAZEL-635
-      path = (inputEntity.target.baseDirectory ?: error("baseDirectory must not be null")),
+      path = inputEntity.target.baseDirectory,
     )
 
   private fun ModuleDetails.toJdkNameOrDefault(): String? = toJdkName() ?: defaultJdkName

@@ -6,8 +6,8 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRule
 import org.jetbrains.bazel.languages.starlark.documentation.BazelNativeRuleDocumentationSymbol
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement.Companion.relativeTo
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
-import org.jetbrains.kotlin.idea.base.psi.relativeTo
 
 @Suppress("UnstableApiUsage")
 class BazelNativeRuleReference(private val element: StarlarkCallExpression, private val rule: BazelNativeRule) : PsiSymbolReference {

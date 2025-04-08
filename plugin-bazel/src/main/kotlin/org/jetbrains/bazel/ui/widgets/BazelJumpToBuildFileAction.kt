@@ -31,13 +31,20 @@ class BazelJumpToBuildFileAction(private val buildTarget: BuildTarget?) :
   constructor() : this(null)
 
   override fun update(project: Project, e: AnActionEvent) {
-    // buildTarget is provided for the target widget, but not if the action is invoked via the popup menu on a source file
-    if (buildTarget != null) return
+    e.presentation.isEnabledAndVisible = shouldBeEnabledAndVisible(project, e)
+  }
 
-    e.presentation.isEnabledAndVisible = (e.place == ActionPlaces.EDITOR_POPUP || e.place == ActionPlaces.KEYBOARD_SHORTCUT) &&
-      e.getPsiFile()?.virtualFile?.let {
-        project.targetUtils.getTargetsForFile(it).isNotEmpty()
-      } == true
+  private fun shouldBeEnabledAndVisible(project: Project, e: AnActionEvent): Boolean {
+    if (buildTarget != null) {
+      // Action was created via BazelFileTargetsWidget. In this case `e.getPsiFile()` is `null`, but we should enable the action regardless.
+      return true
+    }
+    return (
+      ALLOWED_ACTION_PLACES.contains(e.place) &&
+        e.getPsiFile()?.virtualFile?.let {
+          project.targetUtils.getTargetsForFile(it).isNotEmpty()
+        } == true
+    )
   }
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
@@ -82,11 +89,10 @@ private fun findBuildFileTarget(project: Project, buildTarget: BuildTarget): Psi
 }
 
 fun findBuildFile(project: Project, buildTarget: BuildTarget): StarlarkFile? {
-  val baseDirectoryPath = buildTarget.baseDirectory ?: return null
   // Sometimes a project can contain a directory named "build" (which on case-insensitive filesystems is the same as BUILD).
   // Try with BUILD.bazel first to avoid this case.
-  val buildBazelFilePath = baseDirectoryPath.resolve("BUILD.bazel")
-  val buildFilePath = baseDirectoryPath.resolve("BUILD")
+  val buildBazelFilePath = buildTarget.baseDirectory.resolve("BUILD.bazel")
+  val buildFilePath = buildTarget.baseDirectory.resolve("BUILD")
   val virtualFileManager = VirtualFileManager.getInstance()
   val virtualFile =
     virtualFileManager.findFileByNioPath(buildBazelFilePath)?.takeIf { it.isFile }
@@ -94,3 +100,10 @@ fun findBuildFile(project: Project, buildTarget: BuildTarget): StarlarkFile? {
       ?: return null
   return PsiManager.getInstance(project).findFile(virtualFile) as? StarlarkFile
 }
+
+private val ALLOWED_ACTION_PLACES =
+  listOf(
+    ActionPlaces.EDITOR_POPUP,
+    ActionPlaces.KEYBOARD_SHORTCUT,
+    ActionPlaces.EDITOR_TAB_POPUP,
+  )

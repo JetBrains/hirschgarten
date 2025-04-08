@@ -71,7 +71,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
           )
 
         targetsResult.targets
-          .mapNotNull { it.baseDirectory }
+          .map { it.baseDirectory }
           .map { it.relativeTo(Path(workspaceDir)).toString() } shouldContainExactlyInAnyOrder
           listOf("inner", "inner", "", "")
       }

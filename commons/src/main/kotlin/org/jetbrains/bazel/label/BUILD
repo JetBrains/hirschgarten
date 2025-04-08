@@ -4,4 +4,7 @@ kt_jvm_library(
     name = "label",
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
+    deps = [
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/annotations",
+    ],
 )

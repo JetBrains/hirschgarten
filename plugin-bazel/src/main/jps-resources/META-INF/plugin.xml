@@ -34,6 +34,7 @@
     <depends optional="true" config-file="withGo.xml">org.jetbrains.plugins.go</depends>
     <depends optional="true" config-file="withIdeStarter.xml">com.jetbrains.performancePlugin</depends>
     <depends optional="true" config-file="withPython.xml">com.intellij.modules.python</depends>
+    <depends optional="true" config-file="withJunit.xml">JUnit</depends>
 
     <extensionPoints>
         <extensionPoint qualifiedName="org.jetbrains.bazel.sourceTypeIconProvider"
@@ -92,6 +93,9 @@
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.jvmBinaryJarsExtension"
                         interface="org.jetbrains.bazel.extensionPoints.JvmBinaryJarsExtension"
+                        dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bazel.localJvmRunnerRunConfigurationProvider"
+                        interface="org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider"
                         dynamic="true"/>
     </extensionPoints>
 
@@ -173,7 +177,7 @@
                 language="JVM"/>
         <registryKey defaultValue="false" description="Build project on initial project sync"
                      key="bsp.build.project.on.sync"/>
-        <registryKey defaultValue="false" description="Python modules support" key="bsp.python.support"/>
+        <registryKey defaultValue="true" description="Python modules support" key="bsp.python.support"/>
         <registryKey defaultValue="false" description="Android modules support" key="bsp.android.support"/>
         <registryKey defaultValue="false" description="Go modules support" key="bsp.go.support"/>
         <registryKey defaultValue="true"
@@ -407,7 +411,12 @@
         <lang.syntaxHighlighterFactory
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"/>
-
+        <lang.commenter
+                language="ProjectView"
+                implementationClass="org.jetbrains.bazel.languages.projectview.commenter.ProjectViewCommenter"/>
+        <langCodeStyleSettingsProvider
+                implementation="org.jetbrains.bazel.languages.projectview.formatting.ProjectViewLanguageCodeStyleSettingsProvider"/>
+        <enterHandlerDelegate implementation="org.jetbrains.bazel.languages.projectview.formatting.ProjectViewEnterHandler" />
         <lang.parserDefinition
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"/>
@@ -462,9 +471,10 @@
                 instance="org.jetbrains.bazel.ui.settings.BazelProjectSettingsConfigurable"
                 provider="org.jetbrains.bazel.ui.settings.BazelProjectSettingsConfigurableProvider">
             <configurable
-                    instance="org.jetbrains.bazel.languages.starlark.formatting.configuration.BuildifierConfigurable"
-                    provider="org.jetbrains.bazel.languages.starlark.formatting.configuration.BuildifierConfigurableProvider"
-                    displayName="Buildifier"/>
+                    id="bazel.experimental.project.settings"
+                    displayName="Experimental Settings"
+                    instance="org.jetbrains.bazel.ui.settings.BazelExperimentalProjectSettingsConfigurable"
+                    provider="org.jetbrains.bazel.ui.settings.BazelExperimentalProjectSettingsConfigurableProvider"/>
         </projectConfigurable>
 
         <applicationConfigurable
@@ -519,12 +529,14 @@
         <action class="org.jetbrains.bazel.ui.widgets.CopyTargetIdAction"
                 icon="/icons/bazel.svg">
             <add-to-group group-id="EditorPopupMenu"/>
+            <add-to-group group-id="EditorTabPopupMenu"/>
             <!-- This shortcut doesn't mean anything, it's just not taken by anyone and is easy to type -->
             <keyboard-shortcut first-keystroke="control alt G" second-keystroke="H" keymap="$default"/>
         </action>
 
         <action class="org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction">
             <add-to-group group-id="EditorPopupMenu"/>
+            <add-to-group group-id="EditorTabPopupMenu"/>
             <keyboard-shortcut first-keystroke="control alt G" second-keystroke="J" keymap="$default"/>
         </action>
 

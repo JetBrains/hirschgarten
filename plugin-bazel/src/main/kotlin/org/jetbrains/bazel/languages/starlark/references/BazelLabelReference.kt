@@ -4,6 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.isFile
@@ -25,7 +26,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 import org.jetbrains.bazel.languages.starlark.repomapping.apparentRepoNameToCanonicalName
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRepo
-import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
 
 public val BUILD_FILE_NAMES = sequenceOf("BUILD.bazel", "BUILD")
@@ -42,19 +42,75 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
   }
 
   override fun getVariants(): Array<LookupElement> {
-    val project = element.project
-    if (!project.isBazelProject || isInNameArgument() || !validLabelLocation()) return emptyArray()
+    if (!element.project.isBazelProject || isInNameArgument()) return emptyArray()
 
-    val targetUtils = project.targetUtils
-    return targetUtils
-      .allTargets()
-      .map { targetLookupElement(it.toShortString(project)) }
-      .toTypedArray()
+    if (isFileCompletionLocation()) return fileCompletion()
+    if (isTargetCompletionLocation()) return targetCompletion()
+    return emptyArray()
   }
 
-  private fun validLabelLocation(): Boolean { // TODO: Correct label location validation.
+  // Checks whether it is the value of "src", "srcs" or "hdrs".
+  private fun isFileCompletionLocation(): Boolean {
+    if (element.parent is StarlarkListLiteralExpression) {
+      val parentName = (element.parent.parent as? StarlarkNamedArgumentExpression)?.name
+      return parentName in listOf("srcs", "hdrs")
+    }
+    return ((element.parent as? StarlarkNamedArgumentExpression)?.name == "src")
+  }
+
+  // Returns an array of all files (excluding BUILD ones) from the current directory and its
+  // subdirectories, excluding subpackages — that is, subdirectories that contain a BUILD file.
+  private fun fileCompletion(): Array<LookupElement> {
+    val currentDirectory = element.containingFile.originalFile.virtualFile.parent
+    val allFiles = mutableListOf<VirtualFile>()
+    searchForAllFiles(currentDirectory, allFiles)
+
+    // `VfsUtilCore.getRelativePath` can return null in the following two cases:
+    // 1. The two arguments (file and ancestor) belong to different file systems.
+    // 2. The second argument is not an ancestor of the first one.
+    // However, since the first argument is created by traversing down the directory
+    // tree starting from the second one, neither of these conditions should occur.
+    val lookupElements =
+      allFiles
+        .map {
+          fileLookupElement(VfsUtilCore.getRelativePath(it, currentDirectory)!!)
+        }.toTypedArray()
+    return lookupElements
+  }
+
+  private fun searchForAllFiles(currentDirectory: VirtualFile, allFiles: MutableList<VirtualFile>) {
+    val children = currentDirectory.children
+    for (child in children) {
+      if (child.isFile && !child.isBazelFile()) {
+        allFiles.add(child)
+      } else if (child.isDirectory) {
+        if (findBuildFile(child) == null) {
+          searchForAllFiles(child, allFiles)
+        }
+      }
+    }
+  }
+
+  private fun fileLookupElement(name: String): LookupElement =
+    LookupElementBuilder
+      .create("\"" + name + "\"")
+      .withIcon(PlatformIcons.FILE_ICON)
+      .withPresentableText(name)
+
+  private fun VirtualFile.isBazelFile(): Boolean = BUILD_FILE_NAMES.any { name == it }
+
+  private fun isTargetCompletionLocation(): Boolean { // TODO: Correct target completion location validation.
     val parent = element.parent ?: return false
     return parent is StarlarkListLiteralExpression
+  }
+
+  private fun targetCompletion(): Array<LookupElement> {
+    val project = element.project
+    val targetUtils = project.targetUtils
+    return targetUtils
+      .allTargetsAndLibrariesLabels
+      .map { targetLookupElement(it) }
+      .toTypedArray()
   }
 
   private fun targetLookupElement(name: String): LookupElement =

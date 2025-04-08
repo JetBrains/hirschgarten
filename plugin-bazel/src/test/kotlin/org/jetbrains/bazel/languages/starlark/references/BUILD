@@ -31,3 +31,9 @@ ide_starter_test(
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
     ],
 )
+
+kt_intellij_junit4_test(
+    name = "StarlarkClassnameReferenceTest",
+    src = "StarlarkClassnameReferenceTest.kt",
+    deps = ["//plugin-bazel"],
+)

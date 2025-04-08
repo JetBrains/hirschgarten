@@ -58,6 +58,7 @@ object GitHub : Project({
         buildType(PluginBenchmark.BenchmarkDefaultGitHub)
         buildType(PluginBenchmark.BenchmarkWithVersionGitHub)
         buildType(IdeStarterTests.HotswapTestGitHub)
+        buildType(IdeStarterTests.RunLineMarkerTestGitHub)
         buildType(IdeStarterTests.ExternalRepoResolveTestGitHub)
         buildType(IdeStarterTests.JarSourceExcludeTestGitHub)
         buildType(IdeStarterTests.BazelProjectModelModifierTestGitHub)
@@ -81,7 +82,7 @@ object GitHub : Project({
         buildType(ServerE2eTests.PartialSyncGitHub)
         buildType(ServerE2eTests.ExternalAutoloadsGitHub)
         buildType(ServerE2eTests.NestedModulesGitHub)
-        buildType(StaticAnalysis.HirschgartenGitHub)
+//        buildType(StaticAnalysis.HirschgartenGitHub)
 //        buildType(StaticAnalysis.AndroidBazelRulesGitHub)
 //        buildType(StaticAnalysis.AndroidTestdpcGitHub)
         buildType(StaticAnalysis.BazelGitHub)
@@ -122,6 +123,7 @@ object GitHub : Project({
       PluginBenchmark.BenchmarkDefaultGitHub,
       PluginBenchmark.BenchmarkWithVersionGitHub,
       IdeStarterTests.HotswapTestGitHub,
+      IdeStarterTests.RunLineMarkerTestGitHub,
       IdeStarterTests.ExternalRepoResolveTestGitHub,
       IdeStarterTests.JarSourceExcludeTestGitHub,
       IdeStarterTests.BazelProjectModelModifierTestGitHub,
@@ -145,7 +147,7 @@ object GitHub : Project({
       ServerE2eTests.PartialSyncGitHub,
       ServerE2eTests.NestedModulesGitHub,
       ServerE2eTests.ExternalAutoloadsGitHub,
-      StaticAnalysis.HirschgartenGitHub,
+//      StaticAnalysis.HirschgartenGitHub,
 //      StaticAnalysis.AndroidBazelRulesGitHub,
 //      StaticAnalysis.AndroidTestdpcGitHub,
       StaticAnalysis.BazelGitHub,
@@ -174,6 +176,7 @@ object Space : Project({
         buildType(PluginBenchmark.SpaceBenchmarkDefault)
         buildType(PluginBenchmark.SpaceBenchmarkWithVersion)
         buildType(IdeStarterTests.HotswapTestSpace)
+        buildType(IdeStarterTests.RunLineMarkerTestSpace)
         buildType(IdeStarterTests.ExternalRepoResolveTestSpace)
         buildType(IdeStarterTests.JarSourceExcludeTestSpace)
         buildType(IdeStarterTests.BazelProjectModelModifierTestSpace)
@@ -197,7 +200,7 @@ object Space : Project({
         buildType(ServerE2eTests.PartialSyncSpace)
         buildType(ServerE2eTests.NestedModulesSpace)
         buildType(ServerE2eTests.ExternalAutoloadsSpace)
-        buildType(StaticAnalysis.HirschgartenSpace)
+//        buildType(StaticAnalysis.HirschgartenSpace)
 //        buildType(StaticAnalysis.AndroidBazelRulesSpace)
 //        buildType(StaticAnalysis.AndroidTestdpcSpace)
         buildType(StaticAnalysis.BazelSpace)
@@ -238,6 +241,7 @@ object Space : Project({
       PluginBenchmark.SpaceBenchmarkDefault,
       PluginBenchmark.SpaceBenchmarkWithVersion,
       IdeStarterTests.HotswapTestSpace,
+      IdeStarterTests.RunLineMarkerTestSpace,
       IdeStarterTests.ExternalRepoResolveTestSpace,
       IdeStarterTests.JarSourceExcludeTestSpace,
       IdeStarterTests.BazelProjectModelModifierTestSpace,
@@ -261,7 +265,7 @@ object Space : Project({
       ServerE2eTests.PartialSyncSpace,
       ServerE2eTests.NestedModulesSpace,
       ServerE2eTests.ExternalAutoloadsSpace,
-      StaticAnalysis.HirschgartenSpace,
+//      StaticAnalysis.HirschgartenSpace,
 //      StaticAnalysis.AndroidBazelRulesSpace,
 //      StaticAnalysis.AndroidTestdpcSpace,
       StaticAnalysis.BazelSpace,

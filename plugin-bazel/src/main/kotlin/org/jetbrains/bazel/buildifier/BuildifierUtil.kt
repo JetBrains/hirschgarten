@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.languages.starlark.formatting
+package org.jetbrains.bazel.buildifier
 
 import com.intellij.execution.Platform
 import com.intellij.execution.configurations.PathEnvironmentVariableUtil

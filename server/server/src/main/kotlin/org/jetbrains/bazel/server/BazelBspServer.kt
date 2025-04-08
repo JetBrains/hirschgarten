@@ -73,7 +73,7 @@ class BazelBspServer(
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,
       )
-    val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper(workspaceRoot)
+    val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper(bazelPathsResolver)
     val projectSyncService =
       ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, bazelInfo, workspaceContextProvider)
     val additionalBuildTargetsProvider = AdditionalAndroidBuildTargetsProvider(projectProvider)
@@ -155,7 +155,6 @@ class BazelBspServer(
     val kotlinAndroidModulesMerger = KotlinAndroidModulesMerger()
     val bazelProjectMapper =
       BazelProjectMapper(
-        bazelInfo,
         languagePluginsService,
         bazelPathsResolver,
         targetTagsResolver,

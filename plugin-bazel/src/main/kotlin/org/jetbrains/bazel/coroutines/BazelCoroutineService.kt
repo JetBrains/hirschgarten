@@ -9,10 +9,10 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.annotations.InternalApi
 
 @Service(Service.Level.PROJECT)
-@ApiStatus.Internal
+@InternalApi
 class BazelCoroutineService(private val cs: CoroutineScope) {
   fun start(callable: suspend () -> Unit): Job = cs.launch { callable() }
 
