@@ -51,7 +51,6 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
   }
 
   fun isBlankLine(
-    file: PsiFile,
     caretOffset: Int,
     document: Document,
   ): Boolean {
@@ -91,7 +90,7 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
     editor.caretModel.moveToOffset(offset)
 
     // remove indent if enter is pressed on the blank line
-    if (isBlankLine(file, offset, document)) {
+    if (isBlankLine(offset, document)) {
       editor.document.insertString(offset, "\n")
       editor.caretModel.moveToOffset(offset + 1)
       return EnterHandlerDelegate.Result.Stop
