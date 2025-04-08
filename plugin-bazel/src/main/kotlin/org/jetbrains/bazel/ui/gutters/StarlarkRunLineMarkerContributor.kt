@@ -5,6 +5,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 import org.jetbrains.bazel.config.isBazelProject
@@ -46,7 +47,8 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
   private fun PsiElement.calculateMarkerInfo(): Info? =
     containingFile.virtualFile?.let { virtualFile ->
       val targetName = getTargetName() ?: return null
-      val targetLabel = calculateLabel(project, virtualFile.toNioPath(), targetName)
+      val path = virtualFile.toNioPathOrNull() ?: return null
+      val targetLabel = calculateLabel(project, path, targetName)
       val targetInfo = targetLabel?.let { project.targetUtils.getBuildTargetForLabel(it) }
       calculateLineMarkerInfo(project, targetInfo).takeIf { it.actions.isNotEmpty() }
     }
