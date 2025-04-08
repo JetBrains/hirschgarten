@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.projectview.annotation
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
@@ -14,10 +15,11 @@ class ProjectViewAnnotator : Annotator {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
     if (element is ProjectViewPsiSection) {
       // Check if the section is empty.
-      ProjectViewSection.KEYWORD_MAP[element.firstChild.text]?.let { parser ->
-        val isSectionEmpty: Boolean = when (parser) {
-          is ProjectViewSection.Parser.Scalar -> element.lastChild.firstChild == null
-          is ProjectViewSection.Parser.List -> element.children.isEmpty()
+      ProjectViewSection.KEYWORD_MAP[element.firstChild.text]?.let { section ->
+        val isSectionEmpty: Boolean = if (section.isList) {
+          element.children.isEmpty()
+        } else {
+          element.lastChild.firstChild == null
         }
 
         if (isSectionEmpty) {
@@ -26,14 +28,14 @@ class ProjectViewAnnotator : Annotator {
       }
     } else if (element is ProjectViewPsiSectionItem) {
       // Parse the item.
-      ProjectViewSection.KEYWORD_MAP[element.parent.firstChild.text]?.let { parser ->
-        element.firstChild?.let { item ->
-          val res = parser.parseItem(item.text)
-          when (res) {
-            is ProjectViewSection.Parser.ParsingResult.OK -> null
-            is ProjectViewSection.Parser.ParsingResult.Error ->
-              createErrorAnnotation(holder, res.message, item.range)
+      ProjectViewSection.KEYWORD_MAP[element.parent.firstChild.text]?.let { section ->
+        val res = section.parseItem(element.text)
+        when (res) {
+          is ProjectViewSection.ItemParser.ParsingResult.OK -> {
+            createHighlightAnnotation(holder, section.highlightColor, element.range)
           }
+          is ProjectViewSection.ItemParser.ParsingResult.Error ->
+            createErrorAnnotation(holder, res.message, element.range)
         }
       }
     }
@@ -41,6 +43,10 @@ class ProjectViewAnnotator : Annotator {
 
   private fun createErrorAnnotation(holder: AnnotationHolder, message: String, range: TextRange) {
     holder.newAnnotation(HighlightSeverity.ERROR, message).range(range).create()
+  }
+
+  private fun createHighlightAnnotation(holder: AnnotationHolder, textAttributesKey: TextAttributesKey, range: TextRange) {
+    holder.newSilentAnnotation(HighlightSeverity.INFORMATION).textAttributes(textAttributesKey).range(range).create()
   }
 
   data class Annotation(
