@@ -31,10 +31,10 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
       listOf(
         generatorFile(".gitignore", ".bazelbsp/\n.idea/"),
         generatorFile(".bazelversion", BAZEL_VERSION),
-        generatorFile("MODULE.bazel", moduleBazel(context)),
-        generatorFile("src/main/org/example/BUILD.bazel", buildBazelMain()),
+        generatorFile(BazelPluginConstants.MODULE_BAZEL_FILE_NAME, moduleBazel(context)),
+        generatorFile("src/main/org/example/${BazelPluginConstants.defaultBuildFileName()}", buildBazelMain()),
         generatorFile("src/main/org/example/Main.java", mainJava()),
-        generatorFile("src/test/org/example/BUILD.bazel", buildBazelTest()),
+        generatorFile("src/test/org/example/${BazelPluginConstants.defaultBuildFileName()}", buildBazelTest()),
         generatorFile("src/test/org/example/MainTest.java", testJava()),
       )
 
