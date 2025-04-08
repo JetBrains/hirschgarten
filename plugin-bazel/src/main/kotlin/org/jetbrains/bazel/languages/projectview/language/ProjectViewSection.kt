@@ -4,7 +4,7 @@ object ProjectViewSection {
   sealed interface Parser {
     fun parseItem(text: String): ParsingResult =
       if (text.isEmpty()) {
-        ParsingResult.NoItemError
+        ParsingResult.Error("Empty item!")
       } else {
         parseNonEmptyItem(text)
       }
@@ -13,13 +13,10 @@ object ProjectViewSection {
 
     sealed interface Scalar : Parser {
       data object NonNegativeInteger : Scalar {
-        private const val ERROR = "Invalid number!"
-        private val digits = '0'..'9'
-
         override fun parseNonEmptyItem(text: kotlin.String): ParsingResult =
           parseWithPredicate(
-            text == "0" || (text[0] != '0' && text.all { it in digits }),
-            ERROR,
+            text == "0" || (text[0] != '0' && text.all { it in '0'..'9' }),
+            "Invalid number!",
           )
       }
 
@@ -48,8 +45,6 @@ object ProjectViewSection {
       object OK : ParsingResult
 
       data class Error(val message: String) : ParsingResult
-
-      object NoItemError : ParsingResult
     }
   }
 
