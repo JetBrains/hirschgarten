@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModuleEntity
 import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
@@ -190,7 +191,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   @PublicApi
   fun getTargetsForFile(file: VirtualFile): List<Label> =
-    fileToTarget[file.toNioPath()]
+    fileToTarget[file.toNioPathOrNull()]
       ?: getTargetsFromAncestorsForFile(file)
 
   @InternalApi
@@ -198,7 +199,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     val executableDirectTargets =
       getTargetsForFile(file).filter { label -> labelToTargetInfo[label]?.capabilities?.isExecutable == true }
     if (executableDirectTargets.isEmpty()) {
-      return fileToExecutableTargets.getOrDefault(file.toNioPath(), emptySet()).toList()
+      return fileToExecutableTargets.getOrDefault(file.toNioPathOrNull(), emptySet()).toList()
     }
     return executableDirectTargets
   }
@@ -208,8 +209,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       val rootDir = project.rootDir
       var iter = file.parent
       while (iter != null && VfsUtil.isAncestor(rootDir, iter, false)) {
-        val key = iter.toNioPath()
-        if (key in fileToTarget) return fileToTarget[key]!!
+        fileToTarget[iter.toNioPathOrNull()]?.let { return it }
         iter = iter.parent
       }
       emptyList()

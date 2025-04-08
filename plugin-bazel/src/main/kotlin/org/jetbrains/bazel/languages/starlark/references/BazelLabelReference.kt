@@ -8,6 +8,7 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.isFile
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
@@ -216,7 +217,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     ): VirtualFile? {
       val foundRepoRoot =
         if (label.repoName.isEmpty() && containingFile != null) {
-          findContainingBazelRepo(project, containingFile.toNioPath())
+          findContainingBazelRepo(project, containingFile.toNioPathOrNull() ?: return null)
         } else if (label.isApparent) {
           project.apparentRepoNameToCanonicalName[label.repoName]?.let { canonicalRepoName ->
             project.canonicalRepoNameToPath[canonicalRepoName]
