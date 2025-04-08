@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.languages.bazelrc.commenter
+package org.jetbrains.bazel.languages.projectview.commenter
 
 import com.google.idea.testing.runfiles.Runfiles
 import com.intellij.openapi.actionSystem.IdeActions
