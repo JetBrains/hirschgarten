@@ -4,7 +4,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.bazelrunner.BazelProcess
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.RelativeLabel
@@ -16,19 +15,30 @@ import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
-internal class QueryEvaluator {
-  private var currentRunnerDirFile: VirtualFile? = null
-  private var bazelRunner: BazelRunner? = null
+internal class QueryEvaluator(
+  private var currentRunnerDirFile: VirtualFile,
+) {
+  private var bazelRunner: BazelRunner
+
+  init {
+    currentRunnerDirFile.isDirectoryOrThrow()
+    bazelRunner = getRunnerOfDirectory(currentRunnerDirFile)
+  }
 
   private var currentProcess = AtomicReference<BazelProcess?>(null)
   private var currentProcessCancelled = AtomicBoolean(false)
 
-  val isDirectorySet: Boolean get() = bazelRunner != null
 
   fun setEvaluationDirectory(directoryFile: VirtualFile) {
-    if (!directoryFile.isDirectory) throw IllegalArgumentException("$directoryFile is not a directory")
+    directoryFile.isDirectoryOrThrow()
+    if (directoryFile == currentRunnerDirFile) return
 
-    if (directoryFile == currentRunnerDirFile) {println("asd"); return}
+    bazelRunner = getRunnerOfDirectory(directoryFile)
+    currentRunnerDirFile = directoryFile
+  }
+
+  private fun getRunnerOfDirectory(directoryFile: VirtualFile): BazelRunner {
+    directoryFile.isDirectoryOrThrow()
 
     val wcc = WorkspaceContextConstructor(directoryFile.toNioPath(), Path.of(""))
     val pv = ProjectView.Builder().build()
@@ -37,9 +47,7 @@ internal class QueryEvaluator {
         private val wc = wcc.construct(pv)
         override fun currentWorkspaceContext(): WorkspaceContext = wc
       }
-    bazelRunner = BazelRunner(wcp, null, directoryFile.toNioPath())
-
-    currentRunnerDirFile = directoryFile
+    return BazelRunner(wcp, null, directoryFile.toNioPath())
   }
 
   // Starts a process which evaluates given query.
@@ -51,12 +59,11 @@ internal class QueryEvaluator {
     additionalFlags: String,
     flagsAlreadyPrefixedWithDoubleHyphen: Boolean = false
   ) {
-    if (!isDirectorySet) throw IllegalStateException("Directory to run query from is not set")
     if (currentProcess.get() != null) throw IllegalStateException("Trying to start new process before result of previous is received")
 
     // TODO: add proper way to add raw query to evaluation
     val label = RelativeLabel(Package(listOf(command)), AmbiguousEmptyTarget)
-    val commandToRun = bazelRunner!!.buildBazelCommand {
+    val commandToRun = bazelRunner.buildBazelCommand {
       query { targets.add(label) }
     }
 
@@ -71,7 +78,7 @@ internal class QueryEvaluator {
       }
     }
 
-    val startedProcess = bazelRunner!!.runBazelCommand(commandToRun, serverPidFuture = null)
+    val startedProcess = bazelRunner.runBazelCommand(commandToRun, serverPidFuture = null)
     currentProcessCancelled.set(false)
     currentProcess.set(startedProcess)
   }
@@ -102,4 +109,8 @@ internal class QueryEvaluator {
     }
 
   }
+}
+
+private fun VirtualFile.isDirectoryOrThrow() {
+  if (!this.isDirectory) throw IllegalArgumentException("$this is not a directory")
 }

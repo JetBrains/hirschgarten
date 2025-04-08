@@ -93,7 +93,7 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
   }
 
   // Bazel Runner
-  private val queryEvaluator = QueryEvaluator()
+  private val queryEvaluator = QueryEvaluator(project.baseDir)
 
   // Graph Window Manager
   private val graphWindowManager = GraphWindowManager()
@@ -278,13 +278,6 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
   }
 
   private fun evaluate() {
-    if (!queryEvaluator.isDirectorySet) {
-      System.err.println("Bazel Query directory not set or other error occurred")
-      showInConsole("Bazel Query directory not set or other error occurred")
-      updateUI()
-      return
-    }
-
     val flagsToRun = mutableListOf<String>()
     for (flag in defaultFlags) {
       if (flag.isSelected) {
