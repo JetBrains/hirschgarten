@@ -9,7 +9,6 @@ import com.intellij.psi.PsiReferenceBase
 import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
-import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
 
 class StarlarkVisibilityReference(element: StarlarkStringLiteralExpression) :
@@ -20,7 +19,7 @@ class StarlarkVisibilityReference(element: StarlarkStringLiteralExpression) :
     val project = element.project
     if (!project.isBazelProject) return emptyArray()
 
-    val shortTargets = project.targetUtils.allTargets().map { it.toShortString(project) }
+    val shortTargets = project.targetUtils.allTargetsAndLibrariesLabels
     val targetVisibilities = shortTargets.map { visibilityLookupElement(it) }.toTypedArray()
     val pkgVisibilities = shortTargets.map { visibilityLookupElement("$it:__pkg__") }.toTypedArray()
     val subpkgVisibilities = shortTargets.map { visibilityLookupElement("$it:__subpackages__") }.toTypedArray()

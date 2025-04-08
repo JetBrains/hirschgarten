@@ -26,7 +26,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 import org.jetbrains.bazel.languages.starlark.repomapping.apparentRepoNameToCanonicalName
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRepo
-import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
 
 public val BUILD_FILE_NAMES = sequenceOf("BUILD.bazel", "BUILD")
@@ -109,8 +108,8 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     val project = element.project
     val targetUtils = project.targetUtils
     return targetUtils
-      .allTargets()
-      .map { targetLookupElement(it.toShortString(project)) }
+      .allTargetsAndLibrariesLabels
+      .map { targetLookupElement(it) }
       .toTypedArray()
   }
 

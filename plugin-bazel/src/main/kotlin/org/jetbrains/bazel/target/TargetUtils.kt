@@ -23,6 +23,7 @@ import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -66,7 +67,12 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   private var fileToExecutableTargets: Map<Path, List<Label>> = hashMapOf()
 
-  // Not persisted!
+  // Everything below this comment is not persisted!
+  var allTargetsAndLibrariesLabels: List<String> = emptyList()
+    private set
+
+    @InternalApi get
+
   private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
 
   private var listeners: List<(Boolean) -> Unit> = emptyList()
@@ -103,10 +109,13 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     fileToExecutableTargets = calculateFileToExecutableTargets(libraryItems)
 
     this.libraryModulesLookupTable = createLibraryModulesLookupTable(libraryModules)
+    updateComputedFields()
   }
 
+  @InternalApi
   fun addTargets(targetInfos: List<BuildTarget>) {
     labelToTargetInfo = labelToTargetInfo + targetInfos.associateBy { it.id }
+    updateComputedFields()
   }
 
   private suspend fun calculateFileToExecutableTargets(libraryItems: List<LibraryItem>?): Map<Path, List<Label>> =
@@ -156,6 +165,10 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   private fun createLibraryModulesLookupTable(libraryModules: List<JavaModule>) =
     libraryModules.map { it.genericModuleInfo.name }.toHashSet()
 
+  private fun updateComputedFields() {
+    allTargetsAndLibrariesLabels = (allTargets() + allLibraries()).map { it.toShortString(project) }
+  }
+
   @InternalApi
   fun fireSyncListeners(targetListChanged: Boolean) {
     listeners.forEach { it(targetListChanged) }
@@ -166,10 +179,16 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     listeners += listener
   }
 
+  @PublicApi
   fun allTargets(): List<Label> = labelToTargetInfo.keys.toList()
 
+  @PublicApi
+  fun allLibraries(): List<Label> = libraryIdToTarget.values.toList()
+
+  @PublicApi
   fun getTargetsForPath(path: Path): List<Label> = fileToTarget[path] ?: emptyList()
 
+  @PublicApi
   fun getTargetsForFile(file: VirtualFile): List<Label> =
     fileToTarget[file.toNioPath()]
       ?: getTargetsFromAncestorsForFile(file)
@@ -244,6 +263,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       state.fileToTarget.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
     fileToExecutableTargets =
       state.fileToExecutableTargets.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
+    updateComputedFields()
   }
 }
 
