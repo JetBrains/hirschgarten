@@ -58,3 +58,9 @@ kt_intellij_junit4_test(
     src = "StarlarkVisibilityCompletionTest.kt",
     deps = ["//plugin-bazel"],
 )
+
+kt_intellij_junit4_test(
+    name = "StarlarkFileCompletionTest",
+    src = "StarlarkFileCompletionTest.kt",
+    deps = ["//plugin-bazel"],
+)
