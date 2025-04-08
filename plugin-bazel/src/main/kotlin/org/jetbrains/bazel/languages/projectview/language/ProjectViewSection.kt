@@ -14,21 +14,21 @@ data class ProjectViewSection(
   sealed interface ProjectViewSectionItem {
     fun getHighlightColor(): TextAttributesKey = DefaultLanguageHighlighterColors.IDENTIFIER
 
-    fun parse(text: kotlin.String): ParsingResult =
+    fun parse(text: String): ParsingResult =
       if (text.isEmpty()) {
         ParsingResult.Error("Empty item!")
       } else {
         parseNonEmptyItem(text)
       }
 
-    fun parseNonEmptyItem(text: kotlin.String): ParsingResult = ParsingResult.OK
+    fun parseNonEmptyItem(text: String): ParsingResult = ParsingResult.OK
 
-    data object NonNegativeInteger : ProjectViewSectionItem {
+    data object Integer : ProjectViewSectionItem {
       override fun getHighlightColor(): TextAttributesKey = DefaultLanguageHighlighterColors.NUMBER
 
-      override fun parseNonEmptyItem(text: kotlin.String): ParsingResult =
+      override fun parseNonEmptyItem(text: String): ParsingResult =
         parseWithPredicate(
-          text == "0" || (text[0] != '0' && text.all { it in '0'..'9' }),
+          text.toIntOrNull() != null,
           "Invalid number!",
         )
     }
@@ -36,7 +36,7 @@ data class ProjectViewSection(
     data object Boolean : ProjectViewSectionItem {
       override fun getHighlightColor(): TextAttributesKey = DefaultLanguageHighlighterColors.KEYWORD
 
-      override fun parseNonEmptyItem(text: kotlin.String): ParsingResult {
+      override fun parseNonEmptyItem(text: String): ParsingResult {
         val booleanValues = setOf("true", "false")
         return parseWithPredicate(
           text in booleanValues,
@@ -53,11 +53,11 @@ data class ProjectViewSection(
   sealed interface ParsingResult {
     object OK : ParsingResult
 
-    data class Error(val message: kotlin.String) : ParsingResult
+    data class Error(val message: String) : ParsingResult
   }
 
   companion object {
-    val NonNegativeInteger = ProjectViewSection(ProjectViewSectionItem.NonNegativeInteger, false)
+    val Integer = ProjectViewSection(ProjectViewSectionItem.Integer, false)
     val Boolean = ProjectViewSection(ProjectViewSectionItem.Boolean, false)
     val Identifier = ProjectViewSection(ProjectViewSectionItem.Identifier, false)
     val Path = ProjectViewSection(ProjectViewSectionItem.Path, false)
@@ -69,7 +69,7 @@ data class ProjectViewSection(
     val KEYWORD_MAP: Map<ProjectViewSyntaxKey, ProjectViewSection> =
       mapOf(
         "allow_manual_targets_sync" to Boolean,
-        "android_min_sdk" to NonNegativeInteger,
+        "android_min_sdk" to Integer,
         "bazel_binary" to Path,
         "build_flags" to ListIdentifier,
         "derive_targets_from_directories" to Boolean,
@@ -80,11 +80,11 @@ data class ProjectViewSection(
         "experimental_no_prune_transitive_compile_time_jars_patterns" to ListIdentifier,
         "experimental_transitive_compile_time_jars_target_kinds" to ListIdentifier,
         "ide_java_home_override" to Path,
-        "import_depth" to NonNegativeInteger,
+        "import_depth" to Integer,
         "shard_approach" to Identifier,
         "shard_sync" to Boolean,
         "sync_flags" to ListIdentifier,
-        "target_shard_size" to NonNegativeInteger,
+        "target_shard_size" to Integer,
         "targets" to ListPath,
         "import_run_configurations" to ListIdentifier,
       )
