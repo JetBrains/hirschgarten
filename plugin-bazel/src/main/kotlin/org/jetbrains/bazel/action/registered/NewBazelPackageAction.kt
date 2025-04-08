@@ -91,7 +91,7 @@ class NewBazelPackageAction : DumbAwareAction() {
     parent: PsiDirectory,
     ideView: IdeView,
   ) {
-    val filename = BazelPluginConstants.BUILD_FILE_NAMES[0]
+    val filename = BazelPluginConstants.defaultBuildFileName()
     val buildFile =
       WriteCommandAction.writeCommandAction(project).compute(
         ThrowableComputable {
