@@ -1,0 +1,3 @@
+targets:
+  //java/com/google/android/myproject:MyProje<caret>ctDevTarget
+  -//java/com/google/android/myproject:MyExpensiveTarget
