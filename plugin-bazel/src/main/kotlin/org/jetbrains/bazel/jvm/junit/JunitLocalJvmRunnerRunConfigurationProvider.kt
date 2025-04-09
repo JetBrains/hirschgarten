@@ -70,9 +70,9 @@ class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurati
   }
 
   private fun PsiElement.getPsiClassOrNull(): PsiClass? =
-    parent as? PsiClass ?: runReadAction { getParentOfType<KtClass>(false)?.toLightClass() }
+    runReadAction { parent as? PsiClass ?: getParentOfType<KtClass>(false)?.toLightClass() }
 
-  private fun PsiElement.getPsiMethodOrNull(): PsiMethod? = parent as? PsiMethod ?: runReadAction { parent.getRepresentativeLightMethod() }
+  private fun PsiElement.getPsiMethodOrNull(): PsiMethod? = runReadAction { parent as? PsiMethod ?: parent.getRepresentativeLightMethod() }
 
   private fun defineDefaultBazelEnvs(project: Project, environment: JvmEnvironmentItem): Map<String, String> =
     mapOf(
