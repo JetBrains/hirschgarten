@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.server.sync
 
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bsp.info.BspInfo
@@ -24,7 +26,6 @@ import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.CppOptionsItem
 import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
@@ -157,14 +158,13 @@ class BspProjectMapper(
 
   private fun NonModuleTarget.toBuildTarget(): BuildTarget {
     val languages = languages.flatMap(Language::allNames).distinct()
-    val capabilities = inferCapabilities(tags)
     val tags = tags.mapNotNull(BspMappings::toBspTag)
     val buildTarget =
       BuildTarget(
         id = label,
         tags = tags,
         languageIds = languages,
-        capabilities = capabilities,
+        kind = inferKind(this.tags),
         baseDirectory = baseDirectory,
         dependencies = emptyList(),
         sources = emptyList(),
@@ -198,7 +198,6 @@ class BspProjectMapper(
     val dependencies =
       directDependencies
     val languages = languages.flatMap(Language::allNames).distinct()
-    val capabilities = inferCapabilities(tags)
     val tags = tags.mapNotNull(BspMappings::toBspTag)
 
     val buildTarget =
@@ -207,9 +206,10 @@ class BspProjectMapper(
         tags = tags,
         languageIds = languages,
         dependencies = dependencies,
-        capabilities = capabilities,
+        kind = inferKind(this.tags),
         baseDirectory = baseDirectory,
         sources = sources(),
+        noBuild = this.tags.contains(Tag.NO_BUILD),
         resources = resources.toList(),
       )
 
@@ -217,18 +217,18 @@ class BspProjectMapper(
     return buildTarget
   }
 
-  private fun inferCapabilities(tags: Set<Tag>): BuildTargetCapabilities {
-    val canCompile = !tags.contains(Tag.NO_BUILD)
-    val canTest = tags.contains(Tag.TEST)
-    val canRun = tags.contains(Tag.APPLICATION)
-    // Native-BSP debug is not supported with Bazel.
-    // It simply means that the `debugSession/start` method should not be called on any Bazel target.
-    // Enabling client-side debugging (for example, for JVM targets via JDWP) is up to the client.
-    val canDebug = false
-    return BuildTargetCapabilities(
-      canCompile = canCompile,
-      canTest = canTest,
-      canRun = canRun,
+  private fun inferKind(tags: Set<Tag>): TargetKind {
+    val ruleType =
+      when {
+        tags.contains(Tag.TEST) -> RuleType.TEST
+        tags.contains(Tag.APPLICATION) -> RuleType.BINARY
+        tags.contains(Tag.LIBRARY) -> RuleType.LIBRARY
+        else -> RuleType.UNKNOWN
+      }
+    return TargetKind(
+      kindString = "", // TODO propagate from aspect
+      languageClasses = emptySet(), // TODO Use when Module/BuildTarget are merged and moved to the client side
+      ruleType = ruleType,
     )
   }
 

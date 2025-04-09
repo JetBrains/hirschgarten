@@ -1,11 +1,12 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
@@ -40,7 +41,10 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
           Label.parse("//target3"),
           Label.parse("@maven//:lib1"),
         ),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         sources = emptyList(),
         resources = emptyList(),
         baseDirectory = Path("base/dir"),
@@ -68,7 +72,10 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
           Label.parse("//target2"),
           Label.parse("@maven//:lib1"),
         ),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         sources = emptyList(),
         resources = emptyList(),
         baseDirectory = Path("base/dir"),
@@ -110,7 +117,10 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
           Label.parse("@maven//:lib1"),
           Label.parse("@maven//:lib2"),
         ),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         sources = emptyList(),
         resources = emptyList(),
         baseDirectory = Path("base/dir"),
@@ -163,7 +173,10 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
           Label.parse("@maven//:lib1"),
           Label.parse("@maven//:lib2"),
         ),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         sources = emptyList(),
         resources = emptyList(),
         baseDirectory = Path("base/dir"),
@@ -178,7 +191,10 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
           Label.parse("//target4"),
           Label.parse("@maven//:lib2"),
         ),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         sources = emptyList(),
         resources = emptyList(),
         baseDirectory = Path("base/dir"),

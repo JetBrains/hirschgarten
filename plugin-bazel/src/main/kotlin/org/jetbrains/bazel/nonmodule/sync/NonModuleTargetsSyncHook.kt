@@ -12,7 +12,7 @@ class NonModuleTargetsSyncHook : ProjectSyncHook {
       }
 
     // Filter out non-module targets which cannot be run or tested, as they are just cluttering the ui
-    val usefulNonModuleTargets = nonModuleTargetsResult.nonModuleTargets.filter { it.capabilities.canRun || it.capabilities.canTest }
+    val usefulNonModuleTargets = nonModuleTargetsResult.nonModuleTargets.filter { it.kind.isExecutable }
     environment.project.targetUtils.addTargets(usefulNonModuleTargets)
   }
 }

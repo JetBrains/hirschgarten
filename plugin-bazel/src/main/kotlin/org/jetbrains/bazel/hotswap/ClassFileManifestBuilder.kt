@@ -24,6 +24,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.util.ui.MessageCategory
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelHotSwapBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.hotswap.BazelHotSwapManager.HotSwappableDebugSession
@@ -126,8 +127,8 @@ object ClassFileManifestBuilder {
   private fun Label.isTestTarget(project: Project): Boolean =
     project.targetUtils
       .getBuildTargetForLabel(this)
-      ?.capabilities
-      ?.canTest == true
+      ?.kind
+      ?.ruleType == RuleType.TEST
 
   private suspend fun queryJvmEnvironment(
     target: Label,

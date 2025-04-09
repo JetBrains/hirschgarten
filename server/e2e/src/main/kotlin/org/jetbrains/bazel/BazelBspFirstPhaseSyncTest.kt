@@ -2,9 +2,10 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -58,11 +59,10 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
         tags = listOf("library"),
         languageIds = listOf("java"),
         dependencies = emptyList(),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = false,
+        kind =
+          TargetKind(
+            kindString = "java_library",
+            ruleType = RuleType.LIBRARY,
           ),
         sources = listOf(SourceItem(Path("\$WORKSPACE/src/Lib.java"), false)),
         resources = emptyList(),
@@ -75,11 +75,10 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
         tags = listOf("application"),
         languageIds = listOf("java"),
         dependencies = listOf(Label.parse("//src:java-lib")),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = true,
+        kind =
+          TargetKind(
+            kindString = "java_binary",
+            ruleType = RuleType.BINARY,
           ),
         sources = listOf(SourceItem(Path("\$WORKSPACE/src/Main.java"), false)),
         resources = emptyList(),
@@ -92,11 +91,10 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
         tags = listOf("library"),
         languageIds = listOf("kotlin"),
         dependencies = emptyList(),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = false,
+        kind =
+          TargetKind(
+            kindString = "kt_jvm_library",
+            ruleType = RuleType.LIBRARY,
           ),
         sources = listOf(SourceItem(Path("\$WORKSPACE/src/Lib.kt"), false)),
         resources = emptyList(),
@@ -109,11 +107,10 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
         tags = listOf("application"),
         languageIds = listOf("kotlin"),
         dependencies = listOf(Label.parse("//src:kt-lib")),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = true,
+        kind =
+          TargetKind(
+            kindString = "kt_jvm_binary",
+            ruleType = RuleType.BINARY,
           ),
         sources = listOf(SourceItem(Path("\$WORKSPACE/src/Main.kt"), false)),
         resources = emptyList(),

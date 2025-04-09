@@ -2,6 +2,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
@@ -55,7 +56,7 @@ internal class KotlinFacetEntityUpdater(
     dependsOnModuleNames = emptyList(), // Gradle specific
     additionalVisibleModuleNames = entityToAdd.toAssociateModules().toMutableSet(),
     sourceSetNames = emptyList(),
-    isTestModule = entityToAdd.genericModuleInfo.capabilities.canTest,
+    isTestModule = entityToAdd.genericModuleInfo.kind.ruleType == RuleType.TEST,
     externalProjectId = "",
     isHmppEnabled = false,
     pureKotlinSourceFolders = emptyList(),

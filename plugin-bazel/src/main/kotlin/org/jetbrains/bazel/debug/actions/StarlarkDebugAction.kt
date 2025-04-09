@@ -37,7 +37,7 @@ class StarlarkDebugAction(private val targetId: Label) :
   }
 
   companion object {
-    fun isApplicableTo(targetInfo: BuildTarget): Boolean = targetInfo.capabilities.canCompile
+    fun isApplicableTo(targetInfo: BuildTarget): Boolean = !targetInfo.noBuild
   }
 }
 

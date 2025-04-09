@@ -10,6 +10,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.BazelRunHandler
@@ -61,7 +62,7 @@ class AndroidBazelRunHandler(private val configuration: BazelRunConfiguration) :
 
     override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       BazelFeatureFlags.isAndroidSupportEnabled &&
-        targetInfos.singleOrNull()?.let { it.languageIds.includesAndroid() && !it.capabilities.canTest } ?: false
+        targetInfos.singleOrNull()?.let { it.languageIds.includesAndroid() && it.kind.ruleType != RuleType.TEST } ?: false
 
     override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
   }

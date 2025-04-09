@@ -1,11 +1,12 @@
 package org.jetbrains.bazel
 
 import org.jetbrains.bazel.android.BazelBspAndroidProjectTestBase
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
 import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
@@ -70,11 +71,11 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
         listOf("application"),
         listOf("android", "java"),
         listOf(Label.parse("@@//src/main/java/com/example/myapplication:lib")),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = true,
-          canRun = true,
-        ),
+        kind =
+          TargetKind(
+            kindString = "java_binary",
+            ruleType = RuleType.BINARY,
+          ),
         baseDirectory = Path("\$WORKSPACE/src/main/"),
         data = appAndroidBuildTargetData,
         sources = emptyList(),
@@ -87,11 +88,11 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
         listOf("library"),
         listOf("android", "java"),
         listOf(Label.parse("@@rules_jvm_external~~maven~maven//:androidx_appcompat_appcompat")),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = false,
-        ),
+        kind =
+          TargetKind(
+            kindString = "java_binary",
+            ruleType = RuleType.BINARY,
+          ),
         baseDirectory = Path("\$WORKSPACE/src/main/java/com/example/myapplication/"),
         data = libAndroidBuildTargetData,
         sources = emptyList(),
@@ -110,11 +111,11 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
           Label.parse("@@rules_jvm_external~~maven~maven//:org_robolectric_shadows_framework"),
           Label.parse("@@rules_robolectric~//bazel:android-all"),
         ),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canRun = false,
-          canTest = true,
-        ),
+        kind =
+          TargetKind(
+            kindString = "java_binary",
+            ruleType = RuleType.BINARY,
+          ),
         baseDirectory = Path("\$WORKSPACE/src/test/java/com/example/myapplication/"),
         data = libTestAndroidBuildTargetData,
         sources = emptyList(),

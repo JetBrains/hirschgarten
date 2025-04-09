@@ -5,6 +5,8 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.bazelrunner.utils.orLatestSupported
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bazel.server.model.FirstPhaseProject
@@ -30,7 +32,6 @@ import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.TransitiveCompileTimeJarsTargetKindsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -236,7 +237,11 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.LIBRARY),
             languageIds = listOf("java"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false),
+            kind =
+              TargetKind(
+                kindString = "java_library",
+                ruleType = RuleType.LIBRARY,
+              ),
             sources =
               listOf(
                 SourceItem(target1Src1, false, "com.example"),
@@ -255,7 +260,11 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.APPLICATION),
             languageIds = listOf("java", "kotlin"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = true, canTest = false),
+            kind =
+              TargetKind(
+                kindString = "java_binary",
+                ruleType = RuleType.BINARY,
+              ),
             sources =
               listOf(
                 SourceItem(target2Src1, false, "com.example"),
@@ -270,7 +279,11 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.TEST),
             languageIds = listOf("java"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = true),
+            kind =
+              TargetKind(
+                kindString = "java_test",
+                ruleType = RuleType.TEST,
+              ),
             sources = emptyList(),
             resources =
               listOf(
@@ -285,7 +298,11 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.LIBRARY),
             languageIds = listOf("kotlin"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false),
+            kind =
+              TargetKind(
+                kindString = "kt_jvm_library",
+                ruleType = RuleType.LIBRARY,
+              ),
             sources = emptyList(),
             resources = emptyList(),
             baseDirectory = workspaceRoot.resolve(Path("target4")),
@@ -296,7 +313,11 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.APPLICATION),
             languageIds = listOf("kotlin"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = true, canTest = false),
+            kind =
+              TargetKind(
+                kindString = "kt_jvm_binary",
+                ruleType = RuleType.BINARY,
+              ),
             sources = emptyList(),
             resources = emptyList(),
             baseDirectory = workspaceRoot.resolve(Path("target5")),
@@ -307,7 +328,11 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.TEST),
             languageIds = listOf("kotlin"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = true),
+            kind =
+              TargetKind(
+                kindString = "kt_jvm_test",
+                ruleType = RuleType.TEST,
+              ),
             sources = emptyList(),
             resources = emptyList(),
             baseDirectory = workspaceRoot.resolve(Path("target6")),
@@ -318,7 +343,11 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.LIBRARY),
             languageIds = listOf("java"),
             dependencies = emptyList(),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false),
+            kind =
+              TargetKind(
+                kindString = "custom_rule_with_supported_rules_library",
+                ruleType = RuleType.LIBRARY,
+              ),
             sources =
               listOf(
                 SourceItem(target7Src1, false, "com.example"),
@@ -333,7 +362,11 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.LIBRARY),
             languageIds = listOf("java", "kotlin"),
             dependencies = emptyList(),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false),
+            kind =
+              TargetKind(
+                kindString = "java_library",
+                ruleType = RuleType.LIBRARY,
+              ),
             sources =
               listOf(
                 // note: the direct mapping for "//target8:src1.kt" becomes workspaceRoot/target8/src1.kt
@@ -356,7 +389,11 @@ class FirstPhaseTargetToBspMapperTest {
             tags = listOf(BuildTargetTag.LIBRARY),
             languageIds = listOf("java"),
             dependencies = emptyList(),
-            capabilities = BuildTargetCapabilities(canCompile = true, canRun = false, canTest = false),
+            kind =
+              TargetKind(
+                kindString = "filegroup",
+                ruleType = RuleType.LIBRARY,
+              ),
             sources =
               listOf(
                 SourceItem(fgSrc1, false, "com.fg"),

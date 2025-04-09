@@ -145,7 +145,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   ): Set<Label> =
     resultCache.getOrPut(target) {
       val targetInfo = labelToTargetInfo[target]
-      if (targetInfo?.capabilities?.isExecutable == true) {
+      if (targetInfo?.kind?.isExecutable == true) {
         return@getOrPut setOf(target)
       }
 
@@ -191,7 +191,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   @InternalApi
   fun getExecutableTargetsForFile(file: VirtualFile): List<Label> {
     val executableDirectTargets =
-      getTargetsForFile(file).filter { label -> labelToTargetInfo[label]?.capabilities?.isExecutable == true }
+      getTargetsForFile(file).filter { label -> labelToTargetInfo[label]?.kind?.isExecutable == true }
     if (executableDirectTargets.isEmpty()) {
       return fileToExecutableTargets.getOrDefault(file.toNioPathOrNull(), emptySet()).toList()
     }

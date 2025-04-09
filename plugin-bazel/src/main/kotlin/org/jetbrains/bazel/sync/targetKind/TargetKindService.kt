@@ -12,7 +12,6 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.info.BspTargetInfo
 import java.util.Collections
 
-
 /**
  * Provides a set of recognized bazel rule names. Individual language-specific sub-plugins can use
  * this EP to register rule types relevant to that language.
@@ -90,59 +89,57 @@ fun TargetKind.hasLanguage(languageClass: LanguageClass): Boolean = this.languag
 
 fun TargetKind.hasAnyLanguageIn(vararg languageClass: LanguageClass): Boolean = languageClass.any { this.languageClasses.contains(it) }
 
+/**
+ * When a rule has a transition applied to it then it will present with this
+ * prefix on it.
+ */
+private const val RULE_NAME_PREFIX_TRANSITION = "_transition_"
 
+fun TargetKind.Companion.fromRuleName(ruleName: String): TargetKind? {
+  var ruleName = ruleName
+  if (ruleName.startsWith(RULE_NAME_PREFIX_TRANSITION)) {
+    ruleName = ruleName.substring(RULE_NAME_PREFIX_TRANSITION.length)
+  }
+  return TargetKindService.service.stringToKind[ruleName]
+}
 
+val TargetKind.Companion.perLanguageKinds: Multimap<LanguageClass, TargetKind>
   /**
-   * When a rule has a transition applied to it then it will present with this
-   * prefix on it.
+   * Returns a per-language map of rule kinds handled by an available [TargetKindProvider].
+   *
+   *
+   * Don't rely on this map being complete -- some rule names are recognized at runtime using
+   * heuristics.
    */
-  private const val RULE_NAME_PREFIX_TRANSITION = "_transition_"
-
-  fun TargetKind.Companion.fromRuleName(ruleName: String): TargetKind? {
-    var ruleName = ruleName
-    if (ruleName.startsWith(RULE_NAME_PREFIX_TRANSITION)) {
-      ruleName = ruleName.substring(RULE_NAME_PREFIX_TRANSITION.length)
+  get() {
+    val state =
+      TargetKindService.service
+    synchronized(state.perLanguageKinds) {
+      return state.perLanguageKinds
     }
-    return TargetKindService.service.stringToKind[ruleName]
   }
 
-  val TargetKind.Companion.perLanguageKinds: Multimap<LanguageClass, TargetKind>
-    /**
-     * Returns a per-language map of rule kinds handled by an available [TargetKindProvider].
-     *
-     *
-     * Don't rely on this map being complete -- some rule names are recognized at runtime using
-     * heuristics.
-     */
-    get() {
-      val state =
-        TargetKindService.service
-      synchronized(state.perLanguageKinds) {
-        return state.perLanguageKinds
-      }
-    }
+fun TargetKind.Companion.getKindsForLanguage(language: LanguageClass): Set<TargetKind> = perLanguageKinds.get(language).toSet()
 
-  fun TargetKind.Companion.getKindsForLanguage(language: LanguageClass): Set<TargetKind> = perLanguageKinds.get(language).toSet()
-
-  /** If rule type isn't recognized, uses a heuristic to guess the rule type.  */
-  fun TargetKind.Companion.guessRuleType(ruleName: String): RuleType? {
-    val kind = fromRuleName(ruleName)
-    if (kind != null) {
-      return kind.ruleType
-    }
-    if (isTestSuite(ruleName) || ruleName.endsWith("_test")) {
-      return RuleType.TEST
-    }
-    if (ruleName.endsWith("_binary")) {
-      return RuleType.BINARY
-    }
-    if (ruleName.endsWith("_library")) {
-      return RuleType.LIBRARY
-    }
-    return RuleType.UNKNOWN
+/** If rule type isn't recognized, uses a heuristic to guess the rule type.  */
+fun TargetKind.Companion.guessRuleType(ruleName: String): RuleType? {
+  val kind = fromRuleName(ruleName)
+  if (kind != null) {
+    return kind.ruleType
   }
-
-  private fun isTestSuite(ruleName: String): Boolean {
-    // handle plain test_suite targets and macros producing a test/test_suite
-    return ruleName.endsWith("test_suite") || ruleName.endsWith("test_suites")
+  if (isTestSuite(ruleName) || ruleName.endsWith("_test")) {
+    return RuleType.TEST
   }
+  if (ruleName.endsWith("_binary")) {
+    return RuleType.BINARY
+  }
+  if (ruleName.endsWith("_library")) {
+    return RuleType.LIBRARY
+  }
+  return RuleType.UNKNOWN
+}
+
+private fun isTestSuite(ruleName: String): Boolean {
+  // handle plain test_suite targets and macros producing a test/test_suite
+  return ruleName.endsWith("test_suite") || ruleName.endsWith("test_suites")
+}

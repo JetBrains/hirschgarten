@@ -3,10 +3,11 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -48,7 +49,10 @@ class SourcesItemToJavaSourceRootTransformerTest {
         listOf("library"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         listOf(sourceItem),
         emptyList(),
         baseDirectory = Path("base/dir"),
@@ -86,7 +90,10 @@ class SourcesItemToJavaSourceRootTransformerTest {
         listOf("test"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         listOf(sourceItem),
         emptyList(),
         baseDirectory = Path("base/dir"),
@@ -132,7 +139,10 @@ class SourcesItemToJavaSourceRootTransformerTest {
         listOf("library"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         listOf(sourceItem1, sourceItem2),
         emptyList(),
         baseDirectory = Path("base/dir"),
@@ -185,7 +195,10 @@ class SourcesItemToJavaSourceRootTransformerTest {
         listOf("library"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         listOf(sourceItem1),
         emptyList(),
         baseDirectory = Path("base/dir"),
@@ -196,7 +209,10 @@ class SourcesItemToJavaSourceRootTransformerTest {
         listOf("library"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         listOf(sourceItem2),
         emptyList(),
         baseDirectory = Path("base/dir"),
@@ -250,7 +266,10 @@ class SourcesItemToJavaSourceRootTransformerTest {
         listOf("library"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         listOf(sourceItem1),
         emptyList(),
         baseDirectory = Path("base/dir"),
@@ -262,7 +281,10 @@ class SourcesItemToJavaSourceRootTransformerTest {
         listOf("library"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         listOf(sourceItem2),
         emptyList(),
         baseDirectory = Path("base/dir"),

@@ -12,6 +12,7 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.backend.workspace.virtualFile
 import org.jetbrains.bazel.action.SuspendableAction
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
@@ -45,11 +46,11 @@ internal open class RunAllTestsBaseAction(
     e
       .getCurrentPath()
       ?.toSubFilesInTestSourceContent(project)
-      ?.filter { it.capabilities.canTest }
+      ?.filter { it.kind.ruleType == RuleType.TEST }
       ?.toList() ?: listOf()
 
   private fun shouldShowAction(project: Project, e: AnActionEvent): Boolean {
-    return e.getCurrentPath()?.toSubFilesInTestSourceContent(project)?.any { it.capabilities.canTest } ?: return false
+    return e.getCurrentPath()?.toSubFilesInTestSourceContent(project)?.any { it.kind.ruleType == RuleType.TEST } ?: return false
   }
 
   private fun AnActionEvent.getCurrentPath(): VirtualFile? = getData(PlatformDataKeys.VIRTUAL_FILE)
