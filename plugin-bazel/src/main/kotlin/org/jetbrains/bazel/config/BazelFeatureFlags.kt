@@ -8,7 +8,6 @@ private const val ANDROID_SUPPORT = "bsp.android.support"
 private const val GO_SUPPORT = "bsp.go.support"
 private const val BUILD_PROJECT_ON_SYNC = "bsp.build.project.on.sync"
 private const val SHORTEN_MODULE_LIBRARY_NAMES = "bsp.shorten.module.library.names"
-private const val RETRIEVE_TARGETS_FOR_FILE_FROM_ANCESTORS = "bsp.retrieve.targets.for.file.from.ancestors"
 private const val WRAP_LIBRARIES_INSIDE_MODULES = "bsp.wrap.libraries.inside.modules"
 private const val USE_PHASED_SYNC = "bsp.use.phased.sync"
 private const val EXECUTE_SECOND_PHASE_ON_SYNC = "bsp.execute.second.phase.on.sync"
@@ -35,9 +34,6 @@ object BazelFeatureFlags {
 
   val isShortenModuleLibraryNamesEnabled: Boolean
     get() = Registry.`is`(SHORTEN_MODULE_LIBRARY_NAMES)
-
-  val isRetrieveTargetsForFileFromAncestorsEnabled: Boolean
-    get() = Registry.`is`(RETRIEVE_TARGETS_FOR_FILE_FROM_ANCESTORS)
 
   val isWrapLibrariesInsideModulesEnabled: Boolean
     get() = Registry.`is`(WRAP_LIBRARIES_INSIDE_MODULES) || isKotlinPluginK2Mode
