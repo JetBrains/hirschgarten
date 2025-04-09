@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
+import org.jetbrains.bazel.config.workspaceName
 import org.jetbrains.bazel.runfiles.RunfilesUtils
 import org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
@@ -69,14 +70,13 @@ class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurati
   }
 
   private fun PsiElement.getPsiClassOrNull(): PsiClass? =
-    parent as? PsiClass ?: runReadAction { getParentOfType<KtClass>(false)?.toLightClass() }
+    runReadAction { parent as? PsiClass ?: getParentOfType<KtClass>(false)?.toLightClass() }
 
-  private fun PsiElement.getPsiMethodOrNull(): PsiMethod? = parent as? PsiMethod ?: runReadAction { parent.getRepresentativeLightMethod() }
+  private fun PsiElement.getPsiMethodOrNull(): PsiMethod? = runReadAction { parent as? PsiMethod ?: parent.getRepresentativeLightMethod() }
 
   private fun defineDefaultBazelEnvs(project: Project, environment: JvmEnvironmentItem): Map<String, String> =
     mapOf(
       "TEST_SRCDIR" to RunfilesUtils.calculateTargetRunfiles(project, environment.target).toString(),
-      // TODO: BAZEL-1836
-      ("TEST_WORKSPACE" to "_main"),
+      ("TEST_WORKSPACE" to (project.workspaceName ?: "_main")),
     )
 }
