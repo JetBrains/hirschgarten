@@ -35,6 +35,7 @@ class BazelProjectProperties(private val project: Project) : PersistentStateComp
   var rootDir: VirtualFile? = null
   var defaultJdkName: String? = null
   var isBrokenBspProject: Boolean = false
+  var workspaceName: String? = null
 
   override fun getState(): BazelProjectPropertiesState? =
     BazelProjectPropertiesState(
@@ -109,4 +110,10 @@ var Project.defaultJdkName: String?
   get() = bazelProjectProperties.defaultJdkName
   set(value) {
     bazelProjectProperties.defaultJdkName = value
+  }
+
+var Project.workspaceName: String?
+  get() = bazelProjectProperties.workspaceName
+  set(value) {
+    bazelProjectProperties.workspaceName = value
   }
