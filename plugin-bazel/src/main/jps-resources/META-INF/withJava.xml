@@ -1,0 +1,25 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <java.programPatcher implementation="org.jetbrains.bazel.jvm.run.BazelJvmEnvironmentProgramPatcher"/>
+        <java.elementFinder implementation="org.jetbrains.bazel.services.BazelJavaClassFinder"/>
+        <programRunner implementation="org.jetbrains.bazel.jvm.run.BazelJvmDebugRunner"/>
+        <runLineMarkerContributor
+                implementationClass="org.jetbrains.bazel.jvm.ui.gutters.BspJVMRunLineMarkerContributor"
+                language="JVM"/>
+        <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelJavaNewProjectWizard"/>
+        <useScopeEnlarger implementation="org.jetbrains.bazel.services.BazelJavaUseScopeEnlarger"/>
+
+    </extensions>
+
+    <extensions defaultExtensionNs="org.jetbrains.bazel">
+        <runHandlerProvider implementation="org.jetbrains.bazel.jvm.run.JvmRunHandler$JvmRunHandlerProvider"
+                            id="JvmRunHandlerProvider"/>
+        <runHandlerProvider
+                implementation="org.jetbrains.bazel.jvm.run.JvmTestHandler$JvmTestHandlerProvider"
+                id="JvmTestHandlerProvider"/>
+        <!-- Dependency: JvmSyncHook -> TargetUtils#updateComputedFields -> toShortString -> BazelRepoMappingService -->
+        <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook" order="after BazelRepoMappingSyncHook"/>
+        <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.JavaSourceTypeIconProvider"/>
+
+    </extensions>
+</idea-plugin>

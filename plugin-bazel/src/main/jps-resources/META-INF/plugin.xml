@@ -22,10 +22,8 @@
   ]]>
     </description>
 
-    <depends>com.intellij.modules.java</depends>
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.platform</depends>
-    <depends>org.jetbrains.kotlin</depends>
 
     <depends optional="true" config-file="withAndroid.xml">org.jetbrains.android</depends>
     <depends optional="true" config-file="withCodeWithMe.xml">com.jetbrains.codeWithMe</depends>
@@ -33,6 +31,8 @@
     <depends optional="true" config-file="withDevKit.xml">DevKit</depends>
     <depends optional="true" config-file="withGo.xml">org.jetbrains.plugins.go</depends>
     <depends optional="true" config-file="withIdeStarter.xml">com.jetbrains.performancePlugin</depends>
+    <depends optional="true" config-file="withJava.xml">com.intellij.modules.java</depends>
+    <depends optional="true" config-file="withKotlin.xml">org.jetbrains.kotlin</depends>
     <depends optional="true" config-file="withPython.xml">com.intellij.modules.python</depends>
     <depends optional="true" config-file="withJunit.xml">JUnit</depends>
 
@@ -100,22 +100,13 @@
     </extensionPoints>
 
     <extensions defaultExtensionNs="org.jetbrains.bazel">
-        <runHandlerProvider implementation="org.jetbrains.bazel.jvm.run.JvmRunHandler$JvmRunHandlerProvider"
-                            id="JvmRunHandlerProvider"/>
-        <runHandlerProvider
-                implementation="org.jetbrains.bazel.jvm.run.JvmTestHandler$JvmTestHandlerProvider"
-                id="JvmTestHandlerProvider"/>
         <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericRunHandlerProvider"
                             order="last"/>
         <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericTestHandlerProvider"
                             order="last"/>
-        <!-- Dependency: JvmSyncHook -> TargetUtils#updateComputedFields -> toShortString -> BazelRepoMappingService -->
-        <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook" order="after BazelRepoMappingSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.BazelBinPathSyncHook"/>
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
-        <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.JavaSourceTypeIconProvider"/>
-        <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.KotlinSourceTypeIconProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -146,10 +137,6 @@
         <workspaceModel.fileIndexContributor
                 implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
 
-        <java.programPatcher implementation="org.jetbrains.bazel.jvm.run.BazelJvmEnvironmentProgramPatcher"/>
-        <java.elementFinder implementation="org.jetbrains.bazel.services.BazelJavaClassFinder"/>
-        <useScopeEnlarger implementation="org.jetbrains.bazel.services.BazelJavaUseScopeEnlarger"/>
-
         <postStartupActivity
                 implementation="org.jetbrains.bazel.startup.BazelStartupActivity"/>
 
@@ -158,7 +145,6 @@
                 implementation="org.jetbrains.bazel.ui.projectTree.BazelProjectViewNodeDecorator"/>
         <projectTaskRunner
                 implementation="org.jetbrains.bazel.buildTask.BazelProjectTaskRunner"/>
-        <programRunner implementation="org.jetbrains.bazel.jvm.run.BazelJvmDebugRunner"/>
 
         <programRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageProgramRunner"/>
         <coverageRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageRunner"/>
@@ -173,9 +159,7 @@
         <!--                    serviceImplementation="org.jetbrains.bazel.services.SingleFileSourcesTrackerImpl"-->
         <!--                    overrides="true"/>-->
 
-        <runLineMarkerContributor
-                implementationClass="org.jetbrains.bazel.jvm.ui.gutters.BspJVMRunLineMarkerContributor"
-                language="JVM"/>
+
         <registryKey defaultValue="false" description="Build project on initial project sync"
                      key="bsp.build.project.on.sync"/>
         <registryKey defaultValue="true" description="Python modules support" key="bsp.python.support"/>
@@ -223,21 +207,6 @@
 
         <statistics.projectUsagesCollector implementation="org.jetbrains.plugins.bazel.fus.BazelProjectStatisticsCollector"/>
 
-    </extensions>
-
-    <extensions defaultExtensionNs="org.jetbrains.kotlin">
-        <projectConfigurator
-                implementation="org.jetbrains.bazel.kotlin.BazelKotlinProjectConfigurator"
-                order="first"
-        />
-
-        <!--suppress PluginXmlValidity -->
-        <supportsKotlinPluginMode supportsK2="true"/>
-
-        <!-- this is left for backward-compatibility with the first versions of 242,
-        it can be removed later -->
-        <!--suppress PluginXmlValidity -->
-        <supportsKotlinK2Mode/>
     </extensions>
 
     <actions>
@@ -511,9 +480,6 @@
                      description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
                      key="bazel.merge.source.roots"/>
         <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
-
-        <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelJavaNewProjectWizard"/>
-        <newProjectWizard.kotlin.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelKotlinNewProjectWizard"/>
     </extensions>
 
     <actions>
