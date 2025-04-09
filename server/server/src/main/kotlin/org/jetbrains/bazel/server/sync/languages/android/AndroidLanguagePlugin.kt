@@ -4,7 +4,6 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinModule
@@ -104,8 +103,7 @@ class AndroidLanguagePlugin(
   override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     javaLanguagePlugin.dependencySources(targetInfo, dependencyGraph)
 
-  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData? =
-    javaLanguagePlugin.calculateSourceRootAndAdditionalData(source)
+  override fun calculateJvmPackagePrefix(source: Path): String? = javaLanguagePlugin.calculateJvmPackagePrefix(source)
 
   override fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<Path> {
     if (!targetInfo.hasAndroidTargetInfo()) return emptySet()
