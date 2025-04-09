@@ -9,7 +9,6 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.toNioPathOrNull
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
@@ -21,8 +20,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
-import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
@@ -36,7 +33,6 @@ import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.isExecutable
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.to
 
 private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
@@ -190,9 +186,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   fun getTargetsForPath(path: Path): List<Label> = fileToTarget[path] ?: emptyList()
 
   @PublicApi
-  fun getTargetsForFile(file: VirtualFile): List<Label> =
-    fileToTarget[file.toNioPathOrNull()]
-      ?: getTargetsFromAncestorsForFile(file)
+  fun getTargetsForFile(file: VirtualFile): List<Label> = file.toNioPathOrNull()?.let { getTargetsForPath(it) } ?: emptyList()
 
   @InternalApi
   fun getExecutableTargetsForFile(file: VirtualFile): List<Label> {
@@ -202,20 +196,6 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       return fileToExecutableTargets.getOrDefault(file.toNioPathOrNull(), emptySet()).toList()
     }
     return executableDirectTargets
-  }
-
-  private fun getTargetsFromAncestorsForFile(file: VirtualFile): List<Label> {
-    return if (BazelFeatureFlags.isRetrieveTargetsForFileFromAncestorsEnabled) {
-      val rootDir = project.rootDir
-      var iter = file.parent
-      while (iter != null && VfsUtil.isAncestor(rootDir, iter, false)) {
-        fileToTarget[iter.toNioPathOrNull()]?.let { return it }
-        iter = iter.parent
-      }
-      emptyList()
-    } else {
-      emptyList()
-    }
   }
 
   @PublicApi // // https://youtrack.jetbrains.com/issue/BAZEL-1632

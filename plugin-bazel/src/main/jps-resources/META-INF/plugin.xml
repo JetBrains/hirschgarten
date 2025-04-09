@@ -185,9 +185,6 @@
                      description="Shorten module/library names by hashing the first parts and retaining the others"
                      key="bsp.shorten.module.library.names"/>
         <registryKey defaultValue="false"
-                     description="Retrieve targets for file from its ancestors"
-                     key="bsp.retrieve.targets.for.file.from.ancestors"/>
-        <registryKey defaultValue="false"
                      description="Wrap libraries inside modules to form a proper dependency graph between libraries. Enabled by default with K2 mode"
                      key="bsp.wrap.libraries.inside.modules"/>
         <registryKey defaultValue="false"
