@@ -218,7 +218,7 @@ class ProjectTest {
       languages = emptySet(),
       tags = emptySet(),
       baseDirectory = Path("/path/to/$this"),
-      sourceSet = SourceSet(emptySet(), emptySet()),
+      sources = emptyList(),
       resources = emptySet(),
       sourceDependencies = emptySet(),
       languageData = null,
