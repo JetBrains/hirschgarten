@@ -81,7 +81,7 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
     }
 
     if (!isApplicable(file, dataContext)) {
-      return EnterHandlerDelegate.Result.Default
+      return EnterHandlerDelegate.Result.Continue
     }
     val document = editor.document
     PsiDocumentManager.getInstance(file.project).commitDocument(document)
@@ -95,7 +95,7 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
       return EnterHandlerDelegate.Result.Stop
     }
     if (!insertIndent(file, offset)) {
-      return EnterHandlerDelegate.Result.Default
+      return EnterHandlerDelegate.Result.Continue
     }
 
     originalHandler?.execute(editor, editor.caretModel.currentCaret, dataContext)
