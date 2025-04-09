@@ -63,7 +63,7 @@ class BazelProjectTaskRunner : ProjectTaskRunner() {
 
   @OptIn(ExperimentalCoroutinesApi::class)
   private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTarget>): Promise<Result> {
-    val targetIdentifiers = targetsToBuild.filter { it.capabilities.canCompile }.map { it.id }
+    val targetIdentifiers = targetsToBuild.filter { !it.noBuild }.map { it.id }
     val result =
       BazelCoroutineService.getInstance(project).startAsync {
         runBuildTargetTask(targetIdentifiers, project)

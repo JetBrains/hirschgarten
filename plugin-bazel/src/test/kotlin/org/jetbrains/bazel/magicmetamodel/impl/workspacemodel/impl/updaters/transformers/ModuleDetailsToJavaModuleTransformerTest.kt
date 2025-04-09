@@ -7,6 +7,8 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -20,7 +22,6 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JvmBuildTarget
@@ -78,7 +79,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           Label.parse("module3"),
           Label.parse("@maven//:lib1"),
         ),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         baseDirectory = projectRoot,
         data = data,
         sources =
@@ -216,7 +220,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           Label.parse("module3"),
           Label.parse("@maven//:lib1"),
         ),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         baseDirectory = projectRoot,
         data = kotlinBuildTarget,
         sources = emptyList(),
@@ -324,7 +331,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           Label.parse("module3"),
           Label.parse("@maven//:lib1"),
         ),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         baseDirectory = module1Root,
         sources =
           listOf(
@@ -389,7 +399,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           Label.parse("module3"),
           Label.parse("@maven//:lib1"),
         ),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         baseDirectory = module2Root,
         sources =
           listOf(
@@ -574,7 +587,10 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           Label.parse("module3"),
           Label.parse("@maven//:lib1"),
         ),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         baseDirectory = projectRoot,
         data = data,
         sources =
@@ -751,10 +767,9 @@ class ExtractJvmBuildTargetTest {
         listOf("tag1", "tag2"),
         listOf("language1"),
         listOf(Label.parse("dep1"), Label.parse("dep2")),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = true,
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
         ),
         baseDirectory = Path("/base/dir"),
         data = data,

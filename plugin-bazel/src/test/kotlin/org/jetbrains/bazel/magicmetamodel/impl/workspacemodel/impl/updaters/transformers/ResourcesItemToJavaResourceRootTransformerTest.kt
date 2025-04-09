@@ -3,10 +3,11 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
@@ -42,7 +43,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         emptyList(),
         emptyList(),
         listOf(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         emptyList(),
         listOf(resourceFilePath),
         baseDirectory = Path("base/dir"),
@@ -73,7 +77,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         listOf("test"),
         emptyList(),
         listOf(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         emptyList(),
         listOf(resourceFilePath),
         baseDirectory = Path("base/dir"),
@@ -104,7 +111,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         emptyList(),
         emptyList(),
         listOf(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         emptyList(),
         listOf(resourceDirPath),
         baseDirectory = Path("base/dir"),
@@ -140,7 +150,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         emptyList(),
         emptyList(),
         listOf(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         emptyList(),
         listOf(resourceFilePath1, resourceFilePath2, resourceFilePath3),
         baseDirectory = Path("base/dir"),
@@ -188,7 +201,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         emptyList(),
         emptyList(),
         listOf(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         emptyList(),
         listOf(resourceFilePath, resourceDirPath),
         baseDirectory = Path("base/dir"),
@@ -231,7 +247,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         emptyList(),
         emptyList(),
         listOf(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         emptyList(),
         listOf(resourceFilePath1, resourceFilePath2, resourceDirPath3),
         baseDirectory = Path("base/dir"),
@@ -284,7 +303,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         emptyList(),
         emptyList(),
         listOf(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         emptyList(),
         listOf(resourceFilePath1, resourceFilePath2, resourceDirPath3),
         baseDirectory = Path("base/dir"),

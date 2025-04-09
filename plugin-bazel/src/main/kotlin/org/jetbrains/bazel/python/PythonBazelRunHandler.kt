@@ -4,6 +4,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
@@ -33,7 +34,7 @@ class PythonBazelRunHandler : BazelRunHandler {
 
     override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       targetInfos.all {
-        it.languageIds.contains("python") && it.capabilities.canRun
+        it.languageIds.contains("python") && it.kind.ruleType == RuleType.BINARY
       }
 
     override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)

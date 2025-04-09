@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
+import com.google.gson.Gson
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.LibraryDependency
@@ -67,7 +68,7 @@ internal class ModuleEntityUpdater(
 
     val imlData =
       ModuleCustomImlDataEntity(
-        customModuleOptions = entityToAdd.capabilities.asMap() + entityToAdd.languageIdsAsSingleEntryMap,
+        customModuleOptions = mapOf("kind" to Gson().toJson(entityToAdd.kind)) + entityToAdd.languageIdsAsSingleEntryMap,
         entitySource = moduleEntity.entitySource,
       ) {
         this.rootManagerTagCustomData = null

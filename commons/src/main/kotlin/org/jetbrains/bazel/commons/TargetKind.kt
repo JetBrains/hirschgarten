@@ -15,16 +15,6 @@
  */
 package org.jetbrains.bazel.commons
 
-import com.google.common.collect.HashMultimap
-import com.google.common.collect.Multimap
-import com.google.common.collect.Multimaps
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.Service
-import com.intellij.openapi.extensions.ExtensionPointName
-import org.jetbrains.bazel.info.BspTargetInfo
-import java.util.Collections
-import java.util.function.Function
-
 // For compatibility with OG
 typealias Kind = TargetKind
 
@@ -38,9 +28,11 @@ typealias Kind = TargetKind
  */
 data class TargetKind(
   val kindString: String,
-  val languageClasses: Set<LanguageClass>,
+  val languageClasses: Set<LanguageClass> = emptySet(), // Not used... yet
   val ruleType: RuleType,
 ) {
   // Used in extension functions
-  companion object {}
+  companion object
+
+  val isExecutable: Boolean = ruleType == RuleType.BINARY || ruleType == RuleType.TEST
 }

@@ -6,7 +6,6 @@ import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
-import org.jetbrains.bazel.workspacemodel.entities.toModuleCapabilities
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.ScalacOptionsItem
@@ -34,7 +33,7 @@ internal class BspModuleDetailsToModuleTransformer(
           .mapNotNull { targetsMap[it] }
           .map { IntermediateModuleDependency(moduleName = nameProvider(it.id)) },
       librariesDependencies = calculateLibrariesDependencies(inputEntity),
-      capabilities = inputEntity.target.capabilities.toModuleCapabilities(),
+      kind = inputEntity.target.kind,
       languageIds = inputEntity.target.languageIds,
       associates =
         inputEntity.associates.mapNotNull {

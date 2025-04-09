@@ -2,6 +2,7 @@ package org.jetbrains.bazel.nonmodule.sync.ideStarter
 
 import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.target.targetUtils
 
@@ -14,13 +15,13 @@ class CheckNonModuleTargetsCommand(text: String, line: Int) : PlaybackCommandCor
     }
 
     val binInfo = checkNotNull(project.targetUtils.getBuildTargetForLabel(Label.parse("//:bin"))) { "No info for //:bin" }
-    check(binInfo.capabilities.canRun) {
-      "Expected //:bin to be runnable, actual: ${binInfo.capabilities.canRun}"
+    check(binInfo.kind.ruleType == RuleType.BINARY) {
+      "Expected //:bin to be runnable, actual: ${binInfo.kind.ruleType}"
     }
 
     val testInfo = checkNotNull(project.targetUtils.getBuildTargetForLabel(Label.parse("//:test"))) { "No info for //:test" }
-    check(testInfo.capabilities.canTest) {
-      "Expected //:test to be testable, actual: ${testInfo.capabilities.canTest}"
+    check(testInfo.kind.ruleType == RuleType.TEST) {
+      "Expected //:test to be testable, actual: ${testInfo.kind.ruleType}"
     }
   }
 
