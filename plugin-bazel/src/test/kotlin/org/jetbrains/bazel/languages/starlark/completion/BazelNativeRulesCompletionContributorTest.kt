@@ -149,7 +149,7 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
   }
 
   @Test
-  fun `should complete brackets`() {
+  fun `should autocomplete brackets and required args`() {
     // given
     myFixture.configureByText("BUILD", "")
     myFixture.type("java_bin")
@@ -159,6 +159,11 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
 
     // then
     assertNull(lookups)
-    myFixture.checkResult("java_binary(<caret>)")
+    val expected =
+      "java_binary(\n" +
+        "\tname = \"\",\n" +
+        "\t<caret>\n)"
+
+    myFixture.checkResult(expected)
   }
 }

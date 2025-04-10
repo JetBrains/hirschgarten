@@ -5,7 +5,8 @@ import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
-import com.intellij.codeInsight.completion.util.ParenthesesInsertHandler
+import com.intellij.codeInsight.completion.InsertHandler
+import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PatternCondition
@@ -16,6 +17,7 @@ import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
+import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRule
 import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRules
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
@@ -50,13 +52,29 @@ class BazelNativeRulesCompletionContributor : CompletionContributor() {
       context: ProcessingContext,
       result: CompletionResultSet,
     ) {
-      BazelNativeRules.ruleNames.forEach { result.addElement(functionLookupElement(it)) }
+      BazelNativeRules.NATIVE_RULES_MAP.values.forEach { result.addElement(functionLookupElement(it)) }
     }
 
-    private fun functionLookupElement(name: String): LookupElement =
+    private class NativeRuleInsertHandler<T : LookupElement>(val rule: BazelNativeRule) : InsertHandler<T> {
+      override fun handleInsert(context: InsertionContext, item: T) {
+        val editor = context.editor
+        val document = editor.document
+        document.insertString(context.tailOffset, "(\n")
+
+        val requiredArgs = rule.arguments.filter { it.required }
+        requiredArgs.forEach {
+          document.insertString(context.tailOffset, "\t${it.name} = ${it.default},\n")
+        }
+
+        document.insertString(context.tailOffset, "\t\n)")
+        editor.caretModel.moveToOffset(context.tailOffset - 2)
+      }
+    }
+
+    private fun functionLookupElement(rule: BazelNativeRule): LookupElement =
       LookupElementBuilder
-        .create(name)
-        .withInsertHandler(ParenthesesInsertHandler.WITH_PARAMETERS)
+        .create(rule.name)
         .withIcon(PlatformIcons.FUNCTION_ICON)
+        .withInsertHandler(NativeRuleInsertHandler(rule))
   }
 }
