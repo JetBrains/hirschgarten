@@ -6,6 +6,8 @@ import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.target.targetUtils
@@ -32,7 +34,10 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
           tags = emptyList(),
           languageIds = emptyList(),
           dependencies = emptyList(),
-          capabilities = BuildTargetCapabilities(),
+          kind = TargetKind(
+            kindString = "java_library",
+            ruleType = RuleType.LIBRARY
+          ),
           sources = emptyList(),
           resources = emptyList(),
           baseDirectory = Path("/"),
