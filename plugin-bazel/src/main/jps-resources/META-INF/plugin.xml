@@ -97,6 +97,9 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.localJvmRunnerRunConfigurationProvider"
                         interface="org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
+                        interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater"
+                        dynamic="true"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="org.jetbrains.bazel">
@@ -116,6 +119,8 @@
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.JavaSourceTypeIconProvider"/>
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.KotlinSourceTypeIconProvider"/>
+        <!-- TODO: move to withKotlin.xml -->
+        <kotlinFacetEntityUpdater implementation="org.jetbrains.bazel.kotlin.sync.BazelKotlinFacetEntityUpdater"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

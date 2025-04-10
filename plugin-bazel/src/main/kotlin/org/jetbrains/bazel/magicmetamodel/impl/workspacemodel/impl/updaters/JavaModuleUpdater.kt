@@ -2,6 +2,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.java.workspace.entities.JavaModuleSettingsEntity
 import com.intellij.java.workspace.entities.javaSettings
+import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
@@ -58,9 +59,12 @@ internal class JavaModuleWithSourcesUpdater(
     }
 
     if (entityToAdd.genericModuleInfo.languageIds.includesKotlin()) {
-      val kotlinFacetEntityUpdater =
-        KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
-      kotlinFacetEntityUpdater.addEntity(entityToAdd, moduleEntity)
+      KotlinFacetEntityUpdater.ep.extensionList.firstOrNull()?.addEntity(
+        diff = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
+        entityToAdd = entityToAdd,
+        parentModuleEntity = moduleEntity,
+        projectBasePath = projectBasePath,
+      )
     }
 
     if (isAndroidSupportEnabled && entityToAdd.androidAddendum != null) {
@@ -183,4 +187,18 @@ internal class JavaModuleUpdater(
     with(genericModuleInfo.languageIds) {
       includesKotlin() || includesJava()
     }
+}
+
+// TODO: should be removed, kotlin needs a separate sync hook: https://youtrack.jetbrains.com/issue/BAZEL-1885
+interface KotlinFacetEntityUpdater {
+  fun addEntity(
+    diff: MutableEntityStorage,
+    entityToAdd: JavaModule,
+    parentModuleEntity: ModuleEntity,
+    projectBasePath: Path,
+  )
+
+  companion object {
+    val ep = ExtensionPointName.create<KotlinFacetEntityUpdater>("org.jetbrains.bazel.kotlinFacetEntityUpdater")
+  }
 }
