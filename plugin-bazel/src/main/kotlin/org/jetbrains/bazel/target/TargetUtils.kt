@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.label.Label
@@ -80,6 +81,12 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   fun removeFileToTargetIdEntry(path: Path) {
     fileToTarget = fileToTarget - path
+  }
+
+  @InternalApi
+  @TestOnly
+  fun setTargets(labelToTargetInfo: Map<Label, BuildTarget>) {
+    this.labelToTargetInfo = labelToTargetInfo
   }
 
   @InternalApi
