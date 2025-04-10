@@ -8,6 +8,13 @@ import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 
+/**
+ * BazelJVMProjectSettings holds the JVM-specific part of settings. It can be modified by BazelJVMSettingsProviders,
+ * which injects JVM-specific settings into the Bazel setting panel. However, unlike BazelJVMSettingsProviders, this BazelJVMProjectSettings is always available
+ * even there is no java-plugin.
+ * (BazelJVMSettingsProviders is the extension of an extension point, and it will not be loaded when java plugin is absent, so that user won't be able to change t
+ * the JVM-specific settings when there is no java plugin)
+ * */
 data class BazelJVMProjectSettings(
   val hotSwapEnabled: Boolean = true,
   val enableLocalJvmActions: Boolean = false,
