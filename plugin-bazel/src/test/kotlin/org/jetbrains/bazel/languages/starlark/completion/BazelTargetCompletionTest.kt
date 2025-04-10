@@ -3,6 +3,8 @@ package org.jetbrains.bazel.languages.starlark.completion
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.target.targetUtils
@@ -29,7 +31,10 @@ class BazelTargetCompletionTest : BasePlatformTestCase() {
           tags = emptyList(),
           languageIds = emptyList(),
           dependencies = emptyList(),
-          capabilities = BuildTargetCapabilities(),
+          kind = TargetKind(
+            kindString = "java_library",
+            ruleType = RuleType.LIBRARY
+          ),
           sources = emptyList(),
           resources = emptyList(),
           baseDirectory = Path("/"),
