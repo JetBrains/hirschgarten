@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.model
 
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 
 data class Module(
@@ -10,7 +11,7 @@ data class Module(
   val languages: Set<Language>,
   val tags: Set<Tag>,
   val baseDirectory: Path,
-  val sourceSet: SourceSet,
+  val sources: List<SourceItem>,
   val resources: Set<Path>,
   val sourceDependencies: Set<Path>,
   val languageData: LanguageData?,
