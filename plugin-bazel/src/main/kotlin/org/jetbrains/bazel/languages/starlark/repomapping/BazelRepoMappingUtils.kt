@@ -46,17 +46,44 @@ private fun Path.segments(): List<String> {
 }
 
 /**
- * We should show apparent labels in the UI, where possible, to avoid confusing the user with labels containing symbols such as ~ or +.
+ * We should show apparent labels in the UI, where possible, to avoid confusing the user with labels containing symbols such as `~` or `+`.
+ * If conversion to an apparent label fails, fall back to the original label.
  */
-fun Label.toApparentLabel(project: Project): Label {
-  if (this !is ResolvedLabel) return this
+fun Label.toApparentLabelOrThis(project: Project): Label = toApparentLabel(project) ?: this
+
+/**
+ * Converts this [Label]'s repository either to [Apparent] or to [Main].
+ */
+fun Label.toApparentLabel(project: Project): ResolvedLabel? {
+  if (this !is ResolvedLabel) return null
   if (this.repo !is Canonical) return this
-  val apparentRepoName = project.canonicalRepoNameToApparentName[this.repo.repoName] ?: return this
+  val apparentRepoName = project.canonicalRepoNameToApparentName[this.repo.repoName] ?: return null
   return this.copy(repo = Apparent(apparentRepoName))
 }
 
+/**
+ * Converts this [Label]'s repository either to [Canonical] or to [Main].
+ */
+fun Label.toCanonicalLabel(project: Project): ResolvedLabel? {
+  if (this !is ResolvedLabel) return null
+  val repo =
+    if (repo !is Apparent) {
+      repo
+    } else {
+      val canonicalRepoName = project.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
+      Canonical.createCanonicalOrMain(canonicalRepoName)
+    }
+  val target =
+    if (target is AmbiguousEmptyTarget) {
+      SingleTarget(packagePath.pathSegments.lastOrNull() ?: return null)
+    } else {
+      target
+    }
+  return this.copy(repo = repo, target = target)
+}
+
 fun Label.toShortString(project: Project): String {
-  val label = this.toApparentLabel(project)
+  val label = this.toApparentLabelOrThis(project)
   if (label !is ResolvedLabel) return label.toString()
 
   val repoPart = if (label.repo !is Main) label.repo.toString() else ""
