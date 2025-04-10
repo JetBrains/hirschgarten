@@ -127,6 +127,14 @@ sealed class NonModuleTargetsTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/nonmodule/sync:NonModuleTargetsTest"
 )
 
+sealed class RunAllTestsActionTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Run all tests action test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testResultsTree:runAllTestsActionTest"
+)
+
 object HotswapTestGitHub : HotswapTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
@@ -198,3 +206,12 @@ object NonModuleTargetsTestGitHub : NonModuleTargetsTest(
 object NonModuleTargetsTestSpace : NonModuleTargetsTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )
+
+object RunAllTestsActionTestGitHub : RunAllTestsActionTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object RunAllTestsActionTestSpace : RunAllTestsActionTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+

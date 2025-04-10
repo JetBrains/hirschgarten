@@ -215,6 +215,9 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   fun getBuildTargetForModule(module: com.intellij.openapi.module.Module): BuildTarget? =
     getTargetForModuleId(module.name)?.let { getBuildTargetForLabel(it) }
 
+  @InternalApi
+  fun allBuildTargets(): List<BuildTarget> = labelToTargetInfo.values.toList()
+
   /**
    * [libraryModulesLookupTable] is not persisted between IDE restarts, use this method with caution.
    */
