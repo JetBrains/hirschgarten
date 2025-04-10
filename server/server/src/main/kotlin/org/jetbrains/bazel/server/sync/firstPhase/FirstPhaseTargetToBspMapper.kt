@@ -97,17 +97,16 @@ class FirstPhaseTargetToBspMapper(private val bazelPathsResolver: BazelPathsReso
 
   private fun Target.calculateSources(project: FirstPhaseProject): List<SourceItem> {
     val sourceFiles = srcs.calculateFiles()
-    val sourceFilesAndData = sourceFiles.map { it to JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(it) }
-    val itemsFromDependencies = srcs.calculateModuleDependencies(project).flatMap { it.calculateSources(project) }
-    val directItems =
-      sourceFilesAndData.map {
+    val sources =
+      sourceFiles.map {
         SourceItem(
-          it.first,
-          false,
-          it.second?.jvmPackagePrefix,
+          path = it,
+          generated = false,
+          jvmPackagePrefix = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(it),
         )
       }
-    return (directItems + itemsFromDependencies).distinct()
+    val itemsFromDependencies = srcs.calculateModuleDependencies(project).flatMap { it.calculateSources(project) }
+    return (sources + itemsFromDependencies).distinct()
   }
 
   private fun Target.calculateResources(project: FirstPhaseProject): List<Path> {

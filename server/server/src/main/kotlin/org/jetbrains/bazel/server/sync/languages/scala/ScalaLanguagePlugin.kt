@@ -7,7 +7,6 @@ import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -70,6 +69,6 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
     buildTarget.data = scalaBuildTarget
   }
 
-  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData? =
+  override fun calculateJvmPackagePrefix(source: Path): String? =
     JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source, true)
 }

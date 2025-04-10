@@ -9,8 +9,7 @@ object JVMLanguagePluginParser {
   private val ONE_BYTE_CHARSET = Charset.forName("ISO-8859-1")
   private const val BUFFER_SIZE = 256 // Should be enough to read a Java package name if it's on the first line
 
-  fun calculateJVMSourceRootAndAdditionalData(source: Path, multipleLines: Boolean = false): SourceRootAndData? =
-    findPackage(source, multipleLines)?.let { SourceRootAndData(jvmPackagePrefix = it) }
+  fun calculateJVMSourceRootAndAdditionalData(source: Path, multipleLines: Boolean = false): String? = findPackage(source, multipleLines)
 
   private fun findPackage(source: Path, multipleLines: Boolean): String? =
     source.bufferedReader(charset = ONE_BYTE_CHARSET, bufferSize = BUFFER_SIZE).use { bufferedReader ->

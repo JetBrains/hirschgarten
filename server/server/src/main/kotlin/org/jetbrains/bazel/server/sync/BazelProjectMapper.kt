@@ -28,8 +28,6 @@ import org.jetbrains.bazel.server.model.Language
 import org.jetbrains.bazel.server.model.Library
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.model.NonModuleTarget
-import org.jetbrains.bazel.server.model.SourceSet
-import org.jetbrains.bazel.server.model.SourceWithData
 import org.jetbrains.bazel.server.model.Tag
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
@@ -37,6 +35,7 @@ import org.jetbrains.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
+import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -1006,7 +1005,7 @@ class BazelProjectMapper(
     val tags = targetTagsResolver.resolveTags(target)
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
     val languagePlugin = languagePluginsService.getPlugin(languages)
-    val sourceSet = resolveSourceSet(target, languagePlugin)
+    val sources = resolveSourceSet(target, languagePlugin)
     val resources = resolveResources(target, languagePlugin)
     val languageData = languagePlugin.resolveModule(target)
     val sourceDependencies = languagePlugin.dependencySources(target, dependencyGraph)
@@ -1018,7 +1017,7 @@ class BazelProjectMapper(
       languages = languages,
       tags = tags,
       baseDirectory = baseDirectory,
-      sourceSet = sourceSet,
+      sources = sources,
       resources = resources,
       sourceDependencies = sourceDependencies,
       languageData = languageData,
@@ -1034,46 +1033,29 @@ class BazelProjectMapper(
     return languagesForTarget + languagesForSources
   }
 
-  private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): SourceSet {
-    val (sources, nonExistentSources) =
+  private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<SourceItem> {
+    val sources =
       (target.sourcesList + languagePlugin.calculateAdditionalSources(target))
         .toSet()
         .map(bazelPathsResolver::resolve)
-        .partition { it.exists() }
+        .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
+        .filter { it.exists() }
+        .map { SourceItem(path = it, generated = false, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
 
-    nonExistentSources.forEach { it.logNonExistingFile(target.id) }
     val generatedSources =
       target.generatedSourcesList
         .toSet()
         .map(bazelPathsResolver::resolve)
         .filter { it.extension != "srcjar" }
-        .onEach { if (it.notExists()) it.logNonExistingFile(target.id) }
+        .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
         .filter { it.exists() }
+        .map { SourceItem(path = it, generated = true, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
 
-    val sourceRootsAndData = sources.map { it to languagePlugin.calculateSourceRootAndAdditionalData(it) }
-    val generatedRootsAndData = generatedSources.map { it to languagePlugin.calculateSourceRootAndAdditionalData(it) }
-    return SourceSet(
-      sources =
-        sourceRootsAndData
-          .map {
-            SourceWithData(
-              source = it.first,
-              jvmPackagePrefix = it.second?.jvmPackagePrefix,
-            )
-          }.toSet(),
-      generatedSources =
-        generatedRootsAndData
-          .map {
-            SourceWithData(
-              source = it.first,
-              jvmPackagePrefix = it.second?.jvmPackagePrefix,
-            )
-          }.toSet(),
-    )
+    return sources + generatedSources
   }
 
-  private fun Path.logNonExistingFile(targetId: String) {
-    val message = "[WARN] target $targetId: $this does not exist."
+  private fun logNonExistingFile(file: Path, targetId: String) {
+    val message = "[WARN] target $targetId: $file does not exist."
     bspClientLogger.error(message)
   }
 
