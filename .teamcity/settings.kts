@@ -66,6 +66,7 @@ object GitHub : Project({
         buildType(IdeStarterTests.TestResultsTreeTestGitHub)
         buildType(IdeStarterTests.ImportRunConfigurationsTestGitHub)
         buildType(IdeStarterTests.NonModuleTargetsTestGitHub)
+        buildType(IdeStarterTests.RunAllTestsActionTestGitHub)
         buildType(ServerE2eTests.SampleRepoGitHub)
         buildType(ServerE2eTests.LocalJdkGitHub)
         buildType(ServerE2eTests.RemoteJdkGitHub)
@@ -131,6 +132,7 @@ object GitHub : Project({
       IdeStarterTests.TestResultsTreeTestGitHub,
       IdeStarterTests.ImportRunConfigurationsTestGitHub,
       IdeStarterTests.NonModuleTargetsTestGitHub,
+      IdeStarterTests.RunAllTestsActionTestGitHub,
       ServerE2eTests.SampleRepoGitHub,
       ServerE2eTests.LocalJdkGitHub,
       ServerE2eTests.RemoteJdkGitHub,
@@ -184,6 +186,7 @@ object Space : Project({
         buildType(IdeStarterTests.TestResultsTreeTestSpace)
         buildType(IdeStarterTests.ImportRunConfigurationsTestSpace)
         buildType(IdeStarterTests.NonModuleTargetsTestSpace)
+        buildType(IdeStarterTests.RunAllTestsActionTestSpace)
         buildType(ServerE2eTests.SampleRepoSpace)
         buildType(ServerE2eTests.LocalJdkSpace)
         buildType(ServerE2eTests.RemoteJdkSpace)
@@ -249,6 +252,7 @@ object Space : Project({
       IdeStarterTests.TestResultsTreeTestSpace,
       IdeStarterTests.ImportRunConfigurationsTestSpace,
       IdeStarterTests.NonModuleTargetsTestSpace,
+      IdeStarterTests.RunAllTestsActionTestSpace,
       ServerE2eTests.SampleRepoSpace,
       ServerE2eTests.LocalJdkSpace,
       ServerE2eTests.RemoteJdkSpace,
