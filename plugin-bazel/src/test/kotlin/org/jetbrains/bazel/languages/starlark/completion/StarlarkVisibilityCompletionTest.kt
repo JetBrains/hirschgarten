@@ -7,13 +7,15 @@ import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.target.BuildTargetState
-import org.jetbrains.bazel.target.TargetUtilsState
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import kotlin.io.path.Path
 
 @RunWith(JUnit4::class)
 class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
@@ -23,15 +25,20 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
   }
 
   private fun setTargets(targets: List<String>) {
-    val targetsState =
-      TargetUtilsState(
-        labelToTargetInfo = targets.associateWith { BuildTargetState() },
-        moduleIdToTarget = emptyMap(),
-        libraryIdToTarget = emptyMap(),
-        fileToTarget = emptyMap(),
-        fileToExecutableTargets = emptyMap(),
-      )
-    project.targetUtils.loadState(targetsState)
+    project.targetUtils.setTargets(
+      targets.map { Label.parse(it) }.associateWith {
+        BuildTarget(
+          id = it,
+          tags = emptyList(),
+          languageIds = emptyList(),
+          dependencies = emptyList(),
+          capabilities = BuildTargetCapabilities(),
+          sources = emptyList(),
+          resources = emptyList(),
+          baseDirectory = Path("/"),
+        )
+      },
+    )
   }
 
   @Test
