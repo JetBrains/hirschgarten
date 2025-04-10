@@ -87,6 +87,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   @TestOnly
   fun setTargets(labelToTargetInfo: Map<Label, BuildTarget>) {
     this.labelToTargetInfo = labelToTargetInfo
+    updateComputedFields()
   }
 
   @InternalApi
