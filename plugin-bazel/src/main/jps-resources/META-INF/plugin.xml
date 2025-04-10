@@ -508,6 +508,7 @@
                      description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
                      key="bazel.merge.source.roots"/>
         <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
+        <searchEverywhereContributor implementation="org.jetbrains.bazel.ui.widgets.LabelSearchEverywhereContributor$Factory"/>
 
         <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelJavaNewProjectWizard"/>
         <newProjectWizard.kotlin.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelKotlinNewProjectWizard"/>

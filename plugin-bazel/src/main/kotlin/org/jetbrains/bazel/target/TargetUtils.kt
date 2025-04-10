@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.findNameProvider
@@ -52,6 +53,10 @@ data class TargetUtilsState(
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
 class TargetUtils(private val project: Project) : PersistentStateComponent<TargetUtilsState> {
+  /**
+   * All labels in [TargetUtils] are canonical.
+   * When querying [labelToTargetInfo] (e.g., via [getBuildTargetForLabel]) the label must be first canonicalized via [toCanonicalLabel].
+   */
   @InternalApi
   var labelToTargetInfo: Map<Label, BuildTarget> = emptyMap()
     private set
@@ -209,7 +214,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   fun getTargetForLibraryId(libraryId: String): Label? = libraryIdToTarget[libraryId]
 
   @InternalApi
-  fun getBuildTargetForLabel(label: Label): BuildTarget? = labelToTargetInfo[label]
+  fun getBuildTargetForLabel(label: Label): BuildTarget? = label.toCanonicalLabel(project)?.let { labelToTargetInfo[it] }
 
   @InternalApi
   fun getBuildTargetForModule(module: com.intellij.openapi.module.Module): BuildTarget? =
