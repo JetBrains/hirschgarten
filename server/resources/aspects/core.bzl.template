@@ -1,7 +1,7 @@
 # Copyright 2019-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 
 load("//aspects:extensions.bzl", "EXTENSIONS", "TOOLCHAINS")
-load("//aspects:utils/utils.bzl", "ALL_DEPS", "COMPILE_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "file_location", "get_aspect_ids", "update_sync_output_groups")
+load("//aspects:utils/utils.bzl", "ALL_DEPS", "COMPILE_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "file_location", "get_aspect_ids", "update_sync_output_groups", "do_starlark_string_expansion_dict")
 load("//aspects:rules/java/java_info.bzl", "java_info_in_target", "java_info_reference")
 
 def create_all_extension_info(target, ctx, output_groups, dep_targets):
@@ -128,9 +128,12 @@ def _bsp_target_info_aspect_impl(target, ctx):
     default_info = target[DefaultInfo]
     executable = default_info and default_info.files_to_run.executable != None
 
-    env = getattr(rule_attrs, "env", {})
-    if type(env) == "Target":
-        env = str(env.label)
+    raw_env = getattr(rule_attrs, "env", {})
+    if type(raw_env) == "Target":
+        raw_env = str(raw_env.label)
+
+    data_deps = getattr(ctx.rule.attr, "data", [])
+    env = do_starlark_string_expansion_dict(ctx, "env", raw_env, data_deps)
 
     info = dict(
         id = str(target.label),
