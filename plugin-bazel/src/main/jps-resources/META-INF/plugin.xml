@@ -25,7 +25,6 @@
     <depends>com.intellij.modules.java</depends>
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.platform</depends>
-    <depends>org.jetbrains.kotlin</depends>
 
     <depends optional="true" config-file="withAndroid.xml">org.jetbrains.android</depends>
     <depends optional="true" config-file="withCodeWithMe.xml">com.jetbrains.codeWithMe</depends>
@@ -33,6 +32,7 @@
     <depends optional="true" config-file="withDevKit.xml">DevKit</depends>
     <depends optional="true" config-file="withGo.xml">org.jetbrains.plugins.go</depends>
     <depends optional="true" config-file="withIdeStarter.xml">com.jetbrains.performancePlugin</depends>
+    <depends optional="true" config-file="withKotlin.xml">org.jetbrains.kotlin</depends>
     <depends optional="true" config-file="withPython.xml">com.intellij.modules.python</depends>
     <depends optional="true" config-file="withJunit.xml">JUnit</depends>
 
@@ -118,9 +118,6 @@
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.JavaSourceTypeIconProvider"/>
-        <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.KotlinSourceTypeIconProvider"/>
-        <!-- TODO: move to withKotlin.xml -->
-        <kotlinFacetEntityUpdater implementation="org.jetbrains.bazel.kotlin.sync.BazelKotlinFacetEntityUpdater"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -225,21 +222,6 @@
 
         <statistics.projectUsagesCollector implementation="org.jetbrains.plugins.bazel.fus.BazelProjectStatisticsCollector"/>
 
-    </extensions>
-
-    <extensions defaultExtensionNs="org.jetbrains.kotlin">
-        <projectConfigurator
-                implementation="org.jetbrains.bazel.kotlin.BazelKotlinProjectConfigurator"
-                order="first"
-        />
-
-        <!--suppress PluginXmlValidity -->
-        <supportsKotlinPluginMode supportsK2="true"/>
-
-        <!-- this is left for backward-compatibility with the first versions of 242,
-        it can be removed later -->
-        <!--suppress PluginXmlValidity -->
-        <supportsKotlinK2Mode/>
     </extensions>
 
     <actions>
@@ -515,7 +497,6 @@
         <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
 
         <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelJavaNewProjectWizard"/>
-        <newProjectWizard.kotlin.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelKotlinNewProjectWizard"/>
     </extensions>
 
     <actions>

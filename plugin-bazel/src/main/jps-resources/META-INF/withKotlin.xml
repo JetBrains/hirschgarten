@@ -1,0 +1,22 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="org.jetbrains.bazel">
+        <kotlinFacetEntityUpdater implementation="org.jetbrains.bazel.kotlin.sync.BazelKotlinFacetEntityUpdater"/>
+        <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.KotlinSourceTypeIconProvider"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <projectConfigurator implementation="org.jetbrains.bazel.kotlin.BazelKotlinProjectConfigurator" order="first"/>
+
+        <!--suppress PluginXmlValidity -->
+        <supportsKotlinPluginMode supportsK2="true"/>
+
+        <!-- this is left for backward-compatibility with the first versions of 242,
+        it can be removed later -->
+        <!--suppress PluginXmlValidity -->
+        <supportsKotlinK2Mode/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <newProjectWizard.kotlin.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelKotlinNewProjectWizard"/>
+    </extensions>
+</idea-plugin>
