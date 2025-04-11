@@ -4,9 +4,11 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
+import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.junit.jupiter.api.Test
 
 /**
@@ -31,9 +33,9 @@ class DisabledKotlinPluginTest : IdeStarterBaseProjectTest() {
     val commands =
       CommandChain()
         .takeScreenshot("startSync")
-//        .waitForBazelSync()
+        .waitForBazelSync()
         .waitForSmartMode()
-//        .exitApp()
+        .exitApp()
     createContext()
       .withDisabledPlugins(setOf("org.jetbrains.kotlin"))
       .runIDE(commands = commands, runTimeout = timeout)
