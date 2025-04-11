@@ -3,6 +3,7 @@ package org.jetbrains.bazel.compatibility
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
+import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
@@ -35,14 +36,19 @@ class DisabledKotlinPluginTest : IdeStarterBaseProjectTest() {
         .takeScreenshot("startSync")
         .waitForBazelSync()
         .waitForSmartMode()
+        .checkImportedModules()
+        .checkTargetsInTargetWidget()
         .exitApp()
+
     createContext()
       .withDisabledPlugins(setOf("org.jetbrains.kotlin"))
       .runIDE(commands = commands, runTimeout = timeout)
   }
 
-  private fun IDETestContext.withDisabledPlugins(pluginIds: Set<String>): IDETestContext {
-    pluginConfigurator.disablePlugins(pluginIds)
-    return this
-  }
+  private fun <T : CommandChain> T.checkImportedModules(): T = also { addCommand("${CMD_PREFIX}checkImportedModules") }
+
+  private fun <T : CommandChain> T.checkTargetsInTargetWidget(): T = also { addCommand("${CMD_PREFIX}checkTargetsInTargetWidget") }
+
+  private fun IDETestContext.withDisabledPlugins(pluginIds: Set<String>): IDETestContext =
+    also { pluginConfigurator.disablePlugins(pluginIds) }
 }

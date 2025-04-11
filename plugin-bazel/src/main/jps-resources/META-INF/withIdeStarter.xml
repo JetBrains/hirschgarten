@@ -11,6 +11,11 @@
                 implementation="org.jetbrains.bazel.run.coverage.ideStarter.BazelCoverageCommandProvider"/>
         <performancePlugin.commandProvider
                 implementation="org.jetbrains.bazel.nonmodule.sync.ideStarter.CheckNonModuleTargetsProvider"/>
-        <performancePlugin.commandProvider implementation="org.jetbrains.bazel.ui.ideStarter.UITestCommandProvider"/>
+        <performancePlugin.commandProvider
+                implementation="org.jetbrains.bazel.kotlin.sync.ideStarter.CheckImportedModulesProvider"/>
+        <performancePlugin.commandProvider
+                implementation="org.jetbrains.bazel.kotlin.sync.ideStarter.CheckTargetsInTargetWidgetProvider"/>
+        <performancePlugin.commandProvider
+                implementation="org.jetbrains.bazel.ui.ideStarter.UITestCommandProvider"/>
     </extensions>
 </idea-plugin>
