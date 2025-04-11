@@ -18,6 +18,7 @@ import com.intellij.ui.DocumentAdapter
 import com.intellij.util.Consumer
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
+import org.jetbrains.bazel.config.isBazelProject
 import javax.swing.SwingUtilities
 import javax.swing.event.DocumentEvent
 
@@ -26,7 +27,7 @@ class NewBazelPackageAction : DumbAwareAction() {
     val project = e.project
     val presentation: Presentation = e.presentation
     val view = e.getData(LangDataKeys.IDE_VIEW)
-    if (project == null || view == null || view.directories.isEmpty()) {
+    if (project == null || !project.isBazelProject || view == null || view.directories.isEmpty()) {
       presentation.isEnabledAndVisible = false
       return
     }
