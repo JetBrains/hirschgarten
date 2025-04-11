@@ -64,7 +64,7 @@ class BspJVMRunLineMarkerContributorTest : BasePlatformTestCase() {
         ?.nextSibling
         ?.nextSibling
     psiElement.shouldNotBeNull()
-    val runLineMarkerContributor = BspJVMRunLineMarkerContributor()
+    val runLineMarkerContributor = BspKotlinRunLineMarkerContributor()
 
     // when
     val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
@@ -85,7 +85,7 @@ class BspJVMRunLineMarkerContributorTest : BasePlatformTestCase() {
         ?.nextSibling
         ?.nextSibling
     psiElement.shouldNotBeNull()
-    val runLineMarkerContributor = BspJVMRunLineMarkerContributor()
+    val runLineMarkerContributor = BspKotlinRunLineMarkerContributor()
 
     // when
     val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
@@ -127,7 +127,7 @@ class BspJVMRunLineMarkerContributorTest : BasePlatformTestCase() {
         ?.nextSibling
         ?.nextSibling
     psiElement.shouldNotBeNull()
-    val runLineMarkerContributor = BspJVMRunLineMarkerContributor()
+    val runLineMarkerContributor = BspKotlinRunLineMarkerContributor()
 
     // when
     val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
@@ -148,7 +148,7 @@ class BspJVMRunLineMarkerContributorTest : BasePlatformTestCase() {
         ?.nextSibling
         ?.nextSibling
     psiElement.shouldNotBeNull()
-    val runLineMarkerContributor = BspJVMRunLineMarkerContributor()
+    val runLineMarkerContributor = BspKotlinRunLineMarkerContributor()
 
     // when
     val result = runLineMarkerContributor.getSingleTestFilter(psiElement)
