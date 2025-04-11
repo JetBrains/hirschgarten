@@ -19,6 +19,7 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
   private val enableLocalJvmActionsCheckBox: JBCheckBox
   private val useIntellijTestRunnerCheckBox: JBCheckBox
   private val enableBuildWithJpsCheckBox: JBCheckBox
+  private val hotswapEnabledCheckBox: JBCheckBox
 
   private var currentProjectSettings = project.bazelProjectSettings
 
@@ -27,6 +28,7 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
     // experimental features
     useIntellijTestRunnerCheckBox = initUseIntellijTestRunnerCheckBoxBox()
     enableLocalJvmActionsCheckBox = initEnableLocalJvmActionsCheckBox()
+    hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
 
     enableBuildWithJpsCheckBox = initEnableBuildWithJpsCheckBox()
   }
@@ -57,9 +59,18 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
       }
     }
 
+  private fun initHotSwapEnabledCheckBox(): JBCheckBox =
+    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.hotswap.enabled.checkbox.text")).apply {
+      isSelected = currentProjectSettings.hotSwapEnabled
+      addItemListener {
+        currentProjectSettings = currentProjectSettings.withNewHotSwapEnabled(isSelected)
+      }
+    }
+
   override fun createComponent(): JComponent =
     panel {
       row { cell(enableBuildWithJpsCheckBox).align(Align.FILL) }
+      row { cell(hotswapEnabledCheckBox).align(Align.FILL) }
       group(BazelPluginBundle.message("project.settings.local.runner.settings")) {
         row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
         row {

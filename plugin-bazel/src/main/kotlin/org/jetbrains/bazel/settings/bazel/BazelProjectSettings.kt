@@ -16,9 +16,9 @@ import kotlin.io.path.exists
 data class BazelProjectSettings(
   val projectViewPath: Path? = null,
   val buildifierExecutablePath: Path? = null,
-  val hotSwapEnabled: Boolean = true,
   val showExcludedDirectoriesAsSeparateNode: Boolean = true,
   // experimental settings
+  val hotSwapEnabled: Boolean = false,
   val enableLocalJvmActions: Boolean = false,
   val useIntellijTestRunner: Boolean = false,
   val enableBuildWithJps: Boolean = false,

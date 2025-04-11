@@ -26,7 +26,7 @@ import kotlin.io.path.pathString
 internal class BazelProjectSettingsConfigurable(private val project: Project) : SearchableConfigurable {
   private val projectViewPathField: TextFieldWithBrowseButton
   private val buildifierExecutablePathField: TextFieldWithBrowseButton
-  private val hotswapEnabledCheckBox: JBCheckBox
+
   private val showExcludedDirectoriesAsSeparateNodeCheckBox: JBCheckBox
 
   private var currentProjectSettings = project.bazelProjectSettings
@@ -34,7 +34,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
   init {
     projectViewPathField = initProjectViewFileField()
     buildifierExecutablePathField = initBuildifierExecutablePathField()
-    hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
     showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
   }
 
@@ -79,14 +78,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
       buildifierExecutablePathField.text.takeIf { it.isNotBlank() } ?: BuildifierUtil.detectBuildifierExecutable()?.absolutePath,
     )
 
-  private fun initHotSwapEnabledCheckBox(): JBCheckBox =
-    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.hotswap.enabled.checkbox.text")).apply {
-      isSelected = currentProjectSettings.hotSwapEnabled
-      addItemListener {
-        currentProjectSettings = currentProjectSettings.withNewHotSwapEnabled(isSelected)
-      }
-    }
-
   private fun initShowExcludedDirectoriesAsSeparateNodeCheckBox(): JBCheckBox =
     JBCheckBox(BazelPluginBundle.message("project.settings.plugin.show.excluded.directories.as.separate.node.checkbox.text")).apply {
       isSelected = currentProjectSettings.showExcludedDirectoriesAsSeparateNode
@@ -101,7 +92,6 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
       row(BazelPluginBundle.message("project.settings.buildifier.label")) {
         cell(buildifierExecutablePathField).align(Align.FILL).validationInfo { buildifierExecutableValidationInfo() }
       }
-      row { cell(hotswapEnabledCheckBox).align(Align.FILL) }
       row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
     }
 
