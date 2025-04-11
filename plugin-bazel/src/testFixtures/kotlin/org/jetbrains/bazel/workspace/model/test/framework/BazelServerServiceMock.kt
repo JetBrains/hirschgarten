@@ -26,7 +26,6 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
-import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -62,7 +61,6 @@ private val mockBuildServer =
     workspaceBuildTargetsResult = WorkspaceBuildTargetsResult(emptyList()),
     workspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
     workspaceLibrariesResult = WorkspaceLibrariesResult(emptyList()),
-    workspaceNonModuleTargetsResult = NonModuleTargetsResult(emptyList()),
     jvmBinaryJarsResult = JvmBinaryJarsResult(emptyList()),
     workspaceInvalidTargetsResult = WorkspaceInvalidTargetsResult(emptyList()),
     workspaceBazelRepoMappingResult = WorkspaceBazelRepoMappingResult(emptyMap(), emptyMap()),

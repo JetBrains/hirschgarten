@@ -35,12 +35,6 @@ interface JoinedBuildServer {
 
   suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult
 
-  /**
-   * Returns the list of all targets in the workspace that are neither modules nor libraries, but should be displayed in the UI.
-   */
-
-  suspend fun workspaceNonModuleTargets(): NonModuleTargetsResult
-
   suspend fun workspaceDirectories(): WorkspaceDirectoriesResult
 
   suspend fun workspaceInvalidTargets(): WorkspaceInvalidTargetsResult

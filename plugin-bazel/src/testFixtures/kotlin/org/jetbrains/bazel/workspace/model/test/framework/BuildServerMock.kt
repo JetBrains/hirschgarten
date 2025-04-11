@@ -26,7 +26,6 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
-import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.RunParams
@@ -61,7 +60,6 @@ class BuildServerMock(
   private val cppOptionsResult: CppOptionsResult? = null,
   private val workspaceLibrariesResult: WorkspaceLibrariesResult? = null,
   private val workspaceGoLibrariesResult: WorkspaceGoLibrariesResult? = null,
-  private val workspaceNonModuleTargetsResult: NonModuleTargetsResult? = null,
   private val workspaceDirectoriesResult: WorkspaceDirectoriesResult? = null,
   private val workspaceInvalidTargetsResult: WorkspaceInvalidTargetsResult? = null,
   private val analysisDebugResult: AnalysisDebugResult? = null,
@@ -108,8 +106,6 @@ class BuildServerMock(
   override suspend fun workspaceLibraries(): WorkspaceLibrariesResult = wrapInFuture(workspaceLibrariesResult)
 
   override suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult = wrapInFuture(workspaceGoLibrariesResult)
-
-  override suspend fun workspaceNonModuleTargets(): NonModuleTargetsResult = wrapInFuture(workspaceNonModuleTargetsResult)
 
   override suspend fun workspaceDirectories(): WorkspaceDirectoriesResult = wrapInFuture(workspaceDirectoriesResult)
 

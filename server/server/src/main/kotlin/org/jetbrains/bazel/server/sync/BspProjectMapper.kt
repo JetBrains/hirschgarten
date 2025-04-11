@@ -48,7 +48,6 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.PythonOptionsItem
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
@@ -73,7 +72,12 @@ class BspProjectMapper(
 ) {
   fun workspaceTargets(project: AspectSyncProject): WorkspaceBuildTargetsResult {
     val buildTargets = project.modules.map { it.toBuildTarget() }
-    return WorkspaceBuildTargetsResult(buildTargets, hasError = project.hasError)
+    val nonModuleTargets =
+      project.nonModuleTargets
+        .map {
+          it.toBuildTarget()
+        }.filter { it.capabilities.canRun || it.capabilities.canTest } // Filter out non-module targets that would just clutter the ui
+    return WorkspaceBuildTargetsResult(buildTargets + nonModuleTargets, hasError = project.hasError)
   }
 
   fun workspaceInvalidTargets(project: AspectSyncProject): WorkspaceInvalidTargetsResult =
@@ -104,14 +108,6 @@ class BspProjectMapper(
         )
       }
     return WorkspaceGoLibrariesResult(libraries)
-  }
-
-  fun workspaceNonModuleTargets(project: AspectSyncProject): NonModuleTargetsResult {
-    val nonModuleTargets =
-      project.nonModuleTargets.map {
-        it.toBuildTarget()
-      }
-    return NonModuleTargetsResult(nonModuleTargets)
   }
 
   fun workspaceDirectories(project: Project): WorkspaceDirectoriesResult {

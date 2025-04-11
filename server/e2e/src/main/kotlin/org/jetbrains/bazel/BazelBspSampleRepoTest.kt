@@ -26,7 +26,6 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
-import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import org.jetbrains.bsp.protocol.ScalaPlatform
 import org.jetbrains.bsp.protocol.SourceItem
@@ -121,7 +120,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       jvmRunEnvironment(),
       jvmTestEnvironment(),
       javacOptionsResult(),
-      nonModuleTargets(),
       buildTargetWithOriginId(),
     )
 
@@ -693,81 +691,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     ) { testClient.testJavacOptions(30.seconds, params, expectedResult) }
   }
 
-  private fun nonModuleTargets(): BazelBspTestScenarioStep {
-    val expectedTargets =
-      NonModuleTargetsResult(
-        listOf(
-          BuildTarget(
-            Label.parse("@//genrule:foo"),
-            listOf("application"),
-            emptyList(),
-            emptyList(),
-            BuildTargetCapabilities(
-              canCompile = true,
-              canTest = false,
-              canRun = true,
-            ),
-            baseDirectory = Path("$workspaceDir/genrule/"),
-            sources = emptyList(),
-            resources = emptyList(),
-          ),
-          BuildTarget(
-            Label.parse("@//target_with_resources:resources"),
-            listOf("library"),
-            emptyList(),
-            emptyList(),
-            BuildTargetCapabilities(
-              canCompile = true,
-              canTest = false,
-              canRun = false,
-            ),
-            baseDirectory = Path("$workspaceDir/target_with_resources/"),
-            sources = emptyList(),
-            resources = emptyList(),
-          ),
-          BuildTarget(
-            Label.parse("@//target_without_java_info:filegroup"),
-            listOf("application"),
-            listOf("java"),
-            emptyList(),
-            BuildTargetCapabilities(
-              canCompile = true,
-              canTest = false,
-              canRun = true,
-            ),
-            baseDirectory = Path("$workspaceDir/target_without_java_info/"),
-            sources = emptyList(),
-            resources = emptyList(),
-          ),
-          BuildTarget(
-            Label.parse("@//target_without_java_info:genrule"),
-            listOf("application"),
-            listOf("java", "kotlin"),
-            emptyList(),
-            BuildTargetCapabilities(
-              canCompile = true,
-              canTest = false,
-              canRun = true,
-            ),
-            baseDirectory = Path("$workspaceDir/target_without_java_info/"),
-            sources = emptyList(),
-            resources = emptyList(),
-          ),
-        ),
-      )
-
-    val client = createTestkitClient()
-
-    return BazelBspTestScenarioStep(
-      "non module targets",
-    ) {
-      client.test(30.seconds) { session ->
-        val targets = session.server.workspaceNonModuleTargets()
-        client.assertJsonEquals(expectedTargets, targets)
-      }
-    }
-  }
-
   private fun buildTargetWithOriginId(): BazelBspTestScenarioStep {
     val targetId = Label.parse("$targetPrefix//java_targets:java_library")
     val originId = "build-target-origin-id"
@@ -1219,6 +1142,66 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           ),
         resources = emptyList(),
       )
+
+    val nonModuleTargets =
+      listOf(
+        BuildTarget(
+          Label.parse("@//genrule:foo"),
+          listOf("application"),
+          emptyList(),
+          emptyList(),
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = true,
+          ),
+          baseDirectory = Path("$workspaceDir/genrule/"),
+          sources = emptyList(),
+          resources = emptyList(),
+        ),
+        BuildTarget(
+          Label.parse("@//target_with_resources:resources"),
+          listOf("library"),
+          emptyList(),
+          emptyList(),
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = false,
+          ),
+          baseDirectory = Path("$workspaceDir/target_with_resources/"),
+          sources = emptyList(),
+          resources = emptyList(),
+        ),
+        BuildTarget(
+          Label.parse("@//target_without_java_info:filegroup"),
+          listOf("application"),
+          listOf("java"),
+          emptyList(),
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = true,
+          ),
+          baseDirectory = Path("$workspaceDir/target_without_java_info/"),
+          sources = emptyList(),
+          resources = emptyList(),
+        ),
+        BuildTarget(
+          Label.parse("@//target_without_java_info:genrule"),
+          listOf("application"),
+          listOf("java", "kotlin"),
+          emptyList(),
+          BuildTargetCapabilities(
+            canCompile = true,
+            canTest = false,
+            canRun = true,
+          ),
+          baseDirectory = Path("$workspaceDir/target_without_java_info/"),
+          sources = emptyList(),
+          resources = emptyList(),
+        ),
+      )
     return WorkspaceBuildTargetsResult(
       listOfNotNull(
         javaTargetsJavaBinary,
@@ -1236,7 +1219,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         environmentVariablesJavaLibrary,
         environmentVariablesJavaTest,
         targetWithJavacExportsJavaLibrary.takeIf { majorBazelVersion > 5 },
-      ),
+      ) + nonModuleTargets,
     )
   }
 }
