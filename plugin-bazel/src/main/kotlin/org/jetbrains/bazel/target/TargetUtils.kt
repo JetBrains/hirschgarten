@@ -23,8 +23,7 @@ import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
-import org.jetbrains.bazel.magicmetamodel.findNameProvider
+import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
@@ -94,7 +93,6 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     fileToTarget: Map<Path, List<Label>>,
     libraryItems: List<LibraryItem>?,
     libraryModules: List<JavaModule>,
-    nameProvider: TargetNameReformatProvider,
   ) {
     this.labelToTargetInfo = targetIdToTargetInfo.mapKeys { it.key }
     moduleIdToTarget =
@@ -104,7 +102,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     libraryIdToTarget =
       libraryItems
         ?.associate { library ->
-          nameProvider.invoke(library.id) to library.id
+          library.id.formatAsModuleName(project) to library.id
         }.orEmpty()
 
     this.fileToTarget = fileToTarget
@@ -278,8 +276,7 @@ val com.intellij.openapi.module.Module.moduleEntity: ModuleEntity?
 
 @InternalApi
 fun BuildTarget.getModule(project: Project): com.intellij.openapi.module.Module? {
-  val moduleNameProvider = project.findNameProvider()
-  val moduleName = moduleNameProvider(this.id)
+  val moduleName = this.id.formatAsModuleName(project)
   return ModuleManager.getInstance(project).findModuleByName(moduleName)
 }
 

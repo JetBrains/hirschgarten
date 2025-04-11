@@ -25,7 +25,6 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.extensionPoints.shouldImportJvmBinaryJars
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
-import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
@@ -243,17 +242,16 @@ class CollectProjectDetailsTask(
     ) {
       coroutineScope {
         val projectBasePath = project.rootDir.toNioPath()
-        val nameProvider = project.findNameProvider()
         val libraryGraph = LibraryGraph(projectDetails.libraries.orEmpty())
 
         val libraries =
           bspTracer.spanBuilder("create.libraries.ms").use {
-            libraryGraph.createLibraries(nameProvider)
+            libraryGraph.createLibraries(project)
           }
 
         val libraryModules =
           bspTracer.spanBuilder("create.library.modules.ms").use {
-            libraryGraph.createLibraryModules(nameProvider, projectDetails.defaultJdkName)
+            libraryGraph.createLibraryModules(project, projectDetails.defaultJdkName)
           }
 
         val targetIdToModuleDetails =
@@ -284,7 +282,6 @@ class CollectProjectDetailsTask(
                 fileToTarget = fileToTarget,
                 projectBasePath = projectBasePath,
                 project = project,
-                nameProvider = nameProvider,
                 isAndroidSupportEnabled = BazelFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
               )
 
@@ -295,7 +292,6 @@ class CollectProjectDetailsTask(
                 fileToTarget,
                 projectDetails.libraries,
                 libraryModules,
-                nameProvider,
               )
             }
             targetIdToModuleEntityMap

@@ -37,8 +37,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
-import org.jetbrains.bazel.magicmetamodel.findNameProvider
+import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
@@ -126,7 +125,6 @@ private fun Project.doWeCareAboutIt(): Boolean = this.isBazelProject && this.isT
 private fun VFileEvent.process(project: Project) {
   val workspaceModel = WorkspaceModel.getInstance(project)
   val storage = workspaceModel.currentSnapshot
-  val moduleNameProvider = project.findNameProvider()
   val targetUtils = project.targetUtils
 
   val newFile = this.getNewFile()
@@ -141,7 +139,6 @@ private fun VFileEvent.process(project: Project) {
         workspaceModel = workspaceModel,
         targetUtils = targetUtils,
         storage = storage,
-        moduleNameProvider = moduleNameProvider,
       )
     }
 
@@ -151,7 +148,6 @@ private fun VFileEvent.process(project: Project) {
         project = project,
         workspaceModel = workspaceModel,
         storage = storage,
-        moduleNameProvider = moduleNameProvider,
       )
     }
   }.invokeOnCompletion { targetUtils.fireSyncListeners(false) }
@@ -169,7 +165,6 @@ private suspend fun processFileCreated(
   project: Project,
   workspaceModel: WorkspaceModel,
   storage: ImmutableEntityStorage,
-  moduleNameProvider: TargetNameReformatProvider,
 ) {
   // ProjectFileIndex::getModulesForFile is not compatible with IJ 2024, but it's not important enough to bother with SDK-compat
   // TODO: replace once 243 is dropped
@@ -189,7 +184,7 @@ private suspend fun processFileCreated(
     ?.let { targets ->
       val modules =
         targets
-          .mapNotNull { it.toModuleEntity(storage, moduleNameProvider) }
+          .mapNotNull { it.toModuleEntity(storage, project) }
 //          .filter { !existingModules.contains(it) } // 251
           .filter { it != existingModule } // 243
       modules.forEach { url.addToModule(workspaceModel, it, newFile.extension) }
@@ -204,7 +199,6 @@ private suspend fun processFileRemoved(
   workspaceModel: WorkspaceModel,
   targetUtils: TargetUtils,
   storage: ImmutableEntityStorage,
-  moduleNameProvider: TargetNameReformatProvider,
 ) {
   val oldUrl = workspaceModel.getVirtualFileUrlManager().fromPath(oldFilePath)
   val oldUri = oldFilePath.toNioPathOrNull()!!
@@ -212,7 +206,7 @@ private suspend fun processFileRemoved(
   val modules =
     targetUtils
       .getTargetsForPath(oldUri)
-      .mapNotNull { it.toModuleEntity(storage, moduleNameProvider) }
+      .mapNotNull { it.toModuleEntity(storage, project) }
   modules.forEach {
     oldUrl.removeFromModule(workspaceModel, it)
     newUrl?.removeFromModule(workspaceModel, it) // IntelliJ might have already changed the content root's path to the new one
@@ -240,9 +234,8 @@ private suspend fun askForInverseSources(project: Project, fileUrl: VirtualFileU
       .buildTargetInverseSources(InverseSourcesParams(TextDocumentIdentifier(fileUrl.toPath())))
   }
 
-private fun Label.toModuleEntity(storage: ImmutableEntityStorage, moduleNameProvider: TargetNameReformatProvider): ModuleEntity? {
-  val moduleName = moduleNameProvider(this)
-  val moduleId = ModuleId(moduleName)
+private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? {
+  val moduleId = ModuleId(this.formatAsModuleName(project))
   return storage.resolve(moduleId)
 }
 

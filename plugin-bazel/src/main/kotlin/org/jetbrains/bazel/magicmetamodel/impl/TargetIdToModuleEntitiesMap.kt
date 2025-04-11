@@ -8,7 +8,6 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
-import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
 import org.jetbrains.bazel.workspacemodel.entities.Module
@@ -26,14 +25,12 @@ object TargetIdToModuleEntitiesMap {
     fileToTarget: Map<Path, List<Label>>,
     projectBasePath: Path,
     project: Project,
-    nameProvider: TargetNameReformatProvider,
     isAndroidSupportEnabled: Boolean,
   ): Map<Label, List<Module>> {
     val moduleDetailsToJavaModuleTransformer =
       ModuleDetailsToJavaModuleTransformer(
         targetIdToTargetInfo,
         fileToTarget,
-        nameProvider,
         projectBasePath,
         project,
         isAndroidSupportEnabled,

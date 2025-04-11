@@ -6,19 +6,16 @@ import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BazelBuildTarge
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.utils.StringUtils
 
-typealias TargetNameReformatProvider = (Label) -> String
-
-fun Project.findNameProvider(): TargetNameReformatProvider =
-  { buildTarget ->
-    val bazelBuildTargetClassifier = BazelBuildTargetClassifier(this)
-    val targetName = bazelBuildTargetClassifier.calculateBuildTargetName(buildTarget).sanitizeName()
-    val prefix =
-      bazelBuildTargetClassifier
-        .calculateBuildTargetPath(buildTarget)
-        .shortenTargetPath(targetName.length)
-        .joinToString(".") { pathElement -> pathElement.sanitizeName() }
-    if (prefix.isBlank()) targetName else "$prefix.$targetName"
-  }
+fun Label.formatAsModuleName(project: Project): String {
+  val bazelBuildTargetClassifier = BazelBuildTargetClassifier(project)
+  val targetName = bazelBuildTargetClassifier.calculateBuildTargetName(this).sanitizeName()
+  val prefix =
+    bazelBuildTargetClassifier
+      .calculateBuildTargetPath(this)
+      .shortenTargetPath(targetName.length)
+      .joinToString(".") { pathElement -> pathElement.sanitizeName() }
+  return if (prefix.isBlank()) targetName else "$prefix.$targetName"
+}
 
 private fun List<String>.shortenTargetPath(targetNameLength: Int = 0): List<String> =
   if (BazelFeatureFlags.isShortenModuleLibraryNamesEnabled) {
