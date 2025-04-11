@@ -34,8 +34,7 @@ import com.jetbrains.python.sdk.guessedLanguageLevel
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
-import org.jetbrains.bazel.magicmetamodel.findNameProvider
+import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
@@ -62,7 +61,6 @@ class PythonProjectSync : ProjectSyncHook {
 
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     val pythonTargets = environment.buildTargets.calculatePythonTargets()
-    val moduleNameProvider = environment.project.findNameProvider()
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
 
     val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
@@ -70,7 +68,7 @@ class PythonProjectSync : ProjectSyncHook {
     val defaultSdk = getSystemSdk()
 
     pythonTargets.forEach {
-      val moduleName = moduleNameProvider(it.id)
+      val moduleName = it.id.formatAsModuleName(environment.project)
       val moduleSourceEntity = BspModuleEntitySource(moduleName)
       val targetSourceDependencies = sourceDependencies[it.id] ?: emptyList()
       val sourceDependencyLibrary =
@@ -82,7 +80,7 @@ class PythonProjectSync : ProjectSyncHook {
         moduleName = moduleName,
         entitySource = moduleSourceEntity,
         virtualFileUrlManager = virtualFileUrlManager,
-        moduleNameProvider = moduleNameProvider,
+        project = environment.project,
         sdk = sdks[it.id] ?: defaultSdk,
         sourceDependencyLibrary = sourceDependencyLibrary,
       )
@@ -195,7 +193,7 @@ class PythonProjectSync : ProjectSyncHook {
     moduleName: String,
     entitySource: BspModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-    moduleNameProvider: TargetNameReformatProvider,
+    project: Project,
     sdk: Sdk?,
     sourceDependencyLibrary: LibraryEntity.Builder? = null,
   ): ModuleEntity {
@@ -210,7 +208,7 @@ class PythonProjectSync : ProjectSyncHook {
     val dependencies =
       target.dependencies.map {
         ModuleDependency(
-          module = ModuleId(moduleNameProvider(it)),
+          module = ModuleId(it.formatAsModuleName(project)),
           exported = true,
           scope = DependencyScope.COMPILE,
           productionOnTest = true,

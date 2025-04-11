@@ -1,10 +1,11 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import com.intellij.openapi.module.StdModuleTypes
+import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
+import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
@@ -76,11 +77,11 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
     }
   }
 
-  fun createLibraries(nameProvider: TargetNameReformatProvider): List<Library> =
+  fun createLibraries(project: Project): List<Library> =
     libraries
       .map {
         Library(
-          displayName = nameProvider(it.id),
+          displayName = it.id.formatAsModuleName(project),
           iJars = it.ijars,
           classJars = it.jars,
           sourceJars = it.sourceJars,
@@ -88,12 +89,12 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
         )
       }
 
-  fun createLibraryModules(nameProvider: TargetNameReformatProvider, defaultJdkName: String?): List<JavaModule> {
+  fun createLibraryModules(project: Project, defaultJdkName: String?): List<JavaModule> {
     if (!BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled) return emptyList()
 
     return libraries
       .map { library ->
-        val libraryName = nameProvider(library.id)
+        val libraryName = library.id.formatAsModuleName(project)
         val libraryModuleName = libraryName.addLibraryModulePrefix()
         JavaModule(
           genericModuleInfo =
@@ -103,7 +104,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
               librariesDependencies = listOf(IntermediateLibraryDependency(libraryName, true)),
               modulesDependencies =
                 library.dependencies.map { targetId ->
-                  val rawId = nameProvider(targetId)
+                  val rawId = targetId.formatAsModuleName(project)
                   val id = if (targetId.isLibraryId()) rawId.addLibraryModulePrefix() else rawId
                   IntermediateModuleDependency(id)
                 },
