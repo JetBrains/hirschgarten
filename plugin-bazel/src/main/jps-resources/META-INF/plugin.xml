@@ -109,8 +109,9 @@
                             order="last"/>
         <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericTestHandlerProvider"
                             order="last"/>
-        <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"/>
-        <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.BazelBinPathSyncHook"/>
+        <!-- Dependency: JvmSyncHook -> TargetUtils#updateComputedFields -> toShortString -> BazelRepoMappingService -->
+        <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook" order="after BazelRepoMappingSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.PathSyncHook"/>
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.JavaSourceTypeIconProvider"/>
@@ -184,14 +185,8 @@
                      description="Shorten module/library names by hashing the first parts and retaining the others"
                      key="bsp.shorten.module.library.names"/>
         <registryKey defaultValue="false"
-                     description="Retrieve targets for file from its ancestors"
-                     key="bsp.retrieve.targets.for.file.from.ancestors"/>
-        <registryKey defaultValue="false"
                      description="Wrap libraries inside modules to form a proper dependency graph between libraries. Enabled by default with K2 mode"
                      key="bsp.wrap.libraries.inside.modules"/>
-        <registryKey defaultValue="false"
-                     description="Enable phased sync. Phased sync consists of multiple steps, making code available sooner with limited dependency resolution"
-                     key="bsp.use.phased.sync"/>
         <registryKey defaultValue="true"
                      description="Execute second phase of the phased sync. `bsp.use.phased.sync` has to be enabled to use this flag. It should be used only for testing purposes."
                      key="bsp.execute.second.phase.on.sync"/>
@@ -287,7 +282,7 @@
         <projectSyncHook implementation="org.jetbrains.bazel.services.InvalidTargetsProjectSyncHook"/>
         <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
-        <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook" id="BazelRepoMappingSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.nonmodule.sync.NonModuleTargetsSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
         <additionalProjectTaskRunnerProvider
@@ -514,6 +509,7 @@
                      description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
                      key="bazel.merge.source.roots"/>
         <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
+        <searchEverywhereContributor implementation="org.jetbrains.bazel.ui.widgets.LabelSearchEverywhereContributor$Factory"/>
 
         <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelJavaNewProjectWizard"/>
         <newProjectWizard.kotlin.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelKotlinNewProjectWizard"/>

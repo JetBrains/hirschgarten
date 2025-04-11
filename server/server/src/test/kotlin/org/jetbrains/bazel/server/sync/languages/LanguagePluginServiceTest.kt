@@ -210,10 +210,10 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.JAVA))
 
       // when
-      val result = plugin.calculateSourceRootAndAdditionalData(filePath)
+      val result = plugin.calculateJvmPackagePrefix(filePath)
 
       // then
-      result?.jvmPackagePrefix shouldBe "org.jetbrains.bazel.server.sync.languages.java"
+      result shouldBe "org.jetbrains.bazel.server.sync.languages.java"
     }
 
     @Test
@@ -226,7 +226,7 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.JAVA))
 
       // when
-      val result = plugin.calculateSourceRootAndAdditionalData(filePath)
+      val result = plugin.calculateJvmPackagePrefix(filePath)
 
       // then
       result shouldBe null
@@ -251,10 +251,10 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.JAVA))
 
       // when
-      val result = plugin.calculateSourceRootAndAdditionalData(filePath)
+      val result = plugin.calculateJvmPackagePrefix(filePath)
 
       // then
-      result?.jvmPackagePrefix shouldBe "org.jetbrains.bazel.server.sync.languages"
+      result shouldBe "org.jetbrains.bazel.server.sync.languages"
     }
 
     @Test
@@ -276,10 +276,10 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.SCALA))
 
       // when
-      val result = plugin.calculateSourceRootAndAdditionalData(filePath)
+      val result = plugin.calculateJvmPackagePrefix(filePath)
 
       // then
-      result?.jvmPackagePrefix shouldBe "org.jetbrains.bazel.server.sync.languages"
+      result shouldBe "org.jetbrains.bazel.server.sync.languages"
     }
 
     @Test
@@ -302,10 +302,10 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.SCALA))
 
       // when
-      val result = plugin.calculateSourceRootAndAdditionalData(filePath)
+      val result = plugin.calculateJvmPackagePrefix(filePath)
 
       // then
-      result?.jvmPackagePrefix shouldBe "org.jetbrains.bazel.server.sync.languages.scala"
+      result shouldBe "org.jetbrains.bazel.server.sync.languages.scala"
     }
 
     @Test
@@ -331,10 +331,10 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.SCALA))
 
       // when
-      val result = plugin.calculateSourceRootAndAdditionalData(filePath)
+      val result = plugin.calculateJvmPackagePrefix(filePath)
 
       // then
-      result?.jvmPackagePrefix shouldBe "org.jetbrains.bazel.server.sync.languages.scala"
+      result shouldBe "org.jetbrains.bazel.server.sync.languages.scala"
     }
 
     @Test
@@ -347,7 +347,7 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.SCALA))
 
       // when
-      val result = plugin.calculateSourceRootAndAdditionalData(filePath)
+      val result = plugin.calculateJvmPackagePrefix(filePath)
 
       // then
       result shouldBe null
@@ -370,10 +370,10 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.KOTLIN))
 
       // when
-      val result = plugin.calculateSourceRootAndAdditionalData(filePath)
+      val result = plugin.calculateJvmPackagePrefix(filePath)
 
       // then
-      result?.jvmPackagePrefix shouldBe "org.jetbrains.bazel.server.sync.languages.kotlin"
+      result shouldBe "org.jetbrains.bazel.server.sync.languages.kotlin"
     }
 
     @Test
@@ -386,7 +386,7 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.KOTLIN))
 
       // when
-      val result = plugin.calculateSourceRootAndAdditionalData(filePath)
+      val result = plugin.calculateJvmPackagePrefix(filePath)
 
       // then
       result shouldBe null
@@ -407,7 +407,7 @@ class LanguagePluginServiceTest {
       val plugin = languagePluginsService.getPlugin(hashSetOf())
 
       // when
-      val result = plugin.calculateSourceRootAndAdditionalData(filePath)
+      val result = plugin.calculateJvmPackagePrefix(filePath)
 
       // then
       result shouldBe null

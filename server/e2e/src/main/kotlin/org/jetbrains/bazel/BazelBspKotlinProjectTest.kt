@@ -12,6 +12,7 @@ import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
+import org.jetbrains.bsp.protocol.WorkspaceNameResult
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.seconds
 
@@ -37,6 +38,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
   override fun scenarioSteps(): List<BazelBspTestScenarioStep> =
     listOf(
       compareWorkspaceTargetsResults(),
+      compareBazelWorkspaceNameResults(),
     )
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
@@ -274,6 +276,19 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "compare workspace targets results",
     ) { testClient.testWorkspaceTargets(140.seconds, expectedWorkspaceBuildTargetsResult()) }
+
+  private fun compareBazelWorkspaceNameResults(): BazelBspTestScenarioStep =
+    BazelBspTestScenarioStep(
+      "compare workspace targets results",
+    ) {
+      val workspaceName =
+        if (isBzlmod) {
+          "_main"
+        } else {
+          "kt_prj"
+        }
+      testClient.testWorkspaceName(140.seconds, WorkspaceNameResult(workspaceName = workspaceName))
+    }
 
   companion object {
     @JvmStatic

@@ -2,4 +2,7 @@
     <extensions defaultExtensionNs="org.jetbrains.bazel">
         <localJvmRunnerRunConfigurationProvider implementation="org.jetbrains.bazel.jvm.junit.JunitLocalJvmRunnerRunConfigurationProvider"/>
     </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <runConfigurationExtension implementation="org.jetbrains.bazel.jvm.junit.JUnitRunConfigurationExtension"/>
+    </extensions>
 </idea-plugin>

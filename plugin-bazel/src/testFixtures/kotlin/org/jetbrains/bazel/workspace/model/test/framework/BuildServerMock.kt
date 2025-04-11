@@ -45,6 +45,7 @@ import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
+import org.jetbrains.bsp.protocol.WorkspaceNameResult
 
 class BuildServerMock(
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
@@ -141,6 +142,8 @@ class BuildServerMock(
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = wrapInFuture(workspaceBazelRepoMappingResult)
 
   override suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = WorkspaceBazelBinPathResult("/path/to/bazel-bin")
+
+  override suspend fun workspaceName(): WorkspaceNameResult = WorkspaceNameResult("_main")
 
   override suspend fun workspaceContext(): WorkspaceContext = wrapInFuture(workspaceContextResult)
 

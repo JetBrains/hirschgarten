@@ -24,6 +24,7 @@ import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
+import org.jetbrains.bsp.protocol.WorkspaceNameResult
 import org.jetbrains.bsp.testkit.JsonComparator
 import java.nio.file.Path
 import kotlin.time.Duration
@@ -100,6 +101,13 @@ class TestClient(
   fun testWorkspaceTargets(timeout: Duration, expectedResult: WorkspaceBuildTargetsResult) {
     test(timeout) { session ->
       val result = session.server.workspaceBuildTargets()
+      assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  fun testWorkspaceName(timeout: Duration, expectedResult: WorkspaceNameResult) {
+    test(timeout) { session ->
+      val result = session.server.workspaceName()
       assertJsonEquals(expectedResult, result)
     }
   }

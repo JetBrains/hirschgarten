@@ -66,6 +66,7 @@ object GitHub : Project({
         buildType(IdeStarterTests.TestResultsTreeTestGitHub)
         buildType(IdeStarterTests.ImportRunConfigurationsTestGitHub)
         buildType(IdeStarterTests.NonModuleTargetsTestGitHub)
+        buildType(IdeStarterTests.RunAllTestsActionTestGitHub)
         buildType(ServerE2eTests.SampleRepoGitHub)
         buildType(ServerE2eTests.LocalJdkGitHub)
         buildType(ServerE2eTests.RemoteJdkGitHub)
@@ -82,7 +83,7 @@ object GitHub : Project({
         buildType(ServerE2eTests.PartialSyncGitHub)
         buildType(ServerE2eTests.ExternalAutoloadsGitHub)
         buildType(ServerE2eTests.NestedModulesGitHub)
-//        buildType(StaticAnalysis.HirschgartenGitHub)
+        buildType(StaticAnalysis.HirschgartenGitHub)
 //        buildType(StaticAnalysis.AndroidBazelRulesGitHub)
 //        buildType(StaticAnalysis.AndroidTestdpcGitHub)
         buildType(StaticAnalysis.BazelGitHub)
@@ -131,6 +132,7 @@ object GitHub : Project({
       IdeStarterTests.TestResultsTreeTestGitHub,
       IdeStarterTests.ImportRunConfigurationsTestGitHub,
       IdeStarterTests.NonModuleTargetsTestGitHub,
+      IdeStarterTests.RunAllTestsActionTestGitHub,
       ServerE2eTests.SampleRepoGitHub,
       ServerE2eTests.LocalJdkGitHub,
       ServerE2eTests.RemoteJdkGitHub,
@@ -147,7 +149,7 @@ object GitHub : Project({
       ServerE2eTests.PartialSyncGitHub,
       ServerE2eTests.NestedModulesGitHub,
       ServerE2eTests.ExternalAutoloadsGitHub,
-//      StaticAnalysis.HirschgartenGitHub,
+      StaticAnalysis.HirschgartenGitHub,
 //      StaticAnalysis.AndroidBazelRulesGitHub,
 //      StaticAnalysis.AndroidTestdpcGitHub,
       StaticAnalysis.BazelGitHub,
@@ -184,6 +186,7 @@ object Space : Project({
         buildType(IdeStarterTests.TestResultsTreeTestSpace)
         buildType(IdeStarterTests.ImportRunConfigurationsTestSpace)
         buildType(IdeStarterTests.NonModuleTargetsTestSpace)
+        buildType(IdeStarterTests.RunAllTestsActionTestSpace)
         buildType(ServerE2eTests.SampleRepoSpace)
         buildType(ServerE2eTests.LocalJdkSpace)
         buildType(ServerE2eTests.RemoteJdkSpace)
@@ -200,7 +203,7 @@ object Space : Project({
         buildType(ServerE2eTests.PartialSyncSpace)
         buildType(ServerE2eTests.NestedModulesSpace)
         buildType(ServerE2eTests.ExternalAutoloadsSpace)
-//        buildType(StaticAnalysis.HirschgartenSpace)
+        buildType(StaticAnalysis.HirschgartenSpace)
 //        buildType(StaticAnalysis.AndroidBazelRulesSpace)
 //        buildType(StaticAnalysis.AndroidTestdpcSpace)
         buildType(StaticAnalysis.BazelSpace)
@@ -249,6 +252,7 @@ object Space : Project({
       IdeStarterTests.TestResultsTreeTestSpace,
       IdeStarterTests.ImportRunConfigurationsTestSpace,
       IdeStarterTests.NonModuleTargetsTestSpace,
+      IdeStarterTests.RunAllTestsActionTestSpace,
       ServerE2eTests.SampleRepoSpace,
       ServerE2eTests.LocalJdkSpace,
       ServerE2eTests.RemoteJdkSpace,
@@ -265,7 +269,7 @@ object Space : Project({
       ServerE2eTests.PartialSyncSpace,
       ServerE2eTests.NestedModulesSpace,
       ServerE2eTests.ExternalAutoloadsSpace,
-//      StaticAnalysis.HirschgartenSpace,
+      StaticAnalysis.HirschgartenSpace,
 //      StaticAnalysis.AndroidBazelRulesSpace,
 //      StaticAnalysis.AndroidTestdpcSpace,
       StaticAnalysis.BazelSpace,

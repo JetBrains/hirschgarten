@@ -69,7 +69,7 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData(packageName)
+    calculatedSourceRoot shouldBe packageName
   }
 
   @Test
@@ -95,7 +95,7 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData(packageName)
+    calculatedSourceRoot shouldBe packageName
   }
 
   @Test
@@ -121,7 +121,7 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData("com.example")
+    calculatedSourceRoot shouldBe "com.example"
   }
 
   @Test
@@ -147,7 +147,7 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData("com.example")
+    calculatedSourceRoot shouldBe "com.example"
   }
 
   @Test
@@ -174,6 +174,6 @@ class JVMLanguagePluginParserTest {
     val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe SourceRootAndData(packageName)
+    calculatedSourceRoot shouldBe packageName
   }
 }

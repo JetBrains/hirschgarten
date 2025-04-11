@@ -48,6 +48,7 @@ import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
+import org.jetbrains.bsp.protocol.WorkspaceNameResult
 
 class BspServerApi(
   private val projectSyncService: ProjectSyncService,
@@ -122,6 +123,8 @@ class BspServerApi(
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = projectSyncService.workspaceBazelRepoMapping()
 
   override suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = projectSyncService.workspaceBazelBinPath()
+
+  override suspend fun workspaceName(): WorkspaceNameResult = projectSyncService.workspaceName()
 
   override suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
     projectSyncService.resolveLocalToRemote(params)
