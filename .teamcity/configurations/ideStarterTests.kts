@@ -127,6 +127,14 @@ sealed class NonModuleTargetsTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/nonmodule/sync:NonModuleTargetsTest"
 )
 
+sealed class DisabledKotlinPluginTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Sync project with disabled kotlin plugin test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:DisabledKotlinPluginTest"
+)
+
 object HotswapTestGitHub : HotswapTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
@@ -196,5 +204,13 @@ object NonModuleTargetsTestGitHub : NonModuleTargetsTest(
 )
 
 object NonModuleTargetsTestSpace : NonModuleTargetsTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object DisabledKotlinPluginTestGitHub : DisabledKotlinPluginTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object DisabledKotlinPluginTestSpace : DisabledKotlinPluginTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )
