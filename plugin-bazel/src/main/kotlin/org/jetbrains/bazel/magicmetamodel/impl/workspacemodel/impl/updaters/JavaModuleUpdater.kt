@@ -98,12 +98,7 @@ internal class JavaModuleWithSourcesUpdater(
       returnDependencies.add(SdkDependency(SdkId(it, "JavaSDK")))
     }
     entityToAdd.scalaAddendum?.also { addendum ->
-      returnDependencies.add(
-        toLibraryDependency(
-          IntermediateLibraryDependency(addendum.scalaSdkName, true),
-          workspaceModelEntityUpdaterConfig.project,
-        ),
-      )
+      returnDependencies.add(toLibraryDependency(IntermediateLibraryDependency(addendum.scalaSdkName, true)))
     }
     return returnDependencies
   }
