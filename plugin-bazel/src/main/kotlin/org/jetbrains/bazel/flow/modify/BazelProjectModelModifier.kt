@@ -19,9 +19,9 @@ import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
 import com.intellij.openapi.util.TextRange
 import com.intellij.pom.java.LanguageLevel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
@@ -41,7 +41,6 @@ import org.jetbrains.concurrency.await
 
 private val log = logger<BazelProjectModelModifier>()
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class BazelProjectModelModifier(private val project: Project) : JavaProjectModelModifier() {
   private val ideaProjectModelModifier = IdeaProjectModelModifier(project)
 
@@ -182,8 +181,9 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
     jumpToBuildFile(project, target)
   }
 
-  private fun asyncPromise(callable: suspend () -> Unit): Promise<Void> =
-    AsyncPromise<Void>().also { promise ->
+  private fun asyncPromise(callable: suspend () -> Unit): Promise<Void>? {
+    if (!project.isBazelProject) return null
+    return AsyncPromise<Void>().also { promise ->
       BazelCoroutineService.getInstance(project).startAsync(callable = callable).invokeOnCompletion { throwable ->
         if (throwable != null) {
           promise.setError(throwable)
@@ -192,4 +192,5 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
         }
       }
     }
+  }
 }
