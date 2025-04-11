@@ -11,7 +11,8 @@ object BspMappings {
       Tag.LIBRARY -> BuildTargetTag.LIBRARY
       Tag.INTELLIJ_PLUGIN -> "intellij-plugin"
       Tag.NO_IDE -> BuildTargetTag.NO_IDE
-      Tag.NO_BUILD, Tag.MANUAL -> null
+      Tag.MANUAL -> BuildTargetTag.MANUAL
+      Tag.NO_BUILD -> null
     }
 
   fun getModules(project: AspectSyncProject, targets: List<Label>): Set<Module> = targets.mapNotNull(project::findModule).toSet()

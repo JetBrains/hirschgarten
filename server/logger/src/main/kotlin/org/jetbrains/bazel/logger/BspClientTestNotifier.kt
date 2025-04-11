@@ -9,7 +9,6 @@ import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TaskStartParams
 import org.jetbrains.bsp.protocol.TestFinish
 import org.jetbrains.bsp.protocol.TestFinishData
-import org.jetbrains.bsp.protocol.TestReport
 import org.jetbrains.bsp.protocol.TestStart
 import org.jetbrains.bsp.protocol.TestStatus
 import org.jetbrains.bsp.protocol.TestTask
@@ -96,38 +95,5 @@ class BspClientTestNotifier(private val bspClient: JoinedBuildClient, private va
         message = "Test started for target $targetIdentifier",
       )
     bspClient.onBuildTaskStart(taskStartParams)
-  }
-
-  /**
-   * Notifies the client about ending the testing procedure
-   *
-   * @param targetIdentifier identifier of the testing target being finished
-   * @param taskId     TaskId of the testing target execution
-   */
-  fun endTestTarget(
-    targetIdentifier: Label,
-    taskId: TaskId,
-    time: Long? = null,
-  ) {
-    val testReport =
-      TestReport(
-        targetIdentifier,
-        passedTests,
-        failedTests,
-        ignoredTests,
-        cancelledTests,
-        skippedTests,
-        time = time,
-      )
-
-    val taskFinishParams =
-      TaskFinishParams(
-        taskId,
-        originId = originId,
-        status = StatusCode.OK,
-        data = testReport,
-        message = "Test finished for target $targetIdentifier",
-      )
-    bspClient.onBuildTaskFinish(taskFinishParams)
   }
 }

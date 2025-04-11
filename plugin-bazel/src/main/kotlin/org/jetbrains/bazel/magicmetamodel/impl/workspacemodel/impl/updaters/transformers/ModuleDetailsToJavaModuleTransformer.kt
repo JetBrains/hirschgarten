@@ -4,7 +4,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.utils.StringUtils
 import org.jetbrains.bazel.workspacemodel.entities.AndroidAddendum
@@ -28,12 +27,11 @@ import java.nio.file.Path
 internal class ModuleDetailsToJavaModuleTransformer(
   targetsMap: Map<Label, BuildTarget>,
   fileToTarget: Map<Path, List<Label>>,
-  nameProvider: TargetNameReformatProvider,
   projectBasePath: Path,
   private val project: Project,
   private val isAndroidSupportEnabled: Boolean = false,
 ) {
-  private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(targetsMap, nameProvider)
+  private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(targetsMap, project)
   private val type = ModuleTypeId("JAVA_MODULE")
   private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer()
   private val javaModuleToDummyJavaModulesTransformerHACK =

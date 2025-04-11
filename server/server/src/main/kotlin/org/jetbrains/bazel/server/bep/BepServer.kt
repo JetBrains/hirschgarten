@@ -257,10 +257,8 @@ class BepServer(
       return
     }
 
-    val bspClientTestNotifier = this.bspClientTestNotifier
     if (bspClientTestNotifier != null) {
-      bspClientTestNotifier.endTestTarget(target, taskId)
-      this.bspClientTestNotifier = null
+      bspClientTestNotifier = null
       return
     }
 

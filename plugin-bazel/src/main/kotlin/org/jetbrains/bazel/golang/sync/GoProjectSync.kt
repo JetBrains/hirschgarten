@@ -29,8 +29,7 @@ import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
-import org.jetbrains.bazel.magicmetamodel.findNameProvider
+import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.task.query
@@ -58,11 +57,10 @@ class GoProjectSync : ProjectSyncHook {
     val goTargets = environment.buildTargets.calculateGoTargets()
     val idToGoTargetMap = goTargets.associateBy({ it.id }, { it })
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
-    val moduleNameProvider = environment.project.findNameProvider()
 
     val moduleEntities =
       goTargets.map {
-        val moduleName = moduleNameProvider(it.id)
+        val moduleName = it.id.formatAsModuleName(environment.project)
         val moduleSourceEntity = BspModuleEntitySource(moduleName)
 
         val moduleEntity =
@@ -72,7 +70,7 @@ class GoProjectSync : ProjectSyncHook {
             moduleName = moduleName,
             entitySource = moduleSourceEntity,
             virtualFileUrlManager = virtualFileUrlManager,
-            moduleNameProvider = moduleNameProvider,
+            project = environment.project,
           )
         val vgoModule =
           prepareVgoModule(environment, it, moduleEntity.symbolicId, virtualFileUrlManager, idToGoTargetMap, moduleSourceEntity)
@@ -96,7 +94,7 @@ class GoProjectSync : ProjectSyncHook {
     moduleName: String,
     entitySource: BspModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
-    moduleNameProvider: TargetNameReformatProvider,
+    project: Project,
   ): ModuleEntity {
     val sourceContentRootEntities = getSourceContentRootEntities(target, entitySource, virtualFileUrlManager)
     val resourceContentRootEntities = getResourceContentRootEntities(target, entitySource, virtualFileUrlManager)
@@ -106,7 +104,7 @@ class GoProjectSync : ProjectSyncHook {
         dependencies =
           target.dependencies.map {
             ModuleDependency(
-              module = ModuleId(moduleNameProvider(it)),
+              module = ModuleId(it.formatAsModuleName(project)),
               exported = true,
               scope = DependencyScope.COMPILE,
               productionOnTest = true,

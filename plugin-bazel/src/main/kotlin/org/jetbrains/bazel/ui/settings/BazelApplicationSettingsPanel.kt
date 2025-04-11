@@ -11,6 +11,7 @@ import com.intellij.openapi.options.ConfigurableProvider
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.CollectionComboBoxModel
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
@@ -27,7 +28,7 @@ import javax.swing.JComponent
     ),
   ],
 )
-internal class BazelApplicationSettingsService : PersistentStateComponent<BazelApplicationSettings> {
+class BazelApplicationSettingsService : PersistentStateComponent<BazelApplicationSettings> {
   var settings: BazelApplicationSettings = BazelApplicationSettings()
 
   override fun getState(): BazelApplicationSettings? = settings
@@ -42,12 +43,13 @@ internal class BazelApplicationSettingsService : PersistentStateComponent<BazelA
   }
 }
 
-internal data class BazelApplicationSettings(var updateChannel: UpdateChannel = UpdateChannel.RELEASE)
+data class BazelApplicationSettings(var updateChannel: UpdateChannel = UpdateChannel.RELEASE, var enablePhasedSync: Boolean = false)
 
 class BazelApplicationSettingsConfigurable : SearchableConfigurable {
   private val panelApplicationSettings = BazelApplicationSettingsService.getInstance().settings.copy()
 
   private val updateChannelComboBox: ComboBox<UpdateChannel> = ComboBox<UpdateChannel>()
+  private val enablePhasedSyncCheckBox: JBCheckBox = initEnablePhasedSyncCheckBox()
 
   init {
     initUpdateChannelComboBox()
@@ -62,6 +64,15 @@ class BazelApplicationSettingsConfigurable : SearchableConfigurable {
     }
   }
 
+  private fun initEnablePhasedSyncCheckBox(): JBCheckBox =
+    JBCheckBox(BazelPluginBundle.message("application.settings.plugin.enable.phased.sync.checkbox.text")).apply {
+      val settings = panelApplicationSettings
+      isSelected = settings.enablePhasedSync
+      addItemListener {
+        settings.enablePhasedSync = isSelected
+      }
+    }
+
   override fun getId(): String = ID
 
   override fun getDisplayName(): String? = BazelPluginBundle.message(DISPLAY_NAME_KEY)
@@ -72,6 +83,12 @@ class BazelApplicationSettingsConfigurable : SearchableConfigurable {
         row(BazelPluginBundle.message("application.settings.update.channel.dropdown.title")) {
           cell(updateChannelComboBox).align(Align.FILL).resizableColumn()
           contextHelp(BazelPluginBundle.message("application.settings.update.channel.dropdown.help.description")).align(AlignX.RIGHT)
+        }
+      }
+      group("Experimental Settings", indent = false) {
+        row {
+          cell(enablePhasedSyncCheckBox).align(Align.FILL)
+          contextHelp(BazelPluginBundle.message("application.settings.plugin.enable.phased.sync.help.text"))
         }
       }
     }

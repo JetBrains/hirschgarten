@@ -6,17 +6,15 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.platform.backend.workspace.toVirtualFileUrl
-import com.intellij.platform.backend.workspace.virtualFile
+import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.BuildTargetTag
 import javax.swing.Icon
 
 internal open class RunAllTestsBaseAction(
@@ -41,33 +39,30 @@ internal open class RunAllTestsBaseAction(
     e.presentation.isEnabledAndVisible = runReadAction { shouldShowAction(project, e) }
   }
 
-  private fun getAllTestTargetInfos(project: Project, e: AnActionEvent): List<BuildTarget> =
-    e
+  private fun getAllTestTargetInfos(project: Project, event: AnActionEvent): List<BuildTarget> =
+    event
       .getCurrentPath()
-      ?.toSubFilesInTestSourceContent(project)
-      ?.filter { it.capabilities.canTest }
-      ?.toList() ?: listOf()
+      ?.toChildTestTargets(project)
+      .orEmpty()
 
-  private fun shouldShowAction(project: Project, e: AnActionEvent): Boolean {
-    return e.getCurrentPath()?.toSubFilesInTestSourceContent(project)?.any { it.capabilities.canTest } ?: return false
-  }
+  private fun shouldShowAction(project: Project, e: AnActionEvent): Boolean =
+    e.getCurrentPath()?.toChildTestTargets(project)?.isNotEmpty() ?: false
 
   private fun AnActionEvent.getCurrentPath(): VirtualFile? = getData(PlatformDataKeys.VIRTUAL_FILE)
 
-  private fun VirtualFile.toSubFilesInTestSourceContent(project: Project): Sequence<BuildTarget> {
-    val pfIndex = ProjectFileIndex.getInstance(project)
-    val vfsManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
-    val targetUtilService = project.targetUtils
-
-    return this
-      .toVirtualFileUrl(vfsManager)
-      .subTreeFileUrls
-      .asSequence()
-      .mapNotNull { it.virtualFile }
-      .filter { pfIndex.isInTestSourceContent(it) }
-      .flatMap { targetUtilService.getExecutableTargetsForFile(it) }
-      .distinct()
-      .mapNotNull { targetUtilService.getBuildTargetForLabel(it) }
+  private fun VirtualFile.toChildTestTargets(project: Project): List<BuildTarget> {
+    val childTargets =
+      if (isDirectory) {
+        val path = toNioPathOrNull() ?: return emptyList()
+        project.targetUtils
+          .allBuildTargets()
+          .filter { it.baseDirectory.startsWith(path) }
+      } else {
+        project.targetUtils.getExecutableTargetsForFile(this).mapNotNull { project.targetUtils.getBuildTargetForLabel(it) }
+      }
+    return childTargets.filter {
+      it.capabilities.canTest && !it.tags.contains(BuildTargetTag.MANUAL)
+    }
   }
 }
 

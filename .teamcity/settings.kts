@@ -66,6 +66,7 @@ object GitHub : Project({
         buildType(IdeStarterTests.TestResultsTreeTestGitHub)
         buildType(IdeStarterTests.ImportRunConfigurationsTestGitHub)
         buildType(IdeStarterTests.NonModuleTargetsTestGitHub)
+        buildType(IdeStarterTests.RunAllTestsActionTestGitHub)
         buildType(IdeStarterTests.DisabledKotlinPluginTestGitHub)
         buildType(ServerE2eTests.SampleRepoGitHub)
         buildType(ServerE2eTests.LocalJdkGitHub)
@@ -132,6 +133,7 @@ object GitHub : Project({
       IdeStarterTests.TestResultsTreeTestGitHub,
       IdeStarterTests.ImportRunConfigurationsTestGitHub,
       IdeStarterTests.NonModuleTargetsTestGitHub,
+      IdeStarterTests.RunAllTestsActionTestGitHub,
       IdeStarterTests.DisabledKotlinPluginTestGitHub,
       ServerE2eTests.SampleRepoGitHub,
       ServerE2eTests.LocalJdkGitHub,
@@ -186,6 +188,7 @@ object Space : Project({
         buildType(IdeStarterTests.TestResultsTreeTestSpace)
         buildType(IdeStarterTests.ImportRunConfigurationsTestSpace)
         buildType(IdeStarterTests.NonModuleTargetsTestSpace)
+        buildType(IdeStarterTests.RunAllTestsActionTestSpace)
         buildType(IdeStarterTests.DisabledKotlinPluginTestSpace)
         buildType(ServerE2eTests.SampleRepoSpace)
         buildType(ServerE2eTests.LocalJdkSpace)
@@ -252,6 +255,7 @@ object Space : Project({
       IdeStarterTests.TestResultsTreeTestSpace,
       IdeStarterTests.ImportRunConfigurationsTestSpace,
       IdeStarterTests.NonModuleTargetsTestSpace,
+      IdeStarterTests.RunAllTestsActionTestSpace,
       IdeStarterTests.DisabledKotlinPluginTestSpace,
       ServerE2eTests.SampleRepoSpace,
       ServerE2eTests.LocalJdkSpace,

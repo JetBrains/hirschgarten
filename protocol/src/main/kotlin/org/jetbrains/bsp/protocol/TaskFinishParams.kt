@@ -44,13 +44,3 @@ public data class JUnitStyleTestSuiteData(
   val systemOut: String?,
   val systemErr: String?,
 ) : TestFinishData
-
-data class TestReport(
-  val target: Label,
-  val passed: Int,
-  val failed: Int,
-  val ignored: Int,
-  val cancelled: Int,
-  val skipped: Int,
-  val time: Long? = null,
-) : TaskFinishData

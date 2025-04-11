@@ -1,0 +1,29 @@
+
+è
+
+ktlint_fix6Lint Kotlin files and automatically fix them as needed*
+nameA unique name for this target. *
+srcsSource files to review and fix …
+configktlint_config to use*]
+KtlintConfigInfoI
+KtlintConfigInfo5@rules_kotlin//kotlin/internal/lint:ktlint_config.bzl2None"@
+
+ktlint_fix2@rules_kotlin//kotlin/internal/lint:ktlint_fix.bzl8
+å
+ktlint_test8Lint Kotlin files, and fail if the linter raises errors.*
+nameA unique name for this target.  
+srcsSource files to lint …
+configktlint_config to use*]
+KtlintConfigInfoI
+KtlintConfigInfo5@rules_kotlin//kotlin/internal/lint:ktlint_config.bzl2None"B
+ktlint_test3@rules_kotlin//kotlin/internal/lint:ktlint_test.bzl08
+€
+ktlint_config’Used to configure ktlint.
+
+`ktlint` can be configured to use a `.editorconfig`, as documented at
+https://github.com/pinterest/ktlint/#editorconfig*
+nameA unique name for this target. 1
+editorconfigEditor config file to use2NoneR
+android_rules_enabled0Turn on Android Kotlin Style Guide compatibility2False_
+experimental_rules_enabled8Turn on experimental rules (ktlint-ruleset-experimental)2False"F
+ktlint_config5@rules_kotlin//kotlin/internal/lint:ktlint_config.bzl2@rules_kotlin//kotlin:lint.bzl

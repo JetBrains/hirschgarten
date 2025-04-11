@@ -7,8 +7,12 @@ java_binary(
         "-Werror",
         "-Xlint:all",
     ],
+    jvm_flags = [
+        "--some_flag=$(location :java_library)"
+    ],
     main_class = "java_targets.JavaBinary",
     visibility = ["//visibility:public"],
+    data = [":java_library"]
 )
 
 java_binary(

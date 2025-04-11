@@ -34,7 +34,8 @@ class WorkspaceContextConstructorTest {
       // given
       val workspaceRoot = Path("path/to/workspace")
       val dotBazelBspDirPath = Path("path/to/bazelbsp")
-      val constructor = WorkspaceContextConstructor(workspaceRoot, dotBazelBspDirPath)
+      val projectViewFilePath = workspaceRoot.resolve("path/to/project/view/file")
+      val constructor = WorkspaceContextConstructor(workspaceRoot, dotBazelBspDirPath, projectViewFilePath)
       val projectView =
         ProjectView
           .Builder(
@@ -102,6 +103,7 @@ class WorkspaceContextConstructorTest {
             listOf(
               workspaceRoot.resolve("path/to/included1"),
               workspaceRoot.resolve("path/to/included2"),
+              projectViewFilePath,
             ),
           excludedValues =
             listOf(

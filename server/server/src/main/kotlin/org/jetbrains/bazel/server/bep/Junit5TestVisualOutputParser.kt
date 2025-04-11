@@ -195,7 +195,6 @@ private class TestResultTreeNode(
     if (isRootNode()) {
       bspClientTestNotifier.beginTestTarget(Label.parse(name), taskId)
       children.forEach { it.value.notifyClient(bspClientTestNotifier) }
-      bspClientTestNotifier.endTestTarget(Label.parse(name), taskId, time = time)
     } else if (isLeafNode()) {
       val fullMessage = generateMessage()
       bspClientTestNotifier.startTest(name, taskId)

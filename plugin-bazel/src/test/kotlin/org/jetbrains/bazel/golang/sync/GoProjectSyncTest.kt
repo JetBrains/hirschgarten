@@ -11,8 +11,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
-import org.jetbrains.bazel.magicmetamodel.findNameProvider
+import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
@@ -75,7 +74,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     // given
     val server = BuildServerMock(workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()))
     val diff = AllProjectStructuresProvider(project).newDiff()
-    val goTestTargets = generateTestSet(project.findNameProvider())
+    val goTestTargets = generateTestSet()
 
     // when
     runBlocking {
@@ -110,7 +109,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     // given
     val server = BuildServerMock(workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()))
     val diff = AllProjectStructuresProvider(project).newDiff()
-    val goTestTargets = generateTestSet(project.findNameProvider())
+    val goTestTargets = generateTestSet()
 
     // when
     runBlocking {
@@ -139,7 +138,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     }
   }
 
-  private fun generateTestSet(nameProvider: TargetNameReformatProvider): GoTestSet {
+  private fun generateTestSet(): GoTestSet {
     val goLibrary1 =
       GeneratedTargetInfo(
         targetId = Label.parse("@@server/lib:hello_lib"),
@@ -167,12 +166,12 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     val virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
 
     val expectedRoot = Path("/targets_base_dir").toVirtualFileUrl(virtualFileUrlManager)
-    val expectedVgoStandaloneEntities = targetInfos.map { generateVgoStandaloneResult(it, expectedRoot, nameProvider) }
+    val expectedVgoStandaloneEntities = targetInfos.map { generateVgoStandaloneResult(it, expectedRoot) }
     val expectedVgoDependencyEntities =
       listOf(
-        generateVgoDependencyResult(goLibrary1, goLibrary2, expectedRoot, nameProvider),
-        generateVgoDependencyResult(goLibrary1, goApplication, expectedRoot, nameProvider),
-        generateVgoDependencyResult(goLibrary2, goApplication, expectedRoot, nameProvider),
+        generateVgoDependencyResult(goLibrary1, goLibrary2, expectedRoot),
+        generateVgoDependencyResult(goLibrary1, goApplication, expectedRoot),
+        generateVgoDependencyResult(goLibrary2, goApplication, expectedRoot),
       )
     return GoTestSet(buildTargets, expectedVgoStandaloneEntities, expectedVgoDependencyEntities)
   }
@@ -195,13 +194,9 @@ class GoProjectSyncTest : MockProjectBaseTest() {
       resources = info.resourcesItems,
     )
 
-  private fun generateVgoStandaloneResult(
-    info: GeneratedTargetInfo,
-    expectedRoot: VirtualFileUrl,
-    nameProvider: TargetNameReformatProvider,
-  ): ExpectedVgoStandaloneModuleEntity =
+  private fun generateVgoStandaloneResult(info: GeneratedTargetInfo, expectedRoot: VirtualFileUrl): ExpectedVgoStandaloneModuleEntity =
     ExpectedVgoStandaloneModuleEntity(
-      moduleId = ModuleId(nameProvider(info.targetId)),
+      moduleId = ModuleId(info.targetId.formatAsModuleName(project)),
       entitySource = BspProjectEntitySource,
       importPath = info.importPath,
       root = expectedRoot,
@@ -211,14 +206,13 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     dependencyInfo: GeneratedTargetInfo,
     parentInfo: GeneratedTargetInfo,
     expectedRoot: VirtualFileUrl,
-    nameProvider: TargetNameReformatProvider,
   ): ExpectedVgoDependencyEntity =
     ExpectedVgoDependencyEntity(
       importPath = dependencyInfo.importPath,
       entitySource = BspProjectEntitySource,
       isMainModule = false,
       internal = true,
-      module = generateVgoStandaloneResult(parentInfo, expectedRoot, nameProvider),
+      module = generateVgoStandaloneResult(parentInfo, expectedRoot),
       root = expectedRoot,
     )
 

@@ -185,7 +185,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("data", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("additional_linker_inputs", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("conlyopts", BAZEL_EMPTY_LIST, false),
@@ -232,7 +232,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("data", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("hdrs", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("additional_compiler_inputs", BAZEL_EMPTY_LIST, false),
@@ -286,7 +286,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-          BazelNativeRuleArgument("src", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("src", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("data", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("additional_linker_inputs", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("conlyopts", BAZEL_EMPTY_LIST, false),
@@ -401,7 +401,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("hdrs", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("alwayslink", BAZEL_FALSE, false),
           BazelNativeRuleArgument("conlyopts", BAZEL_EMPTY_LIST, false),
@@ -455,7 +455,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("allow_exports", BAZEL_NONE, false),
           BazelNativeRuleArgument("exports", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("import_prefix", BAZEL_EMPTY_STRING, false),
@@ -507,7 +507,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("data", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("imports", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("legacy_create_init", "-1", false),
@@ -528,7 +528,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("data", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("imports", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("precompile", BAZEL_EMPTY_STRING, false),
@@ -544,7 +544,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("data", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("imports", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("legacy_create_init", "-1", false),
@@ -586,7 +586,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, false),
           BazelNativeRuleArgument("env_inherit", BAZEL_EMPTY_LIST, false),
         ),
       ),
@@ -596,7 +596,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, false),
         ),
       ),
       addNativeRule(
@@ -605,7 +605,7 @@ object BazelNativeRules {
         setOf(
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
-          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, false),
         ),
       ),
     )

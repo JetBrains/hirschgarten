@@ -13,7 +13,7 @@ class StarlarkArgumentList(node: ASTNode) : StarlarkBaseElement(node) {
 
   fun getNameArgumentValue(): String? = getNameArgument()?.getArgumentStringValue()
 
-  private fun getNameArgument(): StarlarkNamedArgumentExpression? =
+  fun getNameArgument(): StarlarkNamedArgumentExpression? =
     findChildrenByClass(StarlarkNamedArgumentExpression::class.java).find { it.isNameArgument() }
 
   fun getKeywordArgument(name: String): StarlarkNamedArgumentExpression? =

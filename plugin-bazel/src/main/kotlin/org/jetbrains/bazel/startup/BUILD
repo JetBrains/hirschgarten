@@ -15,6 +15,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/notifications",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/settings",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/widgets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/widgets/fileTargets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",

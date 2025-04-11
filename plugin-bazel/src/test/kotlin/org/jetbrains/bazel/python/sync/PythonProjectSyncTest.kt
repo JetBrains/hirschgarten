@@ -19,8 +19,7 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
-import org.jetbrains.bazel.magicmetamodel.findNameProvider
+import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
@@ -161,11 +160,10 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
 
     val targetInfos = listOf(pythonLibrary1, pythonLibrary2, pythonBinary)
     val targets = targetInfos.map { generateTarget(it, emptyList(), emptyList()) }
-    val nameProvider = project.findNameProvider()
 
-    val expectedModuleEntity1 = generateExpectedModuleEntity(pythonBinary, listOf(pythonLibrary1, pythonLibrary2), nameProvider)
-    val expectedModuleEntity2 = generateExpectedModuleEntity(pythonLibrary1, emptyList(), nameProvider)
-    val expectedModuleEntity3 = generateExpectedModuleEntity(pythonLibrary2, emptyList(), nameProvider)
+    val expectedModuleEntity1 = generateExpectedModuleEntity(pythonBinary, listOf(pythonLibrary1, pythonLibrary2))
+    val expectedModuleEntity2 = generateExpectedModuleEntity(pythonLibrary1, emptyList())
+    val expectedModuleEntity3 = generateExpectedModuleEntity(pythonLibrary2, emptyList())
     return PythonTestSet(
       WorkspaceBuildTargetsResult(
         targets,
@@ -191,7 +189,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         listOf(Path("/Resource1"), Path("/Resource2"), Path("/Resource3")),
       )
 
-    val expectedModuleEntity = generateExpectedModuleEntity(pythonBinary, emptyList(), project.findNameProvider())
+    val expectedModuleEntity = generateExpectedModuleEntity(pythonBinary, emptyList())
 
     val expectedContentRootEntities =
       generateExpectedSourceRootEntities(target, expectedModuleEntity.moduleEntity)
@@ -233,13 +231,12 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   private fun generateExpectedModuleEntity(
     targetInfo: GeneratedTargetInfo,
     dependenciesTargetInfo: List<GeneratedTargetInfo>,
-    nameProvider: TargetNameReformatProvider,
   ): ExpectedModuleEntity {
     val sdkDependency: ModuleDependencyItem = SdkDependency(SdkId("${project.name}-python-$PYTHON_INTERPRETER_MD5", "PythonSDK"))
     val moduleDependencies: List<ModuleDependencyItem> =
       dependenciesTargetInfo.map {
         ModuleDependency(
-          module = ModuleId(nameProvider(it.targetId)),
+          module = ModuleId(it.targetId.formatAsModuleName(project)),
           exported = true,
           scope = DependencyScope.COMPILE,
           productionOnTest = true,
@@ -248,7 +245,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     return ExpectedModuleEntity(
       moduleEntity =
         ModuleEntity(
-          name = nameProvider(targetInfo.targetId),
+          name = targetInfo.targetId.formatAsModuleName(project),
           entitySource = BspProjectEntitySource,
           dependencies = moduleDependencies + sdkDependency,
         ) {

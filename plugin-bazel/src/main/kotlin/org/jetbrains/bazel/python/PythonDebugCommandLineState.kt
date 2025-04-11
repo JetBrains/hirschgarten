@@ -15,8 +15,7 @@ import com.jetbrains.python.run.PythonScriptCommandLineState
 import com.jetbrains.python.sdk.PythonSdkUtil
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
-import org.jetbrains.bazel.magicmetamodel.findNameProvider
+import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
@@ -74,9 +73,8 @@ class PythonDebugCommandLineState(
 
 private fun getSdkForTarget(project: Project, target: Label): Sdk {
   val storage = WorkspaceModel.getInstance(project).currentSnapshot
-  val moduleNameProvider = project.findNameProvider()
-  return moduleNameProvider
-    .let { target.toModuleEntity(storage, it) } // module
+  return target
+    .toModuleEntity(storage, project) // module
     ?.dependencies // module's dependencies
     ?.firstNotNullOfOrNull { it as? SdkDependency } // first SDK dependency
     ?.sdk
@@ -85,8 +83,8 @@ private fun getSdkForTarget(project: Project, target: Label): Sdk {
     ?: error(BazelPluginBundle.message("python.debug.error.no.sdk", target))
 }
 
-private fun Label.toModuleEntity(storage: ImmutableEntityStorage, moduleNameProvider: TargetNameReformatProvider): ModuleEntity? {
-  val moduleName = moduleNameProvider(this)
+private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Project): ModuleEntity? {
+  val moduleName = this.formatAsModuleName(project)
   val moduleId = ModuleId(moduleName)
   return storage.resolve(moduleId)
 }

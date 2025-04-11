@@ -10,6 +10,7 @@ import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.PhasedSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
 import org.jetbrains.bazel.ui.widgets.fileTargets.updateBazelFileTargetsWidget
 import org.jetbrains.bazel.ui.widgets.tool.window.all.targets.registerBazelToolWindow
 import org.jetbrains.bazel.utils.RunConfigurationProducersDisabler
@@ -61,7 +62,7 @@ class BazelStartupActivity : BazelProjectActivity() {
 
   private suspend fun Project.resyncProjectIfNeeded() {
     if (isProjectInIncompleteState()) {
-      if (BazelFeatureFlags.isPhasedSync) {
+      if (BazelApplicationSettingsService.getInstance().settings.enablePhasedSync) {
         log.info("Running Bazel phased sync task")
         PhasedSync(this).sync()
       } else {
