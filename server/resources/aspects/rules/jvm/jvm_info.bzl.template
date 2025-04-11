@@ -1,4 +1,4 @@
-load("//aspects:utils/utils.bzl", "create_struct", "file_location", "is_external", "map", "update_sync_output_groups", "filter_not_none")
+load("//aspects:utils/utils.bzl", "create_struct", "file_location", "is_external", "map", "update_sync_output_groups", "filter_not_none", "do_starlark_string_expansion")
 load("//aspects:rules/java/java_info.bzl", "java_info_in_target", "get_java_info")
 #if( $kotlinEnabled == "true" )
 load("//aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider")
@@ -159,7 +159,7 @@ def extract_jvm_info(target, ctx, output_groups, **kwargs):
     javac_opts = get_javac_opts(ctx)
     raw_jvm_flags = getattr(ctx.rule.attr, "jvm_flags", [])
     data_deps = getattr(ctx.rule.attr, "data", [])
-    jvm_flags = [ctx.expand_location(flag, targets=data_deps) for flag in raw_jvm_flags]
+    jvm_flags = do_starlark_string_expansion(ctx, "jvm_flags", raw_jvm_flags, data_deps)
     args = getattr(ctx.rule.attr, "args", [])
     main_class = getattr(ctx.rule.attr, "main_class", None)
     if ${addTransitiveCompileTimeJars} and ctx.rule.kind in ${transitiveCompileTimeJarsTargetKinds}:
