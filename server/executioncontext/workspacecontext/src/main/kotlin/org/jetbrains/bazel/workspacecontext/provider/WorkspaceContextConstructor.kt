@@ -7,9 +7,12 @@ import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import java.nio.file.Path
 
-class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDirPath: Path) :
-  ExecutionContextConstructor<WorkspaceContext> {
-  private val directoriesSpecExtractor = DirectoriesSpecExtractor(workspaceRoot)
+class WorkspaceContextConstructor(
+  workspaceRoot: Path,
+  private val dotBazelBspDirPath: Path,
+  projectViewPath: Path,
+) : ExecutionContextConstructor<WorkspaceContext> {
+  private val directoriesSpecExtractor = DirectoriesSpecExtractor(workspaceRoot, projectViewPath)
 
   private val log = LogManager.getLogger(WorkspaceContextConstructor::class.java)
 
