@@ -28,6 +28,7 @@
 
     <depends optional="true" config-file="withAndroid.xml">org.jetbrains.android</depends>
     <depends optional="true" config-file="withCodeWithMe.xml">com.jetbrains.codeWithMe</depends>
+    <depends optional="true" config-file="withCoverage.xml">com.intellij.modules.coverage"</depends>
     <depends optional="true" config-file="withCpp.xml">com.intellij.clion</depends>
     <depends optional="true" config-file="withDevKit.xml">DevKit</depends>
     <depends optional="true" config-file="withGo.xml">org.jetbrains.plugins.go</depends>
@@ -162,11 +163,6 @@
                 implementation="org.jetbrains.bazel.buildTask.BazelProjectTaskRunner"/>
         <programRunner implementation="org.jetbrains.bazel.jvm.run.BazelJvmDebugRunner"/>
 
-        <programRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageProgramRunner"/>
-        <coverageRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageRunner"/>
-        <coverageEngine implementation="org.jetbrains.bazel.run.coverage.BazelCoverageEngine"/>
-        <projectViewNodeDecorator implementation="org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecorator"/>
-
         <directoryProjectConfigurator
                 implementation="org.jetbrains.bazel.flow.open.CounterPlatformProjectConfigurator"
                 order="last"/>
@@ -228,10 +224,6 @@
         <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsAction" id="BazelRunAllTestsAction">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-        </action>
-        <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsWithCoverageAction">
-            <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="BazelRunAllTestsAction"/>
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="BazelRunAllTestsAction"/>
         </action>
         <action id="Bazel.ResyncAction" class="org.jetbrains.bazel.action.registered.ResyncAction"
                 icon="/icons/resync.svg"/>

@@ -65,8 +65,6 @@ import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
-import org.jetbrains.kotlin.analysis.api.platform.analysisMessageBus
-import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinModificationTopics
 import java.nio.file.Path
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
@@ -362,7 +360,6 @@ class CollectProjectDetailsTask(
     }
 
     VirtualFileManager.getInstance().asyncRefresh()
-    project.refreshKotlinHighlighting()
     checkSharedSources()
   }
 
@@ -422,22 +419,6 @@ class CollectProjectDetailsTask(
     writeAction {
       val javacOptions = JavacConfiguration.getOptions(project, JavacConfiguration::class.java)
       javacOptions.ADDITIONAL_OPTIONS_OVERRIDE = this.javacOptions
-    }
-
-  /**
-   * Workaround for https://youtrack.jetbrains.com/issue/KT-70632
-   */
-  private suspend fun Project.refreshKotlinHighlighting() =
-    writeAction {
-      try {
-        analysisMessageBus.syncPublisher(KotlinModificationTopics.GLOBAL_MODULE_STATE_MODIFICATION).onModification()
-      } catch (_: NoClassDefFoundError) {
-        // TODO: the above method was removed in 252 master.
-        //  Replace with `project.publishGlobalModuleStateModificationEvent()` once it's available in the next 252 EAP
-        val utilsKt = Class.forName("org.jetbrains.kotlin.analysis.api.platform.modification.UtilsKt")
-        val method = utilsKt.getDeclaredMethod("publishGlobalModuleStateModificationEvent", Project::class.java)
-        method.invoke(utilsKt, project)
-      }
     }
 
   private fun checkSharedSources() {

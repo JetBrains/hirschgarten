@@ -1,8 +1,12 @@
 package org.jetbrains.bazel.performanceImpl
 
-import com.intellij.collaboration.async.nestedDisposable
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
+import com.intellij.openapi.util.Disposer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
@@ -50,4 +54,18 @@ internal class WaitForBazelSyncCommand(text: String, line: Int) : PlaybackComman
 
       check(project.targetUtils.allTargets().isNotEmpty()) { "Target id list is empty after sync" }
     }
+
+  // copied com.intellij.collaboration.async.nestedDisposable because it's not always available in the tests
+  @OptIn(InternalCoroutinesApi::class)
+  private fun CoroutineScope.nestedDisposable(): Disposable {
+    val job = coroutineContext[Job]
+    require(job != null) {
+      "Found no Job in context: $coroutineContext"
+    }
+    return Disposer.newDisposable().also {
+      job.invokeOnCompletion(onCancelling = true, handler = { _ ->
+        Disposer.dispose(it)
+      })
+    }
+  }
 }

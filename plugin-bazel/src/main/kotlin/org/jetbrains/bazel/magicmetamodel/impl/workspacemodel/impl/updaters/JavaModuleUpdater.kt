@@ -169,9 +169,11 @@ internal class JavaModuleUpdater(
     JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled)
   private val javaModuleWithoutSourcesUpdater = JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig)
 
-  override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity =
+  override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity? =
     if (entityToAdd.doesntContainSourcesAndResources() && entityToAdd.containsJavaKotlinLanguageIds()) {
       javaModuleWithoutSourcesUpdater.addEntity(entityToAdd)
+    } else if (entityToAdd.containsKotlinLanguageId()) {
+      entityToAdd.addKotlinModuleIfPossible()
     } else {
       javaModuleWithSourcesUpdater.addEntity(entityToAdd)
     }
@@ -182,6 +184,11 @@ internal class JavaModuleUpdater(
     with(genericModuleInfo.languageIds) {
       includesKotlin() || includesJava()
     }
+
+  private fun JavaModule.containsKotlinLanguageId() = genericModuleInfo.languageIds.includesKotlin()
+
+  private suspend fun JavaModule.addKotlinModuleIfPossible(): ModuleEntity? =
+    if (KotlinFacetEntityUpdater.ep.extensionList.isNotEmpty()) javaModuleWithSourcesUpdater.addEntity(this) else null
 }
 
 // TODO: should be removed, kotlin needs a separate sync hook: https://youtrack.jetbrains.com/issue/BAZEL-1885

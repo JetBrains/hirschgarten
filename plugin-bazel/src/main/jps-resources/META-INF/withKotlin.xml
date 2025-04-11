@@ -2,6 +2,8 @@
     <extensions defaultExtensionNs="org.jetbrains.bazel">
         <kotlinFacetEntityUpdater implementation="org.jetbrains.bazel.kotlin.sync.BazelKotlinFacetEntityUpdater"/>
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.KotlinSourceTypeIconProvider"/>
+
+        <projectPostSyncHook implementation="org.jetbrains.bazel.kotlin.sync.RefreshKotlinHighlightingPostSyncHook"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
