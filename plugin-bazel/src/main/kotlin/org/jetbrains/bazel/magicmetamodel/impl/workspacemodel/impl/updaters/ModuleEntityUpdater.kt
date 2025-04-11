@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.LibraryDependency
 import com.intellij.platform.workspace.jps.entities.LibraryId
