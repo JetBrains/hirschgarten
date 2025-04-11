@@ -68,10 +68,11 @@ internal class ModuleDetailsToJavaModuleTransformer(
           )
         listOf(javaModuleWithDummyDependencies) + dummyModules
       }
-      is JavaModuleToDummyJavaModulesTransformerHACK.MergedSourceRoots -> {
+      is JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots -> {
         val javaModuleWithMergedSourceRoots =
           javaModule.copy(
             sourceRoots = dummyModulesResult.mergedSourceRoots,
+            resourceRoots = dummyModulesResult.mergedResourceRoots ?: javaModule.resourceRoots,
           )
         listOf(javaModuleWithMergedSourceRoots)
       }

@@ -22,12 +22,15 @@ class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
     val compiledSourceCodeInsideJarExcludeEntity = storage.resolve(entity.compiledSourceCodeInsideJarExcludeId) ?: return
 
     val relativePathsToExclude: Set<String> = compiledSourceCodeInsideJarExcludeEntity.relativePathsInsideJarToExclude
+    val namesInsideJarToExclude: Set<String> = compiledSourceCodeInsideJarExcludeEntity.namesInsideJarToExclude
 
     library.roots.map { libraryRoot ->
       val contentRootUrl = libraryRoot.url
       registrar.registerExclusionCondition(
         root = contentRootUrl,
-        condition = { it.getRelativePathInsideJar() in relativePathsToExclude },
+        condition = {
+          it.name in namesInsideJarToExclude || it.getRelativePathInsideJar() in relativePathsToExclude
+        },
         entity = entity,
       )
     }

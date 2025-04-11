@@ -1,16 +1,12 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import com.intellij.openapi.module.StdModuleTypes
-import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.config.bazelProjectProperties
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
@@ -109,7 +105,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         ),
       )
 
-    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedSourceRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
       expectedMergedSourceRoots
   }
 
@@ -119,11 +115,10 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     }
 
   @Test
-  fun `should merge sources with sources and with resources in common path`() {
+  fun `should merge roots with sources and with resources in common path`() {
     // given
-    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "hirschgarten")
+    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "module1")
     val projectRootName = projectRoot.name
-    VirtualFileManager.getInstance().findFileByNioPath(projectRoot)?.also { project.rootDir = it }
     val javaVersion = "11"
 
     val givenModule =
@@ -179,52 +174,36 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       )
 
     // when
-    val javaModules = transformIntoDummyModules(givenJavaModule)
+    val mergedRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
 
     // then
-    val expectedModule =
-      GenericModuleInfo(
-        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${javaPath.name}".addIntelliJDummyPrefix(),
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = listOf(),
-        librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
-        languageIds = listOf("java", "scala", "kotlin"),
+    val expectedMergedSourceRoots =
+      listOf(
+        JavaSourceRoot(
+          sourcePath = javaPath.toAbsolutePath(),
+          generated = false,
+          packagePrefix = "",
+          rootType = JAVA_SOURCE_ROOT_TYPE,
+        ),
       )
 
-    val expectedJavaModule =
-      JavaModule(
-        genericModuleInfo = expectedModule,
-        baseDirContentRoot = ContentRoot(path = javaPath.toAbsolutePath()),
-        sourceRoots =
-          listOf(
-            JavaSourceRoot(
-              sourcePath = javaPath.toAbsolutePath(),
-              generated = false,
-              packagePrefix = "",
-              rootType = JAVA_SOURCE_ROOT_TYPE,
-            ),
-          ),
-        resourceRoots =
-          listOf(
-            ResourceRoot(
-              resourcePath = resourcesPath.toAbsolutePath(),
-              rootType = JAVA_RESOURCE_ROOT_TYPE,
-            ),
-          ),
-        jvmJdkName = givenJavaModule.jvmJdkName,
-        kotlinAddendum = givenJavaModule.kotlinAddendum,
+    val expectedMergedResourceRoots =
+      listOf(
+        ResourceRoot(
+          resourcePath = messagesPath,
+          rootType = JAVA_RESOURCE_ROOT_TYPE,
+        ),
       )
 
-    javaModules shouldContainExactlyInAnyOrder (
-      listOf(expectedJavaModule) to { actual, expected -> validateJavaModule(actual, expected) }
-    )
+    (mergedRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+      expectedMergedSourceRoots
+    mergedRoots.mergedResourceRoots shouldContainExactlyInAnyOrder expectedMergedResourceRoots
   }
 
   @Test
-  fun `should return dummy module with no sources and with single resources in common path`() {
+  fun `should merge roots for module with no sources and with single resources in common path`() {
     // given
-    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "hirschgarten")
-    VirtualFileManager.getInstance().findFileByNioPath(projectRoot)?.also { project.rootDir = it }
+    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "module1")
     val projectRootName = projectRoot.name
     val javaVersion = "11"
 
@@ -260,45 +239,28 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
       )
 
     // when
-    val javaModules = transformIntoDummyModules(givenJavaModule)
+    val mergedRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
 
     // then
-    val expectedModule =
-      GenericModuleInfo(
-        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${resourcesPath.name}.${messagesPath.name}".addIntelliJDummyPrefix(),
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = listOf(),
-        librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
-        languageIds = listOf("java", "scala", "kotlin"),
+    val expectedMergedSourceRoots = emptyList<JavaSourceRoot>()
+
+    val expectedMergedResourceRoots =
+      listOf(
+        ResourceRoot(
+          resourcePath = messagesPath,
+          rootType = JAVA_RESOURCE_ROOT_TYPE,
+        ),
       )
 
-    val expectedJavaModule =
-      JavaModule(
-        genericModuleInfo = expectedModule,
-        baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
-        sourceRoots =
-          listOf(),
-        resourceRoots =
-          listOf(
-            ResourceRoot(
-              resourcePath = messagesPath.toAbsolutePath(),
-              rootType = JAVA_RESOURCE_ROOT_TYPE,
-            ),
-          ),
-        jvmJdkName = givenJavaModule.jvmJdkName,
-        kotlinAddendum = givenJavaModule.kotlinAddendum,
-      )
-
-    javaModules shouldContainExactlyInAnyOrder (
-      listOf(expectedJavaModule) to { actual, expected -> validateJavaModule(actual, expected) }
-    )
+    (mergedRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+      expectedMergedSourceRoots
+    mergedRoots.mergedResourceRoots shouldContainExactlyInAnyOrder expectedMergedResourceRoots
   }
 
   @Test
-  fun `should return dummy module with no sources and with multiple resources in common path`() {
+  fun `should merge roots for module with no sources and with multiple resources in common path`() {
     // given
-    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "hirschgarten")
-    project.bazelProjectProperties.rootDir = LocalFileSystem.getInstance().findFileByNioFile(projectRoot)!!
+    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "module1")
     val projectRootName = projectRoot.name
     val javaVersion = "11"
 
@@ -331,44 +293,83 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
               resourcePath = resourceFilePath.toAbsolutePath(),
               rootType = JAVA_RESOURCE_ROOT_TYPE,
             ),
+            ResourceRoot(
+              resourcePath = iconFilePath.toAbsolutePath(),
+              rootType = JAVA_RESOURCE_ROOT_TYPE,
+            ),
           ),
         jvmJdkName = javaVersion,
         kotlinAddendum = null,
       )
 
     // when
-    val javaModules = transformIntoDummyModules(givenJavaModule)
+    val mergedRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
 
     // then
-    val expectedModule =
-      GenericModuleInfo(
-        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${resourcesPath.name}.${messagesPath.name}".addIntelliJDummyPrefix(),
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
-        modulesDependencies = listOf(),
-        librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
-        languageIds = listOf("java", "scala", "kotlin"),
+    val expectedMergedSourceRoots = emptyList<JavaSourceRoot>()
+
+    val expectedMergedResourceRoots =
+      listOf(
+        ResourceRoot(
+          resourcePath = resourcesPath,
+          rootType = JAVA_RESOURCE_ROOT_TYPE,
+        ),
       )
 
-    val expectedJavaModule =
+    (mergedRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+      expectedMergedSourceRoots
+    mergedRoots.mergedResourceRoots shouldContainExactlyInAnyOrder expectedMergedResourceRoots
+  }
+
+  @Test
+  fun `should not merge roots if additional files would be covered`() {
+    // given
+    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "module1")
+    val projectRootName = projectRoot.name
+    val javaVersion = "11"
+
+    val givenModule =
+      GenericModuleInfo(
+        name = projectRootName,
+        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        modulesDependencies = emptyList(),
+        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+      )
+    val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
+    val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
+    val resourcesPath = createTempDirectoryAndDeleteItOnExit(mainPath, "resources")
+    val messagesPath = createTempDirectoryAndDeleteItOnExit(resourcesPath, "messages")
+    val resourceFilePath = createTempFile(messagesPath, "Resources", ".properties")
+    resourceFilePath.toFile().deleteOnExit()
+    val anotherResourceFilePath = createTempFile(messagesPath, "AnotherResource", ".properties")
+    anotherResourceFilePath.toFile().deleteOnExit()
+
+    val givenJavaModule =
       JavaModule(
-        genericModuleInfo = expectedModule,
+        genericModuleInfo = givenModule,
         baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
         sourceRoots =
           listOf(),
         resourceRoots =
           listOf(
             ResourceRoot(
-              resourcePath = messagesPath.toAbsolutePath(),
+              resourcePath = resourceFilePath.toAbsolutePath(),
               rootType = JAVA_RESOURCE_ROOT_TYPE,
             ),
           ),
-        jvmJdkName = givenJavaModule.jvmJdkName,
-        kotlinAddendum = givenJavaModule.kotlinAddendum,
+        jvmJdkName = javaVersion,
+        kotlinAddendum = null,
       )
 
-    javaModules shouldContainExactlyInAnyOrder (
-      listOf(expectedJavaModule) to { actual, expected -> validateJavaModule(actual, expected) }
-    )
+    // when
+    val mergedRoots = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, emptyMap(), project).transform(givenJavaModule)
+
+    // then
+    mergedRoots shouldBe
+      JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots(
+        mergedSourceRoots = emptyList(),
+        mergedResourceRoots = null,
+      )
   }
 
   @Test
@@ -548,7 +549,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         ),
       )
 
-    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedSourceRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
       expectedMergedSourceRoots
   }
 
@@ -623,7 +624,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         ),
       )
 
-    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedSourceRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
       expectedMergedSourceRoots
   }
 
@@ -812,7 +813,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         ),
       )
 
-    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedSourceRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
       expectedMergedSourceRoots
   }
 
@@ -888,7 +889,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         ),
       )
 
-    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedSourceRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
       expectedMergedSourceRoots
   }
 
@@ -960,7 +961,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         ),
       )
 
-    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedSourceRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
       expectedMergedSourceRoots
   }
 
@@ -1024,7 +1025,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         ),
       )
 
-    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedSourceRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
       expectedMergedSourceRoots
   }
 
@@ -1159,7 +1160,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         ),
       )
 
-    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedSourceRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
       expectedMergedSourceRoots
   }
 
@@ -1225,7 +1226,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         ),
       )
 
-    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedSourceRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
+    (mergedSourceRoots as JavaModuleToDummyJavaModulesTransformerHACK.MergedRoots).mergedSourceRoots shouldContainExactlyInAnyOrder
       expectedMergedSourceRoots
   }
 
