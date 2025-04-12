@@ -3,8 +3,11 @@ package org.jetbrains.bazel.server.sync.languages
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.model.LanguageData
+import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.FastBuildCommand
+import org.jetbrains.bsp.protocol.FastBuildParams
 import java.nio.file.Path
 
 data class SourceRootAndData(val jvmPackagePrefix: String)
@@ -25,6 +28,9 @@ abstract class LanguagePlugin<T : LanguageData> {
   open fun resolveBuilderPath(targetInfo: BspTargetInfo.TargetInfo): String? = null
 
   open fun resolveBuilderArgs(targetInfo: BspTargetInfo.TargetInfo): List<String> = emptyList()
+
+
+  open fun prepareFastBuild(module: Module, params: FastBuildParams): FastBuildCommand? = null
 
   @Suppress("UNCHECKED_CAST")
   fun setModuleData(moduleData: LanguageData, buildTarget: BuildTarget) = applyModuleData(moduleData as T, buildTarget)

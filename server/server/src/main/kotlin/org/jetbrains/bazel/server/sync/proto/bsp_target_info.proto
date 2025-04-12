@@ -96,6 +96,7 @@ message KotlinTargetInfo {
   repeated KotlincPluginInfo kotlinc_plugin_infos = 600;
   string builder_script = 700;
   repeated string builder_args = 800;
+  repeated string output_jars = 900;
 }
 
 message PythonTargetInfo {

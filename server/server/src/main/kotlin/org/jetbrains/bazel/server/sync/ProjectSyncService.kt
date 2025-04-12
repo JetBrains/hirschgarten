@@ -14,6 +14,8 @@ import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
+import org.jetbrains.bsp.protocol.FastBuildCommand
+import org.jetbrains.bsp.protocol.FastBuildParams
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
@@ -147,6 +149,11 @@ class ProjectSyncService(
   suspend fun buildJvmToolchainInfo(label: Label): JvmToolchainInfo? {
     val project = projectProvider.get() as? AspectSyncProject ?: TODO()
     return bspMapper.jvmBuilderParams(project, label)
+  }
+
+  suspend fun fastBuildTarget(params: FastBuildParams): FastBuildCommand? {
+    val project = projectProvider.get() as? AspectSyncProject ?: TODO()
+    return bspMapper.fastBuildTarget(project, params)
   }
 
   fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =

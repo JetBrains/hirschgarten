@@ -67,4 +67,6 @@ interface JoinedBuildServer {
   suspend fun workspaceContext(): WorkspaceContext
 
   suspend fun jvmToolchainInfo(label: Label): JvmToolchainInfo?
+
+  suspend fun fastBuildFile(params: FastBuildParams): FastBuildCommand?
 }

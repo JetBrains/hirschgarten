@@ -63,6 +63,7 @@ def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
                 dep_plugins.append(exported_compiler_plugins)
     plugins = depset(direct = direct_plugins, transitive = dep_plugins).to_list()
     kt_compiler_plugin_infos = filter_not_none([extract_kt_compiler_plugin_info(plugin) for plugin in plugins])
+    jar_outputs = [file_location(f) for f in getattr(provider, "all_output_jars", [])]
 
     kotlin_target_info = create_struct(
         language_version = language_version,
@@ -73,6 +74,7 @@ def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
         kotlinc_plugin_infos = kt_compiler_plugin_infos,
         builder_script = kotlin_toolchain.kotlinbuilder.files_to_run.executable.path,
         builder_args = kotlin_toolchain.builder_args,
+        output_jars = [f.root_execution_path_fragment + "/" + f.relative_path for f in jar_outputs],
     )
 
     info_file = dict(kotlin_target_info = kotlin_target_info)

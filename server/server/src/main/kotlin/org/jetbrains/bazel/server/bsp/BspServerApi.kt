@@ -17,6 +17,8 @@ import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
+import org.jetbrains.bsp.protocol.FastBuildCommand
+import org.jetbrains.bsp.protocol.FastBuildParams
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
@@ -132,4 +134,9 @@ class BspServerApi(
 
   override suspend fun workspaceContext(): WorkspaceContext = projectSyncService.workspaceContext()
   override suspend fun jvmToolchainInfo(label: Label) = projectSyncService.buildJvmToolchainInfo(label)
+
+
+  override suspend fun fastBuildFile(params: FastBuildParams): FastBuildCommand? {
+    return projectSyncService.fastBuildTarget(params)
+  }
 }

@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.fastbuild
 
-import com.android.tools.idea.projectsystem.gradle.findModule
 import com.intellij.compiler.CompilerMessageImpl
 import com.intellij.compiler.impl.CompileContextImpl
 import com.intellij.compiler.impl.ExitStatus
@@ -25,7 +24,6 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.compiler.CompilerMessageCategory
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.progress.ProgressIndicator
@@ -33,25 +31,18 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.util.io.toCanonicalPath
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
-import com.intellij.util.io.delete
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.sync.BazelBinPathService
-import org.jetbrains.bazel.server.connection.connection
-import org.jetbrains.bazel.target.TargetUtils
+import org.jetbrains.bsp.protocol.FastBuildCommand
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import java.io.File
 import java.io.OutputStreamWriter
-import java.nio.file.Files
 import java.nio.file.Path
 import java.util.zip.ZipFile
-import kotlin.io.path.exists
-import kotlin.io.path.name
 import kotlin.io.path.notExists
 import kotlin.io.path.outputStream
 import kotlin.io.path.pathString
@@ -65,113 +56,21 @@ object FastBuildUtils {
 
   const val fastBuildEnabledKey = "bsp.enable.jvm.fastbuild"
 
-  suspend fun fastBuildFiles(project: Project, files: List<VirtualFile>): Promise<ProjectTaskRunner.Result> {
+  fun fastBuildFiles(project: Project, fastBuildCommand: FastBuildCommand, file: VirtualFile): Promise<ProjectTaskRunner.Result> {
     val promise = AsyncPromise<ProjectTaskRunner.Result>()
-    val workspaceRoot = project.rootDir.toNioPath()
-
-    val targetUtils = project.service<TargetUtils>()
-    val virtualFileManager = VirtualFileManager.getInstance()
-    val buildInfos = files
-      .mapNotNull { file ->
-        targetUtils.getBuildTargetForLabel(
-          targetUtils.getTargetsForFile(file).first()
-        )?.let {
-          file to it
-        }
-      }.toMap()
-
-    if (buildInfos.isEmpty()) {
-      logger.info("Unable to determine build targets for files, falling back to native compile")
-      TODO()
-    }
-    for (entry in buildInfos) {
-      val toolchainInfo = project.connection.runWithServer { it.jvmToolchainInfo(entry.value.id) }
-      if (toolchainInfo == null) {
-        TODO()
-      }
-      val inputFile = entry.key
-      val filePath = inputFile.path
-      val canonicalFilePath = inputFile.canonicalPath
-//      span.setAttribute("file", filePath)
-//      span.setAttribute("file.canonical", canonicalFilePath + "")
-
-      val workspacePath = workspaceRoot.pathString
-      val canonicalWorkspaceRootPath = workspaceRoot.toCanonicalPath()
-//      span.setAttribute("workspaceRoot", workspacePath)
-//      span.setAttribute("workspaceRoot.canonical", canonicalWorkspaceRootPath)
-      if (!(canonicalFilePath?.startsWith(canonicalWorkspaceRootPath) ?: false)) {
-        logger.warn(String.format("Path %s is not under workspace root %s or bazel folder is null",
-          filePath, workspacePath
-        ))
-        NotificationGroupManager.getInstance().getNotificationGroup("HotSwap Messages").createNotification(
-          "Hotswap failed",
-          String.format("Hotswap failed with errors: %s is not under workspace root %s.", canonicalFilePath, canonicalWorkspaceRootPath),
-          NotificationType.ERROR
-        ).setImportant(true).notify(project)
-
-//        span.addEvent("path is not under workspace root or bazel folder is null")
-//          .setStatus(StatusCode.ERROR)
-//          .end()
-        continue
-      }
-      val relativePath = entry.value.baseDirectory?.let {
-        virtualFileManager.findFileByNioPath(it)?.toNioPath()?.relativeTo(workspaceRoot)
-      } ?: continue
-      val isLib = targetUtils.isLibrary(entry.value.id)
-      val bazelBin = BazelBinPathService.getInstance(project).bazelBinPath ?: TODO()
-      val targetJar = Path.of("$bazelBin/${relativePath}/${if (isLib) "lib" else ""}${entry.value.id.targetName}.jar")
-
-      val originalParamsFile = targetJar.parent.resolve(targetJar.fileName.name + "-0.params")
-      val originalParamsFile1 = targetJar.parent.resolve(targetJar.fileName.name + "-1.params")
-
-      if (originalParamsFile.notExists()) {
-        logger.info("Params file not found for fast compile. Delegating to bazel build")
-//        span.setAttribute("fast-build", false)
-        //Without the params file, we have to fall back to the original hotswap mechanism via bazel build
-        //This will generate the params file for later use
-        //TODO multiple files
-//        bazelServer.nativeBuildAndHotswap(project, context, span, *tasks).onProcessed { promise.setResult(it) }
-        TODO()
-      }
-//      span.setAttribute("fast-build", true)
-
-      runInEdt {
-        FileDocumentManager.getInstance().saveAllDocuments()
-      }
-
-
       val compileTask = CompilerTask(project, "Recompile", false, false, true, false)
-      val compileScope = OneProjectItemCompileScope(project, inputFile)
+      val compileScope = OneProjectItemCompileScope(project, file)
       val compileContext = CompileContextImpl(project, compileTask, compileScope, true, false)
       compileTask.start({
         val indicator = ProgressManager.getInstance().progressIndicator
 
         indicator.checkCanceled()
 
-        val tempDir = Files.createTempDirectory("cdb-fast-compile")
-        logger.debug("Using '$tempDir' for fast compile")
-        val outputJar = tempDir.resolve("output.jar")
 
-        val paramsFile = updateAndWriteCompileParams(
-          originalParamsFile,
-          tempDir,
-          outputJar,
-          Path.of(inputFile.canonicalPath),
-          Path.of(workspaceRoot.toCanonicalPath()),
-          targetJar
+        val arguments = listOf(
+          fastBuildCommand.builderScript,
+          *fastBuildCommand.builderArgs.toTypedArray()
         )
-
-        indicator.checkCanceled()
-
-
-        val arguments = buildList {
-          add(toolchainInfo.builder_script)
-          addAll(toolchainInfo.builder_args)
-          add("@${paramsFile.pathString}")
-          if (originalParamsFile1.exists()) {
-            add("@${originalParamsFile1.pathString}")
-          }
-        }
         val command = GeneralCommandLine(arguments).apply {
           workDirectory = File(BazelBinPathService.getInstance(project).bazelExecPath ?: TODO())
         }
@@ -190,7 +89,7 @@ object FastBuildUtils {
                       project,
                       CompilerMessageCategory.ERROR,
                       error,
-                      inputFile,
+                      file,
                       line,
                       0,
                       null
@@ -219,7 +118,6 @@ object FastBuildUtils {
           handler.startNotify()
           if (!handler.waitFor() || handler.exitCode != 0) {
             compileTask.setEndCompilationStamp(ExitStatus.ERRORS, System.currentTimeMillis())
-            tempDir.delete()
             return@start
           }
         } catch (e: ExecutionException) {
@@ -236,110 +134,19 @@ object FastBuildUtils {
         }
         compileTask.setEndCompilationStamp(ExitStatus.SUCCESS, System.currentTimeMillis())
 
-        processAndHotswapOutput(tempDir, outputJar, project)
+        processAndHotswapOutput(fastBuildCommand.outputFile, project)
         promise.setResult(TaskRunnerResults.SUCCESS)
       }, null)
-    }
     return promise
-  }
-
-  /**
-   * Copies the original params file updating certain fields to reduce compile time
-   * and point to a different output
-   */
-  fun updateAndWriteCompileParams(
-    originalParams: Path, tempDir: Path, outputJar: Path, inputFile: Path,
-    workspaceRoot: Path, targetJar: Path
-  ): Path {
-    val params = tempDir.resolve("compile.params")
-    originalParams.reader().buffered().use { ips ->
-      params.writer().use { os ->
-        var line = ips.readLine()
-        val sourceFile = inputFile.relativeTo(workspaceRoot)
-        while (line != null) {
-          fun OutputStreamWriter.writeLn(line: String) = write("$line\n")
-          when (line) {
-            "--output" -> {
-              os.writeLn(line)
-              os.writeLn(outputJar.pathString)
-              ips.readLine()
-            }
-
-            "--native_header_output" -> {
-              os.writeLn(line)
-              os.writeLn(tempDir.resolve("output-native-header.jar").pathString)
-              ips.readLine()
-            }
-
-            "--generated_sources_output" -> {
-              os.writeLn(line)
-              os.writeLn(tempDir.resolve("output-generated-sources.jar").pathString)
-              ips.readLine()
-            }
-
-            "--output_manifest_proto" -> {
-              os.writeLn(line)
-              os.writeLn(tempDir.resolve("output.jar_manifest_proto").pathString)
-              ips.readLine()
-            }
-
-            "--output_deps_proto" -> {
-              os.writeLn(line)
-              os.writeLn(tempDir.resolve("output.jdpes").pathString)
-              ips.readLine()
-            }
-
-            "--sources" -> {
-              os.writeLn(line)
-              line = ips.readLine()
-              os.writeLn(sourceFile.pathString)
-              while (line?.startsWith("--") == false) {
-                line = ips.readLine()
-              }
-              continue
-            }
-
-            "--source_jars" -> {
-              line = ips.readLine()
-              while (line?.startsWith("--") == false) {
-                line = ips.readLine()
-              }
-              continue
-            }
-
-            "--direct_dependencies" -> {
-              os.writeLn(line)
-              line = ips.readLine()
-              while (line?.startsWith("--") == false) {
-                os.write("$line\n")
-                line = ips.readLine()
-              }
-              //Add the modules jar to the dependencies
-              if (targetJar.notExists()) {
-                logger.error("Bazel module jar not found: $targetJar")
-              }
-              os.writeLn(targetJar.pathString)
-              continue
-            }
-
-            else -> {
-              os.writeLn(line)
-            }
-          }
-          line = ips.readLine()
-        }
-      }
-    }
-    return params
   }
 
   /**
    * Unzips the jar and uses the files within to hotswap
    */
-  fun processAndHotswapOutput(tempDir: Path, outputJar: Path, project: Project) {
+  fun processAndHotswapOutput(outputJar: Path, project: Project) {
     ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Hotswapping", true) {
       override fun run(indicator: ProgressIndicator) {
-        val unzip = tempDir.resolve("unzip").also { it.toFile().mkdir() }
+        val unzip = outputJar.parent.resolve("unzip").also { it.toFile().mkdir() }
         val files = buildList<String> {
           ZipFile(outputJar.toFile()).use { zipFile ->
             zipFile.entries().iterator().forEach {
@@ -364,13 +171,13 @@ object FastBuildUtils {
         indicator.checkCanceled()
 //        span.end()
 
-        hotswapFile(project, files, tempDir.toFile())
+        hotswapFile(project, files)
       }
     })
 
   }
 
-  fun hotswapFile(project: Project, hotswapMap: Map<String, HotSwapFile>, tempDir: File) {
+  fun hotswapFile(project: Project, hotswapMap: Map<String, HotSwapFile>) {
 
     ApplicationManager.getApplication().invokeLater {
       val sessionsToHotswap = getSessionsToHotswap(project)
@@ -384,7 +191,6 @@ object FastBuildUtils {
         } finally {
           triggerHotswapSuccessNotification(project, progress)
           progress.finished()
-          tempDir.delete()
 //          hotswapSpan.end()
         }
       }

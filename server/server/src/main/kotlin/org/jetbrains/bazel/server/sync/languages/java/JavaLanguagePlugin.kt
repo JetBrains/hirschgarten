@@ -3,14 +3,20 @@ package org.jetbrains.bazel.server.sync.languages.java
 import org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
+import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.FastBuildCommand
+import org.jetbrains.bsp.protocol.FastBuildParams
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import java.nio.file.Path
+import kotlin.io.path.exists
+import kotlin.io.path.name
+import kotlin.io.path.pathString
 
 class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, private val jdkResolver: JdkResolver) :
   LanguagePlugin<JavaModule>() {
@@ -65,6 +71,29 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
       return targetInfo.jvmTargetInfo.builderArgsList
     }
     return emptyList()
+  }
+
+  override fun prepareFastBuild(module: Module, params: FastBuildParams): FastBuildCommand? {
+    val languageData = module.languageData
+    if (languageData is JavaModule) {
+      val targetJar = languageData.binaryOutputs.first()
+      val targetParams = targetJar.parent.resolve(targetJar.name + "-0.params")
+      val targetParams1 = targetJar.parent.resolve(targetJar.name + "-1.params")
+
+      val buildOutputJar = params.tempDir.resolve("build.jar")
+      val buildParams = JavaManifestUtil.updateAndWriteCompileParams(targetParams, params.tempDir, buildOutputJar, params.file, bazelPathsResolver.workspaceRoot(), targetJar)
+
+      val builder = module.builderPath ?: TODO()
+      val args = buildList {
+        addAll(module.builderArgs)
+        add("@${buildParams.pathString}")
+        if (targetParams1.exists()) {
+          add("@${targetParams1.pathString}")
+        }
+      }
+      return FastBuildCommand(builder, args, buildOutputJar)
+    }
+    return null
   }
 
   private fun javaVersionFromJavacOpts(javacOpts: List<String>): String? =

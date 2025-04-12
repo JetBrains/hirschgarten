@@ -14,6 +14,8 @@ import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
+import org.jetbrains.bsp.protocol.FastBuildCommand
+import org.jetbrains.bsp.protocol.FastBuildParams
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
@@ -148,4 +150,7 @@ class BuildServerMock(
   override suspend fun jvmToolchainInfo(label: Label) = JvmToolchainInfo("/path/to/java/home", emptyList())
 
   private fun <T> wrapInFuture(value: T?): T = value ?: error("mock value is null")
+  override suspend fun fastBuildFile(params: FastBuildParams): FastBuildCommand {
+    TODO()
+  }
 }
