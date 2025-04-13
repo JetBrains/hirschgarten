@@ -16,21 +16,14 @@ class ProjectViewAnnotator : Annotator {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
     if (element is ProjectViewPsiSection) {
       // Check if the section is empty.
-      ProjectViewSection.KEYWORD_MAP[element.firstChild.text]?.let { section ->
-        val isSectionEmpty: Boolean =
-          if (section.isList) {
-            element.children.isEmpty()
-          } else {
-            element.lastChild.firstChild == null
-          }
-
-        if (isSectionEmpty) {
-          createErrorAnnotation(holder, "No items!", element.range)
+      ProjectViewSection.KEYWORD_MAP[element.getKeyword()]?.let { section ->
+        if (element.isEmpty()) {
+          createErrorAnnotation(holder, "No items", element.range)
         }
       }
     } else if (element is ProjectViewPsiSectionItem) {
       // Parse the item.
-      ProjectViewSection.KEYWORD_MAP[element.parent.firstChild.text]?.let { section ->
+      ProjectViewSection.KEYWORD_MAP[element.getKeyword()]?.let { section ->
         val res = section.parseItem(element.text)
         when (res) {
           is ProjectViewSection.ParsingResult.OK -> {
@@ -40,8 +33,8 @@ class ProjectViewAnnotator : Annotator {
             createErrorAnnotation(holder, res.message, element.range)
         }
       }
-    } else if (element is ProjectViewPsiImport && element.lastChild.firstChild == null) {
-      createErrorAnnotation(holder, "No import path!", element.range)
+    } else if (element is ProjectViewPsiImport && element.isEmpty()) {
+      createErrorAnnotation(holder, "No import path", element.range)
     }
   }
 
@@ -64,10 +57,4 @@ class ProjectViewAnnotator : Annotator {
       .range(range)
       .create()
   }
-
-  data class Annotation(
-    val message: String,
-    val range: TextRange,
-    val severity: HighlightSeverity,
-  )
 }
