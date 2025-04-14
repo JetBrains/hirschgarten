@@ -4,7 +4,9 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.options.UnnamedConfigurable
 import com.intellij.openapi.project.Project
 
-interface BazelSettingsProvider : UnnamedConfigurable
+interface BazelSettingsProvider {
+  fun createConfigurable(project: Project): UnnamedConfigurable
+}
 
 object BazelExperimentalSettingsProvider {
   val ep = ExtensionPointName.create<BazelSettingsProvider>("org.jetbrains.bazel.bazelExperimentalSettingsProvider")
