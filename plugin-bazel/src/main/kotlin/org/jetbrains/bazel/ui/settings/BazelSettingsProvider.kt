@@ -16,7 +16,7 @@ object BazelGeneralSettingsProvider {
   val ep = ExtensionPointName.create<BazelSettingsProvider>("org.jetbrains.bazel.bazelGeneralSettingsProvider")
 }
 
-val Project.bazelExperimentalSettingsProvider: List<BazelSettingsProvider>
+val Project.bazelExperimentalSettingsProviders: List<BazelSettingsProvider>
   get() = BazelExperimentalSettingsProvider.ep.getExtensions(this).toList()
 val Project.bazelGeneralSettingsProvider: List<BazelSettingsProvider>
   get() = BazelGeneralSettingsProvider.ep.getExtensions(this).toList()
