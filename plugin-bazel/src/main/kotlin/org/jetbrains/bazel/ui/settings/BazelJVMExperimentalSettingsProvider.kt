@@ -32,7 +32,7 @@ class BazelJVMExperimentalSettings(private val project: Project): UnnamedConfigu
     hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
   }
 
-  override fun createComponent(): JComponent? =
+  override fun createComponent(): JComponent =
     panel {
       group(BazelPluginBundle.message("project.settings.local.runner.settings")) {
         row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
