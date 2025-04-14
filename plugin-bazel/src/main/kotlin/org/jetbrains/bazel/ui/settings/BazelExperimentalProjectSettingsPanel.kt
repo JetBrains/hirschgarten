@@ -27,7 +27,13 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
         .forEach { appendDslConfigurable(it) }
     }
 
-  override fun createConfigurables(): List<UnnamedConfigurable> = project.bazelExperimentalSettingsProvider
+  override fun getDependencies(): List<ExtensionPointName<BazelSettingsProvider>> =
+    listOf(BazelExperimentalSettingsProvider.ep)
+
+  override fun createConfigurables(): List<UnnamedConfigurable> = project.bazelExperimentalSettingsProvider.map {
+    it.createConfigurable(project)
+  }
+
 
   override fun reset() {
     super<BoundCompositeSearchableConfigurable>.reset()
