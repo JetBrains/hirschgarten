@@ -6,6 +6,7 @@ import com.intellij.psi.tree.IElementType
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementType
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementTypes
 import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
+import org.jetbrains.bazel.languages.projectview.language.ProjectViewSectionParser
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 
 class ProjectViewParser(private val builder: PsiBuilder) {
@@ -24,15 +25,18 @@ class ProjectViewParser(private val builder: PsiBuilder) {
     val marker = builder.mark()
     when (getCurrentTokenType()) {
       ProjectViewTokenType.SECTION_KEYWORD -> {
-        ProjectViewSection.KEYWORD_MAP[builder.tokenText]?.let { section ->
+        ProjectViewSection.KEYWORD_MAP[builder.tokenText]?.let { parser ->
           builder.advanceLexer()
           expect(ProjectViewTokenType.COLON)
 
-          if (section.isList) {
-            skipToNextLine()
-            parseListItems()
-          } else {
-            parseItem(ProjectViewElementTypes.SECTION_ITEM)
+          when (parser) {
+            is ProjectViewSectionParser.ScalarSectionParser<*> -> {
+              parseItem(ProjectViewElementTypes.SECTION_ITEM)
+            }
+            is ProjectViewSectionParser.ListSectionParser<*> -> {
+              skipToNextLine()
+              parseListItems()
+            }
           }
 
           marker.done(ProjectViewElementTypes.SECTION)

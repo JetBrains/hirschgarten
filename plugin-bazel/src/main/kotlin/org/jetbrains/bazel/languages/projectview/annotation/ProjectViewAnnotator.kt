@@ -6,35 +6,38 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.languages.projectview.language.ProjectViewImport
 import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
+import org.jetbrains.bazel.languages.projectview.language.ProjectViewSectionParser
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImport
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
-import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSectionItem
 import org.jetbrains.kotlin.idea.base.codeInsight.handlers.fixers.range
 
 class ProjectViewAnnotator : Annotator {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
     if (element is ProjectViewPsiSection) {
-      // Check if the section is empty.
-      ProjectViewSection.KEYWORD_MAP[element.getKeyword()]?.let { section ->
-        if (element.isEmpty()) {
-          createErrorAnnotation(holder, "No items", element.range)
-        }
+      ProjectViewSection.KEYWORD_MAP[element.getKeyword()]?.let { parser ->
+        val itemElements = element.getItems()
+        parser.parse(itemElements.map { it.text }).fold(
+          onSuccess = {
+            it.textAttributesKey?.let { textAttributesKey ->
+              itemElements.forEach { itemElement -> createInformationAnnotation(holder, textAttributesKey, itemElement.range) }
+            }
+          },
+          onFailure = {
+            val errorScope =
+              when (it) {
+                is ProjectViewSectionParser.ScalarValueException -> itemElements.first()
+                else -> element
+              }
+            createErrorAnnotation(holder, it.message ?: "", errorScope.range)
+          },
+        )
       }
-    } else if (element is ProjectViewPsiSectionItem) {
-      // Parse the item.
-      ProjectViewSection.KEYWORD_MAP[element.getKeyword()]?.let { section ->
-        val res = section.parseItem(element.text)
-        when (res) {
-          is ProjectViewSection.ParsingResult.Ok<*> -> {
-            createHighlightAnnotation(holder, section.highlightColor, element.range)
-          }
-          is ProjectViewSection.ParsingResult.Error ->
-            createErrorAnnotation(holder, res.message, element.range)
-        }
+    } else if (element is ProjectViewPsiImport) {
+      ProjectViewImport.KEYWORD_MAP[element.getKeyword()]?.let { import ->
+        import.parse(element.getPath()).onFailure { createErrorAnnotation(holder, it.message ?: "", element.range) }
       }
-    } else if (element is ProjectViewPsiImport && element.isEmpty()) {
-      createErrorAnnotation(holder, "No import path", element.range)
     }
   }
 
@@ -46,7 +49,7 @@ class ProjectViewAnnotator : Annotator {
     holder.newAnnotation(HighlightSeverity.ERROR, message).range(range).create()
   }
 
-  private fun createHighlightAnnotation(
+  private fun createInformationAnnotation(
     holder: AnnotationHolder,
     textAttributesKey: TextAttributesKey,
     range: TextRange,
