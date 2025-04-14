@@ -24,10 +24,11 @@ class ProjectViewLexerTest : LexerTestCase() {
     fun getExampleCode(): String
 
     companion object {
-      fun create(key: ProjectViewSyntaxKey, parser: ProjectViewSection.Parser): Section =
-        when (parser) {
-          is ProjectViewSection.Parser.Scalar -> Scalar(key)
-          is ProjectViewSection.Parser.List<*> -> List(key)
+      fun create(key: ProjectViewSyntaxKey, section: ProjectViewSection<*>): Section =
+        if (section.isList) {
+          List(key)
+        } else {
+          Scalar(key)
         }
 
       private val SCALAR_SECTION =
@@ -38,7 +39,6 @@ class ProjectViewLexerTest : LexerTestCase() {
           "ProjectView:identifier",
         )
 
-      /** A vector section. */
       private val LIST_SECTION =
         listOf(
           "ProjectView:section_keyword",
@@ -74,7 +74,7 @@ class ProjectViewLexerTest : LexerTestCase() {
 
   @Test
   fun `should lex registered sections`() {
-    ProjectViewSection.KEYWORD_MAP.map { (key, parser) -> Section.create(key, parser) }.forEach { section ->
+    ProjectViewSection.KEYWORD_MAP.map { (key, section) -> Section.create(key, section) }.forEach { section ->
       section.getExampleCode() shouldLexTo
         section.getExpectedTokens()
     }
