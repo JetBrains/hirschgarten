@@ -22,13 +22,12 @@ import com.intellij.testFramework.replaceService
 import com.intellij.testFramework.workspaceModel.updateProjectModel
 import com.intellij.workspaceModel.ide.legacyBridge.impl.java.JAVA_SOURCE_ROOT_ENTITY_TYPE_ID
 import com.intellij.workspaceModel.ide.toPath
-import com.jetbrains.rd.util.AtomicReference
 import io.kotest.common.runBlocking
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.channels.Channel
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
@@ -51,7 +50,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   @TestDisposable
   lateinit var disposable: Disposable
 
-  private lateinit var waiter: ReusableDeferred
+  private val waiter = Channel<Unit>()
 
   private val target1 = Label.parse("//src:target1")
   private val target2 = Label.parse("//src:target2")
@@ -71,13 +70,13 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     target3.createModule()
     target4.createModule()
 
-    waiter = registerSyncWaiter()
+    registerSyncWaiter()
   }
 
   @Test
   fun `source file creation`() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
-    waiter.awaitAndReset()
+    waiter.await()
 
     file.assertModelStatus(
       target1 to true,
@@ -88,7 +87,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   @Test
   fun `source file rename`() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
-    waiter.awaitAndReset()
+    waiter.await()
 
     file.assertModelStatus(
       target1 to true,
@@ -97,7 +96,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     )
 
     runTestWriteAction { file.rename(requestor, "bbb.java") }
-    waiter.awaitAndReset()
+    waiter.await()
 
     file.assertModelStatus(
       target1 to true,
@@ -111,7 +110,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     val src = project.rootDir.createDirectory("src")
     val file = src.createFile("aaa", "java")
     val pack = src.createDirectory("package")
-    waiter.awaitAndReset()
+    waiter.await()
 
     file.assertModelStatus(
       target1 to true,
@@ -120,7 +119,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     )
 
     runTestWriteAction { file.move(requestor, pack) }
-    waiter.awaitAndReset()
+    waiter.await()
 
     file.assertModelStatus(
       target1 to false,
@@ -133,7 +132,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   fun `source file copy`() {
     val src = project.rootDir.createDirectory("src")
     val file = src.createFile("aaa", "java")
-    waiter.awaitAndReset()
+    waiter.await()
 
     file.assertModelStatus(
       target1 to true,
@@ -142,7 +141,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     )
 
     val newFile = runTestWriteAction { file.copy(requestor, src, "bbb.java") }
-    waiter.awaitAndReset()
+    waiter.await()
 
     file.assertModelStatus(
       target1 to true,
@@ -160,7 +159,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   fun `source file delete`() {
     val src = project.rootDir.createDirectory("src")
     val file = src.createFile("aaa", "java")
-    waiter.awaitAndReset()
+    waiter.await()
 
     file.assertModelStatus(
       target1 to true,
@@ -168,7 +167,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     )
 
     runTestWriteAction { file.delete(requestor) }
-    waiter.awaitAndReset()
+    waiter.await()
 
     file.assertModelStatus(
       target1 to false,
@@ -201,9 +200,9 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     val fileListener = AssignFileToModuleListener()
     val src = project.rootDir.createDirectory("src")
     val fileA = src.createFile("aaa", "java")
-    waiter.awaitAndReset() // waiting for the real file listener to finish to avoid disposable errors
+    waiter.await() // waiting for the real file listener to finish to avoid disposable errors
     val fileB = src.createFile("bbb", "java")
-    waiter.awaitAndReset() // waiting for the real file listener to finish to avoid disposable errors
+    waiter.await() // waiting for the real file listener to finish to avoid disposable errors
 
     val events = listOf(createEvent(fileA), createEvent(fileB))
     val job = fileListener.testableAfter(events)[project]
@@ -253,7 +252,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
 
     val file = src.createFile("aaa", "java")
     val fileUrl = file.toVirtualFileUrl(virtualFileUrlManager)
-    waiter.awaitAndReset()
+    waiter.await()
 
     // should not be added to target1's model
     target1.itsModuleContainsFile(fileUrl).shouldBeFalse()
@@ -338,8 +337,9 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     return resolve(moduleId) ?: error("Module for $target does not exist")
   }
 
-  private fun registerSyncWaiter(): ReusableDeferred =
-    ReusableDeferred().also { deferred -> project.targetUtils.registerSyncListener { deferred.complete() } }
+  private fun registerSyncWaiter() {
+    project.targetUtils.registerSyncListener { runBlocking { waiter.send(Unit) } }
+  }
 }
 
 private class InverseSourcesServer(private val projectBasePath: Path) : BuildServerMock() {
@@ -369,15 +369,6 @@ private class InverseSourcesServer(private val projectBasePath: Path) : BuildSer
   }
 }
 
-private class ReusableDeferred {
-  private val deferred = AtomicReference(CompletableDeferred<Unit>())
-
-  fun complete() {
-    deferred.get().complete(Unit)
-  }
-
-  fun awaitAndReset() {
-    runBlocking { deferred.get().join() }
-    deferred.getAndSet(CompletableDeferred())
-  }
+private fun Channel<Unit>.await() {
+  runBlocking { receive() }
 }
