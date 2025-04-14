@@ -1,33 +1,36 @@
 package org.jetbrains.bazel.ui.settings
 
+import com.intellij.openapi.options.BoundCompositeSearchableConfigurable
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurableProvider
-import com.intellij.openapi.options.SearchableConfigurable
+import com.intellij.openapi.options.UnnamedConfigurable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import javax.swing.JComponent
 
-internal class BazelExperimentalProjectSettingsConfigurable(private val project: Project) : SearchableConfigurable {
+internal class BazelExperimentalProjectSettingsConfigurable(private val project: Project) :
+  BoundCompositeSearchableConfigurable<UnnamedConfigurable>(
+    displayName = BazelPluginBundle.message(DISPLAY_NAME_KEY),
+    helpTopic = "",
+  ) {
   // experimental features
 
   private var currentProjectSettings = project.bazelProjectSettings
 
-  override fun createComponent(): JComponent =
+  override fun createPanel(): DialogPanel =
     panel {
-      project.bazelSettingsProvider.forEach { it.addExperimentalSettings()() }
+      // add settings from extensions
+      configurables
+        .sortedBy { c -> (c as? Configurable)?.displayName ?: "" }
+        .forEach { appendDslConfigurable(it) }
     }
 
-  override fun isModified(): Boolean =
-    currentProjectSettings != project.bazelProjectSettings || project.bazelSettingsProvider.any { it.isModified() }
-
-  override fun apply() {
-    project.bazelSettingsProvider.forEach { it.apply() }
-  }
+  override fun createConfigurables(): List<UnnamedConfigurable> = project.bazelExperimentalSettingsProvider
 
   override fun reset() {
-    super.reset()
+    super<BoundCompositeSearchableConfigurable>.reset()
     currentProjectSettings = project.bazelProjectSettings
   }
 

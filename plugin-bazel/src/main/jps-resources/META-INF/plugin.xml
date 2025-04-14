@@ -101,7 +101,11 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
                         interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bazel.bazelSettingsProvider"
+        <extensionPoint qualifiedName="org.jetbrains.bazel.bazelExperimentalSettingsProvider"
+                        area="IDEA_PROJECT"
+                        interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"
+                        dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bazel.bazelGeneralSettingsProvider"
                         area="IDEA_PROJECT"
                         interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"
                         dynamic="true"/>
@@ -276,8 +280,8 @@
         <additionalProjectTaskRunnerProvider
                 implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
 
-        <bazelSettingsProvider implementation="org.jetbrains.bazel.ui.settings.BazelJVMSettingsProvider"/>
-
+        <bazelExperimentalSettingsProvider
+                implementation="org.jetbrains.bazel.ui.settings.BazelJVMExperimentalSettingsProvider"/>
 
     </extensions>
 

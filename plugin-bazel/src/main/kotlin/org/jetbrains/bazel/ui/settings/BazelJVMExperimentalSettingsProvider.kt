@@ -3,41 +3,32 @@ package org.jetbrains.bazel.ui.settings
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.Align
-import com.intellij.ui.dsl.builder.Panel
+import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
-import org.jetbrains.bazel.sync.scope.SecondPhaseSync
-import org.jetbrains.bazel.sync.status.isSyncInProgress
-import org.jetbrains.bazel.sync.task.ProjectSyncTask
+import javax.swing.JComponent
 
-class BazelJVMSettingsProvider(private val project: Project) : BazelSettingsProvider {
-  private val hotswapEnabledCheckBox: JBCheckBox
-
+class BazelJVMExperimentalSettingsProvider(private val project: Project) : BazelSettingsProvider {
   // experimental features
   private val enableLocalJvmActionsCheckBox: JBCheckBox
   private val enableBuildWithJpsCheckBox: JBCheckBox
   private val useIntellijTestRunnerCheckBox: JBCheckBox
+  private val hotswapEnabledCheckBox: JBCheckBox
 
   private var currentJVMProjectSettings = project.bazelJVMProjectSettings
 
   init {
-    hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
 
     // experimental features
     enableLocalJvmActionsCheckBox = initEnableLocalJvmActionsCheckBox()
     enableBuildWithJpsCheckBox = initEnableBuildWithJpsCheckBox()
     // TODO: BAZEL-1837
     useIntellijTestRunnerCheckBox = initUseIntellijTestRunnerCheckBoxBox()
+    hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
   }
 
-  override fun addGeneralSettings(): Panel.() -> Unit =
-    {
-      row { cell(hotswapEnabledCheckBox).align(Align.FILL) }
-    }
-
-  override fun addExperimentalSettings(): Panel.() -> Unit =
-    {
+  override fun createComponent(): JComponent? =
+    panel {
       group(BazelPluginBundle.message("project.settings.local.runner.settings")) {
         row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
         row {
@@ -52,12 +43,6 @@ class BazelJVMSettingsProvider(private val project: Project) : BazelSettingsProv
   override fun isModified(): Boolean = currentJVMProjectSettings != project.bazelJVMProjectSettings
 
   override fun apply() {
-    val isEnableBuildWithJpsChanged = currentJVMProjectSettings.enableBuildWithJps != project.bazelJVMProjectSettings.enableBuildWithJps
-    if (isEnableBuildWithJpsChanged && !project.isSyncInProgress()) {
-      BazelCoroutineService.getInstance(project).start {
-        ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
-      }
-    }
     project.bazelJVMProjectSettings = currentJVMProjectSettings
   }
 
