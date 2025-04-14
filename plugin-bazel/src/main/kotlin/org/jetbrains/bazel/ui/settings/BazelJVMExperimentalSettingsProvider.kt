@@ -8,7 +8,12 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import javax.swing.JComponent
 
-class BazelJVMExperimentalSettingsProvider(private val project: Project) : BazelSettingsProvider {
+class BazelJVMExperimentalSettingsProvider : BazelSettingsProvider {
+  override fun createConfigurable(project: Project): UnnamedConfigurable =
+    BazelJVMExperimentalSettings(project)
+}
+
+class BazelJVMExperimentalSettings(private val project: Project): UnnamedConfigurable {
   // experimental features
   private val enableLocalJvmActionsCheckBox: JBCheckBox
   private val enableBuildWithJpsCheckBox: JBCheckBox
