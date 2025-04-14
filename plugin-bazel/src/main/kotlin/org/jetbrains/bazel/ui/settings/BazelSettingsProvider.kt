@@ -18,5 +18,5 @@ object BazelGeneralSettingsProvider {
 
 val Project.bazelExperimentalSettingsProviders: List<BazelSettingsProvider>
   get() = BazelExperimentalSettingsProvider.ep.getExtensions(this).toList()
-val Project.bazelGeneralSettingsProvider: List<BazelSettingsProvider>
+val Project.bazelGeneralSettingsProviders: List<BazelSettingsProvider>
   get() = BazelGeneralSettingsProvider.ep.getExtensions(this).toList()
