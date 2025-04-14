@@ -27,12 +27,10 @@ sealed class CopyTargetIdAction : AnAction({ BazelPluginBundle.message("widget.c
     clipboard.setContents(transferable)
   }
 
-  class FromContainer(private val container: BuildTargetContainer, component: JComponent) : CopyTargetIdAction() {
+  abstract class FromContainer(component: JComponent) : CopyTargetIdAction() {
     init {
       registerCustomShortcutSet(CommonShortcuts.getCopy(), component)
     }
-
-    override fun getTargetInfo(): BuildTarget? = container.getSelectedBuildTarget()
   }
 
   class FromTargetInfo(private val targetInfo: BuildTarget) : CopyTargetIdAction() {

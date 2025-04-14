@@ -26,15 +26,16 @@ import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.filter.FilterActionGroup
 import org.jetbrains.bazel.ui.widgets.tool.window.filter.TargetFilter
+import org.jetbrains.bazel.ui.widgets.tool.window.model.BuildTargetsModel
 import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
 import java.nio.file.Path
 import javax.swing.SwingConstants
 
 class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, true) {
-  private val targetFilter = TargetFilter { rerenderComponents() }
-  private val searchBarPanel = SearchBarPanel()
-  private var loadedTargetsPanel: BspPanelComponent
+  private val model = BuildTargetsModel(project)
+  private val searchBarPanel = SearchBarPanel(model)
+  private val loadedTargetsPanel = BspPanelComponent(project, model)
 
   init {
     val actionManager = ActionManager.getInstance()
@@ -61,7 +62,7 @@ class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, t
       }
 
     this.toolbar = actionToolbar.component
-    setContent(loadedTargetsPanel.withScrollAndSearch())
+    setContent(loadedTargetsPanel.withScrollAndSearch(searchBarPanel))
 
     targetUtils.registerSyncListener { targetListChanged ->
       if (targetListChanged) {
@@ -72,25 +73,17 @@ class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, t
     }
   }
 
-  private fun createLoadedTargetsPanel(project: Project, targetUtils: TargetUtils): BspPanelComponent =
-    BspPanelComponent(
+  private fun createLoadedTargetsPanel(project: Project): BspPanelComponent {
+    // Initialize the model with targets
+    val targets = project.targetUtils.allTargets().mapNotNull { project.targetUtils.getBuildTargetForLabel(it) }
+    model.updateTargets(targets, project.invalidTargets)
+
+    return BspPanelComponent(
       project = project,
-      targetIcon = BazelPluginIcons.bazel,
-      invalidTargetIcon = BazelPluginIcons.bazelError,
-      toolName = BazelPluginConstants.BAZEL_DISPLAY_NAME,
-      targets = targetUtils.allTargets().mapNotNull { targetUtils.getBuildTargetForLabel(it) },
-      invalidTargets = project.invalidTargets,
-      searchBarPanel = searchBarPanel,
+      model = model,
     ).apply {
       registerPopupHandler { LoadedTargetsMouseListener(it, project) }
     }
-
-  private fun rerenderComponents() {
-    val targetUtils = project.targetUtils
-    searchBarPanel.clearAllListeners()
-    loadedTargetsPanel =
-      loadedTargetsPanel.createNewWithTargets(targetFilter.getMatchingLoadedTargets(targetUtils), project.invalidTargets)
-    setContent(loadedTargetsPanel.withScrollAndSearch())
   }
 }
 

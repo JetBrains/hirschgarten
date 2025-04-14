@@ -5,14 +5,14 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
-import org.jetbrains.bazel.ui.widgets.tool.window.search.LazySearchDisplay
-import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
+import org.jetbrains.bazel.ui.widgets.tool.window.model.BuildTargetsModel
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.awt.Point
 import java.util.concurrent.Callable
@@ -23,143 +23,97 @@ import javax.swing.SwingConstants
 
 class BuildTargetSearch(
   private val project: Project,
-  private val targetIcon: Icon,
-  private val toolName: String,
-  targets: Collection<BuildTarget>,
-  val searchBarPanel: SearchBarPanel,
-) : BuildTargetContainer {
-  private val targetSearchPanel: JPanel = JPanel(VerticalLayout(0))
+  private val model: BuildTargetsModel,
+) : JBPanel<BuildTargetSearch>(VerticalLayout(0)) {
 
-  override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction.FromContainer(this, targetSearchPanel)
+  val copyTargetIdAction: CopyTargetIdAction = object : CopyTargetIdAction.FromContainer(this) {
+    override fun getTargetInfo(): BuildTarget? {
+      return targetTree.getSelectedBuildTarget()
+    }
+  }
 
-  private val searchListDisplay = LazySearchDisplay(project, targetIcon, showAsTree = false)
-  private val searchTreeDisplay = LazySearchDisplay(project, targetIcon, showAsTree = true)
+  private val targetTree = BuildTargetTree(
+    project = project,
+    model = model,
+  )
 
-  private var displayedSearchPanel: JPanel? = null
   private val noResultsInfoComponent =
     JBLabel(
       BazelPluginBundle.message("widget.target.search.no.results"),
       SwingConstants.CENTER,
     )
 
-  private val targets = targets.sortedBy { it.id.toShortString(project) }
-
   private var popupHandlerBuilder: ((BuildTargetContainer) -> PopupHandler)? = null
-  private val queryChangeListeners = mutableSetOf<() -> Unit>()
 
   init {
-    searchBarPanel.registerQueryChangeListener(::onSearchQueryChange)
-    searchBarPanel.registerDisplayChangeListener { reloadPanels() }
-    searchBarPanel.inProgress = false
     noResultsInfoComponent.isVisible = false
     targetSearchPanel.add(noResultsInfoComponent)
-    onSearchQueryChange(getCurrentSearchQuery())
+    targetSearchPanel.add(targetTree.treeComponent)
+
+    // Listen for model changes
+    model.addListener {
+      // Perform search if search is active and in progress
+      if (model.isSearchActive && model.searchInProgress) {
+        performSearch()
+      }
+      updateDisplay()
+    }
+
+    // Initial display update
+    updateDisplay()
   }
 
-  private fun onSearchQueryChange(newQuery: Regex) {
-    conductSearch(newQuery)
-    queryChangeListeners.forEach { it() }
+  private fun performSearch() {
+    val query = model.searchQuery
+    val results = model.targets.filter { target ->
+      // Search in target ID string representation
+      val targetString = target.id.toShortString(project)
+      query.containsMatchIn(targetString)
+    }
+    model.updateSearchResults(results)
   }
 
-  private fun getCurrentSearchQuery(): Regex = searchBarPanel.getCurrentSearchQuery()
+  private fun updateDisplay() {
+    // Update the tree highlighter to highlight search matches
+    if (model.isSearchActive) {
+      targetTree.updateLabelHighlighter { QueryHighlighter.highlight(it, model.searchQuery) }
+    } else {
+      targetTree.updateLabelHighlighter { it }
+    }
+
+    // Update visibility of components based on search results
+    noResultsInfoComponent.isVisible = model.isSearchActive && model.searchResults.isEmpty()
+    targetTree.treeComponent.isVisible = !model.isSearchActive || model.searchResults.isNotEmpty()
+
+    // Refresh the panel
+    targetSearchPanel.revalidate()
+    targetSearchPanel.repaint()
+  }
 
   /**
    * @return `true` if search is in progress, or its results are ready,
    * `false` if nothing is currently being searched for
    */
-  fun isSearchActive(): Boolean = !searchBarPanel.isEmpty()
+  fun isSearchActive(): Boolean = model.isSearchActive
 
-  private fun conductSearch(query: Regex) {
-    if (isSearchActive()) {
-      noResultsInfoComponent.isVisible = false
-      searchBarPanel.inProgress = true
-      ReadAction
-        .nonBlocking(SearchCallable(project, query, targets))
-        .finishOnUiThread(ModalityState.defaultModalityState()) { displaySearchResultsUnlessOutdated(it) }
-        .coalesceBy(this)
-        .submit(NonUrgentExecutor.getInstance())
-    }
-  }
-
-  private fun displaySearchResultsUnlessOutdated(results: SearchResults) {
-    if (results.query.pattern == getCurrentSearchQuery().pattern) {
-      searchListDisplay.updateSearch(results.targets, results.query)
-      searchTreeDisplay.updateSearch(results.targets, results.query)
-      reloadPanels()
-      searchBarPanel.inProgress = false
-      noResultsInfoComponent.isVisible = results.targets.isEmpty()
-    }
-  }
-
-  private fun reloadPanels() {
-    if (getCurrentSearchQuery().pattern.isNotEmpty()) {
-      displayedSearchPanel?.let { targetSearchPanel.remove(it) }
-      displayedSearchPanel = targetSearchPanel.addLazySearchDisplayUnlessEmpty()
-      targetSearchPanel.revalidate()
-      targetSearchPanel.repaint()
-    }
-  }
-
-  private fun JPanel.addLazySearchDisplayUnlessEmpty(): JPanel? {
-    val chosenDisplay = chooseTargetSearchPanel()
-    return if (chosenDisplay.isEmpty()) {
-      null
-    } else {
-      chosenDisplay.get().also { this.add(it) }
-    }
-  }
-
-  private fun chooseTargetSearchPanel() = if (searchBarPanel.isDisplayAsTreeChosen()) searchTreeDisplay else searchListDisplay
-
-  override fun isEmpty(): Boolean = targets.isEmpty()
+  override fun isEmpty(): Boolean = model.isEmpty
 
   override fun getComponent(): JComponent = targetSearchPanel
 
   override fun registerPopupHandler(popupHandlerBuilder: (BuildTargetContainer) -> PopupHandler) {
     this.popupHandlerBuilder = popupHandlerBuilder
-    searchListDisplay.registerPopupHandler(popupHandlerBuilder(this))
-    searchTreeDisplay.registerPopupHandler(popupHandlerBuilder(this))
+    targetTree.registerPopupHandler(popupHandlerBuilder)
   }
 
-  /**
-   * Adds a listener, which will be triggered every time the search query changes
-   *
-   * @param listener function to be triggered
-   */
-  fun addQueryChangeListener(listener: () -> Unit) {
-    queryChangeListeners.add(listener)
-  }
+  override fun getSelectedBuildTarget(): BuildTarget? =
 
-  override fun getSelectedBuildTarget(): BuildTarget? = chooseTargetSearchPanel().getSelectedBuildTarget()
+  override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget> = targetTree.getSelectedBuildTargetsUnderDirectory()
 
-  override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget> =
-    listOfNotNull(chooseTargetSearchPanel().getSelectedBuildTarget())
+  override fun getSelectedComponentName(): String = targetTree.getSelectedComponentName()
 
-  override fun getSelectedComponentName(): String = chooseTargetSearchPanel().getSelectedBuildTarget()?.id?.toShortString(project) ?: ""
-
-  override fun isPointSelectable(point: Point): Boolean = chooseTargetSearchPanel().isPointSelectable(point)
+  override fun isPointSelectable(point: Point): Boolean = targetTree.isPointSelectable(point)
 
   override fun selectTopTargetAndFocus() {
-    chooseTargetSearchPanel().selectTopTargetAndFocus()
+    targetTree.selectTopTargetAndFocus()
   }
 
-  override fun createNewWithTargets(newTargets: Collection<BuildTarget>, newInvalidTargets: List<Label>): BuildTargetSearch {
-    val new = BuildTargetSearch(project, targetIcon, toolName, newTargets, searchBarPanel)
-    popupHandlerBuilder?.let { new.registerPopupHandler(it) }
-    return new
-  }
-
-  private class SearchCallable(
-    private val project: Project,
-    private val query: Regex,
-    private val targets: Collection<BuildTarget>,
-  ) : Callable<SearchResults> {
-    override fun call(): SearchResults =
-      SearchResults(
-        query,
-        targets.filter { query.containsMatchIn(it.id.toShortString(project)) },
-      )
-  }
-}
-
-private data class SearchResults(val query: Regex, val targets: List<BuildTarget>)
