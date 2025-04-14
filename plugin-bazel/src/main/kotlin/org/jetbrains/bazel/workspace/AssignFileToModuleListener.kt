@@ -2,8 +2,8 @@
 
 package org.jetbrains.bazel.workspace
 
-import androidx.annotation.VisibleForTesting
 import com.intellij.ide.impl.isTrusted
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -35,6 +35,7 @@ import com.intellij.workspaceModel.ide.legacyBridge.impl.java.JAVA_SOURCE_ROOT_E
 import com.intellij.workspaceModel.ide.toPath
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
@@ -125,9 +126,20 @@ private fun VirtualFile.getRelatedProjects(): List<Project> =
   ProjectManager
     .getInstance()
     .openProjects
-    .filter { it.doWeCareAboutIt() && VfsUtil.isAncestor(it.rootDir, this, false) }
+    .filter { it.doWeCareAboutIt() && this.isInsideProject(it) }
 
 private fun Project.doWeCareAboutIt(): Boolean = this.isBazelProject && this.isTrusted()
+
+private fun VirtualFile.isInsideProject(project: Project): Boolean =
+  try {
+    VfsUtil.isAncestor(project.rootDir, this, false)
+  } catch (e: IllegalStateException) {
+    if (ApplicationManager.getApplication().isUnitTestMode) {
+      false // otherwise would break unrelated tests
+    } else {
+      throw e
+    }
+  }
 
 private suspend fun VFileEvent.process(project: Project) {
   val workspaceModel = WorkspaceModel.getInstance(project)
