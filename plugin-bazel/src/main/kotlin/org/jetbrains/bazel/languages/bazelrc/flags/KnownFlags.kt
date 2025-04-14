@@ -4656,6 +4656,7 @@ internal object KnownFlags {
 
   @Option(
     name = "experimental_downloader_config",
+    metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """
       Specify a file to configure the remote downloader with. This file consists of lines, each of which starts
       with a directive (`allow`, `block` or `rewrite`) followed by either a host name (for `allow` and `block`) or
