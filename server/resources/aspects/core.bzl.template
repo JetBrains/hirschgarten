@@ -113,9 +113,12 @@ def _bsp_target_info_aspect_impl(target, ctx):
             if not s.is_source
         ]
 
-    resources_attr = getattr(ctx.rule.attr, "resources", [])
-    resources = []
+    resources_attr = getattr(ctx.rule.attr, "resources", None)
+    if resources_attr == None and ctx.rule.kind.endswith("_resources"):
+        # https://github.com/JetBrains/intellij-community/blob/b41a4084da5521effedd334e28896fd9d07410da/build/jvm-rules/rules/resource.bzl#L49
+        resources_attr = getattr(ctx.rule.attr, "files", None)
 
+    resources = []
     if type(resources_attr) == "list":
         resources = [
             file_location(f)

@@ -18,7 +18,20 @@ enum class Language(
         "intellij_plugin_debug_target", // a workaround to register this target type as Java module in IntelliJ IDEA
       ),
   ),
-  KOTLIN("kotlin", hashSetOf(".kt"), setOf("kt_jvm_binary", "kt_jvm_library", "kt_jvm_test"), hashSetOf(JAVA.id)),
+  KOTLIN(
+    "kotlin",
+    hashSetOf(".kt"),
+    setOf(
+      "kt_jvm_binary",
+      "kt_jvm_library",
+      "kt_jvm_test",
+      // rules_jvm from IntelliJ monorepo
+      "jvm_library",
+      "jvm_binary",
+      "jvm_resources",
+    ),
+    hashSetOf(JAVA.id),
+  ),
   CPP("cpp", hashSetOf(".C", ".cc", ".cpp", ".CPP", ".c++", ".cp", "cxx", ".h", ".hpp")),
   PYTHON("python", hashSetOf(".py")),
   THRIFT("thrift", hashSetOf(".thrift")),

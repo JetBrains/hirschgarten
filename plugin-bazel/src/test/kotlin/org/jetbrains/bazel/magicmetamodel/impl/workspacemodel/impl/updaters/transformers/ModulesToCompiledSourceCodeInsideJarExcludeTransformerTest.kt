@@ -35,7 +35,7 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
           packagePrefix = "",
         ),
       )
-    val module = createModuleWithSourceRoots(sourceRoots)
+    val module = createModuleWithRoots(sourceRoots)
 
     // when
     val entity = ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(listOf(module))
@@ -50,6 +50,7 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
         "com/example/weird_casing.java",
         "com/example/weird_casing.class",
       )
+    entity.namesInsideJarToExclude shouldBe emptyList()
   }
 
   @Test
@@ -74,7 +75,7 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
           packagePrefix = "",
         ),
       )
-    val module = createModuleWithSourceRoots(sourceRoots)
+    val module = createModuleWithRoots(sourceRoots)
 
     // when
     val entity = ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(listOf(module))
@@ -92,11 +93,33 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
         "com/example/weird_casing.class",
         "com/example/Weird_casingKt.class",
       )
+    entity.namesInsideJarToExclude shouldBe emptyList()
+  }
+
+  @Test
+  fun `should add excludes for xml resources but not for other ones`() {
+    // given
+    val resourceRoots =
+      listOf(
+        Path("/src/resources/plugin.xml"),
+        Path("/src/resources/plugin.properties"),
+      )
+    val module = createModuleWithRoots(emptyList(), resourceRoots)
+
+    // when
+    val entity = ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(listOf(module))
+
+    // then
+    entity.relativePathsInsideJarToExclude shouldBe emptyList()
+    entity.namesInsideJarToExclude shouldBe
+      setOf(
+        "plugin.xml",
+      )
   }
 
   private data class JavaSourceRoot(val sourcePath: Path, val packagePrefix: String = "")
 
-  private fun createModuleWithSourceRoots(sourceRoots: List<JavaSourceRoot>): ModuleDetails =
+  private fun createModuleWithRoots(sourceRoots: List<JavaSourceRoot>, resourceRoots: List<Path> = emptyList()): ModuleDetails =
     ModuleDetails(
       target =
         BuildTarget(
@@ -113,7 +136,7 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
                 jvmPackagePrefix = it.packagePrefix,
               )
             },
-          resources = emptyList(),
+          resources = resourceRoots,
           baseDirectory = Path("base/dir"),
         ),
       javacOptions = null,
