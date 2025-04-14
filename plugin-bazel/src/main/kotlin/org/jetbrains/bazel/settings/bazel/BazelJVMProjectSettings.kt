@@ -16,20 +16,13 @@ import com.intellij.openapi.project.Project
  * the JVM-specific settings when there is no java plugin)
  * */
 data class BazelJVMProjectSettings(
-  val hotSwapEnabled: Boolean = true,
-  val enableLocalJvmActions: Boolean = false,
-  val enableBuildWithJps: Boolean = false,
-  val useIntellijTestRunner: Boolean = false,
-) {
-  fun withNewHotSwapEnabled(newHotSwapEnabled: Boolean): BazelJVMProjectSettings = copy(hotSwapEnabled = newHotSwapEnabled)
-}
-
-internal data class BazelJVMProjectSettingsState(
   var hotSwapEnabled: Boolean = true,
   var enableLocalJvmActions: Boolean = false,
   var enableBuildWithJps: Boolean = false,
   var useIntellijTestRunner: Boolean = false,
-)
+) {
+  fun withNewHotSwapEnabled(newHotSwapEnabled: Boolean): BazelJVMProjectSettings = copy(hotSwapEnabled = newHotSwapEnabled)
+}
 
 @State(
   name = "BazelJVMProjectSettingsService",
@@ -39,18 +32,18 @@ internal data class BazelJVMProjectSettingsState(
 @Service(Service.Level.PROJECT)
 internal class BazelJVMProjectSettingsService :
   DumbAware,
-  PersistentStateComponent<BazelJVMProjectSettingsState> {
+  PersistentStateComponent<BazelJVMProjectSettings> {
   var settings: BazelJVMProjectSettings = BazelJVMProjectSettings()
 
-  override fun getState(): BazelJVMProjectSettingsState =
-    BazelJVMProjectSettingsState(
+  override fun getState(): BazelJVMProjectSettings =
+    BazelJVMProjectSettings(
       hotSwapEnabled = settings.hotSwapEnabled,
       enableLocalJvmActions = settings.enableLocalJvmActions,
       enableBuildWithJps = settings.enableBuildWithJps,
       useIntellijTestRunner = settings.useIntellijTestRunner,
     )
 
-  override fun loadState(settingsState: BazelJVMProjectSettingsState) {
+  override fun loadState(settingsState: BazelJVMProjectSettings) {
     this.settings =
       BazelJVMProjectSettings(
         hotSwapEnabled = settingsState.hotSwapEnabled,

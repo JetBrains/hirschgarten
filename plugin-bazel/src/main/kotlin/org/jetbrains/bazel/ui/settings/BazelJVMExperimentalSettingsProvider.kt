@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.ui.settings
 
+import com.intellij.openapi.options.UnnamedConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.Align
@@ -9,11 +10,10 @@ import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import javax.swing.JComponent
 
 class BazelJVMExperimentalSettingsProvider : BazelSettingsProvider {
-  override fun createConfigurable(project: Project): UnnamedConfigurable =
-    BazelJVMExperimentalSettings(project)
+  override fun createConfigurable(project: Project): UnnamedConfigurable = BazelJVMExperimentalSettings(project)
 }
 
-class BazelJVMExperimentalSettings(private val project: Project): UnnamedConfigurable {
+class BazelJVMExperimentalSettings(private val project: Project) : UnnamedConfigurable {
   // experimental features
   private val enableLocalJvmActionsCheckBox: JBCheckBox
   private val enableBuildWithJpsCheckBox: JBCheckBox
@@ -36,6 +36,10 @@ class BazelJVMExperimentalSettings(private val project: Project): UnnamedConfigu
     panel {
       group(BazelPluginBundle.message("project.settings.local.runner.settings")) {
         row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
+        row {
+          cell(hotswapEnabledCheckBox).align(Align.FILL)
+          contextHelp(BazelPluginBundle.message("project.settings.plugin.hotswap.enabled.checkbox.help.text"))
+        }
         row {
           cell(useIntellijTestRunnerCheckBox).align(Align.FILL)
           contextHelp(BazelPluginBundle.message("project.settings.plugin.use.intellij.test.runner.help.text"))
@@ -70,9 +74,13 @@ class BazelJVMExperimentalSettings(private val project: Project): UnnamedConfigu
 
   private fun initHotSwapEnabledCheckBox(): JBCheckBox =
     JBCheckBox(BazelPluginBundle.message("project.settings.plugin.hotswap.enabled.checkbox.text")).apply {
+      // hotswap now only works with local JVM actions
+      isEnabled = currentJVMProjectSettings.enableLocalJvmActions
       isSelected = currentJVMProjectSettings.hotSwapEnabled
       addItemListener {
-        currentJVMProjectSettings = currentJVMProjectSettings.withNewHotSwapEnabled(isSelected)
+        if (currentJVMProjectSettings.enableLocalJvmActions) {
+          currentJVMProjectSettings = currentJVMProjectSettings.withNewHotSwapEnabled(isSelected)
+        }
       }
     }
 

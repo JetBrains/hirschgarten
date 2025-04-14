@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.ui.settings
 
+import com.intellij.openapi.extensions.BaseExtensionPointName
 import com.intellij.openapi.options.BoundCompositeSearchableConfigurable
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurableProvider
@@ -14,7 +15,8 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
   BoundCompositeSearchableConfigurable<UnnamedConfigurable>(
     displayName = BazelPluginBundle.message(DISPLAY_NAME_KEY),
     helpTopic = "",
-  ) {
+  ),
+  Configurable.WithEpDependencies {
   // experimental features
 
   private var currentProjectSettings = project.bazelProjectSettings
@@ -27,13 +29,12 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
         .forEach { appendDslConfigurable(it) }
     }
 
-  override fun getDependencies(): List<ExtensionPointName<BazelSettingsProvider>> =
-    listOf(BazelExperimentalSettingsProvider.ep)
+  override fun getDependencies(): List<BaseExtensionPointName<*>> = listOf(BazelExperimentalSettingsProvider.ep)
 
-  override fun createConfigurables(): List<UnnamedConfigurable> = project.bazelExperimentalSettingsProvider.map {
-    it.createConfigurable(project)
-  }
-
+  override fun createConfigurables(): List<UnnamedConfigurable> =
+    project.bazelExperimentalSettingsProviders.map {
+      it.createConfigurable(project)
+    }
 
   override fun reset() {
     super<BoundCompositeSearchableConfigurable>.reset()

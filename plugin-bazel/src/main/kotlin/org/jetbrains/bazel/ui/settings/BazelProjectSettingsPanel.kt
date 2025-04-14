@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.ui.settings
 
-import com.intellij.application.options.editor.EditorOptionsProvider
 import com.intellij.ide.projectView.ProjectView
+import com.intellij.openapi.extensions.BaseExtensionPointName
 import com.intellij.openapi.observable.util.whenTextChanged
 import com.intellij.openapi.options.BoundCompositeSearchableConfigurable
 import com.intellij.openapi.options.Configurable
@@ -27,7 +27,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
     displayName = BazelPluginBundle.message(DISPLAY_NAME_KEY),
     helpTopic = "",
   ),
-  EditorOptionsProvider {
+  Configurable.WithEpDependencies {
   private val projectViewPathField: TextFieldWithBrowseButton
   private val buildifierExecutablePathField: TextFieldWithBrowseButton
 
@@ -41,7 +41,12 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
     showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
   }
 
-  override fun createConfigurables(): List<UnnamedConfigurable> = project.bazelGeneralSettingsProvider
+  override fun getDependencies(): List<BaseExtensionPointName<*>> = listOf(BazelGeneralSettingsProvider.ep)
+
+  override fun createConfigurables(): List<UnnamedConfigurable> =
+    project.bazelGeneralSettingsProviders.map {
+      it.createConfigurable(project)
+    }
 
   override fun createPanel(): DialogPanel =
     panel {
