@@ -102,11 +102,9 @@
                         interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.bazelExperimentalSettingsProvider"
-                        area="IDEA_PROJECT"
                         interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bazel.bazelGeneralSettingsProvider"
-                        area="IDEA_PROJECT"
                         interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"
                         dynamic="true"/>
     </extensionPoints>
