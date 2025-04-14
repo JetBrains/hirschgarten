@@ -27,7 +27,6 @@ import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
-import org.jetbrains.bazel.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.bazel.workspacemodel.entities.isJvmTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.awt.Component
@@ -36,9 +35,13 @@ import java.awt.event.MouseEvent
 
 abstract class LoadedTargetsMouseListener(private val project: Project) : PopupHandler() {
   abstract fun isPointSelectable(point: Point): Boolean
+
   abstract fun getSelectedBuildTarget(): BuildTarget?
+
   abstract fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget>
+
   abstract val copyTargetIdAction: CopyTargetIdAction
+
   abstract fun getSelectedComponentName(): String
 
   override fun mouseClicked(mouseEvent: MouseEvent) {

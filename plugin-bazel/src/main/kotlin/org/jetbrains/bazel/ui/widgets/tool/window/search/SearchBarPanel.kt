@@ -7,16 +7,15 @@ import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.fields.ExtendableTextField
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.ui.widgets.tool.window.model.BuildTargetsModel
+import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelToolwindowModel
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleDocumentListener
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.TextComponentExtension
 import java.awt.BorderLayout
 import javax.swing.JComponent
-import javax.swing.JPanel
 
-class SearchBarPanel(private val model: BuildTargetsModel) : JBPanel<SearchBarPanel>(BorderLayout()) {
+class SearchBarPanel(private val model: BazelToolwindowModel) : JBPanel<SearchBarPanel>(BorderLayout()) {
   private val searchLoadingExtension: TextComponentExtension.Indicator =
     TextComponentExtension.Indicator(
       trueIcon = AnimatedIcon.Default.INSTANCE,
@@ -28,28 +27,19 @@ class SearchBarPanel(private val model: BuildTargetsModel) : JBPanel<SearchBarPa
   private val textField = prepareTextField()
 
   private val focusFindAction = SimpleAction { textField.requestFocus() }
-  private val toggleMatchCaseAction = SimpleAction { 
-    model.matchCase = !model.matchCase
-  }
-  private val toggleRegexAction = SimpleAction { 
-    model.regexMode = !model.regexMode
-  }
+  private val toggleMatchCaseAction =
+    SimpleAction {
+      model.matchCase = !model.matchCase
+    }
+  private val toggleRegexAction =
+    SimpleAction {
+      model.regexMode = !model.regexMode
+    }
 
   init {
     add(textField)
     toggleMatchCaseAction.registerCustomShortcutSet(BspShortcuts.matchCase, this)
     toggleRegexAction.registerCustomShortcutSet(BspShortcuts.regexMode, this)
-
-    // Listen for model changes
-    model.addListener {
-      repaintLoading()
-    }
-  }
-
-  private fun repaintLoading() {
-    // Avoid removing and adding the extension if it's not necessary
-    // This prevents a potential infinite recursion
-    textField.repaint()
   }
 
   private fun prepareTextField(): ExtendableTextField {
@@ -98,16 +88,17 @@ class SearchBarPanel(private val model: BuildTargetsModel) : JBPanel<SearchBarPa
       addExtension(regexExtension)
       addExtension(matchCaseExtension)
       addExtension(clearExtension)
-      this.document.addDocumentListener(SimpleDocumentListener {
-        model.searchQuery = textField.text
-      })
+      this.document.addDocumentListener(
+        SimpleDocumentListener {
+          model.searchQuery = textField.text
+        },
+      )
     }
   }
 
   private fun clearQuery() {
     textField.text = ""
   }
-
 
   override fun setEnabled(enabled: Boolean) {
     super.setEnabled(enabled)

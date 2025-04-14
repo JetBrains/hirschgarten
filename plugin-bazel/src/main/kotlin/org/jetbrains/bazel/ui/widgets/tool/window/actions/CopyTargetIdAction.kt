@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.util.ui.TextTransferable
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.JComponent
 

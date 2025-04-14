@@ -5,9 +5,9 @@ import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.writeIntentReadAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
@@ -17,38 +17,26 @@ import com.intellij.psi.PsiManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
-import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.services.invalidTargets
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import org.jetbrains.bazel.target.TargetUtils
-import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.ui.widgets.tool.window.filter.FilterActionGroup
-import org.jetbrains.bazel.ui.widgets.tool.window.filter.TargetFilter
-import org.jetbrains.bazel.ui.widgets.tool.window.model.BuildTargetsModel
-import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
-import org.jetbrains.bazel.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
 import java.nio.file.Path
 import javax.swing.SwingConstants
 
 class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, true) {
-  private val model = BuildTargetsModel(project)
-  private val searchBarPanel = SearchBarPanel(model)
-  private val loadedTargetsPanel = BspPanelComponent(project, model)
+  private val model = project.service<BazelToolwindowModel>()
+  val panel = BazelPanelComponent(project, model)
+
+//  private val loadedTargetsPanel = BspPanelComponent(project, model)
 
   init {
     val actionManager = ActionManager.getInstance()
-    val targetUtils = project.targetUtils
-
-    loadedTargetsPanel = createLoadedTargetsPanel(project, targetUtils)
 
     val defaultActions = actionManager.getAction("Bazel.ActionsToolbar")
     val actionGroup =
       DefaultActionGroup().apply {
         addAll(defaultActions)
         addSeparator()
-        add(FilterActionGroup(targetFilter))
+//        add(FilterActionGroup(targetFilter))
         addSeparator()
         add(BazelToolWindowSettingsAction(BazelPluginBundle.message("project.settings.display.name")))
         addSeparator()
@@ -62,28 +50,7 @@ class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, t
       }
 
     this.toolbar = actionToolbar.component
-    setContent(loadedTargetsPanel.withScrollAndSearch(searchBarPanel))
-
-    targetUtils.registerSyncListener { targetListChanged ->
-      if (targetListChanged) {
-        ApplicationManager.getApplication().invokeLater {
-          rerenderComponents()
-        }
-      }
-    }
-  }
-
-  private fun createLoadedTargetsPanel(project: Project): BspPanelComponent {
-    // Initialize the model with targets
-    val targets = project.targetUtils.allTargets().mapNotNull { project.targetUtils.getBuildTargetForLabel(it) }
-    model.updateTargets(targets, project.invalidTargets)
-
-    return BspPanelComponent(
-      project = project,
-      model = model,
-    ).apply {
-      registerPopupHandler { LoadedTargetsMouseListener(it, project) }
-    }
+    setContent(panel)
   }
 }
 
