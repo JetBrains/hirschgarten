@@ -13,9 +13,9 @@ class ProjectProvider(private val projectResolver: ProjectResolver, private val 
   private var project: Project? = null
   private val projectMutex = Mutex()
 
-  suspend fun refreshAndGet(build: Boolean): AspectSyncProject =
+  suspend fun refreshAndGet(build: Boolean, originId: String): AspectSyncProject =
     projectMutex.withLock {
-      loadFromBazel(build = build, null).also { project = it }
+      loadFromBazel(build = build, null, originId).also { project = it }
     }
 
   suspend fun updateAndGet(targetsToSync: List<Label>): AspectSyncProject =
@@ -36,8 +36,12 @@ class ProjectProvider(private val projectResolver: ProjectResolver, private val 
   // No mutex needed because project is volatile
   fun getIfLoaded(): Project? = project
 
-  private suspend fun loadFromBazel(build: Boolean, targetsToSync: List<Label>?): AspectSyncProject =
-    projectResolver.resolve(build = build, targetsToSync, project as? FirstPhaseProject).also {
+  private suspend fun loadFromBazel(
+    build: Boolean,
+    targetsToSync: List<Label>?,
+    originId: String? = null,
+  ): AspectSyncProject =
+    projectResolver.resolve(build = build, targetsToSync, project as? FirstPhaseProject, originId).also {
       projectResolver.releaseMemory()
     }
 }

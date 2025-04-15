@@ -41,7 +41,6 @@ import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 import kotlin.io.path.Path
-import kotlin.io.path.toPath
 
 class ExecuteService(
   private val compilationManager: BazelBspCompilationManager,
@@ -51,7 +50,7 @@ class ExecuteService(
   private val bazelPathsResolver: BazelPathsResolver,
   private val additionalBuildTargetsProvider: AdditionalAndroidBuildTargetsProvider,
 ) {
-  private suspend fun <T> withBepServer(originId: String?, body: suspend (BepReader) -> T): T {
+  private suspend fun <T> withBepServer(originId: String, body: suspend (BepReader) -> T): T {
     val diagnosticsService = DiagnosticsService(compilationManager.workspaceRoot)
     val server = BepServer(compilationManager.client, diagnosticsService, originId, bazelPathsResolver)
     val bepReader = BepReader(server)
@@ -233,7 +232,7 @@ class ExecuteService(
 
   private suspend fun build(
     bspIds: List<Label>,
-    originId: String?,
+    originId: String,
     additionalArguments: List<String> = emptyList(),
   ): BazelProcessResult {
     val allTargets = bspIds + getAdditionalBuildTargets(bspIds)

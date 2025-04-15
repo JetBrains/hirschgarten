@@ -39,6 +39,7 @@ import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -77,7 +78,8 @@ class BuildServerMock(
   private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = null,
   private val workspaceContextResult: WorkspaceContext? = null,
 ) : JoinedBuildServer {
-  override suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult = wrapInFuture(workspaceBuildTargetsResult)
+  override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult =
+    wrapInFuture(workspaceBuildTargetsResult)
 
   override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult =
     wrapInFuture(inverseSourcesResult)
@@ -123,7 +125,8 @@ class BuildServerMock(
 
   override suspend fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult = wrapInFuture(jvmBinaryJarsResult)
 
-  override suspend fun workspaceBuildAndGetBuildTargets(): WorkspaceBuildTargetsResult = wrapInFuture(workspaceBuildTargetsResultAndBuild)
+  override suspend fun workspaceBuildAndGetBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult =
+    wrapInFuture(workspaceBuildTargetsResultAndBuild)
 
   override suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult =
     wrapInFuture(workspaceBuildTargetsPartial)
