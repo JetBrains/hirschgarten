@@ -277,10 +277,6 @@
         <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
         <additionalProjectTaskRunnerProvider
                 implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
-
-        <bazelExperimentalSettingsProvider
-                implementation="org.jetbrains.bazel.ui.settings.BazelJVMExperimentalSettingsProvider"/>
-
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

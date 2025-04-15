@@ -8,6 +8,8 @@
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.KotlinSourceTypeIconProvider"/>
 
         <projectPostSyncHook implementation="org.jetbrains.bazel.kotlin.sync.RefreshKotlinHighlightingPostSyncHook"/>
+        <bazelExperimentalSettingsProvider
+                implementation="org.jetbrains.bazel.ui.settings.BazelJVMExperimentalSettingsProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
