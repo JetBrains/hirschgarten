@@ -16,7 +16,9 @@
         <projectService serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
                         serviceImplementation="org.jetbrains.bazel.services.BazelExternalAnnotationsManager"
                         overrides="true"/>
-
+        <runLineMarkerContributor
+                implementationClass="org.jetbrains.bazel.jvm.ui.gutters.BspJVMRunLineMarkerContributor"
+                language="JVM"/>
         <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelJavaNewProjectWizard"/>
     </extensions>
 </idea-plugin>
