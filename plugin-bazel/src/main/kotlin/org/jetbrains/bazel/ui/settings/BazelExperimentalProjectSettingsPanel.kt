@@ -17,8 +17,6 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
     helpTopic = "",
   ),
   Configurable.WithEpDependencies {
-  // experimental features
-
   private var currentProjectSettings = project.bazelProjectSettings
 
   override fun createPanel(): DialogPanel =

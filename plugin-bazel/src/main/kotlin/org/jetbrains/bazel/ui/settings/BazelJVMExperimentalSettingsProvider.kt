@@ -58,7 +58,8 @@ class BazelJVMExperimentalSettings(private val project: Project) : UnnamedConfig
       isSelected = currentJVMProjectSettings.enableLocalJvmActions
       addItemListener {
         currentJVMProjectSettings = currentJVMProjectSettings.copy(enableLocalJvmActions = isSelected)
-        // useIntellijTestRunnerCheckBox.isEnabled = isSelected
+        useIntellijTestRunnerCheckBox.isEnabled = isSelected
+        hotswapEnabledCheckBox.isEnabled = isSelected
       }
     }
 
