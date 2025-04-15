@@ -47,8 +47,8 @@ class ProjectSyncService(
   private val bazelInfo: BazelInfo,
   private val workspaceContextProvider: WorkspaceContextProvider,
 ) {
-  suspend fun workspaceBuildTargets(build: Boolean): WorkspaceBuildTargetsResult {
-    val project = projectProvider.refreshAndGet(build = build)
+  suspend fun workspaceBuildTargets(build: Boolean, originId: String): WorkspaceBuildTargetsResult {
+    val project = projectProvider.refreshAndGet(build = build, originId = originId)
     return bspMapper.workspaceTargets(project)
   }
 
