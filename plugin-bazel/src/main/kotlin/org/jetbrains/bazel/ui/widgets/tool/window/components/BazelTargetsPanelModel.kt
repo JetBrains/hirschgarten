@@ -15,9 +15,7 @@ class BazelTargetsPanelModel(private val project: Project) {
   // All targets in the project, set by the sync hook
   private var targets: Map<Label, BuildTarget> = emptyMap()
 
-  fun getTargetData(target: Label): BuildTarget? {
-    return targets[target]
-  }
+  fun getTargetData(target: Label): BuildTarget? = targets[target]
 
   var visibleTargets: List<Label> = emptyList()
     private set
@@ -49,8 +47,9 @@ class BazelTargetsPanelModel(private val project: Project) {
     val filteredTargets = targets.filter { targetFilter.predicate(it.value) }
 
     // Then, apply the search query
-    val searchResults = if (!searchQuery.isEmpty()) {
-      val regex = searchQuery.toRegex(options)
+    val searchResults =
+      if (!searchQuery.isEmpty()) {
+        val regex = searchQuery.toRegex(options)
         searchRegex = regex
         filteredTargets
           .filter {
@@ -58,10 +57,10 @@ class BazelTargetsPanelModel(private val project: Project) {
             val targetString = it.key.toShortString(project)
             regex.containsMatchIn(targetString)
           }
-    } else {
-      searchRegex = null
-      filteredTargets
-    }
+      } else {
+        searchRegex = null
+        filteredTargets
+      }
 
     // Finally, sort the results
     visibleTargets = searchResults.keys.sortedBy { it.toShortString(project) }
