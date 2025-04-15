@@ -27,7 +27,7 @@ internal interface WorkspaceModelEntityWithParentModuleUpdater<in E : WorkspaceM
 
 internal interface WorkspaceModelEntityWithoutParentModuleUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity> :
   WorkspaceModelEntityUpdater<E, R> {
-  suspend fun addEntities(entitiesToAdd: List<E>): List<R> = entitiesToAdd.map { addEntity(it) }
+  suspend fun addEntities(entitiesToAdd: List<E>): List<R> = entitiesToAdd.mapNotNull { addEntity(it) }
 
-  suspend fun addEntity(entityToAdd: E): R
+  suspend fun addEntity(entityToAdd: E): R?
 }

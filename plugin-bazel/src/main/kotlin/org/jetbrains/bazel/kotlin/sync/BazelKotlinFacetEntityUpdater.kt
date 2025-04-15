@@ -1,8 +1,10 @@
-package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
+package org.jetbrains.bazel.kotlin.sync
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
+import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
@@ -19,26 +21,31 @@ import org.jetbrains.kotlin.idea.workspaceModel.kotlinSettings
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import java.nio.file.Path
 
-internal class KotlinFacetEntityUpdater(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-  private val projectBasePath: Path,
-) : WorkspaceModelEntityWithParentModuleUpdater<JavaModule, KotlinSettingsEntity> {
-  override suspend fun addEntity(entityToAdd: JavaModule, parentModuleEntity: ModuleEntity): KotlinSettingsEntity {
+class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
+  override fun addEntity(
+    diff: MutableEntityStorage,
+    entityToAdd: JavaModule,
+    parentModuleEntity: ModuleEntity,
+    projectBasePath: Path,
+  ) {
     val kotlinAddendum = entityToAdd.kotlinAddendum
-    val compilerArguments = kotlinAddendum?.kotlincOptions?.toK2JVMCompilerArguments(entityToAdd, kotlinAddendum)
+    val compilerArguments = kotlinAddendum?.kotlincOptions?.toK2JVMCompilerArguments(entityToAdd, kotlinAddendum, projectBasePath)
     val kotlinSettingsEntity =
       calculateKotlinSettingsEntity(entityToAdd, compilerArguments, parentModuleEntity, kotlinAddendum?.kotlincOptions)
-    return addKotlinSettingsEntity(parentModuleEntity, kotlinSettingsEntity)
+    diff.addKotlinSettingsEntity(parentModuleEntity, kotlinSettingsEntity)
   }
 
-  private fun List<String>.toK2JVMCompilerArguments(entityToAdd: JavaModule, kotlinAddendum: KotlinAddendum) =
-    parseCommandLineArguments(K2JVMCompilerArguments::class, this).apply {
-      languageVersion = kotlinAddendum.languageVersion
-      apiVersion = kotlinAddendum.apiVersion
-      autoAdvanceLanguageVersion = false
-      autoAdvanceApiVersion = false
-      friendPaths = entityToAdd.toJpsFriendPaths(projectBasePath).toTypedArray()
-    }
+  private fun List<String>.toK2JVMCompilerArguments(
+    entityToAdd: JavaModule,
+    kotlinAddendum: KotlinAddendum,
+    projectBasePath: Path,
+  ) = parseCommandLineArguments(K2JVMCompilerArguments::class, this).apply {
+    languageVersion = kotlinAddendum.languageVersion
+    apiVersion = kotlinAddendum.apiVersion
+    autoAdvanceLanguageVersion = false
+    autoAdvanceApiVersion = false
+    friendPaths = entityToAdd.toJpsFriendPaths(projectBasePath).toTypedArray()
+  }
 
   private fun calculateKotlinSettingsEntity(
     entityToAdd: JavaModule,
@@ -100,12 +107,12 @@ internal class KotlinFacetEntityUpdater(
       .map { it.moduleName }
       .toSet()
 
-  private fun addKotlinSettingsEntity(
+  private fun MutableEntityStorage.addKotlinSettingsEntity(
     parentModuleEntity: ModuleEntity,
     kotlinSettingsEntity: KotlinSettingsEntity.Builder,
   ): KotlinSettingsEntity {
     val updatedParentModuleEntity =
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyModuleEntity(parentModuleEntity) {
+      modifyModuleEntity(parentModuleEntity) {
         this.kotlinSettings += kotlinSettingsEntity
       }
 
