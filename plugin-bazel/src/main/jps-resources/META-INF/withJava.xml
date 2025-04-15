@@ -1,0 +1,22 @@
+<idea-plugin>
+    <depends optional="true" config-file="withCoverage.xml">com.intellij.modules.coverage</depends>
+
+    <extensions defaultExtensionNs="org.jetbrains.bazel">
+        <!-- Dependency: JvmSyncHook -> TargetUtils#updateComputedFields -> toShortString -> BazelRepoMappingService -->
+        <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook" order="after BazelRepoMappingSyncHook"/>
+
+        <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.JavaSourceTypeIconProvider"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <java.programPatcher implementation="org.jetbrains.bazel.jvm.run.BazelJvmEnvironmentProgramPatcher"/>
+        <java.elementFinder implementation="org.jetbrains.bazel.services.BazelJavaClassFinder"/>
+        <useScopeEnlarger implementation="org.jetbrains.bazel.services.BazelJavaUseScopeEnlarger"/>
+
+        <projectService serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
+                        serviceImplementation="org.jetbrains.bazel.services.BazelExternalAnnotationsManager"
+                        overrides="true"/>
+
+        <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelJavaNewProjectWizard"/>
+    </extensions>
+</idea-plugin>
