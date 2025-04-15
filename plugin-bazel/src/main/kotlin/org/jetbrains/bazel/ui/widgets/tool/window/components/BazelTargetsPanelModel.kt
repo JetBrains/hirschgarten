@@ -7,99 +7,99 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.ui.widgets.tool.window.filter.TargetFilter
 import org.jetbrains.bsp.protocol.BuildTarget
 
+// It is a service, because we want to update the state from a sync hook
 @Service(Service.Level.PROJECT)
 class BazelTargetsPanelModel(private val project: Project) {
-  var buildTargetTree: BuildTargetTree? = null
+  var targetsPanel: BazelTargetsPanel? = null
 
-  fun update() = {}
+  // All targets in the project, set by the sync hook
+  private var targets: Map<Label, BuildTarget> = emptyMap()
+
+  fun getTargetData(target: Label): BuildTarget? {
+    return targets[target]
+  }
+
+  var visibleTargets: List<Label> = emptyList()
+    private set
+
+  // Invalid targets display logic is currently disabled
+  var invalidTargets: List<Label> = emptyList()
+    private set
 
   var matchCase: Boolean = false
     set(value) {
       field = value
-      updateRegex()
+      updateVisibleTargets()
     }
 
   var regexMode: Boolean = false
     set(value) {
       field = value
-      updateRegex()
+      updateVisibleTargets()
     }
 
-  private fun updateRegex() {
+  private fun updateVisibleTargets() {
     val options =
       setOfNotNull(
         if (!matchCase) RegexOption.IGNORE_CASE else null,
         if (!regexMode) RegexOption.LITERAL else null,
       )
-    if (!searchQuery.isEmpty()) {
-      performSearch(searchQuery.toRegex(options))
+
+    // First, apply the filter
+    val filteredTargets = targets.filter { targetFilter.predicate(it.value) }
+
+    // Then, apply the search query
+    val searchResults = if (!searchQuery.isEmpty()) {
+      val regex = searchQuery.toRegex(options)
+        searchRegex = regex
+        filteredTargets
+          .filter {
+            // Search in target ID string representation
+            val targetString = it.key.toShortString(project)
+            regex.containsMatchIn(targetString)
+          }
+    } else {
+      searchRegex = null
+      filteredTargets
     }
+
+    // Finally, sort the results
+    visibleTargets = searchResults.keys.sortedBy { it.toShortString(project) }
+
+    targetsPanel?.update()
   }
 
   var searchRegex: Regex? = null
-    set(value) {
-      field = value
-      update()
-    }
+    private set
 
   val isSearchActive: Boolean
-    get() =  searchQuery.isNotEmpty()
+    get() = searchQuery.isNotEmpty()
 
-  var targetFilter = TargetFilter.FILTER.OFF
-
-  // Model state
-  var targets: Map<Label, BuildTarget> = emptyMap()
-    private set
-
-  var invalidTargets: List<Label> = emptyList()
-    private set
+  var targetFilter = TargetFilter.OFF
+    set(value) {
+      field = value
+      updateVisibleTargets()
+    }
 
   var searchQuery: String = ""
     set(value) {
       field = value
-      if (value.isEmpty()) {
-        searchResults = emptyList()
-        searchInProgress = false
-      } else {
-        searchInProgress = true
-      }
-      updateRegex()
+      updateVisibleTargets()
     }
-
-  var searchResults: List<Label> = emptyList()
-    private set
 
   var displayAsTree: Boolean = true
     set(value) {
       field = value
-      buildTargetTree?.updateTree()
+      targetsPanel?.update()
     }
 
-  var searchInProgress: Boolean = false
-
-  // Computed properties
-  val isEmpty: Boolean
-    get() = targets.isEmpty()
+  val hasAnyTargets: Boolean
+    get() = targets.isNotEmpty()
 
   fun updateTargets(newTargets: Map<Label, BuildTarget>, newInvalidTargets: List<Label> = emptyList()) {
     targets = newTargets
     invalidTargets = newInvalidTargets
-    // Reset search results when targets change
-    searchResults = emptyList()
-    searchInProgress = false
-    buildTargetTree?.updateTree()
-  }
 
-  private fun performSearch(regex: Regex) {
-    searchResults =
-      targets.keys
-        .toList()
-        .map { Pair(it.toShortString(project), it) }
-        .filter {
-          // Search in target ID string representation
-          val targetString = it.first
-          regex.containsMatchIn(targetString)
-        }.sortedBy { it.first }
-        .map { it.second }
+    updateVisibleTargets()
   }
 }

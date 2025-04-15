@@ -1,13 +1,11 @@
-package org.jetbrains.bazel.ui.widgets.tool.window.search
+package org.jetbrains.bazel.ui.widgets.tool.window.components
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.CommonShortcuts
 import com.intellij.openapi.keymap.KeymapUtil
-import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.fields.ExtendableTextField
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleDocumentListener
@@ -16,13 +14,6 @@ import java.awt.BorderLayout
 import javax.swing.JComponent
 
 class SearchBarPanel(private val model: BazelTargetsPanelModel) : JBPanel<SearchBarPanel>(BorderLayout()) {
-  private val searchLoadingExtension: TextComponentExtension.Indicator =
-    TextComponentExtension.Indicator(
-      trueIcon = AnimatedIcon.Default.INSTANCE,
-      falseIcon = AllIcons.Actions.Find,
-      predicate = { model.searchInProgress },
-      beforeText = true,
-    )
 
   private val textField = prepareTextField()
 
@@ -83,7 +74,6 @@ class SearchBarPanel(private val model: BazelTargetsPanelModel) : JBPanel<Search
     return newField.apply {
       this.emptyText.text =
         BazelPluginBundle.message("widget.target.search.hint", KeymapUtil.getFirstKeyboardShortcutText(CommonShortcuts.getFind()))
-      addExtension(searchLoadingExtension)
       addExtension(treeExtension)
       addExtension(regexExtension)
       addExtension(matchCaseExtension)

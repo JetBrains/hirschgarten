@@ -76,12 +76,8 @@ class BuildTargetTree(
     cellRenderer = TargetTreeCellRenderer { it }
     isRootVisible = false
 
-    // Listen for model changes
-    model.buildTargetTree = this
-
     // Initial tree generation
     updateTree()
-    expandPath(TreePath(rootNode.path))
   }
 
   fun updateTree() {
@@ -93,8 +89,7 @@ class BuildTargetTree(
       }
 
     // Generate the tree with the current targets
-    val targetsToDisplay = if (model.isSearchActive) model.searchResults else model.targets.keys
-    generateTree(targetsToDisplay, model.invalidTargets, classifier)
+    generateTree(model.visibleTargets, model.invalidTargets, classifier)
 
     // Notify the tree model that the structure has changed
     (treeModel as? DefaultTreeModel)?.reload()
@@ -108,7 +103,7 @@ class BuildTargetTree(
       targets.map {
         BuildTargetTreeIdentifier(
           it,
-          model.targets[it],
+          model.getTargetData(it),
           classifier.calculateBuildTargetPath(it),
           classifier.calculateBuildTargetName(it),
         )
@@ -199,7 +194,7 @@ class BuildTargetTree(
 
   private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode =
     DefaultMutableTreeNode(
-      TargetNodeData(project, identifier.id, identifier.target, identifier.displayName, identifier.target != null),
+      TargetNodeData(identifier.target, identifier.id.toShortString(project),  identifier.target != null),
     )
 
   private fun simplifyNodeIfHasOneChild(
@@ -252,21 +247,13 @@ class BuildTargetTree(
   }
 }
 
-private interface NodeData
-
-data class DirectoryNodeData(val name: String, val targets: List<BuildTargetTreeIdentifier>) : NodeData {
-  override fun toString(): String = name
-}
+data class DirectoryNodeData(val name: String, val targets: List<BuildTargetTreeIdentifier>)
 
 data class TargetNodeData(
-  val project: Project,
-  val id: Label,
   val target: BuildTarget?,
   val displayName: String,
   val isValid: Boolean,
-) : NodeData {
-  override fun toString(): String = id.toShortString(project)
-}
+)
 
 data class BuildTargetTreeIdentifier(
   val id: Label,
