@@ -23,7 +23,6 @@ class BazelJVMExperimentalSettings(private val project: Project) : UnnamedConfig
 
   init {
 
-    // experimental features
     enableLocalJvmActionsCheckBox = initEnableLocalJvmActionsCheckBox()
     enableBuildWithJpsCheckBox = initEnableBuildWithJpsCheckBox()
     // TODO: BAZEL-1837
