@@ -135,6 +135,14 @@ sealed class RunAllTestsActionTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testResultsTree:runAllTestsActionTest"
 )
 
+sealed class DisabledKotlinPluginTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Sync project with disabled kotlin plugin test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:DisabledKotlinPluginTest"
+)
+
 object HotswapTestGitHub : HotswapTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
@@ -215,3 +223,10 @@ object RunAllTestsActionTestSpace : RunAllTestsActionTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )
 
+object DisabledKotlinPluginTestGitHub : DisabledKotlinPluginTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object DisabledKotlinPluginTestSpace : DisabledKotlinPluginTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
