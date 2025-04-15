@@ -65,7 +65,6 @@ class PythonProjectSync : ProjectSyncHook {
 
     val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
     val sourceDependencies = calculateDependenciesSources(pythonTargets.map { it.id }, environment)
-    val defaultSdk = getSystemSdk()
 
     pythonTargets.forEach {
       val moduleName = it.id.formatAsModuleName(environment.project)
@@ -81,7 +80,7 @@ class PythonProjectSync : ProjectSyncHook {
         entitySource = moduleSourceEntity,
         virtualFileUrlManager = virtualFileUrlManager,
         project = environment.project,
-        sdk = sdks[it.id] ?: defaultSdk,
+        sdk = sdks[it.id],
         sourceDependencyLibrary = sourceDependencyLibrary,
       )
     }
@@ -115,11 +114,17 @@ class PythonProjectSync : ProjectSyncHook {
         .distinct()
         .associateWith { findOrAddSdk(it, project) }
 
-    return interpretersByTarget.mapValues { sdksByInterpreter[it.value] }
+    val sdksByTarget = interpretersByTarget.mapValues { sdksByInterpreter[it.value] }
+    return if (sdksByTarget.values.contains(null)) { // replace null SDKs with a default one if available
+      val systemSdk = getSystemSdk() ?: return sdksByTarget
+      val existingSystemSdk = ProjectJdkTable.getInstance().findJdk(systemSdk.name, systemSdk.sdkType.name)
+      val defaultSdk = existingSystemSdk ?: systemSdk.addToSdkTable(project)
+      sdksByTarget.mapValues { it.value ?: defaultSdk }
+    } else sdksByTarget
   }
 
-  private suspend fun findOrAddSdk(interpreter: PythonBuildTarget, project: Project): Sdk {
-    val sdkName = chooseSdkName(interpreter, project.name)
+  private suspend fun findOrAddSdk(pythonTarget: PythonBuildTarget, project: Project): Sdk {
+    val sdkName = chooseSdkName(pythonTarget, project.name)
     val sdkTable = ProjectJdkTable.getInstance()
 
     val existingSdk = sdkTable.findJdk(sdkName, PythonSdkType.getInstance().toString())
@@ -129,15 +134,20 @@ class PythonProjectSync : ProjectSyncHook {
       ProjectJdkImpl(
         sdkName,
         PythonSdkType.getInstance(),
-        interpreter.interpreter.toString(),
-        interpreter.version,
+        pythonTarget.interpreter.toString(),
+        pythonTarget.version,
       )
 
-    writeAction {
-      sdkTable.addJdk(sdk)
-      PythonSdkUpdater.scheduleUpdate(sdk, project)
-    }
+    sdk.addToSdkTable(project)
     return sdk
+  }
+
+  private suspend fun Sdk.addToSdkTable(project: Project): Sdk {
+    writeAction {
+      ProjectJdkTable.getInstance().addJdk(this)
+      PythonSdkUpdater.scheduleUpdate(this, project)
+    }
+    return this
   }
 
   private fun chooseSdkName(interpreter: PythonBuildTarget, projectName: String): String =
