@@ -265,9 +265,12 @@ class BazelProjectMapper(
       }.toMap()
 
   private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo) =
-    targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
-      targetInfo.hasJvmTargetInfo() &&
-      !hasKnownJvmSources(targetInfo)
+    !targetInfo.kind.endsWith("_resources") &&
+      (
+        targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
+          targetInfo.hasJvmTargetInfo() &&
+          !hasKnownJvmSources(targetInfo)
+      )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport

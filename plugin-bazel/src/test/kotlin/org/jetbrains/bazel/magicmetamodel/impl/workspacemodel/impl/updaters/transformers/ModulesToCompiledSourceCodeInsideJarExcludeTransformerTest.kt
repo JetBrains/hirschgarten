@@ -102,7 +102,7 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
     val resourceRoots =
       listOf(
         Path("/src/resources/plugin.xml"),
-        Path("/src/resources/plugin.properties"),
+        Path("/src/resources/plugin.info"),
       )
     val module = createModuleWithRoots(emptyList(), resourceRoots)
 
