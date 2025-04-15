@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.treeStructure.Tree
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BazelBuildTargetClassifier
+import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BuildTargetClassifierExtension
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.DefaultBuildTargetClassifierExtension
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
@@ -14,6 +15,7 @@ import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.awt.Point
 import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreeNode
 import javax.swing.tree.TreePath
@@ -21,7 +23,7 @@ import javax.swing.tree.TreeSelectionModel
 
 class BuildTargetTree(
   private val project: Project,
-  private val model: BazelToolwindowModel,
+  private val model: BazelTargetsPanelModel,
   private val rootNode: DefaultMutableTreeNode = DefaultMutableTreeNode(DirectoryNodeData("[root]", emptyList())),
 ) : Tree(rootNode) {
   private val loadedTargetsMouseListener: LoadedTargetsMouseListener =
@@ -69,13 +71,6 @@ class BuildTargetTree(
       addMouseListener(it)
     }
 
-  private var bspBuildTargetClassifier =
-    if (model.displayAsTree) {
-      BazelBuildTargetClassifier(project)
-    } else {
-      DefaultBuildTargetClassifierExtension(project)
-    }
-
   init {
     selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
     cellRenderer = TargetTreeCellRenderer { it }
@@ -90,8 +85,7 @@ class BuildTargetTree(
   }
 
   fun updateTree() {
-    // Update the classifier if display mode changed
-    bspBuildTargetClassifier =
+    val classifier =
       if (model.displayAsTree) {
         BazelBuildTargetClassifier(project)
       } else {
@@ -100,29 +94,34 @@ class BuildTargetTree(
 
     // Generate the tree with the current targets
     val targetsToDisplay = if (model.isSearchActive) model.searchResults else model.targets.keys
-    generateTree(targetsToDisplay, model.invalidTargets)
+    generateTree(targetsToDisplay, model.invalidTargets, classifier)
+
+    // Notify the tree model that the structure has changed
+    (treeModel as? DefaultTreeModel)?.reload()
+
     expandPath(TreePath(rootNode.path))
+
   }
 
-  private fun generateTree(targets: Collection<Label>, invalidTargets: List<Label>) {
+  private fun generateTree(targets: Collection<Label>, invalidTargets: List<Label>, classifier: BuildTargetClassifierExtension) {
     generateTreeFromIdentifiers(
       targets.map {
         BuildTargetTreeIdentifier(
           it,
           model.targets[it],
-          bspBuildTargetClassifier.calculateBuildTargetPath(it),
-          bspBuildTargetClassifier.calculateBuildTargetName(it),
+          classifier.calculateBuildTargetPath(it),
+          classifier.calculateBuildTargetName(it),
         )
       } +
         invalidTargets.map {
           BuildTargetTreeIdentifier(
             it,
             null,
-            bspBuildTargetClassifier.calculateBuildTargetPath(it),
-            bspBuildTargetClassifier.calculateBuildTargetName(it),
+            classifier.calculateBuildTargetPath(it),
+            classifier.calculateBuildTargetName(it),
           )
         },
-      bspBuildTargetClassifier.separator,
+      classifier.separator,
     )
   }
 

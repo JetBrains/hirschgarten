@@ -3,16 +3,28 @@ package org.jetbrains.bazel.ui.widgets.tool.window.components
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.ui.widgets.tool.window.search.SearchBarPanel
+import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
+import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
 import javax.swing.SwingConstants
 
-class BuildTargetSearch(private val project: Project, private val model: BazelTargetsPanelModel) :
-  JBPanel<BuildTargetSearch>(VerticalLayout(0)) {
-  private val targetTree =
+class BazelTargetsPanel(private val project: Project, private val model: BazelTargetsPanelModel) :
+  JBPanel<BazelTargetsPanel>(VerticalLayout(0)) {
+  val searchBarPanel = SearchBarPanel(model)
+  val targetTree =
     BuildTargetTree(
       project = project,
       model = model,
+    )
+  val scrollPane = JBScrollPane(targetTree)
+
+  private val emptyTreeMessage =
+    JBLabel(
+      BazelPluginBundle.message("widget.no.targets.message"),
+      SwingConstants.CENTER,
     )
 
   private val noResultsInfoComponent =
@@ -22,13 +34,14 @@ class BuildTargetSearch(private val project: Project, private val model: BazelTa
     )
 
   init {
+    searchBarPanel.isEnabled = true
+    searchBarPanel.registerSearchShortcutsOn(scrollPane)
+    registerMoveDownShortcut(searchBarPanel)
+    add(searchBarPanel, VerticalLayout.TOP)
+    add(scrollPane, VerticalLayout.FILL)
     noResultsInfoComponent.isVisible = false
     add(noResultsInfoComponent)
-    add(targetTree)
     model.buildTargetTree = targetTree
-
-    // Initial display update
-    updateDisplay()
   }
 
   private fun updateDisplay() {
@@ -44,8 +57,20 @@ class BuildTargetSearch(private val project: Project, private val model: BazelTa
     noResultsInfoComponent.isVisible = model.isSearchActive && model.searchResults.isEmpty()
     targetTree.isVisible = !model.isSearchActive || model.searchResults.isNotEmpty()
 
+
+    targetTree.updateTree()
+
     // Refresh the panel
     revalidate()
     repaint()
+  }
+
+  private fun registerMoveDownShortcut(searchBarPanel: SearchBarPanel) {
+    val action =
+      SimpleAction {
+//      searchBarPanel.selectionRows = intArrayOf(0)
+        requestFocus()
+      }
+    action.registerCustomShortcutSet(BspShortcuts.fromSearchBarToTargets, searchBarPanel)
   }
 }

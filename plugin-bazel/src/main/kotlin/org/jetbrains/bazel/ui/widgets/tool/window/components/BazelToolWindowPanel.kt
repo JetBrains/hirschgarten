@@ -23,10 +23,8 @@ import java.nio.file.Path
 import javax.swing.SwingConstants
 
 class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, true) {
-  private val model = project.service<BazelToolwindowModel>()
-  val panel = BazelPanelComponent(project, model)
-
-//  private val loadedTargetsPanel = BspPanelComponent(project, model)
+  private val model = project.service<BazelTargetsPanelModel>()
+  val panel = BazelTargetsPanel(project, model)
 
   init {
     val actionManager = ActionManager.getInstance()

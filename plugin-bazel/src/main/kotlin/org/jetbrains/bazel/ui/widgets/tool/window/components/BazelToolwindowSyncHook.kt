@@ -5,6 +5,6 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 
 class BazelToolwindowSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
-    environment.project.service<BazelToolwindowModel>().updateTargets(environment.buildTargets.targets.associateBy { it.id })
+    environment.project.service<BazelTargetsPanelModel>().updateTargets(environment.buildTargets.targets.associateBy { it.id })
   }
 }

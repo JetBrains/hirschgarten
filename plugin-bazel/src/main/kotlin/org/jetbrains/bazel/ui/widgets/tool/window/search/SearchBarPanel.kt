@@ -7,7 +7,7 @@ import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.fields.ExtendableTextField
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelToolwindowModel
+import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleDocumentListener
@@ -15,7 +15,7 @@ import org.jetbrains.bazel.ui.widgets.tool.window.utils.TextComponentExtension
 import java.awt.BorderLayout
 import javax.swing.JComponent
 
-class SearchBarPanel(private val model: BazelToolwindowModel) : JBPanel<SearchBarPanel>(BorderLayout()) {
+class SearchBarPanel(private val model: BazelTargetsPanelModel) : JBPanel<SearchBarPanel>(BorderLayout()) {
   private val searchLoadingExtension: TextComponentExtension.Indicator =
     TextComponentExtension.Indicator(
       trueIcon = AnimatedIcon.Default.INSTANCE,
