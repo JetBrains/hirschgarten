@@ -59,7 +59,7 @@ class LabelSearchEverywhereContributor(private val project: Project) :
       val fullString = label.toString()
       if (matcher.matches(fullString)) {
         val foundItemDescriptor = FoundItemDescriptor(LabelWithPreview(label, project), matcher.matchingDegree(fullString))
-        if (!consumer.process(foundItemDescriptor)) break
+        if (!runReadAction { consumer.process(foundItemDescriptor) }) break
       }
     }
   }
