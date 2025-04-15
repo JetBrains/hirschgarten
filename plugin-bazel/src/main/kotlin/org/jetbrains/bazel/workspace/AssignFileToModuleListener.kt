@@ -59,7 +59,9 @@ class AssignFileToModuleListener : BulkFileListener {
   private val pendingEvents = mutableMapOf<Project, MutableList<VFileEvent>>()
 
   override fun after(events: MutableList<out VFileEvent>) {
-    testableAfter(events)
+    if (!ApplicationManager.getApplication().isUnitTestMode) {
+      testableAfter(events)
+    }
   }
 
   @VisibleForTesting
@@ -126,20 +128,9 @@ private fun VirtualFile.getRelatedProjects(): List<Project> =
   ProjectManager
     .getInstance()
     .openProjects
-    .filter { it.doWeCareAboutIt() && this.isInsideProject(it) }
+    .filter { it.doWeCareAboutIt() && VfsUtil.isAncestor(it.rootDir, this, false) }
 
 private fun Project.doWeCareAboutIt(): Boolean = this.isBazelProject && this.isTrusted()
-
-private fun VirtualFile.isInsideProject(project: Project): Boolean =
-  try {
-    VfsUtil.isAncestor(project.rootDir, this, false)
-  } catch (e: IllegalStateException) {
-    if (ApplicationManager.getApplication().isUnitTestMode) {
-      false // otherwise would break unrelated tests
-    } else {
-      throw e
-    }
-  }
 
 private suspend fun VFileEvent.process(project: Project) {
   val workspaceModel = WorkspaceModel.getInstance(project)

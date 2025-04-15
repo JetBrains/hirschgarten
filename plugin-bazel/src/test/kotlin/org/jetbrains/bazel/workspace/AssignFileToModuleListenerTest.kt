@@ -7,7 +7,11 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.events.ChildInfo
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
+import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
+import com.intellij.openapi.vfs.newvfs.events.VFileDeleteEvent
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent
+import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
@@ -26,8 +30,9 @@ import io.kotest.common.runBlocking
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.Job
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
@@ -50,8 +55,6 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   @TestDisposable
   lateinit var disposable: Disposable
 
-  private val waiter = Channel<Unit>()
-
   private val target1 = Label.parse("//src:target1")
   private val target2 = Label.parse("//src:target2")
   private val target3 = Label.parse("//src/package:target3")
@@ -69,14 +72,18 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     target2.createModule()
     target3.createModule()
     target4.createModule()
-
-    registerSyncWaiter()
   }
 
   @Test
   fun `source file creation`() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
-    waiter.await()
+
+    file.assertModelStatus(
+      target1 to false,
+      target2 to false,
+    )
+
+    createEvent(file).process().assertNotNullAndAwait()
 
     file.assertModelStatus(
       target1 to true,
@@ -87,7 +94,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   @Test
   fun `source file rename`() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
-    waiter.await()
+    createEvent(file).process().assertNotNullAndAwait()
 
     file.assertModelStatus(
       target1 to true,
@@ -96,7 +103,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     )
 
     runTestWriteAction { file.rename(requestor, "bbb.java") }
-    waiter.await()
+    renameEvent(file, "aaa.java", "bbb.java").process().assertNotNullAndAwait()
 
     file.assertModelStatus(
       target1 to true,
@@ -110,7 +117,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     val src = project.rootDir.createDirectory("src")
     val file = src.createFile("aaa", "java")
     val pack = src.createDirectory("package")
-    waiter.await()
+    createEvent(file).process().assertNotNullAndAwait()
 
     file.assertModelStatus(
       target1 to true,
@@ -118,8 +125,9 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
       target3 to false,
     )
 
+    val moveEvent = moveEvent(file, pack)
     runTestWriteAction { file.move(requestor, pack) }
-    waiter.await()
+    moveEvent.process().assertNotNullAndAwait()
 
     file.assertModelStatus(
       target1 to false,
@@ -132,7 +140,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   fun `source file copy`() {
     val src = project.rootDir.createDirectory("src")
     val file = src.createFile("aaa", "java")
-    waiter.await()
+    createEvent(file).process().assertNotNullAndAwait()
 
     file.assertModelStatus(
       target1 to true,
@@ -141,7 +149,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     )
 
     val newFile = runTestWriteAction { file.copy(requestor, src, "bbb.java") }
-    waiter.await()
+    copyEvent(newFile, src, "bbb.java").process().assertNotNullAndAwait()
 
     file.assertModelStatus(
       target1 to true,
@@ -159,7 +167,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   fun `source file delete`() {
     val src = project.rootDir.createDirectory("src")
     val file = src.createFile("aaa", "java")
-    waiter.await()
+    createEvent(file).process().assertNotNullAndAwait()
 
     file.assertModelStatus(
       target1 to true,
@@ -167,7 +175,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     )
 
     runTestWriteAction { file.delete(requestor) }
-    waiter.await()
+    deleteEvent(file).process().assertNotNullAndAwait()
 
     file.assertModelStatus(
       target1 to false,
@@ -177,22 +185,14 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should ignore non-source file`() {
-    val fileListener = AssignFileToModuleListener()
     val file = project.rootDir.createDirectory("src").createFile("aaa", "txt")
-    val event = createEvent(file)
-
-    val job = fileListener.testableAfter(listOf(event))[project]
-    job.shouldBeNull()
+    createEvent(file).process().shouldBeNull()
   }
 
   @Test
   fun `should ignore directory creation`() {
-    val fileListener = AssignFileToModuleListener()
     val directory = project.rootDir.createDirectory("src")
-    val event = createEvent(directory)
-
-    val job = fileListener.testableAfter(listOf(event))[project]
-    job.shouldBeNull()
+    createEvent(directory).process().shouldBeNull()
   }
 
   @Test
@@ -200,9 +200,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     val fileListener = AssignFileToModuleListener()
     val src = project.rootDir.createDirectory("src")
     val fileA = src.createFile("aaa", "java")
-    waiter.await() // waiting for the real file listener to finish to avoid disposable errors
     val fileB = src.createFile("bbb", "java")
-    waiter.await() // waiting for the real file listener to finish to avoid disposable errors
 
     val events = listOf(createEvent(fileA), createEvent(fileB))
     val job = fileListener.testableAfter(events)[project]
@@ -212,16 +210,10 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should ignore non-applicable events`() {
-    val fileListener = AssignFileToModuleListener()
     val file = project.rootDir.createDirectory("src").createFile("aaa", "txt")
-    val event1 = encodingChangeEvent(file)
-    val event2 = contentChangeEvent(file)
 
-    val job1 = fileListener.testableAfter(listOf(event1))[project]
-    job1.shouldBeNull()
-
-    val job2 = fileListener.testableAfter(listOf(event2))[project]
-    job2.shouldBeNull()
+    encodingChangeEvent(file).process().shouldBeNull()
+    contentChangeEvent(file).process().shouldBeNull()
   }
 
   @Test
@@ -252,7 +244,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
 
     val file = src.createFile("aaa", "java")
     val fileUrl = file.toVirtualFileUrl(virtualFileUrlManager)
-    waiter.await()
+    createEvent(file).process().assertNotNullAndAwait()
 
     // should not be added to target1's model
     target1.itsModuleContainsFile(fileUrl).shouldBeFalse()
@@ -260,22 +252,6 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     file.assertModelStatus(target2 to true)
     fileUrl.belongsToTarget(target1).shouldBeTrue()
   }
-
-  private fun createEvent(file: VirtualFile): VFileCreateEvent =
-    VFileCreateEvent(
-      requestor,
-      file.parent,
-      file.name,
-      false,
-      null,
-      null,
-      emptyArray<ChildInfo>(),
-    )
-
-  private fun encodingChangeEvent(file: VirtualFile) =
-    VFilePropertyChangeEvent(requestor, file, VirtualFile.PROP_ENCODING, Charsets.US_ASCII, Charsets.UTF_8)
-
-  private fun contentChangeEvent(file: VirtualFile) = VFileContentChangeEvent(requestor, file, 0, 0)
 
   private fun VirtualFile.createFile(name: String, extension: String): VirtualFile {
     if (!this.isDirectory) error("Can't create a file in a non-directory file")
@@ -290,6 +266,35 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
       this.createChildDirectory(requestor, name)
     }
   }
+
+  private fun createEvent(file: VirtualFile) =
+    VFileCreateEvent(
+      requestor,
+      file.parent,
+      file.name,
+      false,
+      null,
+      null,
+      emptyArray<ChildInfo>(),
+    )
+
+  private fun deleteEvent(file: VirtualFile) = VFileDeleteEvent(this, file)
+
+  private fun moveEvent(file: VirtualFile, newParent: VirtualFile) = VFileMoveEvent(this, file, newParent)
+
+  private fun copyEvent(file: VirtualFile, newParent: VirtualFile, newChildName: String) =
+    VFileCopyEvent(this, file, newParent, newChildName)
+
+  private fun renameEvent(file: VirtualFile, oldName: String, newName: String) =
+    VFilePropertyChangeEvent(this, file, VirtualFile.PROP_NAME, oldName, newName)
+
+  private fun encodingChangeEvent(file: VirtualFile) =
+    VFilePropertyChangeEvent(requestor, file, VirtualFile.PROP_ENCODING, Charsets.US_ASCII, Charsets.UTF_8)
+
+  private fun contentChangeEvent(file: VirtualFile) = VFileContentChangeEvent(requestor, file, 0, 0)
+
+  private fun VFileEvent.process(): Job? =
+    AssignFileToModuleListener().testableAfter(listOf(this))[project]
 
   private fun VirtualFile.assertModelStatus(vararg expectedStates: Pair<Label, Boolean>) {
     this.toVirtualFileUrl(virtualFileUrlManager).assertModelStatus(*expectedStates)
@@ -336,10 +341,6 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     val moduleId = ModuleId(target.formatAsModuleName(project))
     return resolve(moduleId) ?: error("Module for $target does not exist")
   }
-
-  private fun registerSyncWaiter() {
-    project.targetUtils.registerSyncListener { runBlocking { waiter.send(Unit) } }
-  }
 }
 
 private class InverseSourcesServer(private val projectBasePath: Path) : BuildServerMock() {
@@ -369,6 +370,7 @@ private class InverseSourcesServer(private val projectBasePath: Path) : BuildSer
   }
 }
 
-private fun Channel<Unit>.await() {
-  runBlocking { receive() }
+private fun Job?.assertNotNullAndAwait() {
+  this.shouldNotBeNull()
+  runBlocking { join() }
 }
