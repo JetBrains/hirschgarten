@@ -14,7 +14,6 @@ class BazelJVMExperimentalSettingsProvider : BazelSettingsProvider {
 }
 
 class BazelJVMExperimentalSettings(private val project: Project) : UnnamedConfigurable {
-  // experimental features
   private val enableLocalJvmActionsCheckBox: JBCheckBox
   private val enableBuildWithJpsCheckBox: JBCheckBox
   private val useIntellijTestRunnerCheckBox: JBCheckBox
