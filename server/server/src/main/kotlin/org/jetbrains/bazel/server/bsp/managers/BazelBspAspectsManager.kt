@@ -191,6 +191,7 @@ class BazelBspAspectsManager(
     outputGroups: List<String>,
     shouldLogInvocation: Boolean,
     workspaceContext: WorkspaceContext,
+    originId: String?,
   ): BazelBspAspectsManagerResult {
     if (targetsSpec.values.isEmpty()) return BazelBspAspectsManagerResult(BepOutput(), BazelStatus.SUCCESS)
     val defaultFlags =
@@ -211,7 +212,7 @@ class BazelBspAspectsManager(
       .buildTargetsWithBep(
         targetsSpec = targetsSpec,
         extraFlags = flagsToUse,
-        originId = null,
+        originId = originId,
         environment = emptyList(),
         shouldLogInvocation = shouldLogInvocation,
         workspaceContext = workspaceContext,

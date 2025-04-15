@@ -25,14 +25,15 @@
     <depends>com.intellij.modules.java</depends>
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.platform</depends>
-    <depends>org.jetbrains.kotlin</depends>
 
     <depends optional="true" config-file="withAndroid.xml">org.jetbrains.android</depends>
     <depends optional="true" config-file="withCodeWithMe.xml">com.jetbrains.codeWithMe</depends>
+    <depends optional="true" config-file="withCoverage.xml">com.intellij.modules.coverage</depends>
     <depends optional="true" config-file="withCpp.xml">com.intellij.clion</depends>
     <depends optional="true" config-file="withDevKit.xml">DevKit</depends>
     <depends optional="true" config-file="withGo.xml">org.jetbrains.plugins.go</depends>
     <depends optional="true" config-file="withIdeStarter.xml">com.jetbrains.performancePlugin</depends>
+    <depends optional="true" config-file="withKotlin.xml">org.jetbrains.kotlin</depends>
     <depends optional="true" config-file="withPython.xml">com.intellij.modules.python</depends>
     <depends optional="true" config-file="withJunit.xml">JUnit</depends>
 
@@ -97,7 +98,15 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.localJvmRunnerRunConfigurationProvider"
                         interface="org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
+                        interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater"
+                        dynamic="true"/>
     </extensionPoints>
+
+    <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <supportsKotlinPluginMode supportsK1="true" supportsK2="true"/>
+    </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.bazel">
         <runHandlerProvider implementation="org.jetbrains.bazel.jvm.run.JvmRunHandler$JvmRunHandlerProvider"
@@ -116,7 +125,6 @@
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.JavaSourceTypeIconProvider"/>
-        <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.KotlinSourceTypeIconProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -160,11 +168,6 @@
         <projectTaskRunner
                 implementation="org.jetbrains.bazel.buildTask.BazelProjectTaskRunner"/>
         <programRunner implementation="org.jetbrains.bazel.jvm.run.BazelJvmDebugRunner"/>
-
-        <programRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageProgramRunner"/>
-        <coverageRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageRunner"/>
-        <coverageEngine implementation="org.jetbrains.bazel.run.coverage.BazelCoverageEngine"/>
-        <projectViewNodeDecorator implementation="org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecorator"/>
 
         <directoryProjectConfigurator
                 implementation="org.jetbrains.bazel.flow.open.CounterPlatformProjectConfigurator"
@@ -220,29 +223,10 @@
 
     </extensions>
 
-    <extensions defaultExtensionNs="org.jetbrains.kotlin">
-        <projectConfigurator
-                implementation="org.jetbrains.bazel.kotlin.BazelKotlinProjectConfigurator"
-                order="first"
-        />
-
-        <!--suppress PluginXmlValidity -->
-        <supportsKotlinPluginMode supportsK2="true"/>
-
-        <!-- this is left for backward-compatibility with the first versions of 242,
-        it can be removed later -->
-        <!--suppress PluginXmlValidity -->
-        <supportsKotlinK2Mode/>
-    </extensions>
-
     <actions>
         <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsAction" id="BazelRunAllTestsAction">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-        </action>
-        <action class="org.jetbrains.bazel.ui.projectTree.action.RunAllTestsWithCoverageAction">
-            <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="BazelRunAllTestsAction"/>
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="BazelRunAllTestsAction"/>
         </action>
         <action id="Bazel.ResyncAction" class="org.jetbrains.bazel.action.registered.ResyncAction"
                 icon="/icons/resync.svg"/>
@@ -303,10 +287,7 @@
         <projectOpenProcessor
                 implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor"/>
         <postStartupActivity
-                implementation="org.jetbrains.bazel.flow.open.SuggestEnableK2StartupActivity"/>
-        <postStartupActivity
                 implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity"/>
-        <notificationGroup displayType="BALLOON" id="Enable K2 Compiler Mode with Bazel"/>
         <notificationGroup displayType="BALLOON" id="Bazel slow plugins warning"/>
 
         <externalSystemUnlinkedProjectAware
@@ -509,7 +490,6 @@
         <searchEverywhereContributor implementation="org.jetbrains.bazel.ui.widgets.LabelSearchEverywhereContributor$Factory"/>
 
         <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelJavaNewProjectWizard"/>
-        <newProjectWizard.kotlin.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelKotlinNewProjectWizard"/>
     </extensions>
 
     <actions>

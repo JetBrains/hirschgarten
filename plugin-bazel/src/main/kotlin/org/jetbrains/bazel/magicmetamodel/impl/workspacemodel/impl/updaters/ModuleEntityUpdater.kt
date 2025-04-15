@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.LibraryDependency
 import com.intellij.platform.workspace.jps.entities.LibraryId
@@ -14,11 +13,12 @@ import com.intellij.platform.workspace.jps.entities.customImlData
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.SymbolicEntityId
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import com.intellij.util.containers.Interner
 import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.bazel.jpsCompilation.utils.JpsConstants
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleEntityUpdater.Companion.interner
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.target.targetUtils
@@ -27,8 +27,9 @@ import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
-import org.jetbrains.kotlin.tooling.core.Interner
-import org.jetbrains.kotlin.tooling.core.WeakInterner
+
+private val dependencyInterner: Interner<ModuleDependencyItem> = Interner.createWeakInterner()
+private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInterner()
 
 internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -51,7 +52,7 @@ internal class ModuleEntityUpdater(
     val dependencies =
       defaultDependencies +
         modulesDependencies +
-        librariesDependencies.map { toLibraryDependency(it, workspaceModelEntityUpdaterConfig.project) } +
+        librariesDependencies.map { toLibraryDependency(it) } +
         associatesDependencies
 
     val moduleEntityBuilder =
@@ -100,35 +101,28 @@ internal class ModuleEntityUpdater(
         )
     }
 
-  private fun toModuleDependencyItemModuleDependency(
-    intermediateModuleDependency: IntermediateModuleDependency,
-    project: Project = workspaceModelEntityUpdaterConfig.project,
-  ): ModuleDependency =
-    interner.getOrPut(
+  private fun toModuleDependencyItemModuleDependency(intermediateModuleDependency: IntermediateModuleDependency): ModuleDependency =
+    dependencyInterner.intern(
       ModuleDependency(
-        module = interner.getOrPut(ModuleId(intermediateModuleDependency.moduleName)),
+        module = idInterner.intern(ModuleId(intermediateModuleDependency.moduleName)) as ModuleId,
         exported = true,
         scope = DependencyScope.COMPILE,
         productionOnTest = true,
       ),
-    )
-
-  companion object {
-    val interner: Interner = WeakInterner()
-  }
+    ) as ModuleDependency
 }
 
-internal fun toLibraryDependency(intermediateLibraryDependency: IntermediateLibraryDependency, project: Project): LibraryDependency =
-  interner.getOrPut(
+internal fun toLibraryDependency(intermediateLibraryDependency: IntermediateLibraryDependency): LibraryDependency =
+  dependencyInterner.intern(
     LibraryDependency(
       library =
-        interner.getOrPut(
+        idInterner.intern(
           LibraryId(
             name = intermediateLibraryDependency.libraryName,
             tableId = LibraryTableId.ProjectLibraryTableId, // treat all libraries as project-level libraries
           ),
-        ),
+        ) as LibraryId,
       exported = true, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
       scope = DependencyScope.COMPILE,
     ),
-  )
+  ) as LibraryDependency
