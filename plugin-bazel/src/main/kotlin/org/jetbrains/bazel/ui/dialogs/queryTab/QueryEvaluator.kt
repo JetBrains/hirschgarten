@@ -28,7 +28,7 @@ internal class QueryEvaluator {
       return
     }
 
-    val wcc = WorkspaceContextConstructor(directoryFile.toNioPath(), Path.of(""))
+    val wcc = WorkspaceContextConstructor(directoryFile.toNioPath(), Path.of(""), Path.of(""))
     val pv = ProjectView.Builder().build()
     wcp =
       object : WorkspaceContextProvider {
