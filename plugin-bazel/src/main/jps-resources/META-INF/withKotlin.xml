@@ -1,13 +1,12 @@
 <idea-plugin>
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
-        <projectConfigurator implementation="org.jetbrains.bazel.kotlin.BazelKotlinProjectConfigurator" order="first"/>
+        <projectConfigurator implementation="org.jetbrains.bazel.kotlin.configuration.BazelKotlinProjectConfigurator" order="first"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.bazel">
         <kotlinFacetEntityUpdater implementation="org.jetbrains.bazel.kotlin.sync.BazelKotlinFacetEntityUpdater"/>
-        <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.KotlinSourceTypeIconProvider"/>
-
         <projectPostSyncHook implementation="org.jetbrains.bazel.kotlin.sync.RefreshKotlinHighlightingPostSyncHook"/>
+        <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.configuration.KotlinSourceTypeIconProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

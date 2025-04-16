@@ -83,7 +83,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jvm/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jvm/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/jvm/ui/gutters",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/configuration",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/startup",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/sync/ideStarter",
