@@ -7,6 +7,7 @@
         <runHandlerProvider
                 implementation="org.jetbrains.bazel.android.run.AndroidBazelRunHandler$Provider"/>
         <jvmBinaryJarsExtension implementation="org.jetbrains.bazel.android.AndroidJvmBinaryJarsExtension"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.android.BazelAndroidModelUpdater"/>
     </extensions>
     <extensions defaultExtensionNs="com.android.project">
         <!-- order = first, because GradleProjectSystemProvider returns true if there's a build.gradle file (even if imported with BSP) -->
@@ -15,7 +16,6 @@
     <extensions defaultExtensionNs="com.intellij">
         <stepsBeforeRunProvider implementation="org.jetbrains.bazel.android.run.AndroidBeforeRunTaskProvider"/>
         <programRunner implementation="org.jetbrains.bazel.android.run.BazelAndroidProgramRunner"/>
-        <postStartupActivity implementation="org.jetbrains.bazel.android.BazelAndroidModelUpdater"/>
     </extensions>
     <extensions defaultExtensionNs="com.android.tools.idea">
         <rendering.tokens.buildSystemFilePreviewServices

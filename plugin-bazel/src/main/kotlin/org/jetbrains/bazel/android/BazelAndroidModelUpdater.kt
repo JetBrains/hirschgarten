@@ -8,25 +8,23 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.android.facet.AndroidFacet
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.startup.BazelProjectActivity
+import org.jetbrains.bazel.sync.ProjectSyncHook
+import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.target.moduleEntity
-import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspacemodel.entities.androidAddendumEntity
 
-class BazelAndroidModelUpdater : BazelProjectActivity() {
-  override suspend fun Project.executeForBazelProject() {
-    targetUtils.registerSyncListener {
-      if (!BazelFeatureFlags.isAndroidSupportEnabled) return@registerSyncListener
-      BazelCoroutineService.getInstance(this).start {
-        readActionBlocking {
-          updateAndroidModel(this)
-        }
-        val syncManager = this.getProjectSystem().getSyncManager() as BazelProjectSystemSyncManager
-        syncManager.notifySyncEnded(this)
+class BazelAndroidModelUpdater : ProjectSyncHook {
+  override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isAndroidSupportEnabled
+
+  override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
+    val project = environment.project
+    BazelCoroutineService.getInstance(project).start {
+      readActionBlocking {
+        updateAndroidModel(project)
       }
+      val syncManager = project.getProjectSystem().getSyncManager() as BazelProjectSystemSyncManager
+      syncManager.notifySyncEnded(project)
     }
-    if (!BazelFeatureFlags.isAndroidSupportEnabled) return
-    updateAndroidModel(this)
   }
 
   private fun updateAndroidModel(project: Project) {
