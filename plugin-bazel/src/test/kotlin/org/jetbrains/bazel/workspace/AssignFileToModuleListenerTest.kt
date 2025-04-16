@@ -282,19 +282,24 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
 
   private fun moveEvent(file: VirtualFile, newParent: VirtualFile) = VFileMoveEvent(this, file, newParent)
 
-  private fun copyEvent(file: VirtualFile, newParent: VirtualFile, newChildName: String) =
-    VFileCopyEvent(this, file, newParent, newChildName)
+  private fun copyEvent(
+    file: VirtualFile,
+    newParent: VirtualFile,
+    newChildName: String,
+  ) = VFileCopyEvent(this, file, newParent, newChildName)
 
-  private fun renameEvent(file: VirtualFile, oldName: String, newName: String) =
-    VFilePropertyChangeEvent(this, file, VirtualFile.PROP_NAME, oldName, newName)
+  private fun renameEvent(
+    file: VirtualFile,
+    oldName: String,
+    newName: String,
+  ) = VFilePropertyChangeEvent(this, file, VirtualFile.PROP_NAME, oldName, newName)
 
   private fun encodingChangeEvent(file: VirtualFile) =
     VFilePropertyChangeEvent(requestor, file, VirtualFile.PROP_ENCODING, Charsets.US_ASCII, Charsets.UTF_8)
 
   private fun contentChangeEvent(file: VirtualFile) = VFileContentChangeEvent(requestor, file, 0, 0)
 
-  private fun VFileEvent.process(): Job? =
-    AssignFileToModuleListener().testableAfter(listOf(this))[project]
+  private fun VFileEvent.process(): Job? = AssignFileToModuleListener().testableAfter(listOf(this))[project]
 
   private fun VirtualFile.assertModelStatus(vararg expectedStates: Pair<Label, Boolean>) {
     this.toVirtualFileUrl(virtualFileUrlManager).assertModelStatus(*expectedStates)
@@ -333,7 +338,10 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   }
 
   private fun doesModuleContainFile(moduleTarget: Label, fileUrl: VirtualFileUrl): Boolean =
-    workspaceModel.currentSnapshot.resolveModule(moduleTarget).contentRoots.any { it.url == fileUrl }
+    workspaceModel.currentSnapshot
+      .resolveModule(moduleTarget)
+      .contentRoots
+      .any { it.url == fileUrl }
 
   private fun ImmutableEntityStorage.resolveModule(target: Label): ModuleEntity {
     val moduleId = ModuleId(target.formatAsModuleName(project))

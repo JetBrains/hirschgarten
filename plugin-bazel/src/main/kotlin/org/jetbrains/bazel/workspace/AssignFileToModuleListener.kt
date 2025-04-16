@@ -178,7 +178,8 @@ private suspend fun processFileCreated(
   modulesToRemoveFrom: MutableList<ModuleEntity>,
 ): List<ModuleEntity> {
   val existingModules =
-    AssignFileToModuleListenerCompat.getModulesForFile(newFile, project)
+    AssignFileToModuleListenerCompat
+      .getModulesForFile(newFile, project)
       .filter { it.moduleEntity?.entitySource != BspDummyEntitySource }
       .mapNotNull { it.moduleEntity }
 
