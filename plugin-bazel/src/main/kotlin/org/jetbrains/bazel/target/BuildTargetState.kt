@@ -13,7 +13,7 @@ data class BuildTargetState(
   var capabilities: BuildTargetCapabilities = BuildTargetCapabilities(),
   var tags: List<String> = emptyList(),
   var languageIds: List<String> = emptyList(),
-  var baseDirectory: String? = null,
+  var baseDirectory: String = "",
 ) {
   fun fromState(): BuildTarget =
     BuildTarget(
@@ -21,7 +21,7 @@ data class BuildTargetState(
       capabilities = capabilities,
       tags = tags,
       languageIds = languageIds,
-      baseDirectory = baseDirectory?.let { Path(it) },
+      baseDirectory = Path(baseDirectory),
       dependencies = emptyList(),
       sources = emptyList(),
       resources = emptyList(),

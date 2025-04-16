@@ -829,6 +829,148 @@ class TestXmlParserTest {
     lastFinishData?.time shouldBe 0.02
   }
 
+  /**
+   * ```kotlin
+   * import org.junit.jupiter.api.Test
+   *
+   * class MultilineExceptionTest {
+   *   @Test
+   *   fun `throws multi-line exception`() {
+   *     throw Exception("First line\n  Second line\nThird line")
+   *   }
+   *
+   *   @Test
+   *   fun `throws single-line exception with trailing newline`() {
+   *     throw Exception("First line\n")
+   *   }
+   * }
+   * ```
+   */
+  @Test
+  fun `junit5 - parsing multiline error messages`(
+    @TempDir tempDir: Path,
+  ) {
+    val dollar = "${'$'}"
+    val sampleContents =
+      """
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="server/server/src/test/kotlin/org/jetbrains/bazel/server/diagnostics/MultilineExceptionTest" tests="1" failures="0" errors="1">
+    <testcase name="server/server/src/test/kotlin/org/jetbrains/bazel/server/diagnostics/MultilineExceptionTest" status="run" duration="0" time="0"><error message="exited with error code 1"></error></testcase>
+      <system-out>
+Generated test.log (if the file is not UTF-8, then this may be unreadable):
+<![CDATA[exec $dollar{PAGER:-/usr/bin/less} "$dollar{'$dollar'}0" || exit 1
+Executing tests from //server/server/src/test/kotlin/org/jetbrains/bazel/server/diagnostics:MultilineExceptionTest
+-----------------------------------------------------------------------------
+
+Thanks for using JUnit! Support its development at https://junit.org/sponsoring
+
+?[36m╷?[0m
+?[36m└─?[0m ?[36mJUnit Platform Suite?[0m ?[32m✔?[0m
+?[36m   └─?[0m ?[36mMultilineExceptionTest?[0m ?[32m✔?[0m
+?[36m      ├─?[0m ?[31mthrows multi-line exception()?[0m ?[31m✘?[0m ?[31mFirst line?[0m
+?[36m      │     ?[0m?[31m     Second line?[0m
+?[36m      │     ?[0m?[31m   Third line?[0m
+?[36m      └─?[0m ?[31mthrows single-line exception with trailing newline()?[0m ?[31m✘?[0m ?[31mFirst line?[0m
+
+Failures (2):
+  JUnit Platform Suite:MultilineExceptionTest:throws multi-line exception()
+    MethodSource [className = 'org.jetbrains.bazel.server.diagnostics.MultilineExceptionTest', methodName = 'throws multi-line exception', methodParameterTypes = '']
+    => java.lang.Exception: First line
+  Second line
+Third line
+       org.jetbrains.bazel.server.diagnostics.MultilineExceptionTest.throws multi-line exception(MultilineExceptionTest.kt:8)
+       java.base/java.lang.reflect.Method.invoke(Method.java:568)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+  JUnit Platform Suite:MultilineExceptionTest:throws single-line exception with trailing newline()
+    MethodSource [className = 'org.jetbrains.bazel.server.diagnostics.MultilineExceptionTest', methodName = 'throws single-line exception with trailing newline', methodParameterTypes = '']
+    => java.lang.Exception: First line
+
+       org.jetbrains.bazel.server.diagnostics.MultilineExceptionTest.throws single-line exception with trailing newline(MultilineExceptionTest.kt:13)
+       java.base/java.lang.reflect.Method.invoke(Method.java:568)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+Test run finished after 36 ms
+[         2 containers found      ]
+[         0 containers skipped    ]
+[         2 containers started    ]
+[         0 containers aborted    ]
+[         2 containers successful ]
+[         0 containers failed     ]
+[         2 tests found           ]
+[         0 tests skipped         ]
+[         2 tests started         ]
+[         0 tests aborted         ]
+[         0 tests successful      ]
+[         2 tests failed          ]
+
+
+WARNING: Delegated to the 'execute' command.
+         This behaviour has been deprecated and will be removed in a future release.
+         Please use the 'execute' command directly.]]>
+      </system-out>
+    </testsuite>
+</testsuites>
+      """.trimIndent()
+
+    val client = MockBuildClient()
+    val notifier = BspClientTestNotifier(client, "sample-origin")
+
+    // when
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+
+    // then
+    val expectedNames =
+      listOf(
+        "MultilineExceptionTest",
+        "throws multi-line exception()",
+        "throws single-line exception with trailing newline()",
+      )
+
+    val testFinishes = client.taskFinishCalls.filter { it.data is TestFinish }
+
+    testFinishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
+
+    testFinishes.forEach {
+      val data = (it.data as TestFinish)
+      when (data.displayName) {
+        "throws multi-line exception()" -> {
+          data.status shouldBe TestStatus.FAILED
+          data.message shouldBe
+            """
+            First line
+              Second line
+            Third line
+                MethodSource [className = 'org.jetbrains.bazel.server.diagnostics.MultilineExceptionTest', methodName = 'throws multi-line exception', methodParameterTypes = '']
+            java.lang.Exception: First line
+              Second line
+            Third line
+                   org.jetbrains.bazel.server.diagnostics.MultilineExceptionTest.throws multi-line exception(MultilineExceptionTest.kt:8)
+                   java.base/java.lang.reflect.Method.invoke(Method.java:568)
+                   java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+                   java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+            """.trimIndent()
+        }
+        "throws single-line exception with trailing newline()" -> {
+          data.status shouldBe TestStatus.FAILED
+          data.message shouldBe
+            """
+            First line
+                MethodSource [className = 'org.jetbrains.bazel.server.diagnostics.MultilineExceptionTest', methodName = 'throws single-line exception with trailing newline', methodParameterTypes = '']
+            java.lang.Exception: First line
+
+                   org.jetbrains.bazel.server.diagnostics.MultilineExceptionTest.throws single-line exception with trailing newline(MultilineExceptionTest.kt:13)
+                   java.base/java.lang.reflect.Method.invoke(Method.java:568)
+                   java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+                   java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+            """.trimIndent()
+        }
+      }
+    }
+  }
+
   private fun writeTempFile(tempDir: Path, contents: String): String {
     val tempFile = tempDir.resolve("tempFile.xml").toFile()
     tempFile.writeText(contents)

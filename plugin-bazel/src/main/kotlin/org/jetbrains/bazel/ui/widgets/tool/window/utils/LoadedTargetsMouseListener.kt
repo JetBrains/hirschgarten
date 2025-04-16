@@ -80,7 +80,7 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
         addAction(BuildTargetAction(target.id))
       }
       fillWithEligibleActions(project, target, false)
-      add(BazelJumpToBuildFileAction(target))
+      add(BazelJumpToBuildFileAction(target.id))
       if (StarlarkDebugAction.isApplicableTo(target)) add(StarlarkDebugAction(target.id))
     }
 

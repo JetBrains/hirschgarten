@@ -15,5 +15,5 @@ data class AnalysisDebugResult(val statusCode: StatusCode)
 data class RunWithDebugParams(
   val originId: String,
   val runParams: RunParams,
-  val debug: RemoteDebugData?,
+  val debug: DebugType?,
 )

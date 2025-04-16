@@ -22,7 +22,7 @@ import com.intellij.ui.LightweightHint
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
-import org.jetbrains.bazel.languages.starlark.formatting.configuration.BuildifierConfiguration
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
 private val LOG = logger<StarlarkFormattingService>()
 private const val NOTIFICATION_GROUP_ID = "Buildifier"
@@ -33,13 +33,13 @@ class StarlarkFormattingService : AsyncDocumentFormattingService() {
   override fun canFormat(file: PsiFile): Boolean {
     val virtualFile = file.virtualFile ?: return false
     if (!FileTypeRegistry.getInstance().isFileOfType(virtualFile, StarlarkFileType)) return false
-    return BuildifierConfiguration.getBuildifierPath(file.project) != null
+    return file.project.bazelProjectSettings.getBuildifierPathString() != null
   }
 
   override fun createFormattingTask(request: AsyncFormattingRequest): FormattingTask? {
     val formattingContext = request.context
     val project = formattingContext.project
-    val buildifierPath = BuildifierConfiguration.getBuildifierPath(project) ?: return null
+    val buildifierPath = project.bazelProjectSettings.getBuildifierPathString() ?: return null
 
     if (!checkDocumentExists(request)) {
       LOG.warn("Document for file ${request.context.containingFile.name} is null")

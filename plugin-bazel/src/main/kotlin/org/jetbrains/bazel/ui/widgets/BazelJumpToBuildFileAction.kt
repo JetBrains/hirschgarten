@@ -6,9 +6,7 @@ import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.isFile
 import com.intellij.psi.PsiElement
@@ -19,74 +17,72 @@ import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.action.getEditor
 import org.jetbrains.bazel.action.getPsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.BuildTarget
 
-class BazelJumpToBuildFileAction(private val buildTarget: BuildTarget?) :
+class BazelJumpToBuildFileAction(private val target: Label?) :
   SuspendableAction({ BazelPluginBundle.message("widget.open.build.file") }, AllIcons.Actions.OpenNewTab) {
   // Used in plugin.xml for source file popup menu
   @Suppress("UNUSED")
   constructor() : this(null)
 
   override fun update(project: Project, e: AnActionEvent) {
-    // buildTarget is provided for the target widget, but not if the action is invoked via the popup menu on a source file
-    if (buildTarget != null) return
+    e.presentation.isEnabledAndVisible = shouldBeEnabledAndVisible(project, e)
+  }
 
-    e.presentation.isEnabledAndVisible = (e.place == ActionPlaces.EDITOR_POPUP || e.place == ActionPlaces.KEYBOARD_SHORTCUT) &&
-      e.getPsiFile()?.virtualFile?.let {
-        project.targetUtils.getTargetsForFile(it).isNotEmpty()
-      } == true
+  private fun shouldBeEnabledAndVisible(project: Project, e: AnActionEvent): Boolean {
+    if (target != null) {
+      // Action was created via BazelFileTargetsWidget. In this case `e.getPsiFile()` is `null`, but we should enable the action regardless.
+      return true
+    }
+    return (
+      ALLOWED_ACTION_PLACES.contains(e.place) &&
+        e.getPsiFile()?.virtualFile?.let {
+          project.targetUtils.getTargetsForFile(it).isNotEmpty()
+        } == true
+    )
   }
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    val buildTarget =
-      this.buildTarget ?: run {
+    val target =
+      this.target ?: run {
         val virtualFile = readAction { e.getPsiFile()?.virtualFile } ?: return
-        getBuildTarget(project, virtualFile, e.getEditor()) ?: return
+        project.targetUtils.getTargetsForFile(virtualFile).chooseTarget(e.getEditor()) ?: return
       }
-    jumpToBuildFile(project, buildTarget)
-  }
-
-  private suspend fun getBuildTarget(
-    project: Project,
-    file: VirtualFile,
-    editor: Editor?,
-  ): BuildTarget? {
-    val target = project.targetUtils.getTargetsForFile(file).chooseTarget(editor) ?: return null
-    return project.targetUtils.getBuildTargetForLabel(target)
+    jumpToBuildFile(project, target)
   }
 }
 
-suspend fun jumpToBuildFile(project: Project, buildTarget: BuildTarget) {
+suspend fun jumpToBuildFile(project: Project, target: Label) {
   val buildFile =
     readAction {
-      findBuildFileTarget(project, buildTarget)
+      findBuildFileTarget(project, target)
     } ?: return
   withContext(Dispatchers.EDT) {
     EditorHelper.openInEditor(buildFile, true, true)
   }
 }
 
-private fun findBuildFileTarget(project: Project, buildTarget: BuildTarget): PsiElement? {
-  val buildFile = findBuildFile(project, buildTarget) ?: return null
-
+fun findBuildFileTarget(project: Project, label: Label): PsiElement? {
+  val buildFile = findBuildFile(project, label) ?: return null
   // Try to jump to a specific target
-  val target = buildTarget.id.target as? SingleTarget
+  val target = label.target as? SingleTarget
   if (target != null) {
-    buildFile.findRuleTarget(target.targetName)?.let { return it }
+    val ruleTarget = buildFile.findRuleTarget(target.targetName)
+    ruleTarget?.getArgumentList()?.getNameArgument()?.let { return it }
   }
   // Fallback to the BUILD file itself
   return buildFile
 }
 
-fun findBuildFile(project: Project, buildTarget: BuildTarget): StarlarkFile? {
-  val baseDirectoryPath = buildTarget.baseDirectory ?: return null
+fun findBuildFile(project: Project, target: Label): StarlarkFile? {
+  val buildTarget = project.targetUtils.getBuildTargetForLabel(target) ?: return null
   // Sometimes a project can contain a directory named "build" (which on case-insensitive filesystems is the same as BUILD).
   // Try with BUILD.bazel first to avoid this case.
-  val buildBazelFilePath = baseDirectoryPath.resolve("BUILD.bazel")
-  val buildFilePath = baseDirectoryPath.resolve("BUILD")
+  val buildBazelFilePath = buildTarget.baseDirectory.resolve("BUILD.bazel")
+  val buildFilePath = buildTarget.baseDirectory.resolve("BUILD")
   val virtualFileManager = VirtualFileManager.getInstance()
   val virtualFile =
     virtualFileManager.findFileByNioPath(buildBazelFilePath)?.takeIf { it.isFile }
@@ -94,3 +90,10 @@ fun findBuildFile(project: Project, buildTarget: BuildTarget): StarlarkFile? {
       ?: return null
   return PsiManager.getInstance(project).findFile(virtualFile) as? StarlarkFile
 }
+
+private val ALLOWED_ACTION_PLACES =
+  listOf(
+    ActionPlaces.EDITOR_POPUP,
+    ActionPlaces.KEYBOARD_SHORTCUT,
+    ActionPlaces.EDITOR_TAB_POPUP,
+  )

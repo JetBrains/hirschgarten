@@ -34,6 +34,7 @@ data class AspectSyncProject(
   val nonModuleTargets: List<NonModuleTarget>, // targets that should be displayed in the project view but are neither modules nor libraries
   override val repoMapping: RepoMapping = RepoMappingDisabled,
   override val workspaceContext: WorkspaceContext,
+  val workspaceName: String,
   val hasError: Boolean = false,
 ) : Project {
   private val moduleMap: Map<Label, Module> = modules.associateBy(Module::label)

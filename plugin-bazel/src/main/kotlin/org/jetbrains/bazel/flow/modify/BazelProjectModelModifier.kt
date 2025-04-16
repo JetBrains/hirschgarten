@@ -19,15 +19,16 @@ import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
 import com.intellij.openapi.util.TextRange
 import com.intellij.pom.java.LanguageLevel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
+import org.jetbrains.bazel.languages.starlark.rename.StarlarkElementGenerator
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.target.targetUtils
@@ -40,7 +41,6 @@ import org.jetbrains.concurrency.await
 
 private val log = logger<BazelProjectModelModifier>()
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class BazelProjectModelModifier(private val project: Project) : JavaProjectModelModifier() {
   private val ideaProjectModelModifier = IdeaProjectModelModifier(project)
 
@@ -90,24 +90,32 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
 
   private suspend fun tryAddingModuleDependencyToBuildFile(from: Module, labelToInsert: Label?): Boolean {
     if (labelToInsert !is ResolvedLabel) return false
-    val fromBuildTarget = from.project.targetUtils.getBuildTargetForModule(from) ?: return false
-    val targetBuildFile = readAction { findBuildFile(from.project, fromBuildTarget) } ?: return false
-    val targetRuleLabel = fromBuildTarget.id
+    val targetRuleLabel = from.project.targetUtils.getTargetForModuleId(from.name) ?: return false
+    val targetBuildFile = readAction { findBuildFile(from.project, targetRuleLabel) } ?: return false
     val ruleTarget = readAction { targetBuildFile.findRuleTarget(targetRuleLabel.targetName) } ?: return false
+    val argList = readAction { ruleTarget.getArgumentList() } ?: return false
+    val depsArg = readAction { argList.getDepsArgument() }
+    var updatedDepsArg = depsArg
+    if (depsArg == null) {
+      WriteCommandAction.runWriteCommandAction(from.project) {
+        // Create a new deps argument with an empty list
+        val emptyDepsList = "deps = [],"
+        val node = StarlarkElementGenerator(this.project).createNamedArgument(emptyDepsList)
+        argList.addBefore(node.psi, argList.lastChild)
+      }
+      // After creating the deps argument, we need to re-fetch it
+      updatedDepsArg = readAction { argList.getDepsArgument() }
+    }
     val depsList =
       readAction {
-        ruleTarget
-          .getArgumentList()
-          ?.getDepsArgument()
-          ?.children
-          ?.first { it is StarlarkListLiteralExpression } as? StarlarkListLiteralExpression
+        updatedDepsArg?.children?.filterIsInstance<StarlarkListLiteralExpression>()?.firstOrNull()
       }
-        ?: return false
+
     var insertSuccessful = false
 
     try {
       WriteCommandAction.runWriteCommandAction(from.project) {
-        depsList.insertString(labelToInsert.toShortString(project))
+        depsList?.insertString(labelToInsert.toShortString(project))
         insertSuccessful = true
       }
     } catch (e: Exception) {
@@ -169,12 +177,13 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
     }
 
   private suspend fun Module.jumpToBuildFile() {
-    val buildTarget = project.targetUtils.getBuildTargetForModule(this) ?: return
-    jumpToBuildFile(project, buildTarget)
+    val target = project.targetUtils.getTargetForModuleId(this.name) ?: return
+    jumpToBuildFile(project, target)
   }
 
-  private fun asyncPromise(callable: suspend () -> Unit): Promise<Void> =
-    AsyncPromise<Void>().also { promise ->
+  private fun asyncPromise(callable: suspend () -> Unit): Promise<Void>? {
+    if (!project.isBazelProject) return null
+    return AsyncPromise<Void>().also { promise ->
       BazelCoroutineService.getInstance(project).startAsync(callable = callable).invokeOnCompletion { throwable ->
         if (throwable != null) {
           promise.setError(throwable)
@@ -183,4 +192,5 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
         }
       }
     }
+  }
 }

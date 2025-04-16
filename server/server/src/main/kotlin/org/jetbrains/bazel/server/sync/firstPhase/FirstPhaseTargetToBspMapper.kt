@@ -2,8 +2,10 @@ package org.jetbrains.bazel.server.sync.firstPhase
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.model.Language
+import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
@@ -15,7 +17,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 
-class FirstPhaseTargetToBspMapper(private val workspaceRoot: Path) {
+class FirstPhaseTargetToBspMapper(private val bazelPathsResolver: BazelPathsResolver) {
   fun toWorkspaceBuildTargetsResult(project: FirstPhaseProject): WorkspaceBuildTargetsResult {
     val shouldSyncManualTargets = project.workspaceContext.allowManualTargetsSync.value
 
@@ -32,16 +34,19 @@ class FirstPhaseTargetToBspMapper(private val workspaceRoot: Path) {
     return WorkspaceBuildTargetsResult(targets)
   }
 
-  private fun Target.toBspBuildTarget(project: FirstPhaseProject): BuildTarget =
-    BuildTarget(
-      id = Label.parse(name),
+  private fun Target.toBspBuildTarget(project: FirstPhaseProject): BuildTarget {
+    val label = Label.parse(name).assumeResolved()
+    return BuildTarget(
+      id = label,
       tags = inferTags(),
       languageIds = inferLanguages().map { it.id }.toList(),
       dependencies = interestingDeps.map { Label.parse(it) },
       capabilities = inferCapabilities(),
       sources = calculateSources(project),
       resources = calculateResources(project),
+      baseDirectory = bazelPathsResolver.toDirectoryPath(label, project.repoMapping),
     )
+  }
 
   private fun Target.inferTags(): List<String> {
     val typeTag = inferTypeTagFromTargetKind()
@@ -82,17 +87,16 @@ class FirstPhaseTargetToBspMapper(private val workspaceRoot: Path) {
 
   private fun Target.calculateSources(project: FirstPhaseProject): List<SourceItem> {
     val sourceFiles = srcs.calculateFiles()
-    val sourceFilesAndData = sourceFiles.map { it to JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(it) }
-    val itemsFromDependencies = srcs.calculateModuleDependencies(project).flatMap { it.calculateSources(project) }
-    val directItems =
-      sourceFilesAndData.map {
+    val sources =
+      sourceFiles.map {
         SourceItem(
-          it.first,
-          false,
-          it.second?.jvmPackagePrefix,
+          path = it,
+          generated = false,
+          jvmPackagePrefix = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(it),
         )
       }
-    return (directItems + itemsFromDependencies).distinct()
+    val itemsFromDependencies = srcs.calculateModuleDependencies(project).flatMap { it.calculateSources(project) }
+    return (sources + itemsFromDependencies).distinct()
   }
 
   private fun Target.calculateResources(project: FirstPhaseProject): List<Path> {
@@ -115,6 +119,6 @@ class FirstPhaseTargetToBspMapper(private val workspaceRoot: Path) {
     val withoutTargetPrefix = withoutColons.trimStart('/')
     val relativePath = Path(withoutTargetPrefix)
 
-    return workspaceRoot.resolve(relativePath)
+    return bazelPathsResolver.workspaceRoot().resolve(relativePath)
   }
 }

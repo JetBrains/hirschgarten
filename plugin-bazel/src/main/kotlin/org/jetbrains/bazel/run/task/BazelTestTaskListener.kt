@@ -13,7 +13,6 @@ import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.TestFinish
-import org.jetbrains.bsp.protocol.TestReport
 import org.jetbrains.bsp.protocol.TestStart
 import org.jetbrains.bsp.protocol.TestStatus
 import org.jetbrains.bsp.protocol.TestTask
@@ -74,10 +73,6 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
     data: Any?,
   ) {
     when (data) {
-      is TestReport -> {
-        handler.notifyTextAvailable(ServiceMessageBuilder("testingFinished").toString(), ProcessOutputType.STDOUT)
-      }
-
       is TestFinish -> {
         val serviceMessage =
           if (parentId != null) {

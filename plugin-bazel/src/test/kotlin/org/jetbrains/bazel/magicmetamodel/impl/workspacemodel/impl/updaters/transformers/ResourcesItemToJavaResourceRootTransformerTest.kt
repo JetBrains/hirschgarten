@@ -45,6 +45,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         BuildTargetCapabilities(),
         emptyList(),
         listOf(resourceFilePath),
+        baseDirectory = Path("base/dir"),
       )
 
     // when
@@ -75,6 +76,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         BuildTargetCapabilities(),
         emptyList(),
         listOf(resourceFilePath),
+        baseDirectory = Path("base/dir"),
       )
 
     // when
@@ -105,6 +107,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         BuildTargetCapabilities(),
         emptyList(),
         listOf(resourceDirPath),
+        baseDirectory = Path("base/dir"),
       )
 
     // when
@@ -140,6 +143,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         BuildTargetCapabilities(),
         emptyList(),
         listOf(resourceFilePath1, resourceFilePath2, resourceFilePath3),
+        baseDirectory = Path("base/dir"),
       )
 
     // when
@@ -187,6 +191,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         BuildTargetCapabilities(),
         emptyList(),
         listOf(resourceFilePath, resourceDirPath),
+        baseDirectory = Path("base/dir"),
       )
 
     // when
@@ -229,6 +234,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         BuildTargetCapabilities(),
         emptyList(),
         listOf(resourceFilePath1, resourceFilePath2, resourceDirPath3),
+        baseDirectory = Path("base/dir"),
       )
 
     // when
@@ -281,6 +287,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
         BuildTargetCapabilities(),
         emptyList(),
         listOf(resourceFilePath1, resourceFilePath2, resourceDirPath3),
+        baseDirectory = Path("base/dir"),
       )
 
     // when

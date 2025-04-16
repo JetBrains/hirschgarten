@@ -6,7 +6,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.run.state.GenericRunState
+import org.jetbrains.bazel.run.state.AbstractGenericRunState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
@@ -16,7 +16,7 @@ import org.jetbrains.bsp.protocol.RunParams
 class BazelRunCommandLineState(
   environment: ExecutionEnvironment,
   originId: OriginId,
-  private val runState: GenericRunState,
+  private val runState: AbstractGenericRunState<*>,
 ) : BazelCommandLineStateBase(environment, originId) {
   private val configuration = environment.runProfile as BazelRunConfiguration
 

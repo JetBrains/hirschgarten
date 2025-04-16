@@ -48,6 +48,7 @@ class ProjectTest {
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(0),
           workspaceContext = createMockWorkspaceContext(),
+          workspaceName = "_main",
         )
 
       val project2 =
@@ -60,6 +61,7 @@ class ProjectTest {
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(0),
           workspaceContext = createMockWorkspaceContext(),
+          workspaceName = "_main",
         )
 
       // then
@@ -83,6 +85,7 @@ class ProjectTest {
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(21),
           workspaceContext = createMockWorkspaceContext(),
+          workspaceName = "_main",
         )
 
       val project2 =
@@ -95,6 +98,7 @@ class ProjectTest {
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(37),
           workspaceContext = createMockWorkspaceContext(),
+          workspaceName = "_main",
         )
 
       // then
@@ -126,6 +130,7 @@ class ProjectTest {
           nonModuleTargets = listOf("//nonmodule1".toMockNonModuleTarget(), "//nonmodule2".toMockNonModuleTarget()),
           bazelRelease = BazelRelease(1),
           workspaceContext = createMockWorkspaceContext(targetsPattern = "//..."),
+          workspaceName = "_main",
         )
 
       val project2 =
@@ -152,6 +157,7 @@ class ProjectTest {
           nonModuleTargets = listOf("//nonmodule3".toMockNonModuleTarget()),
           bazelRelease = BazelRelease(1),
           workspaceContext = createMockWorkspaceContext(targetsPattern = "//other/..."),
+          workspaceName = "_main",
         )
 
       // then
@@ -190,6 +196,7 @@ class ProjectTest {
             ),
           bazelRelease = BazelRelease(1),
           workspaceContext = createMockWorkspaceContext(targetsPattern = "//other/..."),
+          workspaceName = "_main",
         )
       val newProject = project1 + project2
 
@@ -211,7 +218,7 @@ class ProjectTest {
       languages = emptySet(),
       tags = emptySet(),
       baseDirectory = Path("/path/to/$this"),
-      sourceSet = SourceSet(emptySet(), emptySet()),
+      sources = emptyList(),
       resources = emptySet(),
       sourceDependencies = emptySet(),
       languageData = null,

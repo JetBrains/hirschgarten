@@ -3,14 +3,16 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
+import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import kotlin.io.path.Path
 
 @DisplayName("buildTargetToModuleDependencyTransformer.transform(buildTarget) tests")
-class BuildTargetToIntermediateModuleDependencyTransformerTest {
+class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelBaseTest() {
   @Test
   fun `should return no module dependencies for no dependencies`() {
     // given
@@ -19,7 +21,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
 
     // when
     val buildTargetToModuleDependencyTransformer =
-      BuildTargetToModuleDependencyTransformer(allTargets, mapOf(), DefaultNameProvider)
+      BuildTargetToModuleDependencyTransformer(allTargets, mapOf(), project)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(emptyBuildTargets)
 
     // then
@@ -42,12 +44,13 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
         BuildTargetCapabilities(),
         sources = emptyList(),
         resources = emptyList(),
+        baseDirectory = Path("base/dir"),
       )
     val allTargets = setOf<Label>()
 
     // when
     val buildTargetToModuleDependencyTransformer =
-      BuildTargetToModuleDependencyTransformer(allTargets, mapOf(), DefaultNameProvider)
+      BuildTargetToModuleDependencyTransformer(allTargets, mapOf(), project)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTarget)
 
     // then
@@ -69,6 +72,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
         BuildTargetCapabilities(),
         sources = emptyList(),
         resources = emptyList(),
+        baseDirectory = Path("base/dir"),
       )
     val allTargets =
       setOf(
@@ -80,13 +84,13 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
 
     // when
     val buildTargetToModuleDependencyTransformer =
-      BuildTargetToModuleDependencyTransformer(allTargets.toTargetIds(), targetsMap, DefaultNameProvider)
+      BuildTargetToModuleDependencyTransformer(allTargets.toTargetIds(), targetsMap, project)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTarget)
 
     // then
     val expectedIntermediateModuleDependency =
       IntermediateModuleDependency(
-        moduleName = "@//target2",
+        moduleName = "target2.target2",
       )
 
     moduleDependencies shouldBe listOf(expectedIntermediateModuleDependency)
@@ -110,6 +114,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
         BuildTargetCapabilities(),
         sources = emptyList(),
         resources = emptyList(),
+        baseDirectory = Path("base/dir"),
       )
     val allTargets =
       setOf(
@@ -124,21 +129,21 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
 
     // when
     val buildTargetToModuleDependencyTransformer =
-      BuildTargetToModuleDependencyTransformer(allTargets.toTargetIds(), targetsMap, DefaultNameProvider)
+      BuildTargetToModuleDependencyTransformer(allTargets.toTargetIds(), targetsMap, project)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTarget)
 
     // then
     val expectedIntermediateModuleDependency1 =
       IntermediateModuleDependency(
-        moduleName = "@//target2",
+        moduleName = "target2.target2",
       )
     val expectedIntermediateModuleDependency2 =
       IntermediateModuleDependency(
-        moduleName = "@//target3",
+        moduleName = "target3.target3",
       )
     val expectedIntermediateModuleDependency3 =
       IntermediateModuleDependency(
-        moduleName = "@//target4",
+        moduleName = "target4.target4",
       )
 
     moduleDependencies shouldBe
@@ -162,6 +167,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
         BuildTargetCapabilities(),
         sources = emptyList(),
         resources = emptyList(),
+        baseDirectory = Path("base/dir"),
       )
     val buildTarget2 =
       BuildTarget(
@@ -176,6 +182,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
         BuildTargetCapabilities(),
         sources = emptyList(),
         resources = emptyList(),
+        baseDirectory = Path("base/dir"),
       )
 
     val allTargets =
@@ -193,21 +200,21 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
 
     // when
     val buildTargetToModuleDependencyTransformer =
-      BuildTargetToModuleDependencyTransformer(allTargets.toTargetIds(), targetsMap, DefaultNameProvider)
+      BuildTargetToModuleDependencyTransformer(allTargets.toTargetIds(), targetsMap, project)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTargets)
 
     // then
     val expectedIntermediateModuleDependency1 =
       IntermediateModuleDependency(
-        moduleName = "@//target2",
+        moduleName = "target2.target2",
       )
     val expectedIntermediateModuleDependency2 =
       IntermediateModuleDependency(
-        moduleName = "@//target3",
+        moduleName = "target3.target3",
       )
     val expectedIntermediateModuleDependency3 =
       IntermediateModuleDependency(
-        moduleName = "@//target4",
+        moduleName = "target4.target4",
       )
 
     moduleDependencies shouldBe

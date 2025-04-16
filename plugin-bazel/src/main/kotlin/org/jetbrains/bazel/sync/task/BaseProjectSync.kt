@@ -11,6 +11,7 @@ import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 
@@ -48,9 +49,11 @@ class BaseProjectSync(private val project: Project) {
           "workspace/buildTargetsFirstPhase",
         ) { server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams(taskId)) }
       } else if (buildProject) {
-        query("workspace/buildAndGetBuildTargets") { server.workspaceBuildAndGetBuildTargets() }
+        query("workspace/buildAndGetBuildTargets") {
+          server.workspaceBuildAndGetBuildTargets(WorkspaceBuildTargetsParams(taskId))
+        }
       } else {
-        query("workspace/buildTargets") { server.workspaceBuildTargets() }
+        query("workspace/buildTargets") { server.workspaceBuildTargets(WorkspaceBuildTargetsParams(taskId)) }
       }
     }
 }

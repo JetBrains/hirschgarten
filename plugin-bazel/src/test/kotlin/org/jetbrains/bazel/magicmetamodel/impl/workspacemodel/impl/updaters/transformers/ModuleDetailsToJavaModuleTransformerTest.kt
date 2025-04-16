@@ -127,7 +127,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetailsToJavaModuleTransformer(
         targetsMap,
         emptyMap(),
-        DefaultNameProvider,
         projectBasePath,
         project,
       ).transform(
@@ -137,12 +136,12 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     // then
     val expectedModule =
       GenericModuleInfo(
-        name = "module1",
+        name = "module1.module1",
         type = ModuleTypeId("JAVA_MODULE"),
         modulesDependencies =
           listOf(
-            IntermediateModuleDependency("module2"),
-            IntermediateModuleDependency("module3"),
+            IntermediateModuleDependency("module2.module2"),
+            IntermediateModuleDependency("module3.module3"),
           ),
         librariesDependencies = emptyList(),
       )
@@ -247,7 +246,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetailsToJavaModuleTransformer(
         targetsMap,
         emptyMap(),
-        DefaultNameProvider,
         projectBasePath,
         project,
       ).transform(moduleDetails).first()
@@ -255,12 +253,12 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     // then
     val expectedModule =
       GenericModuleInfo(
-        name = "module1",
+        name = "module1.module1",
         type = ModuleTypeId("JAVA_MODULE"),
         modulesDependencies =
           listOf(
-            IntermediateModuleDependency("module2"),
-            IntermediateModuleDependency("module3"),
+            IntermediateModuleDependency("module2.module2"),
+            IntermediateModuleDependency("module3.module3"),
           ),
         librariesDependencies = emptyList(),
         associates =
@@ -434,7 +432,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         ModuleDetailsToJavaModuleTransformer(
           targetsMap,
           emptyMap(),
-          DefaultNameProvider,
           projectBasePath,
           project,
         ).transform(entity).first()
@@ -443,12 +440,12 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     // then
     val expectedModule1 =
       GenericModuleInfo(
-        name = "module1",
+        name = "module1.module1",
         type = ModuleTypeId("JAVA_MODULE"),
         modulesDependencies =
           listOf(
-            IntermediateModuleDependency("module2"),
-            IntermediateModuleDependency("module3"),
+            IntermediateModuleDependency("module2.module2"),
+            IntermediateModuleDependency("module3.module3"),
           ),
         librariesDependencies = emptyList(),
       )
@@ -489,11 +486,11 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val expectedModule2 =
       GenericModuleInfo(
-        name = "module2",
+        name = "module2.module2",
         type = ModuleTypeId("JAVA_MODULE"),
         modulesDependencies =
           listOf(
-            IntermediateModuleDependency("module3"),
+            IntermediateModuleDependency("module3.module3"),
           ),
         librariesDependencies = emptyList(),
       )
@@ -620,7 +617,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetailsToJavaModuleTransformer(
         targetsMap,
         emptyMap(),
-        DefaultNameProvider,
         projectBasePath,
         project,
       ).transform(
@@ -631,12 +627,12 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val dummyJavaModuleName = calculateDummyJavaModuleName(projectRoot, projectBasePath)
     val expectedModule =
       GenericModuleInfo(
-        name = "module1",
+        name = "module1.module1",
         type = ModuleTypeId("JAVA_MODULE"),
         modulesDependencies =
           listOf(
-            IntermediateModuleDependency("module2"),
-            IntermediateModuleDependency("module3"),
+            IntermediateModuleDependency("module2.module2"),
+            IntermediateModuleDependency("module3.module3"),
             IntermediateModuleDependency(dummyJavaModuleName),
           ),
         librariesDependencies = emptyList(),
