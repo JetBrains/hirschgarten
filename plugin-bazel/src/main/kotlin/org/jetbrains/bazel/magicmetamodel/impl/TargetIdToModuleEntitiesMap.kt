@@ -8,7 +8,6 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
-import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
 import org.jetbrains.bazel.workspacemodel.entities.Module
@@ -16,6 +15,7 @@ import org.jetbrains.bazel.workspacemodel.entities.isJvmOrAndroidTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import java.nio.file.Path
+import kotlin.io.path.Path
 
 object TargetIdToModuleEntitiesMap {
   suspend operator fun invoke(
@@ -25,14 +25,12 @@ object TargetIdToModuleEntitiesMap {
     fileToTarget: Map<Path, List<Label>>,
     projectBasePath: Path,
     project: Project,
-    nameProvider: TargetNameReformatProvider,
     isAndroidSupportEnabled: Boolean,
   ): Map<Label, List<Module>> {
     val moduleDetailsToJavaModuleTransformer =
       ModuleDetailsToJavaModuleTransformer(
         targetIdToTargetInfo,
         fileToTarget,
-        nameProvider,
         projectBasePath,
         project,
         isAndroidSupportEnabled,
@@ -72,6 +70,7 @@ fun Collection<String>.toDefaultTargetsMap(): Map<Label, BuildTarget> =
         capabilities = BuildTargetCapabilities(),
         sources = listOf(),
         resources = listOf(),
+        baseDirectory = Path("base/dir"),
       )
     },
   )

@@ -14,7 +14,9 @@ import java.nio.file.Path
 object SdkUtils {
   suspend fun addJdkIfNeeded(projectName: String, javaHome: Path) {
     val jdkName = projectName.projectNameToJdkName(javaHome)
-    val path = javaHome.toString()
+    // Normalize the JDK path, because some code in the platform compares paths using `startsWith`, e.g.
+    // https://github.com/JetBrains/intellij-community/blob/b41a4084da5521effedd334e28896fd9d07410da/java/codeserver/core/src/com/intellij/java/codeserver/core/JpmsModuleAccessInfo.kt#L216
+    val path = javaHome.normalize().toString()
     val jdk = ExternalSystemJdkProvider.getInstance().createJdk(jdkName, path)
     addSdkIfNeeded(jdk)
   }

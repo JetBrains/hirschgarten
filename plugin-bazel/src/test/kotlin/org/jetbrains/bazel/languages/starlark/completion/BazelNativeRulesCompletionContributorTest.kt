@@ -68,15 +68,7 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
     lookups shouldContainAll
       listOf(
         "java_binary",
-        "java_import",
         "java_library",
-        "java_plugin",
-        "java_runtime",
-        "java_test",
-        "java_toolchain",
-        "java_package_configuration",
-        "java_single_jar",
-        "java_proto_library",
       )
   }
 
@@ -157,7 +149,7 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
   }
 
   @Test
-  fun `should complete brackets`() {
+  fun `should autocomplete brackets and required args`() {
     // given
     myFixture.configureByText("BUILD", "")
     myFixture.type("java_bin")
@@ -167,6 +159,11 @@ class BazelNativeRulesCompletionContributorTest : BasePlatformTestCase() {
 
     // then
     assertNull(lookups)
-    myFixture.checkResult("java_binary(<caret>)")
+    val expected =
+      "java_binary(\n" +
+        "\tname = \"\",\n" +
+        "\t<caret>\n)"
+
+    myFixture.checkResult(expected)
   }
 }

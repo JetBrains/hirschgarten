@@ -12,6 +12,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkEmptyExpre
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFalseLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFloatLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGeneratorExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkIntegerLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkKeyValueExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkLambdaExpression
@@ -86,6 +87,7 @@ object StarlarkElementTypes {
   val FALSE_LITERAL_EXPRESSION = StarlarkElementType("FALSE_LITERAL_EXPRESSION")
   val FLOAT_LITERAL_EXPRESSION = StarlarkElementType("FLOAT_LITERAL_EXPRESSION")
   val GENERATOR_EXPRESSION = StarlarkElementType("GENERATOR_EXPRESSION")
+  val GLOB_EXPRESSION = StarlarkElementType("GLOB_EXPRESSION")
   val TARGET_EXPRESSION = StarlarkElementType("TARGET_EXPRESSION")
   val INTEGER_LITERAL_EXPRESSION = StarlarkElementType("INTEGER_LITERAL_EXPRESSION")
   val KEY_VALUE_EXPRESSION = StarlarkElementType("KEY_VALUE_EXPRESSION")
@@ -105,6 +107,42 @@ object StarlarkElementTypes {
   val SUBSCRIPTION_EXPRESSION = StarlarkElementType("SUBSCRIPTION_EXPRESSION")
   val TRUE_LITERAL_EXPRESSION = StarlarkElementType("TRUE_LITERAL_EXPRESSION")
   val TUPLE_EXPRESSION = StarlarkElementType("TUPLE_EXPRESSION")
+
+  val EXPRESSIONS =
+    setOf(
+      ARGUMENT_EXPRESSION,
+      ARGUMENT_LIST,
+      BINARY_EXPRESSION,
+      CALL_EXPRESSION,
+      CONDITIONAL_EXPRESSION,
+      DICT_COMP_EXPRESSION,
+      DICT_LITERAL_EXPRESSION,
+      DOUBLE_STAR_EXPRESSION,
+      EMPTY_EXPRESSION,
+      FALSE_LITERAL_EXPRESSION,
+      FLOAT_LITERAL_EXPRESSION,
+      GENERATOR_EXPRESSION,
+      GLOB_EXPRESSION,
+      TARGET_EXPRESSION,
+      INTEGER_LITERAL_EXPRESSION,
+      KEY_VALUE_EXPRESSION,
+      LAMBDA_EXPRESSION,
+      LIST_COMP_EXPRESSION,
+      LIST_LITERAL_EXPRESSION,
+      NAMED_ARGUMENT_EXPRESSION,
+      NONE_LITERAL_EXPRESSION,
+      PARENTHESIZED_EXPRESSION,
+      PREFIX_EXPRESSION,
+      REFERENCE_EXPRESSION,
+      SLICE_EXPRESSION,
+      SLICE_ITEM,
+      STAR_ARGUMENT_EXPRESSION,
+      STAR_EXPRESSION,
+      STRING_LITERAL_EXPRESSION,
+      SUBSCRIPTION_EXPRESSION,
+      TRUE_LITERAL_EXPRESSION,
+      TUPLE_EXPRESSION,
+    )
 
   fun createElement(node: ASTNode): PsiElement =
     when (val type = node.elementType) {
@@ -141,6 +179,7 @@ object StarlarkElementTypes {
       FALSE_LITERAL_EXPRESSION -> StarlarkFalseLiteralExpression(node)
       FLOAT_LITERAL_EXPRESSION -> StarlarkFloatLiteralExpression(node)
       GENERATOR_EXPRESSION -> StarlarkGeneratorExpression(node)
+      GLOB_EXPRESSION -> StarlarkGlobExpression(node)
       INTEGER_LITERAL_EXPRESSION -> StarlarkIntegerLiteralExpression(node)
       KEY_VALUE_EXPRESSION -> StarlarkKeyValueExpression(node)
       LAMBDA_EXPRESSION -> StarlarkLambdaExpression(node)

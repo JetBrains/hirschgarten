@@ -39,12 +39,14 @@ import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
+import org.jetbrains.bsp.protocol.WorkspaceNameResult
 
 class BuildServerMock(
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
@@ -76,7 +78,8 @@ class BuildServerMock(
   private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = null,
   private val workspaceContextResult: WorkspaceContext? = null,
 ) : JoinedBuildServer {
-  override suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult = wrapInFuture(workspaceBuildTargetsResult)
+  override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult =
+    wrapInFuture(workspaceBuildTargetsResult)
 
   override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult =
     wrapInFuture(inverseSourcesResult)
@@ -122,7 +125,8 @@ class BuildServerMock(
 
   override suspend fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult = wrapInFuture(jvmBinaryJarsResult)
 
-  override suspend fun workspaceBuildAndGetBuildTargets(): WorkspaceBuildTargetsResult = wrapInFuture(workspaceBuildTargetsResultAndBuild)
+  override suspend fun workspaceBuildAndGetBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult =
+    wrapInFuture(workspaceBuildTargetsResultAndBuild)
 
   override suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult =
     wrapInFuture(workspaceBuildTargetsPartial)
@@ -141,6 +145,8 @@ class BuildServerMock(
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = wrapInFuture(workspaceBazelRepoMappingResult)
 
   override suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = WorkspaceBazelBinPathResult("/path/to/bazel-bin")
+
+  override suspend fun workspaceName(): WorkspaceNameResult = WorkspaceNameResult("_main")
 
   override suspend fun workspaceContext(): WorkspaceContext = wrapInFuture(workspaceContextResult)
 

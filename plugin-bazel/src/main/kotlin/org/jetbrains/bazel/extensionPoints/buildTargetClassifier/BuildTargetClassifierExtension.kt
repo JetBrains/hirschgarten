@@ -3,7 +3,7 @@ package org.jetbrains.bazel.extensionPoints.buildTargetClassifier
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
-import org.jetbrains.bazel.languages.starlark.repomapping.toApparentLabel
+import org.jetbrains.bazel.languages.starlark.repomapping.toApparentLabelOrThis
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 
 public interface BuildTargetClassifierExtension {
@@ -65,7 +65,7 @@ class BazelBuildTargetClassifier(private val project: Project) : BuildTargetClas
 
   override fun calculateBuildTargetPath(buildTarget: Label): List<String> =
     buildTarget
-      .toApparentLabel(project)
+      .toApparentLabelOrThis(project)
       .let { listOf((it as? ResolvedLabel)?.repoName.orEmpty()) + it.packagePath.pathSegments }
       .filter { pathSegment -> pathSegment.isNotEmpty() }
 

@@ -6,7 +6,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 
 class BazelSearchOptionsContributor : SearchableOptionContributor() {
   override fun processOptions(processor: SearchableOptionProcessor) {
-    val settingPages = listOf(bazelProjectSettingsPage, bazelApplicationSettingsPage)
+    val settingPages = listOf(bazelProjectSettingsPage, bazelApplicationSettingsPage, bazelExperimentalProjectSettingsPage)
     settingPages.forEach { page ->
       val displayName = page.cleanDisplayName()
       page.optionBundleKeys.forEach {
@@ -30,6 +30,13 @@ private val bazelProjectSettingsPage =
     id = BazelProjectSettingsConfigurable.ID,
     displayNameKey = BazelProjectSettingsConfigurable.DISPLAY_NAME_KEY,
     optionBundleKeys = BazelProjectSettingsConfigurable.SearchIndex.keys,
+  )
+
+private val bazelExperimentalProjectSettingsPage =
+  SettingsPage(
+    id = BazelExperimentalProjectSettingsConfigurable.ID,
+    displayNameKey = BazelExperimentalProjectSettingsConfigurable.DISPLAY_NAME_KEY,
+    optionBundleKeys = BazelExperimentalProjectSettingsConfigurable.SearchIndex.keys,
   )
 
 private val bazelApplicationSettingsPage =

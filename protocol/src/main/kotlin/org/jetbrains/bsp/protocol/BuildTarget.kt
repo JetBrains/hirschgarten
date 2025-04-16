@@ -10,7 +10,7 @@ data class BuildTarget(
   val capabilities: BuildTargetCapabilities,
   val sources: List<SourceItem>,
   val resources: List<Path>,
-  val baseDirectory: Path? = null,
+  val baseDirectory: Path,
   var data: BuildTargetData? = null,
 )
 

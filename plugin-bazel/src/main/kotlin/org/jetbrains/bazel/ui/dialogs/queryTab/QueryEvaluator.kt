@@ -71,7 +71,7 @@ internal class QueryEvaluator(
   private fun getRunnerOfDirectory(directoryFile: VirtualFile): Pair<BazelRunner, WorkspaceContext> {
     directoryFile.isDirectoryOrThrow()
 
-    val wcc = WorkspaceContextConstructor(directoryFile.toNioPath(), Path.of(""))
+    val wcc = WorkspaceContextConstructor(directoryFile.toNioPath(), Path.of(""), Path.of(""))
     val pv = ProjectView.Builder().build()
 
     return Pair(BazelRunner(null, directoryFile.toNioPath()), wcc.construct(pv))

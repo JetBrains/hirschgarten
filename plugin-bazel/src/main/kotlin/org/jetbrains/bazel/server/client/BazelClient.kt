@@ -5,7 +5,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.ui.console.TaskConsole
-import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bsp.protocol.CoverageReport
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
 import org.jetbrains.bsp.protocol.JoinedBuildClient
@@ -109,7 +108,7 @@ class BazelClient(
     val targetConsole = if (params.originId.startsWith("build")) buildConsole else syncConsole
     params.diagnostics.forEach {
       targetConsole.addDiagnosticMessage(
-        params.originId ?: PROJECT_SYNC_TASK_ID,
+        params.originId,
         params.textDocument?.path,
         it.range.start.line,
         it.range.start.character,

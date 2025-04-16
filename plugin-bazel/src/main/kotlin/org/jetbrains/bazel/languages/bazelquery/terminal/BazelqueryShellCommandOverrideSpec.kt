@@ -57,7 +57,7 @@ internal fun bazelQueryCommandSpec(): ShellCommandSpec =
   }
 
 @Suppress("UnstableApiUsage")
-fun ShellCommandContext.dummyArgs() {
+private fun ShellCommandContext.dummyArgs() {
   argument {
     displayName("option")
     isVariadic = true
@@ -71,7 +71,7 @@ fun ShellCommandContext.dummyArgs() {
 }
 
 @Suppress("UnstableApiUsage")
-fun ShellCommandContext.queryCompletion() {
+private fun ShellCommandContext.queryCompletion() {
   argument {
     displayName("query expression")
     val targetPriority = 40 // The greater, the closer to the first place, default is 50
@@ -118,7 +118,7 @@ fun ShellCommandContext.queryCompletion() {
 }
 
 @Suppress("UnstableApiUsage")
-fun ShellCommandContext.allOptions(context: ShellRuntimeContext) {
+private fun ShellCommandContext.allOptions(context: ShellRuntimeContext) {
   knownOptions.forEach { queryFlag ->
     val flagNameDD = "--${queryFlag.name}"
     val flag = Flag.byName(flagNameDD)
@@ -163,7 +163,7 @@ fun ShellCommandContext.allOptions(context: ShellRuntimeContext) {
 }
 
 @Suppress("UnstableApiUsage")
-fun ShellCommandContext.optionWithUnknownArgs(flag: Flag, project: Project) {
+private fun ShellCommandContext.optionWithUnknownArgs(flag: Flag, project: Project) {
   option("--${flag.option.name}") {
     description(flagDescriptionHtml(flag, project))
     argument {
@@ -176,7 +176,7 @@ fun ShellCommandContext.optionWithUnknownArgs(flag: Flag, project: Project) {
 }
 
 @Suppress("UnstableApiUsage")
-fun ShellCommandContext.booleanAndTriStateFlagSuggestion(flag: Flag, context: ShellRuntimeContext) {
+private fun ShellCommandContext.booleanAndTriStateFlagSuggestion(flag: Flag, context: ShellRuntimeContext) {
   val trueFlag = "--${flag.option.name}"
   val falseFlag = "--no${flag.option.name}"
 
@@ -197,7 +197,7 @@ fun ShellCommandContext.booleanAndTriStateFlagSuggestion(flag: Flag, context: Sh
   }
 }
 
-fun flagDescriptionHtml(flag: Flag, project: Project): String {
+private fun flagDescriptionHtml(flag: Flag, project: Project): String {
   // TODO not this copy paste from BazelFlagDocumentationTarget
   val markdownText =
     """
@@ -222,7 +222,7 @@ fun flagDescriptionHtml(flag: Flag, project: Project): String {
   return DocMarkdownToHtmlConverter.convert(project, markdownText)
 }
 
-fun functionDescriptionHtml(function: BazelqueryFunction, project: Project): String {
+private fun functionDescriptionHtml(function: BazelqueryFunction, project: Project): String {
   // TODO not this copy paste from functions
   val markdownText =
     """
@@ -239,15 +239,15 @@ fun functionDescriptionHtml(function: BazelqueryFunction, project: Project): Str
   return DocMarkdownToHtmlConverter.convert(project, markdownText)
 }
 
-fun isStartAndEndWithQuote(expression: String): Boolean =
+private fun isStartAndEndWithQuote(expression: String): Boolean =
   expression.length >= 2 &&
     ((expression.startsWith('\'') && expression.endsWith('\'')) || (expression.startsWith('"') && expression.endsWith('"')))
 
-val knownCommands = BazelqueryFunction.getAll()
+private val knownCommands = BazelqueryFunction.getAll()
 
 private fun BazelqueryFunction.argumentsMarkdown(): String =
   arguments.joinToString(separator = "\n") { arg ->
     "- `${arg.name}` (${arg.type}${if (arg.optional) ", optional" else ""}): ${arg.description}"
   }
 
-val knownOptions = BazelqueryCommonOptions.getAll()
+private val knownOptions = BazelqueryCommonOptions.getAll()

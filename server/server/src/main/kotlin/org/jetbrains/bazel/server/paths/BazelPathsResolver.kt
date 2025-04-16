@@ -2,12 +2,17 @@ package org.jetbrains.bazel.server.paths
 
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
+import org.jetbrains.bazel.label.Canonical
+import org.jetbrains.bazel.label.Main
+import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
+import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.io.path.exists
+import kotlin.io.path.Path
 
 private const val BAZEL_COMPONENT_SEPARATOR = "/"
 
@@ -15,11 +20,6 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
   private val paths = ConcurrentHashMap<FileLocation, Path>()
 
   fun workspaceRoot(): Path = bazelInfo.workspaceRoot
-
-  fun resolvePaths(fileLocations: List<FileLocation>, shouldFilterExisting: Boolean = false): List<Path> =
-    fileLocations
-      .map(::resolve)
-      .filter { !shouldFilterExisting || it.exists() }
 
   fun resolvePaths(fileLocations: List<FileLocation>): List<Path> = fileLocations.map(::resolve)
 
@@ -67,16 +67,6 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
 
   private fun isInExternalWorkspace(fileLocation: FileLocation): Boolean = fileLocation.rootExecutionPathFragment.startsWith("external/")
 
-  fun pathToDirectoryPath(path: Path, isWorkspace: Boolean = true): Path {
-    val absolutePath =
-      if (isWorkspace) {
-        relativePathToWorkspaceAbsolute(path)
-      } else {
-        relativePathToExecRootAbsolute(path)
-      }
-    return absolutePath
-  }
-
   fun relativePathToWorkspaceAbsolute(path: Path): Path = bazelInfo.workspaceRoot.resolve(path)
 
   fun relativePathToExecRootAbsolute(path: Path): Path = bazelInfo.execRoot.resolve(path)
@@ -107,5 +97,27 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
       Paths.get(path).isAbsolute -> File(path)
       path.startsWith("external/") -> bazelInfo.outputBase.resolve(path).toFile()
       else -> bazelInfo.workspaceRoot.resolve(path).toFile()
+    }
+
+  fun toDirectoryPath(label: ResolvedLabel, repoMapping: RepoMapping): Path {
+    val repoPath = (repoMapping as? BzlmodRepoMapping)?.let { label.toRepoPath(repoMapping) } ?: label.toRepoPathForBazel7()
+    return repoPath.resolve(label.packagePath.toString())
+  }
+
+  private fun ResolvedLabel.toRepoPath(repoMapping: BzlmodRepoMapping): Path? {
+    val canonicalName =
+      if (repo is Canonical || repo is Main) {
+        repo.repoName
+      } else {
+        repoMapping.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
+      }
+    return repoMapping.canonicalRepoNameToPath[canonicalName]
+  }
+
+  private fun ResolvedLabel.toRepoPathForBazel7(): Path =
+    if (repo is Main) {
+      bazelInfo.workspaceRoot
+    } else {
+      relativePathToExecRootAbsolute(Path("external", repo.repoName, *packagePath.pathSegments.toTypedArray()))
     }
 }

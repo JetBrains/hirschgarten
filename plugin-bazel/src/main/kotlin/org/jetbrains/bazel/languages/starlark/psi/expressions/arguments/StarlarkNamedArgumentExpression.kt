@@ -6,8 +6,10 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
+import org.jetbrains.bazel.languages.starlark.references.BazelNativeRuleArgumentReference
 import org.jetbrains.bazel.languages.starlark.references.StarlarkNamedArgumentReference
 
+@Suppress("UnstableApiUsage")
 class StarlarkNamedArgumentExpression(node: ASTNode) :
   StarlarkBaseElement(node),
   StarlarkArgumentElement {
@@ -21,7 +23,7 @@ class StarlarkNamedArgumentExpression(node: ASTNode) :
 
   override fun getName(): String? = getNameNode()?.text
 
-  private fun getNameNode(): ASTNode? = node.findChildByType(StarlarkTokenTypes.IDENTIFIER)
+  fun getNameNode(): ASTNode? = node.findChildByType(StarlarkTokenTypes.IDENTIFIER)
 
   fun isNameArgument(): Boolean = containsArgumentWithName("name")
 
@@ -33,4 +35,7 @@ class StarlarkNamedArgumentExpression(node: ASTNode) :
   fun containsArgumentWithName(name: String): Boolean = node.findChildByType(StarlarkTokenTypes.IDENTIFIER)?.text == name
 
   fun getArgumentStringValue(): String? = findChildByClass(StarlarkStringLiteralExpression::class.java)?.getStringContents()
+
+  override fun getOwnReferences(): Collection<BazelNativeRuleArgumentReference> =
+    name?.let { listOf(BazelNativeRuleArgumentReference(this)) } ?: emptyList()
 }

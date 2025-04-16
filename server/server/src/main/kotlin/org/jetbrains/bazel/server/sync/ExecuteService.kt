@@ -31,6 +31,7 @@ import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
+import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.MobileInstallStartType
@@ -41,7 +42,6 @@ import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 import kotlin.io.path.Path
-import kotlin.io.path.toPath
 
 class ExecuteService(
   private val compilationManager: BazelBspCompilationManager,
@@ -51,7 +51,7 @@ class ExecuteService(
   private val bazelPathsResolver: BazelPathsResolver,
   private val additionalBuildTargetsProvider: AdditionalAndroidBuildTargetsProvider,
 ) {
-  private suspend fun <T> withBepServer(originId: String?, body: suspend (BepReader) -> T): T {
+  private suspend fun <T> withBepServer(originId: String, body: suspend (BepReader) -> T): T {
     val diagnosticsService = DiagnosticsService(compilationManager.workspaceRoot)
     val server = BepServer(compilationManager.client, diagnosticsService, originId, bazelPathsResolver)
     val bepReader = BepReader(server)
@@ -99,7 +99,7 @@ class ExecuteService(
   suspend fun runWithDebug(params: RunWithDebugParams): RunResult {
     val modules = selectModules(listOf(params.runParams.target))
     val singleModule = modules.singleOrResponseError(params.runParams.target)
-    val requestedDebugType = DebugType.fromDebugData(params.debug)
+    val requestedDebugType = params.debug
     val debugArguments = generateRunArguments(requestedDebugType)
     val debugOptions = generateRunOptions(requestedDebugType)
     val buildBeforeRun = buildBeforeRun(requestedDebugType)
@@ -151,7 +151,7 @@ class ExecuteService(
       if (params.debug != null) {
         val modules = selectModules(params.targets)
         val singleModule = modules.singleOrResponseError(params.targets.first())
-        val requestedDebugType = DebugType.fromDebugData(params.debug)
+        val requestedDebugType = params.debug
         verifyDebugRequest(requestedDebugType, singleModule)
         generateRunArguments(requestedDebugType)
       } else {
@@ -174,6 +174,10 @@ class ExecuteService(
 
         else -> bazelRunner.buildBazelCommand(workspaceContext) { test() }
       }
+
+    if (params.debug is DebugType.JDWP) {
+      command.options.add(BazelFlag.javaTestDebug())
+    }
 
     params.additionalBazelParams?.let { additionalParams ->
       (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalParams.split(" "))
@@ -233,7 +237,7 @@ class ExecuteService(
 
   private suspend fun build(
     bspIds: List<Label>,
-    originId: String?,
+    originId: String,
     additionalArguments: List<String> = emptyList(),
   ): BazelProcessResult {
     val allTargets = bspIds + getAdditionalBuildTargets(bspIds)

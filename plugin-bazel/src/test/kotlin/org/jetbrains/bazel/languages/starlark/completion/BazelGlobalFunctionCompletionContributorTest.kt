@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,7 +32,7 @@ class BazelGlobalFunctionCompletionContributorTest : BasePlatformTestCase() {
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldContainExactlyInAnyOrder listOf("max", "existing_rule", "existing_rules", "exports_files")
+    lookups shouldContainAll listOf("max", "existing_rule", "existing_rules", "exports_files")
   }
 
   @Test

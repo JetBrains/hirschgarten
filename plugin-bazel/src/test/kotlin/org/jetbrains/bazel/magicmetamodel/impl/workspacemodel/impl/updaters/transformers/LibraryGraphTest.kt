@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import java.util.concurrent.TimeUnit
 import kotlin.collections.map
+import kotlin.io.path.Path
 
 class LibraryGraphTest {
   @Nested
@@ -412,6 +413,7 @@ private fun mockTarget(id: String, dependencies: List<String>): BuildTarget =
     BuildTargetCapabilities(),
     emptyList(),
     emptyList(),
+    Path("base/dir"),
   )
 
 private fun mockLibraryItem(id: String, dependencies: List<String>): LibraryItem =
