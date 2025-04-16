@@ -6,6 +6,7 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.projectAware.BazelProjectAware
 import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import javax.swing.JComponent
 
@@ -50,6 +51,10 @@ class BazelJVMExperimentalSettings(private val project: Project) : UnnamedConfig
   override fun isModified(): Boolean = currentJVMProjectSettings != project.bazelJVMProjectSettings
 
   override fun apply() {
+    val isEnableBuildWithJpsChanged = currentJVMProjectSettings.enableBuildWithJps != project.bazelJVMProjectSettings.enableBuildWithJps
+    if (isEnableBuildWithJpsChanged) {
+      BazelProjectAware.notify(project)
+    }
     project.bazelJVMProjectSettings = currentJVMProjectSettings
   }
 
