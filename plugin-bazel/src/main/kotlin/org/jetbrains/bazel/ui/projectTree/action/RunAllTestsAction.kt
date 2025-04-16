@@ -62,7 +62,7 @@ internal open class RunAllTestsBaseAction(
         project.targetUtils.getExecutableTargetsForFile(this).mapNotNull { project.targetUtils.getBuildTargetForLabel(it) }
       }
     return childTargets.filter {
-      it.capabilities.canTest && !it.tags.contains(BuildTargetTag.MANUAL)
+      it.kind.ruleType == RuleType.TEST && !it.tags.contains(BuildTargetTag.MANUAL)
     }
   }
 }

@@ -6,6 +6,7 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -111,6 +112,12 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
             ),
           ),
         librariesDependencies = emptyList(),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     shouldBeIgnoringDependenciesOrder(module, expectedModule)
@@ -198,6 +205,12 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
             IntermediateModuleDependency(
               moduleName = "target5.target5",
             ),
+          ),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
           ),
       )
 
@@ -315,6 +328,12 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
             ),
           ),
         librariesDependencies = emptyList(),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val expectedModule2 =
@@ -328,6 +347,12 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
             ),
           ),
         librariesDependencies = emptyList(),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     modules shouldContainExactlyInAnyOrder (

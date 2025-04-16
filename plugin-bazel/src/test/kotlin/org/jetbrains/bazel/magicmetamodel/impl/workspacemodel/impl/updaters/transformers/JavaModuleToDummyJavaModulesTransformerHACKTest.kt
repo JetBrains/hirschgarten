@@ -7,6 +7,9 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
@@ -41,6 +44,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             IntermediateModuleDependency("module3"),
           ),
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")
@@ -127,6 +136,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = emptyList(),
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
     val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
     val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
@@ -213,6 +228,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = emptyList(),
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
     val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
     val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
@@ -270,6 +291,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = emptyList(),
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
     val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
     val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
@@ -334,6 +361,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = emptyList(),
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
     val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
     val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
@@ -385,6 +418,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = emptyList(),
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
     val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
     val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
@@ -442,6 +481,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         name = "$projectRootName.${srcPath.name}.${mainPath.name}.${javaPath.name}".addIntelliJDummyPrefix(),
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
         librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
         languageIds = listOf("java", "scala", "kotlin"),
       )
@@ -482,6 +527,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = emptyList(),
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
     val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
     val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
@@ -566,6 +617,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = emptyList(),
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
     val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
     val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
@@ -645,6 +702,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
         librariesDependencies = listOf(),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val givenJavaModule1 =
@@ -671,6 +734,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
         librariesDependencies = listOf(),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val givenJavaModule2 =
@@ -716,6 +785,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
         librariesDependencies = listOf(),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val givenJavaModule =
@@ -763,6 +838,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             IntermediateModuleDependency("module3"),
           ),
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")
@@ -830,6 +911,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = emptyList(),
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
     val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
     val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
@@ -911,6 +998,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             IntermediateModuleDependency("module3"),
           ),
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")
@@ -983,6 +1076,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             IntermediateModuleDependency("module3"),
           ),
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")
@@ -1047,6 +1146,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             IntermediateModuleDependency("module3"),
           ),
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")
@@ -1100,6 +1205,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = emptyList(),
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
     val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
     val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
@@ -1182,6 +1293,12 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
             IntermediateModuleDependency("module3"),
           ),
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")
