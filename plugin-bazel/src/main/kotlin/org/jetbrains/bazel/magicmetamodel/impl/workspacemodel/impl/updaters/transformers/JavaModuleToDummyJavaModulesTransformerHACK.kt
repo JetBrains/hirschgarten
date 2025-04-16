@@ -25,7 +25,6 @@ import kotlin.io.path.Path
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
-import kotlin.io.path.notExists
 import kotlin.io.path.pathString
 
 private val RELEVANT_EXTENSIONS = listOf("java", "kt", "scala")
@@ -239,7 +238,7 @@ private fun calculateSourceRootsForParentDirs(sourceRoots: List<JavaSourceRoot>)
     .eachCount()
 
 private fun sourceRootForParentDir(sourceRoot: JavaSourceRoot): JavaSourceRoot? {
-  if (sourceRoot.sourcePath.notExists() || sourceRoot.sourcePath.isDirectory()) return null
+  if (sourceRoot.sourcePath.isDirectory()) return null
   val sourceParent = sourceRoot.sourcePath.parent.pathString
   val sourceRootPath = Path(sourceParent)
   val packagePrefix = sourceRoot.packagePrefix
