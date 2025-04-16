@@ -248,10 +248,11 @@
         <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook"/>
 
         <projectSyncHook implementation="org.jetbrains.bazel.services.InvalidTargetsProjectSyncHook"/>
+        <!-- Must be last because of JvmSyncHook can override added targets by it -->
+        <projectSyncHook implementation="org.jetbrains.bazel.nonmodule.sync.NonModuleTargetsSyncHook" order="last"/>
         <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook" id="BazelRepoMappingSyncHook"/>
-        <projectSyncHook implementation="org.jetbrains.bazel.nonmodule.sync.NonModuleTargetsSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
         <additionalProjectTaskRunnerProvider
                 implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
