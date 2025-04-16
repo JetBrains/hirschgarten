@@ -19,7 +19,6 @@ import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.JBUI
-import kotlinx.coroutines.Job
 import org.jdesktop.swingx.VerticalLayout
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
@@ -31,7 +30,6 @@ import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.io.OutputStreamWriter
-import java.util.concurrent.atomic.AtomicReference
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.ButtonGroup
@@ -52,7 +50,6 @@ private class QueryFlagField(
   val checkBox =
     JCheckBox(flag, checked).apply {
       addActionListener {
-        updateFlagCount(isSelected)
         valuesButtons.forEach { it.isVisible = isSelected }
       }
     }
@@ -68,14 +65,6 @@ private class QueryFlagField(
       it.isVisible = false
     }
     valuesButtons.firstOrNull()?.isSelected = true
-  }
-
-  companion object {
-    var selectedFlagCount = 0
-
-    private fun updateFlagCount(isSelected: Boolean) {
-      selectedFlagCount += if (isSelected) 1 else -1
-    }
   }
 
   fun addToPanel(panel: JPanel) {
@@ -99,8 +88,7 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
     }
 
   // Bazel Runner
-  private val queryEvaluator = QueryEvaluator()
-  private val evaluatorJob = AtomicReference<Job?>(null)
+  private val queryEvaluator = QueryEvaluator(project.baseDir)
 
   // Graph Window Manager
   private val graphWindowManager = GraphWindowManager()
@@ -295,14 +283,7 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
   }
 
   private fun evaluate() {
-    if (!queryEvaluator.isDirectorySet) {
-      System.err.println("Bazel Query directory not set or other error occurred")
-      showInConsole("Bazel Query directory not set or other error occurred")
-      updateUI()
-      return
-    }
-
-    val flagsToRun = mutableListOf<String>()
+    val flagsToRun = mutableListOf<BazelFlag>()
     for (flag in defaultFlags) {
       if (flag.isSelected) {
         var option = flag.flag
@@ -314,58 +295,56 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
               ?.text
           option += "=$selectedValue"
         }
-        flagsToRun.add(option)
+        flagsToRun.add(BazelFlag(option))
       }
     }
+    flagsToRun.addAll(BazelFlag.fromTextField(flagTextField.text))
+
     showInConsole("Bazel Query in progress...")
 
+    queryEvaluator.orderEvaluation(editorTextField.text, flagsToRun)
+    SwingUtilities.invokeLater { setButtonsPanelToCancel() }
     var commandResults: BazelProcessResult? = null
-    val job =
-      BazelCoroutineService.getInstance(project).start {
-        commandResults = queryEvaluator.evaluate(editorTextField.text, flagsToRun, flagTextField.text)
-      }
-    job.invokeOnCompletion {
-      val finishedJob = evaluatorJob.getAndSet(null)
-      if (finishedJob == null) return@invokeOnCompletion
-      if (finishedJob.isCancelled) return@invokeOnCompletion
+    CoroutineService.getInstance(project).start {
+      commandResults = queryEvaluator.waitAndGetResults()
+    }.invokeOnCompletion {
       SwingUtilities.invokeLater {
-        if (commandResults!!.isSuccess) {
-          val res = commandResults.stdout
-          if (res.isEmpty()) {
-            showInConsole("Nothing found")
-          } else {
-            val hyperlinkInfoList = mutableListOf<Pair<IntRange, HyperlinkInfo>>()
-            addLinksToResult(res, hyperlinkInfoList)
-            showInConsole(res, hyperlinkInfoList)
-            if (res.startsWith("digraph")) {
-              val imageIcon = convertDotToImageIcon(res)
-              if (imageIcon != null) {
-                graphWindowManager.openImageInNewWindow(imageIcon)
-              } else {
-                System.err.println("Failed to generate graph visualization")
+        if (commandResults == null) {
+          showInConsole("Query cancelled")
+        } else {
+          if (commandResults!!.isSuccess) {
+            val res = commandResults!!.stdout
+            if (res.isEmpty()) {
+              showInConsole("Nothing found")
+            } else {
+                val hyperlinkInfoList = mutableListOf<Pair<IntRange, HyperlinkInfo>>()
+                addLinksToResult(res, hyperlinkInfoList)
+                showInConsole(res, hyperlinkInfoList)
+              if (res.startsWith("digraph")) {
+                val imageIcon = convertDotToImageIcon(res)
+                if (imageIcon != null) {
+                  graphWindowManager.openImageInNewWindow(imageIcon)
+                } else {
+                  //System.err.println("Failed to generate graph visualization")
+                  NotificationGroupManager.getInstance()
+                    .getNotificationGroup("Bazel")
+                    .createNotification("Failed to generate graph visualization", NotificationType.ERROR)
+                    .notify(project)
+                }
               }
             }
+          } else {
+            showInConsole("Command execution failed:\n" + commandResults!!.stderr)
           }
-        } else {
-          showInConsole("Command execution failed:\n" + commandResults.stderr)
         }
+
         setButtonsPanelToEvaluate()
-        updateUI()
       }
     }
-    evaluatorJob.set(job)
-
-    setButtonsPanelToCancel()
   }
 
   private fun cancelEvaluate() {
-    val job = evaluatorJob.getAndSet(null)
-    if (job != null) {
-      job.cancel()
-      setButtonsPanelToEvaluate()
-      showInConsole("Query cancelled")
-      updateUI()
-    }
+    queryEvaluator.cancelEvaluation()
   }
 
   private fun showInConsole(text: String, hyperlinkInfoList: List<Pair<IntRange, HyperlinkInfo?>> = emptyList()) {

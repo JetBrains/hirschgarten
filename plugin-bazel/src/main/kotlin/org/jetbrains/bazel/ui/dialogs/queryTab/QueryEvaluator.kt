@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.ui.dialogs.queryTab
 
 import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.bazel.bazelrunner.BazelProcess
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
@@ -12,21 +13,60 @@ import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextConstructor
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
-internal class QueryEvaluator {
-  private var currentRunnerDirFile: VirtualFile? = null
-  private var bazelRunner: BazelRunner? = null
-  private var wcp: WorkspaceContextProvider? = null
+internal class BazelFlag(value: String) {
+  val value = withDoubleHyphen(value)
 
-  val isDirectorySet: Boolean get() = bazelRunner != null
+  companion object {
+    fun withDoubleHyphen(flagToParse: String): String {
+      val flag = flagToParse.trim()
+      val initialHyphens = flag.indexOfFirst { it != '-' }
+      return when {
+        initialHyphens < 2 -> {"-".repeat(2 - initialHyphens) + flag}
+        initialHyphens > 2 -> flag.substring(2 - initialHyphens)
+        else -> flag
+      }
+    }
+
+    fun fromTextField(textFieldContents: String): MutableList<BazelFlag> {
+      val result = mutableListOf<BazelFlag>()
+      if (textFieldContents.isNotEmpty()) {
+        for (flag in textFieldContents.trim().split(" -")) {
+          val option = flag.trim().replace(" ", "=")
+          result.add(BazelFlag(option))
+        }
+      }
+      return result
+    }
+  }
+}
+
+internal class QueryEvaluator(
+  private var currentRunnerDirFile: VirtualFile,
+) {
+  private var bazelRunner: BazelRunner
+
+  init {
+    currentRunnerDirFile.isDirectoryOrThrow()
+    bazelRunner = getRunnerOfDirectory(currentRunnerDirFile)
+  }
+
+  private var currentProcess = AtomicReference<BazelProcess?>(null)
+  private var currentProcessCancelled = AtomicBoolean(false)
+
 
   fun setEvaluationDirectory(directoryFile: VirtualFile) {
-    if (!directoryFile.isDirectory) throw IllegalArgumentException("$directoryFile is not a directory")
+    directoryFile.isDirectoryOrThrow()
+    if (directoryFile == currentRunnerDirFile) return
 
-    if (directoryFile == currentRunnerDirFile) {
-      println("asd")
-      return
-    }
+    bazelRunner = getRunnerOfDirectory(directoryFile)
+    currentRunnerDirFile = directoryFile
+  }
+
+  private fun getRunnerOfDirectory(directoryFile: VirtualFile): BazelRunner {
+    directoryFile.isDirectoryOrThrow()
 
     val wcc = WorkspaceContextConstructor(directoryFile.toNioPath(), Path.of(""))
     val pv = ProjectView.Builder().build()
@@ -38,39 +78,62 @@ internal class QueryEvaluator {
 
         override fun currentFeatureFlags(): FeatureFlags = FeatureFlags()
       }
-    bazelRunner = BazelRunner(null, directoryFile.toNioPath())
-
-    currentRunnerDirFile = directoryFile
+    return BazelRunner(wcp, null, directoryFile.toNioPath())
   }
 
-  suspend fun evaluate(
+  // Starts a process which evaluates given query.
+  // Result is valid for one call of waitAndGetResult() and another evaluation cannot be called
+  // before result of previous is received.
+  fun orderEvaluation(
     command: String,
-    flags: List<String>,
-    additionalFlags: String,
-    flagsAlreadyPrefixedWithDoubleHyphen: Boolean = false,
-  ): BazelProcessResult {
-    if (!isDirectorySet) throw IllegalStateException("Directory to run query from is not set")
+    flags: List<BazelFlag>
+  ) {
+    if (currentProcess.get() != null) throw IllegalStateException("Trying to start new process before result of previous is received")
 
     // TODO: add proper way to add raw query to evaluation
     val label = RelativeLabel(Package(listOf(command)), AmbiguousEmptyTarget)
-    val commandToRun =
-      bazelRunner!!.buildBazelCommand(wcp!!.readWorkspaceContext()) {
-        query { targets.add(label) }
-      }
+    val commandToRun = bazelRunner.buildBazelCommand {
+      query { targets.add(label) }
+    }
 
     commandToRun.options.clear()
     for (flag in flags) {
-      commandToRun.options.add((if (flagsAlreadyPrefixedWithDoubleHyphen) "" else "--") + flag)
-    }
-    if (additionalFlags.isNotEmpty()) {
-      for (flag in additionalFlags.trim().split(" -")) {
-        val option = flag.trim().replace(" ", "=")
-        commandToRun.options.add(if (flag.startsWith("--")) option else "-$option")
-      }
+      commandToRun.options.add(flag.value)
     }
 
-    return bazelRunner!!
-      .runBazelCommand(commandToRun, serverPidFuture = null)
-      .waitAndGetResult()
+    val startedProcess = bazelRunner.runBazelCommand(commandToRun, serverPidFuture = null)
+    currentProcessCancelled.set(false)
+    currentProcess.set(startedProcess)
   }
+
+  // Cancels currently running process
+  fun cancelEvaluation() {
+    val retrievedProcess = currentProcess.get()
+    if (retrievedProcess != null) {     // Cancellation might be called before UI changes state but after process is finished
+      if (currentProcessCancelled.compareAndSet(false, true)) {
+        retrievedProcess.process.destroy() // seems like it calls SIGTERM
+      }
+    }
+  }
+
+  // Returns process results if process was not cancelled, null otherwise
+  suspend fun waitAndGetResults(): BazelProcessResult? {
+    val retrievedProcess = currentProcess.get()
+    return if (retrievedProcess != null) {
+      val result = retrievedProcess.waitAndGetResult()
+      currentProcess.set(null)
+      retrievedProcess.process.destroy()
+      if (currentProcessCancelled.get()) null else result
+      // There exists an exit code in bazel (8) which would result with .bazelStatus in return value being BazelStatus.CANCEL,
+      // but with SIGTERM being called on the process return value is 143, which results in BazelStatus.FATAL_ERROR.
+      // Having a boolean which explicitely tells us if process was cancelled, while not ideal, works.
+    } else {
+      throw IllegalStateException("No command to get result from")
+    }
+
+  }
+}
+
+private fun VirtualFile.isDirectoryOrThrow() {
+  if (!this.isDirectory) throw IllegalArgumentException("$this is not a directory")
 }
