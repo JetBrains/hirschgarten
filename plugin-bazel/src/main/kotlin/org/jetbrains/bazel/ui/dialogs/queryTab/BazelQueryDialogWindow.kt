@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.ui.dialogs.queryTab
 
+import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.HyperlinkInfo
 import com.intellij.execution.filters.HyperlinkInfoBase
 import com.intellij.execution.impl.ConsoleViewImpl
@@ -8,6 +9,7 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.icons.AllIcons
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.application.WriteIntentReadAction
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
@@ -122,7 +124,7 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
 
   // Clickable targets in output
   private fun addLinksToResult(text: String, hyperlinkInfoList: MutableList<Pair<IntRange, HyperlinkInfo>>) {
-    val filterResult = bazelFilter.applyFilter(text, text.length)
+    val filterResult = WriteIntentReadAction.compute<Filter.Result> { bazelFilter.applyFilter(text, text.length) }
 
     filterResult?.resultItems?.forEachIndexed { index, item ->
       hyperlinkInfoList.add(
@@ -305,7 +307,7 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
     queryEvaluator.orderEvaluation(editorTextField.text, flagsToRun)
     SwingUtilities.invokeLater { setButtonsPanelToCancel() }
     var commandResults: BazelProcessResult? = null
-    CoroutineService.getInstance(project).start {
+    BazelCoroutineService.getInstance(project).start {
       commandResults = queryEvaluator.waitAndGetResults()
     }.invokeOnCompletion {
       SwingUtilities.invokeLater {

@@ -10,8 +10,6 @@ import org.jetbrains.bazel.label.RelativeLabel
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextConstructor
-import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
-import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -47,10 +45,13 @@ internal class QueryEvaluator(
   private var currentRunnerDirFile: VirtualFile,
 ) {
   private var bazelRunner: BazelRunner
+  private var workspaceContext: WorkspaceContext
 
   init {
     currentRunnerDirFile.isDirectoryOrThrow()
-    bazelRunner = getRunnerOfDirectory(currentRunnerDirFile)
+    val getRunnerCallResult = getRunnerOfDirectory(currentRunnerDirFile)
+    bazelRunner = getRunnerCallResult.first
+    workspaceContext = getRunnerCallResult.second
   }
 
   private var currentProcess = AtomicReference<BazelProcess?>(null)
@@ -61,24 +62,19 @@ internal class QueryEvaluator(
     directoryFile.isDirectoryOrThrow()
     if (directoryFile == currentRunnerDirFile) return
 
-    bazelRunner = getRunnerOfDirectory(directoryFile)
+    val getRunnerCallResult = getRunnerOfDirectory(directoryFile)
+    bazelRunner = getRunnerCallResult.first
+    workspaceContext = getRunnerCallResult.second
     currentRunnerDirFile = directoryFile
   }
 
-  private fun getRunnerOfDirectory(directoryFile: VirtualFile): BazelRunner {
+  private fun getRunnerOfDirectory(directoryFile: VirtualFile): Pair<BazelRunner, WorkspaceContext> {
     directoryFile.isDirectoryOrThrow()
 
     val wcc = WorkspaceContextConstructor(directoryFile.toNioPath(), Path.of(""))
     val pv = ProjectView.Builder().build()
-    wcp =
-      object : WorkspaceContextProvider {
-        private val wc = wcc.construct(pv)
 
-        override fun readWorkspaceContext(): WorkspaceContext = wc
-
-        override fun currentFeatureFlags(): FeatureFlags = FeatureFlags()
-      }
-    return BazelRunner(wcp, null, directoryFile.toNioPath())
+    return Pair(BazelRunner(null, directoryFile.toNioPath()), wcc.construct(pv))
   }
 
   // Starts a process which evaluates given query.
@@ -92,7 +88,7 @@ internal class QueryEvaluator(
 
     // TODO: add proper way to add raw query to evaluation
     val label = RelativeLabel(Package(listOf(command)), AmbiguousEmptyTarget)
-    val commandToRun = bazelRunner.buildBazelCommand {
+    val commandToRun = bazelRunner.buildBazelCommand(workspaceContext) {
       query { targets.add(label) }
     }
 
