@@ -1,4 +1,4 @@
-@file:Suppress("UnstableApiUsage")
+@file:Suppress("UnstableApiUsage", "SameParameterValue")
 
 package org.jetbrains.bazel.workspace
 
@@ -247,7 +247,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     createEvent(file).process().assertNotNullAndAwait()
 
     // should not be added to target1's model
-    target1.itsModuleContainsFile(fileUrl).shouldBeFalse()
+    doesModuleContainFile(target1, fileUrl).shouldBeFalse()
     // but the rest of the actions should happen normally
     file.assertModelStatus(target2 to true)
     fileUrl.belongsToTarget(target1).shouldBeTrue()
@@ -302,7 +302,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
 
   private fun VirtualFileUrl.assertModelStatus(vararg expectedStates: Pair<Label, Boolean>) {
     expectedStates.forEach { (target, shouldBeAdded) ->
-      target.itsModuleContainsFile(this).shouldBe(shouldBeAdded)
+      doesModuleContainFile(target, this).shouldBe(shouldBeAdded)
       this.belongsToTarget(target).shouldBe(shouldBeAdded)
     }
   }
@@ -332,10 +332,8 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     runTestWriteAction { workspaceModel.updateProjectModel { it.addEntity(module) } }
   }
 
-  private fun Label.itsModuleContainsFile(fileUrl: VirtualFileUrl): Boolean {
-    val module = workspaceModel.currentSnapshot.resolveModule(this)
-    return module.contentRoots.any { it.url == fileUrl }
-  }
+  private fun doesModuleContainFile(moduleTarget: Label, fileUrl: VirtualFileUrl): Boolean =
+    workspaceModel.currentSnapshot.resolveModule(moduleTarget).contentRoots.any { it.url == fileUrl }
 
   private fun ImmutableEntityStorage.resolveModule(target: Label): ModuleEntity {
     val moduleId = ModuleId(target.formatAsModuleName(project))

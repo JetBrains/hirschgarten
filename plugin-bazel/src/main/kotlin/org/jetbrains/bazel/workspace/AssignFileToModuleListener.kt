@@ -4,11 +4,9 @@ package org.jetbrains.bazel.workspace
 
 import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.readAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -42,6 +40,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.sdkcompat.AssignFileToModuleListenerCompat
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.status.SyncStatusService
 import org.jetbrains.bazel.target.TargetUtils
@@ -54,6 +53,8 @@ import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.jetbrains.kotlin.config.KOTLIN_SOURCE_ROOT_TYPE_ID
+import java.nio.file.Path
+import kotlin.io.path.pathString
 
 class AssignFileToModuleListener : BulkFileListener {
   private val pendingEvents = mutableMapOf<Project, MutableList<VFileEvent>>()
@@ -84,7 +85,7 @@ class AssignFileToModuleListener : BulkFileListener {
 
   private fun Project.processWithDelay(event: VFileEvent): Job? {
     synchronized(pendingEvents) {
-      @Suppress("KotlinUnreachableCode") // it is not unreachable, but IJ erroneously marks it so
+      @Suppress("KotlinUnreachableCode") // it is not unreachable, but IJ wrongly marks it as such
       pendingEvents[this]?.let {
         it.add(event)
         return null
@@ -114,7 +115,7 @@ private fun VFileEvent.getAffectedFile(): VirtualFile? {
   return if (file?.isDirectory == false) file else null
 }
 
-private fun VFileEvent.getOldFilePath(): String? =
+private fun VFileEvent.getOldFilePath(): Path? =
   when (this) {
     is VFileCreateEvent -> null // explicit branch for code clarity
     is VFileCopyEvent -> null // explicit branch for code clarity
@@ -122,22 +123,22 @@ private fun VFileEvent.getOldFilePath(): String? =
     is VFileMoveEvent -> this.oldPath
     is VFilePropertyChangeEvent -> if (this.propertyName == VirtualFile.PROP_NAME) this.oldPath else null
     else -> null
-  }
+  }?.toNioPathOrNull()
 
 private fun VirtualFile.getRelatedProjects(): List<Project> =
   ProjectManager
     .getInstance()
     .openProjects
-    .filter { it.doWeCareAboutIt() && VfsUtil.isAncestor(it.rootDir, this, false) }
+    .filter { it.isRelevant() && VfsUtil.isAncestor(it.rootDir, this, false) }
 
-private fun Project.doWeCareAboutIt(): Boolean = this.isBazelProject && this.isTrusted()
+private fun Project.isRelevant(): Boolean = this.isBazelProject && this.isTrusted()
 
 private suspend fun VFileEvent.process(project: Project) {
   val workspaceModel = WorkspaceModel.getInstance(project)
   val targetUtils = project.targetUtils
 
   val newFile = this.getNewFile()
-  val oldFilePath = this.getOldFilePath() // the old file path must be kept as a string, since this file no longer exists
+  val oldFilePath = this.getOldFilePath() // the old file must be kept as a path, since this file no longer exists
 
   runWithProgress(project) {
     val modulesToRemoveFrom =
@@ -176,17 +177,10 @@ private suspend fun processFileCreated(
   workspaceModel: WorkspaceModel,
   modulesToRemoveFrom: MutableList<ModuleEntity>,
 ): List<ModuleEntity> {
-  // ProjectFileIndex::getModulesForFile is not compatible with IJ 2024, but it's not important enough to bother with SDK-compat
-  // TODO: replace once 243 is dropped
-//  val existingModules =
-//    readAction { ProjectFileIndex.getInstance(project).getModulesForFile(newFile, true) }
-//      .filter { it.moduleEntity?.entitySource != BspDummyEntitySource }
-//      .mapNotNull { it.moduleEntity }
-
-  val existingModule =
-    readAction { ProjectFileIndex.getInstance(project).getModuleForFile(newFile) }.let {
-      if (it?.moduleEntity?.entitySource != BspDummyEntitySource) it?.moduleEntity else null
-    }
+  val existingModules =
+    AssignFileToModuleListenerCompat.getModulesForFile(newFile, project)
+      .filter { it.moduleEntity?.entitySource != BspDummyEntitySource }
+      .mapNotNull { it.moduleEntity }
 
   val url = newFile.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   val path = url.toPath()
@@ -199,22 +193,20 @@ private suspend fun processFileCreated(
         project.targetUtils.addFileToTargetIdEntry(path, targets)
         return@let modules
       } ?: emptyList()
-//  return contentRootToAdd.filter { !modulesToRemoveFrom.remove(it) && !existingModules.contains(it) } // 251
-  return contentRootToAdd.filter { !modulesToRemoveFrom.remove(it) && it != existingModule } // 243
+  return contentRootToAdd.filter { !modulesToRemoveFrom.remove(it) && !existingModules.contains(it) }
 }
 
 private fun processFileRemoved(
-  oldFilePath: String,
+  oldFilePath: Path,
   project: Project,
   workspaceModel: WorkspaceModel,
   targetUtils: TargetUtils,
 ): List<ModuleEntity> {
-  val oldUri = oldFilePath.toNioPathOrNull()!!
   val modules =
     targetUtils
-      .getTargetsForPath(oldUri)
+      .getTargetsForPath(oldFilePath)
       .mapNotNull { it.toModuleEntity(workspaceModel.currentSnapshot, project) }
-  project.targetUtils.removeFileToTargetIdEntry(oldUri)
+  project.targetUtils.removeFileToTargetIdEntry(oldFilePath)
   return modules
 }
 
@@ -245,13 +237,13 @@ private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Proje
 
 private suspend fun updateContentRoots(
   newFile: VirtualFile?,
-  oldFilePath: String?,
+  oldFilePath: Path?,
   toRemove: List<ModuleEntity>,
   toAdd: List<ModuleEntity>,
   workspaceModel: WorkspaceModel,
 ) {
   val urlManager = workspaceModel.getVirtualFileUrlManager()
-  val oldUrl = oldFilePath?.let { urlManager.fromPath(it) }
+  val oldUrl = oldFilePath?.let { urlManager.fromPath(it.pathString) }
   val newUrl = newFile?.toVirtualFileUrl(urlManager)
   workspaceModel.update("File changes processing") { storage ->
     toRemove.forEach { module ->
