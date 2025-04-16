@@ -9,5 +9,4 @@ class BazelqueryFlag(node: ASTNode) : BazelqueryBaseElement(node) {
 
   val name: PsiElement?
     get() = findChildByType(BazelqueryTokenTypes.FLAG)
-
 }

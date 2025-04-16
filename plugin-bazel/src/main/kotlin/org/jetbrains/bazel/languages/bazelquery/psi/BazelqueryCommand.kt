@@ -9,5 +9,4 @@ class BazelqueryCommand(node: ASTNode) : BazelqueryBaseElement(node) {
 
   val name: PsiElement?
     get() = findChildByType(BazelqueryTokenSets.COMMANDS)
-
 }
