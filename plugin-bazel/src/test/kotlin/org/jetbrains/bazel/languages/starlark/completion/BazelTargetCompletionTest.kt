@@ -9,7 +9,6 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,10 +30,11 @@ class BazelTargetCompletionTest : BasePlatformTestCase() {
           tags = emptyList(),
           languageIds = emptyList(),
           dependencies = emptyList(),
-          kind = TargetKind(
-            kindString = "java_library",
-            ruleType = RuleType.LIBRARY
-          ),
+          kind =
+            TargetKind(
+              kindString = "java_library",
+              ruleType = RuleType.LIBRARY,
+            ),
           sources = emptyList(),
           resources = emptyList(),
           baseDirectory = Path("/"),

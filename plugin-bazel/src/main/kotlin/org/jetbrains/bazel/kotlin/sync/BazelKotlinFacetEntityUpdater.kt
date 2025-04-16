@@ -2,8 +2,8 @@ package org.jetbrains.bazel.kotlin.sync
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
-import org.jetbrains.bazel.commons.RuleType
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule

@@ -56,7 +56,7 @@ data class GenericModuleInfo(
   val type: ModuleTypeId,
   val modulesDependencies: List<IntermediateModuleDependency>,
   val librariesDependencies: List<IntermediateLibraryDependency>,
-  val kind: TargetKind = TODO(),
+  val kind: TargetKind,
   val languageIds: LanguageIds = listOf(),
   val associates: List<IntermediateModuleDependency> = listOf(),
   val isDummy: Boolean = false,

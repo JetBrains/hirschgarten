@@ -7,6 +7,7 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -148,6 +149,12 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
             IntermediateModuleDependency("module3.module3"),
           ),
         librariesDependencies = emptyList(),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val expectedBaseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath())
@@ -272,6 +279,12 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           listOf(
             IntermediateModuleDependency("//target4"),
             IntermediateModuleDependency("//target5"),
+          ),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
           ),
       )
 
@@ -461,6 +474,12 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
             IntermediateModuleDependency("module3.module3"),
           ),
         librariesDependencies = emptyList(),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val expectedBaseDirContentRoot1 =
@@ -506,6 +525,12 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
             IntermediateModuleDependency("module3.module3"),
           ),
         librariesDependencies = emptyList(),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val expectedBaseDirContentRoot2 =
@@ -652,6 +677,12 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
             IntermediateModuleDependency(dummyJavaModuleName),
           ),
         librariesDependencies = emptyList(),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val expectedBaseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath())
