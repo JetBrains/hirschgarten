@@ -22,10 +22,8 @@ import com.intellij.execution.process.ProcessOutputType
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.compiler.CompilerMessageCategory
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -34,21 +32,19 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.sync.BazelBinPathService
 import org.jetbrains.bsp.protocol.FastBuildCommand
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import java.io.File
-import java.io.OutputStreamWriter
+import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
+import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
-import kotlin.io.path.notExists
+import java.util.zip.ZipOutputStream
+import kotlin.io.path.name
 import kotlin.io.path.outputStream
-import kotlin.io.path.pathString
-import kotlin.io.path.reader
-import kotlin.io.path.relativeTo
-import kotlin.io.path.writer
 
 object FastBuildUtils {
 
@@ -134,7 +130,7 @@ object FastBuildUtils {
         }
         compileTask.setEndCompilationStamp(ExitStatus.SUCCESS, System.currentTimeMillis())
 
-        processAndHotswapOutput(fastBuildCommand.outputFile, project)
+        processAndHotswapOutput(fastBuildCommand.outputFile, fastBuildCommand.originalOutputFile, project)
         promise.setResult(TaskRunnerResults.SUCCESS)
       }, null)
     return promise
@@ -143,11 +139,11 @@ object FastBuildUtils {
   /**
    * Unzips the jar and uses the files within to hotswap
    */
-  fun processAndHotswapOutput(outputJar: Path, project: Project) {
+  fun processAndHotswapOutput(outputJar: Path, originalOutputJar: Path, project: Project) {
     ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Hotswapping", true) {
       override fun run(indicator: ProgressIndicator) {
         val unzip = outputJar.parent.resolve("unzip").also { it.toFile().mkdir() }
-        val files = buildList<String> {
+        val files = buildList {
           ZipFile(outputJar.toFile()).use { zipFile ->
             zipFile.entries().iterator().forEach {
               if (it.isDirectory || !it.name.endsWith(".class")) {
@@ -155,11 +151,13 @@ object FastBuildUtils {
               }
               val output = unzip.resolve(it.name)
               output.parent.toFile().mkdirs()
-              zipFile.getInputStream(it).copyTo(output.outputStream())
+              zipFile.getInputStream(it).use { it.copyTo(output.outputStream())}
               add(it.name)
             }
           }
-        }.associate {
+        }
+
+        val hotswapMap = files.associate {
           it.replace(File.separatorChar, '.').let {
             if (it.endsWith(".class")) {
               return@let it.substringBeforeLast('.')
@@ -171,10 +169,32 @@ object FastBuildUtils {
         indicator.checkCanceled()
 //        span.end()
 
-        hotswapFile(project, files)
+        updateRuntimeJar(originalOutputJar, outputJar.parent, unzip, files)
+        hotswapFile(project, hotswapMap)
       }
     })
 
+  }
+
+  fun updateRuntimeJar(runtimeJarPath: Path, tempDir: Path, updatedFilesRoot: Path, updatedFiles: List<String>) {
+    val tempJarPath = tempDir.resolve(runtimeJarPath.name)
+    ZipOutputStream(tempJarPath.toFile().outputStream()).use { tempJar ->
+      ZipFile(runtimeJarPath.toFile()).use { runtimeJar ->
+        runtimeJar.entries().iterator().forEach { runtimeEntry ->
+          if (updatedFiles.contains(runtimeEntry.name)) {
+            tempJar.putNextEntry(ZipEntry(runtimeEntry.name))
+            updatedFilesRoot.resolve(runtimeEntry.name).toFile().inputStream().use { it.copyTo(tempJar) }
+          } else {
+            tempJar.putNextEntry(runtimeEntry)
+            runtimeJar.getInputStream(runtimeEntry).use { it.copyTo(tempJar) }
+          }
+          tempJar.closeEntry()
+        }
+      }
+    }
+    Files.copy(tempJarPath,
+      runtimeJarPath,
+      StandardCopyOption.REPLACE_EXISTING)
   }
 
   fun hotswapFile(project: Project, hotswapMap: Map<String, HotSwapFile>) {
