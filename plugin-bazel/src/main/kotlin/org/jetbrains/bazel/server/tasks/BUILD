@@ -25,9 +25,9 @@ kt_jvm_library(
         "//rules_intellij/third_party/code_with_me",
         "//rules_intellij/third_party/devkit",
         "//rules_intellij/third_party/go",
-        "//rules_intellij/third_party/terminal",
         "//rules_intellij/third_party/performance",
         "//rules_intellij/third_party/python",
+        "//rules_intellij/third_party/terminal",
         "//sdkcompat",
     ],
 )

@@ -601,9 +601,11 @@ java_import(
 """
 
 _TERMINAL_251_VERSION = "251.20015.44"
+
 _TERMINAL_243_VERSION = "243.23654.19"
 
 TERMINAL_PLUGIN_251_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.terminal/%s/org.jetbrains.plugins.terminal-%s.zip" % (_TERMINAL_251_VERSION, _TERMINAL_251_VERSION)
+
 TERMINAL_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.terminal/%s/org.jetbrains.plugins.terminal-%s.zip" % (_TERMINAL_243_VERSION, _TERMINAL_243_VERSION)
 
 http_archive(
