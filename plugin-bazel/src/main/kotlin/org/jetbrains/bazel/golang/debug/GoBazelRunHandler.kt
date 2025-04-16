@@ -24,8 +24,8 @@ import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bazel.workspacemodel.entities.includesGo
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import java.util.UUID
@@ -90,7 +90,7 @@ class GoRunWithDebugCommandLineState(
         environmentVariables = settings.env.envs,
         additionalBazelParams = settings.additionalBazelParams,
       )
-    val remoteDebugData = RemoteDebugData("go_dlv", debugServerAddress.port)
+    val remoteDebugData = DebugType.GoDlv(debugServerAddress.port)
     val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
 
     server.buildTargetRunWithDebug(runWithDebugParams)
