@@ -120,7 +120,9 @@ class PythonProjectSync : ProjectSyncHook {
       val existingSystemSdk = ProjectJdkTable.getInstance().findJdk(systemSdk.name, systemSdk.sdkType.name)
       val defaultSdk = existingSystemSdk ?: systemSdk.addToSdkTable(project)
       sdksByTarget.mapValues { it.value ?: defaultSdk }
-    } else sdksByTarget
+    } else {
+      sdksByTarget
+    }
   }
 
   private suspend fun findOrAddSdk(pythonTarget: PythonBuildTarget, project: Project): Sdk {
