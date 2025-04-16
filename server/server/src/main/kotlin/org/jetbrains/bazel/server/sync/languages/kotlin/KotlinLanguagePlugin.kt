@@ -6,7 +6,6 @@ import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.FastBuildCommand
@@ -86,8 +85,7 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
   override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     javaLanguagePlugin.dependencySources(targetInfo, dependencyGraph)
 
-  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData? =
-    javaLanguagePlugin.calculateSourceRootAndAdditionalData(source)
+  override fun calculateJvmPackagePrefix(source: Path): String? = javaLanguagePlugin.calculateJvmPackagePrefix(source)
 
   override fun prepareFastBuild(module: Module, params: FastBuildParams): FastBuildCommand? {
     val languageData = module.languageData

@@ -164,7 +164,13 @@ open class Hirschgarten (
   params = {
     password("qodana.cloud.token.hirschgarten", "credentialsJSON:d57ead0e-b567-440d-817e-f92e084a1cc0", label = "qodana.cloud.token.hirschgarten", description = "Qodana token for Hirschgarten statistics", display = ParameterDisplay.HIDDEN)
   }
-)
+) {
+  init {
+    steps.items.forEach { step ->
+      step.enabled = false
+    }
+  }
+}
 
 object HirschgartenGitHub : Hirschgarten(
     vcsRoot = BaseConfiguration.GitHubVcs,

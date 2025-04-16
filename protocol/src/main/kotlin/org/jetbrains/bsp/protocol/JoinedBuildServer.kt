@@ -4,7 +4,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 interface JoinedBuildServer {
-  suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult
+  suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult
 
   suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult
 
@@ -54,7 +54,7 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult
 
-  suspend fun workspaceBuildAndGetBuildTargets(): WorkspaceBuildTargetsResult
+  suspend fun workspaceBuildAndGetBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult
 
   suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult
 
@@ -63,6 +63,8 @@ interface JoinedBuildServer {
   suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult
 
   suspend fun workspaceBazelBinPath(): WorkspaceBazelPathsResult
+
+  suspend fun workspaceName(): WorkspaceNameResult
 
   suspend fun workspaceContext(): WorkspaceContext
 

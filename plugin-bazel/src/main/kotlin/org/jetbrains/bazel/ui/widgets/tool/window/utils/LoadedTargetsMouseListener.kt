@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.ui.PopupHandler
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -79,7 +80,7 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
         addAction(BuildTargetAction(target.id))
       }
       fillWithEligibleActions(project, target, false)
-      add(BazelJumpToBuildFileAction(target))
+      add(BazelJumpToBuildFileAction(target.id))
       if (StarlarkDebugAction.isApplicableTo(target)) add(StarlarkDebugAction(target.id))
     }
 
@@ -120,6 +121,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
   target: BuildTarget,
   includeTargetNameInText: Boolean,
   singleTestFilter: String? = null,
+  callerPsiElement: PsiElement? = null,
 ): DefaultActionGroup {
   val canBeDebugged = RunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
   if (target.capabilities.canRun) {
@@ -165,11 +167,34 @@ fun DefaultActionGroup.fillWithEligibleActions(
       addAction(RunWithLocalJvmRunnerAction(project, target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
     }
     if (target.capabilities.canTest) {
-      addAction(TestWithLocalJvmRunnerAction(project, target, includeTargetNameInText = includeTargetNameInText))
-      addAction(TestWithLocalJvmRunnerAction(project, target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
+      if (callerPsiElement != null) { // called from gutter
+        addLocalJvmTestActions(project, target, includeTargetNameInText, callerPsiElement)
+      } else if (!project.bazelProjectSettings.useIntellijTestRunner) { // called from target tree widget
+        addLocalJvmTestActions(project, target, includeTargetNameInText, null)
+      }
     }
   }
   return this
+}
+
+private fun DefaultActionGroup.addLocalJvmTestActions(
+  project: Project,
+  target: BuildTarget,
+  includeTargetNameInText: Boolean,
+  callerPsiElement: PsiElement?,
+) {
+  addAction(
+    TestWithLocalJvmRunnerAction(project, target, includeTargetNameInText = includeTargetNameInText, callerPsiElement = callerPsiElement),
+  )
+  addAction(
+    TestWithLocalJvmRunnerAction(
+      project,
+      target,
+      isDebugMode = true,
+      includeTargetNameInText = includeTargetNameInText,
+      callerPsiElement = callerPsiElement,
+    ),
+  )
 }
 
 internal class RunAllTestsActionInTargetTreeAction(private val targets: List<BuildTarget>, private val directoryName: String) :

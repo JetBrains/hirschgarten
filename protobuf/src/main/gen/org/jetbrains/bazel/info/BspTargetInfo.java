@@ -3235,43 +3235,6 @@ public final class BspTargetInfo {
      */
     org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getTransitiveCompileTimeJarsOrBuilder(
         int index);
-
-    /**
-     * <code>string builder_script = 12;</code>
-     * @return The builderScript.
-     */
-    java.lang.String getBuilderScript();
-    /**
-     * <code>string builder_script = 12;</code>
-     * @return The bytes for builderScript.
-     */
-    com.google.protobuf.ByteString
-        getBuilderScriptBytes();
-
-    /**
-     * <code>repeated string builder_args = 13;</code>
-     * @return A list containing the builderArgs.
-     */
-    java.util.List<java.lang.String>
-        getBuilderArgsList();
-    /**
-     * <code>repeated string builder_args = 13;</code>
-     * @return The count of builderArgs.
-     */
-    int getBuilderArgsCount();
-    /**
-     * <code>repeated string builder_args = 13;</code>
-     * @param index The index of the element to return.
-     * @return The builderArgs at the given index.
-     */
-    java.lang.String getBuilderArgs(int index);
-    /**
-     * <code>repeated string builder_args = 13;</code>
-     * @param index The index of the value to return.
-     * @return The bytes of the builderArgs at the given index.
-     */
-    com.google.protobuf.ByteString
-        getBuilderArgsBytes(int index);
   }
   /**
    * Protobuf type {@code bazelbsp.JvmTargetInfo}
@@ -3306,9 +3269,6 @@ public final class BspTargetInfo {
           com.google.protobuf.LazyStringArrayList.emptyList();
       jdeps_ = java.util.Collections.emptyList();
       transitiveCompileTimeJars_ = java.util.Collections.emptyList();
-      builderScript_ = "";
-      builderArgs_ =
-          com.google.protobuf.LazyStringArrayList.emptyList();
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
@@ -3638,82 +3598,6 @@ public final class BspTargetInfo {
       return transitiveCompileTimeJars_.get(index);
     }
 
-    public static final int BUILDER_SCRIPT_FIELD_NUMBER = 12;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object builderScript_ = "";
-    /**
-     * <code>string builder_script = 12;</code>
-     * @return The builderScript.
-     */
-    @java.lang.Override
-    public java.lang.String getBuilderScript() {
-      java.lang.Object ref = builderScript_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        builderScript_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string builder_script = 12;</code>
-     * @return The bytes for builderScript.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getBuilderScriptBytes() {
-      java.lang.Object ref = builderScript_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        builderScript_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    public static final int BUILDER_ARGS_FIELD_NUMBER = 13;
-    @SuppressWarnings("serial")
-    private com.google.protobuf.LazyStringArrayList builderArgs_ =
-        com.google.protobuf.LazyStringArrayList.emptyList();
-    /**
-     * <code>repeated string builder_args = 13;</code>
-     * @return A list containing the builderArgs.
-     */
-    public com.google.protobuf.ProtocolStringList
-        getBuilderArgsList() {
-      return builderArgs_;
-    }
-    /**
-     * <code>repeated string builder_args = 13;</code>
-     * @return The count of builderArgs.
-     */
-    public int getBuilderArgsCount() {
-      return builderArgs_.size();
-    }
-    /**
-     * <code>repeated string builder_args = 13;</code>
-     * @param index The index of the element to return.
-     * @return The builderArgs at the given index.
-     */
-    public java.lang.String getBuilderArgs(int index) {
-      return builderArgs_.get(index);
-    }
-    /**
-     * <code>repeated string builder_args = 13;</code>
-     * @param index The index of the value to return.
-     * @return The bytes of the builderArgs at the given index.
-     */
-    public com.google.protobuf.ByteString
-        getBuilderArgsBytes(int index) {
-      return builderArgs_.getByteString(index);
-    }
-
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -3751,12 +3635,6 @@ public final class BspTargetInfo {
       }
       for (int i = 0; i < transitiveCompileTimeJars_.size(); i++) {
         output.writeMessage(11, transitiveCompileTimeJars_.get(i));
-      }
-      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(builderScript_)) {
-        com.google.protobuf.GeneratedMessage.writeString(output, 12, builderScript_);
-      }
-      for (int i = 0; i < builderArgs_.size(); i++) {
-        com.google.protobuf.GeneratedMessage.writeString(output, 13, builderArgs_.getRaw(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -3810,17 +3688,6 @@ public final class BspTargetInfo {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(11, transitiveCompileTimeJars_.get(i));
       }
-      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(builderScript_)) {
-        size += com.google.protobuf.GeneratedMessage.computeStringSize(12, builderScript_);
-      }
-      {
-        int dataSize = 0;
-        for (int i = 0; i < builderArgs_.size(); i++) {
-          dataSize += computeStringSizeNoTag(builderArgs_.getRaw(i));
-        }
-        size += dataSize;
-        size += 1 * getBuilderArgsList().size();
-      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -3852,10 +3719,6 @@ public final class BspTargetInfo {
           .equals(other.getJdepsList())) return false;
       if (!getTransitiveCompileTimeJarsList()
           .equals(other.getTransitiveCompileTimeJarsList())) return false;
-      if (!getBuilderScript()
-          .equals(other.getBuilderScript())) return false;
-      if (!getBuilderArgsList()
-          .equals(other.getBuilderArgsList())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -3896,12 +3759,6 @@ public final class BspTargetInfo {
       if (getTransitiveCompileTimeJarsCount() > 0) {
         hash = (37 * hash) + TRANSITIVE_COMPILE_TIME_JARS_FIELD_NUMBER;
         hash = (53 * hash) + getTransitiveCompileTimeJarsList().hashCode();
-      }
-      hash = (37 * hash) + BUILDER_SCRIPT_FIELD_NUMBER;
-      hash = (53 * hash) + getBuilderScript().hashCode();
-      if (getBuilderArgsCount() > 0) {
-        hash = (37 * hash) + BUILDER_ARGS_FIELD_NUMBER;
-        hash = (53 * hash) + getBuilderArgsList().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -4069,9 +3926,6 @@ public final class BspTargetInfo {
           transitiveCompileTimeJarsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000080);
-        builderScript_ = "";
-        builderArgs_ =
-            com.google.protobuf.LazyStringArrayList.emptyList();
         return this;
       }
 
@@ -4159,13 +4013,6 @@ public final class BspTargetInfo {
         if (((from_bitField0_ & 0x00000020) != 0)) {
           args_.makeImmutable();
           result.args_ = args_;
-        }
-        if (((from_bitField0_ & 0x00000100) != 0)) {
-          result.builderScript_ = builderScript_;
-        }
-        if (((from_bitField0_ & 0x00000200) != 0)) {
-          builderArgs_.makeImmutable();
-          result.builderArgs_ = builderArgs_;
         }
       }
 
@@ -4320,21 +4167,6 @@ public final class BspTargetInfo {
             }
           }
         }
-        if (!other.getBuilderScript().isEmpty()) {
-          builderScript_ = other.builderScript_;
-          bitField0_ |= 0x00000100;
-          onChanged();
-        }
-        if (!other.builderArgs_.isEmpty()) {
-          if (builderArgs_.isEmpty()) {
-            builderArgs_ = other.builderArgs_;
-            bitField0_ |= 0x00000200;
-          } else {
-            ensureBuilderArgsIsMutable();
-            builderArgs_.addAll(other.builderArgs_);
-          }
-          onChanged();
-        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -4436,17 +4268,6 @@ public final class BspTargetInfo {
                 }
                 break;
               } // case 90
-              case 98: {
-                builderScript_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000100;
-                break;
-              } // case 98
-              case 106: {
-                java.lang.String s = input.readStringRequireUtf8();
-                ensureBuilderArgsIsMutable();
-                builderArgs_.add(s);
-                break;
-              } // case 106
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -5827,189 +5648,6 @@ public final class BspTargetInfo {
           transitiveCompileTimeJars_ = null;
         }
         return transitiveCompileTimeJarsBuilder_;
-      }
-
-      private java.lang.Object builderScript_ = "";
-      /**
-       * <code>string builder_script = 12;</code>
-       * @return The builderScript.
-       */
-      public java.lang.String getBuilderScript() {
-        java.lang.Object ref = builderScript_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          builderScript_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>string builder_script = 12;</code>
-       * @return The bytes for builderScript.
-       */
-      public com.google.protobuf.ByteString
-          getBuilderScriptBytes() {
-        java.lang.Object ref = builderScript_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          builderScript_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string builder_script = 12;</code>
-       * @param value The builderScript to set.
-       * @return This builder for chaining.
-       */
-      public Builder setBuilderScript(
-          java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
-        builderScript_ = value;
-        bitField0_ |= 0x00000100;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string builder_script = 12;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearBuilderScript() {
-        builderScript_ = getDefaultInstance().getBuilderScript();
-        bitField0_ = (bitField0_ & ~0x00000100);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string builder_script = 12;</code>
-       * @param value The bytes for builderScript to set.
-       * @return This builder for chaining.
-       */
-      public Builder setBuilderScriptBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
-        builderScript_ = value;
-        bitField0_ |= 0x00000100;
-        onChanged();
-        return this;
-      }
-
-      private com.google.protobuf.LazyStringArrayList builderArgs_ =
-          com.google.protobuf.LazyStringArrayList.emptyList();
-      private void ensureBuilderArgsIsMutable() {
-        if (!builderArgs_.isModifiable()) {
-          builderArgs_ = new com.google.protobuf.LazyStringArrayList(builderArgs_);
-        }
-        bitField0_ |= 0x00000200;
-      }
-      /**
-       * <code>repeated string builder_args = 13;</code>
-       * @return A list containing the builderArgs.
-       */
-      public com.google.protobuf.ProtocolStringList
-          getBuilderArgsList() {
-        builderArgs_.makeImmutable();
-        return builderArgs_;
-      }
-      /**
-       * <code>repeated string builder_args = 13;</code>
-       * @return The count of builderArgs.
-       */
-      public int getBuilderArgsCount() {
-        return builderArgs_.size();
-      }
-      /**
-       * <code>repeated string builder_args = 13;</code>
-       * @param index The index of the element to return.
-       * @return The builderArgs at the given index.
-       */
-      public java.lang.String getBuilderArgs(int index) {
-        return builderArgs_.get(index);
-      }
-      /**
-       * <code>repeated string builder_args = 13;</code>
-       * @param index The index of the value to return.
-       * @return The bytes of the builderArgs at the given index.
-       */
-      public com.google.protobuf.ByteString
-          getBuilderArgsBytes(int index) {
-        return builderArgs_.getByteString(index);
-      }
-      /**
-       * <code>repeated string builder_args = 13;</code>
-       * @param index The index to set the value at.
-       * @param value The builderArgs to set.
-       * @return This builder for chaining.
-       */
-      public Builder setBuilderArgs(
-          int index, java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
-        ensureBuilderArgsIsMutable();
-        builderArgs_.set(index, value);
-        bitField0_ |= 0x00000200;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string builder_args = 13;</code>
-       * @param value The builderArgs to add.
-       * @return This builder for chaining.
-       */
-      public Builder addBuilderArgs(
-          java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
-        ensureBuilderArgsIsMutable();
-        builderArgs_.add(value);
-        bitField0_ |= 0x00000200;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string builder_args = 13;</code>
-       * @param values The builderArgs to add.
-       * @return This builder for chaining.
-       */
-      public Builder addAllBuilderArgs(
-          java.lang.Iterable<java.lang.String> values) {
-        ensureBuilderArgsIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, builderArgs_);
-        bitField0_ |= 0x00000200;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string builder_args = 13;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearBuilderArgs() {
-        builderArgs_ =
-          com.google.protobuf.LazyStringArrayList.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000200);;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string builder_args = 13;</code>
-       * @param value The bytes of the builderArgs to add.
-       * @return This builder for chaining.
-       */
-      public Builder addBuilderArgsBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
-        ensureBuilderArgsIsMutable();
-        builderArgs_.add(value);
-        bitField0_ |= 0x00000200;
-        onChanged();
-        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:bazelbsp.JvmTargetInfo)
@@ -14652,43 +14290,6 @@ public final class BspTargetInfo {
      */
     org.jetbrains.bazel.info.BspTargetInfo.KotlincPluginInfoOrBuilder getKotlincPluginInfosOrBuilder(
         int index);
-
-    /**
-     * <code>string builder_script = 700;</code>
-     * @return The builderScript.
-     */
-    java.lang.String getBuilderScript();
-    /**
-     * <code>string builder_script = 700;</code>
-     * @return The bytes for builderScript.
-     */
-    com.google.protobuf.ByteString
-        getBuilderScriptBytes();
-
-    /**
-     * <code>repeated string builder_args = 800;</code>
-     * @return A list containing the builderArgs.
-     */
-    java.util.List<java.lang.String>
-        getBuilderArgsList();
-    /**
-     * <code>repeated string builder_args = 800;</code>
-     * @return The count of builderArgs.
-     */
-    int getBuilderArgsCount();
-    /**
-     * <code>repeated string builder_args = 800;</code>
-     * @param index The index of the element to return.
-     * @return The builderArgs at the given index.
-     */
-    java.lang.String getBuilderArgs(int index);
-    /**
-     * <code>repeated string builder_args = 800;</code>
-     * @param index The index of the value to return.
-     * @return The bytes of the builderArgs at the given index.
-     */
-    com.google.protobuf.ByteString
-        getBuilderArgsBytes(int index);
   }
   /**
    * Protobuf type {@code bazelbsp.KotlinTargetInfo}
@@ -14720,9 +14321,6 @@ public final class BspTargetInfo {
           com.google.protobuf.LazyStringArrayList.emptyList();
       stdlibs_ = java.util.Collections.emptyList();
       kotlincPluginInfos_ = java.util.Collections.emptyList();
-      builderScript_ = "";
-      builderArgs_ =
-          com.google.protobuf.LazyStringArrayList.emptyList();
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
@@ -14972,82 +14570,6 @@ public final class BspTargetInfo {
       return kotlincPluginInfos_.get(index);
     }
 
-    public static final int BUILDER_SCRIPT_FIELD_NUMBER = 700;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object builderScript_ = "";
-    /**
-     * <code>string builder_script = 700;</code>
-     * @return The builderScript.
-     */
-    @java.lang.Override
-    public java.lang.String getBuilderScript() {
-      java.lang.Object ref = builderScript_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        builderScript_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string builder_script = 700;</code>
-     * @return The bytes for builderScript.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getBuilderScriptBytes() {
-      java.lang.Object ref = builderScript_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        builderScript_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    public static final int BUILDER_ARGS_FIELD_NUMBER = 800;
-    @SuppressWarnings("serial")
-    private com.google.protobuf.LazyStringArrayList builderArgs_ =
-        com.google.protobuf.LazyStringArrayList.emptyList();
-    /**
-     * <code>repeated string builder_args = 800;</code>
-     * @return A list containing the builderArgs.
-     */
-    public com.google.protobuf.ProtocolStringList
-        getBuilderArgsList() {
-      return builderArgs_;
-    }
-    /**
-     * <code>repeated string builder_args = 800;</code>
-     * @return The count of builderArgs.
-     */
-    public int getBuilderArgsCount() {
-      return builderArgs_.size();
-    }
-    /**
-     * <code>repeated string builder_args = 800;</code>
-     * @param index The index of the element to return.
-     * @return The builderArgs at the given index.
-     */
-    public java.lang.String getBuilderArgs(int index) {
-      return builderArgs_.get(index);
-    }
-    /**
-     * <code>repeated string builder_args = 800;</code>
-     * @param index The index of the value to return.
-     * @return The bytes of the builderArgs at the given index.
-     */
-    public com.google.protobuf.ByteString
-        getBuilderArgsBytes(int index) {
-      return builderArgs_.getByteString(index);
-    }
-
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -15079,12 +14601,6 @@ public final class BspTargetInfo {
       }
       for (int i = 0; i < kotlincPluginInfos_.size(); i++) {
         output.writeMessage(600, kotlincPluginInfos_.get(i));
-      }
-      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(builderScript_)) {
-        com.google.protobuf.GeneratedMessage.writeString(output, 700, builderScript_);
-      }
-      for (int i = 0; i < builderArgs_.size(); i++) {
-        com.google.protobuf.GeneratedMessage.writeString(output, 800, builderArgs_.getRaw(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -15125,17 +14641,6 @@ public final class BspTargetInfo {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(600, kotlincPluginInfos_.get(i));
       }
-      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(builderScript_)) {
-        size += com.google.protobuf.GeneratedMessage.computeStringSize(700, builderScript_);
-      }
-      {
-        int dataSize = 0;
-        for (int i = 0; i < builderArgs_.size(); i++) {
-          dataSize += computeStringSizeNoTag(builderArgs_.getRaw(i));
-        }
-        size += dataSize;
-        size += 2 * getBuilderArgsList().size();
-      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -15163,10 +14668,6 @@ public final class BspTargetInfo {
           .equals(other.getStdlibsList())) return false;
       if (!getKotlincPluginInfosList()
           .equals(other.getKotlincPluginInfosList())) return false;
-      if (!getBuilderScript()
-          .equals(other.getBuilderScript())) return false;
-      if (!getBuilderArgsList()
-          .equals(other.getBuilderArgsList())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -15197,12 +14698,6 @@ public final class BspTargetInfo {
       if (getKotlincPluginInfosCount() > 0) {
         hash = (37 * hash) + KOTLINC_PLUGIN_INFOS_FIELD_NUMBER;
         hash = (53 * hash) + getKotlincPluginInfosList().hashCode();
-      }
-      hash = (37 * hash) + BUILDER_SCRIPT_FIELD_NUMBER;
-      hash = (53 * hash) + getBuilderScript().hashCode();
-      if (getBuilderArgsCount() > 0) {
-        hash = (37 * hash) + BUILDER_ARGS_FIELD_NUMBER;
-        hash = (53 * hash) + getBuilderArgsList().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -15355,9 +14850,6 @@ public final class BspTargetInfo {
           kotlincPluginInfosBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000020);
-        builderScript_ = "";
-        builderArgs_ =
-            com.google.protobuf.LazyStringArrayList.emptyList();
         return this;
       }
 
@@ -15426,13 +14918,6 @@ public final class BspTargetInfo {
         if (((from_bitField0_ & 0x00000008) != 0)) {
           kotlincOpts_.makeImmutable();
           result.kotlincOpts_ = kotlincOpts_;
-        }
-        if (((from_bitField0_ & 0x00000040) != 0)) {
-          result.builderScript_ = builderScript_;
-        }
-        if (((from_bitField0_ & 0x00000080) != 0)) {
-          builderArgs_.makeImmutable();
-          result.builderArgs_ = builderArgs_;
         }
       }
 
@@ -15530,21 +15015,6 @@ public final class BspTargetInfo {
             }
           }
         }
-        if (!other.getBuilderScript().isEmpty()) {
-          builderScript_ = other.builderScript_;
-          bitField0_ |= 0x00000040;
-          onChanged();
-        }
-        if (!other.builderArgs_.isEmpty()) {
-          if (builderArgs_.isEmpty()) {
-            builderArgs_ = other.builderArgs_;
-            bitField0_ |= 0x00000080;
-          } else {
-            ensureBuilderArgsIsMutable();
-            builderArgs_.addAll(other.builderArgs_);
-          }
-          onChanged();
-        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -15619,17 +15089,6 @@ public final class BspTargetInfo {
                 }
                 break;
               } // case 4802
-              case 5602: {
-                builderScript_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000040;
-                break;
-              } // case 5602
-              case 6402: {
-                java.lang.String s = input.readStringRequireUtf8();
-                ensureBuilderArgsIsMutable();
-                builderArgs_.add(s);
-                break;
-              } // case 6402
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -16491,189 +15950,6 @@ public final class BspTargetInfo {
           kotlincPluginInfos_ = null;
         }
         return kotlincPluginInfosBuilder_;
-      }
-
-      private java.lang.Object builderScript_ = "";
-      /**
-       * <code>string builder_script = 700;</code>
-       * @return The builderScript.
-       */
-      public java.lang.String getBuilderScript() {
-        java.lang.Object ref = builderScript_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          builderScript_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>string builder_script = 700;</code>
-       * @return The bytes for builderScript.
-       */
-      public com.google.protobuf.ByteString
-          getBuilderScriptBytes() {
-        java.lang.Object ref = builderScript_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          builderScript_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string builder_script = 700;</code>
-       * @param value The builderScript to set.
-       * @return This builder for chaining.
-       */
-      public Builder setBuilderScript(
-          java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
-        builderScript_ = value;
-        bitField0_ |= 0x00000040;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string builder_script = 700;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearBuilderScript() {
-        builderScript_ = getDefaultInstance().getBuilderScript();
-        bitField0_ = (bitField0_ & ~0x00000040);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string builder_script = 700;</code>
-       * @param value The bytes for builderScript to set.
-       * @return This builder for chaining.
-       */
-      public Builder setBuilderScriptBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
-        builderScript_ = value;
-        bitField0_ |= 0x00000040;
-        onChanged();
-        return this;
-      }
-
-      private com.google.protobuf.LazyStringArrayList builderArgs_ =
-          com.google.protobuf.LazyStringArrayList.emptyList();
-      private void ensureBuilderArgsIsMutable() {
-        if (!builderArgs_.isModifiable()) {
-          builderArgs_ = new com.google.protobuf.LazyStringArrayList(builderArgs_);
-        }
-        bitField0_ |= 0x00000080;
-      }
-      /**
-       * <code>repeated string builder_args = 800;</code>
-       * @return A list containing the builderArgs.
-       */
-      public com.google.protobuf.ProtocolStringList
-          getBuilderArgsList() {
-        builderArgs_.makeImmutable();
-        return builderArgs_;
-      }
-      /**
-       * <code>repeated string builder_args = 800;</code>
-       * @return The count of builderArgs.
-       */
-      public int getBuilderArgsCount() {
-        return builderArgs_.size();
-      }
-      /**
-       * <code>repeated string builder_args = 800;</code>
-       * @param index The index of the element to return.
-       * @return The builderArgs at the given index.
-       */
-      public java.lang.String getBuilderArgs(int index) {
-        return builderArgs_.get(index);
-      }
-      /**
-       * <code>repeated string builder_args = 800;</code>
-       * @param index The index of the value to return.
-       * @return The bytes of the builderArgs at the given index.
-       */
-      public com.google.protobuf.ByteString
-          getBuilderArgsBytes(int index) {
-        return builderArgs_.getByteString(index);
-      }
-      /**
-       * <code>repeated string builder_args = 800;</code>
-       * @param index The index to set the value at.
-       * @param value The builderArgs to set.
-       * @return This builder for chaining.
-       */
-      public Builder setBuilderArgs(
-          int index, java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
-        ensureBuilderArgsIsMutable();
-        builderArgs_.set(index, value);
-        bitField0_ |= 0x00000080;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string builder_args = 800;</code>
-       * @param value The builderArgs to add.
-       * @return This builder for chaining.
-       */
-      public Builder addBuilderArgs(
-          java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
-        ensureBuilderArgsIsMutable();
-        builderArgs_.add(value);
-        bitField0_ |= 0x00000080;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string builder_args = 800;</code>
-       * @param values The builderArgs to add.
-       * @return This builder for chaining.
-       */
-      public Builder addAllBuilderArgs(
-          java.lang.Iterable<java.lang.String> values) {
-        ensureBuilderArgsIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, builderArgs_);
-        bitField0_ |= 0x00000080;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string builder_args = 800;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearBuilderArgs() {
-        builderArgs_ =
-          com.google.protobuf.LazyStringArrayList.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000080);;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string builder_args = 800;</code>
-       * @param value The bytes of the builderArgs to add.
-       * @return This builder for chaining.
-       */
-      public Builder addBuilderArgsBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
-        ensureBuilderArgsIsMutable();
-        builderArgs_.add(value);
-        bitField0_ |= 0x00000080;
-        onChanged();
-        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:bazelbsp.KotlinTargetInfo)
@@ -22687,6 +21963,18 @@ java.lang.String defaultValue);
     boolean getExecutable();
 
     /**
+     * <code>string workspace_name = 100;</code>
+     * @return The workspaceName.
+     */
+    java.lang.String getWorkspaceName();
+    /**
+     * <code>string workspace_name = 100;</code>
+     * @return The bytes for workspaceName.
+     */
+    com.google.protobuf.ByteString
+        getWorkspaceNameBytes();
+
+    /**
      * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
      * @return Whether the jvmTargetInfo field is set.
      */
@@ -22883,6 +22171,7 @@ java.lang.String defaultValue);
       resources_ = java.util.Collections.emptyList();
       envInherit_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
+      workspaceName_ = "";
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
@@ -23317,6 +22606,45 @@ java.lang.String defaultValue) {
       return executable_;
     }
 
+    public static final int WORKSPACE_NAME_FIELD_NUMBER = 100;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object workspaceName_ = "";
+    /**
+     * <code>string workspace_name = 100;</code>
+     * @return The workspaceName.
+     */
+    @java.lang.Override
+    public java.lang.String getWorkspaceName() {
+      java.lang.Object ref = workspaceName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        workspaceName_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string workspace_name = 100;</code>
+     * @return The bytes for workspaceName.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getWorkspaceNameBytes() {
+      java.lang.Object ref = workspaceName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        workspaceName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     public static final int JVM_TARGET_INFO_FIELD_NUMBER = 1000;
     private org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo jvmTargetInfo_;
     /**
@@ -23650,6 +22978,9 @@ java.lang.String defaultValue) {
       if (executable_ != false) {
         output.writeBool(90, executable_);
       }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(workspaceName_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 100, workspaceName_);
+      }
       if (((bitField0_ & 0x00000001) != 0)) {
         output.writeMessage(1000, getJvmTargetInfo());
       }
@@ -23744,6 +23075,9 @@ java.lang.String defaultValue) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(90, executable_);
       }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(workspaceName_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(100, workspaceName_);
+      }
       if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1000, getJvmTargetInfo());
@@ -23823,6 +23157,8 @@ java.lang.String defaultValue) {
           .equals(other.getEnvInheritList())) return false;
       if (getExecutable()
           != other.getExecutable()) return false;
+      if (!getWorkspaceName()
+          .equals(other.getWorkspaceName())) return false;
       if (hasJvmTargetInfo() != other.hasJvmTargetInfo()) return false;
       if (hasJvmTargetInfo()) {
         if (!getJvmTargetInfo()
@@ -23924,6 +23260,8 @@ java.lang.String defaultValue) {
       hash = (37 * hash) + EXECUTABLE_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getExecutable());
+      hash = (37 * hash) + WORKSPACE_NAME_FIELD_NUMBER;
+      hash = (53 * hash) + getWorkspaceName().hashCode();
       if (hasJvmTargetInfo()) {
         hash = (37 * hash) + JVM_TARGET_INFO_FIELD_NUMBER;
         hash = (53 * hash) + getJvmTargetInfo().hashCode();
@@ -24177,6 +23515,7 @@ java.lang.String defaultValue) {
         envInherit_ =
             com.google.protobuf.LazyStringArrayList.emptyList();
         executable_ = false;
+        workspaceName_ = "";
         jvmTargetInfo_ = null;
         if (jvmTargetInfoBuilder_ != null) {
           jvmTargetInfoBuilder_.dispose();
@@ -24326,68 +23665,71 @@ java.lang.String defaultValue) {
         if (((from_bitField0_ & 0x00000200) != 0)) {
           result.executable_ = executable_;
         }
-        int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000400) != 0)) {
+          result.workspaceName_ = workspaceName_;
+        }
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000800) != 0)) {
           result.jvmTargetInfo_ = jvmTargetInfoBuilder_ == null
               ? jvmTargetInfo_
               : jvmTargetInfoBuilder_.build();
           to_bitField0_ |= 0x00000001;
         }
-        if (((from_bitField0_ & 0x00000800) != 0)) {
+        if (((from_bitField0_ & 0x00001000) != 0)) {
           result.javaToolchainInfo_ = javaToolchainInfoBuilder_ == null
               ? javaToolchainInfo_
               : javaToolchainInfoBuilder_.build();
           to_bitField0_ |= 0x00000002;
         }
-        if (((from_bitField0_ & 0x00001000) != 0)) {
+        if (((from_bitField0_ & 0x00002000) != 0)) {
           result.javaRuntimeInfo_ = javaRuntimeInfoBuilder_ == null
               ? javaRuntimeInfo_
               : javaRuntimeInfoBuilder_.build();
           to_bitField0_ |= 0x00000004;
         }
-        if (((from_bitField0_ & 0x00002000) != 0)) {
+        if (((from_bitField0_ & 0x00004000) != 0)) {
           result.scalaTargetInfo_ = scalaTargetInfoBuilder_ == null
               ? scalaTargetInfo_
               : scalaTargetInfoBuilder_.build();
           to_bitField0_ |= 0x00000008;
         }
-        if (((from_bitField0_ & 0x00004000) != 0)) {
+        if (((from_bitField0_ & 0x00008000) != 0)) {
           result.cppTargetInfo_ = cppTargetInfoBuilder_ == null
               ? cppTargetInfo_
               : cppTargetInfoBuilder_.build();
           to_bitField0_ |= 0x00000010;
         }
-        if (((from_bitField0_ & 0x00008000) != 0)) {
+        if (((from_bitField0_ & 0x00010000) != 0)) {
           result.kotlinTargetInfo_ = kotlinTargetInfoBuilder_ == null
               ? kotlinTargetInfo_
               : kotlinTargetInfoBuilder_.build();
           to_bitField0_ |= 0x00000020;
         }
-        if (((from_bitField0_ & 0x00010000) != 0)) {
+        if (((from_bitField0_ & 0x00020000) != 0)) {
           result.pythonTargetInfo_ = pythonTargetInfoBuilder_ == null
               ? pythonTargetInfo_
               : pythonTargetInfoBuilder_.build();
           to_bitField0_ |= 0x00000040;
         }
-        if (((from_bitField0_ & 0x00020000) != 0)) {
+        if (((from_bitField0_ & 0x00040000) != 0)) {
           result.androidTargetInfo_ = androidTargetInfoBuilder_ == null
               ? androidTargetInfo_
               : androidTargetInfoBuilder_.build();
           to_bitField0_ |= 0x00000080;
         }
-        if (((from_bitField0_ & 0x00040000) != 0)) {
+        if (((from_bitField0_ & 0x00080000) != 0)) {
           result.androidAarImportInfo_ = androidAarImportInfoBuilder_ == null
               ? androidAarImportInfo_
               : androidAarImportInfoBuilder_.build();
           to_bitField0_ |= 0x00000100;
         }
-        if (((from_bitField0_ & 0x00080000) != 0)) {
+        if (((from_bitField0_ & 0x00100000) != 0)) {
           result.goTargetInfo_ = goTargetInfoBuilder_ == null
               ? goTargetInfo_
               : goTargetInfoBuilder_.build();
           to_bitField0_ |= 0x00000200;
         }
-        if (((from_bitField0_ & 0x00100000) != 0)) {
+        if (((from_bitField0_ & 0x00200000) != 0)) {
           result.cToolchainInfo_ = cToolchainInfoBuilder_ == null
               ? cToolchainInfo_
               : cToolchainInfoBuilder_.build();
@@ -24548,6 +23890,11 @@ java.lang.String defaultValue) {
         if (other.getExecutable() != false) {
           setExecutable(other.getExecutable());
         }
+        if (!other.getWorkspaceName().isEmpty()) {
+          workspaceName_ = other.workspaceName_;
+          bitField0_ |= 0x00000400;
+          onChanged();
+        }
         if (other.hasJvmTargetInfo()) {
           mergeJvmTargetInfo(other.getJvmTargetInfo());
         }
@@ -24695,81 +24042,86 @@ java.lang.String defaultValue) {
                 bitField0_ |= 0x00000200;
                 break;
               } // case 720
+              case 802: {
+                workspaceName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000400;
+                break;
+              } // case 802
               case 8002: {
                 input.readMessage(
                     getJvmTargetInfoFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00000400;
+                bitField0_ |= 0x00000800;
                 break;
               } // case 8002
               case 16002: {
                 input.readMessage(
                     getJavaToolchainInfoFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00000800;
+                bitField0_ |= 0x00001000;
                 break;
               } // case 16002
               case 24002: {
                 input.readMessage(
                     getJavaRuntimeInfoFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00001000;
+                bitField0_ |= 0x00002000;
                 break;
               } // case 24002
               case 32002: {
                 input.readMessage(
                     getScalaTargetInfoFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00002000;
+                bitField0_ |= 0x00004000;
                 break;
               } // case 32002
               case 48002: {
                 input.readMessage(
                     getCppTargetInfoFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00004000;
+                bitField0_ |= 0x00008000;
                 break;
               } // case 48002
               case 56002: {
                 input.readMessage(
                     getKotlinTargetInfoFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00008000;
+                bitField0_ |= 0x00010000;
                 break;
               } // case 56002
               case 64002: {
                 input.readMessage(
                     getPythonTargetInfoFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00010000;
+                bitField0_ |= 0x00020000;
                 break;
               } // case 64002
               case 80002: {
                 input.readMessage(
                     getAndroidTargetInfoFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00020000;
+                bitField0_ |= 0x00040000;
                 break;
               } // case 80002
               case 88002: {
                 input.readMessage(
                     getAndroidAarImportInfoFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00040000;
+                bitField0_ |= 0x00080000;
                 break;
               } // case 88002
               case 96002: {
                 input.readMessage(
                     getGoTargetInfoFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00080000;
+                bitField0_ |= 0x00100000;
                 break;
               } // case 96002
               case 104002: {
                 input.readMessage(
                     getCToolchainInfoFieldBuilder().getBuilder(),
                     extensionRegistry);
-                bitField0_ |= 0x00100000;
+                bitField0_ |= 0x00200000;
                 break;
               } // case 104002
               default: {
@@ -26274,6 +25626,78 @@ java.lang.String defaultValue) {
         return this;
       }
 
+      private java.lang.Object workspaceName_ = "";
+      /**
+       * <code>string workspace_name = 100;</code>
+       * @return The workspaceName.
+       */
+      public java.lang.String getWorkspaceName() {
+        java.lang.Object ref = workspaceName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          workspaceName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string workspace_name = 100;</code>
+       * @return The bytes for workspaceName.
+       */
+      public com.google.protobuf.ByteString
+          getWorkspaceNameBytes() {
+        java.lang.Object ref = workspaceName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          workspaceName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string workspace_name = 100;</code>
+       * @param value The workspaceName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setWorkspaceName(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        workspaceName_ = value;
+        bitField0_ |= 0x00000400;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string workspace_name = 100;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearWorkspaceName() {
+        workspaceName_ = getDefaultInstance().getWorkspaceName();
+        bitField0_ = (bitField0_ & ~0x00000400);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string workspace_name = 100;</code>
+       * @param value The bytes for workspaceName to set.
+       * @return This builder for chaining.
+       */
+      public Builder setWorkspaceNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        workspaceName_ = value;
+        bitField0_ |= 0x00000400;
+        onChanged();
+        return this;
+      }
+
       private org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo jvmTargetInfo_;
       private com.google.protobuf.SingleFieldBuilder<
           org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo, org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.Builder, org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfoOrBuilder> jvmTargetInfoBuilder_;
@@ -26282,7 +25706,7 @@ java.lang.String defaultValue) {
        * @return Whether the jvmTargetInfo field is set.
        */
       public boolean hasJvmTargetInfo() {
-        return ((bitField0_ & 0x00000400) != 0);
+        return ((bitField0_ & 0x00000800) != 0);
       }
       /**
        * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
@@ -26307,7 +25731,7 @@ java.lang.String defaultValue) {
         } else {
           jvmTargetInfoBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000400;
+        bitField0_ |= 0x00000800;
         onChanged();
         return this;
       }
@@ -26321,7 +25745,7 @@ java.lang.String defaultValue) {
         } else {
           jvmTargetInfoBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000400;
+        bitField0_ |= 0x00000800;
         onChanged();
         return this;
       }
@@ -26330,7 +25754,7 @@ java.lang.String defaultValue) {
        */
       public Builder mergeJvmTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo value) {
         if (jvmTargetInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00000400) != 0) &&
+          if (((bitField0_ & 0x00000800) != 0) &&
             jvmTargetInfo_ != null &&
             jvmTargetInfo_ != org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.getDefaultInstance()) {
             getJvmTargetInfoBuilder().mergeFrom(value);
@@ -26341,7 +25765,7 @@ java.lang.String defaultValue) {
           jvmTargetInfoBuilder_.mergeFrom(value);
         }
         if (jvmTargetInfo_ != null) {
-          bitField0_ |= 0x00000400;
+          bitField0_ |= 0x00000800;
           onChanged();
         }
         return this;
@@ -26350,7 +25774,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
        */
       public Builder clearJvmTargetInfo() {
-        bitField0_ = (bitField0_ & ~0x00000400);
+        bitField0_ = (bitField0_ & ~0x00000800);
         jvmTargetInfo_ = null;
         if (jvmTargetInfoBuilder_ != null) {
           jvmTargetInfoBuilder_.dispose();
@@ -26363,7 +25787,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.JvmTargetInfo jvm_target_info = 1000;</code>
        */
       public org.jetbrains.bazel.info.BspTargetInfo.JvmTargetInfo.Builder getJvmTargetInfoBuilder() {
-        bitField0_ |= 0x00000400;
+        bitField0_ |= 0x00000800;
         onChanged();
         return getJvmTargetInfoFieldBuilder().getBuilder();
       }
@@ -26403,7 +25827,7 @@ java.lang.String defaultValue) {
        * @return Whether the javaToolchainInfo field is set.
        */
       public boolean hasJavaToolchainInfo() {
-        return ((bitField0_ & 0x00000800) != 0);
+        return ((bitField0_ & 0x00001000) != 0);
       }
       /**
        * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
@@ -26428,7 +25852,7 @@ java.lang.String defaultValue) {
         } else {
           javaToolchainInfoBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00001000;
         onChanged();
         return this;
       }
@@ -26442,7 +25866,7 @@ java.lang.String defaultValue) {
         } else {
           javaToolchainInfoBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00001000;
         onChanged();
         return this;
       }
@@ -26451,7 +25875,7 @@ java.lang.String defaultValue) {
        */
       public Builder mergeJavaToolchainInfo(org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo value) {
         if (javaToolchainInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00000800) != 0) &&
+          if (((bitField0_ & 0x00001000) != 0) &&
             javaToolchainInfo_ != null &&
             javaToolchainInfo_ != org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.getDefaultInstance()) {
             getJavaToolchainInfoBuilder().mergeFrom(value);
@@ -26462,7 +25886,7 @@ java.lang.String defaultValue) {
           javaToolchainInfoBuilder_.mergeFrom(value);
         }
         if (javaToolchainInfo_ != null) {
-          bitField0_ |= 0x00000800;
+          bitField0_ |= 0x00001000;
           onChanged();
         }
         return this;
@@ -26471,7 +25895,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
        */
       public Builder clearJavaToolchainInfo() {
-        bitField0_ = (bitField0_ & ~0x00000800);
+        bitField0_ = (bitField0_ & ~0x00001000);
         javaToolchainInfo_ = null;
         if (javaToolchainInfoBuilder_ != null) {
           javaToolchainInfoBuilder_.dispose();
@@ -26484,7 +25908,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.JavaToolchainInfo java_toolchain_info = 2000;</code>
        */
       public org.jetbrains.bazel.info.BspTargetInfo.JavaToolchainInfo.Builder getJavaToolchainInfoBuilder() {
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00001000;
         onChanged();
         return getJavaToolchainInfoFieldBuilder().getBuilder();
       }
@@ -26524,7 +25948,7 @@ java.lang.String defaultValue) {
        * @return Whether the javaRuntimeInfo field is set.
        */
       public boolean hasJavaRuntimeInfo() {
-        return ((bitField0_ & 0x00001000) != 0);
+        return ((bitField0_ & 0x00002000) != 0);
       }
       /**
        * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
@@ -26549,7 +25973,7 @@ java.lang.String defaultValue) {
         } else {
           javaRuntimeInfoBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00001000;
+        bitField0_ |= 0x00002000;
         onChanged();
         return this;
       }
@@ -26563,7 +25987,7 @@ java.lang.String defaultValue) {
         } else {
           javaRuntimeInfoBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00001000;
+        bitField0_ |= 0x00002000;
         onChanged();
         return this;
       }
@@ -26572,7 +25996,7 @@ java.lang.String defaultValue) {
        */
       public Builder mergeJavaRuntimeInfo(org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo value) {
         if (javaRuntimeInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00001000) != 0) &&
+          if (((bitField0_ & 0x00002000) != 0) &&
             javaRuntimeInfo_ != null &&
             javaRuntimeInfo_ != org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.getDefaultInstance()) {
             getJavaRuntimeInfoBuilder().mergeFrom(value);
@@ -26583,7 +26007,7 @@ java.lang.String defaultValue) {
           javaRuntimeInfoBuilder_.mergeFrom(value);
         }
         if (javaRuntimeInfo_ != null) {
-          bitField0_ |= 0x00001000;
+          bitField0_ |= 0x00002000;
           onChanged();
         }
         return this;
@@ -26592,7 +26016,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
        */
       public Builder clearJavaRuntimeInfo() {
-        bitField0_ = (bitField0_ & ~0x00001000);
+        bitField0_ = (bitField0_ & ~0x00002000);
         javaRuntimeInfo_ = null;
         if (javaRuntimeInfoBuilder_ != null) {
           javaRuntimeInfoBuilder_.dispose();
@@ -26605,7 +26029,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.JavaRuntimeInfo java_runtime_info = 3000;</code>
        */
       public org.jetbrains.bazel.info.BspTargetInfo.JavaRuntimeInfo.Builder getJavaRuntimeInfoBuilder() {
-        bitField0_ |= 0x00001000;
+        bitField0_ |= 0x00002000;
         onChanged();
         return getJavaRuntimeInfoFieldBuilder().getBuilder();
       }
@@ -26645,7 +26069,7 @@ java.lang.String defaultValue) {
        * @return Whether the scalaTargetInfo field is set.
        */
       public boolean hasScalaTargetInfo() {
-        return ((bitField0_ & 0x00002000) != 0);
+        return ((bitField0_ & 0x00004000) != 0);
       }
       /**
        * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
@@ -26670,7 +26094,7 @@ java.lang.String defaultValue) {
         } else {
           scalaTargetInfoBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00002000;
+        bitField0_ |= 0x00004000;
         onChanged();
         return this;
       }
@@ -26684,7 +26108,7 @@ java.lang.String defaultValue) {
         } else {
           scalaTargetInfoBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00002000;
+        bitField0_ |= 0x00004000;
         onChanged();
         return this;
       }
@@ -26693,7 +26117,7 @@ java.lang.String defaultValue) {
        */
       public Builder mergeScalaTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo value) {
         if (scalaTargetInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00002000) != 0) &&
+          if (((bitField0_ & 0x00004000) != 0) &&
             scalaTargetInfo_ != null &&
             scalaTargetInfo_ != org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.getDefaultInstance()) {
             getScalaTargetInfoBuilder().mergeFrom(value);
@@ -26704,7 +26128,7 @@ java.lang.String defaultValue) {
           scalaTargetInfoBuilder_.mergeFrom(value);
         }
         if (scalaTargetInfo_ != null) {
-          bitField0_ |= 0x00002000;
+          bitField0_ |= 0x00004000;
           onChanged();
         }
         return this;
@@ -26713,7 +26137,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
        */
       public Builder clearScalaTargetInfo() {
-        bitField0_ = (bitField0_ & ~0x00002000);
+        bitField0_ = (bitField0_ & ~0x00004000);
         scalaTargetInfo_ = null;
         if (scalaTargetInfoBuilder_ != null) {
           scalaTargetInfoBuilder_.dispose();
@@ -26726,7 +26150,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.ScalaTargetInfo scala_target_info = 4000;</code>
        */
       public org.jetbrains.bazel.info.BspTargetInfo.ScalaTargetInfo.Builder getScalaTargetInfoBuilder() {
-        bitField0_ |= 0x00002000;
+        bitField0_ |= 0x00004000;
         onChanged();
         return getScalaTargetInfoFieldBuilder().getBuilder();
       }
@@ -26766,7 +26190,7 @@ java.lang.String defaultValue) {
        * @return Whether the cppTargetInfo field is set.
        */
       public boolean hasCppTargetInfo() {
-        return ((bitField0_ & 0x00004000) != 0);
+        return ((bitField0_ & 0x00008000) != 0);
       }
       /**
        * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
@@ -26791,7 +26215,7 @@ java.lang.String defaultValue) {
         } else {
           cppTargetInfoBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00004000;
+        bitField0_ |= 0x00008000;
         onChanged();
         return this;
       }
@@ -26805,7 +26229,7 @@ java.lang.String defaultValue) {
         } else {
           cppTargetInfoBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00004000;
+        bitField0_ |= 0x00008000;
         onChanged();
         return this;
       }
@@ -26814,7 +26238,7 @@ java.lang.String defaultValue) {
        */
       public Builder mergeCppTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo value) {
         if (cppTargetInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00004000) != 0) &&
+          if (((bitField0_ & 0x00008000) != 0) &&
             cppTargetInfo_ != null &&
             cppTargetInfo_ != org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.getDefaultInstance()) {
             getCppTargetInfoBuilder().mergeFrom(value);
@@ -26825,7 +26249,7 @@ java.lang.String defaultValue) {
           cppTargetInfoBuilder_.mergeFrom(value);
         }
         if (cppTargetInfo_ != null) {
-          bitField0_ |= 0x00004000;
+          bitField0_ |= 0x00008000;
           onChanged();
         }
         return this;
@@ -26834,7 +26258,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
        */
       public Builder clearCppTargetInfo() {
-        bitField0_ = (bitField0_ & ~0x00004000);
+        bitField0_ = (bitField0_ & ~0x00008000);
         cppTargetInfo_ = null;
         if (cppTargetInfoBuilder_ != null) {
           cppTargetInfoBuilder_.dispose();
@@ -26847,7 +26271,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.CppTargetInfo cpp_target_info = 6000;</code>
        */
       public org.jetbrains.bazel.info.BspTargetInfo.CppTargetInfo.Builder getCppTargetInfoBuilder() {
-        bitField0_ |= 0x00004000;
+        bitField0_ |= 0x00008000;
         onChanged();
         return getCppTargetInfoFieldBuilder().getBuilder();
       }
@@ -26887,7 +26311,7 @@ java.lang.String defaultValue) {
        * @return Whether the kotlinTargetInfo field is set.
        */
       public boolean hasKotlinTargetInfo() {
-        return ((bitField0_ & 0x00008000) != 0);
+        return ((bitField0_ & 0x00010000) != 0);
       }
       /**
        * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
@@ -26912,7 +26336,7 @@ java.lang.String defaultValue) {
         } else {
           kotlinTargetInfoBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00008000;
+        bitField0_ |= 0x00010000;
         onChanged();
         return this;
       }
@@ -26926,7 +26350,7 @@ java.lang.String defaultValue) {
         } else {
           kotlinTargetInfoBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00008000;
+        bitField0_ |= 0x00010000;
         onChanged();
         return this;
       }
@@ -26935,7 +26359,7 @@ java.lang.String defaultValue) {
        */
       public Builder mergeKotlinTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo value) {
         if (kotlinTargetInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00008000) != 0) &&
+          if (((bitField0_ & 0x00010000) != 0) &&
             kotlinTargetInfo_ != null &&
             kotlinTargetInfo_ != org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.getDefaultInstance()) {
             getKotlinTargetInfoBuilder().mergeFrom(value);
@@ -26946,7 +26370,7 @@ java.lang.String defaultValue) {
           kotlinTargetInfoBuilder_.mergeFrom(value);
         }
         if (kotlinTargetInfo_ != null) {
-          bitField0_ |= 0x00008000;
+          bitField0_ |= 0x00010000;
           onChanged();
         }
         return this;
@@ -26955,7 +26379,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
        */
       public Builder clearKotlinTargetInfo() {
-        bitField0_ = (bitField0_ & ~0x00008000);
+        bitField0_ = (bitField0_ & ~0x00010000);
         kotlinTargetInfo_ = null;
         if (kotlinTargetInfoBuilder_ != null) {
           kotlinTargetInfoBuilder_.dispose();
@@ -26968,7 +26392,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.KotlinTargetInfo kotlin_target_info = 7000;</code>
        */
       public org.jetbrains.bazel.info.BspTargetInfo.KotlinTargetInfo.Builder getKotlinTargetInfoBuilder() {
-        bitField0_ |= 0x00008000;
+        bitField0_ |= 0x00010000;
         onChanged();
         return getKotlinTargetInfoFieldBuilder().getBuilder();
       }
@@ -27008,7 +26432,7 @@ java.lang.String defaultValue) {
        * @return Whether the pythonTargetInfo field is set.
        */
       public boolean hasPythonTargetInfo() {
-        return ((bitField0_ & 0x00010000) != 0);
+        return ((bitField0_ & 0x00020000) != 0);
       }
       /**
        * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
@@ -27033,7 +26457,7 @@ java.lang.String defaultValue) {
         } else {
           pythonTargetInfoBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00010000;
+        bitField0_ |= 0x00020000;
         onChanged();
         return this;
       }
@@ -27047,7 +26471,7 @@ java.lang.String defaultValue) {
         } else {
           pythonTargetInfoBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00010000;
+        bitField0_ |= 0x00020000;
         onChanged();
         return this;
       }
@@ -27056,7 +26480,7 @@ java.lang.String defaultValue) {
        */
       public Builder mergePythonTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo value) {
         if (pythonTargetInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00010000) != 0) &&
+          if (((bitField0_ & 0x00020000) != 0) &&
             pythonTargetInfo_ != null &&
             pythonTargetInfo_ != org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.getDefaultInstance()) {
             getPythonTargetInfoBuilder().mergeFrom(value);
@@ -27067,7 +26491,7 @@ java.lang.String defaultValue) {
           pythonTargetInfoBuilder_.mergeFrom(value);
         }
         if (pythonTargetInfo_ != null) {
-          bitField0_ |= 0x00010000;
+          bitField0_ |= 0x00020000;
           onChanged();
         }
         return this;
@@ -27076,7 +26500,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
        */
       public Builder clearPythonTargetInfo() {
-        bitField0_ = (bitField0_ & ~0x00010000);
+        bitField0_ = (bitField0_ & ~0x00020000);
         pythonTargetInfo_ = null;
         if (pythonTargetInfoBuilder_ != null) {
           pythonTargetInfoBuilder_.dispose();
@@ -27089,7 +26513,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.PythonTargetInfo python_target_info = 8000;</code>
        */
       public org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo.Builder getPythonTargetInfoBuilder() {
-        bitField0_ |= 0x00010000;
+        bitField0_ |= 0x00020000;
         onChanged();
         return getPythonTargetInfoFieldBuilder().getBuilder();
       }
@@ -27129,7 +26553,7 @@ java.lang.String defaultValue) {
        * @return Whether the androidTargetInfo field is set.
        */
       public boolean hasAndroidTargetInfo() {
-        return ((bitField0_ & 0x00020000) != 0);
+        return ((bitField0_ & 0x00040000) != 0);
       }
       /**
        * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
@@ -27154,7 +26578,7 @@ java.lang.String defaultValue) {
         } else {
           androidTargetInfoBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00020000;
+        bitField0_ |= 0x00040000;
         onChanged();
         return this;
       }
@@ -27168,7 +26592,7 @@ java.lang.String defaultValue) {
         } else {
           androidTargetInfoBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00020000;
+        bitField0_ |= 0x00040000;
         onChanged();
         return this;
       }
@@ -27177,7 +26601,7 @@ java.lang.String defaultValue) {
        */
       public Builder mergeAndroidTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo value) {
         if (androidTargetInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00020000) != 0) &&
+          if (((bitField0_ & 0x00040000) != 0) &&
             androidTargetInfo_ != null &&
             androidTargetInfo_ != org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.getDefaultInstance()) {
             getAndroidTargetInfoBuilder().mergeFrom(value);
@@ -27188,7 +26612,7 @@ java.lang.String defaultValue) {
           androidTargetInfoBuilder_.mergeFrom(value);
         }
         if (androidTargetInfo_ != null) {
-          bitField0_ |= 0x00020000;
+          bitField0_ |= 0x00040000;
           onChanged();
         }
         return this;
@@ -27197,7 +26621,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
        */
       public Builder clearAndroidTargetInfo() {
-        bitField0_ = (bitField0_ & ~0x00020000);
+        bitField0_ = (bitField0_ & ~0x00040000);
         androidTargetInfo_ = null;
         if (androidTargetInfoBuilder_ != null) {
           androidTargetInfoBuilder_.dispose();
@@ -27210,7 +26634,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.AndroidTargetInfo android_target_info = 10000;</code>
        */
       public org.jetbrains.bazel.info.BspTargetInfo.AndroidTargetInfo.Builder getAndroidTargetInfoBuilder() {
-        bitField0_ |= 0x00020000;
+        bitField0_ |= 0x00040000;
         onChanged();
         return getAndroidTargetInfoFieldBuilder().getBuilder();
       }
@@ -27250,7 +26674,7 @@ java.lang.String defaultValue) {
        * @return Whether the androidAarImportInfo field is set.
        */
       public boolean hasAndroidAarImportInfo() {
-        return ((bitField0_ & 0x00040000) != 0);
+        return ((bitField0_ & 0x00080000) != 0);
       }
       /**
        * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
@@ -27275,7 +26699,7 @@ java.lang.String defaultValue) {
         } else {
           androidAarImportInfoBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00040000;
+        bitField0_ |= 0x00080000;
         onChanged();
         return this;
       }
@@ -27289,7 +26713,7 @@ java.lang.String defaultValue) {
         } else {
           androidAarImportInfoBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00040000;
+        bitField0_ |= 0x00080000;
         onChanged();
         return this;
       }
@@ -27298,7 +26722,7 @@ java.lang.String defaultValue) {
        */
       public Builder mergeAndroidAarImportInfo(org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo value) {
         if (androidAarImportInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00040000) != 0) &&
+          if (((bitField0_ & 0x00080000) != 0) &&
             androidAarImportInfo_ != null &&
             androidAarImportInfo_ != org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.getDefaultInstance()) {
             getAndroidAarImportInfoBuilder().mergeFrom(value);
@@ -27309,7 +26733,7 @@ java.lang.String defaultValue) {
           androidAarImportInfoBuilder_.mergeFrom(value);
         }
         if (androidAarImportInfo_ != null) {
-          bitField0_ |= 0x00040000;
+          bitField0_ |= 0x00080000;
           onChanged();
         }
         return this;
@@ -27318,7 +26742,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
        */
       public Builder clearAndroidAarImportInfo() {
-        bitField0_ = (bitField0_ & ~0x00040000);
+        bitField0_ = (bitField0_ & ~0x00080000);
         androidAarImportInfo_ = null;
         if (androidAarImportInfoBuilder_ != null) {
           androidAarImportInfoBuilder_.dispose();
@@ -27331,7 +26755,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.AndroidAarImportInfo android_aar_import_info = 11000;</code>
        */
       public org.jetbrains.bazel.info.BspTargetInfo.AndroidAarImportInfo.Builder getAndroidAarImportInfoBuilder() {
-        bitField0_ |= 0x00040000;
+        bitField0_ |= 0x00080000;
         onChanged();
         return getAndroidAarImportInfoFieldBuilder().getBuilder();
       }
@@ -27371,7 +26795,7 @@ java.lang.String defaultValue) {
        * @return Whether the goTargetInfo field is set.
        */
       public boolean hasGoTargetInfo() {
-        return ((bitField0_ & 0x00080000) != 0);
+        return ((bitField0_ & 0x00100000) != 0);
       }
       /**
        * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
@@ -27396,7 +26820,7 @@ java.lang.String defaultValue) {
         } else {
           goTargetInfoBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00080000;
+        bitField0_ |= 0x00100000;
         onChanged();
         return this;
       }
@@ -27410,7 +26834,7 @@ java.lang.String defaultValue) {
         } else {
           goTargetInfoBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00080000;
+        bitField0_ |= 0x00100000;
         onChanged();
         return this;
       }
@@ -27419,7 +26843,7 @@ java.lang.String defaultValue) {
        */
       public Builder mergeGoTargetInfo(org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo value) {
         if (goTargetInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00080000) != 0) &&
+          if (((bitField0_ & 0x00100000) != 0) &&
             goTargetInfo_ != null &&
             goTargetInfo_ != org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.getDefaultInstance()) {
             getGoTargetInfoBuilder().mergeFrom(value);
@@ -27430,7 +26854,7 @@ java.lang.String defaultValue) {
           goTargetInfoBuilder_.mergeFrom(value);
         }
         if (goTargetInfo_ != null) {
-          bitField0_ |= 0x00080000;
+          bitField0_ |= 0x00100000;
           onChanged();
         }
         return this;
@@ -27439,7 +26863,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
        */
       public Builder clearGoTargetInfo() {
-        bitField0_ = (bitField0_ & ~0x00080000);
+        bitField0_ = (bitField0_ & ~0x00100000);
         goTargetInfo_ = null;
         if (goTargetInfoBuilder_ != null) {
           goTargetInfoBuilder_.dispose();
@@ -27452,7 +26876,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.GoTargetInfo go_target_info = 12000;</code>
        */
       public org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.Builder getGoTargetInfoBuilder() {
-        bitField0_ |= 0x00080000;
+        bitField0_ |= 0x00100000;
         onChanged();
         return getGoTargetInfoFieldBuilder().getBuilder();
       }
@@ -27492,7 +26916,7 @@ java.lang.String defaultValue) {
        * @return Whether the cToolchainInfo field is set.
        */
       public boolean hasCToolchainInfo() {
-        return ((bitField0_ & 0x00100000) != 0);
+        return ((bitField0_ & 0x00200000) != 0);
       }
       /**
        * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
@@ -27517,7 +26941,7 @@ java.lang.String defaultValue) {
         } else {
           cToolchainInfoBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00100000;
+        bitField0_ |= 0x00200000;
         onChanged();
         return this;
       }
@@ -27531,7 +26955,7 @@ java.lang.String defaultValue) {
         } else {
           cToolchainInfoBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00100000;
+        bitField0_ |= 0x00200000;
         onChanged();
         return this;
       }
@@ -27540,7 +26964,7 @@ java.lang.String defaultValue) {
        */
       public Builder mergeCToolchainInfo(org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo value) {
         if (cToolchainInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00100000) != 0) &&
+          if (((bitField0_ & 0x00200000) != 0) &&
             cToolchainInfo_ != null &&
             cToolchainInfo_ != org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.getDefaultInstance()) {
             getCToolchainInfoBuilder().mergeFrom(value);
@@ -27551,7 +26975,7 @@ java.lang.String defaultValue) {
           cToolchainInfoBuilder_.mergeFrom(value);
         }
         if (cToolchainInfo_ != null) {
-          bitField0_ |= 0x00100000;
+          bitField0_ |= 0x00200000;
           onChanged();
         }
         return this;
@@ -27560,7 +26984,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
        */
       public Builder clearCToolchainInfo() {
-        bitField0_ = (bitField0_ & ~0x00100000);
+        bitField0_ = (bitField0_ & ~0x00200000);
         cToolchainInfo_ = null;
         if (cToolchainInfoBuilder_ != null) {
           cToolchainInfoBuilder_.dispose();
@@ -27573,7 +26997,7 @@ java.lang.String defaultValue) {
        * <code>.bazelbsp.CToolchainInfo c_toolchain_info = 13000;</code>
        */
       public org.jetbrains.bazel.info.BspTargetInfo.CToolchainInfo.Builder getCToolchainInfoBuilder() {
-        bitField0_ |= 0x00100000;
+        bitField0_ |= 0x00200000;
         onChanged();
         return getCToolchainInfoFieldBuilder().getBuilder();
       }
@@ -27772,96 +27196,94 @@ java.lang.String defaultValue) {
       "utputs\022+\n\013binary_jars\030\001 \003(\0132\026.bazelbsp.F" +
       "ileLocation\022.\n\016interface_jars\030\002 \003(\0132\026.ba" +
       "zelbsp.FileLocation\022+\n\013source_jars\030\003 \003(\013" +
-      "2\026.bazelbsp.FileLocation\"\275\002\n\rJvmTargetIn" +
+      "2\026.bazelbsp.FileLocation\"\217\002\n\rJvmTargetIn" +
       "fo\022\"\n\004jars\030\001 \003(\0132\024.bazelbsp.JvmOutputs\022," +
       "\n\016generated_jars\030\002 \003(\0132\024.bazelbsp.JvmOut" +
       "puts\022\022\n\njavac_opts\030\006 \003(\t\022\021\n\tjvm_flags\030\007 " +
       "\003(\t\022\022\n\nmain_class\030\010 \001(\t\022\014\n\004args\030\t \003(\t\022%\n" +
       "\005jdeps\030\n \003(\0132\026.bazelbsp.FileLocation\022<\n\034" +
       "transitive_compile_time_jars\030\013 \003(\0132\026.baz" +
-      "elbsp.FileLocation\022\026\n\016builder_script\030\014 \001" +
-      "(\t\022\024\n\014builder_args\030\r \003(\t\"n\n\021JavaToolchai" +
-      "nInfo\022\026\n\016source_version\030\001 \001(\t\022\026\n\016target_" +
-      "version\030\002 \001(\t\022)\n\tjava_home\030\003 \001(\0132\026.bazel" +
-      "bsp.FileLocation\"<\n\017JavaRuntimeInfo\022)\n\tj" +
-      "ava_home\030\001 \001(\0132\026.bazelbsp.FileLocation\"\217" +
-      "\001\n\017ScalaTargetInfo\022\023\n\013scalac_opts\030\001 \003(\t\022" +
-      "2\n\022compiler_classpath\030\002 \003(\0132\026.bazelbsp.F" +
-      "ileLocation\0223\n\023scalatest_classpath\030\003 \003(\013" +
-      "2\026.bazelbsp.FileLocation\"\310\002\n\rCppTargetIn" +
-      "fo\022\r\n\005copts\030\001 \003(\t\022\'\n\007headers\030\002 \003(\0132\026.baz" +
-      "elbsp.FileLocation\022/\n\017textual_headers\030\003 " +
-      "\003(\0132\026.bazelbsp.FileLocation\022$\n\034transitiv" +
-      "e_include_directory\030\006 \003(\t\022*\n\"transitive_" +
-      "quote_include_directory\030\007 \003(\t\022\031\n\021transit" +
-      "ive_define\030\010 \003(\t\022+\n#transitive_system_in" +
-      "clude_directory\030\t \003(\t\022\026\n\016include_prefix\030" +
-      "\n \001(\t\022\034\n\024strip_include_prefix\030\013 \001(\t\"\231\001\n\016" +
-      "CToolchainInfo\022\023\n\013target_name\030\001 \001(\t\022\022\n\nc" +
-      "pp_option\030\002 \003(\t\022\020\n\010c_option\030\003 \003(\t\022\022\n\nc_c" +
-      "ompiler\030\004 \001(\t\022\024\n\014cpp_compiler\030\005 \001(\t\022\"\n\032b" +
-      "uilt_in_include_directory\030\006 \003(\t\"?\n\023Kotli" +
-      "ncPluginOption\022\021\n\tplugin_id\030d \001(\t\022\025\n\014opt" +
-      "ion_value\030\310\001 \001(\t\"\200\001\n\021KotlincPluginInfo\022+" +
-      "\n\013plugin_jars\030d \003(\0132\026.bazelbsp.FileLocat" +
-      "ion\022>\n\026kotlinc_plugin_options\030\310\001 \003(\0132\035.b" +
-      "azelbsp.KotlincPluginOption\"\204\002\n\020KotlinTa" +
-      "rgetInfo\022\030\n\020language_version\030d \001(\t\022\024\n\013ap" +
-      "i_version\030\310\001 \001(\t\022\023\n\nassociates\030\254\002 \003(\t\022\025\n" +
-      "\014kotlinc_opts\030\220\003 \003(\t\022(\n\007stdlibs\030\364\003 \003(\0132\026" +
-      ".bazelbsp.FileLocation\022:\n\024kotlinc_plugin" +
-      "_infos\030\330\004 \003(\0132\033.bazelbsp.KotlincPluginIn" +
-      "fo\022\027\n\016builder_script\030\274\005 \001(\t\022\025\n\014builder_a" +
-      "rgs\030\240\006 \003(\t\"P\n\020PythonTargetInfo\022+\n\013interp" +
-      "reter\030\001 \001(\0132\026.bazelbsp.FileLocation\022\017\n\007v" +
-      "ersion\030\002 \001(\t\"\214\004\n\021AndroidTargetInfo\022+\n\013an" +
-      "droid_jar\030d \001(\0132\026.bazelbsp.FileLocation\022" +
-      ")\n\010manifest\030\310\001 \001(\0132\026.bazelbsp.FileLocati" +
-      "on\022O\n\022manifest_overrides\030\372\001 \003(\01322.bazelb" +
-      "sp.AndroidTargetInfo.ManifestOverridesEn" +
-      "try\0225\n\024resource_directories\030\254\002 \003(\0132\026.baz" +
-      "elbsp.FileLocation\022\036\n\025resource_java_pack" +
-      "age\030\220\003 \001(\t\0223\n\022assets_directories\030\302\003 \003(\0132" +
-      "\026.bazelbsp.FileLocation\0220\n\017aidl_binary_j" +
-      "ar\030\364\003 \001(\0132\026.bazelbsp.FileLocation\0220\n\017aid" +
-      "l_source_jar\030\330\004 \001(\0132\026.bazelbsp.FileLocat" +
-      "ion\022$\n\003apk\030\274\005 \001(\0132\026.bazelbsp.FileLocatio" +
-      "n\0328\n\026ManifestOverridesEntry\022\013\n\003key\030\001 \001(\t" +
-      "\022\r\n\005value\030\002 \001(\t:\0028\001\"\230\001\n\024AndroidAarImport" +
-      "Info\022(\n\010manifest\030\001 \001(\0132\026.bazelbsp.FileLo" +
-      "cation\022/\n\017resource_folder\030\002 \001(\0132\026.bazelb" +
-      "sp.FileLocation\022%\n\005r_txt\030\003 \001(\0132\026.bazelbs" +
-      "p.FileLocation\"\271\001\n\014GoTargetInfo\022\022\n\nimpor" +
-      "tpath\030\001 \001(\t\022-\n\rsdk_home_path\030\002 \001(\0132\026.baz" +
-      "elbsp.FileLocation\0221\n\021generated_sources\030" +
-      "\003 \003(\0132\026.bazelbsp.FileLocation\0223\n\023generat" +
-      "ed_libraries\030\004 \003(\0132\026.bazelbsp.FileLocati" +
-      "on\"\314\007\n\nTargetInfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030\024 " +
-      "\001(\t\022\014\n\004tags\030\036 \003(\t\022*\n\014dependencies\030( \003(\0132" +
-      "\024.bazelbsp.Dependency\022\'\n\007sources\0302 \003(\0132\026" +
-      ".bazelbsp.FileLocation\0221\n\021generated_sour" +
-      "ces\0303 \003(\0132\026.bazelbsp.FileLocation\022)\n\tres" +
-      "ources\030< \003(\0132\026.bazelbsp.FileLocation\022*\n\003" +
-      "env\030F \003(\0132\035.bazelbsp.TargetInfo.EnvEntry" +
-      "\022\023\n\013env_inherit\030P \003(\t\022\022\n\nexecutable\030Z \001(" +
-      "\010\0221\n\017jvm_target_info\030\350\007 \001(\0132\027.bazelbsp.J" +
-      "vmTargetInfo\0229\n\023java_toolchain_info\030\320\017 \001" +
-      "(\0132\033.bazelbsp.JavaToolchainInfo\0225\n\021java_" +
-      "runtime_info\030\270\027 \001(\0132\031.bazelbsp.JavaRunti" +
-      "meInfo\0225\n\021scala_target_info\030\240\037 \001(\0132\031.baz" +
-      "elbsp.ScalaTargetInfo\0221\n\017cpp_target_info" +
-      "\030\360. \001(\0132\027.bazelbsp.CppTargetInfo\0227\n\022kotl" +
-      "in_target_info\030\3306 \001(\0132\032.bazelbsp.KotlinT" +
-      "argetInfo\0227\n\022python_target_info\030\300> \001(\0132\032" +
-      ".bazelbsp.PythonTargetInfo\0229\n\023android_ta" +
-      "rget_info\030\220N \001(\0132\033.bazelbsp.AndroidTarge" +
-      "tInfo\022@\n\027android_aar_import_info\030\370U \001(\0132" +
-      "\036.bazelbsp.AndroidAarImportInfo\022/\n\016go_ta" +
-      "rget_info\030\340] \001(\0132\026.bazelbsp.GoTargetInfo" +
-      "\0223\n\020c_toolchain_info\030\310e \001(\0132\030.bazelbsp.C" +
-      "ToolchainInfo\032*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r" +
-      "\n\005value\030\002 \001(\t:\0028\001B\032\n\030org.jetbrains.bazel" +
-      ".infob\006proto3"
+      "elbsp.FileLocation\"n\n\021JavaToolchainInfo\022" +
+      "\026\n\016source_version\030\001 \001(\t\022\026\n\016target_versio" +
+      "n\030\002 \001(\t\022)\n\tjava_home\030\003 \001(\0132\026.bazelbsp.Fi" +
+      "leLocation\"<\n\017JavaRuntimeInfo\022)\n\tjava_ho" +
+      "me\030\001 \001(\0132\026.bazelbsp.FileLocation\"\217\001\n\017Sca" +
+      "laTargetInfo\022\023\n\013scalac_opts\030\001 \003(\t\0222\n\022com" +
+      "piler_classpath\030\002 \003(\0132\026.bazelbsp.FileLoc" +
+      "ation\0223\n\023scalatest_classpath\030\003 \003(\0132\026.baz" +
+      "elbsp.FileLocation\"\310\002\n\rCppTargetInfo\022\r\n\005" +
+      "copts\030\001 \003(\t\022\'\n\007headers\030\002 \003(\0132\026.bazelbsp." +
+      "FileLocation\022/\n\017textual_headers\030\003 \003(\0132\026." +
+      "bazelbsp.FileLocation\022$\n\034transitive_incl" +
+      "ude_directory\030\006 \003(\t\022*\n\"transitive_quote_" +
+      "include_directory\030\007 \003(\t\022\031\n\021transitive_de" +
+      "fine\030\010 \003(\t\022+\n#transitive_system_include_" +
+      "directory\030\t \003(\t\022\026\n\016include_prefix\030\n \001(\t\022" +
+      "\034\n\024strip_include_prefix\030\013 \001(\t\"\231\001\n\016CToolc" +
+      "hainInfo\022\023\n\013target_name\030\001 \001(\t\022\022\n\ncpp_opt" +
+      "ion\030\002 \003(\t\022\020\n\010c_option\030\003 \003(\t\022\022\n\nc_compile" +
+      "r\030\004 \001(\t\022\024\n\014cpp_compiler\030\005 \001(\t\022\"\n\032built_i" +
+      "n_include_directory\030\006 \003(\t\"?\n\023KotlincPlug" +
+      "inOption\022\021\n\tplugin_id\030d \001(\t\022\025\n\014option_va" +
+      "lue\030\310\001 \001(\t\"\200\001\n\021KotlincPluginInfo\022+\n\013plug" +
+      "in_jars\030d \003(\0132\026.bazelbsp.FileLocation\022>\n" +
+      "\026kotlinc_plugin_options\030\310\001 \003(\0132\035.bazelbs" +
+      "p.KotlincPluginOption\"\324\001\n\020KotlinTargetIn" +
+      "fo\022\030\n\020language_version\030d \001(\t\022\024\n\013api_vers" +
+      "ion\030\310\001 \001(\t\022\023\n\nassociates\030\254\002 \003(\t\022\025\n\014kotli" +
+      "nc_opts\030\220\003 \003(\t\022(\n\007stdlibs\030\364\003 \003(\0132\026.bazel" +
+      "bsp.FileLocation\022:\n\024kotlinc_plugin_infos" +
+      "\030\330\004 \003(\0132\033.bazelbsp.KotlincPluginInfo\"P\n\020" +
+      "PythonTargetInfo\022+\n\013interpreter\030\001 \001(\0132\026." +
+      "bazelbsp.FileLocation\022\017\n\007version\030\002 \001(\t\"\214" +
+      "\004\n\021AndroidTargetInfo\022+\n\013android_jar\030d \001(" +
+      "\0132\026.bazelbsp.FileLocation\022)\n\010manifest\030\310\001" +
+      " \001(\0132\026.bazelbsp.FileLocation\022O\n\022manifest" +
+      "_overrides\030\372\001 \003(\01322.bazelbsp.AndroidTarg" +
+      "etInfo.ManifestOverridesEntry\0225\n\024resourc" +
+      "e_directories\030\254\002 \003(\0132\026.bazelbsp.FileLoca" +
+      "tion\022\036\n\025resource_java_package\030\220\003 \001(\t\0223\n\022" +
+      "assets_directories\030\302\003 \003(\0132\026.bazelbsp.Fil" +
+      "eLocation\0220\n\017aidl_binary_jar\030\364\003 \001(\0132\026.ba" +
+      "zelbsp.FileLocation\0220\n\017aidl_source_jar\030\330" +
+      "\004 \001(\0132\026.bazelbsp.FileLocation\022$\n\003apk\030\274\005 " +
+      "\001(\0132\026.bazelbsp.FileLocation\0328\n\026ManifestO" +
+      "verridesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(" +
+      "\t:\0028\001\"\230\001\n\024AndroidAarImportInfo\022(\n\010manife" +
+      "st\030\001 \001(\0132\026.bazelbsp.FileLocation\022/\n\017reso" +
+      "urce_folder\030\002 \001(\0132\026.bazelbsp.FileLocatio" +
+      "n\022%\n\005r_txt\030\003 \001(\0132\026.bazelbsp.FileLocation" +
+      "\"\271\001\n\014GoTargetInfo\022\022\n\nimportpath\030\001 \001(\t\022-\n" +
+      "\rsdk_home_path\030\002 \001(\0132\026.bazelbsp.FileLoca" +
+      "tion\0221\n\021generated_sources\030\003 \003(\0132\026.bazelb" +
+      "sp.FileLocation\0223\n\023generated_libraries\030\004" +
+      " \003(\0132\026.bazelbsp.FileLocation\"\344\007\n\nTargetI" +
+      "nfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030\024 \001(\t\022\014\n\004tags\030\036 " +
+      "\003(\t\022*\n\014dependencies\030( \003(\0132\024.bazelbsp.Dep" +
+      "endency\022\'\n\007sources\0302 \003(\0132\026.bazelbsp.File" +
+      "Location\0221\n\021generated_sources\0303 \003(\0132\026.ba" +
+      "zelbsp.FileLocation\022)\n\tresources\030< \003(\0132\026" +
+      ".bazelbsp.FileLocation\022*\n\003env\030F \003(\0132\035.ba" +
+      "zelbsp.TargetInfo.EnvEntry\022\023\n\013env_inheri" +
+      "t\030P \003(\t\022\022\n\nexecutable\030Z \001(\010\022\026\n\016workspace" +
+      "_name\030d \001(\t\0221\n\017jvm_target_info\030\350\007 \001(\0132\027." +
+      "bazelbsp.JvmTargetInfo\0229\n\023java_toolchain" +
+      "_info\030\320\017 \001(\0132\033.bazelbsp.JavaToolchainInf" +
+      "o\0225\n\021java_runtime_info\030\270\027 \001(\0132\031.bazelbsp" +
+      ".JavaRuntimeInfo\0225\n\021scala_target_info\030\240\037" +
+      " \001(\0132\031.bazelbsp.ScalaTargetInfo\0221\n\017cpp_t" +
+      "arget_info\030\360. \001(\0132\027.bazelbsp.CppTargetIn" +
+      "fo\0227\n\022kotlin_target_info\030\3306 \001(\0132\032.bazelb" +
+      "sp.KotlinTargetInfo\0227\n\022python_target_inf" +
+      "o\030\300> \001(\0132\032.bazelbsp.PythonTargetInfo\0229\n\023" +
+      "android_target_info\030\220N \001(\0132\033.bazelbsp.An" +
+      "droidTargetInfo\022@\n\027android_aar_import_in" +
+      "fo\030\370U \001(\0132\036.bazelbsp.AndroidAarImportInf" +
+      "o\022/\n\016go_target_info\030\340] \001(\0132\026.bazelbsp.Go" +
+      "TargetInfo\0223\n\020c_toolchain_info\030\310e \001(\0132\030." +
+      "bazelbsp.CToolchainInfo\032*\n\010EnvEntry\022\013\n\003k" +
+      "ey\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\032\n\030org.jetbr" +
+      "ains.bazel.infob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -27890,7 +27312,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_JvmTargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_bazelbsp_JvmTargetInfo_descriptor,
-        new java.lang.String[] { "Jars", "GeneratedJars", "JavacOpts", "JvmFlags", "MainClass", "Args", "Jdeps", "TransitiveCompileTimeJars", "BuilderScript", "BuilderArgs", });
+        new java.lang.String[] { "Jars", "GeneratedJars", "JavacOpts", "JvmFlags", "MainClass", "Args", "Jdeps", "TransitiveCompileTimeJars", });
     internal_static_bazelbsp_JavaToolchainInfo_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_bazelbsp_JavaToolchainInfo_fieldAccessorTable = new
@@ -27938,7 +27360,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_KotlinTargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_bazelbsp_KotlinTargetInfo_descriptor,
-        new java.lang.String[] { "LanguageVersion", "ApiVersion", "Associates", "KotlincOpts", "Stdlibs", "KotlincPluginInfos", "BuilderScript", "BuilderArgs", });
+        new java.lang.String[] { "LanguageVersion", "ApiVersion", "Associates", "KotlincOpts", "Stdlibs", "KotlincPluginInfos", });
     internal_static_bazelbsp_PythonTargetInfo_descriptor =
       getDescriptor().getMessageTypes().get(12);
     internal_static_bazelbsp_PythonTargetInfo_fieldAccessorTable = new
@@ -27974,7 +27396,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_TargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_bazelbsp_TargetInfo_descriptor,
-        new java.lang.String[] { "Id", "Kind", "Tags", "Dependencies", "Sources", "GeneratedSources", "Resources", "Env", "EnvInherit", "Executable", "JvmTargetInfo", "JavaToolchainInfo", "JavaRuntimeInfo", "ScalaTargetInfo", "CppTargetInfo", "KotlinTargetInfo", "PythonTargetInfo", "AndroidTargetInfo", "AndroidAarImportInfo", "GoTargetInfo", "CToolchainInfo", });
+        new java.lang.String[] { "Id", "Kind", "Tags", "Dependencies", "Sources", "GeneratedSources", "Resources", "Env", "EnvInherit", "Executable", "WorkspaceName", "JvmTargetInfo", "JavaToolchainInfo", "JavaRuntimeInfo", "ScalaTargetInfo", "CppTargetInfo", "KotlinTargetInfo", "PythonTargetInfo", "AndroidTargetInfo", "AndroidAarImportInfo", "GoTargetInfo", "CToolchainInfo", });
     internal_static_bazelbsp_TargetInfo_EnvEntry_descriptor =
       internal_static_bazelbsp_TargetInfo_descriptor.getNestedTypes().get(0);
     internal_static_bazelbsp_TargetInfo_EnvEntry_fieldAccessorTable = new

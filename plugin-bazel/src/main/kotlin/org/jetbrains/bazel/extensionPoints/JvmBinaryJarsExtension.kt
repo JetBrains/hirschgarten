@@ -3,7 +3,7 @@ package org.jetbrains.bazel.extensionPoints
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.extensions.ExtensionPointName.Companion.create
 import com.intellij.openapi.project.Project
-import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
 
 @PublicApi
@@ -16,5 +16,5 @@ interface JvmBinaryJarsExtension {
   }
 }
 
-@ApiStatus.Internal
+@InternalApi
 fun Project.shouldImportJvmBinaryJars(): Boolean = JvmBinaryJarsExtension.EP_NAME.extensions.any { it.shouldImportJvmBinaryJars(this) }

@@ -9,8 +9,8 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.toNioPathOrNull
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModuleEntity
 import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
@@ -18,13 +18,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
-import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
-import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
-import org.jetbrains.bazel.magicmetamodel.findNameProvider
+import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
+import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
@@ -34,11 +33,10 @@ import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.isExecutable
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.to
 
 private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
-@ApiStatus.Internal
+@InternalApi
 data class TargetUtilsState(
   var labelToTargetInfo: Map<String, BuildTargetState> = emptyMap(),
   var moduleIdToTarget: Map<String, String> = emptyMap(),
@@ -54,7 +52,11 @@ data class TargetUtilsState(
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
 class TargetUtils(private val project: Project) : PersistentStateComponent<TargetUtilsState> {
-  @ApiStatus.Internal
+  /**
+   * All labels in [TargetUtils] are canonical.
+   * When querying [labelToTargetInfo] (e.g., via [getBuildTargetForLabel]) the label must be first canonicalized via [toCanonicalLabel].
+   */
+  @InternalApi
   var labelToTargetInfo: Map<Label, BuildTarget> = emptyMap()
     private set
   private var moduleIdToTarget: Map<String, Label> = emptyMap()
@@ -66,7 +68,12 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   private var fileToExecutableTargets: Map<Path, List<Label>> = hashMapOf()
 
-  // Not persisted!
+  // Everything below this comment is not persisted!
+  var allTargetsAndLibrariesLabels: List<String> = emptyList()
+    private set
+
+    @InternalApi get
+
   private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
 
   private var listeners: List<(Boolean) -> Unit> = emptyList()
@@ -79,14 +86,13 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     fileToTarget = fileToTarget - path
   }
 
-  @ApiStatus.Internal
+  @InternalApi
   suspend fun saveTargets(
     targetIdToTargetInfo: Map<Label, BuildTarget>,
     targetIdToModuleEntity: Map<Label, List<Module>>,
     fileToTarget: Map<Path, List<Label>>,
     libraryItems: List<LibraryItem>?,
     libraryModules: List<JavaModule>,
-    nameProvider: TargetNameReformatProvider,
   ) {
     this.labelToTargetInfo = targetIdToTargetInfo.mapKeys { it.key }
     moduleIdToTarget =
@@ -96,17 +102,20 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     libraryIdToTarget =
       libraryItems
         ?.associate { library ->
-          nameProvider.invoke(library.id) to library.id
+          library.id.formatAsModuleName(project) to library.id
         }.orEmpty()
 
     this.fileToTarget = fileToTarget
     fileToExecutableTargets = calculateFileToExecutableTargets(libraryItems)
 
     this.libraryModulesLookupTable = createLibraryModulesLookupTable(libraryModules)
+    updateComputedFields()
   }
 
+  @InternalApi
   fun addTargets(targetInfos: List<BuildTarget>) {
     labelToTargetInfo = labelToTargetInfo + targetInfos.associateBy { it.id }
+    updateComputedFields()
   }
 
   private suspend fun calculateFileToExecutableTargets(libraryItems: List<LibraryItem>?): Map<Path, List<Label>> =
@@ -156,47 +165,40 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   private fun createLibraryModulesLookupTable(libraryModules: List<JavaModule>) =
     libraryModules.map { it.genericModuleInfo.name }.toHashSet()
 
-  @ApiStatus.Internal
+  private fun updateComputedFields() {
+    allTargetsAndLibrariesLabels = (allTargets() + allLibraries()).map { it.toShortString(project) }
+  }
+
+  @InternalApi
   fun fireSyncListeners(targetListChanged: Boolean) {
     listeners.forEach { it(targetListChanged) }
   }
 
-  @ApiStatus.Internal
+  @InternalApi
   fun registerSyncListener(listener: (targetListChanged: Boolean) -> Unit) {
     listeners += listener
   }
 
+  @PublicApi
   fun allTargets(): List<Label> = labelToTargetInfo.keys.toList()
 
+  @PublicApi
+  fun allLibraries(): List<Label> = libraryIdToTarget.values.toList()
+
+  @PublicApi
   fun getTargetsForPath(path: Path): List<Label> = fileToTarget[path] ?: emptyList()
 
-  fun getTargetsForFile(file: VirtualFile): List<Label> =
-    fileToTarget[file.toNioPath()]
-      ?: getTargetsFromAncestorsForFile(file)
+  @PublicApi
+  fun getTargetsForFile(file: VirtualFile): List<Label> = file.toNioPathOrNull()?.let { getTargetsForPath(it) } ?: emptyList()
 
-  @ApiStatus.Internal
+  @InternalApi
   fun getExecutableTargetsForFile(file: VirtualFile): List<Label> {
     val executableDirectTargets =
       getTargetsForFile(file).filter { label -> labelToTargetInfo[label]?.capabilities?.isExecutable == true }
     if (executableDirectTargets.isEmpty()) {
-      return fileToExecutableTargets.getOrDefault(file.toNioPath(), emptySet()).toList()
+      return fileToExecutableTargets.getOrDefault(file.toNioPathOrNull(), emptySet()).toList()
     }
     return executableDirectTargets
-  }
-
-  private fun getTargetsFromAncestorsForFile(file: VirtualFile): List<Label> {
-    return if (BazelFeatureFlags.isRetrieveTargetsForFileFromAncestorsEnabled) {
-      val rootDir = project.rootDir
-      var iter = file.parent
-      while (iter != null && VfsUtil.isAncestor(rootDir, iter, false)) {
-        val key = iter.toNioPath()
-        if (key in fileToTarget) return fileToTarget[key]!!
-        iter = iter.parent
-      }
-      emptyList()
-    } else {
-      emptyList()
-    }
   }
 
   @PublicApi // // https://youtrack.jetbrains.com/issue/BAZEL-1632
@@ -209,20 +211,23 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   @PublicApi
   fun getTargetForLibraryId(libraryId: String): Label? = libraryIdToTarget[libraryId]
 
-  @ApiStatus.Internal
-  fun getBuildTargetForLabel(label: Label): BuildTarget? = labelToTargetInfo[label]
+  @InternalApi
+  fun getBuildTargetForLabel(label: Label): BuildTarget? = label.toCanonicalLabel(project)?.let { labelToTargetInfo[it] }
 
-  @ApiStatus.Internal
+  @InternalApi
   fun getBuildTargetForModule(module: com.intellij.openapi.module.Module): BuildTarget? =
     getTargetForModuleId(module.name)?.let { getBuildTargetForLabel(it) }
+
+  @InternalApi
+  fun allBuildTargets(): List<BuildTarget> = labelToTargetInfo.values.toList()
 
   /**
    * [libraryModulesLookupTable] is not persisted between IDE restarts, use this method with caution.
    */
-  @ApiStatus.Internal
+  @InternalApi
   fun isLibraryModule(name: String): Boolean = name.addLibraryModulePrefix() in libraryModulesLookupTable
 
-  @ApiStatus.Internal
+  @InternalApi
   override fun getState(): TargetUtilsState =
     TargetUtilsState(
       labelToTargetInfo = labelToTargetInfo.mapKeys { it.key.toString() }.mapValues { it.value.toState() },
@@ -232,7 +237,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       fileToExecutableTargets = fileToExecutableTargets.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.toString() } },
     )
 
-  @ApiStatus.Internal
+  @InternalApi
   override fun loadState(state: TargetUtilsState) {
     labelToTargetInfo =
       state.labelToTargetInfo
@@ -244,10 +249,11 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       state.fileToTarget.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
     fileToExecutableTargets =
       state.fileToExecutableTargets.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
+    updateComputedFields()
   }
 }
 
-@ApiStatus.Internal
+@InternalApi
 fun String.addLibraryModulePrefix() = "_aux.libraries.$this"
 
 @PublicApi
@@ -262,20 +268,19 @@ fun Label.getModule(project: Project): com.intellij.openapi.module.Module? =
 fun Label.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity
 
 val com.intellij.openapi.module.Module.moduleEntity: ModuleEntity?
-  @ApiStatus.Internal
+  @InternalApi
   get() {
     val bridge = this as? ModuleBridge ?: return null
     return bridge.findModuleEntity(bridge.entityStorage.current)
   }
 
-@ApiStatus.Internal
+@InternalApi
 fun BuildTarget.getModule(project: Project): com.intellij.openapi.module.Module? {
-  val moduleNameProvider = project.findNameProvider()
-  val moduleName = moduleNameProvider(this.id)
+  val moduleName = this.id.formatAsModuleName(project)
   return ModuleManager.getInstance(project).findModuleByName(moduleName)
 }
 
-@ApiStatus.Internal
+@InternalApi
 fun calculateFileToTarget(targetIdToModuleDetails: Map<Label, ModuleDetails>): Map<Path, List<Label>> =
   targetIdToModuleDetails.values
     .flatMap { it.toPairsPathToId() }

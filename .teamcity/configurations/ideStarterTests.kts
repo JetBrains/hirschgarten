@@ -103,6 +103,14 @@ sealed class TestResultsTreeTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testResultsTree"
 )
 
+sealed class RunLineMarkerTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Run Line Marker test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testRunLineMarker"
+)
+
 sealed class ImportRunConfigurationsTest(
   vcsRoot: GitVcsRoot,
 ) : IdeStarterTests(
@@ -117,6 +125,22 @@ sealed class NonModuleTargetsTest(
   name = "Sync non module targets test",
   vcsRoot = vcsRoot,
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/nonmodule/sync:NonModuleTargetsTest"
+)
+
+sealed class RunAllTestsActionTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Run all tests action test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ui/testResultsTree:runAllTestsActionTest"
+)
+
+sealed class DisabledKotlinPluginTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Sync project with disabled kotlin plugin test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:DisabledKotlinPluginTest"
 )
 
 object HotswapTestGitHub : HotswapTest(
@@ -167,6 +191,14 @@ object TestResultsTreeTestSpace : TestResultsTreeTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )
 
+object RunLineMarkerTestGitHub : RunLineMarkerTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object RunLineMarkerTestSpace : RunLineMarkerTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
 object ImportRunConfigurationsTestGitHub : ImportRunConfigurationsTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
@@ -180,5 +212,21 @@ object NonModuleTargetsTestGitHub : NonModuleTargetsTest(
 )
 
 object NonModuleTargetsTestSpace : NonModuleTargetsTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object RunAllTestsActionTestGitHub : RunAllTestsActionTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object RunAllTestsActionTestSpace : RunAllTestsActionTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object DisabledKotlinPluginTestGitHub : DisabledKotlinPluginTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object DisabledKotlinPluginTestSpace : DisabledKotlinPluginTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )

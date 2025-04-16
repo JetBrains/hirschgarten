@@ -12,9 +12,7 @@ import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
-import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.logger.BspClientLogger
@@ -30,8 +28,6 @@ import org.jetbrains.bazel.server.model.Language
 import org.jetbrains.bazel.server.model.Library
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.model.NonModuleTarget
-import org.jetbrains.bazel.server.model.SourceSet
-import org.jetbrains.bazel.server.model.SourceWithData
 import org.jetbrains.bazel.server.model.Tag
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
@@ -39,11 +35,11 @@ import org.jetbrains.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
+import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.extension
 import kotlin.io.path.inputStream
@@ -53,7 +49,6 @@ import kotlin.io.path.notExists
 private val THIRD_PARTY_LIBRARIES_PATTERN = "external/[^/]+/(.+)/([^/]+)/[^/]+$".toRegex()
 
 class BazelProjectMapper(
-  private val bazelInfo: BazelInfo,
   private val languagePluginsService: LanguagePluginsService,
   private val bazelPathsResolver: BazelPathsResolver,
   private val targetTagsResolver: TargetTagsResolver,
@@ -235,6 +230,8 @@ class BazelProjectMapper(
         repoMapping,
       )
 
+    val workspaceName = targets.values.map { it.workspaceName }.firstOrNull() ?: "_main"
+
     return AspectSyncProject(
       workspaceRoot = workspaceRoot,
       bazelRelease = bazelInfo.release,
@@ -245,6 +242,7 @@ class BazelProjectMapper(
       nonModuleTargets = nonModuleTargets,
       repoMapping = repoMapping,
       hasError = hasError,
+      workspaceName = workspaceName,
       workspaceContext = workspaceContext,
     )
   }
@@ -267,9 +265,12 @@ class BazelProjectMapper(
       }.toMap()
 
   private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo) =
-    targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
-      targetInfo.hasJvmTargetInfo() &&
-      !hasKnownJvmSources(targetInfo)
+    !targetInfo.kind.endsWith("_resources") &&
+      (
+        targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
+          targetInfo.hasJvmTargetInfo() &&
+          !hasKnownJvmSources(targetInfo)
+      )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
@@ -641,7 +642,7 @@ class BazelProjectMapper(
           label = label,
           languages = inferLanguages(targetInfo, transitiveCompileTimeJarsTargetKinds),
           tags = targetTagsResolver.resolveTags(targetInfo),
-          baseDirectory = label.assumeResolved().toDirectoryPath(repoMapping),
+          baseDirectory = bazelPathsResolver.toDirectoryPath(label.assumeResolved(), repoMapping),
         )
       }
 
@@ -872,7 +873,7 @@ class BazelProjectMapper(
       .map { bazelPathsResolver.resolve(it) }
 
   private fun getGoRootPath(targetInfo: TargetInfo, repoMapping: RepoMapping): Path =
-    targetInfo.label().assumeResolved().toDirectoryPath(repoMapping)
+    bazelPathsResolver.toDirectoryPath(targetInfo.label().assumeResolved(), repoMapping)
 
   private fun selectTargetsToImport(
     workspaceContext: WorkspaceContext,
@@ -954,6 +955,9 @@ class BazelProjectMapper(
       "kt_jvm_library",
       "kt_jvm_binary",
       "kt_jvm_test",
+      "jvm_library",
+      "jvm_binary",
+      "jvm_resources",
       "scala_library",
       "scala_binary",
       "scala_test",
@@ -1005,9 +1009,9 @@ class BazelProjectMapper(
     val directDependencies = extraLibraries.map { it.label } + resolvedDependencies
     val languages = inferLanguages(target, transitiveCompileTimeJarsTargetKinds)
     val tags = targetTagsResolver.resolveTags(target)
-    val baseDirectory = label.toDirectoryPath(repoMapping)
+    val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
     val languagePlugin = languagePluginsService.getPlugin(languages)
-    val sourceSet = resolveSourceSet(target, languagePlugin)
+    val sources = resolveSourceSet(target, languagePlugin)
     val resources = resolveResources(target, languagePlugin)
     val languageData = languagePlugin.resolveModule(target)
     val sourceDependencies = languagePlugin.dependencySources(target, dependencyGraph)
@@ -1021,7 +1025,7 @@ class BazelProjectMapper(
       languages = languages,
       tags = tags,
       baseDirectory = baseDirectory,
-      sourceSet = sourceSet,
+      sources = sources,
       resources = resources,
       sourceDependencies = sourceDependencies,
       languageData = languageData,
@@ -1039,73 +1043,36 @@ class BazelProjectMapper(
     return languagesForTarget + languagesForSources
   }
 
-  private fun ResolvedLabel.toDirectoryPath(repoMapping: RepoMapping): Path {
-    val repoPath = (repoMapping as? BzlmodRepoMapping)?.let { toRepoPath(repoMapping) } ?: toRepoPathForBazel7()
-    return repoPath.resolve(packagePath.toString())
-  }
-
-  private fun ResolvedLabel.toRepoPath(repoMapping: BzlmodRepoMapping): Path? {
-    val canonicalName =
-      if (repo is Canonical || repo is Main) {
-        repo.repoName
-      } else {
-        repoMapping.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
-      }
-    return repoMapping.canonicalRepoNameToPath[canonicalName]
-  }
-
-  private fun ResolvedLabel.toRepoPathForBazel7(): Path =
-    if (repo is Main) {
-      bazelInfo.workspaceRoot
-    } else {
-      bazelPathsResolver.relativePathToExecRootAbsolute(Path("external", repo.repoName, *packagePath.pathSegments.toTypedArray()))
-    }
-
-  private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): SourceSet {
-    val (sources, nonExistentSources) =
+  private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<SourceItem> {
+    val sources =
       (target.sourcesList + languagePlugin.calculateAdditionalSources(target))
         .toSet()
         .map(bazelPathsResolver::resolve)
-        .partition { it.exists() }
+        .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
+        .filter { it.exists() }
+        .map { SourceItem(path = it, generated = false, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
 
-    nonExistentSources.forEach { it.logNonExistingFile(target.id) }
     val generatedSources =
       target.generatedSourcesList
         .toSet()
         .map(bazelPathsResolver::resolve)
         .filter { it.extension != "srcjar" }
-        .onEach { if (it.notExists()) it.logNonExistingFile(target.id) }
+        .onEach { if (it.notExists()) logNonExistingFile(it, target.id) }
         .filter { it.exists() }
+        .map { SourceItem(path = it, generated = true, jvmPackagePrefix = languagePlugin.calculateJvmPackagePrefix(it)) }
 
-    val sourceRootsAndData = sources.map { it to languagePlugin.calculateSourceRootAndAdditionalData(it) }
-    val generatedRootsAndData = generatedSources.map { it to languagePlugin.calculateSourceRootAndAdditionalData(it) }
-    return SourceSet(
-      sources =
-        sourceRootsAndData
-          .map {
-            SourceWithData(
-              source = it.first,
-              jvmPackagePrefix = it.second?.jvmPackagePrefix,
-            )
-          }.toSet(),
-      generatedSources =
-        generatedRootsAndData
-          .map {
-            SourceWithData(
-              source = it.first,
-              jvmPackagePrefix = it.second?.jvmPackagePrefix,
-            )
-          }.toSet(),
-    )
+    return sources + generatedSources
   }
 
-  private fun Path.logNonExistingFile(targetId: String) {
-    val message = "[WARN] target $targetId: $this does not exist."
+  private fun logNonExistingFile(file: Path, targetId: String) {
+    val message = "[WARN] target $targetId: $file does not exist."
     bspClientLogger.error(message)
   }
 
   private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): Set<Path> =
-    bazelPathsResolver.resolvePaths(target.resourcesList).toSet() + languagePlugin.resolveAdditionalResources(target)
+    (bazelPathsResolver.resolvePaths(target.resourcesList) + languagePlugin.resolveAdditionalResources(target))
+      .filter { it.exists() }
+      .toSet()
 
   private fun environmentItem(target: TargetInfo): Map<String, String> {
     val inheritedEnvs = collectInheritedEnvs(target)

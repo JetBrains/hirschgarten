@@ -32,3 +32,5 @@ tools/mtls/*
 
 # perf test
 out
+
+.user.bazelrc

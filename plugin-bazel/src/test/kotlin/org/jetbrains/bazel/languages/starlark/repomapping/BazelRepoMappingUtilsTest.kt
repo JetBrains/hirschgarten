@@ -50,4 +50,28 @@ class BazelRepoMappingUtilsTest : BasePlatformTestCase() {
     val label = Label.parse("@//path/to/target")
     label.assumeResolved().toShortString(project) shouldBe "//path/to/target"
   }
+
+  @Test
+  fun `toApparentLabel should return null on failure`() {
+    val label = Label.parse("@@repo_non_existent//path/to/target")
+    label.toApparentLabel(project) shouldBe null
+  }
+
+  @Test
+  fun `toCanonicalLabel should expand AmbiguousEmptyTarget`() {
+    val label = Label.parse("//path/to/target")
+    label.toCanonicalLabel(project) shouldBe Label.parse("//path/to/target:target")
+  }
+
+  @Test
+  fun `toCanonicalLabel should canonicalize the repo`() {
+    val label = Label.parse("@repo//path/to/target:targetName")
+    label.toCanonicalLabel(project) shouldBe Label.parse("@@repo~//path/to/target:targetName")
+  }
+
+  @Test
+  fun `toCanonicalLabel should return null on failure`() {
+    val label = Label.parse("@repo_non_existent//path/to/target:targetName")
+    label.toCanonicalLabel(project) shouldBe null
+  }
 }

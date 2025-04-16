@@ -10,10 +10,8 @@ import org.jetbrains.bsp.protocol.FastBuildCommand
 import org.jetbrains.bsp.protocol.FastBuildParams
 import java.nio.file.Path
 
-data class SourceRootAndData(val jvmPackagePrefix: String)
-
 abstract class LanguagePlugin<T : LanguageData> {
-  open fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData? = null
+  open fun calculateJvmPackagePrefix(source: Path): String? = null
 
   open fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): List<BspTargetInfo.FileLocation> = listOf()
 

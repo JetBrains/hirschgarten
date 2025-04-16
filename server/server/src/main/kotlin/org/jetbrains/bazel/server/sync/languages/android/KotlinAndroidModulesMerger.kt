@@ -44,7 +44,7 @@ class KotlinAndroidModulesMerger {
   }
 
   private fun tryMergeKotlinAndroidModule(parentModule: Module, moduleById: Map<String, Module>): MergedKotlinAndroidModule? {
-    if (parentModule.sourceSet.sources.isNotEmpty()) return null
+    if (parentModule.sources.isNotEmpty()) return null
 
     val parentModuleId = parentModule.label.toString()
     val kotlinModule = moduleById[parentModuleId + "_kt"] ?: return null
@@ -86,7 +86,7 @@ class KotlinAndroidModulesMerger {
         languages = kotlinModule.languages + androidModule.languages,
         tags = parentModule.tags,
         baseDirectory = parentModule.baseDirectory,
-        sourceSet = kotlinModule.sourceSet,
+        sources = kotlinModule.sources,
         resources = androidModule.resources + parentModule.resources,
         sourceDependencies = kotlinModule.sourceDependencies + androidModule.sourceDependencies,
         languageData = kotlinAndroidLanguageData,

@@ -148,15 +148,24 @@ def collect_targets_from_attrs(rule_attrs, attrs):
         _collect_target_from_attr(rule_attrs, attr_name, result)
     return [target for target in result if is_valid_aspect_target(target)]
 
+def do_starlark_string_expansion_dict(ctx, name, strings_dict, extra_targets = [], should_expand_make_variables = False):
+    # first, expand all starlark predefined paths:
+    #   location, locations, rootpath, rootpaths, execpath, execpaths
+    strings_dict = {k: ctx.expand_location(v, targets = extra_targets) for k, v in strings_dict.items()}
 
+    # then expand any regular GNU make style variables
+    if should_expand_make_variables:
+        strings_dict = {k: expand_make_variables(name, v, ctx) for k, v in strings_dict.items()}
+    return strings_dict
 
-def do_starlark_string_expansion(ctx, name, strings, extra_targets = []):
+def do_starlark_string_expansion(ctx, name, strings, extra_targets = [], should_expand_make_variables = False):
     # first, expand all starlark predefined paths:
     #   location, locations, rootpath, rootpaths, execpath, execpaths
     strings = [ctx.expand_location(value, targets = extra_targets) for value in strings]
 
     # then expand any regular GNU make style variables
-    strings = [expand_make_variables(name, value, ctx) for value in strings]
+    if should_expand_make_variables:
+        strings = [expand_make_variables(name, value, ctx) for value in strings]
     return strings
 
 def expand_make_variables(attr_name, expression, ctx, additional_subs = {}):

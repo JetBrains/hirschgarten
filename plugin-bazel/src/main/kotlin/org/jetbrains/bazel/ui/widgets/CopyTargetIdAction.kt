@@ -7,6 +7,7 @@ import com.intellij.openapi.application.readAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.elementType
@@ -70,7 +71,7 @@ internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.messag
 
   private fun StarlarkCallExpression.calculateTargetId(): String? {
     val targetName = getTargetName() ?: return null
-    val containingFile = containingFile?.virtualFile?.toNioPath() ?: return null
+    val containingFile = containingFile?.virtualFile?.toNioPathOrNull() ?: return null
     return calculateLabel(project, containingFile, targetName)?.toShortString(project)
   }
 
@@ -131,4 +132,5 @@ private val ALLOWED_ACTION_PLACES =
     ActionPlaces.EDITOR_POPUP,
     ActionPlaces.KEYBOARD_SHORTCUT,
     ActionPlaces.ACTION_SEARCH,
+    ActionPlaces.EDITOR_TAB_POPUP,
   )

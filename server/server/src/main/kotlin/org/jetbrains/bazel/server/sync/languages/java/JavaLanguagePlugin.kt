@@ -7,7 +7,6 @@ import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.FastBuildCommand
@@ -46,8 +45,7 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
       )
     }
 
-  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData? =
-    JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source)
+  override fun calculateJvmPackagePrefix(source: Path): String? = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source)
 
   private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }
 

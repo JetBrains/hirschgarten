@@ -34,9 +34,9 @@ import javax.swing.Icon
 /**
  * Make sure this id matches the one of the extension registration <statusBarWidgetFactory/> in the plugin.xml file
  */
-private const val WIDGET_ID = "BspFileTargetsWidget"
+private const val WIDGET_ID = "BazelFileTargetsWidget"
 
-class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
+class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
   init {
     project.targetUtils.registerSyncListener {
       ApplicationManager.getApplication().invokeLater {
@@ -114,11 +114,11 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
       }
       it.fillWithEligibleActions(project, this, false)
       it.addSeparator()
-      it.add(BazelJumpToBuildFileAction(this))
+      it.add(BazelJumpToBuildFileAction(this.id))
       if (StarlarkDebugAction.isApplicableTo(this)) it.add(StarlarkDebugAction(this.id))
     }
 
-  override fun createInstance(project: Project): StatusBarWidget = BspFileTargetsWidget(project)
+  override fun createInstance(project: Project): StatusBarWidget = BazelFileTargetsWidget(project)
 }
 
 class BazelFileTargetsWidgetFactory : StatusBarWidgetFactory {
@@ -128,7 +128,7 @@ class BazelFileTargetsWidgetFactory : StatusBarWidgetFactory {
 
   override fun isAvailable(project: Project): Boolean = project.isBazelProject
 
-  override fun createWidget(project: Project): StatusBarWidget = BspFileTargetsWidget(project)
+  override fun createWidget(project: Project): StatusBarWidget = BazelFileTargetsWidget(project)
 
   override fun disposeWidget(widget: StatusBarWidget) {
     Disposer.dispose(widget)

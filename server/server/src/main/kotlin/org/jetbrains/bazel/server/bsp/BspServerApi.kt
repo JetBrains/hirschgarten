@@ -45,26 +45,30 @@ import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
+import org.jetbrains.bsp.protocol.WorkspaceNameResult
 
 class BspServerApi(
   private val projectSyncService: ProjectSyncService,
   private val executeService: ExecuteService,
   val workspaceContextProvider: DefaultWorkspaceContextProvider,
 ) : JoinedBuildServer {
-  override suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult =
+  override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult =
     projectSyncService.workspaceBuildTargets(
       build = false,
+      originId = params.originId,
     )
 
-  override suspend fun workspaceBuildAndGetBuildTargets(): WorkspaceBuildTargetsResult =
+  override suspend fun workspaceBuildAndGetBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult =
     projectSyncService.workspaceBuildTargets(
       build = true,
+      originId = params.originId,
     )
 
   override suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult =
@@ -125,6 +129,8 @@ class BspServerApi(
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = projectSyncService.workspaceBazelRepoMapping()
 
   override suspend fun workspaceBazelBinPath(): WorkspaceBazelPathsResult = projectSyncService.workspaceBazelPaths()
+
+  override suspend fun workspaceName(): WorkspaceNameResult = projectSyncService.workspaceName()
 
   override suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
     projectSyncService.resolveLocalToRemote(params)

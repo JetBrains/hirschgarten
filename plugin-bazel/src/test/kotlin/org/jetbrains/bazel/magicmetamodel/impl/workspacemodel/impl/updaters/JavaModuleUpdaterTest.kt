@@ -130,7 +130,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         // when
         val returnedModuleEntity =
           runTestWriteAction {
-            updater.addEntity(javaModule)
+            updater.addEntity(javaModule)!!
           }
 
         // then
@@ -754,7 +754,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         // when
         val returnedModuleEntity =
           runTestWriteAction {
-            updater.addEntity(javaModule)
+            updater.addEntity(javaModule)!!
           }
 
         // then

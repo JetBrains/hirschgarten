@@ -40,6 +40,7 @@ import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
+import org.jetbrains.bsp.protocol.WorkspaceNameResult
 
 /** A facade for all project sync related methods  */
 class ProjectSyncService(
@@ -49,8 +50,8 @@ class ProjectSyncService(
   private val bazelInfo: BazelInfo,
   private val workspaceContextProvider: WorkspaceContextProvider,
 ) {
-  suspend fun workspaceBuildTargets(build: Boolean): WorkspaceBuildTargetsResult {
-    val project = projectProvider.refreshAndGet(build = build)
+  suspend fun workspaceBuildTargets(build: Boolean, originId: String): WorkspaceBuildTargetsResult {
+    val project = projectProvider.refreshAndGet(build = build, originId = originId)
     return bspMapper.workspaceTargets(project)
   }
 
@@ -100,6 +101,11 @@ class ProjectSyncService(
   }
 
   fun workspaceBazelPaths(): WorkspaceBazelPathsResult = WorkspaceBazelPathsResult(bazelInfo.bazelBin.toString(), bazelInfo.execRoot.toString())
+
+  suspend fun workspaceName(): WorkspaceNameResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return WorkspaceNameResult(null)
+    return WorkspaceNameResult(project.workspaceName)
+  }
 
   suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return InverseSourcesResult(emptyList())

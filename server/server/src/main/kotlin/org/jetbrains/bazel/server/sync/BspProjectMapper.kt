@@ -58,7 +58,6 @@ import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ScalacOptionsItem
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
-import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -176,26 +175,6 @@ class BspProjectMapper(
     return buildTarget
   }
 
-  private fun Module.sources(): List<SourceItem> {
-    val sourceItems =
-      sourceSet.sources.map {
-        SourceItem(
-          path = it.source,
-          generated = false,
-          jvmPackagePrefix = it.jvmPackagePrefix,
-        )
-      }
-    val generatedSourceItems =
-      sourceSet.generatedSources.map {
-        SourceItem(
-          path = it.source,
-          generated = true,
-          jvmPackagePrefix = it.jvmPackagePrefix,
-        )
-      }
-    return sourceItems + generatedSourceItems
-  }
-
   private fun Module.toBuildTarget(): BuildTarget {
     val label = label
     val dependencies =
@@ -212,7 +191,7 @@ class BspProjectMapper(
         dependencies = dependencies,
         capabilities = capabilities,
         baseDirectory = baseDirectory,
-        sources = sources(),
+        sources = sources,
         resources = resources.toList(),
       )
 

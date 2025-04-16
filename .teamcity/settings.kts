@@ -58,6 +58,7 @@ object GitHub : Project({
         buildType(PluginBenchmark.BenchmarkDefaultGitHub)
         buildType(PluginBenchmark.BenchmarkWithVersionGitHub)
         buildType(IdeStarterTests.HotswapTestGitHub)
+        buildType(IdeStarterTests.RunLineMarkerTestGitHub)
         buildType(IdeStarterTests.ExternalRepoResolveTestGitHub)
         buildType(IdeStarterTests.JarSourceExcludeTestGitHub)
         buildType(IdeStarterTests.BazelProjectModelModifierTestGitHub)
@@ -65,6 +66,8 @@ object GitHub : Project({
         buildType(IdeStarterTests.TestResultsTreeTestGitHub)
         buildType(IdeStarterTests.ImportRunConfigurationsTestGitHub)
         buildType(IdeStarterTests.NonModuleTargetsTestGitHub)
+        buildType(IdeStarterTests.RunAllTestsActionTestGitHub)
+        buildType(IdeStarterTests.DisabledKotlinPluginTestGitHub)
         buildType(ServerE2eTests.SampleRepoGitHub)
         buildType(ServerE2eTests.LocalJdkGitHub)
         buildType(ServerE2eTests.RemoteJdkGitHub)
@@ -122,6 +125,7 @@ object GitHub : Project({
       PluginBenchmark.BenchmarkDefaultGitHub,
       PluginBenchmark.BenchmarkWithVersionGitHub,
       IdeStarterTests.HotswapTestGitHub,
+      IdeStarterTests.RunLineMarkerTestGitHub,
       IdeStarterTests.ExternalRepoResolveTestGitHub,
       IdeStarterTests.JarSourceExcludeTestGitHub,
       IdeStarterTests.BazelProjectModelModifierTestGitHub,
@@ -129,6 +133,8 @@ object GitHub : Project({
       IdeStarterTests.TestResultsTreeTestGitHub,
       IdeStarterTests.ImportRunConfigurationsTestGitHub,
       IdeStarterTests.NonModuleTargetsTestGitHub,
+      IdeStarterTests.RunAllTestsActionTestGitHub,
+      IdeStarterTests.DisabledKotlinPluginTestGitHub,
       ServerE2eTests.SampleRepoGitHub,
       ServerE2eTests.LocalJdkGitHub,
       ServerE2eTests.RemoteJdkGitHub,
@@ -174,6 +180,7 @@ object Space : Project({
         buildType(PluginBenchmark.SpaceBenchmarkDefault)
         buildType(PluginBenchmark.SpaceBenchmarkWithVersion)
         buildType(IdeStarterTests.HotswapTestSpace)
+        buildType(IdeStarterTests.RunLineMarkerTestSpace)
         buildType(IdeStarterTests.ExternalRepoResolveTestSpace)
         buildType(IdeStarterTests.JarSourceExcludeTestSpace)
         buildType(IdeStarterTests.BazelProjectModelModifierTestSpace)
@@ -181,6 +188,8 @@ object Space : Project({
         buildType(IdeStarterTests.TestResultsTreeTestSpace)
         buildType(IdeStarterTests.ImportRunConfigurationsTestSpace)
         buildType(IdeStarterTests.NonModuleTargetsTestSpace)
+        buildType(IdeStarterTests.RunAllTestsActionTestSpace)
+        buildType(IdeStarterTests.DisabledKotlinPluginTestSpace)
         buildType(ServerE2eTests.SampleRepoSpace)
         buildType(ServerE2eTests.LocalJdkSpace)
         buildType(ServerE2eTests.RemoteJdkSpace)
@@ -238,6 +247,7 @@ object Space : Project({
       PluginBenchmark.SpaceBenchmarkDefault,
       PluginBenchmark.SpaceBenchmarkWithVersion,
       IdeStarterTests.HotswapTestSpace,
+      IdeStarterTests.RunLineMarkerTestSpace,
       IdeStarterTests.ExternalRepoResolveTestSpace,
       IdeStarterTests.JarSourceExcludeTestSpace,
       IdeStarterTests.BazelProjectModelModifierTestSpace,
@@ -245,6 +255,8 @@ object Space : Project({
       IdeStarterTests.TestResultsTreeTestSpace,
       IdeStarterTests.ImportRunConfigurationsTestSpace,
       IdeStarterTests.NonModuleTargetsTestSpace,
+      IdeStarterTests.RunAllTestsActionTestSpace,
+      IdeStarterTests.DisabledKotlinPluginTestSpace,
       ServerE2eTests.SampleRepoSpace,
       ServerE2eTests.LocalJdkSpace,
       ServerE2eTests.RemoteJdkSpace,

@@ -1,10 +1,6 @@
 package org.jetbrains.bazel.ui.testResultsTree
 
-import com.intellij.driver.sdk.step
-import com.intellij.driver.sdk.ui.components.common.IdeaFrameUI
 import com.intellij.driver.sdk.ui.components.common.ideFrame
-import com.intellij.driver.sdk.ui.components.elements.tree
-import com.intellij.driver.sdk.ui.xQuery
 import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.project.GitProjectInfo
@@ -16,7 +12,6 @@ import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 
@@ -51,42 +46,11 @@ class TestTargetActionResultsTreeTest : IdeStarterBaseProjectTest() {
       ideFrame {
         waitForIndicators(5.minutes)
         verifyTestStatus(
-          fileName,
           listOf("2 tests passed", "2 tests total"),
           listOf("SimpleKotlinTest", "trivial test()", "another trivial test()"),
         )
         takeScreenshot("afterOpeningTestResultsTree")
       }
-    }
-  }
-
-  private fun IdeaFrameUI.verifyTestStatus(
-    fileName: String,
-    expectedStatus: List<String>,
-    expectedTree: List<String>,
-  ) {
-    var result = true
-    step("Verify test status for '$fileName'") {
-      waitContainsText("Test Results", timeout = 1.minutes)
-      val actualResults = x("//div[@class='TestStatusLine']").getAllTexts()
-      for (expectedItem in expectedStatus) {
-        result = result && actualResults.any { it.text.contains(expectedItem) }
-      }
-      Assertions.assertTrue(
-        result,
-        "Actual status doesn't contain expected: $expectedStatus",
-      )
-    }
-    step("Verify test results tree for '$fileName'") {
-      x("//div[@accessiblename='Show Passed']").click()
-      val treeResults = tree(xQuery { byClass("SMTRunnerTestTreeView") }).getAllTexts()
-      for (expectedItem in expectedTree) {
-        result = result && treeResults.any { it.text.contains(expectedItem) }
-      }
-      Assertions.assertTrue(
-        result,
-        "Actual tree doesn't contain expected: $expectedTree",
-      )
     }
   }
 
