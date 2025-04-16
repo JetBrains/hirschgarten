@@ -17,5 +17,7 @@
                 implementation="org.jetbrains.bazel.kotlin.sync.ideStarter.CheckTargetsInTargetWidgetProvider"/>
         <performancePlugin.commandProvider
                 implementation="org.jetbrains.bazel.ui.ideStarter.UITestCommandProvider"/>
+        <performancePlugin.commandProvider
+                implementation="org.jetbrains.bazel.python.sync.ideStarter.PyCharmCheckImportedModulesProvider"/>
     </extensions>
 </idea-plugin>

@@ -5,7 +5,9 @@ import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
+import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
+import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
 import org.junit.jupiter.api.Test
 
@@ -33,16 +35,14 @@ class PycharmTest : IdeStarterBaseProjectTest() {
     val commands =
       CommandChain()
         .takeScreenshot("startSync")
-//        .waitForBazelSync()
-//        .waitForSmartMode()
-//        .checkImportedModules()
-//        .checkTargetsInTargetWidget()
-//        .exitApp()
+        // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1910
+        // .waitForBazelSync()
+        .waitForSmartMode()
+        .checkImportedModules()
+        .exitApp()
 
     createContext().runIDE(commands = commands, runTimeout = timeout)
   }
 
-  private fun <T : CommandChain> T.checkImportedModules(): T = also { addCommand("${CMD_PREFIX}checkImportedModules") }
-
-  private fun <T : CommandChain> T.checkTargetsInTargetWidget(): T = also { addCommand("${CMD_PREFIX}checkTargetsInTargetWidget") }
+  private fun <T : CommandChain> T.checkImportedModules(): T = also { addCommand("${CMD_PREFIX}PyCharmCheckImportedModules") }
 }
