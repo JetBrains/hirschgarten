@@ -307,42 +307,45 @@ class BazelQueryDialogWindow(private val project: Project) : JPanel() {
     queryEvaluator.orderEvaluation(editorTextField.text, flagsToRun)
     SwingUtilities.invokeLater { setButtonsPanelToCancel() }
     var commandResults: BazelProcessResult? = null
-    BazelCoroutineService.getInstance(project).start {
-      commandResults = queryEvaluator.waitAndGetResults()
-    }.invokeOnCompletion {
-      SwingUtilities.invokeLater {
-        if (commandResults == null) {
-          showInConsole("Query cancelled")
-        } else {
-          if (commandResults!!.isSuccess) {
-            val res = commandResults!!.stdout
-            if (res.isEmpty()) {
-              showInConsole("Nothing found")
-            } else {
+    BazelCoroutineService
+      .getInstance(project)
+      .start {
+        commandResults = queryEvaluator.waitAndGetResults()
+      }.invokeOnCompletion {
+        SwingUtilities.invokeLater {
+          if (commandResults == null) {
+            showInConsole("Query cancelled")
+          } else {
+            if (commandResults!!.isSuccess) {
+              val res = commandResults!!.stdout
+              if (res.isEmpty()) {
+                showInConsole("Nothing found")
+              } else {
                 val hyperlinkInfoList = mutableListOf<Pair<IntRange, HyperlinkInfo>>()
                 addLinksToResult(res, hyperlinkInfoList)
                 showInConsole(res, hyperlinkInfoList)
-              if (res.startsWith("digraph")) {
-                val imageIcon = convertDotToImageIcon(res)
-                if (imageIcon != null) {
-                  graphWindowManager.openImageInNewWindow(imageIcon)
-                } else {
-                  //System.err.println("Failed to generate graph visualization")
-                  NotificationGroupManager.getInstance()
-                    .getNotificationGroup("Bazel")
-                    .createNotification("Failed to generate graph visualization", NotificationType.ERROR)
-                    .notify(project)
+                if (res.startsWith("digraph")) {
+                  val imageIcon = convertDotToImageIcon(res)
+                  if (imageIcon != null) {
+                    graphWindowManager.openImageInNewWindow(imageIcon)
+                  } else {
+                    // System.err.println("Failed to generate graph visualization")
+                    NotificationGroupManager
+                      .getInstance()
+                      .getNotificationGroup("Bazel")
+                      .createNotification("Failed to generate graph visualization", NotificationType.ERROR)
+                      .notify(project)
+                  }
                 }
               }
+            } else {
+              showInConsole("Command execution failed:\n" + commandResults!!.stderr)
             }
-          } else {
-            showInConsole("Command execution failed:\n" + commandResults!!.stderr)
           }
-        }
 
-        setButtonsPanelToEvaluate()
+          setButtonsPanelToEvaluate()
+        }
       }
-    }
   }
 
   private fun cancelEvaluate() {

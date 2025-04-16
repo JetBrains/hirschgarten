@@ -22,7 +22,9 @@ internal class BazelFlag(value: String) {
       val flag = flagToParse.trim()
       val initialHyphens = flag.indexOfFirst { it != '-' }
       return when {
-        initialHyphens < 2 -> {"-".repeat(2 - initialHyphens) + flag}
+        initialHyphens < 2 -> {
+          "-".repeat(2 - initialHyphens) + flag
+        }
         initialHyphens > 2 -> flag.substring(2 - initialHyphens)
         else -> flag
       }
@@ -41,9 +43,7 @@ internal class BazelFlag(value: String) {
   }
 }
 
-internal class QueryEvaluator(
-  private var currentRunnerDirFile: VirtualFile,
-) {
+internal class QueryEvaluator(private var currentRunnerDirFile: VirtualFile) {
   private var bazelRunner: BazelRunner
   private var workspaceContext: WorkspaceContext
 
@@ -56,7 +56,6 @@ internal class QueryEvaluator(
 
   private var currentProcess = AtomicReference<BazelProcess?>(null)
   private var currentProcessCancelled = AtomicBoolean(false)
-
 
   fun setEvaluationDirectory(directoryFile: VirtualFile) {
     directoryFile.isDirectoryOrThrow()
@@ -80,17 +79,15 @@ internal class QueryEvaluator(
   // Starts a process which evaluates given query.
   // Result is valid for one call of waitAndGetResult() and another evaluation cannot be called
   // before result of previous is received.
-  fun orderEvaluation(
-    command: String,
-    flags: List<BazelFlag>
-  ) {
+  fun orderEvaluation(command: String, flags: List<BazelFlag>) {
     if (currentProcess.get() != null) throw IllegalStateException("Trying to start new process before result of previous is received")
 
     // TODO: add proper way to add raw query to evaluation
     val label = RelativeLabel(Package(listOf(command)), AmbiguousEmptyTarget)
-    val commandToRun = bazelRunner.buildBazelCommand(workspaceContext) {
-      query { targets.add(label) }
-    }
+    val commandToRun =
+      bazelRunner.buildBazelCommand(workspaceContext) {
+        query { targets.add(label) }
+      }
 
     commandToRun.options.clear()
     for (flag in flags) {
@@ -105,7 +102,7 @@ internal class QueryEvaluator(
   // Cancels currently running process
   fun cancelEvaluation() {
     val retrievedProcess = currentProcess.get()
-    if (retrievedProcess != null) {     // Cancellation might be called before UI changes state but after process is finished
+    if (retrievedProcess != null) { // Cancellation might be called before UI changes state but after process is finished
       if (currentProcessCancelled.compareAndSet(false, true)) {
         retrievedProcess.process.destroy() // seems like it calls SIGTERM
       }
@@ -126,7 +123,6 @@ internal class QueryEvaluator(
     } else {
       throw IllegalStateException("No command to get result from")
     }
-
   }
 }
 
