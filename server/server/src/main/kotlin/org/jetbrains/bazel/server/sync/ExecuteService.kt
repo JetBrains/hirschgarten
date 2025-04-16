@@ -31,6 +31,7 @@ import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
+import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.MobileInstallStartType
@@ -98,7 +99,7 @@ class ExecuteService(
   suspend fun runWithDebug(params: RunWithDebugParams): RunResult {
     val modules = selectModules(listOf(params.runParams.target))
     val singleModule = modules.singleOrResponseError(params.runParams.target)
-    val requestedDebugType = DebugType.fromDebugData(params.debug)
+    val requestedDebugType = params.debug
     val debugArguments = generateRunArguments(requestedDebugType)
     val debugOptions = generateRunOptions(requestedDebugType)
     val buildBeforeRun = buildBeforeRun(requestedDebugType)
@@ -150,7 +151,7 @@ class ExecuteService(
       if (params.debug != null) {
         val modules = selectModules(params.targets)
         val singleModule = modules.singleOrResponseError(params.targets.first())
-        val requestedDebugType = DebugType.fromDebugData(params.debug)
+        val requestedDebugType = params.debug
         verifyDebugRequest(requestedDebugType, singleModule)
         generateRunArguments(requestedDebugType)
       } else {
@@ -173,6 +174,10 @@ class ExecuteService(
 
         else -> bazelRunner.buildBazelCommand(workspaceContext) { test() }
       }
+
+    if (params.debug is DebugType.JDWP) {
+      command.options.add(BazelFlag.javaTestDebug())
+    }
 
     params.additionalBazelParams?.let { additionalParams ->
       (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalParams.split(" "))

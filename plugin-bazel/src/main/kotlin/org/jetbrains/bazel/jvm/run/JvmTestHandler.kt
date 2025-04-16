@@ -12,21 +12,20 @@ import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
-import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bazel.workspacemodel.entities.isJvmTarget
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.TestParams
 import java.util.UUID
 
 class JvmTestHandler : BazelRunHandler {
   override val name: String = "Jvm BSP Test Handler"
 
-  override val state = GenericTestState()
+  override val state = JvmTestState()
 
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     when {
@@ -59,8 +58,8 @@ class JvmTestHandler : BazelRunHandler {
 class JvmTestWithDebugCommandLineState(
   environment: ExecutionEnvironment,
   originId: OriginId,
-  val settings: GenericTestState,
-) : JvmDebuggableCommandLineState(environment, originId) {
+  val settings: JvmTestState,
+) : JvmDebuggableCommandLineState(environment, originId, settings.debugPort) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelTestTaskListener(handler)
 
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = executeWithTestConsole(executor)
@@ -75,7 +74,7 @@ class JvmTestWithDebugCommandLineState(
         workingDirectory = settings.workingDirectory,
         arguments = transformProgramArguments(settings.programArguments),
         environmentVariables = settings.env.envs,
-        debug = RemoteDebugData("jdwp", getConnectionPort()),
+        debug = DebugType.JDWP(getConnectionPort()),
         testFilter = settings.testFilter,
       )
 

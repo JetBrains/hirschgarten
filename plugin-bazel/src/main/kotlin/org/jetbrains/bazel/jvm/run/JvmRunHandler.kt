@@ -11,15 +11,14 @@ import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
-import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bazel.workspacemodel.entities.includesAndroid
 import org.jetbrains.bazel.workspacemodel.entities.isJvmTarget
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import java.util.UUID
@@ -28,7 +27,7 @@ class JvmRunHandler(val configuration: BazelRunConfiguration) : BazelRunHandler 
   private val buildToolName: String = BazelPluginConstants.BAZEL_DISPLAY_NAME
   override val name: String = "Jvm $buildToolName Run Handler"
 
-  override val state = GenericRunState()
+  override val state = JvmRunState()
 
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     when {
@@ -66,8 +65,8 @@ class JvmRunHandler(val configuration: BazelRunConfiguration) : BazelRunHandler 
 class JvmRunWithDebugCommandLineState(
   environment: ExecutionEnvironment,
   originId: OriginId,
-  val settings: GenericRunState,
-) : JvmDebuggableCommandLineState(environment, originId) {
+  val settings: JvmRunState,
+) : JvmDebuggableCommandLineState(environment, originId, settings.debugPort) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
   override suspend fun startBsp(server: JoinedBuildServer) {
@@ -82,7 +81,7 @@ class JvmRunWithDebugCommandLineState(
         workingDirectory = settings.workingDirectory,
         additionalBazelParams = settings.additionalBazelParams,
       )
-    val remoteDebugData = RemoteDebugData("jdwp", getConnectionPort())
+    val remoteDebugData = DebugType.JDWP(getConnectionPort())
     val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
 
     server.buildTargetRunWithDebug(runWithDebugParams)
