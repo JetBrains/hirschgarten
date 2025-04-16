@@ -257,10 +257,8 @@ class BepServer(
       return
     }
 
-    val bspClientTestNotifier = this.bspClientTestNotifier
     if (bspClientTestNotifier != null) {
-      bspClientTestNotifier.endTestTarget(target, taskId)
-      this.bspClientTestNotifier = null
+      bspClientTestNotifier = null
       return
     }
 
@@ -280,19 +278,20 @@ class BepServer(
   }
 
   private fun processActionCompletedEvent(event: BuildEventStreamProtos.BuildEvent) {
+    val originId: String = originId ?: return
     if (event.hasAction()) {
-      consumeActionCompletedEvent(event.action)
+      consumeActionCompletedEvent(event.action, originId)
     }
   }
 
-  private fun consumeActionCompletedEvent(event: BuildEventStreamProtos.ActionExecuted) {
+  private fun consumeActionCompletedEvent(event: BuildEventStreamProtos.ActionExecuted, originId: String) {
     val label = Label.parse(event.label)
     when (event.stderr.fileCase) {
       BuildEventStreamProtos.File.FileCase.URI -> {
         try {
           val path = Paths.get(URI.create(event.stderr.uri))
           val stdErrText = Files.readString(path)
-          processDiagnosticText(stdErrText, label)
+          processDiagnosticText(stdErrText, label, originId)
         } catch (e: FileSystemNotFoundException) {
           LOGGER.warn(e)
         } catch (e: IOException) {
@@ -301,20 +300,24 @@ class BepServer(
       }
 
       BuildEventStreamProtos.File.FileCase.CONTENTS -> {
-        processDiagnosticText(event.stderr.contents.toStringUtf8(), label)
+        processDiagnosticText(event.stderr.contents.toStringUtf8(), label, originId)
       }
 
       else -> {}
     }
   }
 
-  private fun processDiagnosticText(stdErrText: String, targetLabel: Label) {
+  private fun processDiagnosticText(
+    stdErrText: String,
+    targetLabel: Label,
+    originId: String,
+  ) {
     if (stdErrText.isNotEmpty()) {
       val events =
         diagnosticsService.extractDiagnostics(
           stdErrText,
           targetLabel,
-          originId ?: "no-origin",
+          originId,
         )
       events.forEach {
         bspClient.onBuildPublishDiagnostics(

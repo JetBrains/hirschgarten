@@ -11,7 +11,10 @@ The aspect phase enables the full set of IDE features, including highlighting of
 
 ## Enabling phased sync
 
-There are 2 registry keys:
+Set it in Bazel Application settings:
+Settings | Build, Execution, Deployment | Build Tools | Bazel | Advanced Settings
+-> Enable phased sync
 
-- `bsp.use.phased.sync` - enable the phased sync feature
+Additional registry settings for experimentation:
+
 - `bsp.execute.second.phase.on.sync` - instead of running the aspect phase after the query phase, remain in query-synced mode. This is useful to test functionality before running aspects or saving your computer from working through the whole build.

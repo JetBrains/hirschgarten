@@ -9,8 +9,10 @@ import com.intellij.util.xmlb.annotations.Attribute
 import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 
-class GenericTestState :
-  BazelRunConfigurationState<GenericTestState>(),
+class GenericTestState : AbstractGenericTestState<GenericTestState>()
+
+open class AbstractGenericTestState<T : AbstractGenericTestState<T>> :
+  BazelRunConfigurationState<T>(),
   HasEnv,
   HasProgramArguments,
   HasWorkingDirectory,
@@ -37,12 +39,12 @@ class GenericTestState :
   @com.intellij.configurationStore.Property(description = "Bazel parameters")
   override var additionalBazelParams: String? by string()
 
-  override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<GenericTestState> = GenericTestStateEditor(configuration)
+  override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<T> = GenericTestStateEditor(configuration)
 }
 
-class GenericTestStateEditor(private val config: BazelRunConfiguration) :
-  FragmentedSettingsEditor<GenericTestState>(config.handler?.state as GenericTestState) {
-  override fun createFragments(): Collection<SettingsEditorFragment<GenericTestState, *>> =
+class GenericTestStateEditor<T : AbstractGenericTestState<T>>(private val config: BazelRunConfiguration) :
+  FragmentedSettingsEditor<T>(config.handler?.state as T) {
+  override fun createFragments(): Collection<SettingsEditorFragment<T, *>> =
     SettingsEditorFragmentContainer.fragments {
       add(CommonParameterFragments.createHeader("Test Configuration"))
 

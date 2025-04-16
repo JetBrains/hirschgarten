@@ -45,6 +45,7 @@ class ProjectResolver(
     build: Boolean,
     requestedTargetsToSync: List<Label>?,
     firstPhaseProject: FirstPhaseProject?,
+    originId: String?,
   ): AspectSyncProject =
     bspTracer.spanBuilder("Resolve project").useWithScope {
       val workspaceContext =
@@ -112,7 +113,7 @@ class ProjectResolver(
       val buildAspectResult =
         measured(
           "Building project with aspect",
-        ) { buildProjectWithAspect(workspaceContext, featureFlags, build, targetsToSync, firstPhaseProject) }
+        ) { buildProjectWithAspect(workspaceContext, featureFlags, build, targetsToSync, firstPhaseProject, originId) }
 
       val aspectOutputs =
         measured(
@@ -170,6 +171,7 @@ class ProjectResolver(
     build: Boolean,
     targetsToSync: TargetsSpec,
     firstPhaseProject: FirstPhaseProject?,
+    originId: String?,
   ): BazelBspAspectsManagerResult =
     coroutineScope {
       val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, SYNC_ARTIFACT_OUTPUT_GROUP)
@@ -185,6 +187,7 @@ class ProjectResolver(
               outputGroups = outputGroups,
               shouldLogInvocation = true,
               workspaceContext = workspaceContext,
+              originId = originId,
             ).also {
               if (it.status == BazelStatus.OOM_ERROR) {
                 bspClientLogger.warn(
@@ -232,6 +235,7 @@ class ProjectResolver(
                   outputGroups = outputGroups,
                   shouldLogInvocation = false,
                   workspaceContext = workspaceContext,
+                  originId = originId,
                 )
             if (result.isFailure) {
               bspClientLogger.warn("Failed to build $shardName")

@@ -3,7 +3,7 @@ package org.jetbrains.bsp.protocol
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 interface JoinedBuildServer {
-  suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult
+  suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult
 
   suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult
 
@@ -53,7 +53,7 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult
 
-  suspend fun workspaceBuildAndGetBuildTargets(): WorkspaceBuildTargetsResult
+  suspend fun workspaceBuildAndGetBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult
 
   suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult
 

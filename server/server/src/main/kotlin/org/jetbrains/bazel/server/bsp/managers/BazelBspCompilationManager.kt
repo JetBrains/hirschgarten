@@ -23,7 +23,7 @@ class BazelBspCompilationManager(
   suspend fun buildTargetsWithBep(
     targetsSpec: TargetsSpec,
     extraFlags: List<String> = emptyList(),
-    originId: String? = null,
+    originId: String?,
     environment: List<Pair<String, String>> = emptyList(),
     shouldLogInvocation: Boolean,
     workspaceContext: WorkspaceContext,

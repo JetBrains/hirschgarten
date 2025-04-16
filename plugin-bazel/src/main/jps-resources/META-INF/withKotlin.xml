@@ -1,0 +1,18 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <projectConfigurator implementation="org.jetbrains.bazel.kotlin.BazelKotlinProjectConfigurator" order="first"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="org.jetbrains.bazel">
+        <kotlinFacetEntityUpdater implementation="org.jetbrains.bazel.kotlin.sync.BazelKotlinFacetEntityUpdater"/>
+        <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.KotlinSourceTypeIconProvider"/>
+
+        <projectPostSyncHook implementation="org.jetbrains.bazel.kotlin.sync.RefreshKotlinHighlightingPostSyncHook"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <newProjectWizard.kotlin.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelKotlinNewProjectWizard"/>
+        <postStartupActivity implementation="org.jetbrains.bazel.flow.open.SuggestEnableK2StartupActivity"/>
+        <notificationGroup displayType="BALLOON" id="Enable K2 Compiler Mode with Bazel"/>
+    </extensions>
+</idea-plugin>

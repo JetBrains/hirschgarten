@@ -1,0 +1,284 @@
+
+ñ
+kt_javac_optionsDDefine java compiler options for `kt_jvm_*` rules with java sources.*
+nameA unique name for this target. .
+warnControl warning behaviour.2"report"A
+release)Compile for the specified Java SE release2	"default"P
+x_ep_disable_all_checks,See javac -XepDisableAllChecks documentation2False/
+x_lintSee javac -Xlint: documentation2[]F
+xd_suppress_notes(See javac -XDsuppressNotes documentation2FalseN
+x_explicit_api_mode.Enable explicit API mode for Kotlin libraries.2"off"-
+add_exportsExport internal jdk apis2[]"P
+kt_javac_options<@rules_kotlin//src/main/starlark/core/options:opts.javac.bzl*\
+JavacOptionsL
+JavacOptions<@rules_kotlin//src/main/starlark/core/options:opts.javac.bzl
+É
+kt_jvm_binaryæBuilds a Java archive ("jar file"), plus a wrapper shell script with the same name as the rule. The wrapper
+shell script uses a classpath that includes, among other things, a jar file for each library on which the binary
+depends.
+
+**Note:** This rule does not have all of the features found in [`java_binary`](https://docs.bazel.build/versions/master/be/java.html#java_binary).
+It is appropriate for building workspace utilities. `java_binary` should be preferred for release artefacts.*
+nameA unique name for this target. K
+java_stub_template23"@rules_kotlin//third_party:java_stub_template.txt"ã
+srcsÔThe list of source files that are processed to create the target, this can contain both Java and Kotlin
+files. Java analysis occurs first so Kotlin classes may depend on Java classes in the same compilation unit.2[]ë
+depsÇA list of dependencies of this rule.See general comments about `deps` at
+[Attributes common to all build rules](https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes).*?
+JavaInfo3
+JavaInfo'@@_builtins//:common/java/java_info.bzl*R
+	KtJvmInfoE
+	KtJvmInfo8@rules_kotlin//src/main/starlark/core/compile:common.bzl2[]Ó
+runtime_deps¼Libraries to make available to the final binary or test at runtime only. Like ordinary deps, these will
+appear on the runtime classpath, but unlike them, not on the compile-time classpath.2[]H
+	resources5A list of files that should be include in a Java jar.2[]Ü
+resource_strip_prefix¼The path prefix to strip from Java resources, files residing under common prefix such as
+`src/main/resources` or `src/test/resources` or `kotlin` will have stripping applied by convention.2""Š
+resource_jarssSet of archives containing Java resources. If specified, the contents of these jars are merged into
+the output jar.2[]ä
+dataÕThe list of files needed by this rule at runtime. See general comments about `data` at
+[Attributes common to all build rules](https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes).2[]•
+
+associatesìKotlin deps who should be considered part of the same module/compilation-unit
+for the purposes of "internal" access. Such deps must all share the same module space
+and so a target cannot associate to two deps from two different modules.*‘
+JavaInfo
+	KtJvmInfo3
+JavaInfo'@@_builtins//:common/java/java_info.bzlE
+	KtJvmInfo8@rules_kotlin//src/main/starlark/core/compile:common.bzl2[]€
+plugins*K
+JavaPluginInfo9
+JavaPluginInfo'@@_builtins//:common/java/java_info.bzl*l
+KtPluginConfigurationS
+KtPluginConfiguration:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl*\
+KspPluginInfoK
+KspPluginInfo:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl*j
+KtCompilerPluginInfoR
+KtCompilerPluginInfo:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl*j
+KtCompilerPluginInfoR
+KtCompilerPluginInfo:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl2[]Â
+module_name¬The name of the module, if not provided the module name is derived from the label. --e.g.,
+`//some/package/path:label_name` is translated to
+`some_package_path-label_name`.2""†
+kotlinc_opts‰Kotlinc options to be used when compiling this target. These opts if provided
+will be used instead of the ones provided to the toolchain.*b
+KotlincOptionsP
+KotlincOptions>@rules_kotlin//src/main/starlark/core/options:opts.kotlinc.bzl2Noneü
+
+javac_opts‡Javac options to be used when compiling this target. These opts if provided will
+be used instead of the ones provided to the toolchain.*\
+JavacOptionsL
+JavacOptions<@rules_kotlin//src/main/starlark/core/options:opts.javac.bzl2Noneœ
+	jvm_flagsˆA list of flags to embed in the wrapper script generated for running this binary. Note: does not yet
+support make variable substitution.2[]I
+
+main_class7Name of class with main() method to use as entry point. ";
+kt_jvm_binary*@rules_kotlin//kotlin/internal/jvm:jvm.bzl8
+¿
+kt_jvm_import¼Import Kotlin jars.
+
+## examples
+
+```bzl
+# Old style usage -- reference file groups, do not used this.
+kt_jvm_import(
+    name = "kodein",
+    jars = [
+        "@com_github_salomonbrys_kodein_kodein//jar:file",
+        "@com_github_salomonbrys_kodein_kodein_core//jar:file"
+    ]
+)
+
+# This style will pull in the transitive runtime dependencies of the targets as well.
+kt_jvm_import(
+    name = "kodein",
+    jars = [
+        "@com_github_salomonbrys_kodein_kodein//jar",
+        "@com_github_salomonbrys_kodein_kodein_core//jar"
+    ]
+)
+
+# Import a single kotlin jar.
+kt_jvm_import(
+    name = "kotlin-stdlib",
+    jars = ["lib/kotlin-stdlib.jar"],
+    srcjar = "lib/kotlin-stdlib-sources.jar"
+)
+```*
+nameA unique name for this target. ö
+jarsçThe jars listed here are equavalent to an export attribute. The label should be either to a single
+class jar, or one or more filegroup labels.  The filegroups, when resolved, must contain  only one jar
+containing classes, and (optionally) one peer file containing sources, named `<jarname>-sources.jar`.
+
+DEPRECATED - please use `jar` and `srcjar` attributes.2[]H
+jar9The jar listed here is equivalent to an export attribute.2NoneR
+srcjarThe sources for the class jar.2&"@rules_kotlin//third_party:empty.jar"o
+runtime_depsAdditional runtime deps.*?
+JavaInfo3
+JavaInfo'@@_builtins//:common/java/java_info.bzl2[]o
+deps Compile and runtime dependencies*?
+JavaInfo3
+JavaInfo'@@_builtins//:common/java/java_info.bzl2[]Ù
+exports³Exported libraries.
+
+Deps listed here will be made available to other rules, as if the parents explicitly depended on
+these deps. This is not true for regular (non-exported) deps.*‘
+JavaInfo
+	KtJvmInfo3
+JavaInfo'@@_builtins//:common/java/java_info.bzlE
+	KtJvmInfo8@rules_kotlin//src/main/starlark/core/compile:common.bzl2[]Ã
+exported_compiler_pluginsçExported compiler plugins.
+
+Compiler plugins listed here will be treated as if they were added in the plugins
+attribute of any targets that directly depend on this target. Like java_plugins'
+exported_plugins, this is not transitive*j
+KtCompilerPluginInfoR
+KtCompilerPluginInfo:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl*l
+KtPluginConfigurationS
+KtPluginConfiguration:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl*\
+KspPluginInfoK
+KspPluginInfo:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl2[]W
+	neverlinkAIf true only use this library for compilation and not at runtime.2False";
+kt_jvm_import*@rules_kotlin//kotlin/internal/jvm:jvm.bzl*‘
+JavaInfo
+	KtJvmInfo3
+JavaInfo'@@_builtins//:common/java/java_info.bzlE
+	KtJvmInfo8@rules_kotlin//src/main/starlark/core/compile:common.bzl
+"
+kt_jvm_libraryFThis rule compiles and links Kotlin and Java sources into a .jar file.*
+nameA unique name for this target. K
+java_stub_template23"@rules_kotlin//third_party:java_stub_template.txt"ã
+srcsÔThe list of source files that are processed to create the target, this can contain both Java and Kotlin
+files. Java analysis occurs first so Kotlin classes may depend on Java classes in the same compilation unit.2[]ë
+depsÇA list of dependencies of this rule.See general comments about `deps` at
+[Attributes common to all build rules](https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes).*?
+JavaInfo3
+JavaInfo'@@_builtins//:common/java/java_info.bzl*R
+	KtJvmInfoE
+	KtJvmInfo8@rules_kotlin//src/main/starlark/core/compile:common.bzl2[]Ó
+runtime_deps¼Libraries to make available to the final binary or test at runtime only. Like ordinary deps, these will
+appear on the runtime classpath, but unlike them, not on the compile-time classpath.2[]H
+	resources5A list of files that should be include in a Java jar.2[]Ü
+resource_strip_prefix¼The path prefix to strip from Java resources, files residing under common prefix such as
+`src/main/resources` or `src/test/resources` or `kotlin` will have stripping applied by convention.2""Š
+resource_jarssSet of archives containing Java resources. If specified, the contents of these jars are merged into
+the output jar.2[]ä
+dataÕThe list of files needed by this rule at runtime. See general comments about `data` at
+[Attributes common to all build rules](https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes).2[]•
+
+associatesìKotlin deps who should be considered part of the same module/compilation-unit
+for the purposes of "internal" access. Such deps must all share the same module space
+and so a target cannot associate to two deps from two different modules.*‘
+JavaInfo
+	KtJvmInfo3
+JavaInfo'@@_builtins//:common/java/java_info.bzlE
+	KtJvmInfo8@rules_kotlin//src/main/starlark/core/compile:common.bzl2[]€
+plugins*K
+JavaPluginInfo9
+JavaPluginInfo'@@_builtins//:common/java/java_info.bzl*l
+KtPluginConfigurationS
+KtPluginConfiguration:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl*\
+KspPluginInfoK
+KspPluginInfo:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl*j
+KtCompilerPluginInfoR
+KtCompilerPluginInfo:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl*j
+KtCompilerPluginInfoR
+KtCompilerPluginInfo:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl2[]Â
+module_name¬The name of the module, if not provided the module name is derived from the label. --e.g.,
+`//some/package/path:label_name` is translated to
+`some_package_path-label_name`.2""†
+kotlinc_opts‰Kotlinc options to be used when compiling this target. These opts if provided
+will be used instead of the ones provided to the toolchain.*b
+KotlincOptionsP
+KotlincOptions>@rules_kotlin//src/main/starlark/core/options:opts.kotlinc.bzl2Noneü
+
+javac_opts‡Javac options to be used when compiling this target. These opts if provided will
+be used instead of the ones provided to the toolchain.*\
+JavacOptionsL
+JavacOptions<@rules_kotlin//src/main/starlark/core/options:opts.javac.bzl2None†
+exports³Exported libraries.
+
+Deps listed here will be made available to other rules, as if the parents explicitly depended on
+these deps. This is not true for regular (non-exported) deps.*?
+JavaInfo3
+JavaInfo'@@_builtins//:common/java/java_info.bzl2[]æ
+exported_compiler_pluginsèExported compiler plugins.
+
+Compiler plugins listed here will be treated as if they were added in the plugins attribute
+of any targets that directly depend on this target. Like `java_plugin`s exported_plugins,
+this is not transitive*j
+KtCompilerPluginInfoR
+KtCompilerPluginInfo:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl*l
+KtPluginConfigurationS
+KtPluginConfiguration:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl2[]W
+	neverlinkAIf true only use this library for compilation and not at runtime.2False"<
+kt_jvm_library*@rules_kotlin//kotlin/internal/jvm:jvm.bzl*‘
+JavaInfo
+	KtJvmInfo3
+JavaInfo'@@_builtins//:common/java/java_info.bzlE
+	KtJvmInfo8@rules_kotlin//src/main/starlark/core/compile:common.bzl
+°
+kt_jvm_test§Setup a simple kotlin_test.
+
+**Notes:**
+* The kotlin test library is not added implicitly, it is available with the label
+`@rules_kotlin//kotlin/compiler:kotlin-test`.*
+nameA unique name for this target. K
+java_stub_template23"@rules_kotlin//third_party:java_stub_template.txt"ã
+srcsÔThe list of source files that are processed to create the target, this can contain both Java and Kotlin
+files. Java analysis occurs first so Kotlin classes may depend on Java classes in the same compilation unit.2[]ë
+depsÇA list of dependencies of this rule.See general comments about `deps` at
+[Attributes common to all build rules](https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes).*?
+JavaInfo3
+JavaInfo'@@_builtins//:common/java/java_info.bzl*R
+	KtJvmInfoE
+	KtJvmInfo8@rules_kotlin//src/main/starlark/core/compile:common.bzl2[]Ó
+runtime_deps¼Libraries to make available to the final binary or test at runtime only. Like ordinary deps, these will
+appear on the runtime classpath, but unlike them, not on the compile-time classpath.2[]H
+	resources5A list of files that should be include in a Java jar.2[]Ü
+resource_strip_prefix¼The path prefix to strip from Java resources, files residing under common prefix such as
+`src/main/resources` or `src/test/resources` or `kotlin` will have stripping applied by convention.2""Š
+resource_jarssSet of archives containing Java resources. If specified, the contents of these jars are merged into
+the output jar.2[]ä
+dataÕThe list of files needed by this rule at runtime. See general comments about `data` at
+[Attributes common to all build rules](https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes).2[]•
+
+associatesìKotlin deps who should be considered part of the same module/compilation-unit
+for the purposes of "internal" access. Such deps must all share the same module space
+and so a target cannot associate to two deps from two different modules.*‘
+JavaInfo
+	KtJvmInfo3
+JavaInfo'@@_builtins//:common/java/java_info.bzlE
+	KtJvmInfo8@rules_kotlin//src/main/starlark/core/compile:common.bzl2[]€
+plugins*K
+JavaPluginInfo9
+JavaPluginInfo'@@_builtins//:common/java/java_info.bzl*l
+KtPluginConfigurationS
+KtPluginConfiguration:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl*\
+KspPluginInfoK
+KspPluginInfo:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl*j
+KtCompilerPluginInfoR
+KtCompilerPluginInfo:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl*j
+KtCompilerPluginInfoR
+KtCompilerPluginInfo:@rules_kotlin//src/main/starlark/core/plugin:providers.bzl2[]Â
+module_name¬The name of the module, if not provided the module name is derived from the label. --e.g.,
+`//some/package/path:label_name` is translated to
+`some_package_path-label_name`.2""†
+kotlinc_opts‰Kotlinc options to be used when compiling this target. These opts if provided
+will be used instead of the ones provided to the toolchain.*b
+KotlincOptionsP
+KotlincOptions>@rules_kotlin//src/main/starlark/core/options:opts.kotlinc.bzl2Noneü
+
+javac_opts‡Javac options to be used when compiling this target. These opts if provided will
+be used instead of the ones provided to the toolchain.*\
+JavacOptionsL
+JavacOptions<@rules_kotlin//src/main/starlark/core/options:opts.javac.bzl2Noneœ
+	jvm_flagsˆA list of flags to embed in the wrapper script generated for running this binary. Note: does not yet
+support make variable substitution.2[]C
+
+test_class/The Java class to be loaded by the test runner.2""A
+
+main_class21"com.google.testing.junit.runner.BazelTestRunner"i
+env\Specifies additional environment variables to set when the target is executed by bazel test.
+2{}"9
+kt_jvm_test*@rules_kotlin//kotlin/internal/jvm:jvm.bzl082@rules_kotlin//kotlin:jvm.bzl

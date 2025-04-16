@@ -272,7 +272,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           JvmEnvironmentItem(
             Label.parse("$targetPrefix//java_targets:java_binary"),
             listOf(),
-            emptyList(),
+            listOf("--some_flag=bazel-out/$bazelArch-fastbuild/bin/java_targets/libjava_library.jar"),
             Path("\$WORKSPACE"),
             mapOf(),
             listOf(JvmMainClass("java_targets.JavaBinary", emptyList())),
@@ -443,7 +443,14 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             ),
             emptyList(),
             Path("\$WORKSPACE"),
-            mapOf("foo1" to "val1", "foo2" to "val2", "foo3" to "val3", "foo4" to "val4"),
+            mapOf(
+              "foo1" to "val1",
+              "foo2" to "val2",
+              "foo3" to "val3",
+              "foo4" to "val4",
+              "target_location" to
+                "bazel-out/$bazelArch-fastbuild/bin/environment_variables/java_binary bazel-out/$bazelArch-fastbuild/bin/environment_variables/java_binary.jar",
+            ),
           ),
           JvmEnvironmentItem(
             Label.parse("$targetPrefix//target_with_javac_exports:java_library"),
@@ -468,7 +475,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           JvmEnvironmentItem(
             Label.parse("$targetPrefix//java_targets:java_binary"),
             listOf(),
-            emptyList(),
+            listOf("--some_flag=bazel-out/$bazelArch-fastbuild/bin/java_targets/libjava_library.jar"),
             Path("\$WORKSPACE"),
             mapOf(),
             listOf(JvmMainClass("java_targets.JavaBinary", emptyList())),
@@ -639,7 +646,14 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             ),
             emptyList(),
             Path("\$WORKSPACE"),
-            mapOf("foo1" to "val1", "foo2" to "val2", "foo3" to "val3", "foo4" to "val4"),
+            mapOf(
+              "foo1" to "val1",
+              "foo2" to "val2",
+              "foo3" to "val3",
+              "foo4" to "val4",
+              "target_location" to
+                "bazel-out/$bazelArch-fastbuild/bin/environment_variables/java_binary bazel-out/$bazelArch-fastbuild/bin/environment_variables/java_binary.jar",
+            ),
           ),
           JvmEnvironmentItem(
             Label.parse("$targetPrefix//target_with_javac_exports:java_library"),

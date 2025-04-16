@@ -6,7 +6,7 @@ import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.calculateLabel
-import org.jetbrains.bazel.languages.starlark.repomapping.toApparentLabel
+import org.jetbrains.bazel.languages.starlark.repomapping.toApparentLabelOrThis
 
 private const val MAX_PATH_LENGTH = 25
 private const val MIN_SEGMENTS_NUMBER = 1
@@ -14,7 +14,7 @@ private const val MIN_SEGMENTS_NUMBER = 1
 object BazelFileUtils {
   fun getContainingDirectoryPresentablePath(project: Project, file: VirtualFile): String? {
     val buildFile = file.toNioPathOrNull() ?: return null
-    val relativeDir = calculateLabel(project, buildFile)?.toApparentLabel(project) as? ResolvedLabel ?: return null
+    val relativeDir = calculateLabel(project, buildFile)?.toApparentLabelOrThis(project) as? ResolvedLabel ?: return null
     if (relativeDir.repo is Main && relativeDir.packagePath.pathSegments.isEmpty()) return null
     val presentablePath = truncatePathHead(relativeDir)
     return "${file.nameWithoutExtension} ($presentablePath)"
