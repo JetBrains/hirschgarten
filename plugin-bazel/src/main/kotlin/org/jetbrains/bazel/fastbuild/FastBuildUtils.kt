@@ -169,13 +169,16 @@ object FastBuildUtils {
         indicator.checkCanceled()
 //        span.end()
 
-        updateRuntimeJar(originalOutputJar, outputJar.parent, unzip, files)
+        //updateRuntimeJar(originalOutputJar, outputJar.parent, unzip, files)
         hotswapFile(project, hotswapMap)
       }
     })
 
   }
 
+
+  //This does not seem to work, there is still a problem where unloaded classes (which is common in Kotlin for example)
+  //will not be updated, even if we replace the jar with the updated class files. Need to figure out a way to get this to work
   fun updateRuntimeJar(runtimeJarPath: Path, tempDir: Path, updatedFilesRoot: Path, updatedFiles: List<String>) {
     val tempJarPath = tempDir.resolve(runtimeJarPath.name)
     ZipOutputStream(tempJarPath.toFile().outputStream()).use { tempJar ->
