@@ -19,9 +19,9 @@ import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
 import com.intellij.openapi.util.TextRange
 import com.intellij.pom.java.LanguageLevel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
@@ -41,7 +41,6 @@ import org.jetbrains.concurrency.await
 
 private val log = logger<BazelProjectModelModifier>()
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class BazelProjectModelModifier(private val project: Project) : JavaProjectModelModifier() {
   private val ideaProjectModelModifier = IdeaProjectModelModifier(project)
 
@@ -91,9 +90,8 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
 
   private suspend fun tryAddingModuleDependencyToBuildFile(from: Module, labelToInsert: Label?): Boolean {
     if (labelToInsert !is ResolvedLabel) return false
-    val fromBuildTarget = from.project.targetUtils.getBuildTargetForModule(from) ?: return false
-    val targetBuildFile = readAction { findBuildFile(from.project, fromBuildTarget) } ?: return false
-    val targetRuleLabel = fromBuildTarget.id
+    val targetRuleLabel = from.project.targetUtils.getTargetForModuleId(from.name) ?: return false
+    val targetBuildFile = readAction { findBuildFile(from.project, targetRuleLabel) } ?: return false
     val ruleTarget = readAction { targetBuildFile.findRuleTarget(targetRuleLabel.targetName) } ?: return false
     val argList = readAction { ruleTarget.getArgumentList() } ?: return false
     val depsArg = readAction { argList.getDepsArgument() }
@@ -179,12 +177,13 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
     }
 
   private suspend fun Module.jumpToBuildFile() {
-    val buildTarget = project.targetUtils.getBuildTargetForModule(this) ?: return
-    jumpToBuildFile(project, buildTarget)
+    val target = project.targetUtils.getTargetForModuleId(this.name) ?: return
+    jumpToBuildFile(project, target)
   }
 
-  private fun asyncPromise(callable: suspend () -> Unit): Promise<Void> =
-    AsyncPromise<Void>().also { promise ->
+  private fun asyncPromise(callable: suspend () -> Unit): Promise<Void>? {
+    if (!project.isBazelProject) return null
+    return AsyncPromise<Void>().also { promise ->
       BazelCoroutineService.getInstance(project).startAsync(callable = callable).invokeOnCompletion { throwable ->
         if (throwable != null) {
           promise.setError(throwable)
@@ -193,4 +192,5 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
         }
       }
     }
+  }
 }

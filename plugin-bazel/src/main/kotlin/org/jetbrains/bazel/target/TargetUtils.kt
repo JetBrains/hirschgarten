@@ -22,9 +22,9 @@ import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.magicmetamodel.TargetNameReformatProvider
-import org.jetbrains.bazel.magicmetamodel.findNameProvider
+import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
@@ -53,6 +53,10 @@ data class TargetUtilsState(
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
 class TargetUtils(private val project: Project) : PersistentStateComponent<TargetUtilsState> {
+  /**
+   * All labels in [TargetUtils] are canonical.
+   * When querying [labelToTargetInfo] (e.g., via [getBuildTargetForLabel]) the label must be first canonicalized via [toCanonicalLabel].
+   */
   @InternalApi
   var labelToTargetInfo: Map<Label, BuildTarget> = emptyMap()
     private set
@@ -97,7 +101,6 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     fileToTarget: Map<Path, List<Label>>,
     libraryItems: List<LibraryItem>?,
     libraryModules: List<JavaModule>,
-    nameProvider: TargetNameReformatProvider,
   ) {
     this.labelToTargetInfo = targetIdToTargetInfo.mapKeys { it.key }
     moduleIdToTarget =
@@ -107,7 +110,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     libraryIdToTarget =
       libraryItems
         ?.associate { library ->
-          nameProvider.invoke(library.id) to library.id
+          library.id.formatAsModuleName(project) to library.id
         }.orEmpty()
 
     this.fileToTarget = fileToTarget
@@ -217,11 +220,14 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   fun getTargetForLibraryId(libraryId: String): Label? = libraryIdToTarget[libraryId]
 
   @InternalApi
-  fun getBuildTargetForLabel(label: Label): BuildTarget? = labelToTargetInfo[label]
+  fun getBuildTargetForLabel(label: Label): BuildTarget? = label.toCanonicalLabel(project)?.let { labelToTargetInfo[it] }
 
   @InternalApi
   fun getBuildTargetForModule(module: com.intellij.openapi.module.Module): BuildTarget? =
     getTargetForModuleId(module.name)?.let { getBuildTargetForLabel(it) }
+
+  @InternalApi
+  fun allBuildTargets(): List<BuildTarget> = labelToTargetInfo.values.toList()
 
   /**
    * [libraryModulesLookupTable] is not persisted between IDE restarts, use this method with caution.
@@ -278,8 +284,7 @@ val com.intellij.openapi.module.Module.moduleEntity: ModuleEntity?
 
 @InternalApi
 fun BuildTarget.getModule(project: Project): com.intellij.openapi.module.Module? {
-  val moduleNameProvider = project.findNameProvider()
-  val moduleName = moduleNameProvider(this.id)
+  val moduleName = this.id.formatAsModuleName(project)
   return ModuleManager.getInstance(project).findModuleByName(moduleName)
 }
 

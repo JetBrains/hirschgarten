@@ -9,7 +9,6 @@ private const val GO_SUPPORT = "bsp.go.support"
 private const val BUILD_PROJECT_ON_SYNC = "bsp.build.project.on.sync"
 private const val SHORTEN_MODULE_LIBRARY_NAMES = "bsp.shorten.module.library.names"
 private const val WRAP_LIBRARIES_INSIDE_MODULES = "bsp.wrap.libraries.inside.modules"
-private const val USE_PHASED_SYNC = "bsp.use.phased.sync"
 private const val EXECUTE_SECOND_PHASE_ON_SYNC = "bsp.execute.second.phase.on.sync"
 private const val ADD_DUMMY_MODULES = "bsp.add.dummy.modules"
 private const val EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS = "bsp.exclude.compiled.source.code.inside.jars"
@@ -41,11 +40,8 @@ object BazelFeatureFlags {
   val isKotlinPluginK2Mode: Boolean
     get() = System.getProperty("idea.kotlin.plugin.use.k2", "false").toBoolean()
 
-  val isPhasedSync: Boolean
-    get() = Registry.`is`(USE_PHASED_SYNC)
-
   val executeSecondPhaseOnSync: Boolean
-    get() = isPhasedSync && Registry.`is`(EXECUTE_SECOND_PHASE_ON_SYNC)
+    get() = Registry.`is`(EXECUTE_SECOND_PHASE_ON_SYNC)
 
   val addDummyModules: Boolean
     get() = Registry.`is`(ADD_DUMMY_MODULES) && !enableBazelJavaClassFinder

@@ -10,7 +10,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.run.state.GenericTestState
+import org.jetbrains.bazel.run.state.AbstractGenericTestState
 import org.jetbrains.bazel.run.task.BazelTestTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
@@ -21,7 +21,7 @@ import java.nio.file.Path
 class BazelTestCommandLineState(
   environment: ExecutionEnvironment,
   originId: OriginId,
-  val state: GenericTestState,
+  val state: AbstractGenericTestState<*>,
 ) : BazelCommandLineStateBase(environment, originId) {
   var coverageReportListener: ((Path) -> Unit)? = null
 

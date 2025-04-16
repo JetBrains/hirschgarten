@@ -25,7 +25,6 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.extensionPoints.shouldImportJvmBinaryJars
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
-import org.jetbrains.bazel.magicmetamodel.findNameProvider
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
@@ -65,8 +64,6 @@ import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
-import org.jetbrains.kotlin.analysis.api.platform.analysisMessageBus
-import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinModificationTopics
 import java.nio.file.Path
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
@@ -243,17 +240,16 @@ class CollectProjectDetailsTask(
     ) {
       coroutineScope {
         val projectBasePath = project.rootDir.toNioPath()
-        val nameProvider = project.findNameProvider()
         val libraryGraph = LibraryGraph(projectDetails.libraries.orEmpty())
 
         val libraries =
           bspTracer.spanBuilder("create.libraries.ms").use {
-            libraryGraph.createLibraries(nameProvider)
+            libraryGraph.createLibraries(project)
           }
 
         val libraryModules =
           bspTracer.spanBuilder("create.library.modules.ms").use {
-            libraryGraph.createLibraryModules(nameProvider, projectDetails.defaultJdkName)
+            libraryGraph.createLibraryModules(project, projectDetails.defaultJdkName)
           }
 
         val targetIdToModuleDetails =
@@ -284,7 +280,6 @@ class CollectProjectDetailsTask(
                 fileToTarget = fileToTarget,
                 projectBasePath = projectBasePath,
                 project = project,
-                nameProvider = nameProvider,
                 isAndroidSupportEnabled = BazelFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
               )
 
@@ -295,7 +290,6 @@ class CollectProjectDetailsTask(
                 fileToTarget,
                 projectDetails.libraries,
                 libraryModules,
-                nameProvider,
               )
             }
             targetIdToModuleEntityMap
@@ -362,7 +356,6 @@ class CollectProjectDetailsTask(
     }
 
     VirtualFileManager.getInstance().asyncRefresh()
-    project.refreshKotlinHighlighting()
     checkSharedSources()
   }
 
@@ -422,22 +415,6 @@ class CollectProjectDetailsTask(
     writeAction {
       val javacOptions = JavacConfiguration.getOptions(project, JavacConfiguration::class.java)
       javacOptions.ADDITIONAL_OPTIONS_OVERRIDE = this.javacOptions
-    }
-
-  /**
-   * Workaround for https://youtrack.jetbrains.com/issue/KT-70632
-   */
-  private suspend fun Project.refreshKotlinHighlighting() =
-    writeAction {
-      try {
-        analysisMessageBus.syncPublisher(KotlinModificationTopics.GLOBAL_MODULE_STATE_MODIFICATION).onModification()
-      } catch (_: NoClassDefFoundError) {
-        // TODO: the above method was removed in 252 master.
-        //  Replace with `project.publishGlobalModuleStateModificationEvent()` once it's available in the next 252 EAP
-        val utilsKt = Class.forName("org.jetbrains.kotlin.analysis.api.platform.modification.UtilsKt")
-        val method = utilsKt.getDeclaredMethod("publishGlobalModuleStateModificationEvent", Project::class.java)
-        method.invoke(utilsKt, project)
-      }
     }
 
   private fun checkSharedSources() {

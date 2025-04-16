@@ -17,6 +17,7 @@ java_test(
     env = {
         "foo1": "val1",
         "foo2": "val2",
+        "target_location": "$(locations :java_binary)",
     },
     env_inherit = [
         "foo3",
@@ -24,4 +25,5 @@ java_test(
     ],
     test_class = "environment_variables.JavaTest",
     visibility = ["//visibility:public"],
+    data = [":java_binary"],
 )

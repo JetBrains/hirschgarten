@@ -1,7 +1,7 @@
 # Copyright 2019-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 
 load("//aspects:extensions.bzl", "EXTENSIONS", "TOOLCHAINS")
-load("//aspects:utils/utils.bzl", "ALL_DEPS", "COMPILE_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "file_location", "get_aspect_ids", "update_sync_output_groups")
+load("//aspects:utils/utils.bzl", "ALL_DEPS", "COMPILE_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "file_location", "get_aspect_ids", "update_sync_output_groups", "do_starlark_string_expansion_dict")
 load("//aspects:rules/java/java_info.bzl", "java_info_in_target", "java_info_reference")
 
 def create_all_extension_info(target, ctx, output_groups, dep_targets):
@@ -10,6 +10,9 @@ def create_all_extension_info(target, ctx, output_groups, dep_targets):
 
 COMPILE = 0
 RUNTIME = 1
+
+# Max filename length is 255 symbols on all major OSes. Choose a smaller number to make up for additional suffixes/prefixes.
+MAX_FILENAME_LENGTH = 200
 
 def make_dep(dep, dependency_type):
     return struct(
@@ -113,9 +116,12 @@ def _bsp_target_info_aspect_impl(target, ctx):
             if not s.is_source
         ]
 
-    resources_attr = getattr(ctx.rule.attr, "resources", [])
-    resources = []
+    resources_attr = getattr(ctx.rule.attr, "resources", None)
+    if resources_attr == None and ctx.rule.kind.endswith("_resources"):
+        # https://github.com/JetBrains/intellij-community/blob/b41a4084da5521effedd334e28896fd9d07410da/build/jvm-rules/rules/resource.bzl#L49
+        resources_attr = getattr(ctx.rule.attr, "files", None)
 
+    resources = []
     if type(resources_attr) == "list":
         resources = [
             file_location(f)
@@ -128,9 +134,12 @@ def _bsp_target_info_aspect_impl(target, ctx):
     default_info = target[DefaultInfo]
     executable = default_info and default_info.files_to_run.executable != None
 
-    env = getattr(rule_attrs, "env", {})
-    if type(env) == "Target":
-        env = str(env.label)
+    raw_env = getattr(rule_attrs, "env", {})
+    if type(raw_env) == "Target":
+        raw_env = str(raw_env.label)
+
+    data_deps = getattr(ctx.rule.attr, "data", [])
+    env = do_starlark_string_expansion_dict(ctx, "env", raw_env, data_deps)
 
     info = dict(
         id = str(target.label),
@@ -160,7 +169,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
             exported_properties.update(extension_exported_properties)
 
     file_name = target.label.name
-    file_name = file_name + "-" + str(abs(hash(file_name)))
+    file_name = file_name[:MAX_FILENAME_LENGTH] + "-" + str(abs(hash(file_name)))
     if aspect_ids:
         file_name = file_name + "-" + str(abs(hash(".".join(aspect_ids))))
     file_name = "bsp.%s.bsp-info.textproto" % file_name

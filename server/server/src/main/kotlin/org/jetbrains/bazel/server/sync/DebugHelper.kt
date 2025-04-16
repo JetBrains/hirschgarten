@@ -3,34 +3,12 @@ package org.jetbrains.bazel.server.sync
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.model.isJvmLanguages
-import org.jetbrains.bsp.protocol.RemoteDebugData
-
-sealed interface DebugType {
-  data class UNKNOWN(val name: String) : DebugType // debug type unknown
-
-  data class JDWP(val port: Int) : DebugType // used for Java and Kotlin
-
-  data class GoDlv(val port: Int) : DebugType // used for Go Delve Debugger
-
-  companion object {
-    fun fromDebugData(params: RemoteDebugData?): DebugType? =
-      when (params?.debugType?.lowercase()) {
-        null -> null
-        "jdwp" -> JDWP(params.port)
-        "go_dlv" -> GoDlv(params.port)
-        else -> UNKNOWN(params.debugType)
-      }
-  }
-}
+import org.jetbrains.bsp.protocol.DebugType
 
 object DebugHelper {
   fun jdwpArgument(port: Int): String =
-    // all used options are defined in https://docs.oracle.com/javase/8/docs/technotes/guides/jpda/conninv.html#Invocation
-    "--wrapper_script_flag=--jvm_flag=-agentlib:jdwp=" +
-      "transport=dt_socket," +
-      "server=n," +
-      "suspend=y," +
-      "address=localhost:$port"
+    // https://bazel.build/reference/command-line-reference#flag--java_debug
+    "--wrapper_script_flag=--debug=$port"
 
   fun generateRunArguments(debugType: DebugType?): List<String> =
     when (debugType) {
@@ -63,6 +41,5 @@ object DebugHelper {
         } else {
         }
       is DebugType.GoDlv -> {}
-      is DebugType.UNKNOWN -> throw RuntimeException("Unknown debug type: ${debugType.name}")
     }
 }

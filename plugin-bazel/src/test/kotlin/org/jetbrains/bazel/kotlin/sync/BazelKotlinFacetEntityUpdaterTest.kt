@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
+package org.jetbrains.bazel.kotlin.sync
 
 import com.intellij.facet.FacetManager
 import com.intellij.openapi.module.ModuleManager
@@ -19,14 +19,11 @@ import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
-import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntity
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 import kotlin.io.path.name
 
-@DisplayName("kotlinFacetEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
-class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
+class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
   @Test
   fun `should add KotlinFacet when given KotlinAddendum`() {
     runInEdtAndWait {
@@ -83,7 +80,11 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
 
       // when
       updateWorkspaceModel {
-        val returnedModuleEntity = addEmptyJavaModuleEntity(module.name, it)
+        val returnedModuleEntity =
+          addEmptyJavaModuleEntity(
+            module.name,
+            it,
+          )
         addKotlinFacetEntity(javaModule, returnedModuleEntity, it)
       }
 
@@ -103,16 +104,7 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
     javaModule: JavaModule,
     parentEntity: ModuleEntity,
     builder: MutableEntityStorage,
-  ): KotlinSettingsEntity =
-    runBlocking {
-      val workspaceModelEntityUpdaterConfig =
-        WorkspaceModelEntityUpdaterConfig(
-          builder,
-          virtualFileUrlManager,
-          projectBasePath,
-          project,
-        )
-      val kotlinFacetEntityUpdater = KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
-      return@runBlocking kotlinFacetEntityUpdater.addEntity(javaModule, parentEntity)
-    }
+  ) = runBlocking {
+    BazelKotlinFacetEntityUpdater().addEntity(builder, javaModule, parentEntity, projectBasePath)
+  }
 }
