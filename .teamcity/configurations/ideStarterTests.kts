@@ -143,6 +143,14 @@ sealed class DisabledKotlinPluginTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:DisabledKotlinPluginTest"
 )
 
+sealed class PyCharmPluginTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Sync project in PyCharm test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:PyCharmTest"
+)
+
 object HotswapTestGitHub : HotswapTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
@@ -228,5 +236,13 @@ object DisabledKotlinPluginTestGitHub : DisabledKotlinPluginTest(
 )
 
 object DisabledKotlinPluginTestSpace : DisabledKotlinPluginTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object PyCharmTestGitHub : PyCharmPluginTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object PyCharmTestSpace : PyCharmPluginTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )

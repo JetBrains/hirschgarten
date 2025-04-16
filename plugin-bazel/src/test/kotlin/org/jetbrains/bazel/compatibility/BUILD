@@ -13,10 +13,10 @@ ide_starter_test(
 )
 
 ide_starter_test(
-    name = "PycharmTest",
+    name = "PyCharmTest",
     size = "large",
-    src = "PycharmTest.kt",
-    classname = "org.jetbrains.bazel.compatibility.PycharmTest",
+    src = "PyCharmTest.kt",
+    classname = "org.jetbrains.bazel.compatibility.PyCharmTest",
     tags = ["manual"],
     deps = [
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
