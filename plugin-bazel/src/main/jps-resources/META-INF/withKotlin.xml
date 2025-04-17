@@ -7,6 +7,8 @@
         <kotlinFacetEntityUpdater implementation="org.jetbrains.bazel.kotlin.sync.BazelKotlinFacetEntityUpdater"/>
         <projectPostSyncHook implementation="org.jetbrains.bazel.kotlin.sync.RefreshKotlinHighlightingPostSyncHook"/>
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.configuration.KotlinSourceTypeIconProvider"/>
+        <bazelCoverageClassNodeDecoratorPsiElementClassifier
+                implementation="org.jetbrains.bazel.kotlin.coverage.KotlinBazelCoverageClassNodeDecoratorPsiElementClassifier"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -15,3 +17,4 @@
         <notificationGroup displayType="BALLOON" id="Enable K2 Compiler Mode with Bazel"/>
     </extensions>
 </idea-plugin>
+
