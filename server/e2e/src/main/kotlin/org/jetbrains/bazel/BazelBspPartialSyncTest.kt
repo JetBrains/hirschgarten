@@ -45,7 +45,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
       testClient.test(3.minutes) { session ->
         // initial sync
         val workspaceBuildTargetsResult = session.server.workspaceBuildTargets(WorkspaceBuildTargetsParams("originId"))
-        testClient.assertJsonEquals(expectedWorkspaceBuildTargetsResult(), workspaceBuildTargetsResult)
+        testClient.assertTransformedEquals(expectedWorkspaceBuildTargetsResult(), workspaceBuildTargetsResult)
 
         // partial sync
         val partialSyncTargetId = Label.parse("$targetPrefix//java_targets:java_binary")
@@ -83,7 +83,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
         val expectedTargetsResult = WorkspaceBuildTargetsResult(listOf(javaTargetsJavaBinary))
 
         val workspaceBuildTargetsPartialResult = session.server.workspaceBuildTargetsPartial(workspaceBuildTargetsPartialParams)
-        testClient.assertJsonEquals(expectedTargetsResult, workspaceBuildTargetsPartialResult)
+        testClient.assertTransformedEquals(expectedTargetsResult, workspaceBuildTargetsPartialResult)
       }
     }
 

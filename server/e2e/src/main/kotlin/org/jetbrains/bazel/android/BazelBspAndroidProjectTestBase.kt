@@ -50,7 +50,7 @@ abstract class BazelBspAndroidProjectTestBase : BazelBspTestBaseScenario() {
     ) {
       testClient.test(timeout = 5.minutes) { session ->
         val result = session.server.workspaceBuildTargets(WorkspaceBuildTargetsParams("originId"))
-        testClient.assertJsonEquals<WorkspaceBuildTargetsResult>(expectedWorkspaceBuildTargetsResult(), result)
+        testClient.assertTransformedEquals<WorkspaceBuildTargetsResult>(expectedWorkspaceBuildTargetsResult(), result)
       }
     }
 

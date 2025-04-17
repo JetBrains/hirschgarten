@@ -42,7 +42,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
             .workspaceBuildTargetsFirstPhase(
               WorkspaceBuildTargetsFirstPhaseParams("test origin id"),
             )
-        testClient.assertJsonEquals(expectedWorkspaceBuildTargetsResult(), firstPhaseResult)
+        testClient.assertTransformedEquals(expectedWorkspaceBuildTargetsResult(), firstPhaseResult)
 
         assertFalse(javaLibraryJar.exists())
         assertFalse(javaBinaryJar.exists())

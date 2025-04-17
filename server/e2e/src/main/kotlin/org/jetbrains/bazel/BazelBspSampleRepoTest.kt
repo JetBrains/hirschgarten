@@ -763,7 +763,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     ) {
       client.test(30.seconds) { session ->
         val targets = session.server.workspaceNonModuleTargets()
-        client.assertJsonEquals(expectedTargets, targets)
+        client.assertTransformedEquals(expectedTargets, targets)
       }
     }
   }

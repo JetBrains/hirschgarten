@@ -168,7 +168,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep("libraries results") {
       bazelTestClient.test(timeout = 1.minutes) { session ->
         val libraries = session.server.workspaceGoLibraries()
-        bazelTestClient.assertJsonEquals<WorkspaceGoLibrariesResult>(expectedLibrariesResult(), libraries)
+        bazelTestClient.assertTransformedEquals<WorkspaceGoLibrariesResult>(expectedLibrariesResult(), libraries)
       }
     }
 

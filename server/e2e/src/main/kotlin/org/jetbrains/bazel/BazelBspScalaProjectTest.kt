@@ -165,10 +165,10 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
               actual.buildTarget == expected.buildTarget &&
               actual.textDocument == expected.textDocument
           }?.let {
-            testClient.assertJsonEquals(expected, it)
+            testClient.assertTransformedEquals(expected, it)
           } ?: error("Expected diagnostics $expected not found. Actual diagnostics: ${session.client.publishDiagnosticsNotifications}")
       }
-      testClient.assertJsonEquals(expectedResult, result)
+      testClient.assertTransformedEquals(expectedResult, result)
     }
   }
 

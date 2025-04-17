@@ -37,7 +37,7 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
     ) {
       testClient.test(timeout = 5.minutes) { session ->
         val result = session.server.workspaceBuildTargets(WorkspaceBuildTargetsParams("originId"))
-        testClient.assertJsonEquals<WorkspaceBuildTargetsResult>(expectedWorkspaceBuildTargetsResult(), result)
+        testClient.assertTransformedEquals<WorkspaceBuildTargetsResult>(expectedWorkspaceBuildTargetsResult(), result)
         assertFalse(mainJar.exists())
         assertFalse(genruleShouldNotBeBuilt.exists())
       }
@@ -49,7 +49,7 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
     ) {
       testClient.test(timeout = 5.minutes) { session ->
         val result = session.server.workspaceBuildAndGetBuildTargets(WorkspaceBuildTargetsParams("originId"))
-        testClient.assertJsonEquals<WorkspaceBuildTargetsResult>(expectedWorkspaceBuildTargetsResult(), result)
+        testClient.assertTransformedEquals<WorkspaceBuildTargetsResult>(expectedWorkspaceBuildTargetsResult(), result)
         assertTrue(mainJar.exists())
         assertFalse(genruleShouldNotBeBuilt.exists())
       }
