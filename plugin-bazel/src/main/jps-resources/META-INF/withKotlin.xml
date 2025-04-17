@@ -9,6 +9,7 @@
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.kotlin.configuration.KotlinSourceTypeIconProvider"/>
         <bazelCoverageClassNodeDecoratorPsiElementClassifier
                 implementation="org.jetbrains.bazel.kotlin.coverage.KotlinBazelCoverageClassNodeDecoratorPsiElementClassifier"/>
+        <unresolvedImportChecker implementation ="org.jetbrains.bazel.kotlin.ui.notifications.KotlinUnresolvedImportChecker"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
