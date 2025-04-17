@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.java.jvm
+package org.jetbrains.bazel.java.junit
 
 import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiClass

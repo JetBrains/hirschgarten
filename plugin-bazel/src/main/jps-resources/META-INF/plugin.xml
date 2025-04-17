@@ -181,7 +181,7 @@
                 implementation="org.jetbrains.bazel.flow.open.CounterPlatformProjectConfigurator"
                 order="last"/>
 
-        <psiElementConfigurationLocator implementation="org.jetbrains.bazel.java.jvm.JavaPsiElementConfigurationLocator"/>
+        <psiElementConfigurationLocator implementation="org.jetbrains.bazel.java.junit.JavaPsiElementConfigurationLocator"/>
         <unresolvedImportChecker implementation ="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker"/>
         <!--    <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"-->
         <!--                    serviceImplementation="org.jetbrains.bazel.services.SingleFileSourcesTrackerImpl"-->
