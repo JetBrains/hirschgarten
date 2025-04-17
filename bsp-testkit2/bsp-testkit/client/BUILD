@@ -5,7 +5,6 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//bsp-testkit2/bsp-testkit/utils:JsonComparator",
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/connection",
         "//protocol",
