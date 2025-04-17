@@ -15,6 +15,7 @@ intellij_integration_test_suite(
     ],
     deps = [
         "//plugin-bazel/src:test_fixtures",
+        "//rules_intellij/intellij_platform_sdk:kotlin_for_tests",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/resourceUtil",
         "//rules_intellij/third_party/android:android_for_tests",
         "//rules_intellij/third_party/code_with_me:code_with_me_for_tests",
