@@ -75,6 +75,8 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/golang/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/golang/ui/gutters",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/hotswap",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/junit",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java/junit",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/hotswap/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/intellij",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/coverage",

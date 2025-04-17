@@ -107,6 +107,9 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.unresolvedImportChecker"
                         interface="org.jetbrains.bazel.ui.notifications.UnresolvedImportChecker"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bazel.psiElementConfigurationLocator"
+                        interface="org.jetbrains.bazel.jvm.junit.PsiElementConfigurationLocator"
+                        dynamic="true"/>
     </extensionPoints>
 
     <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -178,6 +181,7 @@
                 implementation="org.jetbrains.bazel.flow.open.CounterPlatformProjectConfigurator"
                 order="last"/>
 
+        <psiElementConfigurationLocator implementation="org.jetbrains.bazel.java.jvm.JavaPsiElementConfigurationLocator"/>
         <unresolvedImportChecker implementation ="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker"/>
         <!--    <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"-->
         <!--                    serviceImplementation="org.jetbrains.bazel.services.SingleFileSourcesTrackerImpl"-->
