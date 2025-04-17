@@ -7,7 +7,9 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import javax.swing.Icon
 
-class StarlarkFunctionDeclaration(node: ASTNode) : StarlarkNamedElement(node), StarlarkCallable {
+class StarlarkFunctionDeclaration(node: ASTNode) :
+  StarlarkNamedElement(node),
+  StarlarkCallable {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitFunctionDeclaration(this)
 
   override fun getIcon(flags: Int): Icon? = PlatformIcons.FUNCTION_ICON
