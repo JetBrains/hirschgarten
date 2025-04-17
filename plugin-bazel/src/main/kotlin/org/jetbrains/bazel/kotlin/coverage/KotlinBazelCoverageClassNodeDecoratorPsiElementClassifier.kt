@@ -5,6 +5,5 @@ import org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecoratorPsiElemen
 import org.jetbrains.kotlin.psi.KtClassOrObject
 
 class KotlinBazelCoverageClassNodeDecoratorPsiElementClassifier : BazelCoverageClassNodeDecoratorPsiElementClassifier {
-  override fun shouldShowCoverageForElement(psiElement: PsiElement): Boolean =
-    psiElement is KtClassOrObject
+  override fun shouldShowCoverageForElement(psiElement: PsiElement): Boolean = psiElement is KtClassOrObject
 }

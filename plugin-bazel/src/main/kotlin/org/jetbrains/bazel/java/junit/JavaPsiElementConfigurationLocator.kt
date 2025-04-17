@@ -7,9 +7,7 @@ import com.intellij.psi.PsiMethod
 import org.jetbrains.bazel.jvm.junit.PsiElementConfigurationLocator
 
 class JavaPsiElementConfigurationLocator : PsiElementConfigurationLocator {
-  override fun getPsiMethod(callerPsiElement: PsiElement): PsiMethod? =
-    runReadAction { callerPsiElement.parent as? PsiMethod }
+  override fun getPsiMethod(callerPsiElement: PsiElement): PsiMethod? = runReadAction { callerPsiElement.parent as? PsiMethod }
 
-  override fun getPsiClass(callerPsiElement: PsiElement): PsiClass? =
-    runReadAction { callerPsiElement.parent as? PsiClass }
+  override fun getPsiClass(callerPsiElement: PsiElement): PsiClass? = runReadAction { callerPsiElement.parent as? PsiClass }
 }

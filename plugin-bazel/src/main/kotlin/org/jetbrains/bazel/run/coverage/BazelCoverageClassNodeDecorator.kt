@@ -40,6 +40,9 @@ interface BazelCoverageClassNodeDecoratorPsiElementClassifier {
   fun shouldShowCoverageForElement(psiElement: PsiElement): Boolean
 
   companion object {
-    val ep = ExtensionPointName.create<BazelCoverageClassNodeDecoratorPsiElementClassifier>("org.jetbrains.bazel.bazelCoverageClassNodeDecoratorPsiElementClassifier")
+    val ep =
+      ExtensionPointName.create<BazelCoverageClassNodeDecoratorPsiElementClassifier>(
+        "org.jetbrains.bazel.bazelCoverageClassNodeDecoratorPsiElementClassifier",
+      )
   }
 }
