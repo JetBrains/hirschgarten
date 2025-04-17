@@ -10,6 +10,7 @@ import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
@@ -49,7 +50,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
       "compare workspace targets results",
     ) {
       testClient.test(60.seconds) { session ->
-        val targetsResult = session.server.workspaceBuildTargets()
+        val targetsResult = session.server.workspaceBuildTargets(WorkspaceBuildTargetsParams("originId"))
 
         targetsResult.targets.size shouldBe 4
         targetsResult.targets.map { it.id } shouldContainExactlyInAnyOrder

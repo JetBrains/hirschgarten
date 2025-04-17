@@ -11,6 +11,9 @@ def create_all_extension_info(target, ctx, output_groups, dep_targets):
 COMPILE = 0
 RUNTIME = 1
 
+# Max filename length is 255 symbols on all major OSes. Choose a smaller number to make up for additional suffixes/prefixes.
+MAX_FILENAME_LENGTH = 200
+
 def make_dep(dep, dependency_type):
     return struct(
         id = str(dep.bsp_info.id),
@@ -166,7 +169,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
             exported_properties.update(extension_exported_properties)
 
     file_name = target.label.name
-    file_name = file_name + "-" + str(abs(hash(file_name)))
+    file_name = file_name[:MAX_FILENAME_LENGTH] + "-" + str(abs(hash(file_name)))
     if aspect_ids:
         file_name = file_name + "-" + str(abs(hash(".".join(aspect_ids))))
     file_name = "bsp.%s.bsp-info.textproto" % file_name

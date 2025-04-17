@@ -71,7 +71,7 @@ fun findBuildFileTarget(project: Project, label: Label): PsiElement? {
   val target = label.target as? SingleTarget
   if (target != null) {
     val ruleTarget = buildFile.findRuleTarget(target.targetName)
-    return ruleTarget?.getArgumentList()?.getNameArgument()
+    ruleTarget?.getArgumentList()?.getNameArgument()?.let { return it }
   }
   // Fallback to the BUILD file itself
   return buildFile

@@ -86,6 +86,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/sync/ideStarter",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin/ui/gutters",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl",

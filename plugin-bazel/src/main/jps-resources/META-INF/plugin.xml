@@ -163,6 +163,10 @@
         <!--    <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"-->
         <!--                    serviceImplementation="org.jetbrains.bazel.services.SingleFileSourcesTrackerImpl"-->
         <!--                    overrides="true"/>-->
+
+        <runLineMarkerContributor
+                implementationClass="org.jetbrains.bazel.jvm.ui.gutters.BazelJavaRunLineMarkerContributor"
+                language="JVM"/>
         <registryKey defaultValue="false" description="Build project on initial project sync"
                      key="bsp.build.project.on.sync"/>
         <registryKey defaultValue="true" description="Python modules support" key="bsp.python.support"/>
@@ -248,6 +252,7 @@
         <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook"/>
 
         <projectSyncHook implementation="org.jetbrains.bazel.services.InvalidTargetsProjectSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook"/>
         <!-- Must be last because of JvmSyncHook can override added targets by it -->
         <projectSyncHook implementation="org.jetbrains.bazel.nonmodule.sync.NonModuleTargetsSyncHook" order="last"/>
         <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->

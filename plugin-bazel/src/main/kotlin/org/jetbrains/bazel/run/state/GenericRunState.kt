@@ -9,8 +9,10 @@ import com.intellij.util.xmlb.annotations.Attribute
 import org.jetbrains.bazel.run.BazelRunConfigurationState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 
-class GenericRunState :
-  BazelRunConfigurationState<GenericRunState>(),
+class GenericRunState : AbstractGenericRunState<GenericRunState>()
+
+open class AbstractGenericRunState<T : AbstractGenericRunState<T>> :
+  BazelRunConfigurationState<T>(),
   HasEnv,
   HasProgramArguments,
   HasWorkingDirectory,
@@ -30,12 +32,12 @@ class GenericRunState :
   @com.intellij.configurationStore.Property(description = "Environment variables")
   override var env: EnvironmentVariablesDataOptions by property(EnvironmentVariablesDataOptions())
 
-  override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<GenericRunState> = GenericRunStateEditor(configuration)
+  override fun getEditor(configuration: BazelRunConfiguration): SettingsEditor<T> = GenericRunStateEditor(configuration)
 }
 
-class GenericRunStateEditor(private val config: BazelRunConfiguration) :
-  FragmentedSettingsEditor<GenericRunState>(config.handler?.state as GenericRunState) {
-  override fun createFragments(): Collection<SettingsEditorFragment<GenericRunState, *>> =
+class GenericRunStateEditor<T : AbstractGenericRunState<T>>(private val config: BazelRunConfiguration) :
+  FragmentedSettingsEditor<T>(config.handler?.state as T) {
+  override fun createFragments(): Collection<SettingsEditorFragment<T, *>> =
     SettingsEditorFragmentContainer.fragments {
       add(CommonParameterFragments.createHeader("Run Configuration"))
 

@@ -5,6 +5,7 @@ import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
 import kotlin.io.path.exists
@@ -48,7 +49,7 @@ abstract class BazelBspAndroidProjectTestBase : BazelBspTestBaseScenario() {
       "Compare workspace/buildTargets",
     ) {
       testClient.test(timeout = 5.minutes) { session ->
-        val result = session.server.workspaceBuildTargets()
+        val result = session.server.workspaceBuildTargets(WorkspaceBuildTargetsParams("originId"))
         testClient.assertJsonEquals<WorkspaceBuildTargetsResult>(expectedWorkspaceBuildTargetsResult(), result)
       }
     }
@@ -59,7 +60,7 @@ abstract class BazelBspAndroidProjectTestBase : BazelBspTestBaseScenario() {
     ) {
       testClient.test(timeout = 5.minutes) { session ->
         // Make sure Bazel unpacks all the dependent AARs
-        session.server.workspaceBuildAndGetBuildTargets()
+        session.server.workspaceBuildAndGetBuildTargets(WorkspaceBuildTargetsParams("originId"))
         val result = session.server.workspaceLibraries()
         val appCompatLibrary = result.libraries.first { "androidx_appcompat_appcompat" in it.id.toString() }
 

@@ -265,9 +265,12 @@ class BazelProjectMapper(
       }.toMap()
 
   private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo) =
-    targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
-      targetInfo.hasJvmTargetInfo() &&
-      !hasKnownJvmSources(targetInfo)
+    !targetInfo.kind.endsWith("_resources") &&
+      (
+        targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
+          targetInfo.hasJvmTargetInfo() &&
+          !hasKnownJvmSources(targetInfo)
+      )
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
@@ -1063,7 +1066,9 @@ class BazelProjectMapper(
   }
 
   private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): Set<Path> =
-    bazelPathsResolver.resolvePaths(target.resourcesList).toSet() + languagePlugin.resolveAdditionalResources(target)
+    (bazelPathsResolver.resolvePaths(target.resourcesList) + languagePlugin.resolveAdditionalResources(target))
+      .filter { it.exists() }
+      .toSet()
 
   private fun environmentItem(target: TargetInfo): Map<String, String> {
     val inheritedEnvs = collectInheritedEnvs(target)
