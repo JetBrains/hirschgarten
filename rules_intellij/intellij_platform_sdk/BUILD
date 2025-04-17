@@ -52,7 +52,7 @@ java_library(
         intellij = [
             ":sdk",
             ":java",
-            ":kotlin",
+#             ":kotlin",
             ":junit",
             ":platform_images",
         ],
