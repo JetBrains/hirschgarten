@@ -20,7 +20,6 @@ SPACE=[\ \t]
 
 SQ=[']
 DQ=[\"]
-DHYP=[\-\-]
 HYP=[\-]
 
 PLUS=[+]
@@ -51,14 +50,13 @@ SQ_WORD={SQ}{QUOTED_WORD}{SQ}
 DQ_WORD={DQ}{QUOTED_WORD}{DQ}
 
 UNEXPECTED_WORD=[^-{NL}{SPACE}][^{NL}{SPACE}]*
-UNEXPECTED_VAL=[^{NL}]+
 FLAG_WORD=[a-z_:]*
 
 INTEGER=[0-9]+
-FLOAT=[0-9]*\.[0-9]+
 
 OPTION={HYP}{HYP}{FLAG_WORD} | {HYP}{FLAG_WORD}
 
+// TODO: check if it is possible to generate this list dynamicly and change lexer on updates
 OPTION_REQ_VALUE="--loading_phase_threads" |
                  "--aspect_deps" |
                  "--graph:conditional_edges_limit" |
@@ -73,65 +71,50 @@ OPTION_REQ_VALUE="--loading_phase_threads" |
                  "--deleted_packages" |
                  "--package_path"
 
-
-COMMENT=#({SOFT_NL} | [^\r\n])*
-COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" | "kind" | "labels" | "loadfiles" | "rdeps" | "allrdeps" | "same_pkg_direct_rdeps" | "siblings" | "some" | "somepath" | "tests" | "visible"
-
 // lexing states:
 %xstate EXPR
-%xstate WORD_DQ
-%xstate WORD_SQ
+%xstate WORD_DQ, WORD_SQ
 
-
-%xstate FLAG, VALUE, PRE_VALUE
-%xstate VALUE_SQ, VALUE_DQ
-
+%xstate FLAG
+%xstate PRE_VALUE
+%xstate VALUE, VALUE_SQ, VALUE_DQ
 %xstate SPACE_NEEDED
-
 
 %%
 
-
+// initial state, which starts expression or flag
 <YYINITIAL> {
     ({SOFT_NL} | [{SPACE}{NL}])+      { return TokenType.WHITE_SPACE; }
-    {COMMENT}+                        { return BazelqueryTokenTypes.COMMENT; }
-
-    "bazel "                           { return BazelqueryTokenTypes.BAZEL; }
-    "query "                           { return BazelqueryTokenTypes.QUERY; }
-    "bazel"                           { return BazelqueryTokenTypes.BAZEL_NO_SPACE; }
-    "query"                           { return BazelqueryTokenTypes.QUERY_NO_SPACE; }
 
     {HYP}                             { yybegin(FLAG);  yypushback(1); }
-
     ([A-Za-z0-9/@._:$~\[\]] | {SQ} | {DQ})           { yybegin(EXPR); yypushback(1); }
     [^]                               { yybegin(FLAG);  yypushback(1); }
 }
 
+// _____EXPRESSIONS_____
+
+// states to tokenize the word in quotes inside the expression
 <WORD_SQ> {
-     {SQ}{SQ}                          { yybegin(EXPR); return BazelqueryTokenTypes.SQ_EMPTY; }
-     {SQ_WORD}                         { yybegin(EXPR); return BazelqueryTokenTypes.SQ_WORD; }
-     {SQ}{QUOTED_WORD}                 { return BazelqueryTokenTypes.SQ_UNFINISHED; }
-     {SQ}                              { return BazelqueryTokenTypes.SQ_UNFINISHED; }
-     [^]                               { yybegin(EXPR); yypushback(1); }
+     {SQ}{SQ}                         { yybegin(EXPR); return BazelqueryTokenTypes.SQ_EMPTY; }
+     {SQ_WORD}                        { yybegin(EXPR); return BazelqueryTokenTypes.SQ_WORD; }
+     {SQ}{QUOTED_WORD}                { return BazelqueryTokenTypes.SQ_UNFINISHED; }
+     {SQ}                             { return BazelqueryTokenTypes.SQ_UNFINISHED; }
+     [^]                              { yybegin(EXPR); yypushback(1); }
  }
 
 <WORD_DQ> {
-      {DQ}{DQ}                          { yybegin(EXPR); return BazelqueryTokenTypes.DQ_EMPTY; }
-      {DQ_WORD}                         { yybegin(EXPR); return BazelqueryTokenTypes.DQ_WORD; }
-      {DQ}{QUOTED_WORD}                 { return BazelqueryTokenTypes.DQ_UNFINISHED; }
-      {DQ}                              { return BazelqueryTokenTypes.DQ_UNFINISHED; }
-      [^]                               { yybegin(EXPR); yypushback(1); }
+      {DQ}{DQ}                        { yybegin(EXPR); return BazelqueryTokenTypes.DQ_EMPTY; }
+      {DQ_WORD}                       { yybegin(EXPR); return BazelqueryTokenTypes.DQ_WORD; }
+      {DQ}{QUOTED_WORD}               { return BazelqueryTokenTypes.DQ_UNFINISHED; }
+      {DQ}                            { return BazelqueryTokenTypes.DQ_UNFINISHED; }
+      [^]                             { yybegin(EXPR); yypushback(1); }
   }
 
-
+// expression tokenization
 <EXPR> {
     ({SOFT_NL} | [{SPACE}{NL}])+      { return TokenType.WHITE_SPACE; }
-    {DQ}                              { yybegin(WORD_DQ); yypushback(1); }
-    {SQ}                              { yybegin(WORD_SQ); yypushback(1); }
 
-    {LEFT_PAREN}                      { return BazelqueryTokenTypes.LEFT_PAREN; }
-    {RIGHT_PAREN}                     { return BazelqueryTokenTypes.RIGHT_PAREN; }
-
+    // operations
     {PLUS} | "union"                  { return BazelqueryTokenTypes.UNION; }
     {HYPHEN} | "except"               { return BazelqueryTokenTypes.EXCEPT; }
     {CARET} | "intersect"             { return BazelqueryTokenTypes.INTERSECT; }
@@ -140,6 +123,7 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
     "="                               { return BazelqueryTokenTypes.EQUALS; }
     "set"                             { return BazelqueryTokenTypes.SET; }
 
+    // commands (=functions)
     "allpaths"                        { return BazelqueryTokenTypes.ALLPATHS; }
     "attr"                            { return BazelqueryTokenTypes.ATTR; }
     "buildfiles"                      { return BazelqueryTokenTypes.BUILDFILES; }
@@ -158,20 +142,29 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
     "tests"                           { return BazelqueryTokenTypes.TESTS; }
     "visible"                         { return BazelqueryTokenTypes.VISIBLE; }
 
+
+    {LEFT_PAREN}                      { return BazelqueryTokenTypes.LEFT_PAREN; }
+    {RIGHT_PAREN}                     { return BazelqueryTokenTypes.RIGHT_PAREN; }
     ","                               { return BazelqueryTokenTypes.COMMA; }
 
-
     {INTEGER}                         { return BazelqueryTokenTypes.INTEGER; }
+    {DQ}                              { yybegin(WORD_DQ); yypushback(1); }
+    {SQ}                              { yybegin(WORD_SQ); yypushback(1); }
     {UNQUOTED_WORD}                   { return BazelqueryTokenTypes.UNQUOTED_WORD; }
+
     [^]                               { yybegin(YYINITIAL); yypushback(1); }
 }
 
+
+// _____FLAGS_____
+
+// expecting space at the end of option (with or without value)
 <SPACE_NEEDED> {
-    {SPACE} | {NL}                          { yybegin(YYINITIAL); return BazelqueryTokenTypes.WHITE_SPACE; }
+    {SPACE} | {NL}                    { yybegin(YYINITIAL); return BazelqueryTokenTypes.WHITE_SPACE; }
     [^]                               { yybegin(YYINITIAL); yypushback(1); return BazelqueryTokenTypes.MISSING_SPACE; }
 }
 
-
+// option name
 <FLAG> {
     {HYP} | {HYP}{HYP}                { return BazelqueryTokenTypes.UNFINISHED_FLAG; }
     {OPTION_REQ_VALUE}{SPACE}         { yybegin(PRE_VALUE); yypushback(1); return BazelqueryTokenTypes.FLAG; }
@@ -184,9 +177,13 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
     {UNEXPECTED_WORD}                 { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNEXPECTED; }
 }
 
+// expecting space or equals sign if option requires value
 <PRE_VALUE> {
     {SPACE} | {EQALS}                 { yybegin(VALUE); return BazelqueryTokenTypes.EQUALS; }
 }
+
+
+// value of the option (can be also quoted)
 
 <VALUE> {
     ({SOFT_NL} | [{SPACE}{NL}])+      { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
@@ -213,6 +210,3 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
     {DQ}                              { yybegin(SPACE_NEEDED); return BazelqueryTokenTypes.UNFINISHED_VAL; }
     [^]                               { yybegin(YYINITIAL); yypushback(1); }
 }
-
-
-

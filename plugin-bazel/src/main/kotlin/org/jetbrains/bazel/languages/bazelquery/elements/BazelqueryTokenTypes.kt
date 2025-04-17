@@ -17,9 +17,6 @@ object BazelqueryTokenTypes {
   val RIGHT_PAREN = BazelqueryTokenType(")")
 
   @JvmField
-  val COMMAND = BazelqueryTokenType("COMMAND")
-
-  @JvmField
   val ALLPATHS = BazelqueryTokenType("ALLPATHS")
 
   @JvmField
@@ -123,18 +120,6 @@ object BazelqueryTokenTypes {
 
   @JvmField
   val SET = BazelqueryTokenType("SET")
-
-  @JvmField
-  val BAZEL = BazelqueryTokenType("BAZEL")
-
-  @JvmField
-  val QUERY = BazelqueryTokenType("QUERY")
-
-  @JvmField
-  val BAZEL_NO_SPACE = BazelqueryTokenType("BAZEL_NO_SPACE")
-
-  @JvmField
-  val QUERY_NO_SPACE = BazelqueryTokenType("QUERY_NO_SPACE")
 
   @JvmField
   val INTEGER = BazelqueryTokenType("INTEGER")
