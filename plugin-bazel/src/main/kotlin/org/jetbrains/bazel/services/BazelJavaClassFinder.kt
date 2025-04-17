@@ -9,6 +9,7 @@ import com.intellij.psi.PsiClassOwner
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementFinder
 import com.intellij.psi.PsiJavaFile
+import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiPackage
 import com.intellij.psi.impl.ResolveScopeManager
@@ -18,7 +19,6 @@ import com.intellij.psi.search.UseScopeEnlarger
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.workspacemodel.entities.BazelJavaSourceRootEntity
 import org.jetbrains.bazel.workspacemodel.entities.PackageNameId
-import org.jetbrains.kotlin.idea.core.util.toPsiFile
 
 /**
  * Adding dummy modules for generated source files can make large parts of the build directory get indexed.
@@ -66,7 +66,7 @@ internal class BazelJavaClassFinder(private val project: Project) : PsiElementFi
       .partition { classNameHint != null && it.nameWithoutExtension == classNameHint }
       .let { it.first.asSequence() + it.second.asSequence() }
       .filter { scope.contains(it) }
-      .mapNotNull { it.toPsiFile(project) }
+      .mapNotNull { PsiManager.getInstance(project).findFile(it) }
       .mapNotNull { it as? PsiClassOwner }
       .flatMap { it.classes.asSequence() }
 }
