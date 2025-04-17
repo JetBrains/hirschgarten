@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.formatting
 
+import com.intellij.application.options.CodeStyle
 import com.intellij.codeInsight.hint.HintManager
 import com.intellij.codeInsight.hint.HintManagerImpl
 import com.intellij.codeInsight.hint.HintUtil
@@ -7,13 +8,17 @@ import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessAdapter
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.ProcessEvent
+import com.intellij.formatting.FormattingContext
+import com.intellij.formatting.FormattingMode
 import com.intellij.formatting.service.AsyncDocumentFormattingService
 import com.intellij.formatting.service.AsyncFormattingRequest
 import com.intellij.formatting.service.FormattingService.Feature
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.readAndWriteAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileTypes.FileTypeRegistry
+import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
@@ -22,6 +27,7 @@ import com.intellij.ui.LightweightHint
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
 private val LOG = logger<StarlarkFormattingService>()
@@ -108,7 +114,6 @@ private open class BuildifierProcessListener(private val request: AsyncFormattin
       showFormattedLinesInfo(BazelPluginBundle.message("buildifier.formatted.ignored"))
       request.onTextReady(null)
     } else {
-      showFormattedLinesInfo(BazelPluginBundle.message("buildifier.formatted.success"))
       request.onTextReady(output.stdout)
     }
   }
@@ -135,3 +140,13 @@ private open class BuildifierProcessListener(private val request: AsyncFormattin
         ModalityState.defaultModalityState(),
       )
 }
+
+suspend fun formatBuildFile(buildFile: StarlarkFile): Unit =
+  readAndWriteAction {
+    val formattingService = StarlarkFormattingService()
+    val textRange = TextRange.from(0, buildFile.textLength)
+    val formattingContext = FormattingContext.create(buildFile, textRange, CodeStyle.getSettings(buildFile), FormattingMode.REFORMAT)
+    writeAction {
+      formattingService.formatDocument(buildFile.containingFile.fileDocument, listOf(textRange), formattingContext, true, true)
+    }
+  }

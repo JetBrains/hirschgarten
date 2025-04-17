@@ -400,6 +400,8 @@
 
         <formattingService
                 implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService"/>
+        <actionOnSave id="StarlarkFormattingActionOnSave"
+                      implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingActionOnSave"/>
 
         <runLineMarkerContributor implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor"
                                   language="Starlark"/>
