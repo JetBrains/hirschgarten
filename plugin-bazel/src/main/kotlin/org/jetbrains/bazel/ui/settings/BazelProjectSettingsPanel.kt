@@ -26,6 +26,7 @@ import kotlin.io.path.pathString
 internal class BazelProjectSettingsConfigurable(private val project: Project) : SearchableConfigurable {
   private val projectViewPathField: TextFieldWithBrowseButton
   private val buildifierExecutablePathField: TextFieldWithBrowseButton
+  private val runBuildifierOnSaveCheckBox: JBCheckBox
   private val showExcludedDirectoriesAsSeparateNodeCheckBox: JBCheckBox
 
   private var currentProjectSettings = project.bazelProjectSettings
@@ -33,6 +34,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
   init {
     projectViewPathField = initProjectViewFileField()
     buildifierExecutablePathField = initBuildifierExecutablePathField()
+    runBuildifierOnSaveCheckBox = initRunBuildifierOnSaveCheckBox()
     showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
   }
 
@@ -77,6 +79,14 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
       buildifierExecutablePathField.text.takeIf { it.isNotBlank() } ?: BuildifierUtil.detectBuildifierExecutable()?.absolutePath,
     )
 
+  private fun initRunBuildifierOnSaveCheckBox(): JBCheckBox =
+    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.run.buildifier.on.save.checkbox.text")).apply {
+      isSelected = currentProjectSettings.runBuildifierOnSave
+      addItemListener {
+        currentProjectSettings = currentProjectSettings.copy(runBuildifierOnSave = isSelected)
+      }
+    }
+
   private fun initShowExcludedDirectoriesAsSeparateNodeCheckBox(): JBCheckBox =
     JBCheckBox(BazelPluginBundle.message("project.settings.plugin.show.excluded.directories.as.separate.node.checkbox.text")).apply {
       isSelected = currentProjectSettings.showExcludedDirectoriesAsSeparateNode
@@ -91,6 +101,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
       row(BazelPluginBundle.message("project.settings.buildifier.label")) {
         cell(buildifierExecutablePathField).align(Align.FILL).validationInfo { buildifierExecutableValidationInfo() }
       }
+      row { cell(runBuildifierOnSaveCheckBox).align(Align.FILL) }
       row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
     }
 
@@ -117,6 +128,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
     super.reset()
     projectViewPathField.text = savedProjectViewPath()
     buildifierExecutablePathField.text = getBuildifierExecPathPlaceholderMessage()
+    runBuildifierOnSaveCheckBox.isSelected = project.bazelProjectSettings.runBuildifierOnSave
 
     showExcludedDirectoriesAsSeparateNodeCheckBox.isSelected = project.bazelProjectSettings.showExcludedDirectoriesAsSeparateNode
 
@@ -153,6 +165,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
         "project.settings.project.view.label",
         "project.settings.plugin.show.excluded.directories.as.separate.node.checkbox.text",
         "project.settings.plugin.title",
+        "project.settings.plugin.run.buildifier.on.save.checkbox.text",
       )
   }
 }
