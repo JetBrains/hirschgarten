@@ -35,12 +35,13 @@ object SearchUtils {
       is StarlarkFile -> parent.searchInTopLevel(processor, stopAt)
       is StarlarkFunctionDeclaration -> parent.searchInParameters(processor)
       is StarlarkForStatement -> parent.searchInLoopVariables(processor)
-      is StarlarkStatementList -> parent.searchInAssignments(processor)
+      is StarlarkStatementList -> parent.searchInAssignmentsAndFunctionDeclarations(processor)
       else -> true
     }
 
-  private fun StarlarkStatementList.searchInAssignments(processor: Processor<StarlarkElement>): Boolean =
-    getAssignments().all { it.check(processor) }
+  private fun StarlarkStatementList.searchInAssignmentsAndFunctionDeclarations(processor: Processor<StarlarkElement>): Boolean =
+    getAssignments().all { it.check(processor) } &&
+      getFunctionDeclarations().all { processor.process(it) }
 
   private fun StarlarkFunctionDeclaration.searchInParameters(processor: Processor<StarlarkElement>): Boolean =
     getParameters().all { processor.process(it) }
