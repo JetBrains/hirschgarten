@@ -70,6 +70,10 @@ class FunctionParsing(context: ParsingContext) : Parsing(context) {
     var parameterType = StarlarkElementTypes.MANDATORY_PARAMETER
     if (atToken(StarlarkTokenTypes.MULT)) {
       builder.advanceLexer()
+      if (atToken(StarlarkTokenTypes.COMMA)) {
+        parameter.done(StarlarkElementTypes.KEYWORD_ONLY_BOUNDARY)
+        return true
+      }
       parameterType = StarlarkElementTypes.VARIADIC_PARAMETER
     } else if (atToken(StarlarkTokenTypes.EXP)) {
       builder.advanceLexer()
