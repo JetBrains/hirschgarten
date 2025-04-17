@@ -19,7 +19,7 @@ open class BazelJavaRunLineMarkerContributor : BspRunLineMarkerContributor() {
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1316
   override fun getSingleTestFilter(element: PsiElement): String? {
-    val psiIdentifier = PsiTreeUtil.getParentOfType<PsiNameIdentifierOwner>(element, true)
+    val psiIdentifier = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java, true)
     val functionName = psiIdentifier?.getFunctionName()
     if (psiIdentifier?.isMethod() == true) {
       val className = psiIdentifier.getClassName() ?: return functionName
@@ -30,7 +30,7 @@ open class BazelJavaRunLineMarkerContributor : BspRunLineMarkerContributor() {
 
   protected open fun PsiNameIdentifierOwner.getFunctionName(): String? = if (this.isClassOrMethod()) tryGetFQN() else null
 
-  protected open fun PsiNameIdentifierOwner.getClassName(): String? = PsiTreeUtil.getParentOfType<PsiClass>(this, true)?.name
+  protected open fun PsiNameIdentifierOwner.getClassName(): String? = PsiTreeUtil.getParentOfType(this, PsiClass::class.java, true)?.name
 
   protected open fun PsiNameIdentifierOwner.tryGetFQN(): String? =
     if (this is PsiClass) {
