@@ -28,6 +28,7 @@ class StarlarkAssignmentReferenceTest : StarlarkReferencesTestCase() {
     resolved shouldBe expectedResolved
   }
 
+  @Test
   fun `should resolve tuple assignment`() {
     // given
     myFixture.configureByFile("TupleAssignmentReference.bzl")
