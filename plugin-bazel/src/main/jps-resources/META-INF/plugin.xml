@@ -177,7 +177,7 @@
         <!--                    overrides="true"/>-->
 
         <runLineMarkerContributor
-                implementationClass="org.jetbrains.bazel.jvm.ui.gutters.BspJVMRunLineMarkerContributor"
+                implementationClass="org.jetbrains.bazel.jvm.ui.gutters.BazelJavaRunLineMarkerContributor"
                 language="JVM"/>
         <registryKey defaultValue="false" description="Build project on initial project sync"
                      key="bsp.build.project.on.sync"/>
