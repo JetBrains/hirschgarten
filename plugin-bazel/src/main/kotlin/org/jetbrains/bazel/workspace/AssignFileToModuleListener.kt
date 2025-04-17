@@ -49,7 +49,6 @@ import org.jetbrains.bazel.workspacemodel.entities.BspDummyEntitySource
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
-import org.jetbrains.kotlin.config.KOTLIN_SOURCE_ROOT_TYPE_ID
 
 class AssignFileToModuleListener : BulkFileListener {
   private val pendingEvents = mutableMapOf<Project, MutableList<VFileEvent>>()
@@ -249,7 +248,7 @@ private suspend fun VirtualFileUrl.addToModule(
   val sourceRootType =
     when (extension) {
       "java" -> JAVA_SOURCE_ROOT_ENTITY_TYPE_ID
-      "kt" -> SourceRootTypeId(KOTLIN_SOURCE_ROOT_TYPE_ID)
+      "kt" -> SourceRootTypeId("kotlin-source")
       "py" -> SourceRootTypeId("python-source")
       else -> {
         logger.warn("Bazel recognised a file as a source, but we failed to parse its extension: .$extension")
