@@ -8,6 +8,7 @@ kt_jvm_library(
         "//commons/src/main/kotlin/org/jetbrains/bazel/jpsCompilation/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel/impl/updaters",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync",
+        "//rules_intellij/intellij_platform_sdk:kotlin",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )

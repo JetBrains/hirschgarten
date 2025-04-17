@@ -6,8 +6,6 @@ import com.intellij.testFramework.PlatformLiteFixture
 import io.kotest.assertions.withClue
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.string.shouldHaveLength
-import org.jetbrains.kotlin.backend.common.push
-import org.jetbrains.kotlin.psi.psiUtil.quoteIfNeeded
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
@@ -28,13 +26,13 @@ abstract class LexerTestCase : PlatformLiteFixture() {
     val lexemes: MutableList<Triple<IElementType?, Int, Int>> = ArrayList(expectedTokens.size)
 
     while (lexer.tokenType != null) {
-      lexemes.push(Triple(lexer.tokenType, lexer.tokenStart, lexer.tokenEnd))
+      lexemes.add(Triple(lexer.tokenType, lexer.tokenStart, lexer.tokenEnd))
       lexer.advance()
     }
 
     var idx = 0
     var tokenPos = 0
-    withClue("\nLexed tokens: ${lexemes.map { Pair(it.first, code.substring(it.second, it.third).quoteIfNeeded()) }}") {
+    withClue("\nLexed tokens: ${lexemes.map { Pair(it.first, code.substring(it.second, it.third)) }}") {
       withClue("Expected tokens: $expectedTokens") {
         withClue("lexed tokens assert: listOf(\n${lexemes.joinToString(",\n") { """"${it.first}"""" }}\n)") {
           while (idx < lexemes.size) {

@@ -33,7 +33,7 @@
     <depends optional="true" config-file="withDevKit.xml">DevKit</depends>
     <depends optional="true" config-file="withGo.xml">org.jetbrains.plugins.go</depends>
     <depends optional="true" config-file="withIdeStarter.xml">com.jetbrains.performancePlugin</depends>
-    <depends optional="true" config-file="withKotlin.xml">org.jetbrains.kotlin</depends>
+    <depends optional="true" config-file="kotlin/withKotlin.xml">org.jetbrains.kotlin</depends>
     <depends optional="true" config-file="withPython.xml">com.intellij.modules.python</depends>
     <depends optional="true" config-file="withJunit.xml">JUnit</depends>
 

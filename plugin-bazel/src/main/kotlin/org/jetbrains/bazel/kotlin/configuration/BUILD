@@ -7,6 +7,7 @@ kt_jvm_library(
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
+        "//rules_intellij/intellij_platform_sdk:kotlin",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )
