@@ -16,6 +16,9 @@
         <newProjectWizard.kotlin.buildSystem implementation="org.jetbrains.bazel.kotlin.ui.starters.BazelKotlinNewProjectWizard"/>
         <postStartupActivity implementation="org.jetbrains.bazel.kotlin.startup.SuggestEnableK2StartupActivity"/>
         <notificationGroup displayType="BALLOON" id="Enable K2 Compiler Mode with Bazel"/>
+        <runLineMarkerContributor
+                implementationClass="org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor"
+                language="kotlin"/>
     </extensions>
 </idea-plugin>
 
