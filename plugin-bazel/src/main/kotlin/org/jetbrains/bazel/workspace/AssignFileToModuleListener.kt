@@ -245,6 +245,7 @@ private suspend fun VirtualFileUrl.addToModule(
 ) {
   if (module.contentRoots.any { it.url == this }) return // we don't want to duplicate content roots
 
+  // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1917
   val sourceRootType =
     when (extension) {
       "java" -> JAVA_SOURCE_ROOT_ENTITY_TYPE_ID
