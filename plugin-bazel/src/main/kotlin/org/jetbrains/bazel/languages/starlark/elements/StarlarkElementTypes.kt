@@ -35,6 +35,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkStarArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkKeywordOnlyBoundary
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkKeywordVariadicParameter
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkMandatoryParameter
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkOptionalParameter
@@ -73,6 +74,7 @@ object StarlarkElementTypes {
   val OPTIONAL_PARAMETER = StarlarkElementType("OPTIONAL_PARAMETER")
   val VARIADIC_PARAMETER = StarlarkElementType("VARIADIC_PARAMETER")
   val KEYWORD_VARIADIC_PARAMETER = StarlarkElementType("KEYWORD_VARIADIC_PARAMETER")
+  val KEYWORD_ONLY_BOUNDARY = StarlarkElementType("KEYWORD_ONLY_BOUNDARY")
   val PARAMETER_LIST = StarlarkElementType("PARAMETER_LIST")
 
   val ARGUMENT_EXPRESSION = StarlarkElementType("ARGUMENT_EXPRESSION")
@@ -166,6 +168,7 @@ object StarlarkElementTypes {
       VARIADIC_PARAMETER -> StarlarkVariadicParameter(node)
       KEYWORD_VARIADIC_PARAMETER -> StarlarkKeywordVariadicParameter(node)
       PARAMETER_LIST -> StarlarkParameterList(node)
+      KEYWORD_ONLY_BOUNDARY -> StarlarkKeywordOnlyBoundary(node)
 
       ARGUMENT_EXPRESSION -> StarlarkArgumentExpression(node)
       ARGUMENT_LIST -> StarlarkArgumentList(node)
