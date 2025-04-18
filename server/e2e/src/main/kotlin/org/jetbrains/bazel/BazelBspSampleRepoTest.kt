@@ -1176,7 +1176,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           emptyList(),
           kind =
             TargetKind(
-              ruleType = RuleType.LIBRARY,
+              ruleType = RuleType.BINARY,
               kindString = "filegroup",
             ),
           baseDirectory = Path("$workspaceDir/target_without_java_info/"),
