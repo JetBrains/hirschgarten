@@ -8,7 +8,7 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import org.jetbrains.bazel.ui.gutters.BspRunLineMarkerContributor
 import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
 
-open class BspJavaRunLineMarkerContributor : BspRunLineMarkerContributor() {
+open class BazelJavaRunLineMarkerContributor : BspRunLineMarkerContributor() {
   override fun isDumbAware(): Boolean = true
 
   override fun PsiElement.shouldAddMarker(): Boolean =

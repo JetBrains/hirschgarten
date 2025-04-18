@@ -37,14 +37,6 @@ import javax.swing.Icon
 private const val WIDGET_ID = "BazelFileTargetsWidget"
 
 class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
-  init {
-    project.targetUtils.registerSyncListener {
-      ApplicationManager.getApplication().invokeLater {
-        update()
-      }
-    }
-  }
-
   override fun ID(): String = WIDGET_ID
 
   override fun getWidgetState(file: VirtualFile?): WidgetState =
