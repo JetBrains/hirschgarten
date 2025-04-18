@@ -31,6 +31,7 @@ class BazelTargetsPanel(private val project: Project, private val model: BazelTa
     searchBarPanel.registerSearchShortcutsOn(scrollPane)
     registerMoveDownShortcut(searchBarPanel)
     add(searchBarPanel, VerticalLayout.TOP)
+    add(message, VerticalLayout.CENTER)
     add(scrollPane, VerticalLayout.FILL)
     model.targetsPanel = this
   }
@@ -68,7 +69,6 @@ class BazelTargetsPanel(private val project: Project, private val model: BazelTa
   private fun registerMoveDownShortcut(searchBarPanel: SearchBarPanel) {
     val action =
       SimpleAction {
-//      searchBarPanel.selectionRows = intArrayOf(0)
         requestFocus()
       }
     action.registerCustomShortcutSet(BspShortcuts.fromSearchBarToTargets, searchBarPanel)

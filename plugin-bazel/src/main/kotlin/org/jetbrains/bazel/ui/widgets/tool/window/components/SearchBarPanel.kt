@@ -14,7 +14,6 @@ import java.awt.BorderLayout
 import javax.swing.JComponent
 
 class SearchBarPanel(private val model: BazelTargetsPanelModel) : JBPanel<SearchBarPanel>(BorderLayout()) {
-
   private val textField = prepareTextField()
 
   private val focusFindAction = SimpleAction { textField.requestFocus() }

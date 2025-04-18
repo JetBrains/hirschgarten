@@ -95,10 +95,13 @@ class BuildTargetTree(
     (treeModel as? DefaultTreeModel)?.reload()
 
     expandPath(TreePath(rootNode.path))
-
   }
 
-  private fun generateTree(targets: Collection<Label>, invalidTargets: List<Label>, classifier: BuildTargetClassifierExtension) {
+  private fun generateTree(
+    targets: Collection<Label>,
+    invalidTargets: List<Label>,
+    classifier: BuildTargetClassifierExtension,
+  ) {
     generateTreeFromIdentifiers(
       targets.map {
         BuildTargetTreeIdentifier(
@@ -194,7 +197,7 @@ class BuildTargetTree(
 
   private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode =
     DefaultMutableTreeNode(
-      TargetNodeData(identifier.target, identifier.id.toShortString(project),  identifier.target != null),
+      TargetNodeData(identifier.target, identifier.id.toShortString(project), identifier.target != null),
     )
 
   private fun simplifyNodeIfHasOneChild(
