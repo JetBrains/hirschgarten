@@ -51,7 +51,7 @@ class BazelJvmDebugRunner : GenericProgramRunner<BazelDebugRunnerSetting>() {
     val result = AtomicReference<RunContentDescriptor>()
     val project = executionEnvironment.project
     ApplicationManager.getApplication().invokeAndWait {
-      val debugEnvironment = DefaultDebugEnvironment(executionEnvironment, state, connection, 0L)
+      val debugEnvironment = DefaultDebugEnvironment(executionEnvironment, state, connection, true)
       try {
         val debuggerSession =
           DebuggerManagerEx

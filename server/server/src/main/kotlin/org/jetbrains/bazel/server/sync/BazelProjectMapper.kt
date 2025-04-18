@@ -1066,7 +1066,9 @@ class BazelProjectMapper(
   }
 
   private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): Set<Path> =
-    bazelPathsResolver.resolvePaths(target.resourcesList).toSet() + languagePlugin.resolveAdditionalResources(target)
+    (bazelPathsResolver.resolvePaths(target.resourcesList) + languagePlugin.resolveAdditionalResources(target))
+      .filter { it.exists() }
+      .toSet()
 
   private fun environmentItem(target: TargetInfo): Map<String, String> {
     val inheritedEnvs = collectInheritedEnvs(target)
