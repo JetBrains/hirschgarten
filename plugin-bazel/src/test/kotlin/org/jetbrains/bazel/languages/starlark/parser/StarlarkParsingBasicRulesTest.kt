@@ -12,4 +12,6 @@ class StarlarkParsingBasicRulesTest : StarlarkParsingTestCase("basicRules") {
   fun testOperand() = doTest(true)
 
   fun testParameters() = doTest(true)
+
+  fun testKeywordOnlyBoundaryMisuse() = doTest(true)
 }

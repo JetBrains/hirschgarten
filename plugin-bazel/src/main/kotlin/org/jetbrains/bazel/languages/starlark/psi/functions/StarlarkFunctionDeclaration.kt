@@ -7,15 +7,17 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import javax.swing.Icon
 
-class StarlarkFunctionDeclaration(node: ASTNode) : StarlarkNamedElement(node) {
+class StarlarkFunctionDeclaration(node: ASTNode) :
+  StarlarkNamedElement(node),
+  StarlarkCallable {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitFunctionDeclaration(this)
 
   override fun getIcon(flags: Int): Icon? = PlatformIcons.FUNCTION_ICON
 
   fun isTopLevel(): Boolean = parent is StarlarkFile
 
-  fun getNamedParameters(): List<StarlarkParameter> =
+  override fun getNamedParameters(): List<StarlarkParameter> =
     getParameters().filter { it is StarlarkMandatoryParameter || it is StarlarkOptionalParameter }
 
-  fun getParameters(): List<StarlarkParameter> = findChildByClass(StarlarkParameterList::class.java)?.getParameters().orEmpty()
+  override fun getParameters(): List<StarlarkParameter> = findChildByClass(StarlarkParameterList::class.java)?.getParameters().orEmpty()
 }

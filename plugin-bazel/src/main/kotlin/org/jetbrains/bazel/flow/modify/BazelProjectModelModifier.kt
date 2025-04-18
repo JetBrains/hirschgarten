@@ -1,11 +1,7 @@
 package org.jetbrains.bazel.flow.modify
 
-import com.intellij.application.options.CodeStyle
-import com.intellij.formatting.FormattingContext
-import com.intellij.formatting.FormattingMode
 import com.intellij.java.library.getMavenCoordinates
 import com.intellij.openapi.application.readAction
-import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.Module
@@ -17,7 +13,6 @@ import com.intellij.openapi.roots.JavaProjectModelModifier
 import com.intellij.openapi.roots.impl.IdeaProjectModelModifier
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
-import com.intellij.openapi.util.TextRange
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -25,8 +20,7 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
-import org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
+import org.jetbrains.bazel.languages.starlark.formatting.formatBuildFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.rename.StarlarkElementGenerator
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
@@ -127,15 +121,6 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
       }
     }
     return insertSuccessful
-  }
-
-  private suspend fun formatBuildFile(buildFile: StarlarkFile) {
-    val formattingService = StarlarkFormattingService()
-    val textRange = TextRange.from(0, buildFile.textLength)
-    val formattingContext = FormattingContext.create(buildFile, textRange, CodeStyle.getSettings(buildFile), FormattingMode.REFORMAT)
-    writeAction {
-      formattingService.formatDocument(buildFile.containingFile.fileDocument, listOf(textRange), formattingContext, true, true)
-    }
   }
 
   private fun notifyAutomaticDependencyAdditionFailure() {
