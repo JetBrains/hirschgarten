@@ -3,6 +3,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -41,11 +42,11 @@ class ResourcesItemToJavaResourceRootTransformerTest {
       BuildTarget(
         Label.parse("//target"),
         emptyList(),
-        emptyList(),
         listOf(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         emptyList(),
         listOf(resourceFilePath),
@@ -75,11 +76,11 @@ class ResourcesItemToJavaResourceRootTransformerTest {
       BuildTarget(
         Label.parse("//target"),
         listOf("test"),
-        emptyList(),
         listOf(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         emptyList(),
         listOf(resourceFilePath),
@@ -109,11 +110,11 @@ class ResourcesItemToJavaResourceRootTransformerTest {
       BuildTarget(
         Label.parse("//target"),
         emptyList(),
-        emptyList(),
         listOf(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         emptyList(),
         listOf(resourceDirPath),
@@ -148,11 +149,11 @@ class ResourcesItemToJavaResourceRootTransformerTest {
       BuildTarget(
         Label.parse("//target"),
         emptyList(),
-        emptyList(),
         listOf(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         emptyList(),
         listOf(resourceFilePath1, resourceFilePath2, resourceFilePath3),
@@ -199,11 +200,11 @@ class ResourcesItemToJavaResourceRootTransformerTest {
       BuildTarget(
         Label.parse("//target"),
         emptyList(),
-        emptyList(),
         listOf(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         emptyList(),
         listOf(resourceFilePath, resourceDirPath),
@@ -245,11 +246,11 @@ class ResourcesItemToJavaResourceRootTransformerTest {
       BuildTarget(
         Label.parse("//target"),
         emptyList(),
-        emptyList(),
         listOf(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         emptyList(),
         listOf(resourceFilePath1, resourceFilePath2, resourceDirPath3),
@@ -301,11 +302,11 @@ class ResourcesItemToJavaResourceRootTransformerTest {
       BuildTarget(
         Label.parse("//target"),
         emptyList(),
-        emptyList(),
         listOf(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         emptyList(),
         listOf(resourceFilePath1, resourceFilePath2, resourceDirPath3),

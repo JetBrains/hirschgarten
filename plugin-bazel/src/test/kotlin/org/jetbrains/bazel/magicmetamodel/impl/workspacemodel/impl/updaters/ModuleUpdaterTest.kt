@@ -75,7 +75,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
           ),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -165,11 +165,10 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
           ),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
-        languageIds = emptyList(),
       )
 
     val module2 =
@@ -190,11 +189,10 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
           ),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
-        languageIds = emptyList(),
       )
 
     val modules = listOf(module1, module2)

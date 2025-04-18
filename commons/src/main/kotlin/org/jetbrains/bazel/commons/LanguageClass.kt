@@ -28,6 +28,7 @@ enum class LanguageClass(val languageName: String, private val recognizedFilenam
   PYTHON("python", setOf("py", "pyw")),
   SCALA("scala", setOf("scala")),
   KOTLIN("kotlin", setOf("kt")),
+  THRIFT("thrift", setOf("thrift")),
   ;
 
   override fun toString(): String = name

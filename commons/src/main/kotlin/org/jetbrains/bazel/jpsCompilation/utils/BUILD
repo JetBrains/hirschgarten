@@ -4,4 +4,5 @@ kt_jvm_library(
     name = "utils",
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
+    deps = ["//commons/src/main/kotlin/org/jetbrains/bazel/commons"],
 )

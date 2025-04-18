@@ -40,7 +40,6 @@ class FirstPhaseTargetToBspMapper(private val bazelPathsResolver: BazelPathsReso
     return BuildTarget(
       id = label,
       tags = inferTags(),
-      languageIds = inferLanguages().map { it.id }.toList(),
       dependencies = interestingDeps.map { Label.parse(it) },
       kind = inferKind(),
       sources = calculateSources(project),
@@ -57,6 +56,9 @@ class FirstPhaseTargetToBspMapper(private val bazelPathsResolver: BazelPathsReso
         isTest -> RuleType.TEST
         else -> RuleType.LIBRARY
       }
+
+    val languagesForTarget = Language.allOfKind(kind)
+    val languagesForSources = srcs.flatMap { Language.allOfSource(it) }.toHashSet()
 
     return TargetKind(
       kindString = kind,

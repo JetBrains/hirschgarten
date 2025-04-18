@@ -51,7 +51,6 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
       BuildTarget(
         targetId,
         emptyList(),
-        listOf("java"),
         listOf(
           Label.parse("@maven//:test"),
           Label.parse("@//target2"),
@@ -60,6 +59,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         sources = emptyList(),
         resources = emptyList(),
@@ -114,7 +114,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         librariesDependencies = emptyList(),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -132,7 +132,6 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
       BuildTarget(
         targetId,
         emptyList(),
-        emptyList(),
         listOf(
           Label.parse("@maven//:test"),
           Label.parse("@//target2"),
@@ -141,6 +140,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         sources = emptyList(),
         resources = emptyList(),
@@ -208,7 +208,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -227,7 +227,6 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
       BuildTarget(
         target1Id,
         emptyList(),
-        listOf("java"),
         listOf(
           Label.parse("@maven//:test"),
           Label.parse("//target2"),
@@ -236,6 +235,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         sources = emptyList(),
         resources = emptyList(),
@@ -269,7 +269,6 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
       BuildTarget(
         target2Id,
         emptyList(),
-        listOf("java"),
         listOf(
           Label.parse("@maven//:test"),
           Label.parse("//target3"),
@@ -277,6 +276,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         sources = emptyList(),
         resources = emptyList(),
@@ -330,7 +330,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         librariesDependencies = emptyList(),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -349,7 +349,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
         librariesDependencies = emptyList(),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),

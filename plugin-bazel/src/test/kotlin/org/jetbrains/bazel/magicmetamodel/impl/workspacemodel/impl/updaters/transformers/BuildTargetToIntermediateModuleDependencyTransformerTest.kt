@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -36,7 +37,6 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
       BuildTarget(
         Label.parse("//target1"),
         emptyList(),
-        emptyList(),
         listOf(
           Label.parse("//target2"),
           Label.parse("//target3"),
@@ -45,6 +45,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         sources = emptyList(),
         resources = emptyList(),
@@ -68,7 +69,6 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
       BuildTarget(
         Label.parse("//target1"),
         emptyList(),
-        emptyList(),
         listOf(
           Label.parse("//target2"),
           Label.parse("@maven//:lib1"),
@@ -76,6 +76,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         sources = emptyList(),
         resources = emptyList(),
@@ -110,7 +111,6 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
       BuildTarget(
         Label.parse("//target1"),
         emptyList(),
-        emptyList(),
         listOf(
           Label.parse("//target2"),
           Label.parse("//target3"),
@@ -121,6 +121,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         sources = emptyList(),
         resources = emptyList(),
@@ -167,7 +168,6 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
       BuildTarget(
         Label.parse("//target1"),
         emptyList(),
-        emptyList(),
         listOf(
           Label.parse("//target2"),
           Label.parse("//target3"),
@@ -177,6 +177,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         sources = emptyList(),
         resources = emptyList(),
@@ -186,7 +187,6 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
       BuildTarget(
         Label.parse("//target1"),
         emptyList(),
-        emptyList(),
         listOf(
           Label.parse("//target3"),
           Label.parse("//target4"),
@@ -195,6 +195,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         sources = emptyList(),
         resources = emptyList(),

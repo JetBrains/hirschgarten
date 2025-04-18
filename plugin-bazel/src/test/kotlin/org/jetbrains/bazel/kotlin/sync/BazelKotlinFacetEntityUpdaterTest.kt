@@ -65,7 +65,6 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
               ruleType = RuleType.LIBRARY,
               languageClasses = setOf(LanguageClass.JAVA),
             ),
-          languageIds = emptyList(),
           associates = associates.map { IntermediateModuleDependency(it) },
         )
 

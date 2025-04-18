@@ -162,7 +162,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
     )
   }
 
-  if (project.bazelProjectSettings.enableLocalJvmActions && target.languageIds.isJvmTarget()) {
+  if (project.bazelProjectSettings.enableLocalJvmActions && target.kind.isJvmTarget()) {
     if (target.kind.ruleType == RuleType.BINARY) {
       addAction(RunWithLocalJvmRunnerAction(project, target, includeTargetNameInText = includeTargetNameInText))
       addAction(RunWithLocalJvmRunnerAction(project, target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))

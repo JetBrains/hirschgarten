@@ -62,7 +62,7 @@ class AndroidBazelRunHandler(private val configuration: BazelRunConfiguration) :
 
     override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       BazelFeatureFlags.isAndroidSupportEnabled &&
-        targetInfos.singleOrNull()?.let { it.languageIds.includesAndroid() && it.kind.ruleType != RuleType.TEST } ?: false
+        targetInfos.singleOrNull()?.let { it.kind.includesAndroid() && it.kind.ruleType != RuleType.TEST } ?: false
 
     override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
   }

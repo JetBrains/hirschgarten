@@ -10,6 +10,7 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -181,11 +182,11 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     BuildTarget(
       info.targetId,
       listOf(info.type),
-      listOf("go"),
       info.dependencies,
       TargetKind(
         kindString = "go_binary",
         ruleType = RuleType.BINARY,
+        languageClasses = setOf(LanguageClass.GO),
       ),
       baseDirectory = Path("/targets_base_dir"),
       data =

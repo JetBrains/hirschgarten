@@ -5,7 +5,7 @@ import io.kotest.matchers.shouldNotBe
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.bazelrunner.utils.orLatestSupported
-import org.jetbrains.bazel.server.model.Language
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.android.AndroidLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.cpp.CppLanguagePlugin
@@ -80,7 +80,7 @@ class LanguagePluginServiceTest {
     @Test
     fun `should return JavaLanguagePlugin for Java Language`() {
       // given
-      val languages: Set<Language> = hashSetOf(Language.JAVA)
+      val languages: Set<LanguageClass> = hashSetOf(LanguageClass.JAVA)
 
       // when
       val plugin = languagePluginsService.getPlugin(languages) as? JavaLanguagePlugin
@@ -92,7 +92,7 @@ class LanguagePluginServiceTest {
     @Test
     fun `should return KotlinLanguagePlugin for Kotlin Language`() {
       // given
-      val languages: Set<Language> = hashSetOf(Language.KOTLIN)
+      val languages: Set<LanguageClass> = hashSetOf(LanguageClass.KOTLIN)
 
       // when
       val plugin = languagePluginsService.getPlugin(languages) as? KotlinLanguagePlugin
@@ -104,7 +104,7 @@ class LanguagePluginServiceTest {
     @Test
     fun `should return ScalaLanguagePlugin for Scala Language`() {
       // given
-      val languages: Set<Language> = hashSetOf(Language.SCALA)
+      val languages: Set<LanguageClass> = hashSetOf(LanguageClass.SCALA)
 
       // when
       val plugin = languagePluginsService.getPlugin(languages) as? ScalaLanguagePlugin
@@ -116,7 +116,7 @@ class LanguagePluginServiceTest {
     @Test
     fun `should return CppLanguagePlugin for Cpp Language`() {
       // given
-      val languages: Set<Language> = hashSetOf(Language.CPP)
+      val languages: Set<LanguageClass> = hashSetOf(LanguageClass.C)
 
       // when
       val plugin = languagePluginsService.getPlugin(languages) as? CppLanguagePlugin
@@ -128,7 +128,7 @@ class LanguagePluginServiceTest {
     @Test
     fun `should return EmptyLanguagePlugin for no Language`() {
       // given
-      val languages: Set<Language> = hashSetOf()
+      val languages: Set<LanguageClass> = hashSetOf()
 
       // when
       val plugin = languagePluginsService.getPlugin(languages) as? EmptyLanguagePlugin
@@ -140,7 +140,7 @@ class LanguagePluginServiceTest {
     @Test
     fun `should return ThriftLanguagePlugin for Thrift Language`() {
       // given
-      val languages: Set<Language> = hashSetOf(Language.THRIFT)
+      val languages: Set<LanguageClass> = hashSetOf(LanguageClass.THRIFT)
 
       // when
       val plugin = languagePluginsService.getPlugin(languages) as? ThriftLanguagePlugin
@@ -152,7 +152,7 @@ class LanguagePluginServiceTest {
     @Test
     fun `should return GoLanguagePlugin for Go Language`() {
       // given
-      val languages: Set<Language> = hashSetOf(Language.GO)
+      val languages: Set<LanguageClass> = hashSetOf(LanguageClass.GO)
 
       // when
       val plugin = languagePluginsService.getPlugin(languages) as? GoLanguagePlugin
@@ -207,7 +207,7 @@ class LanguagePluginServiceTest {
                 |            }
         """.trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getPlugin(hashSetOf(Language.JAVA))
+      val plugin = languagePluginsService.getPlugin(hashSetOf(LanguageClass.JAVA))
 
       // when
       val result = plugin.calculateJvmPackagePrefix(filePath)
@@ -223,7 +223,7 @@ class LanguagePluginServiceTest {
       val filename = "JavaPackageTest.java"
       val content = ""
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getPlugin(hashSetOf(Language.JAVA))
+      val plugin = languagePluginsService.getPlugin(hashSetOf(LanguageClass.JAVA))
 
       // when
       val result = plugin.calculateJvmPackagePrefix(filePath)
@@ -248,7 +248,7 @@ class LanguagePluginServiceTest {
                 |}
         """.trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getPlugin(hashSetOf(Language.JAVA))
+      val plugin = languagePluginsService.getPlugin(hashSetOf(LanguageClass.JAVA))
 
       // when
       val result = plugin.calculateJvmPackagePrefix(filePath)
@@ -273,7 +273,7 @@ class LanguagePluginServiceTest {
                 |            }
         """.trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getPlugin(hashSetOf(Language.SCALA))
+      val plugin = languagePluginsService.getPlugin(hashSetOf(LanguageClass.SCALA))
 
       // when
       val result = plugin.calculateJvmPackagePrefix(filePath)
@@ -299,7 +299,7 @@ class LanguagePluginServiceTest {
                 |}
         """.trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getPlugin(hashSetOf(Language.SCALA))
+      val plugin = languagePluginsService.getPlugin(hashSetOf(LanguageClass.SCALA))
 
       // when
       val result = plugin.calculateJvmPackagePrefix(filePath)
@@ -328,7 +328,7 @@ class LanguagePluginServiceTest {
                 |}
         """.trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getPlugin(hashSetOf(Language.SCALA))
+      val plugin = languagePluginsService.getPlugin(hashSetOf(LanguageClass.SCALA))
 
       // when
       val result = plugin.calculateJvmPackagePrefix(filePath)
@@ -344,7 +344,7 @@ class LanguagePluginServiceTest {
       val filename = "ScalaPackageTest.java"
       val content = ""
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getPlugin(hashSetOf(Language.SCALA))
+      val plugin = languagePluginsService.getPlugin(hashSetOf(LanguageClass.SCALA))
 
       // when
       val result = plugin.calculateJvmPackagePrefix(filePath)
@@ -367,7 +367,7 @@ class LanguagePluginServiceTest {
                 |}
         """.trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getPlugin(hashSetOf(Language.KOTLIN))
+      val plugin = languagePluginsService.getPlugin(hashSetOf(LanguageClass.KOTLIN))
 
       // when
       val result = plugin.calculateJvmPackagePrefix(filePath)
@@ -383,7 +383,7 @@ class LanguagePluginServiceTest {
       val filename = "KotlinPackageTest.kt"
       val content = ""
       val filePath = createFileAndWrite(dirString, filename, content)
-      val plugin = languagePluginsService.getPlugin(hashSetOf(Language.KOTLIN))
+      val plugin = languagePluginsService.getPlugin(hashSetOf(LanguageClass.KOTLIN))
 
       // when
       val result = plugin.calculateJvmPackagePrefix(filePath)

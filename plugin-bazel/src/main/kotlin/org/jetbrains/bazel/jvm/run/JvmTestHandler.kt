@@ -46,7 +46,7 @@ class JvmTestHandler : BazelRunHandler {
 
     override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       targetInfos.all {
-        (it.languageIds.isJvmTarget() && it.kind.ruleType == RuleType.TEST)
+        (it.kind.isJvmTarget() && it.kind.ruleType == RuleType.TEST)
       }
 
     override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
