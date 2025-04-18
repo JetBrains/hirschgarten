@@ -27,6 +27,7 @@ private const val TEST_LINE_SUFFIX = " bliep bliep bliep\n"
 class BazelBuildTargetConsoleFilterTest : BasePlatformTestCase() {
   private lateinit var filter: BazelBuildTargetConsoleFilter
 
+
   override fun setUp() {
     super.setUp()
     val virtualFileManager = VirtualFileManager.getInstance()

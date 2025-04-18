@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.bsp
 
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -16,6 +17,8 @@ import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
+import org.jetbrains.bsp.protocol.FastBuildCommand
+import org.jetbrains.bsp.protocol.FastBuildParams
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JavacOptionsParams
@@ -39,7 +42,7 @@ import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
-import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
+import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsParams
@@ -125,7 +128,7 @@ class BspServerApi(
 
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = projectSyncService.workspaceBazelRepoMapping()
 
-  override suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = projectSyncService.workspaceBazelBinPath()
+  override suspend fun workspaceBazelBinPath(): WorkspaceBazelPathsResult = projectSyncService.workspaceBazelPaths()
 
   override suspend fun workspaceName(): WorkspaceNameResult = projectSyncService.workspaceName()
 
@@ -136,4 +139,10 @@ class BspServerApi(
     projectSyncService.resolveRemoteToLocal(params)
 
   override suspend fun workspaceContext(): WorkspaceContext = projectSyncService.workspaceContext()
+  override suspend fun jvmToolchainInfo(label: Label) = projectSyncService.buildJvmToolchainInfo(label)
+
+
+  override suspend fun fastBuildFile(params: FastBuildParams): FastBuildCommand? {
+    return projectSyncService.fastBuildTarget(params)
+  }
 }

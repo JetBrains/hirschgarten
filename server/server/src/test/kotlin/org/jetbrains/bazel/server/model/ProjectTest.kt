@@ -223,6 +223,8 @@ class ProjectTest {
       sourceDependencies = emptySet(),
       languageData = null,
       environmentVariables = emptyMap(),
+      builderPath = null,
+      builderArgs = emptyList(),
     )
 
   private fun String.toMockLibrary(): Library =

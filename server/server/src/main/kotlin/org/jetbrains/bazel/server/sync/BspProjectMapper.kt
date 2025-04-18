@@ -32,6 +32,8 @@ import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.DirectoryItem
+import org.jetbrains.bsp.protocol.FastBuildCommand
+import org.jetbrains.bsp.protocol.FastBuildParams
 import org.jetbrains.bsp.protocol.GoLibraryItem
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
@@ -47,6 +49,7 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
+import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.PythonOptionsItem
@@ -355,5 +358,16 @@ class BspProjectMapper(
   fun resolveRemoteToLocal(params: BazelResolveRemoteToLocalParams): BazelResolveRemoteToLocalResult {
     val resolve = languagePluginsService.goLanguagePlugin::resolveRemoteToLocal
     return resolve(params)
+  }
+
+  fun jvmBuilderParams(project: AspectSyncProject, label: Label): JvmToolchainInfo? {
+    val module = project.findModule(label) ?: return null
+    return JvmToolchainInfo(module.builderPath, module.builderArgs)
+  }
+
+  suspend fun fastBuildTarget(project: AspectSyncProject, params: FastBuildParams): FastBuildCommand? {
+    val module = project.findModule(params.label) ?: return null
+    val language = languagePluginsService.getPlugin(module.languages)
+    return language.prepareFastBuild(module, params)
   }
 }

@@ -47,6 +47,7 @@ def extract_java_toolchain(target, ctx, dep_targets, **kwargs):
             source_version = toolchain.source_version,
             target_version = toolchain.target_version,
             java_home = java_home,
+            builder_path = toolchain._javabuilder.tool.executable.path
         )
     else:
         for dep in dep_targets:
