@@ -58,7 +58,7 @@ internal class JavaModuleWithSourcesUpdater(
       }
     }
 
-    if (entityToAdd.genericModuleInfo.languageIds.includesKotlin()) {
+    if (entityToAdd.genericModuleInfo.kind.includesKotlin()) {
       KotlinFacetEntityUpdater.ep.extensionList.firstOrNull()?.addEntity(
         diff = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
         entityToAdd = entityToAdd,
@@ -72,7 +72,7 @@ internal class JavaModuleWithSourcesUpdater(
       androidAddendumEntityUpdater.addEntity(entityToAdd.androidAddendum!!, moduleEntity)
     }
 
-    if (isAndroidSupportEnabled && entityToAdd.genericModuleInfo.languageIds.includesAndroid()) {
+    if (isAndroidSupportEnabled && entityToAdd.genericModuleInfo.kind.includesAndroid()) {
       androidFacetEntityUpdaterExtension()?.let { extension ->
         val androidFacetEntityUpdater = extension.createAndroidFacetEntityUpdater(workspaceModelEntityUpdaterConfig)
         androidFacetEntityUpdater.addEntity(entityToAdd, moduleEntity)
@@ -181,11 +181,11 @@ internal class JavaModuleUpdater(
   private fun JavaModule.doesntContainSourcesAndResources() = this.sourceRoots.isEmpty() && this.resourceRoots.isEmpty()
 
   private fun JavaModule.containsJavaKotlinLanguageIds() =
-    with(genericModuleInfo.languageIds) {
+    with(genericModuleInfo.kind) {
       includesKotlin() || includesJava()
     }
 
-  private fun JavaModule.containsKotlinLanguageId() = genericModuleInfo.languageIds.includesKotlin()
+  private fun JavaModule.containsKotlinLanguageId() = genericModuleInfo.kind.includesKotlin()
 
   private suspend fun JavaModule.addKotlinModuleIfPossible(): ModuleEntity? =
     if (KotlinFacetEntityUpdater.ep.extensionList.isNotEmpty()) javaModuleWithSourcesUpdater.addEntity(this) else null

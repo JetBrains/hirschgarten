@@ -60,7 +60,7 @@ class GoBazelRunHandler(private val configuration: BazelRunConfiguration) : Baze
     override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = GoBazelRunHandler(configuration)
 
     override fun canRun(targetInfos: List<BuildTarget>): Boolean =
-      BazelFeatureFlags.isGoSupportEnabled && targetInfos.all { it.languageIds.includesGo() }
+      BazelFeatureFlags.isGoSupportEnabled && targetInfos.all { it.kind.includesGo() }
 
     override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
 

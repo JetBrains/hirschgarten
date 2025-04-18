@@ -409,11 +409,11 @@ private fun mockTarget(id: String, dependencies: List<String>): BuildTarget =
   BuildTarget(
     Label.parse(id),
     emptyList(),
-    emptyList(),
     dependencies.map { Label.parse(it) },
     TargetKind(
       kindString = "java_binary",
       ruleType = RuleType.BINARY,
+      languageClasses = setOf(),
     ),
     emptyList(),
     emptyList(),

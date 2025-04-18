@@ -82,7 +82,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
               ),
             kind =
               TargetKind(
-                kindString = "java_library", // TODO
+                kindString = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
@@ -335,7 +335,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
               ),
             kind =
               TargetKind(
-                kindString = "java_library", // TODO
+                kindString = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
@@ -413,7 +413,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
               ),
             kind =
               TargetKind(
-                kindString = "java_library", // TODO
+                kindString = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
@@ -753,10 +753,9 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             type = ModuleTypeId("JAVA_MODULE"),
             modulesDependencies = emptyList(),
             librariesDependencies = emptyList(),
-            languageIds = listOf("java"),
             kind =
               TargetKind(
-                kindString = "java_library", // TODO
+                kindString = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
@@ -812,10 +811,9 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             type = ModuleTypeId("JAVA_MODULE"),
             modulesDependencies = emptyList(),
             librariesDependencies = emptyList(),
-            languageIds = listOf("java"),
             kind =
               TargetKind(
-                kindString = "java_library", // TODO
+                kindString = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
@@ -843,10 +841,9 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             type = ModuleTypeId("JAVA_MODULE"),
             modulesDependencies = emptyList(),
             librariesDependencies = emptyList(),
-            languageIds = listOf("java"),
             kind =
               TargetKind(
-                kindString = "java_library", // TODO
+                kindString = "java_library",
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),

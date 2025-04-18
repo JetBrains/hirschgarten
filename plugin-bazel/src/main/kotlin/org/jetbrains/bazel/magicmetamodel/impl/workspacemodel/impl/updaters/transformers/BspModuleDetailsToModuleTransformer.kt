@@ -33,7 +33,6 @@ internal class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<L
           .map { IntermediateModuleDependency(moduleName = it.id.formatAsModuleName(project)) },
       librariesDependencies = calculateLibrariesDependencies(inputEntity),
       kind = inputEntity.target.kind,
-      languageIds = inputEntity.target.languageIds,
       associates =
         inputEntity.associates.mapNotNull {
           targetsMap[it]?.toModuleDependency(project)

@@ -36,6 +36,7 @@ import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.includesGo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
@@ -86,7 +87,7 @@ class GoProjectSync : ProjectSyncHook {
     }
   }
 
-  private fun WorkspaceBuildTargetsResult.calculateGoTargets(): List<BuildTarget> = targets.filter { it.languageIds.contains("go") }
+  private fun WorkspaceBuildTargetsResult.calculateGoTargets(): List<BuildTarget> = targets.filter { it.kind.includesGo() }
 
   private fun addModuleEntityFromTarget(
     builder: MutableEntityStorage,

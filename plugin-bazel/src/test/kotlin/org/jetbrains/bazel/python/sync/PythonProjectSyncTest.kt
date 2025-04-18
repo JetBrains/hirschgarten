@@ -18,6 +18,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -213,11 +214,11 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       BuildTarget(
         info.targetId,
         listOf(info.type),
-        listOf("python"),
         info.dependencies,
         TargetKind(
           kindString = "python_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.PYTHON),
         ),
         baseDirectory = Path("/targets_base_dir"),
         data =

@@ -2,6 +2,7 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
@@ -74,6 +75,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "go_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.GO),
         ),
       dependencies =
         listOf(
@@ -99,6 +101,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "go_library",
           ruleType = RuleType.LIBRARY,
+          languageClasses = setOf(LanguageClass.GO),
         ),
       importPath = "example.com/lib",
       sources =
@@ -119,6 +122,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "go_test",
           ruleType = RuleType.TEST,
+          languageClasses = setOf(LanguageClass.GO),
         ),
       importPath = "testmain",
       sources =
@@ -151,7 +155,6 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//$targetDirectory:$targetName"),
         tags = tags,
-        languageIds = listOf("go"),
         dependencies = dependencies,
         kind = kind,
         baseDirectory = Path("\$WORKSPACE/$targetDirectory/"),
