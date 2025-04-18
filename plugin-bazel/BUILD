@@ -1,9 +1,9 @@
+load("@rules_java//java:java_binary.bzl", "java_binary")
 load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
 load(
     "//rules_intellij/build_defs:build_defs.bzl",
     "intellij_plugin",
     "intellij_plugin_library",
-    "optional_plugin_dep",
     "plugin_deploy_zip",
     "repackaged_files",
     "stamped_plugin_xml",

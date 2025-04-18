@@ -1,3 +1,4 @@
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load("//protobuf:check_in_protobuf.bzl", "check_in_protobuf")
 
 sh_binary(

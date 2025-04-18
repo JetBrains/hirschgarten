@@ -1,3 +1,5 @@
+load("@rules_java//java/common:java_common.bzl", "java_common")
+
 def _animals_library_source_impl(ctx):
     tc = ctx.toolchains["@bazel_tools//tools/jdk:toolchain_type"]
     cat_java = ctx.actions.declare_file("Cat.java")

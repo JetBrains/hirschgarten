@@ -43,6 +43,7 @@ intellij_plugin(
 """
 
 load("@rules_java//java:defs.bzl", "java_binary", "java_import")
+load("@rules_java//java/common:java_common.bzl", "java_common")
 load("@rules_java//java/common:java_info.bzl", "JavaInfo")
 load(
     "//rules_intellij/build_defs:restrictions.bzl",

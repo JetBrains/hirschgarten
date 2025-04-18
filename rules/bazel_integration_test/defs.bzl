@@ -21,7 +21,7 @@ def bazel_integration_test_all_versions(name, test_runner, project_path = None, 
     if bzlmod_project_path != None:
         bzlmod_bazel_versions = ["8.0.0"]
         if not exclude_bazel_7:
-            bzlmod_bazel_versions += ["7.4.0"]
+            bzlmod_bazel_versions.append("7.4.0")
         bazel_versions += bzlmod_bazel_versions
 
         bazel_integration_tests(

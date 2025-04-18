@@ -3,16 +3,16 @@ load("@rules_java//java:defs.bzl", "java_binary", "java_library")
 java_binary(
     name = "java_binary",
     srcs = ["JavaBinary.java"],
+    data = [":java_library"],
     javacopts = [
         "-Werror",
         "-Xlint:all",
     ],
     jvm_flags = [
-        "--some_flag=$(location :java_library)"
+        "--some_flag=$(location :java_library)",
     ],
     main_class = "java_targets.JavaBinary",
     visibility = ["//visibility:public"],
-    data = [":java_library"]
 )
 
 java_binary(
