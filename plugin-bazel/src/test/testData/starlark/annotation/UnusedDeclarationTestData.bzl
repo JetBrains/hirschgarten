@@ -11,3 +11,14 @@ _ = 44
 
 rab = 45
 rab + rab
+
+def top_level():
+    def mapping():
+        return 1
+
+    def map(fun):
+        fun()
+
+    map(mapping)
+
+top_level()
