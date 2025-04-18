@@ -29,7 +29,6 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
-import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.RunParams
@@ -116,8 +115,6 @@ class BspServerApi(
   override suspend fun workspaceLibraries(): WorkspaceLibrariesResult = projectSyncService.workspaceBuildLibraries()
 
   override suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult = projectSyncService.workspaceBuildGoLibraries()
-
-  override suspend fun workspaceNonModuleTargets(): NonModuleTargetsResult = projectSyncService.workspaceNonModuleTargets()
 
   override suspend fun workspaceInvalidTargets(): WorkspaceInvalidTargetsResult = projectSyncService.workspaceInvalidTargets()
 

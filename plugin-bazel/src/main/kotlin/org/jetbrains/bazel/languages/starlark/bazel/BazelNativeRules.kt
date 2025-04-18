@@ -4,20 +4,20 @@ data class BazelNativeRuleArgument(
   val name: String,
   val default: String,
   val required: Boolean,
-  val docString: String = "",
+  val docString: String? = null,
 )
 
 data class BazelNativeRule(
   val name: String,
-  val docsLink: String?,
+  val externalDocLink: String?,
   val arguments: Set<BazelNativeRuleArgument>,
-  val docString: String = "",
+  val docString: String? = null,
 )
 
 object BazelNativeRules {
   private fun addNativeRule(
     name: String,
-    docsLink: String,
+    docsLink: String?,
     arguments: Set<BazelNativeRuleArgument>,
   ): Pair<String, BazelNativeRule> = Pair(name, BazelNativeRule(name, docsLink, arguments))
 
