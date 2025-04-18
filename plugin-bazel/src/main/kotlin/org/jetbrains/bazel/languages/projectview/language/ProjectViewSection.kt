@@ -37,5 +37,6 @@ object ProjectViewSection {
       "target_shard_size" to Parser.Scalar.Integer,
       "targets" to Parser.List.String,
       "import_run_configurations" to Parser.List.String,
+      "test_sources" to Parser.List.String, // used by Google's plugin
     )
 }
