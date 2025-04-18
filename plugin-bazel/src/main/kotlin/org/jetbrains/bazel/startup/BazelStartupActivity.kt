@@ -62,6 +62,7 @@ class BazelStartupActivity : BazelProjectActivity() {
 
   private suspend fun Project.resyncProjectIfNeeded() {
     if (isProjectInIncompleteState()) {
+      // First-time sync or incomplete state - run full sync
       if (BazelApplicationSettingsService.getInstance().settings.enablePhasedSync) {
         log.info("Running Bazel phased sync task")
         PhasedSync(this).sync()
@@ -72,6 +73,10 @@ class BazelStartupActivity : BazelProjectActivity() {
           buildProject = BazelFeatureFlags.isBuildProjectOnSyncEnabled,
         )
       }
+    } else {
+      // Project is in a complete state - run only post-sync hooks
+      log.info("Running post-sync hooks on project opening")
+      ProjectSyncTask(this).runPostSyncHooks()
     }
   }
 

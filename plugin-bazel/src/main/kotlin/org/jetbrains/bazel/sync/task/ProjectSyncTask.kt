@@ -226,6 +226,23 @@ class ProjectSyncTask(private val project: Project) {
       ProjectView.getInstance(project).refresh()
     }
   }
+
+  /**
+   * Runs only post-sync hooks without performing a full sync.
+   * This is useful for running post-sync hooks on project opening when a full sync is not needed.
+   */
+  suspend fun runPostSyncHooks() {
+    if (project.isTrusted()) {
+      bspTracer.spanBuilder("bsp.sync.post.hooks.ms").useWithScope {
+        log.debug("Running post-sync hooks")
+        withBackgroundProgress(project, "Running post-sync tasks...", true) {
+          reportSequentialProgress { progressReporter ->
+            executePostSyncHooks(progressReporter)
+          }
+        }
+      }
+    }
+  }
 }
 
 fun <Result> CoroutineScope.asyncQueryIf(
