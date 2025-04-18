@@ -8,15 +8,14 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.android.facet.AndroidFacet
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.sync.ProjectSyncHook
-import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
+import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.workspacemodel.entities.androidAddendumEntity
 
-class BazelAndroidModelUpdater : ProjectSyncHook {
+class BazelAndroidModelUpdater : ProjectPostSyncHook {
   override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isAndroidSupportEnabled
 
-  override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
+  override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
     val project = environment.project
     BazelCoroutineService.getInstance(project).start {
       readActionBlocking {
