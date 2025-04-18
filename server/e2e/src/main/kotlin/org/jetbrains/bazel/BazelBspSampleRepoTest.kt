@@ -1160,11 +1160,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           listOf("application"),
           emptyList(),
           emptyList(),
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = true,
-          ),
+          kind =
+            TargetKind(
+              ruleType = RuleType.BINARY,
+              kindString = "genrule",
+            ),
           baseDirectory = Path("$workspaceDir/genrule/"),
           sources = emptyList(),
           resources = emptyList(),
@@ -1174,11 +1174,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           listOf("application"),
           listOf("java"),
           emptyList(),
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = true,
-          ),
+          kind =
+            TargetKind(
+              ruleType = RuleType.LIBRARY,
+              kindString = "filegroup",
+            ),
           baseDirectory = Path("$workspaceDir/target_without_java_info/"),
           sources = emptyList(),
           resources = emptyList(),
@@ -1188,11 +1188,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           listOf("application"),
           listOf("java", "kotlin"),
           emptyList(),
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = true,
-          ),
+          kind =
+            TargetKind(
+              ruleType = RuleType.BINARY,
+              kindString = "genrule",
+            ),
           baseDirectory = Path("$workspaceDir/target_without_java_info/"),
           sources = emptyList(),
           resources = emptyList(),

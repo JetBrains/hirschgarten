@@ -77,7 +77,7 @@ class BspProjectMapper(
       project.nonModuleTargets
         .map {
           it.toBuildTarget()
-        }.filter { it.capabilities.canRun || it.capabilities.canTest } // Filter out non-module targets that would just clutter the ui
+        }.filter { it.kind.isExecutable } // Filter out non-module targets that would just clutter the ui
     return WorkspaceBuildTargetsResult(buildTargets + nonModuleTargets, hasError = project.hasError)
   }
 
