@@ -1176,7 +1176,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           emptyList(),
           kind =
             TargetKind(
-              ruleType = RuleType.LIBRARY,
+              ruleType = RuleType.BINARY,
               kindString = "filegroup",
               languageClasses = setOf(LanguageClass.JAVA),
             ),
