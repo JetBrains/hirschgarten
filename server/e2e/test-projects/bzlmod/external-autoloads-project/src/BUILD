@@ -1,6 +1,6 @@
 java_library(
     name = "hello",
     srcs = [
-        "Hello.java"
+        "Hello.java",
     ],
 )

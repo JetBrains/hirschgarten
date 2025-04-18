@@ -6,11 +6,7 @@
 #
 # Common test utilities for IntelliJ plugins.
 
-load(
-    "//rules_intellij/intellij_platform_sdk:build_defs.bzl",
-    "select_for_ide",
-    "select_for_plugin_api",
-)
+load("@rules_java//java:java_library.bzl", "java_library")
 
 package(default_visibility = ["//visibility:public"])
 
