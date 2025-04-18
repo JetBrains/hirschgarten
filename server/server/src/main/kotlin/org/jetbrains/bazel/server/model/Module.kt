@@ -16,6 +16,7 @@ data class Module(
   val sourceDependencies: Set<Path>,
   val languageData: LanguageData?,
   val environmentVariables: Map<String, String>,
+  val kindString: String,
 )
 
 // TODO [#BAZEL-721] - quite a naive predicate, but otherwise we'll need to have rule type info in Module instance

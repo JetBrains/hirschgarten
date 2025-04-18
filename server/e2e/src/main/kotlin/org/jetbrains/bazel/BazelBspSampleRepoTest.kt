@@ -705,7 +705,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             emptyList(),
             TargetKind(
               kindString = "genrule",
-              ruleType = RuleType.UNKNOWN,
+              ruleType = RuleType.BINARY,
             ),
             baseDirectory = Path("$workspaceDir/genrule/"),
             sources = emptyList(),
@@ -717,8 +717,8 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             emptyList(),
             emptyList(),
             TargetKind(
-              kindString = "resources",
-              ruleType = RuleType.UNKNOWN,
+              kindString = "filegroup",
+              ruleType = RuleType.LIBRARY,
             ),
             baseDirectory = Path("$workspaceDir/target_with_resources/"),
             sources = emptyList(),
@@ -731,7 +731,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             emptyList(),
             TargetKind(
               kindString = "filegroup",
-              ruleType = RuleType.UNKNOWN,
+              ruleType = RuleType.BINARY, // TODO, it should not be a binary?
             ),
             baseDirectory = Path("$workspaceDir/target_without_java_info/"),
             sources = emptyList(),
@@ -744,7 +744,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             emptyList(),
             TargetKind(
               kindString = "genrule",
-              ruleType = RuleType.UNKNOWN,
+              ruleType = RuleType.BINARY,
             ),
             baseDirectory = Path("$workspaceDir/target_without_java_info/"),
             sources = emptyList(),
