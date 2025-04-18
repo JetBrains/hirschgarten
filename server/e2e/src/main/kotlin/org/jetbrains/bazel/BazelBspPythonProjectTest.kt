@@ -62,7 +62,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           Label.parse("$targetPrefix//lib:example_library"),
         ),
         TargetKind(
-          kindString = "python_binary",
+          kindString = "py_binary",
           ruleType = RuleType.BINARY,
         ),
         baseDirectory = Path("\$WORKSPACE/example/"),
@@ -89,7 +89,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
         listOf("python"),
         listOf(Label.parse(pipDepId)),
         TargetKind(
-          kindString = "python_library",
+          kindString = "py_library",
           ruleType = RuleType.LIBRARY,
         ),
         baseDirectory = Path("\$WORKSPACE/lib/"),
@@ -111,7 +111,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
         listOf("python"),
         listOf(),
         TargetKind(
-          kindString = "python_test",
+          kindString = "py_test",
           ruleType = RuleType.TEST,
         ),
         baseDirectory = Path("\$WORKSPACE/test/"),

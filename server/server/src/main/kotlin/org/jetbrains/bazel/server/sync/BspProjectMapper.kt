@@ -163,7 +163,7 @@ class BspProjectMapper(
         id = label,
         tags = tags,
         languageIds = languages,
-        kind = inferKind(this.tags),
+        kind = inferKind(this.tags, kindString),
         baseDirectory = baseDirectory,
         dependencies = emptyList(),
         sources = emptyList(),
@@ -185,7 +185,7 @@ class BspProjectMapper(
         tags = tags,
         languageIds = languages,
         dependencies = dependencies,
-        kind = inferKind(this.tags),
+        kind = inferKind(this.tags, kindString),
         baseDirectory = baseDirectory,
         sources = sources,
         noBuild = this.tags.contains(Tag.NO_BUILD),
@@ -196,7 +196,7 @@ class BspProjectMapper(
     return buildTarget
   }
 
-  private fun inferKind(tags: Set<Tag>): TargetKind {
+  private fun inferKind(tags: Set<Tag>, kindString: String): TargetKind {
     val ruleType =
       when {
         tags.contains(Tag.TEST) -> RuleType.TEST
@@ -205,7 +205,7 @@ class BspProjectMapper(
         else -> RuleType.UNKNOWN
       }
     return TargetKind(
-      kindString = "", // TODO propagate from aspect
+      kindString = kindString,
       languageClasses = emptySet(), // TODO Use when Module/BuildTarget are merged and moved to the client side
       ruleType = ruleType,
     )

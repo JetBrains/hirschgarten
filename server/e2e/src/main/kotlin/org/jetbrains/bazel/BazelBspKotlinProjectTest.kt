@@ -96,7 +96,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         dependencies = listOf(Label.synthetic("rules_kotlin_kotlin-stdlibs")),
         kind =
           TargetKind(
-            kindString = "java_binary",
+            kindString = "kt_jvm_binary",
             ruleType = RuleType.BINARY,
           ),
         baseDirectory = Path("\$WORKSPACE/kotlinc_test/"),
@@ -119,8 +119,8 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         dependencies = listOf(Label.synthetic("rules_kotlin_kotlin-stdlibs")),
         kind =
           TargetKind(
-            kindString = "java_binary",
-            ruleType = RuleType.BINARY,
+            kindString = "kt_jvm_library",
+            ruleType = RuleType.LIBRARY,
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = kotlinBuildTargetData,
@@ -190,8 +190,8 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
           ),
         kind =
           TargetKind(
-            kindString = "java_binary",
-            ruleType = RuleType.BINARY,
+            kindString = "kt_jvm_library",
+            ruleType = RuleType.LIBRARY,
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = userBuildTargetData,
@@ -219,8 +219,8 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
           ),
         kind =
           TargetKind(
-            kindString = "java_binary",
-            ruleType = RuleType.BINARY,
+            kindString = "kt_jvm_library",
+            ruleType = RuleType.LIBRARY,
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = userOfExportBuildTargetData,
@@ -247,8 +247,8 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
           ),
         kind =
           TargetKind(
-            kindString = "java_binary",
-            ruleType = RuleType.BINARY,
+            kindString = "kt_jvm_library",
+            ruleType = RuleType.LIBRARY,
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = kotlinBuildTargetData,
