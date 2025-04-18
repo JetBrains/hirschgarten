@@ -24,7 +24,6 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
-import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
@@ -73,11 +72,6 @@ class ProjectSyncService(
   suspend fun workspaceBuildGoLibraries(): WorkspaceGoLibrariesResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return WorkspaceGoLibrariesResult(emptyList())
     return bspMapper.workspaceGoLibraries(project)
-  }
-
-  suspend fun workspaceNonModuleTargets(): NonModuleTargetsResult {
-    val project = projectProvider.get() as? AspectSyncProject ?: return NonModuleTargetsResult(emptyList())
-    return bspMapper.workspaceNonModuleTargets(project)
   }
 
   suspend fun workspaceDirectories(): WorkspaceDirectoriesResult {
