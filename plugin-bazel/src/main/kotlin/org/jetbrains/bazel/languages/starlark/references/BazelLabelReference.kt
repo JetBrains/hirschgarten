@@ -93,7 +93,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
   ) {
     val children = currentDirectory.children
     for (child in children) {
-      if (child.isFile && (regex == null || regex.matches(child.name)) && nonBuildFileRegex.matches(child.name)) {
+      if (child.isFile && (regex == null || regex.matches(child.name))) {
         allFiles.add(child)
       } else if (child.isDirectory) {
         if (findBuildFile(child) == null) {
