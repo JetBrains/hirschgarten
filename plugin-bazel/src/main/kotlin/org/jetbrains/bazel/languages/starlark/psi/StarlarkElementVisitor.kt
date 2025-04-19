@@ -154,6 +154,10 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
     visitElement(node)
   }
 
+  fun visitFilenameLoadValue(node: StarlarkFilenameLoadValue) {
+    visitElement(node)
+  }
+
   fun visitLoadStatement(node: StarlarkLoadStatement) {
     visitElement(node)
   }

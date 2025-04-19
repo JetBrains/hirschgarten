@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.elements
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkBinaryExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkConditionalExpression
@@ -63,6 +64,7 @@ object StarlarkElementTypes {
   val FOR_STATEMENT = StarlarkElementType("FOR_STATEMENT")
   val IF_STATEMENT = StarlarkElementType("IF_STATEMENT")
   val LOAD_STATEMENT = StarlarkElementType("LOAD_STATEMENT")
+  val FILENAME_LOAD_VALUE = StarlarkElementType("FILENAME_LOAD_VALUE")
   val NAMED_LOAD_VALUE = StarlarkElementType("NAMED_LOAD_VALUE")
   val STRING_LOAD_VALUE = StarlarkElementType("STRING_LOAD_VALUE")
   val PASS_STATEMENT = StarlarkElementType("PASS_STATEMENT")
@@ -156,6 +158,7 @@ object StarlarkElementTypes {
       FOR_STATEMENT -> StarlarkForStatement(node)
       IF_STATEMENT -> StarlarkIfStatement(node)
       LOAD_STATEMENT -> StarlarkLoadStatement(node)
+      FILENAME_LOAD_VALUE -> StarlarkFilenameLoadValue(node)
       NAMED_LOAD_VALUE -> StarlarkNamedLoadValue(node)
       STRING_LOAD_VALUE -> StarlarkStringLoadValue(node)
       PASS_STATEMENT -> StarlarkAugAssignmentStatement(node)
