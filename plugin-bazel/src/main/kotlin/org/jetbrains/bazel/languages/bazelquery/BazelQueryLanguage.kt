@@ -5,12 +5,12 @@ import com.intellij.openapi.fileTypes.LanguageFileType
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import javax.swing.Icon
 
-object BazelqueryLanguage : Language("Bazelquery")
+object BazelQueryLanguage : Language("BazelQuery")
 
-object BazelqueryFileType : LanguageFileType(BazelqueryLanguage) {
-  override fun getName(): String = "Bazelquery"
+object BazelQueryFileType : LanguageFileType(BazelQueryLanguage) {
+  override fun getName(): String = "BazelQuery"
 
-  override fun getDescription(): String = "Bazelquery language"
+  override fun getDescription(): String = "BazelQuery language"
 
   override fun getDefaultExtension(): String = ".bazelquery"
 

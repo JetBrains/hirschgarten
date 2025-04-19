@@ -3,9 +3,9 @@ package org.jetbrains.bazel.languages.bazelquery.parser
 import com.intellij.lang.ASTNode
 import com.intellij.lang.PsiBuilder
 import com.intellij.psi.tree.IElementType
-import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryElementTypes
-import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenSets
-import org.jetbrains.bazel.languages.bazelquery.elements.BazelqueryTokenTypes
+import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryElementTypes
+import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenSets
+import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenTypes
 
 open class ParsingFlags(private val root: IElementType, val builder: PsiBuilder) : PsiBuilder by builder {
   private val utils = ParsingUtils(builder)
@@ -14,7 +14,7 @@ open class ParsingFlags(private val root: IElementType, val builder: PsiBuilder)
     val flagsList = builder.mark()
     while (!eof()) {
       when {
-        utils.atAnyToken(BazelqueryTokenSets.FLAGS) -> parseFlag()
+        utils.atAnyToken(BazelQueryTokenSets.FLAGS) -> parseFlag()
         else -> utils.advanceError("unexpected token: query option expected")
       }
     }
@@ -25,31 +25,31 @@ open class ParsingFlags(private val root: IElementType, val builder: PsiBuilder)
   private fun parseFlag() {
     val flag = mark()
 
-    if (utils.atToken(BazelqueryTokenTypes.UNFINISHED_FLAG)) {
+    if (utils.atToken(BazelQueryTokenTypes.UNFINISHED_FLAG)) {
       utils.advanceError("unfinished flag")
-      utils.expectToken(BazelqueryTokenTypes.WHITE_SPACE)
-    } else if (utils.atToken(BazelqueryTokenTypes.FLAG)) {
+      utils.expectToken(BazelQueryTokenTypes.WHITE_SPACE)
+    } else if (utils.atToken(BazelQueryTokenTypes.FLAG)) {
       advanceLexer()
 
-      if (!utils.matchToken(BazelqueryTokenTypes.EQUALS)) {
+      if (!utils.matchToken(BazelQueryTokenTypes.EQUALS)) {
         utils.advanceError("expected flag value")
       } else {
-        if (utils.matchToken(BazelqueryTokenTypes.UNFINISHED_VAL)) {
+        if (utils.matchToken(BazelQueryTokenTypes.UNFINISHED_VAL)) {
           error("<quote> expected")
-        } else if (!utils.matchAnyToken(BazelqueryTokenSets.FLAG_VALS)) {
+        } else if (!utils.matchAnyToken(BazelQueryTokenSets.FLAG_VALS)) {
           error("expected flag value")
         } else if (!eof()) {
-          utils.expectToken(BazelqueryTokenTypes.WHITE_SPACE)
+          utils.expectToken(BazelQueryTokenTypes.WHITE_SPACE)
         }
       }
     } else {
       advanceLexer()
-      while (utils.matchToken(BazelqueryTokenTypes.MISSING_SPACE)) {
+      while (utils.matchToken(BazelQueryTokenTypes.MISSING_SPACE)) {
         utils.advanceError("<space> expected")
       }
-      utils.matchToken(BazelqueryTokenTypes.WHITE_SPACE)
+      utils.matchToken(BazelQueryTokenTypes.WHITE_SPACE)
     }
 
-    flag.done(BazelqueryElementTypes.FLAG)
+    flag.done(BazelQueryElementTypes.FLAG)
   }
 }
