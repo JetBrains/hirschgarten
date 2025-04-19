@@ -35,8 +35,9 @@
     <depends optional="true" config-file="withIdeStarter.xml">com.jetbrains.performancePlugin</depends>
     <depends optional="true" config-file="withKotlin.xml">org.jetbrains.kotlin</depends>
     <depends optional="true" config-file="withPython.xml">com.intellij.modules.python</depends>
+    <depends optional="true" config-file="withTerminal.xml">org.jetbrains.plugins.terminal</depends>
     <depends optional="true" config-file="withJunit.xml">JUnit</depends>
-
+  
     <extensionPoints>
         <extensionPoint qualifiedName="org.jetbrains.bazel.sourceTypeIconProvider"
                         interface="org.jetbrains.bazel.utils.SourceTypeIconProvider"
@@ -406,6 +407,50 @@
 
         <runLineMarkerContributor implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor"
                                   language="Starlark"/>
+
+
+
+
+        <fileType
+                name="Bazelquery"
+                implementationClass="org.jetbrains.bazel.languages.bazelquery.BazelqueryFileType"
+                fieldName="INSTANCE"
+                language="Bazelquery"
+
+                extensions="bazelquery"
+        />
+
+        <lang.parserDefinition
+                language="Bazelquery"
+                implementationClass="org.jetbrains.bazel.languages.bazelquery.parser.BazelqueryParserDefinition"/>
+
+        <lang.syntaxHighlighterFactory
+                language="Bazelquery"
+                implementationClass="org.jetbrains.bazel.languages.bazelquery.highlighting.BazelquerySyntaxHighlighterFactory"/>
+
+        <completion.contributor
+                language="Bazelquery"
+                implementationClass="org.jetbrains.bazel.languages.bazelquery.completion.BazelqueryCompletionContributor"/>
+
+
+        <fileType
+                name="BazelqueryFlags"
+                implementationClass="org.jetbrains.bazel.languages.bazelquery.BazelqueryFlagsFileType"
+                fieldName="INSTANCE"
+                language="BazelqueryFlags"
+
+                extensions="bazelqueryflags"
+        />
+
+        <lang.parserDefinition
+                language="BazelqueryFlags"
+                implementationClass="org.jetbrains.bazel.languages.bazelquery.parser.BazelqueryFlagsParserDefinition"/>
+
+        <lang.syntaxHighlighterFactory
+                language="BazelqueryFlags"
+                implementationClass="org.jetbrains.bazel.languages.bazelquery.highlighting.BazelquerySyntaxHighlighterFactory"/>
+
+
 
         <fileType
                 name="Bazelrc"
