@@ -20,6 +20,7 @@ import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
@@ -29,7 +30,7 @@ import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPat
 import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRepo
 import org.jetbrains.bazel.target.targetUtils
 
-public val BUILD_FILE_NAMES = sequenceOf("BUILD.bazel", "BUILD")
+val BUILD_FILE_NAMES = sequenceOf("BUILD.bazel", "BUILD")
 
 // Tested in ExternalRepoResolveTest
 class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolean) :
@@ -42,16 +43,20 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     return resolveLabel(project, label, element.containingFile.originalFile.virtualFile, true)
   }
 
+  private val bzlFileRegex = Regex(""".*\.bzl$""")
+  private val nonBuildFileRegex = Regex("""^(?!BUILD(?:\.bazel)?$).*$""")
+
   override fun getVariants(): Array<LookupElement> {
     if (!element.project.isBazelProject || isInNameArgument()) return emptyArray()
 
-    if (isFileCompletionLocation()) return fileCompletion()
+    if (isSrcFileCompletionLocation()) return fileCompletion(nonBuildFileRegex)
     if (isTargetCompletionLocation()) return targetCompletion()
+    if (isLoadFileCompletionLocation()) return fileCompletion(bzlFileRegex)
     return emptyArray()
   }
 
   // Checks whether it is the value of "src", "srcs" or "hdrs".
-  private fun isFileCompletionLocation(): Boolean {
+  private fun isSrcFileCompletionLocation(): Boolean {
     if (element.parent is StarlarkListLiteralExpression) {
       val parentName = (element.parent.parent as? StarlarkNamedArgumentExpression)?.name
       return parentName in listOf("srcs", "hdrs")
@@ -59,12 +64,14 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     return ((element.parent as? StarlarkNamedArgumentExpression)?.name == "src")
   }
 
+  private fun isLoadFileCompletionLocation(): Boolean = element.parent is StarlarkFilenameLoadValue
+
   // Returns an array of all files (excluding BUILD ones) from the current directory and its
   // subdirectories, excluding subpackages — that is, subdirectories that contain a BUILD file.
-  private fun fileCompletion(): Array<LookupElement> {
+  private fun fileCompletion(regex: Regex? = bzlFileRegex): Array<LookupElement> {
     val currentDirectory = element.containingFile.originalFile.virtualFile.parent
     val allFiles = mutableListOf<VirtualFile>()
-    searchForAllFiles(currentDirectory, allFiles)
+    searchForAllFiles(currentDirectory, allFiles, regex)
 
     // `VfsUtilCore.getRelativePath` can return null in the following two cases:
     // 1. The two arguments (file and ancestor) belong to different file systems.
@@ -79,14 +86,18 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     return lookupElements
   }
 
-  private fun searchForAllFiles(currentDirectory: VirtualFile, allFiles: MutableList<VirtualFile>) {
+  private fun searchForAllFiles(
+    currentDirectory: VirtualFile,
+    allFiles: MutableList<VirtualFile>,
+    regex: Regex? = null,
+  ) {
     val children = currentDirectory.children
     for (child in children) {
-      if (child.isFile && !child.isBazelFile()) {
+      if (child.isFile && (regex == null || regex.matches(child.name)) && nonBuildFileRegex.matches(child.name)) {
         allFiles.add(child)
       } else if (child.isDirectory) {
         if (findBuildFile(child) == null) {
-          searchForAllFiles(child, allFiles)
+          searchForAllFiles(child, allFiles, regex)
         }
       }
     }
@@ -97,8 +108,6 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
       .create("\"" + name + "\"")
       .withIcon(PlatformIcons.FILE_ICON)
       .withPresentableText(name)
-
-  private fun VirtualFile.isBazelFile(): Boolean = BUILD_FILE_NAMES.any { name == it }
 
   private fun isTargetCompletionLocation(): Boolean { // TODO: Correct target completion location validation.
     val parent = element.parent ?: return false
