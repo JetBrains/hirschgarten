@@ -21,6 +21,7 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/intellij:intellij_plugin_deploy_target_info",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
@@ -28,7 +29,6 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/notifications",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
-        "//protocol",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//rules_intellij/third_party/devkit",
     ],

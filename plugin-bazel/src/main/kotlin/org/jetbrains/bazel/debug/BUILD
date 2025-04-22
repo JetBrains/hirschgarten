@@ -7,11 +7,11 @@ kt_jvm_library(
     ]),
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
-        "//protocol",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//third_party/bazel/src/main/java/com/google/devtools/build/lib/starlarkdebug/proto:starlark_debugging_java_proto",
     ],

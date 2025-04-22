@@ -28,8 +28,8 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         ":plugin-bazel-lib",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
-        "//protocol",
         "//rules_intellij/testing:lib",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
@@ -56,12 +56,10 @@ kt_jvm_library(
     ],
     exports = [
         ":optional-xmls",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/annotations",
         "//commons/src/main/kotlin/org/jetbrains/bazel/performance",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action/registered",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/android",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/android/run",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/annotations",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/buildTask",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",

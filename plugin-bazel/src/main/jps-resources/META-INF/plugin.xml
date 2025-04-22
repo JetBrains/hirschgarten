@@ -26,7 +26,6 @@
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.platform</depends>
 
-    <depends optional="true" config-file="withAndroid.xml">org.jetbrains.android</depends>
     <depends optional="true" config-file="withCodeWithMe.xml">com.jetbrains.codeWithMe</depends>
     <depends optional="true" config-file="withCoverage.xml">com.intellij.modules.coverage</depends>
     <depends optional="true" config-file="withCpp.xml">com.intellij.clion</depends>
@@ -218,7 +217,7 @@
         <editorNotificationProvider
                 implementation="org.jetbrains.bazel.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"/>
 
-        <statistics.projectUsagesCollector implementation="org.jetbrains.plugins.bazel.fus.BazelProjectStatisticsCollector"/>
+        <statistics.projectUsagesCollector implementation="org.jetbrains.bazel.fus.BazelProjectStatisticsCollector"/>
 
     </extensions>
 

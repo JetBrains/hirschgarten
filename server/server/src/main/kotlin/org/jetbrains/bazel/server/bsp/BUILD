@@ -8,9 +8,9 @@ kt_jvm_library(
     ]),
     visibility = ["//server/server:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/workspacecontext/provider",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/bazelrunner",
-        "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bazel/workspacecontext/provider",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
         "//third_party/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto:build_event_stream_java_proto",
         "@maven//:io_grpc_grpc_stub",

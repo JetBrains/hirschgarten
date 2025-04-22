@@ -11,7 +11,7 @@ kt_jvm_library(
     deps = [
         "//bsp-testkit2:bazel-testkit-client",
         "//bsp-testkit2:testkit-client",
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/install/src/main/kotlin/org/jetbrains/bazel/install",
         "@maven//:org_apache_logging_log4j_log4j_api",

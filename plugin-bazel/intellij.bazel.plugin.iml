@@ -36,7 +36,6 @@
     <orderEntry type="module" module-name="intellij.bazel.protobuf" exported="" />
     <orderEntry type="module" module-name="intellij.bazel.sdkcompat" exported="" />
     <orderEntry type="module" module-name="intellij.bazel.server" exported="" />
-    <orderEntry type="module" module-name="intellij.bsp.protocol" exported="" />
     <orderEntry type="module" module-name="intellij.devkit.core" />
     <orderEntry type="module" module-name="intellij.go.frontback" />
     <orderEntry type="module" module-name="intellij.go.impl" />
@@ -106,5 +105,8 @@
     <orderEntry type="module" module-name="intellij.python.pydev" />
     <orderEntry type="module" module-name="intellij.platform.coverage" />
     <orderEntry type="module" module-name="intellij.platform.coverage.agent" />
+    <orderEntry type="module" module-name="intellij.junit" />
+    <orderEntry type="module" module-name="kotlin.project-wizard.idea" />
+    <orderEntry type="module" module-name="intellij.platform.util.text.matching" />
   </component>
 </module>

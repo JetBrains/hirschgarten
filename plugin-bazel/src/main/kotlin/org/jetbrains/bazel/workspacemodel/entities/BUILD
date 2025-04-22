@@ -7,10 +7,10 @@ kt_jvm_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/annotations",
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/annotations",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
-        "//protocol",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )

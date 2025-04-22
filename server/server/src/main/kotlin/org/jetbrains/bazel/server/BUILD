@@ -12,9 +12,9 @@ kt_jvm_library(
         "//visibility:public",
     ],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/workspacecontext",
         "//server/bazelrunner",
         "//server/commons",
-        "//server/executioncontext/workspacecontext",
         "//server/logger",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bep",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp",
