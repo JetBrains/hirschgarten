@@ -23,18 +23,6 @@ def make_dep(dep, dependency_type):
 def make_deps(deps, dependency_type):
     return [make_dep(dep, dependency_type) for dep in deps]
 
-def _is_proto_library_wrapper(target, ctx):
-    if not ctx.rule.kind.endswith("proto_library") or ctx.rule.kind == "proto_library":
-        return False
-
-    deps = collect_targets_from_attrs(ctx.rule.attr, ["deps"])
-    return len(deps) == 1 and deps[0].bsp_info and deps[0].bsp_info.kind == "proto_library"
-
-def _get_forwarded_deps(target, ctx):
-    if _is_proto_library_wrapper(target, ctx):
-        return collect_targets_from_attrs(ctx.rule.attr, ["deps"])
-    return []
-
 def _is_analysis_test(target):
     """Returns if the target is an analysis test.
 
@@ -80,8 +68,6 @@ def _bsp_target_info_aspect_impl(target, ctx):
         for export in direct_exports:
             export_deps.extend(export.bsp_info.export_deps)
         export_deps = depset(export_deps).to_list()
-
-    forwarded_deps = _get_forwarded_deps(target, ctx) + direct_exports
 
     dep_targets = direct_dep_targets + private_direct_dep_targets + runtime_dep_targets + direct_exports
     output_groups = dict()
