@@ -21,7 +21,7 @@ open class StarlarkFile(viewProvider: FileViewProvider) :
 
   fun isBuildFile(): Boolean = this.getBazelFileType() == BazelFileType.BUILD
 
-  fun getBazelFileType(): BazelFileType = BazelFileType.ofFileName.getOrDefault(name, BazelFileType.EXTENSION)
+  fun getBazelFileType(): BazelFileType = BazelFileType.ofFileName(name)
 
   fun findRuleTarget(targetName: String): StarlarkCallExpression? =
     findChildrenByClass(StarlarkExpressionStatement::class.java)
