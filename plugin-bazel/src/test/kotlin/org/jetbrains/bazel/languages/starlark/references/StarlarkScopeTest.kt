@@ -118,9 +118,9 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
 
   @Test
   fun `resolve to later binding in same block`() {
+    // Taken from:
+    // https://github.com/bazelbuild/starlark/blob/6dd78ee3a66820a8b7571239946466cc702b209e/spec.md#name-binding-and-variables
     verifyTargetOfReferenceAtCaret(
-      // Taken from:
-      // https://github.com/bazelbuild/starlark/blob/6dd78ee3a66820a8b7571239946466cc702b209e/spec.md#name-binding-and-variables
       """
       y = "goodbye"
 
@@ -146,10 +146,101 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
     )
   }
 
+  @Test
+  fun `first for in comprehension resolves to surrounding scope`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+       <target>y = 1
+       [1 for x in <caret>y for y in [1]]
+       """.trimIndent(),
+    )
+  }
+
+  // Comprehension tests below taken from:
+  // https://github.com/bazelbuild/bazel/commit/29bdfa392bf8a551d0fad5cee4e425e042194bf0#diff-fa5ed5faf1b8b7ddd01110eabbdbf2279e16d035f403231d7d8ca354ba506062R182-R186
+
+  @Test
+  fun `comprehension scope f`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+       def foo(<target>x):
+           x += [[j(x) for x in i(x)] + h(x) for x in f(<caret>x) if g(x)]
+           return k(x)
+
+       foo([[1]])
+       """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `comprehension scope g`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+       def foo(<target>x):
+           x += [[j(x) for x in i(x)] + h(x) for <target>x in f(x) if g(<caret>x)]
+           return k(x)
+
+       foo([[1]])
+       """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `comprehension scope h`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+       def foo(<target>x):
+           x += [[j(x) for x in i(x)] + <caret>h(x) for <target>x in f(x) if g(x)]
+           return k(x)
+
+       foo([[1]])
+       """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `comprehension scope i`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+       def foo(x):
+           x += [[j(x) for x in i(<caret>x)] + h(x) for <target>x in f(x) if g(x)]
+           return k(x)
+
+       foo([[1]])
+       """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `comprehension scope j`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+       def foo(x):
+           x += [[j(<caret>x) for <target>x in i(x)] + h(x) for x in f(x) if g(x)]
+           return k(x)
+
+       foo([[1]])
+       """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `comprehension scope k`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+       def foo(<target>x):
+           x += [[j(x) for x in i(x)] + h(x) for x in f(x) if g(x)]
+           return k(<caret>x)
+
+       foo([[1]])
+       """.trimIndent(),
+    )
+  }
+
   private fun verifyTargetOfReferenceAtCaret(text: String) {
     // given
     val expectedLine = text.lineSequence().indexOfFirst { it.contains("<target>") }
-    val expectedColumn = text.lineSequence().map { it.indexOf("<target>") }.filter { it != -1 }.first()
+    val expectedColumn = text.lineSequence().map { it.replace("<caret>", "").indexOf("<target>") }.filter { it != -1 }.first()
     myFixture.configureByText(StarlarkFileType, text.replace("<target>", ""))
 
     // when
