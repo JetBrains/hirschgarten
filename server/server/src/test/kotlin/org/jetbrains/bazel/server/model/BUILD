@@ -5,7 +5,7 @@ kt_junit5_test(
     size = "small",
     src = "ProjectTest.kt",
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/model",
     ],
 )

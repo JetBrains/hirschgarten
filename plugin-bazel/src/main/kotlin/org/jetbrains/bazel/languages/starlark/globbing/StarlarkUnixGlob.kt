@@ -12,7 +12,6 @@ import com.google.common.util.concurrent.ForwardingListenableFuture
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
-import com.google.errorprone.annotations.CanIgnoreReturnValue
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
@@ -195,7 +194,6 @@ object StarlarkUnixGlob {
      *
      * For a description of the syntax of the patterns, see [StarlarkUnixGlob].
      */
-    @CanIgnoreReturnValue
     @Suppress("unused")
     fun addPattern(pattern: String): Builder {
       this.patterns.add(pattern)
@@ -208,7 +206,6 @@ object StarlarkUnixGlob {
      *
      * For a description of the syntax of the patterns, see [StarlarkUnixGlob].
      */
-    @CanIgnoreReturnValue
     fun addPatterns(patterns: Collection<String>): Builder {
       this.patterns.addAll(patterns)
       return this
@@ -220,14 +217,12 @@ object StarlarkUnixGlob {
      *
      * For a description of the syntax of the patterns, see [StarlarkUnixGlob].
      */
-    @CanIgnoreReturnValue
     fun addExcludes(excludes: Collection<String>): Builder {
       this.excludes.addAll(excludes)
       return this
     }
 
     /** If set to true, directories are not returned in the glob result.  */
-    @CanIgnoreReturnValue
     fun setExcludeDirectories(excludeDirectories: Boolean): Builder {
       this.excludeDirectories = excludeDirectories
       return this
@@ -237,7 +232,6 @@ object StarlarkUnixGlob {
      * Sets the threadpool to use for parallel glob evaluation. If unset, evaluation is done
      * in-thread.
      */
-    @CanIgnoreReturnValue
     @Suppress("unused")
     fun setThreadPool(pool: ThreadPoolExecutor?): Builder {
       this.threadPool = pool
@@ -249,7 +243,6 @@ object StarlarkUnixGlob {
      * the corresponding item is not returned in the output and directories are not traversed
      * either.
      */
-    @CanIgnoreReturnValue
     fun setDirectoryFilter(pathFilter: Predicate<VirtualFile>): Builder {
       this.pathFilter = pathFilter
       return this

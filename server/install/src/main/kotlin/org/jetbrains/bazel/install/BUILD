@@ -9,9 +9,9 @@ kt_jvm_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/constants",
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
-        "//protocol",
-        "//server/executioncontext/projectview:generator",
-        "//server/executioncontext/projectview:parser",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/generator",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/parser",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/install/src/main/kotlin/org/jetbrains/bazel/install/cli",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/utils:fileutils",
     ],

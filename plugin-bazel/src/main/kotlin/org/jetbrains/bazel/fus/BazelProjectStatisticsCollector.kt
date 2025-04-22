@@ -1,6 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
-package org.jetbrains.plugins.bazel.fus
+package org.jetbrains.bazel.fus
 
 import com.intellij.internal.statistic.beans.MetricEvent
 import com.intellij.internal.statistic.eventLog.EventLogGroup

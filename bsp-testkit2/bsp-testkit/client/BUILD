@@ -7,8 +7,8 @@ kt_jvm_library(
     deps = [
         "//bsp-testkit2/bsp-testkit/utils:JsonComparator",
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/server/connection",
-        "//protocol",
         "@maven//:org_junit_jupiter_junit_jupiter_api",
         "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
         "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_test",

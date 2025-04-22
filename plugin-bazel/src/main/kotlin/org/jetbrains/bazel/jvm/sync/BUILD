@@ -7,7 +7,7 @@ kt_jvm_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/label",
         "//commons/src/main/kotlin/org/jetbrains/bazel/performance",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/android",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extensionPoints",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel",
@@ -26,7 +26,6 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/notifications",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
-        "//protocol",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
     ],
 )

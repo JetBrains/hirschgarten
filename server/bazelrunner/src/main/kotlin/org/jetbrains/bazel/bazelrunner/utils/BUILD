@@ -6,7 +6,7 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/constants",
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/params",
     ],
 )
