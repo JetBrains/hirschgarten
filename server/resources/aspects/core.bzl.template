@@ -173,8 +173,6 @@ def _bsp_target_info_aspect_impl(target, ctx):
     if aspect_ids:
         file_name = file_name + "-" + str(abs(hash(".".join(aspect_ids))))
     file_name = "bsp.%s.bsp-info.textproto" % file_name
-    if "request" in file_name and "servlet" in file_name:
-        print("file_name:", file_name)
     info_file = ctx.actions.declare_file(file_name)
     ctx.actions.write(info_file, proto.encode_text(create_struct(**info)))
     update_sync_output_groups(output_groups, "bsp-target-info", depset([info_file]))
