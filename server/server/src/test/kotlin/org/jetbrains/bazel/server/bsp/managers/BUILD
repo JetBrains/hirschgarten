@@ -17,5 +17,6 @@ kt_junit5_test(
     src = "BzlModGraphTest.kt",
     deps = [
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/managers",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/utils:structured_files_utils",
     ],
 )
