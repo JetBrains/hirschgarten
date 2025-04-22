@@ -27,6 +27,7 @@
 
     <depends optional="true" config-file="withAndroid.xml">org.jetbrains.android</depends>
     <depends optional="true" config-file="withCodeWithMe.xml">com.jetbrains.codeWithMe</depends>
+    <depends optional="true" config-file="withCoverage.xml">com.intellij.modules.coverage</depends>
     <depends optional="true" config-file="withCpp.xml">com.intellij.clion</depends>
     <depends optional="true" config-file="withDevKit.xml">DevKit</depends>
     <depends optional="true" config-file="withGo.xml">org.jetbrains.plugins.go</depends>

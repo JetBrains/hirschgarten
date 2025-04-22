@@ -1,6 +1,4 @@
 <idea-plugin>
-    <depends optional="true" config-file="withCoverage.xml">com.intellij.modules.coverage</depends>
-
     <extensions defaultExtensionNs="org.jetbrains.bazel">
         <!-- Dependency: JvmSyncHook -> TargetUtils#updateComputedFields -> toShortString -> BazelRepoMappingService -->
         <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook" order="after BazelRepoMappingSyncHook"/>
