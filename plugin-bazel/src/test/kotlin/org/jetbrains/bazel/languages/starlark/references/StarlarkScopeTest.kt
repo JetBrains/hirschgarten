@@ -134,6 +134,18 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
     )
   }
 
+  @Test
+  fun `falls back to higher scope`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+      def <target>foo():
+          def bar():
+              def baz():
+                  print(<caret>foo)
+      """.trimIndent(),
+    )
+  }
+
   private fun verifyTargetOfReferenceAtCaret(text: String) {
     // given
     val expectedLine = text.lineSequence().indexOfFirst { it.contains("<target>") }

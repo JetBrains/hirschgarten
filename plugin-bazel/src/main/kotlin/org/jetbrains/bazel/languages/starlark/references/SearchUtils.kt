@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFileSystemItem
 import com.intellij.util.Processor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
@@ -19,9 +18,13 @@ object SearchUtils {
     currentElement: PsiElement,
     processor: Processor<StarlarkElement>,
   ) {
-    if (currentElement !is PsiFileSystemItem) {
-      val scope = findScope(currentElement)
-      findAtOrUnder(scope, if (scope is StarlarkFile) currentElement else null, processor)
+    var element = currentElement
+    while (true) {
+      val scope = findScope(element)
+      if (!findAtOrUnder(scope, if (scope is StarlarkFile) currentElement else null, processor)) {
+        return
+      }
+      element = scope.parent
     }
   }
 
@@ -47,6 +50,7 @@ object SearchUtils {
         processor,
       )
 
+      is StarlarkCompExpression -> root.searchInComprehension(processor)
       is StarlarkForStatement -> root.searchInLoopVariables(processor) &&
         root.getStatementLists().all { findAtOrUnder(it, stopAt, processor) }
 
