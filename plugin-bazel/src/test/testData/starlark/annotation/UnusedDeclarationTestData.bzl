@@ -22,3 +22,10 @@ def top_level():
     map(mapping)
 
 top_level()
+
+[x for x in [1, 2, 3] if x > 2]
+[x for x, <weak_warning descr="Variable \"y\" is never used">y</weak_warning>, z in [(1, 2, 3), (4, 5, 6)] if z > 5]
+[x for (x, <weak_warning descr="Variable \"y\" is never used">y</weak_warning>, z) in [(1, 2, 3), (4, 5, 6)] if z > 5]
+{x: x for x in [1, 2, 3] if x > 2}
+{x: x for x, <weak_warning descr="Variable \"y\" is never used">y</weak_warning>, z in [(1, 2, 3), (4, 5, 6)] if z > 5}
+{x: x for (x, <weak_warning descr="Variable \"y\" is never used">y</weak_warning>, z) in [(1, 2, 3), (4, 5, 6)] if z > 5}
