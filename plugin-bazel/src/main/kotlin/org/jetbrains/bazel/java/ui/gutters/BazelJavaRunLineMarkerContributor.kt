@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.jvm.ui.gutters
+package org.jetbrains.bazel.java.ui.gutters
 
 import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.psi.PsiClass
