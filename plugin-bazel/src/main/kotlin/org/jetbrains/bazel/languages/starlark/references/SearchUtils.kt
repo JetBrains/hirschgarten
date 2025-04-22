@@ -7,25 +7,55 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCompExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkCallable
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkForStatement
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementContainer
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementList
 
 object SearchUtils {
-  tailrec fun searchInFile(
+  fun searchInFile(
     currentElement: PsiElement,
     processor: Processor<StarlarkElement>,
-    fromFunction: Boolean = false,
-  ): Unit =
+  ) {
     when (currentElement) {
-      is PsiFileSystemItem -> Unit
+      is PsiFileSystemItem -> {}
       else -> {
-        val parent = currentElement.parent
-        val stopAt = if (!fromFunction) currentElement else null
-        val keepSearching = searchInParent(parent, stopAt, processor)
-        val inFunction = parent is StarlarkCallable
-        if (keepSearching) searchInFile(parent, processor, inFunction || fromFunction) else Unit
+        val scope = findScope(currentElement)
+        findAtOrUnder(scope, if (scope is StarlarkFile) currentElement else null, processor)
       }
     }
+  }
+
+  private tailrec fun findScope(currentElement: PsiElement): PsiElement =
+    when (currentElement) {
+      is StarlarkFile, is StarlarkFunctionDeclaration, is StarlarkCompExpression -> currentElement
+      else -> findScope(currentElement.parent)
+    }
+
+  private fun findAtOrUnder(
+    root: PsiElement,
+    stopAt: PsiElement?,
+    processor: Processor<StarlarkElement>,
+  ): Boolean =
+    when (root) {
+      stopAt -> false
+      is StarlarkFile -> root.searchInTopLevel(processor, stopAt)
+      is StarlarkStatementList -> root.children.all { findAtOrUnder(it, stopAt, processor) }
+      is StarlarkFunctionDeclaration -> processor.process(root) && root.searchInParameters(processor) && findAtOrUnder(
+        root.getStatementList(),
+        stopAt,
+        processor,
+      )
+
+      is StarlarkForStatement -> root.searchInLoopVariables(processor) &&
+        root.getStatementLists().all { findAtOrUnder(it, stopAt, processor) }
+
+      is StarlarkStatementContainer -> root.getStatementLists().all { findAtOrUnder(it, stopAt, processor) }
+      is StarlarkAssignmentStatement -> root.check(processor)
+      else -> true
+    }
+
 
   private fun searchInParent(
     parent: PsiElement,

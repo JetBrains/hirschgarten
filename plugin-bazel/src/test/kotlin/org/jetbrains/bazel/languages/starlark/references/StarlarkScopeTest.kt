@@ -84,8 +84,9 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
       """
       if 1 != 2:
           baz()
-          if 3 != 4
-              <target>foo = 2
+          if 3 != 4:
+              for i in range(10):
+                  <target>foo = 2
           else:
               foo = 3
           foo = 4
@@ -103,8 +104,9 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
       def bar():
           if 1 != 2:
               baz()
-              if 3 != 4
-                  <target>foo = 2
+              if 3 != 4:
+                  for i in range(10):
+                      <target>foo = 2
               else:
                   foo = 3
               foo = 4
