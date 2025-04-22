@@ -24,3 +24,13 @@ kt_jvm_library(
         "//server/server:__subpackages__",
     ],
 )
+
+kt_jvm_library(
+    name = "structured_files_utils",
+    srcs = ["StructuredFilesUtils.kt"],
+    visibility = ["//server:__subpackages__"],
+    deps = [
+        "@maven//:com_google_code_gson_gson",
+        "@maven//:org_apache_logging_log4j_log4j_api",
+    ],
+)

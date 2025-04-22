@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.bazelrunner
 
 import org.jetbrains.bazel.commons.gson.bazelGson
+import org.jetbrains.bazel.server.bsp.utils.toJson
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 sealed interface ShowRepoResult {
@@ -108,9 +109,9 @@ class ModuleResolver(
     }
 
     // Output is json, we need to parse it
-    val output = processResult.stdout
+    val output = processResult.stdout.toJson()
     @Suppress("UNCHECKED_CAST")
-    return gson.fromJson(output, Map::class.java) as? Map<String, String>
+    return output?.let { gson.fromJson(output, Map::class.java) } as? Map<String, String>
       ?: error("Failed to parse repo mapping from bazel. Bazel output:\n$output")
   }
 }

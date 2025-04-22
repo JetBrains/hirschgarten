@@ -14,6 +14,7 @@ kt_jvm_library(
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bep",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/utils",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/utils:fileutils",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/utils:structured_files_utils",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bzlmod",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/diagnostics",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
