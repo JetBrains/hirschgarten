@@ -107,6 +107,31 @@ java_library(
     ),
 )
 
+# IntelliJ Java plugin
+java_library(
+    name = "java",
+    neverlink = 1,
+    visibility = [
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java:__subpackages__",
+    ],
+    exports = select_from_plugin_api_directory(
+        android_studio = [":java"],
+        clion = [],
+        intellij = [":java"],
+    ),
+)
+
+# IntelliJ Java plugin
+java_library(
+    name = "java_for_tests",
+    testonly = 1,
+    exports = select_from_plugin_api_directory(
+        android_studio = [":java"],
+        clion = [],
+        intellij = [":java"],
+    ),
+)
+
 # IntelliJ JUnit plugin
 java_library(
     name = "junit",
