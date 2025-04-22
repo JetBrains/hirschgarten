@@ -44,6 +44,7 @@ class WorkspaceModelUpdaterImpl(
   private suspend fun loadModule(module: Module) {
     when (module) {
       is JavaModule -> {
+        return
         javaModuleUpdater.addEntity(module)
       }
     }

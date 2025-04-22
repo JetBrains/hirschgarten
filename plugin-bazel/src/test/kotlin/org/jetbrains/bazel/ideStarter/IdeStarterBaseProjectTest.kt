@@ -43,7 +43,7 @@ abstract class IdeStarterBaseProjectTest {
     get() = System.getProperty("bazel.ide.starter.test.project.name") ?: javaClass.simpleName
 
   private val testCase: TestCase<ProjectInfoSpec>
-    get() = TestCase(IdeProductProvider.IC, projectInfo).withBuildNumber(System.getProperty("bazel.ide.starter.test.platform.build.number"))
+    get() = TestCase(IdeProductProvider.CL, projectInfo)
 
   protected open val timeout: Duration
     get() = (System.getProperty("bazel.ide.starter.test.timeout.seconds")?.toIntOrNull() ?: 600).seconds

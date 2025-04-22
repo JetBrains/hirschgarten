@@ -38,6 +38,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
     JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, fileToTarget, project)
 
   fun transform(inputEntity: ModuleDetails): List<JavaModule> {
+    return listOf()
     val javaModule =
       JavaModule(
         genericModuleInfo = toGenericModuleInfo(inputEntity),

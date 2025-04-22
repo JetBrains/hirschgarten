@@ -93,17 +93,17 @@ class CollectProjectDetailsTask(
         collectModel(project, server, buildTargets)
       }
 
-    progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.bar.calculate.jdk.infos")) {
-      calculateAllUniqueJdkInfosSubtask(projectDetails)
-      uniqueJavaHomes.orEmpty().also {
-        if (it.isNotEmpty()) {
-          projectDetails.defaultJdkName = project.bazelProjectName.projectNameToJdkName(it.first())
-        } else {
-          projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
-        }
-      }
-      project.defaultJdkName = projectDetails.defaultJdkName
-    }
+//    progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.bar.calculate.jdk.infos")) {
+//      calculateAllUniqueJdkInfosSubtask(projectDetails)
+//      uniqueJavaHomes.orEmpty().also {
+//        if (it.isNotEmpty()) {
+//          projectDetails.defaultJdkName = project.bazelProjectName.projectNameToJdkName(it.first())
+//        } else {
+//          projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
+//        }
+//      }
+//      project.defaultJdkName = projectDetails.defaultJdkName
+//    }
 
     if (scalaSdkExtensionExists()) {
       progressReporter.indeterminateStep(text = "Calculating all unique scala sdk infos") {
@@ -233,6 +233,7 @@ class CollectProjectDetailsTask(
     }
 
   private suspend fun updateInternalModelSubtask(projectDetails: ProjectDetails, syncScope: ProjectSyncScope) {
+    return
     project.syncConsole.withSubtask(
       taskId,
       "calculate-project-structure",
@@ -346,6 +347,7 @@ class CollectProjectDetailsTask(
     // This will be handled properly after this ticket:
     // https://youtrack.jetbrains.com/issue/BAZEL-426/Configure-JDK-using-workspace-model-API-instead-of-ProjectJdkTable
     project.targetUtils.fireSyncListeners(targetListChanged)
+    return
     SdkUtils.cleanUpInvalidJdks(project.bazelProjectName)
     addBspFetchedJdks()
     addBspFetchedJavacOptions()

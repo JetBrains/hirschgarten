@@ -3,7 +3,7 @@
         <programRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageProgramRunner"/>
         <coverageRunner implementation="org.jetbrains.bazel.run.coverage.BazelCoverageRunner"/>
         <coverageEngine implementation="org.jetbrains.bazel.run.coverage.BazelCoverageEngine"/>
-        <projectViewNodeDecorator implementation="org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecorator"/>
+<!--        <projectViewNodeDecorator implementation="org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecorator"/>-->
     </extensions>
 
     <actions>
