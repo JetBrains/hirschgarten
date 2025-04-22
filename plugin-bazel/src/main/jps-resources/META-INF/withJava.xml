@@ -16,7 +16,7 @@
         <useScopeEnlarger implementation="org.jetbrains.bazel.java.search.BazelJavaUseScopeEnlarger"/>
 
         <projectService serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
-                        serviceImplementation="org.jetbrains.bazel.services.BazelExternalAnnotationsManager"
+                        serviceImplementation="org.jetbrains.bazel.java.annotation.BazelExternalAnnotationsManager"
                         overrides="true"/>
         <runLineMarkerContributor
                 implementationClass="org.jetbrains.bazel.jvm.ui.gutters.BazelJavaRunLineMarkerContributor"
