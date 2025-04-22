@@ -80,6 +80,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java/annotation",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java/configuration",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java/junit",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java/search",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java/starters",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java/ui/gutters",

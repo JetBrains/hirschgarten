@@ -11,7 +11,7 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <java.programPatcher implementation="org.jetbrains.bazel.jvm.run.BazelJvmEnvironmentProgramPatcher"/>
+        <java.programPatcher implementation="org.jetbrains.bazel.java.run.BazelJvmEnvironmentProgramPatcher"/>
         <java.elementFinder implementation="org.jetbrains.bazel.java.search.BazelJavaClassFinder"/>
         <useScopeEnlarger implementation="org.jetbrains.bazel.java.search.BazelJavaUseScopeEnlarger"/>
 

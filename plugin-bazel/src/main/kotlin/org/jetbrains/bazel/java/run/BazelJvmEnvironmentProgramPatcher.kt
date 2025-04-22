@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.jvm.run
+package org.jetbrains.bazel.java.run
 
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.JavaParameters
