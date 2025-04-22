@@ -49,7 +49,21 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
   }
 
   @Test
-  fun `resolve to nested assignments`() {
+  fun `resolve to nested assignments in module block`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+      if 1 != 2:
+          <target>foo = 2
+      else:
+          foo = 3
+      foo = 4
+      <caret>foo
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `resolve to nested assignments in function block`() {
     verifyTargetOfReferenceAtCaret(
       """
       foo = 1
@@ -65,7 +79,24 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
   }
 
   @Test
-  fun `resolve to deeply nested assignments`() {
+  fun `resolve to deeply nested assignments in module block`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+      if 1 != 2:
+          baz()
+          if 3 != 4
+              <target>foo = 2
+          else:
+              foo = 3
+          foo = 4
+      foo = 5
+      <caret>foo
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `resolve to deeply nested assignments in function block`() {
     verifyTargetOfReferenceAtCaret(
       """
       foo = 1
@@ -79,6 +110,24 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
               foo = 4
           foo = 5
           return <caret>foo
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `resolve to later binding in same block`() {
+    verifyTargetOfReferenceAtCaret(
+      // Taken from:
+      // https://github.com/bazelbuild/starlark/blob/6dd78ee3a66820a8b7571239946466cc702b209e/spec.md#name-binding-and-variables
+      """
+      y = "goodbye"
+
+      def hello():
+          for x in (1, 2):
+              if x == 2:
+                  print(<caret>y) # prints "hello"
+              if x == 1:
+                  <target>y = "hello"
       """.trimIndent(),
     )
   }
