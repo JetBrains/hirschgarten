@@ -129,9 +129,6 @@
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.PathSyncHook"/>
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
-        <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.JavaSourceTypeIconProvider"/>
-        <psiElementConfigurationLocator implementation="org.jetbrains.bazel.java.junit.JavaPsiElementConfigurationLocator"/>
-        <unresolvedImportChecker implementation ="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -175,9 +172,6 @@
         <!--                    serviceImplementation="org.jetbrains.bazel.services.SingleFileSourcesTrackerImpl"-->
         <!--                    overrides="true"/>-->
 
-        <runLineMarkerContributor
-                implementationClass="org.jetbrains.bazel.jvm.ui.gutters.BazelJavaRunLineMarkerContributor"
-                language="JVM"/>
         <registryKey defaultValue="false" description="Build project on initial project sync"
                      key="bsp.build.project.on.sync"/>
         <registryKey defaultValue="true" description="Python modules support" key="bsp.python.support"/>

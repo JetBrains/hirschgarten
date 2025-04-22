@@ -6,6 +6,8 @@
         <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook" order="after BazelRepoMappingSyncHook"/>
 
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.JavaSourceTypeIconProvider"/>
+        <psiElementConfigurationLocator implementation="org.jetbrains.bazel.java.junit.JavaPsiElementConfigurationLocator"/>
+        <unresolvedImportChecker implementation ="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -17,8 +19,8 @@
                         serviceImplementation="org.jetbrains.bazel.services.BazelExternalAnnotationsManager"
                         overrides="true"/>
         <runLineMarkerContributor
-                implementationClass="org.jetbrains.bazel.jvm.ui.gutters.BspJVMRunLineMarkerContributor"
-                language="JVM"/>
+                implementationClass="org.jetbrains.bazel.jvm.ui.gutters.BazelJavaRunLineMarkerContributor"
+                language="JAVA"/>
         <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelJavaNewProjectWizard"/>
     </extensions>
 </idea-plugin>
