@@ -54,7 +54,6 @@ java_library(
             ":sdk",
             ":java",
             ":kotlin",
-            ":junit",
             ":platform_images",
         ],
     ),
@@ -109,6 +108,7 @@ java_library(
 java_library(
     name = "junit",
     neverlink = 1,
+    visibility = ["//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/junit:__subpackages__"],
     exports = select_from_plugin_api_directory(
         android_studio = [],
         clion = [],

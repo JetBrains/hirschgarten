@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.jvm.junit
+package org.jetbrains.bazel.junit
 
 import com.intellij.execution.PsiLocation
 import com.intellij.execution.ShortenCommandLine
