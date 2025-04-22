@@ -16,6 +16,7 @@ import kotlin.io.path.exists
 data class BazelProjectSettings(
   val projectViewPath: Path? = null,
   val buildifierExecutablePath: Path? = null,
+  val runBuildifierOnSave: Boolean = true,
   val hotSwapEnabled: Boolean = true,
   val showExcludedDirectoriesAsSeparateNode: Boolean = true,
   // experimental settings
@@ -38,6 +39,7 @@ data class BazelProjectSettings(
 internal data class BazelProjectSettingsState(
   var projectViewPathUri: String? = null,
   var buildifierExecutablePathUri: String? = null,
+  var runBuildifierOnSave: Boolean = true,
   var hotSwapEnabled: Boolean = true,
   var showExcludedDirectoriesAsSeparateNode: Boolean = true,
   var enableLocalJvmActions: Boolean = false,
@@ -62,6 +64,7 @@ internal class BazelProjectSettingsService :
     BazelProjectSettingsState(
       projectViewPathUri = settings.projectViewPath?.toUri()?.toString(),
       buildifierExecutablePathUri = settings.buildifierExecutablePath?.toUri()?.toString(),
+      runBuildifierOnSave = settings.runBuildifierOnSave,
       hotSwapEnabled = settings.hotSwapEnabled,
       showExcludedDirectoriesAsSeparateNode = settings.showExcludedDirectoriesAsSeparateNode,
       enableLocalJvmActions = settings.enableLocalJvmActions,
@@ -75,6 +78,7 @@ internal class BazelProjectSettingsService :
         BazelProjectSettings(
           projectViewPath = settingsState.projectViewPathUri?.takeIf { it.isNotBlank() }?.let { Paths.get(URI(it)) },
           buildifierExecutablePath = settingsState.buildifierExecutablePathUri?.takeIf { it.isNotBlank() }?.let { Paths.get(URI(it)) },
+          runBuildifierOnSave = settingsState.runBuildifierOnSave,
           hotSwapEnabled = settingsState.hotSwapEnabled,
           showExcludedDirectoriesAsSeparateNode = settingsState.showExcludedDirectoriesAsSeparateNode,
           enableLocalJvmActions = settingsState.enableLocalJvmActions,

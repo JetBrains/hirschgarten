@@ -23,11 +23,13 @@ class BazelNativeRulesDocumentationTarget(symbol: BazelNativeRuleDocumentationSy
   override fun computeDocumentation(): DocumentationResult? =
     symbolPtr.dereference().run {
       val html =
-        if (nativeRule.docString != null) {
-          nativeRule.docString
-        } else {
-          "External documentation for ${nativeRule.name}: <a href=${nativeRule.docsLink}>${nativeRule.docsLink}</a>"
-        }
-      DocumentationResult.documentation(html.toString())
+        nativeRule.docString
+          ?: if (nativeRule.externalDocLink != null) {
+            "External documentation for ${nativeRule.name}: <a href=${nativeRule.externalDocLink}>${nativeRule.externalDocLink}</a>"
+          } else {
+            return null
+          }
+
+      DocumentationResult.documentation(html)
     }
 }

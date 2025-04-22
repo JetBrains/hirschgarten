@@ -14,6 +14,7 @@ java_binary(
 java_test(
     name = "java_test",
     srcs = ["JavaTest.java"],
+    data = [":java_binary"],
     env = {
         "foo1": "val1",
         "foo2": "val2",
@@ -25,5 +26,4 @@ java_test(
     ],
     test_class = "environment_variables.JavaTest",
     visibility = ["//visibility:public"],
-    data = [":java_binary"],
 )

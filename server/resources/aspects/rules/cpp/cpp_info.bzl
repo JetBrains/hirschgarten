@@ -4,6 +4,8 @@ load(
     "@bazel_tools//tools/build_defs/cc:action_names.bzl",
     "ACTION_NAMES",
 )
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//aspects:utils/utils.bzl", "create_struct", "do_starlark_string_expansion", "file_location", "files_to_list", "update_sync_output_groups")
 
 # Defensive list of features that can appear in the C++ toolchain, but which we
