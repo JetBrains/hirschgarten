@@ -13,7 +13,7 @@ open class BazelJavaRunLineMarkerContributor : BspRunLineMarkerContributor() {
 
   override fun PsiElement.shouldAddMarker(): Boolean =
     !isInsideJar() &&
-      PsiTreeUtil.getParentOfType<PsiNameIdentifierOwner>(this, true)?.isClassOrMethod() ?: false
+      PsiTreeUtil.getParentOfType(this, PsiNameIdentifierOwner::class.java, true)?.isClassOrMethod() ?: false
 
   private fun PsiElement.isInsideJar() = containingFile.virtualFile?.fileSystem is JarFileSystem
 
