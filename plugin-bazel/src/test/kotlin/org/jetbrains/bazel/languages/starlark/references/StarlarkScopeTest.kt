@@ -7,6 +7,7 @@ import io.kotest.matchers.types.instanceOf
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkReferencesTestCase
 import org.jetbrains.kotlin.idea.base.psi.getLineNumber
+import org.jetbrains.kotlin.idea.base.psi.getLineStartOffset
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -95,6 +96,9 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
     // then
     resolved.shouldNotBeNull()
     resolved shouldBe instanceOf<PsiElement>()
-    myFixture.file.getLineNumber(resolved.textOffset) shouldBe targetLine
+    val actualLine = myFixture.file.getLineNumber(resolved.textOffset)
+    targetLine shouldBe actualLine
+    val actualColumn = resolved.textOffset - myFixture.file.getLineStartOffset(targetLine, skipWhitespace = false)!!
+    targetColumn shouldBe actualColumn
   }
 }
