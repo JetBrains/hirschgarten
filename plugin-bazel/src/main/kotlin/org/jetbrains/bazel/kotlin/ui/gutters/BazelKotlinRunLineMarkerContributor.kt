@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.kotlin.ui.gutters
 
 import com.intellij.psi.PsiNameIdentifierOwner
-import org.jetbrains.bazel.jvm.ui.gutters.BazelJavaRunLineMarkerContributor
+import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType

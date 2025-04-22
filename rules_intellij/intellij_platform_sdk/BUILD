@@ -52,7 +52,7 @@ java_library(
         ],
         intellij = [
             ":sdk",
-            ":java",
+            #             ":java",
             ":junit",
             ":platform_images",
         ],
@@ -113,6 +113,8 @@ java_library(
     neverlink = 1,
     visibility = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/java:__subpackages__",
+        "//sdkcompat/v243:__subpackages__",
+        "//sdkcompat/v251:__subpackages__",
     ],
     exports = select_from_plugin_api_directory(
         android_studio = [":java"],

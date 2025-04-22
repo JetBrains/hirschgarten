@@ -9,6 +9,7 @@ import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor
 import org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassBody
