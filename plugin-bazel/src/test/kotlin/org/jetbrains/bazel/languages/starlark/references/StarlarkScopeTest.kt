@@ -136,8 +136,8 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
 
   private fun verifyTargetOfReferenceAtCaret(text: String) {
     // given
-    val targetLine = text.lineSequence().indexOfFirst { it.contains("<target>") }
-    val targetColumn = text.lineSequence().map { it.indexOf("<target>") }.filter { it != -1 }.first()
+    val expectedLine = text.lineSequence().indexOfFirst { it.contains("<target>") }
+    val expectedColumn = text.lineSequence().map { it.indexOf("<target>") }.filter { it != -1 }.first()
     myFixture.configureByText(StarlarkFileType, text.replace("<target>", ""))
 
     // when
@@ -148,8 +148,8 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
     resolved.shouldNotBeNull()
     resolved shouldBe instanceOf<PsiElement>()
     val actualLine = myFixture.file.getLineNumber(resolved.textOffset)
-    targetLine shouldBe actualLine
-    val actualColumn = resolved.textOffset - myFixture.file.getLineStartOffset(targetLine, skipWhitespace = false)!!
-    targetColumn shouldBe actualColumn
+    actualLine shouldBe expectedLine
+    val actualColumn = resolved.textOffset - myFixture.file.getLineStartOffset(expectedLine, skipWhitespace = false)!!
+    actualColumn shouldBe expectedColumn
   }
 }
