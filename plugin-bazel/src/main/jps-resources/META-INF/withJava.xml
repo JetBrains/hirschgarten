@@ -12,8 +12,8 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <java.programPatcher implementation="org.jetbrains.bazel.jvm.run.BazelJvmEnvironmentProgramPatcher"/>
-        <java.elementFinder implementation="org.jetbrains.bazel.services.BazelJavaClassFinder"/>
-        <useScopeEnlarger implementation="org.jetbrains.bazel.services.BazelJavaUseScopeEnlarger"/>
+        <java.elementFinder implementation="org.jetbrains.bazel.java.search.BazelJavaClassFinder"/>
+        <useScopeEnlarger implementation="org.jetbrains.bazel.java.search.BazelJavaUseScopeEnlarger"/>
 
         <projectService serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
                         serviceImplementation="org.jetbrains.bazel.services.BazelExternalAnnotationsManager"
