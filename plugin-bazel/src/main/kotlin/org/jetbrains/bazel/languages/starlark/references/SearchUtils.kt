@@ -5,7 +5,8 @@ import com.intellij.psi.PsiFileSystemItem
 import com.intellij.util.Processor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
-import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCompExpression
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkCallable
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkForStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementList
 
@@ -21,7 +22,7 @@ object SearchUtils {
         val parent = currentElement.parent
         val stopAt = if (!fromFunction) currentElement else null
         val keepSearching = searchInParent(parent, stopAt, processor)
-        val inFunction = parent is StarlarkFunctionDeclaration
+        val inFunction = parent is StarlarkCallable
         if (keepSearching) searchInFile(parent, processor, inFunction || fromFunction) else Unit
       }
     }
@@ -33,18 +34,23 @@ object SearchUtils {
   ): Boolean =
     when (parent) {
       is StarlarkFile -> parent.searchInTopLevel(processor, stopAt)
-      is StarlarkFunctionDeclaration -> parent.searchInParameters(processor)
+      is StarlarkCallable -> parent.searchInParameters(processor)
       is StarlarkForStatement -> parent.searchInLoopVariables(processor)
-      is StarlarkStatementList -> parent.searchInAssignments(processor)
+      is StarlarkStatementList -> parent.searchInAssignmentsAndFunctionDeclarations(processor)
+      is StarlarkCompExpression -> parent.searchInComprehension(processor)
       else -> true
     }
 
-  private fun StarlarkStatementList.searchInAssignments(processor: Processor<StarlarkElement>): Boolean =
-    getAssignments().all { it.check(processor) }
+  private fun StarlarkStatementList.searchInAssignmentsAndFunctionDeclarations(processor: Processor<StarlarkElement>): Boolean =
+    getAssignments().all { it.check(processor) } &&
+      getFunctionDeclarations().all { processor.process(it) }
 
-  private fun StarlarkFunctionDeclaration.searchInParameters(processor: Processor<StarlarkElement>): Boolean =
+  private fun StarlarkCallable.searchInParameters(processor: Processor<StarlarkElement>): Boolean =
     getParameters().all { processor.process(it) }
 
   private fun StarlarkForStatement.searchInLoopVariables(processor: Processor<StarlarkElement>): Boolean =
     getLoopVariables().all { processor.process(it) }
+
+  private fun StarlarkCompExpression.searchInComprehension(processor: Processor<StarlarkElement>): Boolean =
+    getCompVariables().all { processor.process(it) }
 }

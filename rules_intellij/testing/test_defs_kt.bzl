@@ -5,7 +5,6 @@
 """Custom rule for creating IntelliJ plugin tests.
 """
 
-load("@rules_java//java:defs.bzl", "java_test")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_test")
 load(
     "//rules_intellij/build_defs:build_defs.bzl",

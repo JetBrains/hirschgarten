@@ -1,3 +1,5 @@
+load("@rules_java//java:java_library.bzl", "java_library")
+
 #
 # This file is based on Bazel plugin for IntelliJ by The Bazel Authors, licensed under Apache-2.0;
 # It was modified by JetBrains s.r.o. and contributors
@@ -10,7 +12,6 @@
 #   listed here may depend on these libraries.
 load(
     ":build_defs.bzl",
-    "select_for_plugin_api",
     "select_from_plugin_api_directory",
 )
 
@@ -52,7 +53,6 @@ java_library(
         intellij = [
             ":sdk",
             ":java",
-            ":kotlin",
             ":junit",
             ":platform_images",
         ],
@@ -86,6 +86,9 @@ java_library(
 java_library(
     name = "kotlin",
     neverlink = 1,
+    visibility = [
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin:__subpackages__",
+    ],
     exports = select_from_plugin_api_directory(
         android_studio = [":kotlin"],
         clion = [],

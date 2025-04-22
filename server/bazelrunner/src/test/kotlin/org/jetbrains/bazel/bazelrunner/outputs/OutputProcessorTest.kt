@@ -99,6 +99,6 @@ class OutputProcessorTest {
   fun startHangingProcess(): Process =
     startProcess(
       listOf("cmd", "/c", "timeout /t 9999999 >nul"),
-      listOf("sh", "-c", "sleep infinity"),
+      listOf("sh", "-c", "sleep 9999999"),
     )
 }

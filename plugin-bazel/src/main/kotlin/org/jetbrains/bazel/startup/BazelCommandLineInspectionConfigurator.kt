@@ -7,7 +7,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.observation.EP_NAME
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 
 class BazelCommandLineInspectionConfigurator : CommandLineInspectionProjectConfigurator {
   override fun getName(): String = "Bsp Command Line Inspection"
@@ -18,7 +17,8 @@ class BazelCommandLineInspectionConfigurator : CommandLineInspectionProjectConfi
     runBlocking {
       if (project.isBazelProject) {
         EP_NAME.extensionList
-          .firstIsInstanceOrNull<BazelStartupActivityTracker>()
+          .filterIsInstance<BazelStartupActivityTracker>()
+          .firstOrNull()
           ?.awaitConfiguration(project)
       }
     }

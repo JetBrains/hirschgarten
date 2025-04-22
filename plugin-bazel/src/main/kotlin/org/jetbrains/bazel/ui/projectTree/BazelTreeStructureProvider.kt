@@ -30,7 +30,6 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
-import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 
 internal class BazelTreeStructureProvider : TreeStructureProvider {
   // We want to get rid of all the module (group) nodes from the project view tree;
@@ -75,7 +74,7 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
       }
 
     val rootDirectoryNode = BspDirectoryNode(project, rootDirectory, settings, rootDirectoryNodeFilter)
-    val externalLibrariesNode = children.firstIsInstanceOrNull<ExternalLibrariesNode>()
+    val externalLibrariesNode = children.filterIsInstance<ExternalLibrariesNode>().firstOrNull()
 
     val excludedDirectoriesNode =
       if (showExcludedDirectoriesAsSeparateNode) {

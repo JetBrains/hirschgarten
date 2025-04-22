@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.flow.open
+package org.jetbrains.bazel.kotlin.startup
 
 import com.intellij.diagnostic.VMOptions
 import com.intellij.notification.NotificationAction

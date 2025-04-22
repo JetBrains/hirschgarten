@@ -1,14 +1,14 @@
 package org.jetbrains.bazel.ui.notifications
 
 import com.intellij.openapi.components.service
+import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.project.IncompleteDependenciesService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiJavaFile
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotificationProvider
 import com.intellij.ui.EditorNotifications
@@ -19,9 +19,6 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.status.isSyncInProgress
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
-import org.jetbrains.kotlin.idea.references.mainReference
-import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.psi.psiUtil.getQualifiedElementSelector
 import java.util.function.Function
 import javax.swing.JComponent
 
@@ -47,36 +44,13 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotification
     if (!file.isKotlinFileType() && !file.isJavaFileType()) return false
     if (!ProjectFileIndex.getInstance(project).isInSourceContent(file)) return false
     val psiFile = PsiManager.getInstance(project).findFile(file) ?: return false
-    return when (psiFile) {
-      is KtFile -> hasUnresolvedImport(psiFile)
-      is PsiJavaFile -> hasUnresolvedImport(psiFile)
-      else -> false
-    }
+
+    return UnresolvedImportChecker.ep.extensionList.any { it.hasUnresolvedImport(project, psiFile) }
   }
 
   private fun VirtualFile.isKotlinFileType(): Boolean = extension == "kt"
 
   private fun VirtualFile.isJavaFileType(): Boolean = extension == "java"
-
-  private fun hasUnresolvedImport(psiFile: KtFile): Boolean {
-    val importList = psiFile.importList ?: return false
-    return importList.imports
-      .mapNotNull {
-        it.importedReference?.getQualifiedElementSelector()?.mainReference
-      }.any { reference ->
-        reference.multiResolve(false).isEmpty()
-      }
-  }
-
-  private fun hasUnresolvedImport(psiFile: PsiJavaFile): Boolean {
-    val importList = psiFile.importList ?: return false
-    return importList.allImportStatements
-      .mapNotNull {
-        it.reference as? PsiPolyVariantReference
-      }.any { reference ->
-        reference.multiResolve(false).isEmpty()
-      }
-  }
 
   private inner class BuildAndResyncOnUnresolvedImportEditorPanel(project: Project, fileEditor: FileEditor) :
     EditorNotificationPanel(fileEditor, Status.Warning) {
@@ -94,5 +68,13 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotification
         EditorNotifications.getInstance(project).updateNotifications(this@BuildAndResyncOnUnresolvedImportNotificationsProvider)
       }
     }
+  }
+}
+
+interface UnresolvedImportChecker {
+  fun hasUnresolvedImport(project: Project, psiFile: PsiFile): Boolean
+
+  companion object {
+    val ep = ExtensionPointName.create<UnresolvedImportChecker>("org.jetbrains.bazel.unresolvedImportChecker")
   }
 }
