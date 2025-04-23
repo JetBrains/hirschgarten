@@ -1186,7 +1186,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         BuildTarget(
           Label.parse("@//target_without_java_info:filegroup"),
           listOf("application"),
-          listOf("java"),
+          listOf(),
           emptyList(),
           BuildTargetCapabilities(
             canCompile = true,
@@ -1200,7 +1200,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         BuildTarget(
           Label.parse("@//target_without_java_info:genrule"),
           listOf("application"),
-          listOf("java", "kotlin"),
+          listOf(),
           emptyList(),
           BuildTargetCapabilities(
             canCompile = true,
