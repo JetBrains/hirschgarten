@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.ui.starters
+package org.jetbrains.bazel.kotlin.ui.starters
 
 import com.intellij.ide.projectWizard.generators.AssetsNewProjectWizardStep
 import com.intellij.ide.starters.local.GeneratorAsset

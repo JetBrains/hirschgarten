@@ -11,6 +11,7 @@ INTELLIJ_DEPS = [
 INTELLIJ_RUNTIME_DEPS = [
     "//rules_intellij/intellij_platform_sdk:bundled_plugins",
     "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
+    "//rules_intellij/intellij_platform_sdk:kotlin_for_tests",
 ]
 
 JVM_FLAGS = [

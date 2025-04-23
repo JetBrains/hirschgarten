@@ -100,6 +100,15 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.kotlinFacetEntityUpdater"
                         interface="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinFacetEntityUpdater"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bazel.bazelCoverageClassNodeDecoratorPsiElementClassifier"
+                        interface="org.jetbrains.bazel.run.coverage.BazelCoverageClassNodeDecoratorPsiElementClassifier"
+                        dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bazel.unresolvedImportChecker"
+                        interface="org.jetbrains.bazel.ui.notifications.UnresolvedImportChecker"
+                        dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bazel.psiElementConfigurationLocator"
+                        interface="org.jetbrains.bazel.jvm.junit.PsiElementConfigurationLocator"
+                        dynamic="true"/>
     </extensionPoints>
 
     <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -123,6 +132,8 @@
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.JavaSourceTypeIconProvider"/>
+        <psiElementConfigurationLocator implementation="org.jetbrains.bazel.java.junit.JavaPsiElementConfigurationLocator"/>
+        <unresolvedImportChecker implementation ="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -170,7 +181,6 @@
         <directoryProjectConfigurator
                 implementation="org.jetbrains.bazel.flow.open.CounterPlatformProjectConfigurator"
                 order="last"/>
-
         <!--    <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"-->
         <!--                    serviceImplementation="org.jetbrains.bazel.services.SingleFileSourcesTrackerImpl"-->
         <!--                    overrides="true"/>-->
