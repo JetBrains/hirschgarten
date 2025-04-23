@@ -47,7 +47,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem =
       BuildTarget(
         Label.parse("target"),
-        listOf("library"),
+        listOf(),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
@@ -137,7 +137,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem =
       BuildTarget(
         Label.parse("target"),
-        listOf("library"),
+        listOf(),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
@@ -193,7 +193,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem1 =
       BuildTarget(
         Label.parse("target"),
-        listOf("library"),
+        listOf(),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
@@ -207,7 +207,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem2 =
       BuildTarget(
         Label.parse("target"),
-        listOf("library"),
+        listOf(),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
@@ -264,7 +264,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem1 =
       BuildTarget(
         Label.parse("target"),
-        listOf("library"),
+        listOf(),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
@@ -279,7 +279,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem2 =
       BuildTarget(
         Label.parse("target"),
-        listOf("library"),
+        listOf(),
         emptyList(),
         TargetKind(
           kindString = "java_binary",

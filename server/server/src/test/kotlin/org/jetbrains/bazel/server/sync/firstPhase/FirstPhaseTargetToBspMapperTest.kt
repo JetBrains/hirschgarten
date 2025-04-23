@@ -235,7 +235,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target1: unchanged
           BuildTarget(
             id = Label.parse("//target1"),
-            tags = listOf(BuildTargetTag.LIBRARY),
+            tags = listOf(),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             kind =
               TargetKind(
@@ -258,7 +258,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target2: now merges its declared language with those inferred from its .kt sources
           BuildTarget(
             id = Label.parse("//target2"),
-            tags = listOf(BuildTargetTag.APPLICATION),
+            tags = listOf(),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             kind =
               TargetKind(
@@ -277,7 +277,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target3
           BuildTarget(
             id = Label.parse("//target3"),
-            tags = listOf(BuildTargetTag.TEST),
+            tags = listOf(),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             kind =
               TargetKind(
@@ -296,7 +296,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target4
           BuildTarget(
             id = Label.parse("//target4"),
-            tags = listOf(BuildTargetTag.LIBRARY),
+            tags = listOf(),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             kind =
               TargetKind(
@@ -311,7 +311,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target5
           BuildTarget(
             id = Label.parse("//target5"),
-            tags = listOf(BuildTargetTag.APPLICATION),
+            tags = listOf(),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             kind =
               TargetKind(
@@ -326,7 +326,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target6
           BuildTarget(
             id = Label.parse("//target6"),
-            tags = listOf(BuildTargetTag.TEST),
+            tags = listOf(),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             kind =
               TargetKind(
@@ -341,7 +341,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target7: now with its created source files
           BuildTarget(
             id = Label.parse("//target7"),
-            tags = listOf(BuildTargetTag.LIBRARY),
+            tags = listOf(),
             dependencies = emptyList(),
             kind =
               TargetKind(
@@ -360,7 +360,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target8: merging its own source and the sources from filegroupSources dependency
           BuildTarget(
             id = Label.parse("//target8"),
-            tags = listOf(BuildTargetTag.LIBRARY),
+            tags = listOf(),
             dependencies = emptyList(),
             kind =
               TargetKind(
@@ -387,7 +387,7 @@ class FirstPhaseTargetToBspMapperTest {
           ),
           BuildTarget(
             id = Label.parse("//filegroupSources"),
-            tags = listOf(BuildTargetTag.LIBRARY),
+            tags = listOf(),
             dependencies = emptyList(),
             kind =
               TargetKind(

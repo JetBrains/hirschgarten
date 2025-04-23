@@ -47,7 +47,7 @@ object GitHub : Project({
   val allSteps =
     sequential {
       // 1. Run formatter first
-      buildType(ProjectFormat.GitHub)
+      // buildType(ProjectFormat.GitHub)
       // 2. Run everything else in parallel
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
@@ -101,25 +101,25 @@ object GitHub : Project({
   allSteps.forEach { buildType(it) }
 
   // setup trigger for bazel-bsp pipeline
-  ProjectFormat.GitHub.triggers {
-    vcs {
-      branchFilter = ProjectBranchFilters.githubBranchFilter
-      triggerRules = ProjectTriggerRules.triggerRules
-    }
-  }
+//  ProjectFormat.GitHub.triggers {
+//    vcs {
+//      branchFilter = ProjectBranchFilters.githubBranchFilter
+//      triggerRules = ProjectTriggerRules.triggerRules
+//    }
+//  }
 
-  ResultsAggregator.GitHub.triggers {
-    finishBuildTrigger {
-      buildType = "${ProjectFormat.GitHub.id}"
-      successfulOnly = true
-      branchFilter = ProjectBranchFilters.githubBranchFilter
-    }
-  }
+//  ResultsAggregator.GitHub.triggers {
+//    finishBuildTrigger {
+//      buildType = "${ProjectFormat.GitHub.id}"
+//      successfulOnly = true
+//      branchFilter = ProjectBranchFilters.githubBranchFilter
+//    }
+//  }
 
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =
     arrayListOf(
-      ProjectFormat.GitHub,
+      //ProjectFormat.GitHub,
       ProjectBuild.GitHub,
       ProjectUnitTests.GitHub,
       PluginBenchmark.BenchmarkDefaultGitHub,
@@ -169,7 +169,7 @@ object Space : Project({
   val allSteps =
     sequential {
       // 1. Run formatter first
-      buildType(ProjectFormat.Space)
+      //buildType(ProjectFormat.Space)
       // 2. Run everything else in parallel
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
@@ -223,25 +223,25 @@ object Space : Project({
   allSteps.forEach { buildType(it) }
 
   // setup trigger for bazel-bsp pipeline
-  ProjectFormat.Space.triggers {
-    vcs {
-      branchFilter = ProjectBranchFilters.spaceBranchFilter
-      triggerRules = ProjectTriggerRules.triggerRules
-    }
-  }
-
-  ResultsAggregator.Space.triggers {
-    finishBuildTrigger {
-      buildType = "${ProjectFormat.Space.id}"
-      successfulOnly = true
-      branchFilter = ProjectBranchFilters.spaceBranchFilter
-    }
-  }
+//  ProjectFormat.Space.triggers {
+//    vcs {
+//      branchFilter = ProjectBranchFilters.spaceBranchFilter
+//      triggerRules = ProjectTriggerRules.triggerRules
+//    }
+//  }
+//
+//  ResultsAggregator.Space.triggers {
+//    finishBuildTrigger {
+//      buildType = "${ProjectFormat.Space.id}"
+//      successfulOnly = true
+//      branchFilter = ProjectBranchFilters.spaceBranchFilter
+//    }
+//  }
 
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =
     arrayListOf(
-      ProjectFormat.Space,
+      //ProjectFormat.Space,
       ProjectBuild.Space,
       ProjectUnitTests.Space,
       PluginBenchmark.SpaceBenchmarkDefault,

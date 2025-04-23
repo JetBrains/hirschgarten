@@ -82,7 +82,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
     val appBuildTarget =
       BuildTarget(
         Label.parse("@@//src/main:app"),
-        listOf("application"),
+        listOf(),
         listOf(
           Label.parse("@@//src/main/java/com/example/myapplication:lib"),
           // TODO: ideally these non-existent dependencies should be filtered out somehow
@@ -105,7 +105,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
     val libBuildTarget =
       BuildTarget(
         Label.parse("@@//src/main/java/com/example/myapplication:lib"),
-        listOf("library"),
+        listOf(),
         listOf(
           Label.parse("@@rules_jvm_external~~maven~maven//:androidx_appcompat_appcompat"),
           Label.synthetic("rules_kotlin_kotlin-stdlibs"),
@@ -129,7 +129,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
     val libTestBuildTarget =
       BuildTarget(
         Label.parse("@@//src/test/java/com/example/myapplication:lib_test"),
-        listOf("test"),
+        listOf(),
         listOf(
           Label.parse("@@//src/main/java/com/example/myapplication:lib"),
           Label.parse("@@//src/main/java/com/example/myapplication:lib_base"),

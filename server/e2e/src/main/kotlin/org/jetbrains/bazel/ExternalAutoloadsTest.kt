@@ -48,7 +48,7 @@ object ExternalAutoloadsTest : BazelBspTestBaseScenario() {
     val exampleExampleBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//src:hello"),
-        listOf("library"),
+        listOf(),
         emptyList(),
         TargetKind(
           kindString = "java_library",

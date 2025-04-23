@@ -70,7 +70,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     createGoBuildTarget(
       targetDirectory = "example",
       targetName = "hello",
-      tags = listOf("application"),
+      tags = listOf(),
       kind =
         TargetKind(
           kindString = "go_binary",
@@ -96,7 +96,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     createGoBuildTarget(
       targetDirectory = "lib",
       targetName = "go_default_library",
-      tags = listOf("library"),
+      tags = listOf(),
       kind =
         TargetKind(
           kindString = "go_library",
@@ -117,7 +117,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     createGoBuildTarget(
       targetDirectory = "lib",
       targetName = "go_default_test",
-      tags = listOf("test"),
+      tags = listOf(),
       kind =
         TargetKind(
           kindString = "go_test",

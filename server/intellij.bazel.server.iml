@@ -8,9 +8,6 @@
       <sourceFolder url="file://$MODULE_DIR$/install/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/commons/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/bazelrunner/src/main/kotlin" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/executioncontext/api/src/main/kotlin" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/executioncontext/projectview/src/main/kotlin" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/executioncontext/workspacecontext/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
     </content>
     <orderEntry type="inheritedJdk" />
@@ -38,7 +35,6 @@
     <orderEntry type="library" name="protobuf" level="project" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
     <orderEntry type="module" module-name="intellij.bazel.protobuf" />
-    <orderEntry type="module" module-name="intellij.bsp.protocol" />
     <orderEntry type="module" module-name="intellij.platform.ide.util.io" />
     <orderEntry type="module" module-name="intellij.platform.util" />
     <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry" />

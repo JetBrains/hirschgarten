@@ -763,7 +763,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val javaTargetsJavaBinary =
       BuildTarget(
         Label.parse("$targetPrefix//java_targets:java_binary"),
-        listOf("application"),
+        listOf(),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
@@ -785,7 +785,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val javaTargetsJavaBinaryWithFlag =
       BuildTarget(
         Label.parse("$targetPrefix//java_targets:java_binary_with_flag"),
-        listOf("application"),
+        listOf(),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
@@ -827,7 +827,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val scalaTargetsScalaBinary =
       BuildTarget(
         Label.parse("$targetPrefix//scala_targets:scala_binary"),
-        listOf("application"),
+        listOf(),
         listOf(
           Label.synthetic("scala-compiler-$scalaRulesVersion.jar"),
           Label.synthetic("scala-library-$scalaRulesVersion.jar"),
@@ -853,7 +853,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val javaTargetsSubpackageSubpackage =
       BuildTarget(
         Label.parse("$targetPrefix//java_targets/subpackage:java_library"),
-        listOf("library"),
+        listOf(),
         emptyList(),
         TargetKind(
           kindString = "java_library",
@@ -875,7 +875,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val javaTargetsJavaLibrary =
       BuildTarget(
         Label.parse("$targetPrefix//java_targets:java_library"),
-        listOf("library"),
+        listOf(),
         listOf(),
         TargetKind(
           kindString = "java_library",
@@ -897,7 +897,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val targetWithoutJvmFlagsBinary =
       BuildTarget(
         Label.parse("$targetPrefix//target_without_jvm_flags:binary"),
-        listOf("application"),
+        listOf(),
         listOf(
           Label.synthetic("scala-compiler-$scalaRulesVersion.jar"),
           Label.synthetic("scala-library-$scalaRulesVersion.jar"),
@@ -923,7 +923,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val targetWithoutMainClassLibrary =
       BuildTarget(
         Label.parse("$targetPrefix//target_without_main_class:library"),
-        listOf("library"),
+        listOf(),
         listOf(
           Label.synthetic("scala-compiler-$scalaRulesVersion.jar"),
           Label.synthetic("scala-library-$scalaRulesVersion.jar"),
@@ -949,7 +949,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val targetWithoutArgsBinary =
       BuildTarget(
         Label.parse("$targetPrefix//target_without_args:binary"),
-        listOf("application"),
+        listOf(),
         listOf(
           Label.synthetic("scala-compiler-$scalaRulesVersion.jar"),
           Label.synthetic("scala-library-$scalaRulesVersion.jar"),
@@ -980,7 +980,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val targetWithDependencyJavaBinary =
       BuildTarget(
         Label.parse("$targetPrefix//target_with_dependency:java_binary"),
-        listOf("application"),
+        listOf(),
         listOf(
           Label.parse("$targetPrefix//java_targets:java_library_exported"),
           Label.parse(guavaDep),
@@ -1005,7 +1005,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val scalaTargetsScalaTest =
       BuildTarget(
         Label.parse("$targetPrefix//scala_targets:scala_test"),
-        listOf("test"),
+        listOf(),
         listOf(
           Label.synthetic("scala-compiler-$scalaRulesVersion.jar"),
           Label.synthetic("scala-library-$scalaRulesVersion.jar"),
@@ -1045,7 +1045,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val targetWithResourcesJavaBinary =
       BuildTarget(
         Label.parse("$targetPrefix//target_with_resources:java_binary"),
-        listOf("application"),
+        listOf(),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
@@ -1071,7 +1071,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val javaTargetsJavaLibraryExported =
       BuildTarget(
         Label.parse("$targetPrefix//java_targets:java_library_exported"),
-        listOf("library"),
+        listOf(),
         listOf(
           Label.parse("$targetPrefix//java_targets/subpackage:java_library"),
           Label.parse("$targetPrefix//java_targets:java_library_exported_output_jars"),
@@ -1090,7 +1090,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val environmentVariablesJavaLibrary =
       BuildTarget(
         Label.parse("$targetPrefix//environment_variables:java_binary"),
-        listOf("application"),
+        listOf(),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
@@ -1112,7 +1112,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val environmentVariablesJavaTest =
       BuildTarget(
         Label.parse("$targetPrefix//environment_variables:java_test"),
-        listOf("test"),
+        listOf(),
         emptyList(),
         TargetKind(
           kindString = "java_test",
@@ -1134,7 +1134,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val targetWithJavacExportsJavaLibrary =
       BuildTarget(
         Label.parse("$targetPrefix//target_with_javac_exports:java_library"),
-        listOf("library"),
+        listOf(),
         emptyList(),
         TargetKind(
           kindString = "java_library",
@@ -1158,7 +1158,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       listOf(
         BuildTarget(
           Label.parse("@//genrule:foo"),
-          listOf("application"),
+          listOf(),
           emptyList(),
           kind =
             TargetKind(
@@ -1172,7 +1172,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         ),
         BuildTarget(
           Label.parse("@//target_without_java_info:filegroup"),
-          listOf("application"),
+          listOf(),
           emptyList(),
           kind =
             TargetKind(
@@ -1186,7 +1186,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         ),
         BuildTarget(
           Label.parse("@//target_without_java_info:genrule"),
-          listOf("application"),
+          listOf(),
           emptyList(),
           kind =
             TargetKind(

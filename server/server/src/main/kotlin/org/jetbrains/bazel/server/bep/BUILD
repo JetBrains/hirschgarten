@@ -9,7 +9,7 @@ kt_jvm_library(
     resources = ["//server/log4j_config"],
     visibility = ["//server/server:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/bazelrunner",
         "//server/commons",
         "//server/logger",

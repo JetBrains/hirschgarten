@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
@@ -29,7 +30,6 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.isExecutable
 import java.nio.file.Path
@@ -211,7 +211,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   @PublicApi // // https://youtrack.jetbrains.com/issue/BAZEL-1632
   @Suppress("UNUSED")
-  fun isLibrary(target: Label): Boolean = BuildTargetTag.LIBRARY in getBuildTargetForLabel(target)?.tags.orEmpty()
+  fun isLibrary(target: Label): Boolean = getBuildTargetForLabel(target)?.kind?.ruleType == RuleType.LIBRARY
 
   @PublicApi
   fun getTargetForModuleId(moduleId: String): Label? = moduleIdToTarget[moduleId]

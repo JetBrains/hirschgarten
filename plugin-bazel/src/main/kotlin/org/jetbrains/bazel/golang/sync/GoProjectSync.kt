@@ -26,6 +26,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
@@ -143,7 +144,7 @@ class GoProjectSync : ProjectSyncHook {
     }
 
   private fun inferRootType(buildTarget: BuildTarget): String =
-    if (buildTarget.tags.contains("test")) GO_TEST_SOURCE_ROOT_TYPE else GO_SOURCE_ROOT_TYPE
+    if (buildTarget.kind.ruleType == RuleType.TEST) GO_TEST_SOURCE_ROOT_TYPE else GO_SOURCE_ROOT_TYPE
 
   private fun getResourceContentRootEntities(
     target: BuildTarget,

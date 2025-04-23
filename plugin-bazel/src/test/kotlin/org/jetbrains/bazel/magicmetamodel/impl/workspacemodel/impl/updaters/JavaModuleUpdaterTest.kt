@@ -759,6 +759,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
+            kind =
+              TargetKind(
+                kindString = "java_library", // TODO
+                ruleType = RuleType.LIBRARY,
+                languageClasses = setOf(LanguageClass.JAVA),
+              ),
           )
 
         val baseDirContentRootPath = Path("/root/dir/")
@@ -817,6 +823,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),
+            kind =
+              TargetKind(
+                kindString = "java_library", // TODO
+                ruleType = RuleType.LIBRARY,
+                languageClasses = setOf(LanguageClass.JAVA),
+              ),
           )
 
         val baseDirContentRootPath1 = Path("/root/dir1/")
@@ -844,6 +856,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             kind =
               TargetKind(
                 kindString = "java_library",
+                ruleType = RuleType.LIBRARY,
+                languageClasses = setOf(LanguageClass.JAVA),
+              ),
+            kind =
+              TargetKind(
+                kindString = "java_library", // TODO
                 ruleType = RuleType.LIBRARY,
                 languageClasses = setOf(LanguageClass.JAVA),
               ),

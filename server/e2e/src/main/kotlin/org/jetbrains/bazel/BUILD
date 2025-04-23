@@ -7,7 +7,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
@@ -22,7 +22,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
     ],
@@ -35,7 +35,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
     ],
@@ -48,7 +48,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
@@ -62,7 +62,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
     ],
@@ -75,7 +75,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
@@ -89,7 +89,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
@@ -104,7 +104,7 @@ kt_jvm_binary(
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
         ":BazelBspKotlinProjectTest",
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/model",
@@ -118,7 +118,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
     ],
@@ -131,7 +131,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/android",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
@@ -145,7 +145,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/android",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
@@ -160,7 +160,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
     ],
@@ -173,7 +173,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
     ],
@@ -186,7 +186,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
@@ -201,7 +201,7 @@ kt_jvm_binary(
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons",
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
     ],
@@ -214,7 +214,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
     ],
@@ -228,7 +228,7 @@ kt_jvm_binary(
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons",
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
     ],
@@ -241,7 +241,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
@@ -258,7 +258,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
     ],

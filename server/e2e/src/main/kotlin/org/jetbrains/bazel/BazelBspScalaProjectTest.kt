@@ -6,6 +6,8 @@ import org.jetbrains.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
@@ -100,7 +102,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
     val target =
       BuildTarget(
         Label.parse("$targetPrefix//scala_targets:library"),
-        listOf("library"),
+        listOf(),
         listOf(
           Label.synthetic("scala-compiler-2.12.14.jar"),
           Label.synthetic("scala-library-2.12.14.jar"),

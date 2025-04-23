@@ -17,7 +17,7 @@ kt_junit5_test(
     src = "FirstPhaseTargetToBspMapperTest.kt",
     deps = [
         ":mocks",
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/firstPhase",
         "//third_party/bazel/src/main/protobuf:build_java_proto",
         "@maven//:com_google_protobuf_protobuf_java",
@@ -30,7 +30,7 @@ kt_junit5_test(
     src = "FirstPhaseTargetUtilsTest.kt",
     deps = [
         ":mocks",
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/firstPhase",
         "//third_party/bazel/src/main/protobuf:build_java_proto",
         "@maven//:com_google_protobuf_protobuf_java",

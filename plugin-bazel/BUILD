@@ -20,8 +20,8 @@ intellij_plugin_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src:plugin-bazel-lib",
-        "//protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bazel:bsp_export",
     ],
 )

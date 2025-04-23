@@ -5,12 +5,12 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/annotations",
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
         "//commons/src/main/kotlin/org/jetbrains/bazel/label",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/annotations",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl/workspacemodel",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
-        "//protocol",
     ],
 )

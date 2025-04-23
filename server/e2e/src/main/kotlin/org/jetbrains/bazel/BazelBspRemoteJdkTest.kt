@@ -50,7 +50,7 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
     val exampleExampleBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//example:example"),
-        listOf("application"),
+        listOf(),
         emptyList(),
         TargetKind(
           kindString = "java_binary",

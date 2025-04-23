@@ -13,7 +13,7 @@ kt_junit5_test(
     size = "small",
     src = "TestXmlParserTest.kt",
     deps = [
-        "//protocol",
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bep",
     ],
 )

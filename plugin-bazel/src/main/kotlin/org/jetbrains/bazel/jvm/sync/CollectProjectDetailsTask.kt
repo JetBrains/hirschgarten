@@ -13,10 +13,6 @@ import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import kotlinx.coroutines.coroutineScope
-import org.jetbrains.bazel.android.AndroidSdk
-import org.jetbrains.bazel.android.AndroidSdkGetterExtension
-import org.jetbrains.bazel.android.androidSdkGetterExtension
-import org.jetbrains.bazel.android.androidSdkGetterExtensionExists
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.bazelProjectName
@@ -30,7 +26,6 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceMode
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModulesToCompiledSourceCodeInsideJarExcludeTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.androidJarToAndroidSdkName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.bazel.performance.bspTracer
@@ -61,7 +56,6 @@ import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
-import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import java.nio.file.Path
@@ -78,8 +72,6 @@ class CollectProjectDetailsTask(
   private lateinit var javacOptions: Map<String, String>
 
   private var scalaSdks: Set<ScalaSdk>? = null
-
-  private var androidSdks: Set<AndroidSdk>? = null
 
   suspend fun execute(
     project: Project,
@@ -108,12 +100,6 @@ class CollectProjectDetailsTask(
     if (scalaSdkExtensionExists()) {
       progressReporter.indeterminateStep(text = "Calculating all unique scala sdk infos") {
         calculateAllScalaSdkInfosSubtask(projectDetails)
-      }
-    }
-
-    if (BazelFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
-      progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
-        calculateAllAndroidSdkInfosSubtask(projectDetails)
       }
     }
 
@@ -207,31 +193,6 @@ class CollectProjectDetailsTask(
         )
       }
 
-  private suspend fun calculateAllAndroidSdkInfosSubtask(projectDetails: ProjectDetails) =
-    project.syncConsole.withSubtask(
-      taskId,
-      "calculate-all-android-sdk-infos",
-      BazelPluginBundle.message("progress.bar.calculate.android.sdk.infos"),
-    ) {
-      androidSdks =
-        bspTracer.spanBuilder("calculate.all.android.sdk.infos.ms").use {
-          calculateAllAndroidSdkInfos(projectDetails)
-        }
-    }
-
-  private fun calculateAllAndroidSdkInfos(projectDetails: ProjectDetails): Set<AndroidSdk> =
-    projectDetails.targets
-      .mapNotNull { createAndroidSdk(it) }
-      .toSet()
-
-  private fun createAndroidSdk(target: BuildTarget): AndroidSdk? =
-    extractAndroidBuildTarget(target)?.androidJar?.let { androidJar ->
-      AndroidSdk(
-        name = androidJar.androidJarToAndroidSdkName(),
-        androidJar = androidJar,
-      )
-    }
-
   private suspend fun updateInternalModelSubtask(projectDetails: ProjectDetails, syncScope: ProjectSyncScope) {
     project.syncConsole.withSubtask(
       taskId,
@@ -280,7 +241,7 @@ class CollectProjectDetailsTask(
                 fileToTarget = fileToTarget,
                 projectBasePath = projectBasePath,
                 project = project,
-                isAndroidSupportEnabled = BazelFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
+                isAndroidSupportEnabled = false,
               )
 
             if (syncScope is FullProjectSync) {
@@ -316,7 +277,7 @@ class CollectProjectDetailsTask(
               virtualFileUrlManager = virtualFileUrlManager,
               projectBasePath = projectBasePath,
               project = project,
-              isAndroidSupportEnabled = BazelFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
+              isAndroidSupportEnabled = false,
             )
 
           workspaceModelUpdater.loadModules(modulesToLoad + libraryModules)
@@ -350,10 +311,6 @@ class CollectProjectDetailsTask(
     addBspFetchedJdks()
     addBspFetchedJavacOptions()
     addBspFetchedScalaSdks()
-
-    if (BazelFeatureFlags.isAndroidSupportEnabled) {
-      addBspFetchedAndroidSdks()
-    }
 
     VirtualFileManager.getInstance().asyncRefresh()
     checkSharedSources()
@@ -390,25 +347,6 @@ class CollectProjectDetailsTask(
         }
       }
     }
-  }
-
-  private suspend fun addBspFetchedAndroidSdks() {
-    androidSdkGetterExtension()?.let { extension ->
-      project.syncConsole.withSubtask(
-        taskId,
-        "add-bsp-fetched-android-sdks",
-        BazelPluginBundle.message("console.task.model.add.android.fetched.sdks"),
-      ) {
-        bspTracer.spanBuilder("add.bsp.fetched.android.sdks.ms").useWithScope {
-          androidSdks?.forEach { addAndroidSdkIfNeeded(it, extension) }
-        }
-      }
-    }
-  }
-
-  private suspend fun addAndroidSdkIfNeeded(androidSdk: AndroidSdk, androidSdkGetterExtension: AndroidSdkGetterExtension) {
-    val sdk = writeAction { androidSdkGetterExtension.getAndroidSdk(androidSdk) } ?: return
-    SdkUtils.addSdkIfNeeded(sdk)
   }
 
   private suspend fun addBspFetchedJavacOptions() =

@@ -3,6 +3,8 @@ package org.jetbrains.bazel
 import com.google.common.collect.ImmutableList
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -44,7 +46,7 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
     val exampleExampleBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//example:example"),
-        tags = ImmutableList.of("application"),
+        tags = ImmutableList.of(),
         dependencies = ImmutableList.of(Label.parse("@com_google_googletest//:gtest_main")),
         kind =
           TargetKind(

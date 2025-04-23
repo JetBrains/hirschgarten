@@ -8,9 +8,9 @@ kt_jvm_library(
     visibility = ["//server/server:__subpackages__"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/workspacecontext",
         "//server/bazelrunner",
         "//server/commons",
-        "//server/executioncontext/workspacecontext",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bep",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/utils",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/utils:fileutils",

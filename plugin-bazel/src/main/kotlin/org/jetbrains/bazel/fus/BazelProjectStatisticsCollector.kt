@@ -1,6 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
-package org.jetbrains.plugins.bazel.fus
+package org.jetbrains.bazel.fus
 
 import com.intellij.internal.statistic.beans.MetricEvent
 import com.intellij.internal.statistic.eventLog.EventLogGroup
@@ -28,7 +28,7 @@ class BazelProjectStatisticsCollector : ProjectUsagesCollector() {
   }
 
   object Const {
-    internal val GROUP = EventLogGroup("bazel.project.statistics", 0, "FUS", "General statistics about Bazel projects")
+    internal val GROUP = EventLogGroup("bazel.project.statistics", 1, "FUS", "General statistics about Bazel projects")
 
     internal val COUNT_TARGETS =
       GROUP.registerEvent(
