@@ -241,8 +241,8 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
   fun `comprehension scope h`() {
     verifyTargetOfReferenceAtCaret(
       """
-       def foo(<target>x):
-           x += [[j(x) for x in i(x)] + <caret>h(x) for <target>x in f(x) if g(x)]
+       def foo(x):
+           x += [[j(x) for x in i(x)] + h(<caret>x) for <target>x in f(x) if g(x)]
            return k(x)
 
        foo([[1]])
