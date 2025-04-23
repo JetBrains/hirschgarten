@@ -47,7 +47,7 @@ object InverseSourcesQuery {
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
         .waitAndGetResult()
     if (targetLabelsQuery.bspStatusCode == StatusCode.OK) {
-      return targetLabelsQuery.stdoutLines.map { Label.parse(it) }
+      return targetLabelsQuery.stdoutLines.mapNotNull { Label.parseOrNull(it) }
     } else {
       error("Could not retrieve inverse sources")
     }
@@ -69,8 +69,8 @@ object InverseSourcesQuery {
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
         .waitAndGetResult()
-    return if (fileLabelResult.bspStatusCode == StatusCode.OK && fileLabelResult.stdoutLines.size == 1) {
-      fileLabelResult.stdoutLines.first()
+    return if (fileLabelResult.bspStatusCode == StatusCode.OK) {
+      fileLabelResult.stdoutLines.last()
     } else if (fileLabelResult.stderrLines.firstOrNull()?.startsWith("ERROR: no such target '") == true) {
       null
     } else {

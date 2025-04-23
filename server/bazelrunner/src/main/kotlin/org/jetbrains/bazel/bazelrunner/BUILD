@@ -16,6 +16,7 @@ kt_jvm_library(
         "//server/commons",
         "//server/logger",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/info",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/utils:structured_files_utils",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_fasterxml_jackson_module_jackson_module_kotlin",
