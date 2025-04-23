@@ -1,5 +1,6 @@
 <idea-plugin>
     <id>org.jetbrains.bazel</id>
+    <category>Build Tools</category>
     <vendor>JetBrains</vendor>
     <name>Bazel (EAP)</name>
     <description><![CDATA[
