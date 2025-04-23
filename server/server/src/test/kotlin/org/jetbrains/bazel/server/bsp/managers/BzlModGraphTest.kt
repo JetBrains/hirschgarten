@@ -4,6 +4,7 @@ import com.google.gson.JsonObject
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.gson.bazelGson
+import org.jetbrains.bazel.server.bsp.utils.toJson
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
