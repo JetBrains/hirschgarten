@@ -20,35 +20,35 @@ object SearchUtils {
   ) {
     var element = currentElement
     while (true) {
-      val scope = findScope(element) ?: return
-      if (!findAtOrUnder(scope, if (scope is StarlarkFile) currentElement else null, processor)) {
+      val scopeRoot = findScopeRoot(element) ?: return
+      if (!processBindings(scopeRoot, if (scopeRoot is StarlarkFile) currentElement else null, processor)) {
         return
       }
-      element = scope.parent
+      element = scopeRoot.parent
     }
   }
 
-  private tailrec fun findScope(currentElement: PsiElement): PsiElement? =
+  private tailrec fun findScopeRoot(currentElement: PsiElement): PsiElement? =
     when (currentElement) {
       is StarlarkFile, is StarlarkFunctionDeclaration, is StarlarkCompExpression -> currentElement
       // Default values of parameters refer to the parent scope of the function, not the function scope.
-      is StarlarkParameterList -> findScope(currentElement.parent.parent)
-      else -> when (currentElement.parent) {
+      is StarlarkParameterList -> findScopeRoot(currentElement.parent.parent)
+      else -> when (val parent = currentElement.parent) {
         null -> null
-        is StarlarkCompExpression -> findScope(currentElement.parent)
-        else -> findScope(currentElement.parent)
+        is StarlarkCompExpression -> findScopeRoot(parent)
+        else -> findScopeRoot(parent)
       }
     }
 
-  private fun findAtOrUnder(
+  private fun processBindings(
     root: PsiElement,
     stopAt: PsiElement?,
     processor: Processor<StarlarkElement>,
   ): Boolean =
     when (root) {
       stopAt -> false
-      is StarlarkFile, is StarlarkStatementList -> root.children.all { findAtOrUnder(it, stopAt, processor) }
-      is StarlarkFunctionDeclaration -> processor.process(root) && root.searchInParameters(processor) && findAtOrUnder(
+      is StarlarkFile, is StarlarkStatementList -> root.children.all { processBindings(it, stopAt, processor) }
+      is StarlarkFunctionDeclaration -> processor.process(root) && root.searchInParameters(processor) && processBindings(
         root.getStatementList(),
         stopAt,
         processor,
@@ -56,9 +56,9 @@ object SearchUtils {
 
       is StarlarkCompExpression -> root.searchInComprehension(processor)
       is StarlarkForStatement -> root.searchInLoopVariables(processor) &&
-        root.getStatementLists().all { findAtOrUnder(it, stopAt, processor) }
+        root.getStatementLists().all { processBindings(it, stopAt, processor) }
 
-      is StarlarkStatementContainer -> root.getStatementLists().all { findAtOrUnder(it, stopAt, processor) }
+      is StarlarkStatementContainer -> root.getStatementLists().all { processBindings(it, stopAt, processor) }
       is StarlarkAssignmentStatement -> root.check(processor)
       else -> true
     }
