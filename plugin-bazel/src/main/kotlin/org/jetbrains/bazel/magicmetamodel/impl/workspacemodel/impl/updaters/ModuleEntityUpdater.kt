@@ -69,7 +69,7 @@ internal class ModuleEntityUpdater(
 
     val imlData =
       ModuleCustomImlDataEntity(
-        customModuleOptions = mapOf("kind" to Gson().toJson(entityToAdd.kind)) + entityToAdd.languageIdsAsSingleEntryMap,
+        customModuleOptions = emptyMap(),
         entitySource = moduleEntity.entitySource,
       ) {
         this.rootManagerTagCustomData = null
