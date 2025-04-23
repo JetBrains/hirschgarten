@@ -10,7 +10,6 @@ import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiReference
 import com.intellij.psi.util.parents
-import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 
 class ApplyOrderEntryQuickFixCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
@@ -25,7 +24,7 @@ class ApplyOrderEntryQuickFixCommand(text: String, line: Int) : PlaybackCommandC
       readAction {
         val psiElement = checkNotNull(psiFile.findElementAt(editor.caretModel.offset)) { "Can't get the PSI element" }
         val psiReference =
-          checkNotNull(psiElement.parents(withSelf = true).firstIsInstanceOrNull<PsiReference>()) {
+          checkNotNull(psiElement.parents(withSelf = true).filterIsInstance<PsiReference>().firstOrNull()) {
             "PSI element ${psiElement.text} contains no reference"
           }
         val fixes = mutableListOf<IntentionAction>()

@@ -158,7 +158,7 @@ class BspProjectMapper(
       BuildTarget(
         id = label,
         tags = tags,
-        languageIds = languages,
+        languageIds = emptyList(),
         kind = inferKind(this.tags, kindString),
         baseDirectory = baseDirectory,
         dependencies = emptyList(),

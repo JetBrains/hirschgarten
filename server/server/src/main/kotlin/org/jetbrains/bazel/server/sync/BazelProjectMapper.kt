@@ -640,7 +640,6 @@ class BazelProjectMapper(
       .map { (label, targetInfo) ->
         NonModuleTarget(
           label = label,
-          languages = inferLanguages(targetInfo, transitiveCompileTimeJarsTargetKinds),
           tags = targetTagsResolver.resolveTags(targetInfo),
           baseDirectory = bazelPathsResolver.toDirectoryPath(label.assumeResolved(), repoMapping),
           kindString = targetInfo.kind,

@@ -8,7 +8,9 @@ enum class BazelFileType {
   ;
 
   companion object {
-    val ofFileName =
+    fun ofFileName(name: String): BazelFileType = ofFileName.getOrDefault(name, EXTENSION)
+
+    private val ofFileName =
       mapOf(
         "BUILD.bazel" to BUILD,
         "BUILD" to BUILD,

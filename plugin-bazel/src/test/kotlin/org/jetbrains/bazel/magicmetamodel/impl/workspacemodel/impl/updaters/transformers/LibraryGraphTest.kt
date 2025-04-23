@@ -107,11 +107,11 @@ class LibraryGraphTest {
             emptyList(),
           ),
           mockLibraryItem(
-            "not included lib 1",
-            listOf("not included lib 2"),
+            "not_included_lib_1",
+            listOf("not_included_lib_2"),
           ),
           mockLibraryItem(
-            "not included lib 2",
+            "not_included_lib_2",
             emptyList(),
           ),
         )
@@ -173,11 +173,11 @@ class LibraryGraphTest {
             emptyList(),
           ),
           mockLibraryItem(
-            "not included lib 1",
-            listOf("not included lib 2"),
+            "not_included_lib_1",
+            listOf("not_included_lib_2"),
           ),
           mockLibraryItem(
-            "not included lib 2",
+            "not_included_lib_2",
             emptyList(),
           ),
         )
@@ -324,11 +324,11 @@ class LibraryGraphTest {
             emptyList(),
           ),
           mockLibraryItem(
-            "not included lib 1",
-            listOf("not included lib 2"),
+            "not_included_lib_1",
+            listOf("not_included_lib_2"),
           ),
           mockLibraryItem(
-            "not included lib 2",
+            "not_included_lib_2",
             emptyList(),
           ),
         )
@@ -377,11 +377,11 @@ class LibraryGraphTest {
             listOf("lib7"),
           ),
           mockLibraryItem(
-            "not included lib 1",
-            listOf("not included lib 2"),
+            "not_included_lib_1",
+            listOf("not_included_lib_2"),
           ),
           mockLibraryItem(
-            "not included lib 2",
+            "not_included_lib_2",
             emptyList(),
           ),
         )

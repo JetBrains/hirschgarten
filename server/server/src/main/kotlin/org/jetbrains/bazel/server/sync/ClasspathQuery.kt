@@ -5,6 +5,7 @@ import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bsp.info.BspInfo
+import org.jetbrains.bazel.server.bsp.utils.toJson
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import java.nio.file.Path
 
@@ -29,12 +30,19 @@ object ClasspathQuery {
         .waitAndGetResult(ensureAllOutputRead = true)
     if (cqueryResult.isNotSuccess) throw RuntimeException("Could not query target '$target' for runtime classpath")
     try {
-      val classpaths = bazelGson.fromJson(cqueryResult.stdout, JvmClasspath::class.java)
+      val classpaths = bazelGson.fromJson(cqueryResult.stdout.toJson(), JvmClasspath::class.java)
       return classpaths
     } catch (e: JsonSyntaxException) {
       // sometimes Bazel returns two values to a query when multiple configurations apply to a target
       return if (cqueryResult.stdoutLines.size > 1) {
-        val allOpts = cqueryResult.stdoutLines.map { bazelGson.fromJson(it, JvmClasspath::class.java) }
+        val allOpts =
+          cqueryResult.stdoutLines.mapNotNull {
+            try {
+              bazelGson.fromJson(it, JvmClasspath::class.java)
+            } catch (_: JsonSyntaxException) {
+              null
+            }
+          }
         allOpts.maxByOrNull { it.runtime_classpath.size + it.compile_classpath.size }!!
       } else {
         throw e

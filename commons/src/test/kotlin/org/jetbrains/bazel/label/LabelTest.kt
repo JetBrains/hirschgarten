@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.label
 
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -306,5 +307,16 @@ class LabelTest {
     shouldThrow<IllegalArgumentException> {
       Label.parse("@//path/to/...:target")
     }
+  }
+
+  @Test
+  fun `parseOrNull returns null on invalid labels`() {
+    Label.parseOrNull("AUTH: successfully authenticated").shouldBeNull()
+    Label.parseOrNull("Bazel exited with code 123").shouldBeNull()
+  }
+
+  @Test
+  fun `should parse label with leading whitespaces`() {
+    Label.parse("   @//path/to/target    ") shouldBe Label.parse("@//path/to/target")
   }
 }

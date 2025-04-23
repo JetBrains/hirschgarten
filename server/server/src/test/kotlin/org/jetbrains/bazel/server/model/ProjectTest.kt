@@ -239,7 +239,6 @@ class ProjectTest {
   private fun String.toMockNonModuleTarget(): NonModuleTarget =
     NonModuleTarget(
       label = this.toLabel(),
-      languages = emptySet(),
       tags = emptySet(),
       baseDirectory = Path("/path/to/$this"),
       kindString = "kindString",

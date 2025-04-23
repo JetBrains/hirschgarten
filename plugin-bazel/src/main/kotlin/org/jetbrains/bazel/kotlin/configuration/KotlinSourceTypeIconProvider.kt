@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.kotlin
+package org.jetbrains.bazel.kotlin.configuration
 
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.SourceTypeIconProvider

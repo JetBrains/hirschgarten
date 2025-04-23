@@ -19,7 +19,6 @@ import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
 import org.jetbrains.bazel.languages.bazelrc.quickfix.DeleteFlagUseFix
 import org.jetbrains.bazel.languages.bazelrc.quickfix.RenameFlagNameFix
-import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 import kotlin.text.Regex
 
 val flagTokenPattern =
@@ -137,10 +136,8 @@ class BazelrcFlagAnnotator : Annotator {
     }
 
   private fun isNotApplicable(flag: Flag, element: PsiElement) =
-    element
-      .getParentOfType<BazelrcLine>(
-        true,
-        BazelrcLine::class.java,
-      )?.command
-      ?.let { command -> command != "common" && !flag.option.commands.contains(command) } ?: false
+    PsiTreeUtil
+      .getParentOfType(element, true, BazelrcLine::class.java)
+      ?.command
+      ?.let { it != "common" && !flag.option.commands.contains(it) } ?: false
 }

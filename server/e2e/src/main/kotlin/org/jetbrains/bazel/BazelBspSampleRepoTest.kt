@@ -1172,7 +1172,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         BuildTarget(
           Label.parse("@//target_without_java_info:filegroup"),
           listOf(),
-          listOf("java"),
+          listOf(),
           emptyList(),
           kind =
             TargetKind(
@@ -1186,7 +1186,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         BuildTarget(
           Label.parse("@//target_without_java_info:genrule"),
           listOf(),
-          listOf("java", "kotlin"),
+          listOf(),
           emptyList(),
           kind =
             TargetKind(
