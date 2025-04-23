@@ -1,20 +1,32 @@
 package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.psi.PsiElement
+import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
+import com.intellij.testFramework.fixtures.TempDirTestFixture
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.instanceOf
-import org.jetbrains.bazel.languages.starlark.StarlarkFileType
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkReferencesTestCase
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.kotlin.idea.base.psi.getLineNumber
 import org.jetbrains.kotlin.idea.base.psi.getLineStartOffset
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class StarlarkScopeTest : StarlarkReferencesTestCase() {
+class StarlarkScopeTest : BasePlatformTestCase() {
+  @Before
+  fun beforeEach() {
+    project.isBazelProject = true
+    project.rootDir = myFixture.tempDirFixture.getFile(".")!!
+  }
+
+  override fun createTempDirTestFixture(): TempDirTestFixture? = IdeaTestFixtureFactory.getFixtureFactory().createTempDirTestFixture()
+
   @Test
   fun `function scope is preferred to top-level scope`() {
     verifyTargetOfReferenceAtCaret(
@@ -164,9 +176,22 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
 
   @Test
   fun `falls back to load`() {
-    verifyTargetOfReferenceAtCaret(
+    // given
+    myFixture.addFileToProject("BUILD", "")
+    val defsFile = myFixture.addFileToProject(
+      "defs.bzl",
       """
-      load(":defs.bzl", <target>"quz")
+      if 0:
+          qux = 1
+      else:
+          quz = 2
+      """.trimIndent(),
+    )
+
+    myFixture.configureByText(
+      "test.bzl",
+      """
+      load("//:defs.bzl", "quz")
 
       def foo():
           def bar():
@@ -174,6 +199,16 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
                   print(<caret>quz)
       """.trimIndent(),
     )
+
+    // when
+    val reference = myFixture.file.findReferenceAt(myFixture.caretOffset)
+    val resolved = reference!!.resolve()
+
+    // then
+    resolved.shouldNotBeNull()
+    resolved.containingFile shouldBe defsFile
+    resolved.line shouldBe 3
+    resolved.column shouldBe 4
   }
 
   @Test
@@ -184,6 +219,28 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
           def bar():
               def baz():
                   print(<caret>quz)
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `does not search in inner scope`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+      def foo():
+          bar = 1
+      <caret>bar
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `does not search in parameters of inner scope`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+      def foo(bar = 1):
+          pass
+      <caret>bar
       """.trimIndent(),
     )
   }
@@ -293,7 +350,7 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
     // given
     val expectedLine = text.lineSequence().indexOfFirst { it.contains("<target>") }.takeIf { it != -1 }
     val expectedColumn = text.lineSequence().map { it.replace("<caret>", "").indexOf("<target>") }.filter { it != -1 }.firstOrNull()
-    myFixture.configureByText(StarlarkFileType, text.replace("<target>", ""))
+    myFixture.configureByText("test.bzl", text.replace("<target>", ""))
 
     // when
     val reference = myFixture.file.findReferenceAt(myFixture.caretOffset)
@@ -304,12 +361,16 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
       check(expectedColumn != null)
       resolved.shouldNotBeNull()
       resolved shouldBe instanceOf<PsiElement>()
-      val actualLine = myFixture.file.getLineNumber(resolved.textOffset)
-      actualLine shouldBe expectedLine
-      val actualColumn = resolved.textOffset - myFixture.file.getLineStartOffset(expectedLine, skipWhitespace = false)!!
-      actualColumn shouldBe expectedColumn
+      resolved.line shouldBe expectedLine
+      resolved.column shouldBe expectedColumn
     } else {
       resolved.shouldBeNull()
     }
   }
+
+  val PsiElement.line: Int
+    get() = containingFile.getLineNumber(textOffset)!!
+
+  val PsiElement.column: Int
+    get() = textOffset - containingFile.getLineStartOffset(line, skipWhitespace = false)!!
 }

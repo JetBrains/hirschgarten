@@ -16,14 +16,17 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementCo
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementList
 
 object SearchUtils {
-  fun searchInFile(
-    currentElement: PsiElement,
-    processor: Processor<StarlarkElement>,
-  ) {
+  fun searchInFile(currentElement: PsiElement, processor: Processor<StarlarkElement>) {
     var element = currentElement
     while (true) {
       val scopeRoot = findScopeRoot(element) ?: return
-      if (!processBindings(scopeRoot, if (scopeRoot is StarlarkFile) currentElement else null, processor)) {
+      if (!processBindingsInScope(
+          scopeRoot,
+          elementIsRoot = true,
+          stopAt = if (scopeRoot is StarlarkFile) currentElement else null,
+          processor = processor,
+        )
+      ) {
         return
       }
       element = scopeRoot.parent
@@ -55,26 +58,38 @@ object SearchUtils {
       }
     }
 
-  private fun processBindings(
-    root: PsiElement,
+  private fun processBindingsInScope(
+    element: PsiElement,
+    elementIsRoot: Boolean = false,
     stopAt: PsiElement?,
     processor: Processor<StarlarkElement>,
   ): Boolean =
-    when (root) {
+    when (element) {
       stopAt -> false
-      is StarlarkFile, is StarlarkStatementList -> root.children.all { processBindings(it, stopAt, processor) }
-      is StarlarkFunctionDeclaration -> processor.process(root) && root.searchInParameters(processor) && processBindings(
-        root.getStatementList(),
-        stopAt,
-        processor,
-      )
+      is StarlarkFile -> element.searchInLoads(processor, stopAt) && element.children.all {
+        processBindingsInScope(
+          it,
+          stopAt = stopAt,
+          processor = processor,
+        )
+      }
 
-      is StarlarkCompExpression -> root.searchInComprehension(processor)
-      is StarlarkForStatement -> root.searchInLoopVariables(processor) &&
-        root.getStatementLists().all { processBindings(it, stopAt, processor) }
+      is StarlarkFunctionDeclaration -> processor.process(element) && (!elementIsRoot || (element.searchInParameters(processor)
+        && processBindingsInScope(
+        element.getStatementList(),
+        stopAt = stopAt,
+        processor = processor,
+      )))
 
-      is StarlarkStatementContainer -> root.getStatementLists().all { processBindings(it, stopAt, processor) }
-      is StarlarkAssignmentStatement -> root.check(processor)
+      is StarlarkCompExpression -> element.searchInComprehension(processor)
+      is StarlarkForStatement -> element.searchInLoopVariables(processor) &&
+        element.getStatementLists().all { processBindingsInScope(it, stopAt = stopAt, processor = processor) }
+
+      is StarlarkStatementContainer -> element.getStatementLists()
+        .all { processBindingsInScope(it, stopAt = stopAt, processor = processor) }
+
+      is StarlarkStatementList -> element.children.all { processBindingsInScope(it, stopAt = stopAt, processor = processor) }
+      is StarlarkAssignmentStatement -> element.check(processor)
       else -> true
     }
 

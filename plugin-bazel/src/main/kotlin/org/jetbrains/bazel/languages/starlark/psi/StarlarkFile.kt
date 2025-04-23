@@ -35,6 +35,9 @@ open class StarlarkFile(viewProvider: FileViewProvider) :
     return namedElementSearchResult && loadSymbolSearchResult
   }
 
+  fun searchInLoads(processor: Processor<StarlarkElement>, stopAt: PsiElement?): Boolean =
+    keepSearchingWhenAllLoadSymbolsNotMatched(findChildrenByClass(StarlarkElement::class.java).toList(), processor, stopAt)
+
   private fun keepSearchingWhenAllNamedElementsNotMatched(
     children: List<StarlarkElement>,
     processor: Processor<StarlarkElement>,
