@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.psi.PsiElement
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.instanceOf
@@ -135,6 +136,21 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
   }
 
   @Test
+  fun `resolve to conditionally assigned variable`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+      if 1:
+          bar = 1
+      elif 2:
+          <target>baz = 1
+      else 3:
+          quz = 1
+      <caret>baz
+      """.trimIndent(),
+    )
+  }
+
+  @Test
   fun `falls back to higher scope`() {
     verifyTargetOfReferenceAtCaret(
       """
@@ -147,11 +163,47 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
   }
 
   @Test
+  fun `falls back to load`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+      load(":defs.bzl", <target>"quz")
+
+      def foo():
+          def bar():
+              def baz():
+                  print(<caret>quz)
+      """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `not found`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+      def foo():
+          def bar():
+              def baz():
+                  print(<caret>quz)
+      """.trimIndent(),
+    )
+  }
+
+  @Test
   fun `first for in comprehension resolves to surrounding scope`() {
     verifyTargetOfReferenceAtCaret(
       """
-       <target>y = 1
-       [1 for x in <caret>y for y in [1]]
+       <target>x = [[1]]
+       [1 for x in <caret>x for x in x]
+       """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `second for in comprehension resolves to comprehension scope`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+       x = [[1]]
+       [1 for <target>x in x for x in <caret>x]
        """.trimIndent(),
     )
   }
@@ -239,8 +291,8 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
 
   private fun verifyTargetOfReferenceAtCaret(text: String) {
     // given
-    val expectedLine = text.lineSequence().indexOfFirst { it.contains("<target>") }
-    val expectedColumn = text.lineSequence().map { it.replace("<caret>", "").indexOf("<target>") }.filter { it != -1 }.first()
+    val expectedLine = text.lineSequence().indexOfFirst { it.contains("<target>") }.takeIf { it != -1 }
+    val expectedColumn = text.lineSequence().map { it.replace("<caret>", "").indexOf("<target>") }.filter { it != -1 }.firstOrNull()
     myFixture.configureByText(StarlarkFileType, text.replace("<target>", ""))
 
     // when
@@ -248,11 +300,16 @@ class StarlarkScopeTest : StarlarkReferencesTestCase() {
     val resolved = reference!!.resolve()
 
     // then
-    resolved.shouldNotBeNull()
-    resolved shouldBe instanceOf<PsiElement>()
-    val actualLine = myFixture.file.getLineNumber(resolved.textOffset)
-    actualLine shouldBe expectedLine
-    val actualColumn = resolved.textOffset - myFixture.file.getLineStartOffset(expectedLine, skipWhitespace = false)!!
-    actualColumn shouldBe expectedColumn
+    if (expectedLine != null) {
+      check(expectedColumn != null)
+      resolved.shouldNotBeNull()
+      resolved shouldBe instanceOf<PsiElement>()
+      val actualLine = myFixture.file.getLineNumber(resolved.textOffset)
+      actualLine shouldBe expectedLine
+      val actualColumn = resolved.textOffset - myFixture.file.getLineStartOffset(expectedLine, skipWhitespace = false)!!
+      actualColumn shouldBe expectedColumn
+    } else {
+      resolved.shouldBeNull()
+    }
   }
 }

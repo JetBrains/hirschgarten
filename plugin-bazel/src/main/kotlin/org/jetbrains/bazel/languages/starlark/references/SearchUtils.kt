@@ -20,7 +20,7 @@ object SearchUtils {
   ) {
     var element = currentElement
     while (true) {
-      val scope = findScope(element)
+      val scope = findScope(element) ?: return
       if (!findAtOrUnder(scope, if (scope is StarlarkFile) currentElement else null, processor)) {
         return
       }
@@ -28,12 +28,16 @@ object SearchUtils {
     }
   }
 
-  private tailrec fun findScope(currentElement: PsiElement): PsiElement =
+  private tailrec fun findScope(currentElement: PsiElement): PsiElement? =
     when (currentElement) {
       is StarlarkFile, is StarlarkFunctionDeclaration, is StarlarkCompExpression -> currentElement
       // Default values of parameters refer to the parent scope of the function, not the function scope.
       is StarlarkParameterList -> findScope(currentElement.parent.parent)
-      else -> findScope(currentElement.parent)
+      else -> when (currentElement.parent) {
+        null -> null
+        is StarlarkCompExpression -> findScope(currentElement.parent)
+        else -> findScope(currentElement.parent)
+      }
     }
 
   private fun findAtOrUnder(
