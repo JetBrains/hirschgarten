@@ -1,7 +1,9 @@
 package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.elementType
 import com.intellij.util.Processor
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCompExpression
@@ -30,12 +32,25 @@ object SearchUtils {
 
   private tailrec fun findScopeRoot(currentElement: PsiElement): PsiElement? =
     when (currentElement) {
-      is StarlarkFile, is StarlarkFunctionDeclaration, is StarlarkCompExpression -> currentElement
+      is StarlarkFile, is StarlarkFunctionDeclaration -> currentElement
       // Default values of parameters refer to the parent scope of the function, not the function scope.
       is StarlarkParameterList -> findScopeRoot(currentElement.parent.parent)
       else -> when (val parent = currentElement.parent) {
         null -> null
-        is StarlarkCompExpression -> findScopeRoot(parent)
+        is StarlarkCompExpression -> {
+          // In a comprehension, the first 'for' resolves using the scope that contains the
+          // comprehension, while all later 'for's resolve within the comprehension's scope.
+          val inFirstFor = generateSequence(currentElement) { it.prevSibling }
+            .filter { it.elementType == StarlarkTokenTypes.FOR_KEYWORD }
+            .take(2)
+            .count() == 1
+          if (inFirstFor) {
+            findScopeRoot(parent)
+          } else {
+            parent
+          }
+        }
+
         else -> findScopeRoot(parent)
       }
     }
