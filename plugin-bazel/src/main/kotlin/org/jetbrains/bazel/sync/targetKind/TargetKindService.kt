@@ -32,8 +32,8 @@ interface TargetKindProvider {
     get() = { t: BspTargetInfo.TargetInfo -> null }
 
   companion object {
-    val EP_NAME: ExtensionPointName<TargetKindProvider> =
-      ExtensionPointName.create<TargetKindProvider>("org.jetbrains.bazel.TargetKindProvider")
+    val ep: ExtensionPointName<TargetKindProvider> =
+      ExtensionPointName.create("org.jetbrains.bazel.targetKindProvider")
   }
 }
 
@@ -54,7 +54,7 @@ class TargetKindService {
 
   init {
     // initialize the global state
-    TargetKindProvider.EP_NAME.extensions
+    TargetKindProvider.ep.extensions
       .flatMap { it.targetKinds }
       .forEach { this.cacheIfNecessary(it) }
   }
