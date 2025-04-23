@@ -151,14 +151,13 @@ class BspProjectMapper(
     )
 
   private fun NonModuleTarget.toBuildTarget(): BuildTarget {
-    val languages = languages.flatMap(Language::allNames).distinct()
     val capabilities = inferCapabilities(tags)
     val tags = tags.mapNotNull(BspMappings::toBspTag)
     val buildTarget =
       BuildTarget(
         id = label,
         tags = tags,
-        languageIds = languages,
+        languageIds = emptyList(),
         capabilities = capabilities,
         baseDirectory = baseDirectory,
         dependencies = emptyList(),
