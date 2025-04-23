@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.commons
 
-import org.jetbrains.bsp.protocol.StatusCode
-
 // https://bazel.build/run/scripts#exit-codes
 private const val SUCCESS_EXIT_CODE = 0
 private const val BUILD_ERROR_EXIT_CODE = 1
@@ -20,13 +18,6 @@ enum class BazelStatus {
   OOM_ERROR,
   FATAL_ERROR, // for other non-categorized errors
   ;
-
-  fun toBspStatusCode(): StatusCode =
-    when (this) {
-      SUCCESS -> StatusCode.OK
-      CANCEL -> StatusCode.CANCELLED
-      else -> StatusCode.ERROR
-    }
 
   fun merge(anotherBazelStatus: BazelStatus): BazelStatus {
     if (this == OOM_ERROR || anotherBazelStatus == OOM_ERROR) {

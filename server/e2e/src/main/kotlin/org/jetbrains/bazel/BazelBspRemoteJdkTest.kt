@@ -49,7 +49,7 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
     val exampleExampleBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//example:example"),
-        listOf("application"),
+        listOf(),
         listOf("java"),
         emptyList(),
         TargetKind(

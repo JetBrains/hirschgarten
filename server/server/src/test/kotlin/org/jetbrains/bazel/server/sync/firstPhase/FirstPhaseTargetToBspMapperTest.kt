@@ -32,7 +32,6 @@ import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.TransitiveCompileTimeJarsTargetKindsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.BeforeEach
@@ -234,7 +233,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target1: unchanged
           BuildTarget(
             id = Label.parse("//target1"),
-            tags = listOf(BuildTargetTag.LIBRARY),
+            tags = listOf(),
             languageIds = listOf("java"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             kind =
@@ -257,7 +256,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target2: now merges its declared language with those inferred from its .kt sources
           BuildTarget(
             id = Label.parse("//target2"),
-            tags = listOf(BuildTargetTag.APPLICATION),
+            tags = listOf(),
             languageIds = listOf("java", "kotlin"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             kind =
@@ -276,7 +275,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target3
           BuildTarget(
             id = Label.parse("//target3"),
-            tags = listOf(BuildTargetTag.TEST),
+            tags = listOf(),
             languageIds = listOf("java"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             kind =
@@ -295,7 +294,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target4
           BuildTarget(
             id = Label.parse("//target4"),
-            tags = listOf(BuildTargetTag.LIBRARY),
+            tags = listOf(),
             languageIds = listOf("kotlin"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             kind =
@@ -310,7 +309,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target5
           BuildTarget(
             id = Label.parse("//target5"),
-            tags = listOf(BuildTargetTag.APPLICATION),
+            tags = listOf(),
             languageIds = listOf("kotlin"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             kind =
@@ -325,7 +324,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target6
           BuildTarget(
             id = Label.parse("//target6"),
-            tags = listOf(BuildTargetTag.TEST),
+            tags = listOf(),
             languageIds = listOf("kotlin"),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
             kind =
@@ -340,7 +339,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target7: now with its created source files
           BuildTarget(
             id = Label.parse("//target7"),
-            tags = listOf(BuildTargetTag.LIBRARY),
+            tags = listOf(),
             languageIds = listOf("java"),
             dependencies = emptyList(),
             kind =
@@ -359,7 +358,7 @@ class FirstPhaseTargetToBspMapperTest {
           // target8: merging its own source and the sources from filegroupSources dependency
           BuildTarget(
             id = Label.parse("//target8"),
-            tags = listOf(BuildTargetTag.LIBRARY),
+            tags = listOf(),
             languageIds = listOf("java", "kotlin"),
             dependencies = emptyList(),
             kind =
@@ -386,7 +385,7 @@ class FirstPhaseTargetToBspMapperTest {
           ),
           BuildTarget(
             id = Label.parse("//filegroupSources"),
-            tags = listOf(BuildTargetTag.LIBRARY),
+            tags = listOf(),
             languageIds = listOf("java"),
             dependencies = emptyList(),
             kind =

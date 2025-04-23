@@ -56,7 +56,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
     val srcJavaLibTarget =
       BuildTarget(
         Label.parse("//src:java-lib"),
-        tags = listOf("library"),
+        tags = listOf(),
         languageIds = listOf("java"),
         dependencies = emptyList(),
         kind =
@@ -72,7 +72,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
     val srcJavaBinaryTarget =
       BuildTarget(
         Label.parse("//src:java-binary"),
-        tags = listOf("application"),
+        tags = listOf(),
         languageIds = listOf("java"),
         dependencies = listOf(Label.parse("//src:java-lib")),
         kind =
@@ -88,7 +88,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
     val srcKotlinLibTarget =
       BuildTarget(
         Label.parse("//src:kt-lib"),
-        tags = listOf("library"),
+        tags = listOf(),
         languageIds = listOf("kotlin"),
         dependencies = emptyList(),
         kind =
@@ -104,7 +104,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
     val srcKotlinBinaryTarget =
       BuildTarget(
         Label.parse("//src:kt-binary"),
-        tags = listOf("application"),
+        tags = listOf(),
         languageIds = listOf("kotlin"),
         dependencies = listOf(Label.parse("//src:kt-lib")),
         kind =

@@ -73,7 +73,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val buildTarget =
       BuildTarget(
         buildTargetId,
-        listOf("library"),
+        listOf(),
         listOf("java"),
         listOf(
           Label.parse("module2"),
@@ -219,7 +219,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val buildTarget =
       BuildTarget(
         buildTargetId,
-        listOf("library"),
+        listOf(),
         listOf("java"),
         listOf(
           Label.parse("module2"),
@@ -335,7 +335,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val buildTarget1 =
       BuildTarget(
         buildTargetId1,
-        listOf("library"),
+        listOf(),
         listOf("java"),
         listOf(
           Label.parse("module2"),
@@ -602,7 +602,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val buildTarget =
       BuildTarget(
         buildTargetId,
-        listOf("library"),
+        listOf(),
         listOf("java"),
         listOf(
           Label.parse("module2"),

@@ -65,7 +65,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
         val javaTargetsJavaBinary =
           BuildTarget(
             partialSyncTargetId,
-            listOf("application"),
+            listOf(),
             listOf("java"),
             emptyList(),
             TargetKind(
@@ -105,7 +105,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
     val javaTargetsJavaLibrary =
       BuildTarget(
         Label.parse("$targetPrefix//java_targets:java_library"),
-        listOf("library"),
+        listOf(),
         listOf("java"),
         listOf(),
         TargetKind(

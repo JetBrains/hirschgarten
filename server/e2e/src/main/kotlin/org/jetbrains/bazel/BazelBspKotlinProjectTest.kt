@@ -91,7 +91,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     val kotlincTestBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//kotlinc_test:Foo"),
-        tags = listOf("application"),
+        tags = listOf(),
         languageIds = listOf("java", "kotlin"),
         dependencies = listOf(Label.synthetic("rules_kotlin_kotlin-stdlibs")),
         kind =
@@ -114,7 +114,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     val openForTestingBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//plugin_allopen_test:open_for_testing"),
-        tags = listOf("library"),
+        tags = listOf(),
         languageIds = listOf("java", "kotlin"),
         dependencies = listOf(Label.synthetic("rules_kotlin_kotlin-stdlibs")),
         kind =
@@ -180,7 +180,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     val userBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//plugin_allopen_test:user"),
-        tags = listOf("library"),
+        tags = listOf(),
         languageIds = listOf("java", "kotlin"),
         dependencies =
           listOf(
@@ -209,7 +209,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     val userOfExportBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//plugin_allopen_test:user_of_export"),
-        tags = listOf("library"),
+        tags = listOf(),
         languageIds = listOf("java", "kotlin"),
         dependencies =
           listOf(
@@ -238,7 +238,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     val openForTestingExport =
       BuildTarget(
         Label.parse("$targetPrefix//plugin_allopen_test:open_for_testing_export"),
-        tags = listOf("library"),
+        tags = listOf(),
         languageIds = listOf("java", "kotlin"),
         dependencies =
           listOf(

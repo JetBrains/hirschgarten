@@ -56,7 +56,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
     val exampleExampleBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//example:example"),
-        listOf("application"),
+        listOf(),
         listOf("python"),
         listOf(
           Label.parse("$targetPrefix//lib:example_library"),
@@ -85,7 +85,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
     val exampleExampleLibBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//lib:example_library"),
-        listOf("library"),
+        listOf(),
         listOf("python"),
         listOf(Label.parse(pipDepId)),
         TargetKind(
@@ -107,7 +107,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
     val exampleExampleTestBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//test:test"),
-        listOf("test"),
+        listOf(),
         listOf("python"),
         listOf(),
         TargetKind(

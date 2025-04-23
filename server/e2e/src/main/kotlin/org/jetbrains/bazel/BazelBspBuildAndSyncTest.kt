@@ -71,7 +71,7 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
     val srcMainBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//src:main"),
-        listOf("library"),
+        listOf(),
         listOf("java"),
         emptyList(),
         kind =

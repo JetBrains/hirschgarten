@@ -125,7 +125,7 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
       target =
         BuildTarget(
           Label.parse("target"),
-          listOf("library"),
+          listOf(),
           listOf("java"),
           emptyList(),
           TargetKind(

@@ -81,7 +81,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
     val appBuildTarget =
       BuildTarget(
         Label.parse("@@//src/main:app"),
-        listOf("application"),
+        listOf(),
         listOf("android", "java"),
         listOf(
           Label.parse("@@//src/main/java/com/example/myapplication:lib"),
@@ -104,7 +104,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
     val libBuildTarget =
       BuildTarget(
         Label.parse("@@//src/main/java/com/example/myapplication:lib"),
-        listOf("library"),
+        listOf(),
         listOf("android", "java", "kotlin"),
         listOf(
           Label.parse("@@rules_jvm_external~~maven~maven//:androidx_appcompat_appcompat"),
@@ -128,7 +128,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
     val libTestBuildTarget =
       BuildTarget(
         Label.parse("@@//src/test/java/com/example/myapplication:lib_test"),
-        listOf("test"),
+        listOf(),
         listOf("android", "java", "kotlin"),
         listOf(
           Label.parse("@@//src/main/java/com/example/myapplication:lib"),

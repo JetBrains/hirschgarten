@@ -44,7 +44,7 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
     val exampleExampleBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//example:example"),
-        tags = ImmutableList.of("application"),
+        tags = ImmutableList.of(),
         languageIds = ImmutableList.of(Constants.CPP),
         dependencies = ImmutableList.of(Label.parse("@com_google_googletest//:gtest_main")),
         kind =

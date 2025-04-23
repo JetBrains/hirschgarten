@@ -66,18 +66,10 @@ class FirstPhaseTargetToBspMapper(private val bazelPathsResolver: BazelPathsReso
   }
 
   private fun Target.inferTags(): List<String> {
-    val typeTag = inferTypeTagFromTargetKind()
     val manualTag = if (isManual) BuildTargetTag.MANUAL else null
 
-    return listOfNotNull(typeTag, manualTag)
+    return listOfNotNull(manualTag)
   }
-
-  private fun Target.inferTypeTagFromTargetKind(): String =
-    when {
-      isBinary -> BuildTargetTag.APPLICATION
-      isTest -> BuildTargetTag.TEST
-      else -> BuildTargetTag.LIBRARY
-    }
 
   private fun Target.inferLanguages(): Set<Language> {
     val languagesForTarget = Language.allOfKind(kind)
