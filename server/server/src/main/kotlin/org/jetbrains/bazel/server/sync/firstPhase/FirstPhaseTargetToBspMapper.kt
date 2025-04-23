@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.server.sync.firstPhase
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.server.model.FirstPhaseProject
@@ -8,7 +10,6 @@ import org.jetbrains.bazel.server.model.Language
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -41,10 +42,26 @@ class FirstPhaseTargetToBspMapper(private val bazelPathsResolver: BazelPathsReso
       tags = inferTags(),
       languageIds = inferLanguages().map { it.id }.toList(),
       dependencies = interestingDeps.map { Label.parse(it) },
-      capabilities = inferCapabilities(),
+      kind = inferKind(),
       sources = calculateSources(project),
       resources = calculateResources(project),
+      noBuild = isManual, // TODO lol, it's different from the aspect sync??
       baseDirectory = bazelPathsResolver.toDirectoryPath(label, project.repoMapping),
+    )
+  }
+
+  private fun Target.inferKind(): TargetKind {
+    val ruleType =
+      when {
+        isBinary -> RuleType.BINARY
+        isTest -> RuleType.TEST
+        else -> RuleType.LIBRARY
+      }
+
+    return TargetKind(
+      kindString = kind,
+      languageClasses = emptySet(),
+      ruleType = ruleType,
     )
   }
 
@@ -67,13 +84,6 @@ class FirstPhaseTargetToBspMapper(private val bazelPathsResolver: BazelPathsReso
     val languagesForSources = srcs.flatMap { Language.allOfSource(it) }.toHashSet()
     return languagesForTarget + languagesForSources
   }
-
-  private fun Target.inferCapabilities(): BuildTargetCapabilities =
-    BuildTargetCapabilities(
-      canCompile = !isManual,
-      canRun = isBinary,
-      canTest = isTest,
-    )
 
   private fun Target.isSupported(): Boolean {
     val isRuleSupported = Language.allOfKind(kind).isNotEmpty()

@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.ui.PopupHandler
 import org.jetbrains.bazel.action.SuspendableAction
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
@@ -76,7 +77,7 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
       ResyncTargetAction.createIfEnabled(target.id)?.let { addAction(it) }
       addAction(container.copyTargetIdAction)
       addSeparator()
-      if (target.capabilities.canCompile) {
+      if (!target.noBuild) {
         addAction(BuildTargetAction(target.id))
       }
       fillWithEligibleActions(project, target, false)
@@ -85,7 +86,7 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
     }
 
   private fun calculatePopupGroup(targets: List<BuildTarget>): ActionGroup? {
-    val testTargets = targets.filter { it.capabilities.canTest }
+    val testTargets = targets.filter { it.kind.ruleType == RuleType.TEST }
     return if (testTargets.isEmpty()) {
       null
     } else {
@@ -101,9 +102,9 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
   private fun onDoubleClick() {
     container.getSelectedBuildTarget()?.also {
       when {
-        it.capabilities.canTest -> TestTargetAction(project = project, targetInfos = listOf(it)).prepareAndPerform(project)
-        it.capabilities.canRun -> RunTargetAction(project, targetInfo = it).prepareAndPerform(project)
-        it.capabilities.canCompile -> BuildTargetAction.buildTarget(project, it.id)
+        it.kind.ruleType == RuleType.TEST -> TestTargetAction(project = project, targetInfos = listOf(it)).prepareAndPerform(project)
+        it.kind.ruleType == RuleType.BINARY -> RunTargetAction(project, targetInfo = it).prepareAndPerform(project)
+        !it.noBuild -> BuildTargetAction.buildTarget(project, it.id)
       }
     }
   }
@@ -124,14 +125,14 @@ fun DefaultActionGroup.fillWithEligibleActions(
   callerPsiElement: PsiElement? = null,
 ): DefaultActionGroup {
   val canBeDebugged = RunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
-  if (target.capabilities.canRun) {
+  if (target.kind.ruleType == RuleType.BINARY) {
     addAction(RunTargetAction(project, target, includeTargetNameInText = includeTargetNameInText))
     if (canBeDebugged) {
       addAction(RunTargetAction(project, target, isDebugAction = true, includeTargetNameInText = includeTargetNameInText))
     }
   }
 
-  if (target.capabilities.canTest) {
+  if (target.kind.ruleType == RuleType.TEST) {
     addAction(
       TestTargetAction(
         project,
@@ -162,11 +163,11 @@ fun DefaultActionGroup.fillWithEligibleActions(
   }
 
   if (project.bazelProjectSettings.enableLocalJvmActions && target.languageIds.isJvmTarget()) {
-    if (target.capabilities.canRun) {
+    if (target.kind.ruleType == RuleType.BINARY) {
       addAction(RunWithLocalJvmRunnerAction(project, target, includeTargetNameInText = includeTargetNameInText))
       addAction(RunWithLocalJvmRunnerAction(project, target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
     }
-    if (target.capabilities.canTest) {
+    if (target.kind.ruleType == RuleType.TEST) {
       if (callerPsiElement != null) { // called from gutter
         addLocalJvmTestActions(project, target, includeTargetNameInText, callerPsiElement)
       } else if (!project.bazelProjectSettings.useIntellijTestRunner) { // called from target tree widget

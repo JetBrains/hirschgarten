@@ -18,6 +18,8 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.ProjectSyncHook
@@ -31,7 +33,6 @@ import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
@@ -214,7 +215,10 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         listOf(info.type),
         listOf("python"),
         info.dependencies,
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "python_binary",
+          ruleType = RuleType.BINARY,
+        ),
         baseDirectory = Path("/targets_base_dir"),
         data =
           PythonBuildTarget(

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.filter
 
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
 
@@ -21,7 +22,7 @@ public class TargetFilter(private val onFilterChange: () -> Unit) {
 
   public enum class FILTER(public val predicate: (BuildTarget) -> Boolean) {
     OFF({ true }),
-    CAN_RUN({ it.capabilities.canRun }),
-    CAN_TEST({ it.capabilities.canTest }),
+    CAN_RUN({ it.kind.ruleType == RuleType.BINARY }),
+    CAN_TEST({ it.kind.ruleType == RuleType.TEST }),
   }
 }

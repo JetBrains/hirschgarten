@@ -3,10 +3,11 @@ package org.jetbrains.bazel
 import com.google.common.collect.ImmutableList
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.CppBuildTarget
 import org.jetbrains.bsp.protocol.CppOptionsItem
 import org.jetbrains.bsp.protocol.CppOptionsParams
@@ -46,11 +47,10 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
         tags = ImmutableList.of("application"),
         languageIds = ImmutableList.of(Constants.CPP),
         dependencies = ImmutableList.of(Label.parse("@com_google_googletest//:gtest_main")),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = true,
+        kind =
+          TargetKind(
+            kindString = "cc_binary",
+            ruleType = RuleType.BINARY,
           ),
         baseDirectory = Path("\$WORKSPACE/example/"),
         data = exampleExampleCppBuildTarget,
@@ -64,11 +64,10 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
         tags = ImmutableList.of(),
         languageIds = ImmutableList.of(),
         dependencies = ImmutableList.of(),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = false,
-            canTest = false,
-            canRun = false,
+        kind =
+          TargetKind(
+            kindString = "workspace",
+            ruleType = RuleType.UNKNOWN,
           ),
         baseDirectory = Path("\$WORKSPACE/"),
         data = null,

@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import org.jetbrains.bazel.action.SuspendableAction
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
@@ -61,7 +62,7 @@ internal open class RunAllTestsBaseAction(
         project.targetUtils.getExecutableTargetsForFile(this).mapNotNull { project.targetUtils.getBuildTargetForLabel(it) }
       }
     return childTargets.filter {
-      it.capabilities.canTest && !it.tags.contains(BuildTargetTag.MANUAL)
+      it.kind.ruleType == RuleType.TEST && !it.tags.contains(BuildTargetTag.MANUAL)
     }
   }
 }

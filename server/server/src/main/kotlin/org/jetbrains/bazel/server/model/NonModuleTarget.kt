@@ -8,4 +8,5 @@ data class NonModuleTarget(
   val languages: Set<Language>,
   val tags: Set<Tag>,
   val baseDirectory: Path,
+  val kindString: String,
 )

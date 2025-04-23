@@ -643,6 +643,7 @@ class BazelProjectMapper(
           languages = inferLanguages(targetInfo, transitiveCompileTimeJarsTargetKinds),
           tags = targetTagsResolver.resolveTags(targetInfo),
           baseDirectory = bazelPathsResolver.toDirectoryPath(label.assumeResolved(), repoMapping),
+          kindString = targetInfo.kind,
         )
       }
 
@@ -1028,6 +1029,7 @@ class BazelProjectMapper(
       sourceDependencies = sourceDependencies,
       languageData = languageData,
       environmentVariables = environment,
+      kindString = target.kind,
     )
   }
 

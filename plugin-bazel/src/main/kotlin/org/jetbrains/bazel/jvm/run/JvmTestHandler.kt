@@ -6,6 +6,7 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
@@ -45,7 +46,7 @@ class JvmTestHandler : BazelRunHandler {
 
     override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       targetInfos.all {
-        (it.languageIds.isJvmTarget() && it.capabilities.canTest)
+        (it.languageIds.isJvmTarget() && it.kind.ruleType == RuleType.TEST)
       }
 
     override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)

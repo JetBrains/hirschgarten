@@ -2,12 +2,13 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
@@ -93,11 +94,10 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         tags = listOf("application"),
         languageIds = listOf("java", "kotlin"),
         dependencies = listOf(Label.synthetic("rules_kotlin_kotlin-stdlibs")),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = true,
+        kind =
+          TargetKind(
+            kindString = "kt_jvm_binary",
+            ruleType = RuleType.BINARY,
           ),
         baseDirectory = Path("\$WORKSPACE/kotlinc_test/"),
         data = kotlincTestBuildTargetData,
@@ -117,11 +117,10 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         tags = listOf("library"),
         languageIds = listOf("java", "kotlin"),
         dependencies = listOf(Label.synthetic("rules_kotlin_kotlin-stdlibs")),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = false,
+        kind =
+          TargetKind(
+            kindString = "kt_jvm_library",
+            ruleType = RuleType.LIBRARY,
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = kotlinBuildTargetData,
@@ -189,11 +188,10 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             Label.parse("@//plugin_allopen_test:open_for_testing"),
             Label.synthetic("allopen-compiler-plugin.jar"),
           ),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = false,
+        kind =
+          TargetKind(
+            kindString = "kt_jvm_library",
+            ruleType = RuleType.LIBRARY,
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = userBuildTargetData,
@@ -219,11 +217,10 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             Label.parse("@//plugin_allopen_test:open_for_testing_export"),
             Label.synthetic("allopen-compiler-plugin.jar"),
           ),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = false,
+        kind =
+          TargetKind(
+            kindString = "kt_jvm_library",
+            ruleType = RuleType.LIBRARY,
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = userOfExportBuildTargetData,
@@ -248,11 +245,10 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
             Label.synthetic("rules_kotlin_kotlin-stdlibs"),
             Label.parse("@//plugin_allopen_test:open_for_testing"),
           ),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = false,
+        kind =
+          TargetKind(
+            kindString = "kt_jvm_library",
+            ruleType = RuleType.LIBRARY,
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = kotlinBuildTargetData,

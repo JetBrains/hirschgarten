@@ -2,12 +2,13 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -72,11 +73,10 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
         tags = listOf("library", "manual"),
         languageIds = listOf("java"),
         dependencies = emptyList(),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = false,
+        kind =
+          TargetKind(
+            kindString = "java_library",
+            ruleType = RuleType.LIBRARY,
           ),
         baseDirectory = Path("\$WORKSPACE/manual_target/"),
         data = jvmBuildTarget,
@@ -97,11 +97,10 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
         tags = listOf("application", "manual"),
         languageIds = listOf("java"),
         dependencies = emptyList(),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = true,
+        kind =
+          TargetKind(
+            kindString = "java_binary",
+            ruleType = RuleType.BINARY,
           ),
         baseDirectory = Path("\$WORKSPACE/manual_target/"),
         data = jvmBuildTarget,
@@ -122,11 +121,10 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
         tags = listOf("test", "manual"),
         languageIds = listOf("java"),
         dependencies = emptyList(),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = true,
-            canRun = false,
+        kind =
+          TargetKind(
+            kindString = "java_test",
+            ruleType = RuleType.TEST,
           ),
         baseDirectory = Path("\$WORKSPACE/manual_target/"),
         data = jvmBuildTarget,

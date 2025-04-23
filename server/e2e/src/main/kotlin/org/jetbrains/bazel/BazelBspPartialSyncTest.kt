@@ -2,12 +2,13 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsParams
@@ -67,10 +68,10 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
             listOf("application"),
             listOf("java"),
             emptyList(),
-            BuildTargetCapabilities(
-              canCompile = true,
-              canTest = false,
-              canRun = true,
+            TargetKind(
+              kindString = "java_binary",
+              languageClasses = emptySet(),
+              ruleType = RuleType.BINARY,
             ),
             baseDirectory = Path("\$WORKSPACE/java_targets/"),
             data = jvmBuildTarget,
@@ -107,10 +108,9 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
         listOf("library"),
         listOf("java"),
         listOf(),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = false,
+        TargetKind(
+          kindString = "java_library",
+          ruleType = RuleType.LIBRARY,
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
         data = jvmBuildTarget,

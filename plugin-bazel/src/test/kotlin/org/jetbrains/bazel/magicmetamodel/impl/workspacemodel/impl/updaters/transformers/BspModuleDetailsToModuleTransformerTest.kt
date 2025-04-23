@@ -6,6 +6,9 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
@@ -13,7 +16,6 @@ import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -55,7 +57,10 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
           Label.parse("@//target2"),
           Label.parse("@//target3"),
         ),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         sources = emptyList(),
         resources = emptyList(),
         baseDirectory = Path("base/dir"),
@@ -107,6 +112,12 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
             ),
           ),
         librariesDependencies = emptyList(),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     shouldBeIgnoringDependenciesOrder(module, expectedModule)
@@ -127,7 +138,10 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
           Label.parse("@//target2"),
           Label.parse("@//target3"),
         ),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         sources = emptyList(),
         resources = emptyList(),
         baseDirectory = Path("base/dir"),
@@ -192,6 +206,12 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
               moduleName = "target5.target5",
             ),
           ),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     shouldBeIgnoringDependenciesOrder(module, expectedModule)
@@ -213,7 +233,10 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
           Label.parse("//target2"),
           Label.parse("//target3"),
         ),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         sources = emptyList(),
         resources = emptyList(),
         baseDirectory = Path("base/dir"),
@@ -251,7 +274,10 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
           Label.parse("@maven//:test"),
           Label.parse("//target3"),
         ),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+        ),
         sources = emptyList(),
         resources = emptyList(),
         baseDirectory = Path("base/dir"),
@@ -302,6 +328,12 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
             ),
           ),
         librariesDependencies = emptyList(),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val expectedModule2 =
@@ -315,6 +347,12 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
             ),
           ),
         librariesDependencies = emptyList(),
+        kind =
+          TargetKind(
+            kindString = "java_library", // TODO
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     modules shouldContainExactlyInAnyOrder (

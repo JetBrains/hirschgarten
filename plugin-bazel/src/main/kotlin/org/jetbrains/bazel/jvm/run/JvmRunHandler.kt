@@ -4,6 +4,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
@@ -51,8 +52,8 @@ class JvmRunHandler(val configuration: BazelRunConfiguration) : BazelRunHandler 
     // TODO: perhaps better solved by having a tag
     override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       targetInfos.all {
-        (it.languageIds.isJvmTarget() && !it.capabilities.canTest) ||
-          (it.languageIds.includesAndroid() && it.capabilities.canTest)
+        (it.languageIds.isJvmTarget() && it.kind.ruleType != RuleType.TEST) ||
+          (it.languageIds.includesAndroid() && it.kind.ruleType == RuleType.TEST)
       }
 
     override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)

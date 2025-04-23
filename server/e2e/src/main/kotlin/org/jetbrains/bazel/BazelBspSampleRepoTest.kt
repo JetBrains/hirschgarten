@@ -3,12 +3,13 @@ package org.jetbrains.bazel
 import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.DependencySourcesItem
@@ -764,10 +765,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("application"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = true,
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
         data = jvmBuildTarget,
@@ -787,10 +787,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("application"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = true,
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
         data = jvmBuildTargetWithFlag,
@@ -834,10 +833,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           Label.synthetic("scala-library-$scalaRulesVersion.jar"),
           Label.synthetic("scala-reflect-$scalaRulesVersion.jar"),
         ),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = true,
+        TargetKind(
+          kindString = "scala_binary",
+          ruleType = RuleType.BINARY,
         ),
         baseDirectory = Path("\$WORKSPACE/scala_targets/"),
         data = scalaBuildTarget,
@@ -857,10 +855,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("library"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = false,
+        TargetKind(
+          kindString = "java_library",
+          ruleType = RuleType.LIBRARY,
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/subpackage/"),
         data = jvmBuildTarget,
@@ -880,10 +877,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("library"),
         listOf("java"),
         listOf(),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = false,
+        TargetKind(
+          kindString = "java_library",
+          ruleType = RuleType.LIBRARY,
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
         data = jvmBuildTarget,
@@ -907,10 +903,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           Label.synthetic("scala-library-$scalaRulesVersion.jar"),
           Label.synthetic("scala-reflect-$scalaRulesVersion.jar"),
         ),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = true,
+        TargetKind(
+          kindString = "scala_binary",
+          ruleType = RuleType.BINARY,
         ),
         baseDirectory = Path("\$WORKSPACE/target_without_jvm_flags/"),
         data = scalaBuildTarget,
@@ -934,10 +929,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           Label.synthetic("scala-library-$scalaRulesVersion.jar"),
           Label.synthetic("scala-reflect-$scalaRulesVersion.jar"),
         ),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = false,
+        TargetKind(
+          kindString = "scala_library",
+          ruleType = RuleType.LIBRARY,
         ),
         baseDirectory = Path("\$WORKSPACE/target_without_main_class/"),
         data = scalaBuildTarget,
@@ -961,10 +955,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           Label.synthetic("scala-library-$scalaRulesVersion.jar"),
           Label.synthetic("scala-reflect-$scalaRulesVersion.jar"),
         ),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = true,
+        TargetKind(
+          kindString = "scala_binary",
+          ruleType = RuleType.BINARY,
         ),
         baseDirectory = Path("\$WORKSPACE/target_without_args/"),
         data = scalaBuildTarget,
@@ -992,10 +985,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           Label.parse("$targetPrefix//java_targets:java_library_exported"),
           Label.parse(guavaDep),
         ),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = true,
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
         ),
         baseDirectory = Path("\$WORKSPACE/target_with_dependency/"),
         data = jvmBuildTarget,
@@ -1033,10 +1025,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           Label.synthetic("scalatest_2.13-3.2.9.jar"),
           Label.synthetic("test_reporter.jar"),
         ),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = true,
-          canRun = false,
+        TargetKind(
+          kindString = "scala_test",
+          ruleType = RuleType.TEST,
         ),
         baseDirectory = Path("\$WORKSPACE/scala_targets/"),
         data = scalaBuildTarget,
@@ -1056,10 +1047,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("application"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = true,
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
         ),
         baseDirectory = Path("\$WORKSPACE/target_with_resources/"),
         data = jvmBuildTarget,
@@ -1086,10 +1076,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           Label.parse("$targetPrefix//java_targets/subpackage:java_library"),
           Label.parse("$targetPrefix//java_targets:java_library_exported_output_jars"),
         ),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = false,
+        TargetKind(
+          kindString = "java_library",
+          ruleType = RuleType.LIBRARY,
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
         data = jvmBuildTarget,
@@ -1103,10 +1092,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("application"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = true,
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
         ),
         baseDirectory = Path("\$WORKSPACE/environment_variables/"),
         data = jvmBuildTarget,
@@ -1126,10 +1114,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("test"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = true,
-          canRun = false,
+        TargetKind(
+          kindString = "java_test",
+          ruleType = RuleType.TEST,
         ),
         baseDirectory = Path("\$WORKSPACE/environment_variables/"),
         data = jvmBuildTarget,
@@ -1149,10 +1136,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("library"),
         listOf("java"),
         emptyList(),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = false,
+        TargetKind(
+          kindString = "java_library",
+          ruleType = RuleType.LIBRARY,
         ),
         baseDirectory = Path("\$WORKSPACE/target_with_javac_exports/"),
         data = jvmBuildTarget,
@@ -1174,11 +1160,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           listOf("application"),
           emptyList(),
           emptyList(),
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = true,
-          ),
+          kind =
+            TargetKind(
+              ruleType = RuleType.BINARY,
+              kindString = "genrule",
+            ),
           baseDirectory = Path("$workspaceDir/genrule/"),
           sources = emptyList(),
           resources = emptyList(),
@@ -1188,11 +1174,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           listOf("application"),
           listOf("java"),
           emptyList(),
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = true,
-          ),
+          kind =
+            TargetKind(
+              ruleType = RuleType.BINARY,
+              kindString = "filegroup",
+            ),
           baseDirectory = Path("$workspaceDir/target_without_java_info/"),
           sources = emptyList(),
           resources = emptyList(),
@@ -1202,11 +1188,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           listOf("application"),
           listOf("java", "kotlin"),
           emptyList(),
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = true,
-          ),
+          kind =
+            TargetKind(
+              ruleType = RuleType.BINARY,
+              kindString = "genrule",
+            ),
           baseDirectory = Path("$workspaceDir/target_without_java_info/"),
           sources = emptyList(),
           resources = emptyList(),

@@ -1,10 +1,11 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -127,7 +128,10 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
           listOf("library"),
           listOf("java"),
           emptyList(),
-          BuildTargetCapabilities(),
+          TargetKind(
+            kindString = "java_binary",
+            ruleType = RuleType.BINARY,
+          ),
           sources =
             sourceRoots.map {
               SourceItem(

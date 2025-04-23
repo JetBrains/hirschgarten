@@ -2,7 +2,7 @@ package org.jetbrains.bazel.workspacemodel.entities
 
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -56,7 +56,7 @@ data class GenericModuleInfo(
   val type: ModuleTypeId,
   val modulesDependencies: List<IntermediateModuleDependency>,
   val librariesDependencies: List<IntermediateLibraryDependency>,
-  val capabilities: ModuleCapabilities = ModuleCapabilities(),
+  val kind: TargetKind,
   val languageIds: LanguageIds = listOf(),
   val associates: List<IntermediateModuleDependency> = listOf(),
   val isDummy: Boolean = false,
@@ -67,7 +67,7 @@ data class GenericModuleInfo(
     type: ModuleTypeId,
     modulesDependencies: List<IntermediateModuleDependency>,
     librariesDependencies: List<IntermediateLibraryDependency>,
-    capabilities: ModuleCapabilities = ModuleCapabilities(),
+    kind: TargetKind,
     languageIds: Map<String, String>,
     associates: List<IntermediateModuleDependency> = listOf(),
   ) : this(
@@ -75,7 +75,7 @@ data class GenericModuleInfo(
     type,
     modulesDependencies,
     librariesDependencies,
-    capabilities,
+    kind,
     languageIdsFromMap(languageIds),
     associates,
   )
@@ -95,29 +95,6 @@ data class GenericModuleInfo(
     fun languageIdsFromMap(map: Map<String, String>): List<String> = map[LANGUAGE_IDS]?.split(LANGUAGE_IDS_SEPARATOR).orEmpty()
   }
 }
-
-data class ModuleCapabilities(
-  val canRun: Boolean = false,
-  val canTest: Boolean = false,
-  val canCompile: Boolean = false,
-) {
-  fun asMap(): Map<String, String> =
-    mapOf(
-      KEYS.CAN_RUN.name to canRun.toString(),
-      KEYS.CAN_TEST.name to canTest.toString(),
-      KEYS.CAN_COMPILE.name to canCompile.toString(),
-    )
-
-  private enum class KEYS {
-    CAN_RUN,
-    CAN_TEST,
-    CAN_COMPILE,
-  }
-
-  fun isExecutable(): Boolean = canRun || canTest
-}
-
-fun BuildTargetCapabilities.toModuleCapabilities() = ModuleCapabilities(canRun == true, canTest == true, canCompile == true)
 
 interface Module {
   fun getModuleName(): String
