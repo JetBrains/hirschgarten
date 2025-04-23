@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.formatting
 
 import com.intellij.ide.actionsOnSave.impl.ActionsOnSaveFileDocumentManagerListener
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
@@ -15,7 +16,7 @@ class StarlarkFormattingActionOnSave : ActionsOnSaveFileDocumentManagerListener.
   override fun isEnabledForProject(project: Project): Boolean = project.isBazelProject && project.bazelProjectSettings.runBuildifierOnSave
 
   override suspend fun updateDocument(project: Project, document: Document) {
-    val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document) as? StarlarkFile ?: return
+    val psiFile = readAction { PsiDocumentManager.getInstance(project).getPsiFile(document) } as? StarlarkFile ?: return
     formatBuildFile(psiFile)
   }
 }

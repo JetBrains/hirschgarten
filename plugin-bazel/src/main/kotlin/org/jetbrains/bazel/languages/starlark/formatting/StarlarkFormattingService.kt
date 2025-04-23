@@ -19,7 +19,6 @@ import com.intellij.openapi.application.readAndWriteAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiEditorUtil
@@ -27,8 +26,10 @@ import com.intellij.ui.LightweightHint
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
+import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import java.io.File
 
 private val LOG = logger<StarlarkFormattingService>()
 private const val NOTIFICATION_GROUP_ID = "Buildifier"
@@ -89,11 +90,27 @@ class StarlarkFormattingService : AsyncDocumentFormattingService() {
         .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
         .withExePath(buildifierPath)
         .withInput(ioFile)
+        .apply {
+          // Because we pass the input file's text into stdin, buildifier doesn't know the original filename.
+          // We must therefore tell buildifier what file type it was.
+          addParameter("--type=${fileTypeArgument(ioFile)}")
+        }
         // Set the work directory to workspace root so that Buildifier can read .buildifier-tables.json
-        .withWorkDirectory(VfsUtil.virtualToIoFile(request.context.project.rootDir))
+        .withWorkingDirectory(
+          request.context.project.rootDir
+            .toNioPath(),
+        )
 
     return CapturingProcessHandler(commandLine)
   }
+
+  private fun fileTypeArgument(file: File) =
+    when (BazelFileType.ofFileName(file.name)) {
+      BazelFileType.BUILD -> "build"
+      BazelFileType.EXTENSION -> "bzl"
+      BazelFileType.MODULE -> "module"
+      BazelFileType.WORKSPACE -> "workspace"
+    }
 
   override fun getNotificationGroupId(): String = NOTIFICATION_GROUP_ID
 
