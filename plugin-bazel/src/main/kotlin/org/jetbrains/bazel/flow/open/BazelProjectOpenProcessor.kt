@@ -55,13 +55,6 @@ internal class BazelProjectOpenProcessor : BaseProjectOpenProcessor() {
    */
   override fun canOpenProject(file: VirtualFile): Boolean = findProjectFolderFromVFile(file) != null
 
-  private fun VirtualFile.isEligibleFile() = isBazelBspConnectionFile() || isWorkspaceFile() || isBuildFile() || isProjectViewFile()
-
-  /**
-   * Basic name matching to quickly check for an eligible bazel bsp connection file
-   */
-  private fun VirtualFile.isBazelBspConnectionFile() = name == BAZELBSP_JSON_FILE_NAME
-
   override fun calculateBeforeOpenCallback(originalVFile: VirtualFile): (Project) -> Unit =
     when {
       originalVFile.isProjectViewFile() -> projectViewFileBeforeOpenCallback(originalVFile)
@@ -110,16 +103,22 @@ internal class BazelProjectOpenProcessor : BaseProjectOpenProcessor() {
       project.bazelProjectSettings =
         project.bazelProjectSettings.withNewProjectViewPath(originalVFile.toNioPath().toAbsolutePath())
     }
-
-  private fun VirtualFile.isProjectViewFile() = extension == BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION
 }
 
 tailrec fun findProjectFolderFromVFile(vFile: VirtualFile?): VirtualFile? =
   when {
     vFile == null -> null
     vFile.isWorkspaceRoot() -> vFile
+    // this is to prevent opening a file that is not an acceptable Bazel config file, #BAZEL-1940
+    // TODO(Son): figure out how to write a test for it to avoid regression later
+    vFile.isFile && !vFile.isEligibleFile() -> null
+
     else -> findProjectFolderFromVFile(vFile.parent)
   }
+
+private fun VirtualFile.isEligibleFile() = isWorkspaceFile() || isBuildFile() || isProjectViewFile()
+
+private fun VirtualFile.isProjectViewFile() = isFile && extension == BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION
 
 private fun VirtualFile.isWorkspaceRoot(): Boolean {
   if (!isDirectory) return false
