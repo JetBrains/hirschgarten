@@ -4,8 +4,8 @@ import com.intellij.codeInsight.editorActions.ExtendWordSelectionHandlerBase
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.startOffset
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
-import org.jetbrains.kotlin.psi.psiUtil.startOffset
 
 class StarlarkStringLiteralSelectioner : ExtendWordSelectionHandlerBase() {
   override fun canSelect(element: PsiElement): Boolean =

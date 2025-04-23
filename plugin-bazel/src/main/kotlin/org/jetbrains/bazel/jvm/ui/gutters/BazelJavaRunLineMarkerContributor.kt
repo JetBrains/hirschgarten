@@ -5,22 +5,21 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner
+import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.bazel.ui.gutters.BspRunLineMarkerContributor
-import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
 
 open class BazelJavaRunLineMarkerContributor : BspRunLineMarkerContributor() {
   override fun isDumbAware(): Boolean = true
 
   override fun PsiElement.shouldAddMarker(): Boolean =
     !isInsideJar() &&
-      getStrictParentOfType<PsiNameIdentifierOwner>()
-        ?.isClassOrMethod() ?: false
+      PsiTreeUtil.getParentOfType(this, PsiNameIdentifierOwner::class.java, true)?.isClassOrMethod() ?: false
 
   private fun PsiElement.isInsideJar() = containingFile.virtualFile?.fileSystem is JarFileSystem
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1316
   override fun getSingleTestFilter(element: PsiElement): String? {
-    val psiIdentifier = element.getStrictParentOfType<PsiNameIdentifierOwner>()
+    val psiIdentifier = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java, true)
     val functionName = psiIdentifier?.getFunctionName()
     if (psiIdentifier?.isMethod() == true) {
       val className = psiIdentifier.getClassName() ?: return functionName
@@ -31,7 +30,7 @@ open class BazelJavaRunLineMarkerContributor : BspRunLineMarkerContributor() {
 
   protected open fun PsiNameIdentifierOwner.getFunctionName(): String? = if (this.isClassOrMethod()) tryGetFQN() else null
 
-  protected open fun PsiNameIdentifierOwner.getClassName(): String? = this.getStrictParentOfType<PsiClass>()?.name
+  protected open fun PsiNameIdentifierOwner.getClassName(): String? = PsiTreeUtil.getParentOfType(this, PsiClass::class.java, true)?.name
 
   protected open fun PsiNameIdentifierOwner.tryGetFQN(): String? =
     if (this is PsiClass) {

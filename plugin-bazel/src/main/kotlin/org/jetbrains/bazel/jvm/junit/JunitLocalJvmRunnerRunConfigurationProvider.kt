@@ -6,6 +6,7 @@ import com.intellij.execution.configurations.ModuleBasedConfigurationOptions
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.junit.JUnitConfiguration
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiClass
@@ -16,10 +17,6 @@ import org.jetbrains.bazel.runfiles.RunfilesUtils
 import org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
-import org.jetbrains.kotlin.asJava.getRepresentativeLightMethod
-import org.jetbrains.kotlin.asJava.toLightClass
-import org.jetbrains.kotlin.psi.KtClass
-import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 
 class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurationProvider {
   override fun provideRunConfiguration(
@@ -57,8 +54,8 @@ class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurati
     }
 
   private fun JUnitConfiguration.setClassOrMethodConfiguration(psiElement: PsiElement) {
-    val psiMethod = psiElement.getPsiMethodOrNull()
-    val psiClass = psiElement.getPsiClassOrNull()
+    val psiMethod = PsiElementConfigurationLocator.ep.extensionList.firstNotNullOfOrNull { it.getPsiMethod(psiElement) }
+    val psiClass = PsiElementConfigurationLocator.ep.extensionList.firstNotNullOfOrNull { it.getPsiClass(psiElement) }
 
     runReadAction {
       if (psiMethod != null) {
@@ -69,14 +66,19 @@ class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurati
     }
   }
 
-  private fun PsiElement.getPsiClassOrNull(): PsiClass? =
-    runReadAction { parent as? PsiClass ?: getParentOfType<KtClass>(false)?.toLightClass() }
-
-  private fun PsiElement.getPsiMethodOrNull(): PsiMethod? = runReadAction { parent as? PsiMethod ?: parent.getRepresentativeLightMethod() }
-
   private fun defineDefaultBazelEnvs(project: Project, environment: JvmEnvironmentItem): Map<String, String> =
     mapOf(
       "TEST_SRCDIR" to RunfilesUtils.calculateTargetRunfiles(project, environment.target).toString(),
       ("TEST_WORKSPACE" to (project.workspaceName ?: "_main")),
     )
+}
+
+interface PsiElementConfigurationLocator {
+  fun getPsiMethod(callerPsiElement: PsiElement): PsiMethod?
+
+  fun getPsiClass(callerPsiElement: PsiElement): PsiClass?
+
+  companion object {
+    val ep = ExtensionPointName.create<PsiElementConfigurationLocator>("org.jetbrains.bazel.psiElementConfigurationLocator")
+  }
 }

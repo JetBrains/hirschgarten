@@ -10,13 +10,12 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProviderBase
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementList
-import org.jetbrains.kotlin.psi.psiUtil.getParentOfTypes
-import org.jetbrains.kotlin.psi.psiUtil.getParentOfTypesAndPredicate
 
 class StarlarkDebuggerEditorsProvider : XDebuggerEditorsProviderBase() {
   override fun getFileType(): FileType = StarlarkFileType
@@ -61,10 +60,10 @@ class StarlarkDebuggerEditorsProvider : XDebuggerEditorsProviderBase() {
     if (this is StarlarkFile || this is StarlarkStatementList) {
       this as StarlarkElement
     } else {
-      this.getParentOfTypes(false, StarlarkFile::class.java, StarlarkStatementList::class.java)
+      PsiTreeUtil.getParentOfType(this, false, StarlarkFile::class.java, StarlarkStatementList::class.java)
     }
 
   /** Returns element's ancestor, whose direct parent is given superParent (or `null` if nonexistent) */
   private fun PsiElement.getAncestorRightBelow(superParent: PsiElement): PsiElement? =
-    this.getParentOfTypesAndPredicate(false) { it.parent == superParent } // no types given = parent can have any type
+    PsiTreeUtil.findFirstParent(this, true) { it.parent == superParent }
 }

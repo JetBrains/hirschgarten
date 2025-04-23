@@ -53,7 +53,6 @@ java_library(
         intellij = [
             ":sdk",
             ":java",
-            ":kotlin",
             ":junit",
             ":platform_images",
         ],
@@ -87,6 +86,9 @@ java_library(
 java_library(
     name = "kotlin",
     neverlink = 1,
+    visibility = [
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin:__subpackages__",
+    ],
     exports = select_from_plugin_api_directory(
         android_studio = [":kotlin"],
         clion = [],

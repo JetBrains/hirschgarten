@@ -4,12 +4,12 @@ import com.intellij.coverage.CoverageDataManager
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ide.projectView.ProjectViewNodeDecorator
+import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPsiElementPointer
 import org.jetbrains.bazel.sdkcompat.shouldShowCoverageInProjectView
-import org.jetbrains.kotlin.psi.KtClassOrObject
 
 class BazelCoverageClassNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
   override fun decorate(node: ProjectViewNode<*>, data: PresentationData) {
@@ -23,7 +23,8 @@ class BazelCoverageClassNodeDecorator(private val project: Project) : ProjectVie
         else -> null
       } ?: return
 
-    if (psiElement !is PsiClass && psiElement !is KtClassOrObject) return
+    if (psiElement !is PsiClass) return
+    if (BazelCoverageClassNodeDecoratorPsiElementClassifier.ep.extensionList.none { it.shouldShowCoverageForElement(psiElement) }) return
 
     val psiFile = psiElement.containingFile ?: return
     val coverageDataManager = CoverageDataManager.getInstance(project)
@@ -32,5 +33,16 @@ class BazelCoverageClassNodeDecorator(private val project: Project) : ProjectVie
     annotator.getFileCoverageInformationString(psiFile, suite, coverageDataManager)?.let {
       data.locationString = it
     }
+  }
+}
+
+interface BazelCoverageClassNodeDecoratorPsiElementClassifier {
+  fun shouldShowCoverageForElement(psiElement: PsiElement): Boolean
+
+  companion object {
+    val ep =
+      ExtensionPointName.create<BazelCoverageClassNodeDecoratorPsiElementClassifier>(
+        "org.jetbrains.bazel.bazelCoverageClassNodeDecoratorPsiElementClassifier",
+      )
   }
 }

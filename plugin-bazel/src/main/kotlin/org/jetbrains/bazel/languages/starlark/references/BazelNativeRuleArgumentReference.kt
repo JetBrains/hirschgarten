@@ -4,15 +4,15 @@ import com.intellij.model.Symbol
 import com.intellij.model.psi.PsiSymbolReference
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.startOffset
 import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRules
 import org.jetbrains.bazel.languages.starlark.documentation.BazelNativeRuleArgumentDocumentationSymbol
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
-import org.jetbrains.kotlin.idea.base.psi.relativeTo
 
 @Suppress("UnstableApiUsage")
 class BazelNativeRuleArgumentReference(val element: StarlarkNamedArgumentExpression) : PsiSymbolReference {
-  val textRange = element.getNameNode()?.textRange?.relativeTo(element)!!
+  val textRange = element.getNameNode()?.textRange?.shiftLeft(element.startOffset)!!
 
   override fun getElement(): PsiElement = element
 
