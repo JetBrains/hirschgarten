@@ -3,7 +3,6 @@ package org.jetbrains.bazel.languages.starlark.psi
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider
-import com.intellij.psi.PsiElement
 import com.intellij.util.Processor
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
@@ -26,18 +25,6 @@ open class StarlarkFile(viewProvider: FileViewProvider) :
       .mapNotNull { it.callExpressionOrNull() }
       .firstOrNull { it.getArgumentList()?.getNameArgumentValue() == targetName }
 
-  fun searchInLoads(processor: Processor<StarlarkElement>, stopAt: PsiElement?): Boolean =
-    keepSearchingWhenAllLoadSymbolsNotMatched(findChildrenByClass(StarlarkElement::class.java).toList(), processor, stopAt)
-
-  private fun keepSearchingWhenAllLoadSymbolsNotMatched(
-    children: List<StarlarkElement>,
-    processor: Processor<StarlarkElement>,
-    stopAt: PsiElement?,
-  ) = children.all {
-    when (it) {
-      stopAt -> false
-      is StarlarkLoadStatement -> it.getLoadedSymbolsPsi().all { symbol -> processor.process(symbol) }
-      else -> true
-    }
-  }
+  fun searchInLoads(processor: Processor<StarlarkElement>): Boolean =
+    findChildrenByClass(StarlarkLoadStatement::class.java).flatMap { it.getLoadedSymbolsPsi() }.all(processor::process)
 }

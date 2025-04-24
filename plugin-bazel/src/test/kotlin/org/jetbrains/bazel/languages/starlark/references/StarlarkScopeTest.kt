@@ -268,6 +268,31 @@ class StarlarkScopeTest : BasePlatformTestCase() {
   }
 
   @Test
+  fun `forward reference in top-level scope`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+       for i in range(10):
+           if i == 9:
+               print(<caret>value)
+           <target>value = 1
+       """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `forward reference in function scope`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+       def foo():
+           for i in range(10):
+               if i == 9:
+                   print(<caret>value)
+               <target>value = 1
+       """.trimIndent(),
+    )
+  }
+
+  @Test
   fun `comprehension reference from loop body`() {
     verifyTargetOfReferenceAtCaret(
       """

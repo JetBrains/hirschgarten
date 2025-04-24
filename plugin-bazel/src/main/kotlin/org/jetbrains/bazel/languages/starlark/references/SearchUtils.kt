@@ -28,7 +28,6 @@ object SearchUtils {
       val scopeRoot = findScopeRoot(element) ?: return
       if (!processBindingsInScope(
           scopeRoot,
-          stopAt = if (scopeRoot is StarlarkFile && scopeRoot != currentElement) currentElement else null,
           processor = processor,
           elementIsScopeRoot = true,
         )
@@ -66,18 +65,15 @@ object SearchUtils {
 
   private fun processBindingsInScope(
     element: PsiElement,
-    stopAt: PsiElement?,
     processor: Processor<StarlarkElement>,
     elementIsScopeRoot: Boolean = false,
   ): Boolean =
     when (element) {
-      stopAt -> false
-      is StarlarkFile -> element.searchInLoads(processor, stopAt) && element.children.all { processBindingsInScope(it, stopAt, processor) }
+      is StarlarkFile -> element.searchInLoads(processor) && element.children.all { processBindingsInScope(it, processor) }
 
       is StarlarkCallable -> if (elementIsScopeRoot) {
         element.searchInParameters(processor) && (element !is StarlarkFunctionDeclaration || processBindingsInScope(
           element.getStatementList(),
-          stopAt,
           processor,
         ))
       } else {
@@ -85,12 +81,12 @@ object SearchUtils {
       }
 
       is StarlarkStatementContainer -> element.getStatementLists()
-        .all { processBindingsInScope(it, stopAt, processor) } && (element !is StarlarkForStatement || element.searchInLoopVariables(
+        .all { processBindingsInScope(it, processor) } && (element !is StarlarkForStatement || element.searchInLoopVariables(
         processor,
       ))
 
       is StarlarkCompExpression -> element.searchInComprehension(processor)
-      is StarlarkStatementList -> element.children.all { processBindingsInScope(it, stopAt, processor) }
+      is StarlarkStatementList -> element.children.all { processBindingsInScope(it, processor) }
       is StarlarkAssignmentStatement -> element.check(processor)
       else -> true
     }
