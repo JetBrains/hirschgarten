@@ -14,11 +14,11 @@ IDE_STARTER_DEPS = [
     "@maven//:org_kodein_di_kodein_di",
 ]
 
-def ide_starter_test(deps = [], jvm_flags = [], resources = [], **kwargs):
+def ide_starter_test(deps = [], jvm_flags = [], resources = [], product_build_number = BENCHMARK_BUILD_NUMBER, **kwargs):
     kt_junit5_test(
         deps = deps + IDE_STARTER_DEPS,
         jvm_flags = jvm_flags + [
-            "-Dbazel.ide.starter.test.platform.build.number=%s" % BENCHMARK_BUILD_NUMBER,
+            "-Dbazel.ide.starter.test.platform.build.number=%s" % product_build_number,
             "-Dbazel.ide.starter.test.bazel.plugin.zip=%s" % INTELLIJ_BAZEL_PLUGIN_ZIP,
         ],
         resources = resources + [

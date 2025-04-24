@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.startup
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -13,6 +14,7 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
 import org.jetbrains.bazel.ui.widgets.fileTargets.updateBazelFileTargetsWidget
 import org.jetbrains.bazel.ui.widgets.tool.window.all.targets.registerBazelToolWindow
+import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
 import org.jetbrains.bazel.utils.RunConfigurationProducersDisabler
 import java.util.Collections
 import java.util.WeakHashMap
@@ -46,6 +48,11 @@ class BazelStartupActivity : BazelProjectActivity() {
     BazelStartupActivityTracker.stopConfigurationPhase(this)
   }
 
+  private fun Project.updateTargetToolwindow() {
+    val targets = targetUtils.allBuildTargets().associateBy { it.id }
+    service<BazelTargetsPanelModel>().updateTargets(targets)
+  }
+
   /**
    * Make sure calling [BazelOpenProjectProvider.performOpenBazelProject]
    * won't cause [BazelStartupActivity] to execute twice.
@@ -55,6 +62,7 @@ class BazelStartupActivity : BazelProjectActivity() {
   private suspend fun Project.executeOnEveryProjectStartup() {
     log.debug("Executing Bazel startup activities for every opening")
     registerBazelToolWindow(this)
+    updateTargetToolwindow()
     updateBazelFileTargetsWidget()
     RunConfigurationProducersDisabler(this)
     BazelWorkspace.getInstance(this).initialize()

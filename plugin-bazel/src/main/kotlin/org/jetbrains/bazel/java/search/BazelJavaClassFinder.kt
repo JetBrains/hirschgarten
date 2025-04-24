@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.services
+package org.jetbrains.bazel.java.search
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil

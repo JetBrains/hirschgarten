@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.java
+package org.jetbrains.bazel.java.configuration
 
 import com.intellij.ui.IconManager
 import org.jetbrains.bazel.utils.SourceType

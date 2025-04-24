@@ -17,6 +17,7 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.ui.DocumentAdapter
 import com.intellij.util.Consumer
 import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import javax.swing.SwingUtilities
@@ -92,7 +93,7 @@ class NewBazelPackageAction : DumbAwareAction() {
     parent: PsiDirectory,
     ideView: IdeView,
   ) {
-    val filename = BazelPluginConstants.defaultBuildFileName()
+    val filename = Constants.defaultBuildFileName()
     val buildFile =
       WriteCommandAction.writeCommandAction(project).compute(
         ThrowableComputable {

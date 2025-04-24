@@ -6,8 +6,8 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.flow.open.BazelOpenProjectProvider
@@ -36,7 +36,7 @@ internal class LinkBazelProjectFromScriptAction :
 
   private fun VirtualFile.isFileSupported() =
     BazelOpenProjectProvider().isProjectFile(this) ||
-      extension == BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION
+      extension == Constants.PROJECT_VIEW_FILE_EXTENSION
 
   override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 }

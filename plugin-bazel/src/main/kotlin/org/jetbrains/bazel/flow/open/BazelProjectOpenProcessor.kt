@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.constants.Constants.BAZELBSP_JSON_FILE_NAME
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
@@ -23,15 +24,15 @@ val ALL_ELIGIBLE_FILES_GLOB =
     append("{")
     append(BAZELBSP_JSON_FILE_NAME)
     append(",")
-    append(BazelPluginConstants.WORKSPACE_FILE_NAMES.joinToString(","))
+    append(Constants.WORKSPACE_FILE_NAMES.joinToString(","))
     append(",")
-    append(BazelPluginConstants.BUILD_FILE_NAMES.joinToString(","))
+    append(Constants.BUILD_FILE_NAMES.joinToString(","))
     append(",*.")
-    append(BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION)
+    append(Constants.PROJECT_VIEW_FILE_EXTENSION)
     append("}")
   }
 
-val BUILD_FILE_GLOB = "{${BazelPluginConstants.BUILD_FILE_NAMES.joinToString(",")}}"
+val BUILD_FILE_GLOB = "{${Constants.BUILD_FILE_NAMES.joinToString(",")}}"
 
 /**
  * Refrain from using [VirtualFile.getChildren] as it causes performance issues in large projects, such as [BAZEL-1717](https://youtrack.jetbrains.com/issue/BAZEL-1717)
@@ -118,14 +119,14 @@ tailrec fun findProjectFolderFromVFile(vFile: VirtualFile?): VirtualFile? =
 
 private fun VirtualFile.isEligibleFile() = isWorkspaceFile() || isBuildFile() || isProjectViewFile()
 
-private fun VirtualFile.isProjectViewFile() = isFile && extension == BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION
+private fun VirtualFile.isProjectViewFile() = isFile && extension == Constants.PROJECT_VIEW_FILE_EXTENSION
 
 private fun VirtualFile.isWorkspaceRoot(): Boolean {
   if (!isDirectory) return false
   val path = toNioPath()
-  return BazelPluginConstants.WORKSPACE_FILE_NAMES.any { path.resolve(it).isRegularFile() }
+  return Constants.WORKSPACE_FILE_NAMES.any { path.resolve(it).isRegularFile() }
 }
 
-private fun VirtualFile.isWorkspaceFile() = isFile && name in BazelPluginConstants.WORKSPACE_FILE_NAMES
+private fun VirtualFile.isWorkspaceFile() = isFile && name in Constants.WORKSPACE_FILE_NAMES
 
-private fun VirtualFile.isBuildFile() = isFile && name in BazelPluginConstants.BUILD_FILE_NAMES
+private fun VirtualFile.isBuildFile() = isFile && name in Constants.BUILD_FILE_NAMES

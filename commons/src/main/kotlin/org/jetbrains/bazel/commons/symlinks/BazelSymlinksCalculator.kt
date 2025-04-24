@@ -1,10 +1,12 @@
 package org.jetbrains.bazel.commons.symlinks
 
+import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
+import kotlin.io.path.exists
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.name
 
@@ -13,7 +15,11 @@ import kotlin.io.path.name
  */
 object BazelSymlinksCalculator {
   fun calculateBazelSymlinksToExclude(workspaceRoot: Path, bazelSymlinksScanMaxDepth: Int): List<Path> {
-    val symlinksToExclude = kotlin.collections.mutableListOf<Path>()
+    if (bazelSymlinksScanMaxDepth <= 0) return emptyList()
+    // Don't scan non-Bazel projects for symlinks (because it can be quite slow).
+    if (WORKSPACE_FILE_NAMES.none { workspaceFileName -> workspaceRoot.resolve(workspaceFileName).exists() }) return emptyList()
+
+    val symlinksToExclude = mutableListOf<Path>()
 
     val bazelSymlinkEndings = listOf("bin", "out", "testlogs", workspaceRoot.name)
 
@@ -24,7 +30,7 @@ object BazelSymlinksCalculator {
           val resolved = file.toRealPath()
           if (resolved == file) return FileVisitResult.CONTINUE
           // See https://bazel.build/remote/output-directories
-          // This used to be "execroot/_main", but apparently one can configure Bazel such that the path is "execroot/<my-project>"
+          // This string used to be "execroot/_main", but for projects without Bzlmod the relevant path is actually "execroot/<my-project>"
           if (!resolved.invariantSeparatorsPathString.contains("/execroot/")) return FileVisitResult.SKIP_SUBTREE
           symlinksToExclude.add(file)
           return FileVisitResult.SKIP_SUBTREE

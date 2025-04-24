@@ -27,15 +27,26 @@ import org.jetbrains.bazel.runnerAction.TestWithLocalJvmRunnerAction
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
-import org.jetbrains.bazel.ui.widgets.tool.window.components.BuildTargetContainer
+import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.workspacemodel.entities.isJvmTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.awt.Component
+import java.awt.Point
 import java.awt.event.MouseEvent
 
-class LoadedTargetsMouseListener(private val container: BuildTargetContainer, private val project: Project) : PopupHandler() {
+abstract class LoadedTargetsMouseListener(private val project: Project) : PopupHandler() {
+  abstract fun isPointSelectable(point: Point): Boolean
+
+  abstract fun getSelectedBuildTarget(): BuildTarget?
+
+  abstract fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget>
+
+  abstract val copyTargetIdAction: CopyTargetIdAction
+
+  abstract fun getSelectedComponentName(): String
+
   override fun mouseClicked(mouseEvent: MouseEvent) {
-    if (mouseEvent.isDoubleClick() && container.isPointSelectable(mouseEvent.point)) {
+    if (mouseEvent.isDoubleClick() && isPointSelectable(mouseEvent.point)) {
       onDoubleClick()
     } else {
       super.mouseClicked(mouseEvent)
@@ -60,8 +71,8 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
     y: Int,
   ) {
     val actionGroup =
-      container.getSelectedBuildTarget()?.let { calculatePopupGroup(it) }
-        ?: calculatePopupGroup(container.getSelectedBuildTargetsUnderDirectory())
+      getSelectedBuildTarget()?.let { calculatePopupGroup(it) }
+        ?: calculatePopupGroup(getSelectedBuildTargetsUnderDirectory())
 
     if (actionGroup != null) {
       ActionManager
@@ -75,7 +86,7 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
   private fun calculatePopupGroup(target: BuildTarget): ActionGroup =
     DefaultActionGroup().apply {
       ResyncTargetAction.createIfEnabled(target.id)?.let { addAction(it) }
-      addAction(container.copyTargetIdAction)
+      addAction(copyTargetIdAction)
       addSeparator()
       if (!target.noBuild) {
         addAction(BuildTargetAction(target.id))
@@ -91,8 +102,8 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
       null
     } else {
       DefaultActionGroup().apply {
-        addAction(RunAllTestsActionInTargetTreeAction(testTargets, container.getSelectedComponentName()))
-        addAction(RunAllTestsActionWithCoverageInTargetTreeAction(testTargets, container.getSelectedComponentName()))
+        addAction(RunAllTestsActionInTargetTreeAction(testTargets, getSelectedComponentName()))
+        addAction(RunAllTestsActionWithCoverageInTargetTreeAction(testTargets, getSelectedComponentName()))
       }
     }
   }
@@ -100,7 +111,7 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
   private fun MouseEvent.isDoubleClick(): Boolean = this.mouseButton == MouseButton.Left && this.clickCount == 2
 
   private fun onDoubleClick() {
-    container.getSelectedBuildTarget()?.also {
+    getSelectedBuildTarget()?.also {
       when {
         it.kind.ruleType == RuleType.TEST -> TestTargetAction(project = project, targetInfos = listOf(it)).prepareAndPerform(project)
         it.kind.ruleType == RuleType.BINARY -> RunTargetAction(project, targetInfo = it).prepareAndPerform(project)
