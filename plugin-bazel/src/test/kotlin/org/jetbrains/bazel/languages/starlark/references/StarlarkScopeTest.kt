@@ -19,13 +19,14 @@ import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class StarlarkScopeTest : BasePlatformTestCase() {
+
+  override fun createTempDirTestFixture(): TempDirTestFixture? = IdeaTestFixtureFactory.getFixtureFactory().createTempDirTestFixture()
+
   @Before
   fun beforeEach() {
     project.isBazelProject = true
     project.rootDir = myFixture.tempDirFixture.getFile(".")!!
   }
-
-  override fun createTempDirTestFixture(): TempDirTestFixture? = IdeaTestFixtureFactory.getFixtureFactory().createTempDirTestFixture()
 
   @Test
   fun `function scope is preferred to top-level scope`() {

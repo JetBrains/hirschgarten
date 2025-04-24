@@ -23,7 +23,7 @@ object SearchUtils {
       if (!processBindingsInScope(
           scopeRoot,
           elementIsRoot = true,
-          stopAt = if (scopeRoot is StarlarkFile) currentElement else null,
+          stopAt = if (scopeRoot is StarlarkFile && scopeRoot != currentElement) currentElement else null,
           processor = processor,
         )
       ) {
