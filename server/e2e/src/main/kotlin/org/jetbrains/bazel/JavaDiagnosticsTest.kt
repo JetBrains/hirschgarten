@@ -2,10 +2,10 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.DiagnosticSeverity
-import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -52,7 +52,7 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
       testClient.test(60.seconds) { session ->
         session.client.clearDiagnostics()
         val result = session.server.buildTargetCompile(transformedParams)
-        assertEquals(StatusCode.OK, result.statusCode)
+        assertEquals(BazelStatus.SUCCESS, result.statusCode)
         println(session.client.publishDiagnosticsNotifications)
         assertEquals(1, session.client.publishDiagnosticsNotifications.size)
         val deprecatedWarning =
@@ -119,7 +119,7 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         session.client.clearDiagnostics()
         val result = session.server.buildTargetCompile(transformedParams)
         println(session.client.logMessageNotifications)
-        assertEquals(StatusCode.ERROR, result.statusCode)
+        assertEquals(BazelStatus.FATAL_ERROR, result.statusCode)
         assertEquals(2, session.client.publishDiagnosticsNotifications.size)
         val noSuchMethodError =
           session.client.publishDiagnosticsNotifications.find {

@@ -6,11 +6,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import io.kotest.matchers.equals.shouldBeEqual
 import kotlinx.coroutines.CompletableDeferred
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
-import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.TestFinish
 import org.jetbrains.bsp.protocol.TestStart
 import org.jetbrains.bsp.protocol.TestStatus
@@ -113,7 +113,7 @@ class BspTestTaskListenerTest : WorkspaceModelBaseTest() {
         .toString()
 
     // when
-    listener.onTaskFinish(taskId = taskId, parentId = null, message = "", data = testFinishData, status = StatusCode.OK)
+    listener.onTaskFinish(taskId = taskId, parentId = null, message = "", data = testFinishData, status = BazelStatus.SUCCESS)
 
     // then
     handler.latestText shouldBeEqual expectedText

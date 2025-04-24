@@ -3,6 +3,7 @@ package org.jetbrains.bazel
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -25,7 +26,6 @@ import org.jetbrains.bsp.protocol.ScalacOptionsItem
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import java.util.UUID
@@ -177,7 +177,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
     val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it != Label.synthetic("bsp-workspace-root") }
     val compileParams = CompileParams(expectedTargetIdentifiers, originId = UUID.randomUUID().toString())
 
-    val expectedCompilerResult = CompileResult(StatusCode.OK)
+    val expectedCompilerResult = CompileResult(BazelStatus.SUCCESS)
     val expectedDiagnostic =
       Diagnostic(
         Range(Position(4, 2), Position(4, 2)),

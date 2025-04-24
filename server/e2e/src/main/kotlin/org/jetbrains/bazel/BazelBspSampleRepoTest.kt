@@ -3,6 +3,7 @@ package org.jetbrains.bazel
 import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -31,7 +32,6 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import org.jetbrains.bsp.protocol.ScalaPlatform
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
@@ -728,7 +728,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       CompileParams(listOf(targetId), originId = originId)
 
     val expectedResult =
-      CompileResult(StatusCode.OK)
+      CompileResult(BazelStatus.SUCCESS)
 
     return BazelBspTestScenarioStep("build $targetId with origin id: $originId") {
       testClient.testCompile(
