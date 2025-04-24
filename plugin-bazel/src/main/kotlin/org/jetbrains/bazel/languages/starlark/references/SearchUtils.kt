@@ -81,7 +81,7 @@ object SearchUtils {
         processor = processor,
       )))
 
-      is StarlarkCallable -> element.searchInParameters(processor)
+      is StarlarkCallable -> !elementIsRoot || element.searchInParameters(processor)
       is StarlarkCompExpression -> element.searchInComprehension(processor)
       is StarlarkForStatement -> element.searchInLoopVariables(processor) &&
         element.getStatementLists().all { processBindingsInScope(it, stopAt = stopAt, processor = processor) }
