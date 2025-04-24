@@ -12,6 +12,7 @@ data class BuildTargetState(
   var tags: List<String> = emptyList(),
   var languageIds: List<String> = emptyList(),
   var baseDirectory: String = "",
+  var
 ) {
   fun fromState(): BuildTarget =
     BuildTarget(

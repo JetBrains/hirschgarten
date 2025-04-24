@@ -22,6 +22,7 @@ import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
@@ -39,7 +40,7 @@ private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
 @InternalApi
 data class TargetUtilsState(
-  var labelToTargetInfo: Map<String, BuildTargetState> = emptyMap(),
+  var labelToTargetInfo: Map<String, String> = emptyMap(),
   var moduleIdToTarget: Map<String, String> = emptyMap(),
   var libraryIdToTarget: Map<String, String> = emptyMap(),
   var fileToTarget: Map<String, List<String>> = emptyMap(),
@@ -238,7 +239,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   @InternalApi
   override fun getState(): TargetUtilsState =
     TargetUtilsState(
-      labelToTargetInfo = labelToTargetInfo.mapKeys { it.key.toString() }.mapValues { it.value.toState() },
+      labelToTargetInfo = labelToTargetInfo.mapKeys { it.key.toString() }.mapValues { bazelGson.toJson(it.value) },
       moduleIdToTarget = moduleIdToTarget.mapValues { it.value.toString() },
       libraryIdToTarget = libraryIdToTarget.mapValues { it.value.toString() },
       fileToTarget = fileToTarget.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.toString() } },
@@ -250,7 +251,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     labelToTargetInfo =
       state.labelToTargetInfo
         .mapKeys { Label.parse(it.key) }
-        .mapValues { it.value.fromState() }
+        .mapValues { bazelGson.fromJson(it.value, BuildTarget::class.java) }
     moduleIdToTarget = state.moduleIdToTarget.mapValues { Label.parse(it.value) }
     libraryIdToTarget = state.libraryIdToTarget.mapValues { Label.parse(it.value) }
     fileToTarget =
