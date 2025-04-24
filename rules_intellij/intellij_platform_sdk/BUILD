@@ -88,6 +88,7 @@ java_library(
     neverlink = 1,
     visibility = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/kotlin:__subpackages__",
+        "//sdkcompat:__subpackages__",
     ],
     exports = select_from_plugin_api_directory(
         android_studio = [":kotlin"],
