@@ -17,8 +17,8 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementLi
 
 object SearchUtils {
   fun searchInFile(currentElement: PsiElement, processor: Processor<StarlarkElement>) {
-    var element = currentElement
-    while (true) {
+    var element: PsiElement? = currentElement
+    while (element != null) {
       val scopeRoot = findScopeRoot(element) ?: return
       if (!processBindingsInScope(
           scopeRoot,
