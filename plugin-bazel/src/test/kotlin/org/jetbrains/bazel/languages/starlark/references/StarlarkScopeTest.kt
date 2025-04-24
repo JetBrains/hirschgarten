@@ -247,6 +247,15 @@ class StarlarkScopeTest : BasePlatformTestCase() {
   }
 
   @Test
+  fun `comprehension reference from if`() {
+    verifyTargetOfReferenceAtCaret(
+       """
+       [x for x, <target>y in [(1, 2), (4, 5)] if <caret>y > 3]
+       """.trimIndent(),
+    )
+  }
+
+  @Test
   fun `first for in comprehension resolves to surrounding scope`() {
     verifyTargetOfReferenceAtCaret(
       """
