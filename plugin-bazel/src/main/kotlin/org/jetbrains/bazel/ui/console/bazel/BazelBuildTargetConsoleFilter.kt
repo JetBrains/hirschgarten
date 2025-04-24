@@ -9,7 +9,7 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
-import org.jetbrains.bazel.languages.starlark.references.BazelLabelReference
+import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 
 class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
   private val highlightGroupName = "highlightGroup"
@@ -33,7 +33,7 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
   private fun MatchResult.toFilterResultOrNull(line: String, entireLength: Int): Filter.Result? {
     val highlightGroup = groups[highlightGroupName] ?: return null
     val label = Label.parseOrNull(highlightGroup.value) as? ResolvedLabel ?: return null
-    val psi = BazelLabelReference.resolveLabel(project, label, null, false) ?: return null
+    val psi = resolveLabel(project, label) ?: return null
     val containingFile = psi.containingFile?.virtualFile ?: return null
     val hyperLinkInfo = OpenFileHyperlinkInfo(project, containingFile, psi.calculateLineNumber() ?: 0, 0)
     val highlightStartOffset = entireLength - line.length + highlightGroup.range.first
