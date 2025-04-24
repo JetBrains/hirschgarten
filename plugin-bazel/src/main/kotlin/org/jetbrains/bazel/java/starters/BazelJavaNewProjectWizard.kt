@@ -8,6 +8,7 @@ import com.intellij.ide.util.projectWizard.WizardContext
 import com.intellij.ide.wizard.NewProjectWizardStep
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsContexts
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.sdkcompat.StarterWizardCompat
 import org.jetbrains.bazel.sdkcompat.StarterWizardCompat.generatorFile
@@ -31,10 +32,10 @@ class BazelJavaNewProjectWizard : BuildSystemJavaNewProjectWizard {
       listOf(
         generatorFile(".gitignore", ".bazelbsp/\n.idea/"),
         generatorFile(".bazelversion", BAZEL_VERSION),
-        generatorFile(BazelPluginConstants.MODULE_BAZEL_FILE_NAME, moduleBazel(context)),
-        generatorFile("src/main/org/example/${BazelPluginConstants.defaultBuildFileName()}", buildBazelMain()),
+        generatorFile(Constants.MODULE_BAZEL_FILE_NAME, moduleBazel(context)),
+        generatorFile("src/main/org/example/${Constants.defaultBuildFileName()}", buildBazelMain()),
         generatorFile("src/main/org/example/Main.java", mainJava()),
-        generatorFile("src/test/org/example/${BazelPluginConstants.defaultBuildFileName()}", buildBazelTest()),
+        generatorFile("src/test/org/example/${Constants.defaultBuildFileName()}", buildBazelTest()),
         generatorFile("src/test/org/example/MainTest.java", testJava()),
       )
 

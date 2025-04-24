@@ -6,6 +6,7 @@ import com.intellij.openapi.externalSystem.model.ProjectSystemId
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.startup.BazelStartupActivity
@@ -17,7 +18,7 @@ internal class BazelOpenProjectProvider : AbstractOpenProjectProvider() {
 
   // intentionally overriding the visibility to `public` from `protected` in [AbstractOpenProjectProvider]
   @Suppress("RedundantVisibilityModifier")
-  public override fun isProjectFile(file: VirtualFile): Boolean = file.isFile && file.name in BazelPluginConstants.WORKSPACE_FILE_NAMES
+  public override fun isProjectFile(file: VirtualFile): Boolean = file.isFile && file.name in Constants.WORKSPACE_FILE_NAMES
 
   @Suppress("RedundantVisibilityModifier")
   public override suspend fun linkProject(projectFile: VirtualFile, project: Project) {

@@ -6,7 +6,7 @@ import com.intellij.openapi.vfs.resolveFromRootOrRelative
 import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.commons.constants.Constants.DOT_BAZELBSP_DIR_NAME
 import org.jetbrains.bazel.commons.constants.Constants.LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME
-import org.jetbrains.bazel.config.BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION
+import org.jetbrains.bazel.commons.constants.Constants.PROJECT_VIEW_FILE_EXTENSION
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import java.nio.file.Files
