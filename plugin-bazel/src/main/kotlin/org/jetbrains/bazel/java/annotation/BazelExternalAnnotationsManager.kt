@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.services
+package org.jetbrains.bazel.java.annotation
 
 import com.intellij.codeInsight.ExternalAnnotationsManagerImpl
 import com.intellij.codeInsight.ModCommandAwareExternalAnnotationsManager

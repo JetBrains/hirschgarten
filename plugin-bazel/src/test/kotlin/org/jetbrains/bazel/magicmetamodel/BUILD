@@ -17,6 +17,7 @@ intellij_integration_test_suite(
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src:test_fixtures",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/magicmetamodel/impl",
+        "//rules_intellij/intellij_platform_sdk:java_for_tests",
         "//rules_intellij/third_party/go:go_for_tests",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",

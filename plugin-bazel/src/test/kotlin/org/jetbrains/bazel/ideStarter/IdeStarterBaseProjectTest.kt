@@ -5,6 +5,7 @@ import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
+import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.GitProjectInfo
@@ -38,12 +39,13 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(ExperimentalPathApi::class)
 abstract class IdeStarterBaseProjectTest {
   protected abstract val projectInfo: ProjectInfoSpec
+  protected open val ideInfo: IdeInfo = IdeProductProvider.IC
 
   protected open val projectName: String
     get() = System.getProperty("bazel.ide.starter.test.project.name") ?: javaClass.simpleName
 
   private val testCase: TestCase<ProjectInfoSpec>
-    get() = TestCase(IdeProductProvider.IC, projectInfo).withBuildNumber(System.getProperty("bazel.ide.starter.test.platform.build.number"))
+    get() = TestCase(ideInfo, projectInfo).withBuildNumber(System.getProperty("bazel.ide.starter.test.platform.build.number"))
 
   protected open val timeout: Duration
     get() = (System.getProperty("bazel.ide.starter.test.timeout.seconds")?.toIntOrNull() ?: 600).seconds
