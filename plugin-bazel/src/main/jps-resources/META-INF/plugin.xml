@@ -23,7 +23,6 @@
   ]]>
     </description>
 
-    <depends>com.intellij.modules.java</depends>
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.platform</depends>
 
@@ -33,9 +32,10 @@
     <depends optional="true" config-file="withDevKit.xml">DevKit</depends>
     <depends optional="true" config-file="withGo.xml">org.jetbrains.plugins.go</depends>
     <depends optional="true" config-file="withIdeStarter.xml">com.jetbrains.performancePlugin</depends>
+    <depends optional="true" config-file="withJava.xml">com.intellij.modules.java</depends>
+    <depends optional="true" config-file="withJunit.xml">JUnit</depends>
     <depends optional="true" config-file="withKotlin.xml">org.jetbrains.kotlin</depends>
     <depends optional="true" config-file="withPython.xml">com.intellij.modules.python</depends>
-    <depends optional="true" config-file="withJunit.xml">JUnit</depends>
 
     <extensionPoints>
         <extensionPoint qualifiedName="org.jetbrains.bazel.sourceTypeIconProvider"
@@ -127,25 +127,16 @@
                             order="last"/>
         <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericTestHandlerProvider"
                             order="last"/>
-        <!-- Dependency: JvmSyncHook -> TargetUtils#updateComputedFields -> toShortString -> BazelRepoMappingService -->
-        <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook" order="after BazelRepoMappingSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.PathSyncHook"/>
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
-        <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.JavaSourceTypeIconProvider"/>
-        <psiElementConfigurationLocator implementation="org.jetbrains.bazel.java.junit.JavaPsiElementConfigurationLocator"/>
-        <unresolvedImportChecker implementation ="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
-
         <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker"/>
 
         <projectService serviceInterface="com.intellij.openapi.project.BaseProjectDirectories"
                         serviceImplementation="org.jetbrains.bazel.services.BazelBaseProjectDirectories"
-                        overrides="true"/>
-        <projectService serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
-                        serviceImplementation="org.jetbrains.bazel.services.BazelExternalAnnotationsManager"
                         overrides="true"/>
         <moduleService serviceInterface="com.intellij.openapi.roots.ModuleFileIndex"
                        serviceImplementation="org.jetbrains.bazel.services.BazelModuleFileIndex"
@@ -165,10 +156,6 @@
         <workspaceModel.fileIndexContributor
                 implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
 
-        <java.programPatcher implementation="org.jetbrains.bazel.jvm.run.BazelJvmEnvironmentProgramPatcher"/>
-        <java.elementFinder implementation="org.jetbrains.bazel.services.BazelJavaClassFinder"/>
-        <useScopeEnlarger implementation="org.jetbrains.bazel.services.BazelJavaUseScopeEnlarger"/>
-
         <postStartupActivity
                 implementation="org.jetbrains.bazel.startup.BazelStartupActivity"/>
 
@@ -186,9 +173,6 @@
         <!--                    serviceImplementation="org.jetbrains.bazel.services.SingleFileSourcesTrackerImpl"-->
         <!--                    overrides="true"/>-->
 
-        <runLineMarkerContributor
-                implementationClass="org.jetbrains.bazel.jvm.ui.gutters.BazelJavaRunLineMarkerContributor"
-                language="JVM"/>
         <registryKey defaultValue="false" description="Build project on initial project sync"
                      key="bsp.build.project.on.sync"/>
         <registryKey defaultValue="true" description="Python modules support" key="bsp.python.support"/>
@@ -501,8 +485,6 @@
                      key="bazel.merge.source.roots"/>
         <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
         <searchEverywhereContributor implementation="org.jetbrains.bazel.ui.widgets.LabelSearchEverywhereContributor$Factory"/>
-
-        <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.ui.starters.BazelJavaNewProjectWizard"/>
     </extensions>
 
     <actions>
