@@ -18,12 +18,12 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementLi
 object SearchUtils {
   /**
    * Invokes [processor] on each binding in the current scope as well as parent scopes of
-   * [currentElement] such that a binding is visited before any bindings it may shadow.
+   * [element] such that a binding is visited before any bindings it may shadow.
    *
    * https://github.com/bazelbuild/starlark/blob/6dd78ee3a66820a8b7571239946466cc702b209e/spec.md#name-binding-and-variables
    */
-  fun searchInFile(currentElement: PsiElement, processor: Processor<StarlarkElement>) {
-    var element: PsiElement? = currentElement
+  fun searchInFile(element: PsiElement, processor: Processor<StarlarkElement>) {
+    var element: PsiElement? = element
     while (element != null) {
       val scopeRoot = findScopeRoot(element) ?: return
       if (!processBindingsInScope(
@@ -38,17 +38,17 @@ object SearchUtils {
     }
   }
 
-  private tailrec fun findScopeRoot(currentElement: PsiElement): PsiElement? =
-    when (currentElement) {
-      is StarlarkFile, is StarlarkCallable -> currentElement
+  private tailrec fun findScopeRoot(element: PsiElement): PsiElement? =
+    when (element) {
+      is StarlarkFile, is StarlarkCallable -> element
       // Default values of parameters refer to the parent scope of the function, not the function scope.
-      is StarlarkParameterList -> findScopeRoot(currentElement.parent.parent)
-      else -> when (val parent = currentElement.parent) {
+      is StarlarkParameterList -> findScopeRoot(element.parent.parent)
+      else -> when (val parent = element.parent) {
         null -> null
         is StarlarkCompExpression -> {
           // In a comprehension, the first 'for' resolves using the scope that contains the
           // comprehension, while all later 'for's resolve within the comprehension's scope.
-          val inFirstFor = generateSequence(currentElement) { it.prevSibling }
+          val inFirstFor = generateSequence(element) { it.prevSibling }
             .filter { it.elementType == StarlarkTokenTypes.FOR_KEYWORD || it.elementType == StarlarkTokenTypes.IF_KEYWORD }
             .take(2)
             .count() == 1
