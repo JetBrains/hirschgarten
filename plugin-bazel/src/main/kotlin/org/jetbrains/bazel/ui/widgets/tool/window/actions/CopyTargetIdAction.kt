@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.util.ui.TextTransferable
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.bsp.protocol.BuildTarget
 import javax.swing.JComponent
 
@@ -27,12 +26,10 @@ sealed class CopyTargetIdAction : AnAction({ BazelPluginBundle.message("widget.c
     clipboard.setContents(transferable)
   }
 
-  class FromContainer(private val container: BuildTargetContainer, component: JComponent) : CopyTargetIdAction() {
+  abstract class FromContainer(component: JComponent) : CopyTargetIdAction() {
     init {
       registerCustomShortcutSet(CommonShortcuts.getCopy(), component)
     }
-
-    override fun getTargetInfo(): BuildTarget? = container.getSelectedBuildTarget()
   }
 
   class FromTargetInfo(private val targetInfo: BuildTarget) : CopyTargetIdAction() {

@@ -1,11 +1,9 @@
-package org.jetbrains.bazel.ui.widgets.tool.window.search
+package org.jetbrains.bazel.ui.widgets.tool.window.components
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.CommonShortcuts
 import com.intellij.openapi.keymap.KeymapUtil
-import com.intellij.openapi.observable.properties.AtomicProperty
-import com.intellij.ui.AnimatedIcon
-import com.intellij.ui.components.JBTextField
+import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.fields.ExtendableTextField
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
@@ -14,48 +12,24 @@ import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleDocumentListener
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.TextComponentExtension
 import java.awt.BorderLayout
 import javax.swing.JComponent
-import javax.swing.JPanel
-import kotlin.properties.ReadWriteProperty
-import kotlin.reflect.KProperty
 
-class SearchBarPanel : JPanel(BorderLayout()) {
-  var inProgress: Boolean by AtomicBoolean {
-    repaintLoading()
-  }
-
-  private val searchLoadingExtension: TextComponentExtension.Indicator =
-    TextComponentExtension.Indicator(
-      trueIcon = AnimatedIcon.Default.INSTANCE,
-      falseIcon = AllIcons.Actions.Find,
-      predicate = { inProgress },
-      beforeText = true,
-    )
-
+class SearchBarPanel(private val model: BazelTargetsPanelModel) : JBPanel<SearchBarPanel>(BorderLayout()) {
   private val textField = prepareTextField()
-  private val displayChangeListeners = mutableListOf<() -> Unit>()
-  private val queryChangeListeners = mutableListOf<(Regex) -> Unit>()
-
-  private var matchCase: Boolean by AtomicBoolean(::onQueryChange)
-  private var displayAsTree: Boolean by AtomicBoolean(::displayAsTreeChanged)
-  private var regexMode: Boolean by AtomicBoolean(::onQueryChange)
 
   private val focusFindAction = SimpleAction { textField.requestFocus() }
-  private val toggleMatchCaseAction = SimpleAction { matchCase = !matchCase }
-  private val toggleRegexAction = SimpleAction { regexMode = !regexMode }
-
-  private val textFieldComponent = JBTextField()
+  private val toggleMatchCaseAction =
+    SimpleAction {
+      model.matchCase = !model.matchCase
+    }
+  private val toggleRegexAction =
+    SimpleAction {
+      model.regexMode = !model.regexMode
+    }
 
   init {
     add(textField)
     toggleMatchCaseAction.registerCustomShortcutSet(BspShortcuts.matchCase, this)
     toggleRegexAction.registerCustomShortcutSet(BspShortcuts.regexMode, this)
-  }
-
-  private fun repaintLoading() {
-    // without removing and adding the extension back, the icon does not repaint for some reason
-    textField.removeExtension(searchLoadingExtension)
-    textField.addExtension(searchLoadingExtension)
-    textField.repaint()
   }
 
   private fun prepareTextField(): ExtendableTextField {
@@ -64,8 +38,8 @@ class SearchBarPanel : JPanel(BorderLayout()) {
       TextComponentExtension.Switch(
         // MatchCaseHovered icon matches the ShowAsTree icon better than the normal Regex; on new UI both icons look the same
         icon = AllIcons.Actions.MatchCaseHovered,
-        valueGetter = { matchCase },
-        valueSetter = { matchCase = it },
+        valueGetter = { model.matchCase },
+        valueSetter = { model.matchCase = it },
         parentComponent = newField,
         tooltip =
           BazelPluginBundle.message(
@@ -77,16 +51,16 @@ class SearchBarPanel : JPanel(BorderLayout()) {
       TextComponentExtension.Switch(
         // RegexHovered icon matches the ShowAsTree icon better than the normal Regex; on new UI both icons look the same
         icon = AllIcons.Actions.RegexHovered,
-        valueGetter = { regexMode },
-        valueSetter = { regexMode = it },
+        valueGetter = { model.regexMode },
+        valueSetter = { model.regexMode = it },
         parentComponent = newField,
         tooltip = BazelPluginBundle.message("widget.target.search.regex", KeymapUtil.getFirstKeyboardShortcutText(BspShortcuts.regexMode)),
       )
     val treeExtension =
       TextComponentExtension.Switch(
         icon = AllIcons.Actions.ShowAsTree,
-        valueGetter = { displayAsTree },
-        valueSetter = { displayAsTree = it },
+        valueGetter = { model.displayAsTree },
+        valueSetter = { model.displayAsTree = it },
         parentComponent = newField,
         tooltip = BazelPluginBundle.message("widget.target.search.display.as.tree"),
       )
@@ -99,46 +73,25 @@ class SearchBarPanel : JPanel(BorderLayout()) {
     return newField.apply {
       this.emptyText.text =
         BazelPluginBundle.message("widget.target.search.hint", KeymapUtil.getFirstKeyboardShortcutText(CommonShortcuts.getFind()))
-      addExtension(searchLoadingExtension)
       addExtension(treeExtension)
       addExtension(regexExtension)
       addExtension(matchCaseExtension)
       addExtension(clearExtension)
-      this.document.addDocumentListener(SimpleDocumentListener(::onQueryChange))
+      this.document.addDocumentListener(
+        SimpleDocumentListener {
+          model.searchQuery = textField.text
+        },
+      )
     }
   }
 
   private fun clearQuery() {
     textField.text = ""
-    onQueryChange()
-  }
-
-  private fun displayAsTreeChanged() {
-    displayChangeListeners.forEach { it() }
-  }
-
-  private fun onQueryChange() {
-    queryChangeListeners.forEach { it(getCurrentSearchQuery()) }
-    if (textField.text.isEmpty()) inProgress = false
   }
 
   override fun setEnabled(enabled: Boolean) {
     super.setEnabled(enabled)
     textField.isEnabled = enabled
-    textFieldComponent.isEnabled = enabled
-  }
-
-  fun registerDisplayChangeListener(onChange: () -> Unit) {
-    displayChangeListeners.add(onChange)
-  }
-
-  fun registerQueryChangeListener(onChange: (Regex) -> Unit) {
-    queryChangeListeners.add(onChange)
-  }
-
-  fun clearAllListeners() {
-    displayChangeListeners.clear()
-    queryChangeListeners.clear()
   }
 
   fun registerSearchShortcutsOn(component: JComponent) {
@@ -147,31 +100,5 @@ class SearchBarPanel : JPanel(BorderLayout()) {
     toggleRegexAction.registerCustomShortcutSet(BspShortcuts.regexMode, component)
   }
 
-  fun getCurrentSearchQuery(): Regex {
-    val options =
-      setOfNotNull(
-        if (!matchCase) RegexOption.IGNORE_CASE else null,
-        if (!regexMode) RegexOption.LITERAL else null,
-      )
-    return textField.text.toRegex(options)
-  }
-
-  fun isDisplayAsTreeChosen(): Boolean = displayAsTree
-
   fun isEmpty(): Boolean = textField.text.isEmpty()
-}
-
-private class AtomicBoolean(private val changeListener: (() -> Unit)?) : ReadWriteProperty<SearchBarPanel, Boolean> {
-  var theValue: Boolean by AtomicProperty(false)
-
-  override fun getValue(thisRef: SearchBarPanel, property: KProperty<*>): Boolean = theValue
-
-  override fun setValue(
-    thisRef: SearchBarPanel,
-    property: KProperty<*>,
-    value: Boolean,
-  ) {
-    theValue = value
-    changeListener?.invoke()
-  }
 }

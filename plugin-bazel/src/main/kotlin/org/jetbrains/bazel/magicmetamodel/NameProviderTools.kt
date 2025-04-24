@@ -2,15 +2,15 @@ package org.jetbrains.bazel.magicmetamodel
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BazelBuildTargetClassifier
+import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.TreeTargetClassifier
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.utils.StringUtils
 
 fun Label.formatAsModuleName(project: Project): String {
-  val bazelBuildTargetClassifier = BazelBuildTargetClassifier(project)
-  val targetName = bazelBuildTargetClassifier.calculateBuildTargetName(this).sanitizeName()
+  val treeTargetClassifier = TreeTargetClassifier(project)
+  val targetName = treeTargetClassifier.calculateBuildTargetName(this).sanitizeName()
   val prefix =
-    bazelBuildTargetClassifier
+    treeTargetClassifier
       .calculateBuildTargetPath(this)
       .shortenTargetPath(targetName.length)
       .joinToString(".") { pathElement -> pathElement.sanitizeName() }
