@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -126,11 +127,11 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
         BuildTarget(
           Label.parse("target"),
           listOf(),
-          listOf("java"),
           emptyList(),
           TargetKind(
             kindString = "java_binary",
             ruleType = RuleType.BINARY,
+            languageClasses = setOf(LanguageClass.JAVA),
           ),
           sources =
             sourceRoots.map {

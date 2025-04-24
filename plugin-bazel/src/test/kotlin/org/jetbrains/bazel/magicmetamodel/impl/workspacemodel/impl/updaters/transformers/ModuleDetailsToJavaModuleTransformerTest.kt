@@ -74,7 +74,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       BuildTarget(
         buildTargetId,
         listOf(),
-        listOf("java"),
         listOf(
           Label.parse("module2"),
           Label.parse("module3"),
@@ -83,6 +82,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = projectRoot,
         data = data,
@@ -151,7 +151,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         librariesDependencies = emptyList(),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -220,7 +220,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       BuildTarget(
         buildTargetId,
         listOf(),
-        listOf("java"),
         listOf(
           Label.parse("module2"),
           Label.parse("module3"),
@@ -229,6 +228,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = projectRoot,
         data = kotlinBuildTarget,
@@ -282,7 +282,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           ),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -336,7 +336,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       BuildTarget(
         buildTargetId1,
         listOf(),
-        listOf("java"),
         listOf(
           Label.parse("module2"),
           Label.parse("module3"),
@@ -345,6 +344,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = module1Root,
         sources =
@@ -405,7 +405,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       BuildTarget(
         buildTargetId2,
         listOf("test"),
-        listOf("java"),
         listOf(
           Label.parse("module3"),
           Label.parse("@maven//:lib1"),
@@ -413,6 +412,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = module2Root,
         sources =
@@ -476,7 +476,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         librariesDependencies = emptyList(),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -527,7 +527,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         librariesDependencies = emptyList(),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -603,7 +603,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       BuildTarget(
         buildTargetId,
         listOf(),
-        listOf("java"),
         listOf(
           Label.parse("module2"),
           Label.parse("module3"),
@@ -612,6 +611,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = projectRoot,
         data = data,
@@ -679,7 +679,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         librariesDependencies = emptyList(),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -792,11 +792,11 @@ class ExtractJvmBuildTargetTest {
       BuildTarget(
         Label.parse("target"),
         listOf("tag1", "tag2"),
-        listOf("language1"),
         listOf(Label.parse("dep1"), Label.parse("dep2")),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("/base/dir"),
         data = data,

@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.sync
 
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
@@ -10,7 +11,6 @@ import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.BspMappings
-import org.jetbrains.bazel.server.model.Language
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.model.NonModuleTarget
 import org.jetbrains.bazel.server.model.Project
@@ -152,14 +152,12 @@ class BspProjectMapper(
     )
 
   private fun NonModuleTarget.toBuildTarget(): BuildTarget {
-    val languages = languages.flatMap(Language::allNames).distinct()
     val tags = tags.mapNotNull(BspMappings::toBspTag)
     val buildTarget =
       BuildTarget(
         id = label,
         tags = tags,
-        languageIds = emptyList(),
-        kind = inferKind(this.tags, kindString),
+        kind = inferKind(this.tags, kindString, languages),
         baseDirectory = baseDirectory,
         dependencies = emptyList(),
         sources = emptyList(),
@@ -172,16 +170,14 @@ class BspProjectMapper(
     val label = label
     val dependencies =
       directDependencies
-    val languages = languages.flatMap(Language::allNames).distinct()
     val tags = tags.mapNotNull(BspMappings::toBspTag)
 
     val buildTarget =
       BuildTarget(
         id = label,
         tags = tags,
-        languageIds = languages,
         dependencies = dependencies,
-        kind = inferKind(this.tags, kindString),
+        kind = inferKind(this.tags, kindString, languages),
         baseDirectory = baseDirectory,
         sources = sources,
         noBuild = this.tags.contains(Tag.NO_BUILD),
@@ -192,7 +188,11 @@ class BspProjectMapper(
     return buildTarget
   }
 
-  private fun inferKind(tags: Set<Tag>, kindString: String): TargetKind {
+  private fun inferKind(
+    tags: Set<Tag>,
+    kindString: String,
+    languages: Set<LanguageClass>,
+  ): TargetKind {
     val ruleType =
       when {
         tags.contains(Tag.TEST) -> RuleType.TEST
@@ -202,7 +202,7 @@ class BspProjectMapper(
       }
     return TargetKind(
       kindString = kindString,
-      languageClasses = emptySet(), // TODO Use when Module/BuildTarget are merged and moved to the client side
+      languageClasses = languages,
       ruleType = ruleType,
     )
   }

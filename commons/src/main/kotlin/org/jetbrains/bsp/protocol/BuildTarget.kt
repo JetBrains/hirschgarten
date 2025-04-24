@@ -6,7 +6,6 @@ import java.nio.file.Path
 data class BuildTarget(
   val id: Label,
   val tags: List<String>,
-  val languageIds: List<String>,
   val dependencies: List<Label>,
   val kind: TargetKind,
   val sources: List<SourceItem>,

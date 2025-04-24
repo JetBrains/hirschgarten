@@ -3,6 +3,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -47,11 +48,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTarget(
         Label.parse("target"),
         listOf(),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         listOf(sourceItem),
         emptyList(),
@@ -88,11 +89,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTarget(
         Label.parse("target"),
         listOf("test"),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         listOf(sourceItem),
         emptyList(),
@@ -137,11 +138,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTarget(
         Label.parse("target"),
         listOf(),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         listOf(sourceItem1, sourceItem2),
         emptyList(),
@@ -193,11 +194,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTarget(
         Label.parse("target"),
         listOf(),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         listOf(sourceItem1),
         emptyList(),
@@ -207,11 +208,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTarget(
         Label.parse("target"),
         listOf(),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         listOf(sourceItem2),
         emptyList(),
@@ -264,11 +265,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTarget(
         Label.parse("target"),
         listOf(),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         listOf(sourceItem1),
         emptyList(),
@@ -279,11 +280,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
       BuildTarget(
         Label.parse("target"),
         listOf(),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         listOf(sourceItem2),
         emptyList(),

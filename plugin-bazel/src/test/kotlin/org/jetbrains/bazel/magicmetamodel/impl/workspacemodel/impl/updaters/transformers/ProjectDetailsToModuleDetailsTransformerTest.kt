@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -24,10 +25,10 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targetId,
         emptyList(),
         emptyList(),
-        emptyList(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         emptyList(),
         emptyList(),
@@ -70,10 +71,10 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targetId,
         emptyList(),
         emptyList(),
-        emptyList(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         listOf(SourceItem(Path("/root/dir/example/package/File1.java"), false)),
         listOf(Path("/root/dir/resource/File.txt")),
@@ -123,11 +124,11 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       BuildTarget(
         target1Id,
         emptyList(),
-        emptyList(),
         listOf(target2Id),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         listOf(SourceItem(Path("/root/dir1/example/package/File1.java"), false)),
         listOf(Path("/root/dir1/resource/File.txt")),
@@ -144,10 +145,10 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         target2Id,
         emptyList(),
         emptyList(),
-        emptyList(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         listOf(
           SourceItem(Path("/root/dir2/example/package/File1.java"), false),
@@ -161,11 +162,11 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       BuildTarget(
         target3Id,
         emptyList(),
-        emptyList(),
         listOf(target2Id),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         emptyList(),
         emptyList(),
@@ -182,11 +183,11 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       BuildTarget(
         target4Id,
         emptyList(),
-        emptyList(),
         listOf(target1Id),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         listOf(
           SourceItem(Path("/root/dir2/example/package/file.py"), false),

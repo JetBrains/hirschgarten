@@ -1,6 +1,7 @@
 package org.jetbrains.bazel
 
 import org.jetbrains.bazel.android.BazelBspAndroidProjectTestBase
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -82,7 +83,6 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
       BuildTarget(
         Label.parse("@@//src/main:app"),
         listOf(),
-        listOf("android", "java"),
         listOf(
           Label.parse("@@//src/main/java/com/example/myapplication:lib"),
           // TODO: ideally these non-existent dependencies should be filtered out somehow
@@ -94,6 +94,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
           TargetKind(
             kindString = "java_binary",
             ruleType = RuleType.BINARY,
+            languageClasses = setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
           ),
         baseDirectory = Path("\$WORKSPACE/src/main/"),
         data = appAndroidBuildTargetData,
@@ -105,7 +106,6 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
       BuildTarget(
         Label.parse("@@//src/main/java/com/example/myapplication:lib"),
         listOf(),
-        listOf("android", "java", "kotlin"),
         listOf(
           Label.parse("@@rules_jvm_external~~maven~maven//:androidx_appcompat_appcompat"),
           Label.synthetic("rules_kotlin_kotlin-stdlibs"),
@@ -114,6 +114,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
           TargetKind(
             kindString = "java_binary",
             ruleType = RuleType.BINARY,
+            languageClasses = setOf(LanguageClass.JAVA, LanguageClass.ANDROID, LanguageClass.KOTLIN),
           ),
         baseDirectory = Path("\$WORKSPACE/src/main/java/com/example/myapplication/"),
         data = libAndroidBuildTargetData,
@@ -129,7 +130,6 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
       BuildTarget(
         Label.parse("@@//src/test/java/com/example/myapplication:lib_test"),
         listOf(),
-        listOf("android", "java", "kotlin"),
         listOf(
           Label.parse("@@//src/main/java/com/example/myapplication:lib"),
           Label.parse("@@//src/main/java/com/example/myapplication:lib_base"),
@@ -143,6 +143,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
           TargetKind(
             kindString = "java_binary",
             ruleType = RuleType.BINARY,
+            languageClasses = setOf(LanguageClass.JAVA, LanguageClass.ANDROID, LanguageClass.KOTLIN),
           ),
         baseDirectory = Path("\$WORKSPACE/src/test/java/com/example/myapplication/"),
         data = libTestAndroidBuildTargetData,

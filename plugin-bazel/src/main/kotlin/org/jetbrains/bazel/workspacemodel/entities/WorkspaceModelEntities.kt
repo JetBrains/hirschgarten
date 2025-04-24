@@ -57,44 +57,10 @@ data class GenericModuleInfo(
   val modulesDependencies: List<IntermediateModuleDependency>,
   val librariesDependencies: List<IntermediateLibraryDependency>,
   val kind: TargetKind,
-  val languageIds: LanguageIds = listOf(),
   val associates: List<IntermediateModuleDependency> = listOf(),
   val isDummy: Boolean = false,
   val isLibraryModule: Boolean = false,
-) : WorkspaceModelEntity() {
-  internal constructor(
-    name: String,
-    type: ModuleTypeId,
-    modulesDependencies: List<IntermediateModuleDependency>,
-    librariesDependencies: List<IntermediateLibraryDependency>,
-    kind: TargetKind,
-    languageIds: Map<String, String>,
-    associates: List<IntermediateModuleDependency> = listOf(),
-  ) : this(
-    name,
-    type,
-    modulesDependencies,
-    librariesDependencies,
-    kind,
-    languageIdsFromMap(languageIds),
-    associates,
-  )
-
-  val languageIdsAsSingleEntryMap: Map<String, String>
-    get() =
-      languageIds
-        .takeUnless { it.isEmpty() }
-        ?.let {
-          mapOf(LANGUAGE_IDS to it.joinToString(LANGUAGE_IDS_SEPARATOR))
-        }.orEmpty()
-
-  private companion object {
-    const val LANGUAGE_IDS = "languageIds"
-    const val LANGUAGE_IDS_SEPARATOR = ","
-
-    fun languageIdsFromMap(map: Map<String, String>): List<String> = map[LANGUAGE_IDS]?.split(LANGUAGE_IDS_SEPARATOR).orEmpty()
-  }
-}
+) : WorkspaceModelEntity()
 
 interface Module {
   fun getModuleName(): String

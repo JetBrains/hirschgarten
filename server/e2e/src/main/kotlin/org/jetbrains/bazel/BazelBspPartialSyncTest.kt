@@ -2,6 +2,7 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
@@ -66,11 +67,10 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
           BuildTarget(
             partialSyncTargetId,
             listOf(),
-            listOf("java"),
             emptyList(),
             TargetKind(
               kindString = "java_binary",
-              languageClasses = emptySet(),
+              languageClasses = setOf(LanguageClass.JAVA),
               ruleType = RuleType.BINARY,
             ),
             baseDirectory = Path("\$WORKSPACE/java_targets/"),
@@ -106,11 +106,11 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//java_targets:java_library"),
         listOf(),
-        listOf("java"),
         listOf(),
         TargetKind(
           kindString = "java_library",
           ruleType = RuleType.LIBRARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
         data = jvmBuildTarget,

@@ -3,6 +3,7 @@ package org.jetbrains.bazel
 import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -57,13 +58,13 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//example:example"),
         listOf(),
-        listOf("python"),
         listOf(
           Label.parse("$targetPrefix//lib:example_library"),
         ),
         TargetKind(
           kindString = "py_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.PYTHON),
         ),
         baseDirectory = Path("\$WORKSPACE/example/"),
         data = examplePythonBuildTarget,
@@ -86,11 +87,11 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//lib:example_library"),
         listOf(),
-        listOf("python"),
         listOf(Label.parse(pipDepId)),
         TargetKind(
           kindString = "py_library",
           ruleType = RuleType.LIBRARY,
+          languageClasses = setOf(LanguageClass.PYTHON),
         ),
         baseDirectory = Path("\$WORKSPACE/lib/"),
         data = examplePythonBuildTarget,
@@ -108,11 +109,11 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//test:test"),
         listOf(),
-        listOf("python"),
         listOf(),
         TargetKind(
           kindString = "py_test",
           ruleType = RuleType.TEST,
+          languageClasses = setOf(LanguageClass.PYTHON),
         ),
         baseDirectory = Path("\$WORKSPACE/test/"),
         data = examplePythonBuildTarget,

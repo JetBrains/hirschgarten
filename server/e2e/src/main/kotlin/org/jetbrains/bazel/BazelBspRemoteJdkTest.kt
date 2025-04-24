@@ -2,6 +2,7 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -50,11 +51,11 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//example:example"),
         listOf(),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/example/"),
         data = exampleExampleJvmBuildTarget,

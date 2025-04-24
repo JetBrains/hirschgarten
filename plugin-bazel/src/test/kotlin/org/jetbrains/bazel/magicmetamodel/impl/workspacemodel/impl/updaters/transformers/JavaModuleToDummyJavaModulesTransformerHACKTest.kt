@@ -46,7 +46,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -138,7 +138,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -230,7 +230,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -293,7 +293,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -363,7 +363,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -420,7 +420,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -483,12 +483,11 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         modulesDependencies = listOf(),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
-            languageClasses = setOf(LanguageClass.JAVA),
+            languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA, LanguageClass.KOTLIN),
           ),
         librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
-        languageIds = listOf("java", "scala", "kotlin"),
       )
 
     val expectedJavaModule =
@@ -529,7 +528,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -619,7 +618,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -704,7 +703,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -736,7 +735,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -787,7 +786,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -840,7 +839,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -913,7 +912,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -1000,7 +999,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -1078,7 +1077,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -1148,7 +1147,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -1207,7 +1206,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),
@@ -1295,7 +1294,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
         librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
         kind =
           TargetKind(
-            kindString = "java_library", // TODO
+            kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = setOf(LanguageClass.JAVA),
           ),

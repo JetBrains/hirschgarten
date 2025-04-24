@@ -3,6 +3,7 @@ package org.jetbrains.bazel
 import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
@@ -763,11 +764,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//java_targets:java_binary"),
         listOf(),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
         data = jvmBuildTarget,
@@ -785,11 +786,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//java_targets:java_binary_with_flag"),
         listOf(),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
         data = jvmBuildTargetWithFlag,
@@ -827,7 +828,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//scala_targets:scala_binary"),
         listOf(),
-        listOf("scala"),
         listOf(
           Label.synthetic("scala-compiler-$scalaRulesVersion.jar"),
           Label.synthetic("scala-library-$scalaRulesVersion.jar"),
@@ -836,6 +836,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "scala_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/scala_targets/"),
         data = scalaBuildTarget,
@@ -853,11 +854,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//java_targets/subpackage:java_library"),
         listOf(),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_library",
           ruleType = RuleType.LIBRARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/subpackage/"),
         data = jvmBuildTarget,
@@ -875,11 +876,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//java_targets:java_library"),
         listOf(),
-        listOf("java"),
         listOf(),
         TargetKind(
           kindString = "java_library",
           ruleType = RuleType.LIBRARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
         data = jvmBuildTarget,
@@ -897,7 +898,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//target_without_jvm_flags:binary"),
         listOf(),
-        listOf("scala"),
         listOf(
           Label.synthetic("scala-compiler-$scalaRulesVersion.jar"),
           Label.synthetic("scala-library-$scalaRulesVersion.jar"),
@@ -906,6 +906,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "scala_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/target_without_jvm_flags/"),
         data = scalaBuildTarget,
@@ -923,7 +924,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//target_without_main_class:library"),
         listOf(),
-        listOf("scala"),
         listOf(
           Label.synthetic("scala-compiler-$scalaRulesVersion.jar"),
           Label.synthetic("scala-library-$scalaRulesVersion.jar"),
@@ -932,6 +932,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "scala_library",
           ruleType = RuleType.LIBRARY,
+          languageClasses = setOf(LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/target_without_main_class/"),
         data = scalaBuildTarget,
@@ -949,7 +950,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//target_without_args:binary"),
         listOf(),
-        listOf("scala"),
         listOf(
           Label.synthetic("scala-compiler-$scalaRulesVersion.jar"),
           Label.synthetic("scala-library-$scalaRulesVersion.jar"),
@@ -958,6 +958,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "scala_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/target_without_args/"),
         data = scalaBuildTarget,
@@ -980,7 +981,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//target_with_dependency:java_binary"),
         listOf(),
-        listOf("java"),
         listOf(
           Label.parse("$targetPrefix//java_targets:java_library_exported"),
           Label.parse(guavaDep),
@@ -988,6 +988,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/target_with_dependency/"),
         data = jvmBuildTarget,
@@ -1005,7 +1006,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//scala_targets:scala_test"),
         listOf(),
-        listOf("scala"),
         listOf(
           Label.synthetic("scala-compiler-$scalaRulesVersion.jar"),
           Label.synthetic("scala-library-$scalaRulesVersion.jar"),
@@ -1028,6 +1028,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "scala_test",
           ruleType = RuleType.TEST,
+          languageClasses = setOf(LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/scala_targets/"),
         data = scalaBuildTarget,
@@ -1045,11 +1046,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//target_with_resources:java_binary"),
         listOf(),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/target_with_resources/"),
         data = jvmBuildTarget,
@@ -1071,7 +1072,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//java_targets:java_library_exported"),
         listOf(),
-        listOf("java"),
         listOf(
           Label.parse("$targetPrefix//java_targets/subpackage:java_library"),
           Label.parse("$targetPrefix//java_targets:java_library_exported_output_jars"),
@@ -1079,6 +1079,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "java_library",
           ruleType = RuleType.LIBRARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
         data = jvmBuildTarget,
@@ -1090,11 +1091,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//environment_variables:java_binary"),
         listOf(),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_binary",
           ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/environment_variables/"),
         data = jvmBuildTarget,
@@ -1112,11 +1113,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//environment_variables:java_test"),
         listOf(),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_test",
           ruleType = RuleType.TEST,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/environment_variables/"),
         data = jvmBuildTarget,
@@ -1134,11 +1135,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//target_with_javac_exports:java_library"),
         listOf(),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_library",
           ruleType = RuleType.LIBRARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/target_with_javac_exports/"),
         data = jvmBuildTarget,
@@ -1159,11 +1160,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           Label.parse("@//genrule:foo"),
           listOf(),
           emptyList(),
-          emptyList(),
           kind =
             TargetKind(
               ruleType = RuleType.BINARY,
               kindString = "genrule",
+              languageClasses = setOf(),
             ),
           baseDirectory = Path("$workspaceDir/genrule/"),
           sources = emptyList(),
@@ -1172,12 +1173,12 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         BuildTarget(
           Label.parse("@//target_without_java_info:filegroup"),
           listOf(),
-          listOf(),
           emptyList(),
           kind =
             TargetKind(
               ruleType = RuleType.BINARY,
               kindString = "filegroup",
+              languageClasses = setOf(LanguageClass.JAVA),
             ),
           baseDirectory = Path("$workspaceDir/target_without_java_info/"),
           sources = emptyList(),
@@ -1186,12 +1187,12 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         BuildTarget(
           Label.parse("@//target_without_java_info:genrule"),
           listOf(),
-          listOf(),
           emptyList(),
           kind =
             TargetKind(
               ruleType = RuleType.BINARY,
               kindString = "genrule",
+              languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
             ),
           baseDirectory = Path("$workspaceDir/target_without_java_info/"),
           sources = emptyList(),

@@ -2,6 +2,7 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -72,12 +73,12 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//src:main"),
         listOf(),
-        listOf("java"),
         emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
             ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/src/"),
         data = exampleExampleJvmBuildTarget,

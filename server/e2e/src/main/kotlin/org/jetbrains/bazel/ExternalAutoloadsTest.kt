@@ -2,6 +2,7 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -48,11 +49,11 @@ object ExternalAutoloadsTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//src:hello"),
         listOf(),
-        listOf("java"),
         emptyList(),
         TargetKind(
           kindString = "java_library",
           ruleType = RuleType.LIBRARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/src/"),
         data = exampleExampleJvmBuildTarget,

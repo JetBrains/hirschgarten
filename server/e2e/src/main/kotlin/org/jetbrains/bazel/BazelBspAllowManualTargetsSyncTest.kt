@@ -2,6 +2,7 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
@@ -71,12 +72,12 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//manual_target:java_library"),
         tags = listOf("manual"),
-        languageIds = listOf("java"),
         dependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
             ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/manual_target/"),
         data = jvmBuildTarget,
@@ -95,12 +96,12 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//manual_target:java_binary"),
         tags = listOf("manual"),
-        languageIds = listOf("java"),
         dependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_binary",
             ruleType = RuleType.BINARY,
+            languageClasses = setOf(LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/manual_target/"),
         data = jvmBuildTarget,
@@ -119,12 +120,12 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//manual_target:java_test"),
         tags = listOf("manual"),
-        languageIds = listOf("java"),
         dependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_test",
             ruleType = RuleType.TEST,
+            languageClasses = setOf(LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/manual_target/"),
         data = jvmBuildTarget,

@@ -1,6 +1,7 @@
 package org.jetbrains.bazel
 
 import org.jetbrains.bazel.android.BazelBspAndroidProjectTestBase
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -69,12 +70,12 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
       BuildTarget(
         Label.parse("@@//src/main:app"),
         listOf(),
-        listOf("android", "java"),
         listOf(Label.parse("@@//src/main/java/com/example/myapplication:lib")),
         kind =
           TargetKind(
             kindString = "java_binary",
             ruleType = RuleType.BINARY,
+            languageClasses = setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
           ),
         baseDirectory = Path("\$WORKSPACE/src/main/"),
         data = appAndroidBuildTargetData,
@@ -86,12 +87,12 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
       BuildTarget(
         Label.parse("@@//src/main/java/com/example/myapplication:lib"),
         listOf(),
-        listOf("android", "java"),
         listOf(Label.parse("@@rules_jvm_external~~maven~maven//:androidx_appcompat_appcompat")),
         kind =
           TargetKind(
             kindString = "java_binary",
             ruleType = RuleType.BINARY,
+            languageClasses = setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
           ),
         baseDirectory = Path("\$WORKSPACE/src/main/java/com/example/myapplication/"),
         data = libAndroidBuildTargetData,
@@ -103,7 +104,6 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
       BuildTarget(
         Label.parse("@@//src/test/java/com/example/myapplication:lib_test"),
         listOf(),
-        listOf("android", "java"),
         listOf(
           Label.parse("@@//src/main/java/com/example/myapplication:lib"),
           Label.parse("@@rules_jvm_external~~maven~maven//:junit_junit"),
@@ -115,6 +115,7 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
           TargetKind(
             kindString = "java_binary",
             ruleType = RuleType.BINARY,
+            languageClasses = setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
           ),
         baseDirectory = Path("\$WORKSPACE/src/test/java/com/example/myapplication/"),
         data = libTestAndroidBuildTargetData,

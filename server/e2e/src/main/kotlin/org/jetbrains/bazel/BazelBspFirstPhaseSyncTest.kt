@@ -2,6 +2,7 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
@@ -57,12 +58,12 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("//src:java-lib"),
         tags = listOf(),
-        languageIds = listOf("java"),
         dependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "java_library",
             ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
           ),
         sources = listOf(SourceItem(Path("\$WORKSPACE/src/Lib.java"), false)),
         resources = emptyList(),
@@ -73,12 +74,12 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("//src:java-binary"),
         tags = listOf(),
-        languageIds = listOf("java"),
         dependencies = listOf(Label.parse("//src:java-lib")),
         kind =
           TargetKind(
             kindString = "java_binary",
             ruleType = RuleType.BINARY,
+            languageClasses = setOf(LanguageClass.JAVA),
           ),
         sources = listOf(SourceItem(Path("\$WORKSPACE/src/Main.java"), false)),
         resources = emptyList(),
@@ -89,12 +90,12 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("//src:kt-lib"),
         tags = listOf(),
-        languageIds = listOf("kotlin"),
         dependencies = emptyList(),
         kind =
           TargetKind(
             kindString = "kt_jvm_library",
             ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.KOTLIN),
           ),
         sources = listOf(SourceItem(Path("\$WORKSPACE/src/Lib.kt"), false)),
         resources = emptyList(),
@@ -105,12 +106,12 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("//src:kt-binary"),
         tags = listOf(),
-        languageIds = listOf("kotlin"),
         dependencies = listOf(Label.parse("//src:kt-lib")),
         kind =
           TargetKind(
             kindString = "kt_jvm_binary",
             ruleType = RuleType.BINARY,
+            languageClasses = setOf(LanguageClass.KOTLIN),
           ),
         sources = listOf(SourceItem(Path("\$WORKSPACE/src/Main.kt"), false)),
         resources = emptyList(),

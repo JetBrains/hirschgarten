@@ -214,14 +214,13 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
           type = ModuleTypeId(StdModuleTypes.JAVA.id),
           kind =
             TargetKind(
-              kindString = "java_library", // TODO
+              kindString = "java_library",
               ruleType = RuleType.LIBRARY,
               languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA, LanguageClass.KOTLIN),
             ),
           modulesDependencies = listOf(),
           librariesDependencies = javaModule.genericModuleInfo.librariesDependencies,
           isDummy = true,
-          languageIds = listOf("java", "scala", "kotlin"),
         ),
       baseDirContentRoot = ContentRoot(path = sourceRoot.sourcePath),
       // For some reason allowing dummy modules to be JAVA_TEST_SOURCE_ROOT_TYPE causes red code on https://github.com/bazelbuild/bazel

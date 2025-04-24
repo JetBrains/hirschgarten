@@ -52,8 +52,8 @@ class JvmRunHandler(val configuration: BazelRunConfiguration) : BazelRunHandler 
     // TODO: perhaps better solved by having a tag
     override fun canRun(targetInfos: List<BuildTarget>): Boolean =
       targetInfos.all {
-        (it.languageIds.isJvmTarget() && it.kind.ruleType != RuleType.TEST) ||
-          (it.languageIds.includesAndroid() && it.kind.ruleType == RuleType.TEST)
+        (it.kind.isJvmTarget() && it.kind.ruleType != RuleType.TEST) ||
+          (it.kind.includesAndroid() && it.kind.ruleType == RuleType.TEST)
       }
 
     override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)

@@ -2,6 +2,7 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
@@ -92,12 +93,12 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//kotlinc_test:Foo"),
         tags = listOf(),
-        languageIds = listOf("java", "kotlin"),
         dependencies = listOf(Label.synthetic("rules_kotlin_kotlin-stdlibs")),
         kind =
           TargetKind(
             kindString = "kt_jvm_binary",
             ruleType = RuleType.BINARY,
+            languageClasses = setOf(LanguageClass.KOTLIN, LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/kotlinc_test/"),
         data = kotlincTestBuildTargetData,
@@ -115,12 +116,12 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//plugin_allopen_test:open_for_testing"),
         tags = listOf(),
-        languageIds = listOf("java", "kotlin"),
         dependencies = listOf(Label.synthetic("rules_kotlin_kotlin-stdlibs")),
         kind =
           TargetKind(
             kindString = "kt_jvm_library",
             ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.KOTLIN, LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = kotlinBuildTargetData,
@@ -181,7 +182,6 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//plugin_allopen_test:user"),
         tags = listOf(),
-        languageIds = listOf("java", "kotlin"),
         dependencies =
           listOf(
             Label.synthetic("rules_kotlin_kotlin-stdlibs"),
@@ -192,6 +192,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
           TargetKind(
             kindString = "kt_jvm_library",
             ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.KOTLIN, LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = userBuildTargetData,
@@ -210,7 +211,6 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//plugin_allopen_test:user_of_export"),
         tags = listOf(),
-        languageIds = listOf("java", "kotlin"),
         dependencies =
           listOf(
             Label.synthetic("rules_kotlin_kotlin-stdlibs"),
@@ -221,6 +221,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
           TargetKind(
             kindString = "kt_jvm_library",
             ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.KOTLIN, LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = userOfExportBuildTargetData,
@@ -239,7 +240,6 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//plugin_allopen_test:open_for_testing_export"),
         tags = listOf(),
-        languageIds = listOf("java", "kotlin"),
         dependencies =
           listOf(
             Label.synthetic("rules_kotlin_kotlin-stdlibs"),
@@ -249,6 +249,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
           TargetKind(
             kindString = "kt_jvm_library",
             ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.KOTLIN, LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/plugin_allopen_test/"),
         data = kotlinBuildTargetData,

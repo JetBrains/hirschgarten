@@ -43,7 +43,7 @@ object TargetIdToModuleEntitiesMap {
           async {
             val moduleDetails = targetIdToModuleDetails.getValue(it)
             val module =
-              if (moduleDetails.target.languageIds.isJvmOrAndroidTarget()) {
+              if (moduleDetails.target.kind.isJvmOrAndroidTarget()) {
                 moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
               } else {
                 return@async null
@@ -66,12 +66,12 @@ fun Collection<String>.toDefaultTargetsMap(): Map<Label, BuildTarget> =
       BuildTarget(
         id = Label.parse(it),
         tags = listOf(),
-        languageIds = listOf(),
         dependencies = listOf(),
         kind =
           TargetKind(
             kindString = "java_library",
             ruleType = RuleType.LIBRARY,
+            languageClasses = emptySet(),
           ),
         sources = listOf(),
         resources = listOf(),

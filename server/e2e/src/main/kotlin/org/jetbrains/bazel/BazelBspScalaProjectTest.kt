@@ -3,6 +3,9 @@ package org.jetbrains.bazel
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
@@ -100,7 +103,6 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//scala_targets:library"),
         listOf(),
-        listOf("scala"),
         listOf(
           Label.synthetic("scala-compiler-2.12.14.jar"),
           Label.synthetic("scala-library-2.12.14.jar"),
@@ -109,6 +111,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "scala_library",
           ruleType = RuleType.LIBRARY,
+          languageClasses = setOf(LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/scala_targets/"),
         data = scalaBuildTarget,

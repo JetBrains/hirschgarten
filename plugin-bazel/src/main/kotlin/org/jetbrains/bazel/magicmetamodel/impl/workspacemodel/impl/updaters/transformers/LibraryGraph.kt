@@ -107,7 +107,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
               librariesDependencies = listOf(IntermediateLibraryDependency(libraryName, true)),
               kind =
                 TargetKind(
-                  kindString = "java_library", // TODO
+                  kindString = "java_library",
                   ruleType = RuleType.LIBRARY,
                   languageClasses = setOf(LanguageClass.JAVA),
                 ),
@@ -118,7 +118,6 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
                   IntermediateModuleDependency(id)
                 },
               isLibraryModule = true,
-              languageIds = listOf("java"),
             ),
           jvmJdkName = defaultJdkName,
           baseDirContentRoot = null,
