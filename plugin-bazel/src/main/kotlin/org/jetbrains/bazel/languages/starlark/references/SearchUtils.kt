@@ -22,7 +22,7 @@ object SearchUtils {
       val scopeRoot = findScopeRoot(element) ?: return
       if (!processBindingsInScope(
           scopeRoot,
-          elementIsRoot = true,
+          elementIsScopeRoot = true,
           stopAt = if (scopeRoot is StarlarkFile && scopeRoot != currentElement) currentElement else null,
           processor = processor,
         )
@@ -60,7 +60,7 @@ object SearchUtils {
 
   private fun processBindingsInScope(
     element: PsiElement,
-    elementIsRoot: Boolean = false,
+    elementIsScopeRoot: Boolean = false,
     stopAt: PsiElement?,
     processor: Processor<StarlarkElement>,
   ): Boolean =
@@ -74,14 +74,14 @@ object SearchUtils {
         )
       }
 
-      is StarlarkFunctionDeclaration -> processor.process(element) && (!elementIsRoot || (element.searchInParameters(processor)
+      is StarlarkFunctionDeclaration -> processor.process(element) && (!elementIsScopeRoot || (element.searchInParameters(processor)
         && processBindingsInScope(
         element.getStatementList(),
         stopAt = stopAt,
         processor = processor,
       )))
 
-      is StarlarkCallable -> !elementIsRoot || element.searchInParameters(processor)
+      is StarlarkCallable -> !elementIsScopeRoot || element.searchInParameters(processor)
       is StarlarkCompExpression -> element.searchInComprehension(processor)
       is StarlarkForStatement -> element.searchInLoopVariables(processor) &&
         element.getStatementLists().all { processBindingsInScope(it, stopAt = stopAt, processor = processor) }
