@@ -48,11 +48,7 @@ public interface BuildTargetClassifierExtension {
   public fun calculateBuildTargetName(buildTarget: Label): String
 }
 
-/**
- * Default implementation of the [org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BuildTargetClassifierExtension] interface.
- * It will be used in BSP project and when no other implementation exists.
- */
-class DefaultBuildTargetClassifierExtension(private val project: Project) : BuildTargetClassifierExtension {
+class ListTargetClassifier(private val project: Project) : BuildTargetClassifierExtension {
   override val separator: String? = null
 
   override fun calculateBuildTargetPath(buildTarget: Label): List<String> = emptyList()
@@ -60,7 +56,7 @@ class DefaultBuildTargetClassifierExtension(private val project: Project) : Buil
   override fun calculateBuildTargetName(buildTarget: Label): String = buildTarget.toShortString(project)
 }
 
-class BazelBuildTargetClassifier(private val project: Project) : BuildTargetClassifierExtension {
+class TreeTargetClassifier(private val project: Project) : BuildTargetClassifierExtension {
   override val separator: String = "/"
 
   override fun calculateBuildTargetPath(buildTarget: Label): List<String> =

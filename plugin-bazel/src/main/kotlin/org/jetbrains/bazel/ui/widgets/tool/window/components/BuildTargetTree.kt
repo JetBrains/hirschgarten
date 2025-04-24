@@ -2,82 +2,124 @@ package org.jetbrains.bazel.ui.widgets.tool.window.components
 
 import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.treeStructure.Tree
-import com.intellij.util.PlatformIcons
-import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BazelBuildTargetClassifier
-import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.DefaultBuildTargetClassifierExtension
+import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BuildTargetClassifierExtension
+import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.ListTargetClassifier
+import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.TreeTargetClassifier
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
+import org.jetbrains.bazel.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
 import org.jetbrains.bsp.protocol.BuildTarget
-import java.awt.Component
 import java.awt.Point
-import javax.swing.Icon
-import javax.swing.JComponent
-import javax.swing.JTree
-import javax.swing.SwingConstants
 import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
-import javax.swing.tree.TreeCellRenderer
 import javax.swing.tree.TreeNode
 import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
 class BuildTargetTree(
   private val project: Project,
-  private val targetIcon: Icon,
-  private val invalidTargetIcon: Icon,
-  private val targets: Collection<BuildTarget>,
-  private val invalidTargets: List<Label>,
-  private val labelHighlighter: (String) -> String = { it },
-  private val showAsList: Boolean = false,
-) : BuildTargetContainer {
-  private val rootNode = DefaultMutableTreeNode(DirectoryNodeData("[root]", emptyList()))
-  private val cellRenderer = TargetTreeCellRenderer(targetIcon, invalidTargetIcon, labelHighlighter)
-  private var popupHandlerBuilder: ((BuildTargetContainer) -> PopupHandler)? = null
+  private val model: BazelTargetsPanelModel,
+  private val rootNode: DefaultMutableTreeNode = DefaultMutableTreeNode(DirectoryNodeData("[root]", emptyList())),
+) : Tree(rootNode) {
+  private val loadedTargetsMouseListener: LoadedTargetsMouseListener =
+    object : LoadedTargetsMouseListener(project) {
+      override fun getSelectedComponentName(): String {
+        val selected = lastSelectedPathComponent as? DefaultMutableTreeNode
+        val userObject = selected?.userObject
+        return when (userObject) {
+          is TargetNodeData -> userObject.displayName
+          is DirectoryNodeData -> userObject.name
+          else -> ""
+        }
+      }
 
-  val treeComponent: Tree = Tree(rootNode)
+      override fun isPointSelectable(point: Point): Boolean = getPathForLocation(point.x, point.y) != null
 
-  private val bspBuildTargetClassifier =
-    if (showAsList) {
-      DefaultBuildTargetClassifierExtension(project)
-    } else {
-      BazelBuildTargetClassifier(project)
+      override fun getSelectedBuildTarget(): BuildTarget? {
+        val selected = lastSelectedPathComponent as? DefaultMutableTreeNode
+        val userObject = selected?.userObject
+        return if (userObject is TargetNodeData) {
+          userObject.target
+        } else {
+          null
+        }
+      }
+
+      override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget> {
+        val selected = lastSelectedPathComponent as? DefaultMutableTreeNode
+        val userObject = selected?.userObject
+        return (
+          if (userObject is DirectoryNodeData) {
+            userObject.targets.mapNotNull { it.target }
+          } else {
+            emptyList()
+          }
+        )
+      }
+
+      override val copyTargetIdAction: CopyTargetIdAction =
+        object : CopyTargetIdAction.FromContainer(this@BuildTargetTree) {
+          override fun getTargetInfo(): BuildTarget? = getSelectedBuildTarget()
+        }
     }
 
-  override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction.FromContainer(this, treeComponent)
-
   init {
-    treeComponent.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
-    treeComponent.cellRenderer = cellRenderer
-    treeComponent.isRootVisible = false
-    generateTree()
-    treeComponent.expandPath(TreePath(rootNode.path))
+    selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
+    cellRenderer = TargetTreeCellRenderer { it }
+    isRootVisible = false
+
+    // Initial tree generation
+    updateTree()
+
+    loadedTargetsMouseListener.registerKeyboardShortcutForPopup()
+    addMouseListener(loadedTargetsMouseListener)
   }
 
-  private fun generateTree() {
+  fun updateTree() {
+    val classifier =
+      if (model.displayAsTree) {
+        TreeTargetClassifier(project)
+      } else {
+        ListTargetClassifier(project)
+      }
+
+    // Generate the tree with the current targets
+    generateTree(model.visibleTargets, model.invalidTargets, classifier)
+
+    // Notify the tree model that the structure has changed
+    (treeModel as? DefaultTreeModel)?.reload()
+
+    expandPath(TreePath(rootNode.path))
+  }
+
+  private fun generateTree(
+    targets: Collection<Label>,
+    invalidTargets: List<Label>,
+    classifier: BuildTargetClassifierExtension,
+  ) {
     generateTreeFromIdentifiers(
       targets.map {
         BuildTargetTreeIdentifier(
-          it.id,
           it,
-          bspBuildTargetClassifier.calculateBuildTargetPath(it.id),
-          bspBuildTargetClassifier.calculateBuildTargetName(it.id),
+          model.getTargetData(it),
+          classifier.calculateBuildTargetPath(it),
+          classifier.calculateBuildTargetName(it),
         )
       } +
         invalidTargets.map {
           BuildTargetTreeIdentifier(
             it,
             null,
-            bspBuildTargetClassifier.calculateBuildTargetPath(it),
-            bspBuildTargetClassifier.calculateBuildTargetName(it),
+            classifier.calculateBuildTargetPath(it),
+            classifier.calculateBuildTargetName(it),
           )
         },
-      bspBuildTargetClassifier.separator,
+      classifier.separator,
     )
   }
 
@@ -155,7 +197,7 @@ class BuildTargetTree(
 
   private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode =
     DefaultMutableTreeNode(
-      TargetNodeData(project, identifier.id, identifier.target, identifier.displayName, identifier.target != null),
+      TargetNodeData(identifier.target, identifier.id.toShortString(project), identifier.target != null),
     )
 
   private fun simplifyNodeIfHasOneChild(
@@ -177,168 +219,48 @@ class BuildTargetTree(
 
   override fun isEmpty(): Boolean = rootNode.isLeaf
 
-  override fun getComponent(): JComponent = treeComponent
-
-  override fun registerPopupHandler(popupHandlerBuilder: (BuildTargetContainer) -> PopupHandler) {
-    this.popupHandlerBuilder = popupHandlerBuilder
-    val newPopupHandler = popupHandlerBuilder(this).also { it.registerKeyboardShortcutForPopup() }
-    treeComponent.addMouseListener(newPopupHandler)
-  }
-
   private fun PopupHandler.registerKeyboardShortcutForPopup() {
     val popupAction =
       SimpleAction {
-        val selectionPath = treeComponent.selectionPath ?: return@SimpleAction
+        val selectionPath = selectionPath ?: return@SimpleAction
         val directoryIsSelected = (selectionPath.lastPathComponent as? DefaultMutableTreeNode)?.isLeaf == false
         if (directoryIsSelected) {
           // Normally, this is a built-in feature of a Tree.
           //   However, it stops working out-of-the-box since its keyboard shortcut has been overridden.
           selectionPath.toggleExpansion()
         } else {
-          val selectedPoint = selectionPath.let { treeComponent.getPathBounds(it)?.location } ?: return@SimpleAction
-          this.invokePopup(treeComponent, selectedPoint.x, selectedPoint.y)
+          val selectedPoint = selectionPath.let { getPathBounds(it)?.location } ?: return@SimpleAction
+          this.invokePopup(this@BuildTargetTree, selectedPoint.x, selectedPoint.y)
         }
       }
-    popupAction.registerCustomShortcutSet(BspShortcuts.openTargetContextMenu, treeComponent)
+    popupAction.registerCustomShortcutSet(BspShortcuts.openTargetContextMenu, this@BuildTargetTree)
   }
 
   private fun TreePath.toggleExpansion() {
-    if (treeComponent.isCollapsed(this)) {
-      treeComponent.expandPath(this)
+    if (isCollapsed(this)) {
+      expandPath(this)
     } else {
-      treeComponent.collapsePath(this)
+      collapsePath(this)
     }
   }
 
-  override fun getSelectedBuildTarget(): BuildTarget? {
-    val selected = treeComponent.lastSelectedPathComponent as? DefaultMutableTreeNode
-    val userObject = selected?.userObject
-    return if (userObject is TargetNodeData) {
-      userObject.target
-    } else {
-      null
-    }
-  }
-
-  override fun getSelectedBuildTargetsUnderDirectory(): List<BuildTarget> {
-    val selected = treeComponent.lastSelectedPathComponent as? DefaultMutableTreeNode
-    val userObject = selected?.userObject
-    return (
-      if (userObject is DirectoryNodeData) {
-        userObject.targets.mapNotNull { it.target }
-      } else {
-        emptyList()
-      }
-    )
-  }
-
-  override fun getSelectedComponentName(): String {
-    val selected = treeComponent.lastSelectedPathComponent as? DefaultMutableTreeNode
-    val userObject = selected?.userObject
-    return when (userObject) {
-      is TargetNodeData -> userObject.displayName
-      is DirectoryNodeData -> userObject.name
-      else -> ""
-    }
-  }
-
-  override fun selectTopTargetAndFocus() {
-    treeComponent.selectionRows = intArrayOf(0)
-    treeComponent.requestFocus()
-  }
-
-  override fun isPointSelectable(point: Point): Boolean = treeComponent.getPathForLocation(point.x, point.y) != null
-
-  override fun createNewWithTargets(newTargets: Collection<BuildTarget>, newInvalidTargets: List<Label>): BuildTargetTree =
-    createNewWithTargetsAndHighlighter(newTargets, newInvalidTargets, labelHighlighter)
-
-  fun createNewWithTargetsAndHighlighter(
-    newTargets: Collection<BuildTarget>,
-    newInvalidTargets: List<Label>,
-    labelHighlighter: (String) -> String,
-  ): BuildTargetTree {
-    val new =
-      BuildTargetTree(
-        project = project,
-        targetIcon = targetIcon,
-        invalidTargetIcon = invalidTargetIcon,
-        targets = newTargets,
-        invalidTargets = newInvalidTargets,
-        labelHighlighter = labelHighlighter,
-        showAsList = showAsList,
-      )
-    popupHandlerBuilder?.let { new.registerPopupHandler(it) }
-    return new
+  fun selectTopTargetAndFocus() {
+    selectionRows = intArrayOf(0)
+    requestFocus()
   }
 }
 
-private interface NodeData
+data class DirectoryNodeData(val name: String, val targets: List<BuildTargetTreeIdentifier>)
 
-private data class DirectoryNodeData(val name: String, val targets: List<BuildTargetTreeIdentifier>) : NodeData {
-  override fun toString(): String = name
-}
-
-private data class TargetNodeData(
-  val project: Project,
-  val id: Label,
+data class TargetNodeData(
   val target: BuildTarget?,
   val displayName: String,
   val isValid: Boolean,
-) : NodeData {
-  override fun toString(): String = id.toShortString(project)
-}
+)
 
-private data class BuildTargetTreeIdentifier(
+data class BuildTargetTreeIdentifier(
   val id: Label,
   val target: BuildTarget?,
   val path: List<String>,
   val displayName: String,
 )
-
-private class TargetTreeCellRenderer(
-  val targetIcon: Icon,
-  val invalidTargetIcon: Icon,
-  val labelHighlighter: (String) -> String,
-) : TreeCellRenderer {
-  override fun getTreeCellRendererComponent(
-    tree: JTree?,
-    value: Any?,
-    selected: Boolean,
-    expanded: Boolean,
-    leaf: Boolean,
-    row: Int,
-    hasFocus: Boolean,
-  ): Component =
-    when (val userObject = (value as? DefaultMutableTreeNode)?.userObject) {
-      is DirectoryNodeData ->
-        JBLabel(
-          labelHighlighter(userObject.name),
-          PlatformIcons.FOLDER_ICON,
-          SwingConstants.LEFT,
-        )
-
-      is TargetNodeData ->
-        if (userObject.isValid) {
-          JBLabel(
-            labelHighlighter(userObject.displayName),
-            targetIcon,
-            SwingConstants.LEFT,
-          )
-        } else {
-          JBLabel(
-            labelStrikethrough(userObject.displayName),
-            invalidTargetIcon,
-            SwingConstants.LEFT,
-          )
-        }
-
-      else ->
-        JBLabel(
-          BazelPluginBundle.message("widget.no.renderable.component"),
-          PlatformIcons.ERROR_INTRODUCTION_ICON,
-          SwingConstants.LEFT,
-        )
-    }
-
-  private fun labelStrikethrough(text: String): String = "<html><s>$text</s><html>"
-}
