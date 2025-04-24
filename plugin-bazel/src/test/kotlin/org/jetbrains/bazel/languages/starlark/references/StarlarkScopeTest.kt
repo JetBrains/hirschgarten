@@ -258,6 +258,16 @@ class StarlarkScopeTest : BasePlatformTestCase() {
   }
 
   @Test
+  fun `reference to self`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+       def <target>foo():
+           print(<caret>foo)
+       """.trimIndent(),
+    )
+  }
+
+  @Test
   fun `comprehension reference from loop body`() {
     verifyTargetOfReferenceAtCaret(
       """
