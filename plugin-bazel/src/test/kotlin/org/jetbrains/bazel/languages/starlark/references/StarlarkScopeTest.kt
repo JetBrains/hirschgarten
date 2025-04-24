@@ -247,9 +247,30 @@ class StarlarkScopeTest : BasePlatformTestCase() {
   }
 
   @Test
-  fun `comprehension reference from if`() {
+  fun `local variable hides containing function`() {
     verifyTargetOfReferenceAtCaret(
        """
+       def foo():
+           <target>foo = 5
+           print(<caret>foo)
+       """.trimIndent(),
+    )
+  }
+
+  @Test
+  fun `comprehension reference from loop body`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+       [<caret>x for <target>x, y in [(1, 2), (4, 5)] if y > 3]
+       """.trimIndent(),
+    )
+  }
+
+
+  @Test
+  fun `comprehension reference from if`() {
+    verifyTargetOfReferenceAtCaret(
+      """
        [x for x, <target>y in [(1, 2), (4, 5)] if <caret>y > 3]
        """.trimIndent(),
     )
@@ -295,7 +316,7 @@ class StarlarkScopeTest : BasePlatformTestCase() {
   fun `comprehension scope g`() {
     verifyTargetOfReferenceAtCaret(
       """
-       def foo(<target>x):
+       def foo(x):
            x += [[j(x) for x in i(x)] + h(x) for <target>x in f(x) if g(<caret>x)]
            return k(x)
 

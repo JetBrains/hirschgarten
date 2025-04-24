@@ -44,7 +44,7 @@ object SearchUtils {
           // In a comprehension, the first 'for' resolves using the scope that contains the
           // comprehension, while all later 'for's resolve within the comprehension's scope.
           val inFirstFor = generateSequence(currentElement) { it.prevSibling }
-            .filter { it.elementType == StarlarkTokenTypes.FOR_KEYWORD }
+            .filter { it.elementType == StarlarkTokenTypes.FOR_KEYWORD || it.elementType == StarlarkTokenTypes.IF_KEYWORD }
             .take(2)
             .count() == 1
           if (inFirstFor) {
@@ -74,12 +74,12 @@ object SearchUtils {
         )
       }
 
-      is StarlarkFunctionDeclaration -> processor.process(element) && (!elementIsScopeRoot || (element.searchInParameters(processor)
+      is StarlarkFunctionDeclaration -> (!elementIsScopeRoot || (element.searchInParameters(processor)
         && processBindingsInScope(
         element.getStatementList(),
         stopAt = stopAt,
         processor = processor,
-      )))
+      ))) && processor.process(element)
 
       is StarlarkCallable -> !elementIsScopeRoot || element.searchInParameters(processor)
       is StarlarkCompExpression -> element.searchInComprehension(processor)
