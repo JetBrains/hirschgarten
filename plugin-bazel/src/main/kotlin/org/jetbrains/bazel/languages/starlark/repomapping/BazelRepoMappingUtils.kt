@@ -73,13 +73,17 @@ fun Label.toCanonicalLabel(project: Project): ResolvedLabel? {
       val canonicalRepoName = project.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
       Canonical.createCanonicalOrMain(canonicalRepoName)
     }
-  val target =
-    if (target is AmbiguousEmptyTarget) {
-      SingleTarget(packagePath.pathSegments.lastOrNull() ?: return null)
-    } else {
-      target
-    }
+  val target = this.singleTarget() ?: return null
   return this.copy(repo = repo, target = target)
+}
+
+fun Label.singleTarget(): SingleTarget? {
+  val oldTarget = target
+  return when (oldTarget) {
+    is AmbiguousEmptyTarget -> SingleTarget(packagePath.pathSegments.lastOrNull() ?: return null)
+    is SingleTarget -> oldTarget
+    else -> return null
+  }
 }
 
 fun Label.toShortString(project: Project): String {

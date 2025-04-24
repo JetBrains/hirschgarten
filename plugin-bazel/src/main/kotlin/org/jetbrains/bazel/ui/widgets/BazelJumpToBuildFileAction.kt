@@ -7,10 +7,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.isFile
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
@@ -18,8 +14,7 @@ import org.jetbrains.bazel.action.getEditor
 import org.jetbrains.bazel.action.getPsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.SingleTarget
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
+import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 import org.jetbrains.bazel.target.targetUtils
 
 class BazelJumpToBuildFileAction(private val target: Label?) :
@@ -58,37 +53,11 @@ class BazelJumpToBuildFileAction(private val target: Label?) :
 suspend fun jumpToBuildFile(project: Project, target: Label) {
   val buildFile =
     readAction {
-      findBuildFileTarget(project, target)
+      resolveLabel(project, target)
     } ?: return
   withContext(Dispatchers.EDT) {
     EditorHelper.openInEditor(buildFile, true, true)
   }
-}
-
-fun findBuildFileTarget(project: Project, label: Label): PsiElement? {
-  val buildFile = findBuildFile(project, label) ?: return null
-  // Try to jump to a specific target
-  val target = label.target as? SingleTarget
-  if (target != null) {
-    val ruleTarget = buildFile.findRuleTarget(target.targetName)
-    ruleTarget?.getArgumentList()?.getNameArgument()?.let { return it }
-  }
-  // Fallback to the BUILD file itself
-  return buildFile
-}
-
-fun findBuildFile(project: Project, target: Label): StarlarkFile? {
-  val buildTarget = project.targetUtils.getBuildTargetForLabel(target) ?: return null
-  // Sometimes a project can contain a directory named "build" (which on case-insensitive filesystems is the same as BUILD).
-  // Try with BUILD.bazel first to avoid this case.
-  val buildBazelFilePath = buildTarget.baseDirectory.resolve("BUILD.bazel")
-  val buildFilePath = buildTarget.baseDirectory.resolve("BUILD")
-  val virtualFileManager = VirtualFileManager.getInstance()
-  val virtualFile =
-    virtualFileManager.findFileByNioPath(buildBazelFilePath)?.takeIf { it.isFile }
-      ?: virtualFileManager.findFileByNioPath(buildFilePath)?.takeIf { it.isFile }
-      ?: return null
-  return PsiManager.getInstance(project).findFile(virtualFile) as? StarlarkFile
 }
 
 private val ALLOWED_ACTION_PLACES =

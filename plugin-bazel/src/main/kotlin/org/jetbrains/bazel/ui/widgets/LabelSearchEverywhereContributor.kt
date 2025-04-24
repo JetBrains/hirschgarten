@@ -20,6 +20,7 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
 import javax.swing.ListCellRenderer
@@ -78,7 +79,7 @@ class LabelSearchEverywhereContributor(private val project: Project) :
   override fun getElementsRenderer(): ListCellRenderer<in LabelWithPreview> = listCellRenderer
 
   class LabelWithPreview(val label: Label, private val project: Project) : PsiElementNavigationItem {
-    override fun getTargetElement(): PsiElement? = runReadAction { findBuildFileTarget(project, label) }
+    override fun getTargetElement(): PsiElement? = runReadAction { resolveLabel(project, label) }
 
     override fun getName(): String? = null
 
