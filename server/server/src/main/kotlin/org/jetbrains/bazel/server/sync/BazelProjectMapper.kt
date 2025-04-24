@@ -226,7 +226,6 @@ class BazelProjectMapper(
           nonModuleTargetIds.contains(it) &&
             isTargetTreatedAsInternal(it.assumeResolved(), repoMapping)
         },
-        transitiveCompileTimeJarsTargetKinds,
         repoMapping,
       )
 
@@ -631,11 +630,7 @@ class BazelProjectMapper(
     )
   }
 
-  private fun createNonModuleTargets(
-    targets: Map<Label, TargetInfo>,
-    transitiveCompileTimeJarsTargetKinds: Set<String>,
-    repoMapping: RepoMapping,
-  ): List<NonModuleTarget> =
+  private fun createNonModuleTargets(targets: Map<Label, TargetInfo>, repoMapping: RepoMapping): List<NonModuleTarget> =
     targets
       .map { (label, targetInfo) ->
         NonModuleTarget(

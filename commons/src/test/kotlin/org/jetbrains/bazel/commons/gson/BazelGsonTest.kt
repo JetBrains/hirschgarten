@@ -9,34 +9,34 @@ import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
-import java.nio.file.Path
-
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import java.nio.file.Path
 import java.util.stream.Stream
 
-
 class BazelGsonTest {
-
   @Test
   fun `test BuildTarget serialization`() {
-    val buildTarget = BuildTarget(
-      id = Label.parse("//foo:bar"),
-      tags = listOf("tag1", "tag2"),
-      languageIds = listOf("kotlin", "java"),
-      dependencies = listOf(Label.parse("//baz:qux")),
-      kind = TargetKind(
-        kindString = "java_library",
-        languageClasses = setOf(LanguageClass.JAVA, LanguageClass.PYTHON),
-        ruleType = RuleType.BINARY
-      ),
-      sources = emptyList(),
-      resources = emptyList(),
-      baseDirectory = Path.of("/base/dir"),
-      data = PythonBuildTarget(
-        version = "3.8",
-        interpreter = Path.of("/usr/bin/python3")
-      ))
+    val buildTarget =
+      BuildTarget(
+        id = Label.parse("//foo:bar"),
+        tags = listOf("tag1", "tag2"),
+        dependencies = listOf(Label.parse("//baz:qux")),
+        kind =
+          TargetKind(
+            kindString = "java_library",
+            languageClasses = setOf(LanguageClass.JAVA, LanguageClass.PYTHON),
+            ruleType = RuleType.BINARY,
+          ),
+        sources = emptyList(),
+        resources = emptyList(),
+        baseDirectory = Path.of("/base/dir"),
+        data =
+          PythonBuildTarget(
+            version = "3.8",
+            interpreter = Path.of("/usr/bin/python3"),
+          ),
+      )
 
     val json = bazelGson.toJson(buildTarget)
     val deserializedBuildTarget = bazelGson.fromJson(json, BuildTarget::class.java)
@@ -61,16 +61,18 @@ class BazelGsonTest {
 
   companion object {
     @JvmStatic
-    fun labelProvider(): Stream<Arguments> = Stream.of(
-      Arguments.of(Label.parse("//foo:bar")),
-      Arguments.of(Label.parse("@//baz"))
-    )
+    fun labelProvider(): Stream<Arguments> =
+      Stream.of(
+        Arguments.of(Label.parse("//foo:bar")),
+        Arguments.of(Label.parse("@//baz")),
+      )
 
     @JvmStatic
-    fun pathProvider(): Stream<Arguments> = Stream.of(
-      Arguments.of(Path.of("/foo/bar")),
-      Arguments.of(Path.of("C:\\baz\\qux")),
-      Arguments.of(Path.of("relative/path/to/file.txt")),
-    )
+    fun pathProvider(): Stream<Arguments> =
+      Stream.of(
+        Arguments.of(Path.of("/foo/bar")),
+        Arguments.of(Path.of("C:\\baz\\qux")),
+        Arguments.of(Path.of("relative/path/to/file.txt")),
+      )
   }
 }

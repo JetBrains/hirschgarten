@@ -6,6 +6,6 @@ kt_junit5_test(
     src = "BazelGsonTest.kt",
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
-        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol"
+        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
     ],
 )

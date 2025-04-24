@@ -248,17 +248,33 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   @InternalApi
   override fun loadState(state: TargetUtilsState) {
-    labelToTargetInfo =
-      state.labelToTargetInfo
-        .mapKeys { Label.parse(it.key) }
-        .mapValues { bazelGson.fromJson(it.value, BuildTarget::class.java) }
-    moduleIdToTarget = state.moduleIdToTarget.mapValues { Label.parse(it.value) }
-    libraryIdToTarget = state.libraryIdToTarget.mapValues { Label.parse(it.value) }
-    fileToTarget =
-      state.fileToTarget.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
-    fileToExecutableTargets =
-      state.fileToExecutableTargets.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
-    updateComputedFields()
+    var hasError = false
+
+    try {
+      labelToTargetInfo =
+        state.labelToTargetInfo
+          .mapKeys { Label.parse(it.key) }
+          .mapValues { bazelGson.fromJson(it.value, BuildTarget::class.java) }
+      moduleIdToTarget = state.moduleIdToTarget.mapValues { Label.parse(it.value) }
+      libraryIdToTarget = state.libraryIdToTarget.mapValues { Label.parse(it.value) }
+      fileToTarget =
+        state.fileToTarget.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
+      fileToExecutableTargets =
+        state.fileToExecutableTargets.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
+      updateComputedFields()
+    } catch (e: Exception) {
+      hasError = true
+    } finally {
+      if (hasError) {
+        labelToTargetInfo = emptyMap()
+        moduleIdToTarget = emptyMap()
+        libraryIdToTarget = emptyMap()
+        fileToTarget = emptyMap()
+        fileToExecutableTargets = emptyMap()
+        allTargetsAndLibrariesLabels = emptyList()
+        updateComputedFields()
+      }
+    }
   }
 }
 

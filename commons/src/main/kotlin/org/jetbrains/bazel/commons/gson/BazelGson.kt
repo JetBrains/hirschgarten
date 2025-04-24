@@ -2,7 +2,6 @@ package org.jetbrains.bazel.commons.gson
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonElement
 import com.google.gson.TypeAdapter
 import com.google.gson.TypeAdapterFactory
 import com.google.gson.reflect.TypeToken
@@ -38,14 +37,16 @@ class SealedClassTypeAdapterFactory : TypeAdapterFactory {
     if (subclasses.isEmpty()) return null
 
     // Create a map of class name to class for deserialization lookup
-    val nameToSubclass = subclasses.associateBy {
-      it.qualifiedName ?: it.simpleName ?: it.toString()
-    }
+    val nameToSubclass =
+      subclasses.associateBy {
+        it.qualifiedName ?: it.simpleName ?: it.toString()
+      }
 
     // Create delegate adapters for each subclass to avoid stack overflow
-    val subclassAdapters = nameToSubclass.entries.associate { (name, kClass) ->
-      name to gson.getDelegateAdapter(this, TypeToken.get(kClass.java))
-    }
+    val subclassAdapters =
+      nameToSubclass.entries.associate { (name, kClass) ->
+        name to gson.getDelegateAdapter(this, TypeToken.get(kClass.java))
+      }
 
     // Create a delegate adapter for the base type
     val delegateAdapter = gson.getDelegateAdapter(this, type)
@@ -101,7 +102,9 @@ class SealedClassTypeAdapterFactory : TypeAdapterFactory {
             className = reader.nextString()
           } else {
             // Read property value as JsonElement
-            val value = com.google.gson.JsonParser.parseReader(reader)
+            val value =
+              com.google.gson.JsonParser
+                .parseReader(reader)
             jsonObject.add(name, value)
           }
         }
@@ -125,15 +128,13 @@ class SealedClassTypeAdapterFactory : TypeAdapterFactory {
     }
   }
 
-  private fun getKClass(javaClass: Class<*>): KClass<*>? {
-    return try {
+  private fun getKClass(javaClass: Class<*>): KClass<*>? =
+    try {
       Reflection.createKotlinClass(javaClass)
     } catch (e: Exception) {
       null
     }
-  }
 }
-
 
 object LabelSerializer : TypeAdapter<Label?>() {
   override fun read(jsonReader: JsonReader): Label? = jsonReader.nextString().let { Label.parseOrNull(it) }
