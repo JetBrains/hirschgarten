@@ -36,7 +36,7 @@ class EnvironmentCreator(private val projectRootDir: Path) {
   }
 
   private fun createEmptyBuildFile(dotBazelBspDir: Path) {
-    val destinationBuildFilePath = dotBazelBspDir.resolve(Constants.BUILD_FILE_NAME)
+    val destinationBuildFilePath = dotBazelBspDir.resolve(Constants.defaultBuildFileName())
     val destinationWorkspaceFilePath = dotBazelBspDir.resolve(Constants.WORKSPACE_FILE_NAME)
     destinationBuildFilePath.toFile().createNewFile()
     destinationWorkspaceFilePath.toFile().createNewFile()

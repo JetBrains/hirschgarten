@@ -4,6 +4,7 @@ import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectId
 import com.intellij.openapi.externalSystem.ui.ExternalSystemIconProvider
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.projectAware.ProjectAwareExtension
 import javax.swing.Icon
@@ -13,10 +14,10 @@ class BazelProjectAwareExtension : ProjectAwareExtension {
     ExternalSystemProjectId(BazelPluginConstants.SYSTEM_ID, projectPath.path)
 
   override val eligibleConfigFileNames: List<String> =
-    BazelPluginConstants.SUPPORTED_CONFIG_FILE_NAMES
+    Constants.SUPPORTED_CONFIG_FILE_NAMES
 
   override val eligibleConfigFileExtensions: List<String> =
-    BazelPluginConstants.SUPPORTED_EXTENSIONS
+    Constants.SUPPORTED_EXTENSIONS
 }
 
 class BazelExternalSystemIconProvider : ExternalSystemIconProvider {

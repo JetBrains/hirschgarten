@@ -12,8 +12,8 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.action.getPsiFile
 import org.jetbrains.bazel.action.registered.ResyncAction
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 
@@ -47,7 +47,7 @@ internal class LoadProjectViewFileAction :
     }
   }
 
-  private fun PsiFile.isProjectViewFile(): Boolean = virtualFile?.extension == BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION
+  private fun PsiFile.isProjectViewFile(): Boolean = virtualFile?.extension == Constants.PROJECT_VIEW_FILE_EXTENSION
 
   private fun PsiFile.isDifferentProjectViewFileSelected(): Boolean =
     virtualFile?.toNioPath()?.toAbsolutePath() != project.bazelProjectSettings.projectViewPath
