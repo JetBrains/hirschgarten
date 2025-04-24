@@ -35,7 +35,7 @@ object SearchUtils {
 
   private tailrec fun findScopeRoot(currentElement: PsiElement): PsiElement? =
     when (currentElement) {
-      is StarlarkFile, is StarlarkFunctionDeclaration -> currentElement
+      is StarlarkFile, is StarlarkCallable -> currentElement
       // Default values of parameters refer to the parent scope of the function, not the function scope.
       is StarlarkParameterList -> findScopeRoot(currentElement.parent.parent)
       else -> when (val parent = currentElement.parent) {
@@ -81,6 +81,7 @@ object SearchUtils {
         processor = processor,
       )))
 
+      is StarlarkCallable -> element.searchInParameters(processor)
       is StarlarkCompExpression -> element.searchInComprehension(processor)
       is StarlarkForStatement -> element.searchInLoopVariables(processor) &&
         element.getStatementLists().all { processBindingsInScope(it, stopAt = stopAt, processor = processor) }
