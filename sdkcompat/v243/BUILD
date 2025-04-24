@@ -11,6 +11,7 @@ kt_jvm_library(
     }),
     visibility = ["//sdkcompat:__pkg__"],
     deps = [
+        "//rules_intellij/intellij_platform_sdk:kotlin",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//rules_intellij/third_party/android",
     ],
