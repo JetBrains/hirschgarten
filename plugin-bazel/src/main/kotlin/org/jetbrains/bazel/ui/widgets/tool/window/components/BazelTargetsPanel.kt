@@ -4,14 +4,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.components.panels.VerticalLayout
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.SimpleAction
+import java.awt.BorderLayout
 import javax.swing.SwingConstants
 
 class BazelTargetsPanel(private val project: Project, private val model: BazelTargetsPanelModel) :
-  JBPanel<BazelTargetsPanel>(VerticalLayout(0)) {
+  JBPanel<BazelTargetsPanel>(BorderLayout()) {
   val searchBarPanel = SearchBarPanel(model)
   val targetTree =
     BuildTargetTree(
@@ -30,9 +30,29 @@ class BazelTargetsPanel(private val project: Project, private val model: BazelTa
     searchBarPanel.isEnabled = true
     searchBarPanel.registerSearchShortcutsOn(scrollPane)
     registerMoveDownShortcut(searchBarPanel)
-    add(searchBarPanel, VerticalLayout.TOP)
-    add(scrollPane, VerticalLayout.FILL)
+    add(searchBarPanel, BorderLayout.NORTH)
+    showTargetTree()
     model.targetsPanel = this
+  }
+
+  private fun showTargetTree() {
+    if (scrollPane !in components) {
+      add(scrollPane, BorderLayout.CENTER)
+    }
+  }
+
+  private fun hideTargetTree() {
+    remove(scrollPane)
+  }
+
+  private fun showMessage() {
+    if (message !in components) {
+      add(message, BorderLayout.CENTER)
+    }
+  }
+
+  private fun hideMessage() {
+    remove(message)
   }
 
   fun update() {
@@ -47,15 +67,15 @@ class BazelTargetsPanel(private val project: Project, private val model: BazelTa
     // Update visibility of components based on search results
     if (!model.hasAnyTargets) {
       message.text = BazelPluginBundle.message("widget.no.targets.message")
-      message.isVisible = true
-      targetTree.isVisible = false
+      hideTargetTree()
+      showMessage()
     } else if (model.isSearchActive && model.visibleTargets.isEmpty()) {
       message.text = BazelPluginBundle.message("widget.target.search.no.results")
-      message.isVisible = true
-      targetTree.isVisible = false
+      hideTargetTree()
+      showMessage()
     } else {
-      message.isVisible = false
-      targetTree.isVisible = true
+      hideMessage()
+      showTargetTree()
     }
 
     targetTree.updateTree()
