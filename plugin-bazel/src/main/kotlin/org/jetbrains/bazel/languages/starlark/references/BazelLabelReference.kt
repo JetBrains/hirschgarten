@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.starlark.references
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
@@ -64,7 +65,8 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
   private fun fileCompletion(): Array<LookupElement> {
     val currentDirectory = element.containingFile.originalFile.virtualFile.parent
     val allFiles = mutableListOf<VirtualFile>()
-    searchForAllFiles(currentDirectory, allFiles)
+    val projectFileIndex = ProjectFileIndex.getInstance(element.project)
+    searchForAllFiles(projectFileIndex, currentDirectory, allFiles)
 
     // `VfsUtilCore.getRelativePath` can return null in the following two cases:
     // 1. The two arguments (file and ancestor) belong to different file systems.
@@ -79,14 +81,19 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     return lookupElements
   }
 
-  private fun searchForAllFiles(currentDirectory: VirtualFile, allFiles: MutableList<VirtualFile>) {
+  private fun searchForAllFiles(
+    index: ProjectFileIndex,
+    currentDirectory: VirtualFile,
+    allFiles: MutableList<VirtualFile>,
+  ) {
+    if (index.isExcluded(currentDirectory)) return
     val children = currentDirectory.children
     for (child in children) {
       if (child.isFile && !child.isBazelFile()) {
         allFiles.add(child)
       } else if (child.isDirectory) {
         if (findBuildFile(child) == null) {
-          searchForAllFiles(child, allFiles)
+          searchForAllFiles(index, child, allFiles)
         }
       }
     }
