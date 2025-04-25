@@ -8,7 +8,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.commons.constants.Constants.BAZELBSP_JSON_FILE_NAME
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import java.io.IOException
@@ -22,8 +21,6 @@ private val log = logger<BazelProjectOpenProcessor>()
 val ALL_ELIGIBLE_FILES_GLOB =
   buildString {
     append("{")
-    append(BAZELBSP_JSON_FILE_NAME)
-    append(",")
     append(Constants.WORKSPACE_FILE_NAMES.joinToString(","))
     append(",")
     append(Constants.BUILD_FILE_NAMES.joinToString(","))
