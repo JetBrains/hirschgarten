@@ -134,12 +134,11 @@ def _bsp_target_info_aspect_impl(target, ctx):
     default_info = target[DefaultInfo]
     executable = default_info and default_info.files_to_run.executable != None
 
-    raw_env = getattr(rule_attrs, "env", {})
-    if type(raw_env) == "Target":
-        raw_env = str(raw_env.label)
-
-    data_deps = getattr(ctx.rule.attr, "data", [])
-    env = do_starlark_string_expansion_dict(ctx, "env", raw_env, data_deps)
+    env = {}
+    raw_env = getattr(rule_attrs, "env", None)
+    if type(raw_env) == "dict":
+        data_deps = getattr(ctx.rule.attr, "data", [])
+        env = do_starlark_string_expansion_dict(ctx, "env", raw_env, data_deps)
 
     info = dict(
         id = str(target.label),
