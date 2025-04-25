@@ -2,8 +2,8 @@
 
 # Check if at least two arguments are provided (output directory + at least one JAR file)
 if [ "$#" -lt 2 ]; then
-	echo "Usage: $0 <output-dir> <jar-file> [jar-file...]"
-	exit 1
+  echo "Usage: $0 <output-dir> <jar-file> [jar-file...]"
+  exit 1
 fi
 
 # Set output directory from the first argument
@@ -17,13 +17,13 @@ pwd
 
 # Process each JAR file
 for JAR in "$@"; do
-	if [ ! -f "$JAR" ]; then
-		echo "File $JAR not found, skipping."
-		continue
-	fi
+  if [ ! -f "$JAR" ]; then
+    echo "File $JAR not found, skipping."
+    continue
+  fi
 
-	# Extract contents into OUTPUT_DIR without overwrite prompts
-	unzip -qo "$JAR" -d "$OUTPUT_DIR"
+  # Extract contents into OUTPUT_DIR without overwrite prompts
+  unzip -qo "$JAR" -d "$OUTPUT_DIR"
 done
 
 # Remove all non-Java files
