@@ -18,6 +18,11 @@ import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRep
 import org.jetbrains.bazel.languages.starlark.repomapping.singleTarget
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
 
+/**
+ * @param containingFile the file that should be used as context for resolving, e.g., relative labels
+ * @param acceptOnlyFileTarget `true` if [Label.target] always refers to a file on disk (e.g., in `load` statements).
+ * @see ExternalRepoResolveTest
+ */
 fun resolveLabel(
   project: Project,
   label: Label,
@@ -32,8 +37,9 @@ fun resolveLabel(
         resolveBuildFileTarget(buildFile, label)?.let { return it }
       }
       resolveFileTarget(project, buildFile, label)?.let { return it }
-      // Fall back to the BUILD file itself.
-      // The reference can still be valid, e.g., if a macro instantiates a rule with a custom name.
+      // Fall back to the BUILD file, as opposed to a specific target inside it.
+      // The reference may still be valid, e.g., if a macro in the file creates a target with a custom name,
+      // in which case we can't determine which macro actually corresponds to the target with that name.
       return buildFile
     }
     is SourceFile -> PsiManager.getInstance(project).findFile(buildOrSource.file)
@@ -63,7 +69,6 @@ private fun resolveBuildFileOrSourceFile(
   }
 
 private fun resolveBuildFileTarget(buildFile: StarlarkFile, label: Label): PsiElement? {
-  // Try to jump to a specific target
   val target = label.singleTarget() ?: return null
   val ruleTarget = buildFile.findRuleTarget(target.targetName) ?: return null
   return ruleTarget
