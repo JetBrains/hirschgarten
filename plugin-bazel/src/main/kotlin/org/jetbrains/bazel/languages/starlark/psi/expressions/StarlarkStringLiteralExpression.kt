@@ -6,6 +6,7 @@ import com.intellij.psi.PsiReference
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadValue
 import org.jetbrains.bazel.languages.starlark.references.BazelLabelReference
@@ -26,6 +27,7 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
   override fun getReference(): PsiReference? {
     if (isClassnameValue()) return StarlarkClassnameReference(this)
     if (isInVisibilityList()) return StarlarkVisibilityReference(this)
+    if (isLoadFilenameValue()) return BazelLabelReference(this, true)
     val loadAncestor = findLoadStatement() ?: return BazelLabelReference(this, true)
     val loadedFileNamePsi = loadAncestor.getLoadedFileNamePsi() ?: return null
     val loadedFileReference = BazelLabelReference(loadedFileNamePsi, true)
@@ -34,6 +36,8 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
       else -> StarlarkLoadReference(this, loadedFileReference)
     }
   }
+
+  private fun isLoadFilenameValue(): Boolean = parent is StarlarkFilenameLoadValue
 
   private fun findLoadStatement(): StarlarkLoadStatement? = (parent as? StarlarkLoadValue)?.getLoadStatement()
 

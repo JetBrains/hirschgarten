@@ -2,6 +2,9 @@ package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.project.ProjectManagerListener
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VfsUtilCore
@@ -9,13 +12,19 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
+import com.intellij.psi.search.FileTypeIndex
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.PlatformIcons
+import com.intellij.util.messages.MessageBusConnection
 import org.jetbrains.bazel.commons.constants.Constants.BUILD_FILE_NAMES
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.target.targetUtils
 
 // Tested in ExternalRepoResolveTest
@@ -39,6 +48,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
 
     if (isFileCompletionLocation()) return fileCompletion()
     if (isTargetCompletionLocation()) return targetCompletion()
+    if (isLoadFilenameCompletionLocation()) return loadFilenameCompletion()
     return emptyArray()
   }
 
@@ -121,6 +131,75 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
   private fun isInNameArgument(): Boolean {
     val parent = element.parent ?: return false
     return parent is StarlarkNamedArgumentExpression && parent.isNameArgument()
+  }
+
+  private fun isLoadFilenameCompletionLocation(): Boolean = element.parent is StarlarkFilenameLoadValue
+
+  private object BzlFileCache {
+    private var cache: List<String> = listOf()
+    private var cacheOld: Boolean = true
+    private var listener: MessageBusConnection? = null
+
+    private fun init(project: Project) {
+      listener =
+        project.messageBus.connect().apply {
+          subscribe(
+            FileTypeIndex.INDEX_CHANGE_TOPIC,
+            FileTypeIndex.IndexChangeListener { fileType ->
+              cacheOld = fileType is StarlarkFileType || cacheOld
+            },
+          )
+
+          subscribe(
+            ProjectManager.TOPIC,
+            object : ProjectManagerListener {
+              override fun projectClosing(project: Project) {
+                listener?.disconnect()
+                listener = null
+              }
+            },
+          )
+        }
+    }
+
+    private fun updateCache(project: Project) {
+      val starlarkFiles = FileTypeIndex.getFiles(StarlarkFileType, GlobalSearchScope.allScope(project))
+      val bzlFiles = starlarkFiles.filter { it.name.endsWith(".bzl") }
+      val relativePaths =
+        bzlFiles.mapNotNull { file ->
+          VfsUtilCore.getRelativePath(file, project.rootDir)
+        }
+      cache = relativePaths
+      cacheOld = false
+    }
+
+    fun get(project: Project): List<String> {
+      if (listener == null) {
+        init(project)
+      }
+      if (cacheOld) {
+        updateCache(project)
+      }
+
+      return cache
+    }
+  }
+
+  private fun filePathToLabel(relativeFilePath: String): String {
+    val lastSlash = relativeFilePath.lastIndexOf('/')
+    if (lastSlash == -1) {
+      return "//:$relativeFilePath"
+    }
+    return "//" + relativeFilePath.substring(0, lastSlash) + ":" + relativeFilePath.substring(lastSlash + 1)
+  }
+
+  private fun loadFilenameCompletion(): Array<LookupElement> {
+    val relativePaths = BzlFileCache.get(element.project)
+    val lookupElements =
+      relativePaths.map { file ->
+        fileLookupElement(filePathToLabel(file))
+      }
+    return lookupElements.toTypedArray()
   }
 
   companion object {
