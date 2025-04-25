@@ -4,7 +4,7 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
-import org.jetbrains.bazel.jvm.junit.PsiElementConfigurationLocator
+import org.jetbrains.bazel.junit.PsiElementConfigurationLocator
 import org.jetbrains.kotlin.asJava.getRepresentativeLightMethod
 import org.jetbrains.kotlin.asJava.toLightClass
 import org.jetbrains.kotlin.psi.KtClass
