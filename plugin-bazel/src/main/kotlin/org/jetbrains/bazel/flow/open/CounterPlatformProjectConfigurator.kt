@@ -4,6 +4,7 @@ import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
+import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.DirectoryProjectConfigurator
 import com.intellij.platform.backend.workspace.WorkspaceModel
@@ -25,7 +26,7 @@ class CounterPlatformProjectConfigurator : DirectoryProjectConfigurator {
   ) = configureProject(project)
 
   fun configureProject(project: Project) {
-    if (!project.isBazelProject) return
+    if (!project.isBazelProject || !Registry.`is`("ide.create.fake.module.on.project.import")) return
 
     val workspaceModel = WorkspaceModel.getInstance(project) as WorkspaceModelInternal
     val fakeModules =
