@@ -8,6 +8,7 @@ import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.Main
@@ -139,12 +140,10 @@ private fun findReferredAbsolutePackage(
   return repoRoot.findFileByRelativePath(label.packagePath.toString())
 }
 
-fun findBuildFile(packageDir: VirtualFile): VirtualFile? {
-  // Sometimes a project can contain a directory named "build" (which on case-insensitive filesystems is the same as BUILD).
-  // Try with BUILD.bazel first to avoid this case.
-  return packageDir.findChild("BUILD.bazel")?.takeIf { it.isFile }
-    ?: packageDir.findChild("BUILD")?.takeIf { it.isFile }
-}
+fun findBuildFile(packageDir: VirtualFile): VirtualFile? =
+  Constants.BUILD_FILE_NAMES.firstNotNullOfOrNull { buildFileName ->
+    packageDir.findChild(buildFileName)?.takeIf { it.isFile }
+  }
 
 private fun findBuildFilePsi(project: Project, packageDir: VirtualFile): StarlarkFile? {
   val buildFile = findBuildFile(packageDir) ?: return null
