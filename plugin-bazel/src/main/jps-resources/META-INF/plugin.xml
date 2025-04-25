@@ -128,7 +128,8 @@
         <runHandlerProvider implementation="org.jetbrains.bazel.run.handler.GenericTestHandlerProvider"
                             order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.PathSyncHook"/>
-        <projectSyncHook implementation="org.jetbrains.bazel.ui.widgets.tool.window.components.BazelToolwindowSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.ui.widgets.tool.window.components.BazelToolwindowSyncHook"
+                         order="after BazelRepoMappingSyncHook"/>
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
     </extensions>
