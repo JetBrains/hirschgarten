@@ -12,7 +12,7 @@ import org.jetbrains.bazel.languages.starlark.rename.StarlarkElementGenerator
 class StarlarkLoadReference(element: StarlarkStringLiteralExpression, val loadedFileReference: BazelLabelReference) :
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), false) {
   override fun resolve(): PsiElement? {
-    val loadedFile = loadedFileReference.resolve(acceptOnlyFileTarget = true) as? StarlarkFile ?: return null
+    val loadedFile = loadedFileReference.resolve() as? StarlarkFile ?: return null
     val name = element.getStringContents()
     val processor = StarlarkResolveNameProcessor(mutableListOf(), name)
     loadedFile.searchInTopLevel(processor, null)
