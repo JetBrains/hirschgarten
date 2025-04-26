@@ -26,7 +26,7 @@ class CounterPlatformProjectConfigurator : DirectoryProjectConfigurator {
   ) = configureProject(project)
 
   fun configureProject(project: Project) {
-    if (!project.isBazelProject || !Registry.`is`("ide.create.fake.module.on.project.import")) return
+    if (!project.isBazelProject || !Registry.`is`("ide.create.fake.module.on.project.import", true)) return
 
     val workspaceModel = WorkspaceModel.getInstance(project) as WorkspaceModelInternal
     val fakeModules =
