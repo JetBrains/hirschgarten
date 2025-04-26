@@ -16,21 +16,18 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 
 // Tested in ExternalRepoResolveTest
 class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolean) :
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), soft) {
-  override fun resolve(): PsiElement? = resolve(acceptOnlyFileTarget = false)
-
-  /**
-   * @see resolveLabel
-   */
-  fun resolve(acceptOnlyFileTarget: Boolean): PsiElement? {
+  override fun resolve(): PsiElement? {
     val project = element.project
     if (!project.isBazelProject || isInNameArgument()) return null
     val label = Label.parseOrNull(element.getStringContents()) ?: return null
-
+    val acceptOnlyFileTarget = element.getParentOfType<StarlarkLoadStatement>(strict = true) != null
     return resolveLabel(project, label, element.containingFile.originalFile.virtualFile, acceptOnlyFileTarget)
   }
 

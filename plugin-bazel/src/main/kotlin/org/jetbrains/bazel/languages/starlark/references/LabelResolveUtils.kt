@@ -41,7 +41,7 @@ fun resolveLabel(
       // Fall back to the BUILD file, as opposed to a specific target inside it.
       // The reference may still be valid, e.g., if a macro in the file creates a target with a custom name,
       // in which case we can't determine which macro actually corresponds to the target with that name.
-      return buildFile
+      return buildFile.takeIf { !acceptOnlyFileTarget }
     }
     is SourceFile -> PsiManager.getInstance(project).findFile(buildOrSource.file)
   }
