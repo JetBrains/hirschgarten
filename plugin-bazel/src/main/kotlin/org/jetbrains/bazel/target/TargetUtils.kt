@@ -245,17 +245,13 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
         state.fileToExecutableTargets.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
       updateComputedFields()
     } catch (e: Exception) {
-      hasError = true
-    } finally {
-      if (hasError) {
-        labelToTargetInfo = emptyMap()
-        moduleIdToTarget = emptyMap()
-        libraryIdToTarget = emptyMap()
-        fileToTarget = emptyMap()
-        fileToExecutableTargets = emptyMap()
-        allTargetsAndLibrariesLabels = emptyList()
-        updateComputedFields()
-      }
+      labelToTargetInfo = emptyMap()
+      moduleIdToTarget = emptyMap()
+      libraryIdToTarget = emptyMap()
+      fileToTarget = emptyMap()
+      fileToExecutableTargets = emptyMap()
+      allTargetsAndLibrariesLabels = emptyList()
+      updateComputedFields()
     }
   }
 }
