@@ -136,53 +136,59 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
   private fun isLoadFilenameCompletionLocation(): Boolean = element.parent is StarlarkFilenameLoadValue
 
   private object BzlFileCache {
-    private var cache: List<String> = listOf()
-    private var cacheOld: Boolean = true
-    private var listener: MessageBusConnection? = null
+    private class BzlFileCacheInstance(val project: Project) {
+      private var cache: List<String> = listOf()
+      private var cacheOld: Boolean = true
+      private var listener: MessageBusConnection? = null
 
-    private fun init(project: Project) {
-      listener =
-        project.messageBus.connect().apply {
-          subscribe(
-            FileTypeIndex.INDEX_CHANGE_TOPIC,
-            FileTypeIndex.IndexChangeListener { fileType ->
-              cacheOld = fileType is StarlarkFileType || cacheOld
-            },
-          )
+      private fun init() {
+        listener =
+          project.messageBus.connect().apply {
+            subscribe(
+              FileTypeIndex.INDEX_CHANGE_TOPIC,
+              FileTypeIndex.IndexChangeListener { fileType ->
+                cacheOld = fileType is StarlarkFileType || cacheOld
+              },
+            )
 
-          subscribe(
-            ProjectManager.TOPIC,
-            object : ProjectManagerListener {
-              override fun projectClosing(project: Project) {
-                listener?.disconnect()
-                listener = null
-              }
-            },
-          )
-        }
-    }
-
-    private fun updateCache(project: Project) {
-      val starlarkFiles = FileTypeIndex.getFiles(StarlarkFileType, GlobalSearchScope.allScope(project))
-      val bzlFiles = starlarkFiles.filter { it.name.endsWith(".bzl") }
-      val relativePaths =
-        bzlFiles.mapNotNull { file ->
-          VfsUtilCore.getRelativePath(file, project.rootDir)
-        }
-      cache = relativePaths
-      cacheOld = false
-    }
-
-    fun get(project: Project): List<String> {
-      if (listener == null) {
-        init(project)
-      }
-      if (cacheOld) {
-        updateCache(project)
+            subscribe(
+              ProjectManager.TOPIC,
+              object : ProjectManagerListener {
+                override fun projectClosing(project: Project) {
+                  listener?.disconnect()
+                  listener = null
+                }
+              },
+            )
+          }
       }
 
-      return cache
+      private fun updateCache() {
+        val starlarkFiles = FileTypeIndex.getFiles(StarlarkFileType, GlobalSearchScope.allScope(project))
+        val bzlFiles = starlarkFiles.filter { it.name.endsWith(".bzl") }
+        val relativePaths =
+          bzlFiles.mapNotNull { file ->
+            VfsUtilCore.getRelativePath(file, project.rootDir)
+          }
+        cache = relativePaths
+        cacheOld = false
+      }
+
+      fun get(): List<String> {
+        if (listener == null) {
+          init()
+        }
+        if (cacheOld) {
+          updateCache()
+        }
+
+        return cache
+      }
     }
+
+    private val instances = mutableMapOf<Project, BzlFileCacheInstance>()
+
+    fun get(project: Project): List<String> = instances.getOrPut(project) { BzlFileCacheInstance(project) }.get()
   }
 
   private fun filePathToLabel(relativeFilePath: String): String {
