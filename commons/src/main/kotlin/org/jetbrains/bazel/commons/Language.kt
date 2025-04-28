@@ -1,7 +1,5 @@
 package org.jetbrains.bazel.commons
 
-import kotlin.collections.plus
-
 enum class Language(
   val id: String,
   val extensions: Set<String>,
