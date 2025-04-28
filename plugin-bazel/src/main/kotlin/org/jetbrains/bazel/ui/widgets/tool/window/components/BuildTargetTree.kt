@@ -7,7 +7,6 @@ import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BuildTargetClas
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.ListTargetClassifier
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.TreeTargetClassifier
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
@@ -197,7 +196,7 @@ class BuildTargetTree(
 
   private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode =
     DefaultMutableTreeNode(
-      TargetNodeData(identifier.target, identifier.id.toShortString(project), identifier.target != null),
+      TargetNodeData(identifier.target, identifier.displayName, identifier.target != null),
     )
 
   private fun simplifyNodeIfHasOneChild(
@@ -242,11 +241,6 @@ class BuildTargetTree(
     } else {
       collapsePath(this)
     }
-  }
-
-  fun selectTopTargetAndFocus() {
-    selectionRows = intArrayOf(0)
-    requestFocus()
   }
 }
 
