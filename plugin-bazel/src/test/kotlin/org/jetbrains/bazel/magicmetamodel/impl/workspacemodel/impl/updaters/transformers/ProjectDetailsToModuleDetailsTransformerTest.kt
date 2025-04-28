@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
@@ -23,8 +25,11 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targetId,
         emptyList(),
         emptyList(),
-        emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
+        ),
         emptyList(),
         emptyList(),
         baseDirectory = Path("base/dir"),
@@ -66,8 +71,11 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targetId,
         emptyList(),
         emptyList(),
-        emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
+        ),
         listOf(SourceItem(Path("/root/dir/example/package/File1.java"), false)),
         listOf(Path("/root/dir/resource/File.txt")),
         baseDirectory = Path("base/dir"),
@@ -116,9 +124,12 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       BuildTarget(
         target1Id,
         emptyList(),
-        emptyList(),
         listOf(target2Id),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
+        ),
         listOf(SourceItem(Path("/root/dir1/example/package/File1.java"), false)),
         listOf(Path("/root/dir1/resource/File.txt")),
         baseDirectory = Path("base/dir"),
@@ -134,8 +145,11 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         target2Id,
         emptyList(),
         emptyList(),
-        emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
+        ),
         listOf(
           SourceItem(Path("/root/dir2/example/package/File1.java"), false),
           SourceItem(Path("/root/dir2/example/package/File2.java"), false),
@@ -148,9 +162,12 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       BuildTarget(
         target3Id,
         emptyList(),
-        emptyList(),
         listOf(target2Id),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
+        ),
         emptyList(),
         emptyList(),
         baseDirectory = Path("base/dir"),
@@ -166,9 +183,12 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       BuildTarget(
         target4Id,
         emptyList(),
-        emptyList(),
         listOf(target1Id),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
+        ),
         listOf(
           SourceItem(Path("/root/dir2/example/package/file.py"), false),
         ),

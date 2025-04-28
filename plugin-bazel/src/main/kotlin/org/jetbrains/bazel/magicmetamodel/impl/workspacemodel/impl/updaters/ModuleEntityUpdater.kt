@@ -68,7 +68,7 @@ internal class ModuleEntityUpdater(
 
     val imlData =
       ModuleCustomImlDataEntity(
-        customModuleOptions = entityToAdd.capabilities.asMap() + entityToAdd.languageIdsAsSingleEntryMap,
+        customModuleOptions = emptyMap(),
         entitySource = moduleEntity.entitySource,
       ) {
         this.rootManagerTagCustomData = null
@@ -90,7 +90,7 @@ internal class ModuleEntityUpdater(
     when {
       entityToAdd.isDummy -> BspDummyEntitySource
       !workspaceModelEntityUpdaterConfig.project.bazelProjectSettings.enableBuildWithJps ||
-        entityToAdd.languageIds.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspModuleEntitySource(entityToAdd.name)
+        entityToAdd.kind.languageClasses.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspModuleEntitySource(entityToAdd.name)
 
       else ->
         LegacyBridgeJpsEntitySourceFactory.getInstance(workspaceModelEntityUpdaterConfig.project).createEntitySourceForModule(

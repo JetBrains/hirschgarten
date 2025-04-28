@@ -3,6 +3,9 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.BazelJavaSourceRootEntityUpdater
@@ -209,10 +212,15 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
         GenericModuleInfo(
           name = name,
           type = ModuleTypeId(StdModuleTypes.JAVA.id),
+          kind =
+            TargetKind(
+              kindString = "java_library",
+              ruleType = RuleType.LIBRARY,
+              languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA, LanguageClass.KOTLIN),
+            ),
           modulesDependencies = listOf(),
           librariesDependencies = javaModule.genericModuleInfo.librariesDependencies,
           isDummy = true,
-          languageIds = listOf("java", "scala", "kotlin"),
         ),
       baseDirContentRoot = ContentRoot(path = sourceRoot.sourcePath),
       // For some reason allowing dummy modules to be JAVA_TEST_SOURCE_ROOT_TYPE causes red code on https://github.com/bazelbuild/bazel

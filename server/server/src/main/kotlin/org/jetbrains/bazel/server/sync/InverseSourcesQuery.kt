@@ -5,7 +5,6 @@ import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.InverseSourcesResult
-import org.jetbrains.bsp.protocol.StatusCode
 import java.nio.file.Path
 
 object InverseSourcesQuery {
@@ -46,7 +45,7 @@ object InverseSourcesQuery {
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
         .waitAndGetResult()
-    if (targetLabelsQuery.bspStatusCode == StatusCode.OK) {
+    if (targetLabelsQuery.isSuccess) {
       return targetLabelsQuery.stdoutLines.mapNotNull { Label.parseOrNull(it) }
     } else {
       error("Could not retrieve inverse sources")
@@ -69,7 +68,7 @@ object InverseSourcesQuery {
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
         .waitAndGetResult()
-    return if (fileLabelResult.bspStatusCode == StatusCode.OK) {
+    return if (fileLabelResult.isSuccess) {
       fileLabelResult.stdoutLines.last()
     } else if (fileLabelResult.stderrLines.firstOrNull()?.startsWith("ERROR: no such target '") == true) {
       null

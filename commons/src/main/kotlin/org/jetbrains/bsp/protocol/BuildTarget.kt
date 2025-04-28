@@ -1,16 +1,17 @@
 package org.jetbrains.bsp.protocol
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
 data class BuildTarget(
   val id: Label,
   val tags: List<String>,
-  val languageIds: List<String>,
   val dependencies: List<Label>,
-  val capabilities: BuildTargetCapabilities,
+  val kind: TargetKind,
   val sources: List<SourceItem>,
   val resources: List<Path>,
   val baseDirectory: Path,
+  val noBuild: Boolean = false, // TODO no idea how it's used, it replaces the NO_BUILD tag for now
   var data: BuildTargetData? = null,
 )
 

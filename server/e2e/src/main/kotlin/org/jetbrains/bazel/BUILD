@@ -200,6 +200,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons",
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
@@ -226,6 +227,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons",
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",

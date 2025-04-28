@@ -10,6 +10,7 @@ import com.intellij.task.ProjectTaskContext
 import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
@@ -17,7 +18,6 @@ import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.CompileResult
-import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 
@@ -63,7 +63,7 @@ class BazelProjectTaskRunner : ProjectTaskRunner() {
 
   @OptIn(ExperimentalCoroutinesApi::class)
   private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTarget>): Promise<Result> {
-    val targetIdentifiers = targetsToBuild.filter { it.capabilities.canCompile }.map { it.id }
+    val targetIdentifiers = targetsToBuild.filter { !it.noBuild }.map { it.id }
     val result =
       BazelCoroutineService.getInstance(project).startAsync {
         runBuildTargetTask(targetIdentifiers, project)
@@ -75,8 +75,8 @@ class BazelProjectTaskRunner : ProjectTaskRunner() {
 
   private fun CompileResult.toTaskRunnerResult() =
     when (statusCode) {
-      StatusCode.OK -> TaskRunnerResults.SUCCESS
-      StatusCode.CANCELLED -> TaskRunnerResults.ABORTED
+      BazelStatus.SUCCESS -> TaskRunnerResults.SUCCESS
+      BazelStatus.CANCEL -> TaskRunnerResults.ABORTED
       else -> TaskRunnerResults.FAILURE
     }
 }

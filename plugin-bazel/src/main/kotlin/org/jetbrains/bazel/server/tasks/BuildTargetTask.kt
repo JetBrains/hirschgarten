@@ -13,6 +13,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.annotations.InternalApi
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
@@ -27,7 +28,6 @@ import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileReport
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.StatusCode
 import java.nio.file.Path
 import java.util.UUID
 
@@ -65,14 +65,14 @@ class BuildTargetTask(private val project: Project) {
             taskId: TaskId,
             parentId: TaskId?,
             message: String,
-            status: StatusCode,
+            status: BazelStatus,
             data: Any?,
           ) {
             when (data) {
               is CompileReport -> {
-                if (data.errors > 0 || status == StatusCode.ERROR) {
+                if (data.errors == 0 && status == BazelStatus.SUCCESS) {
                   bspBuildConsole.finishSubtask(taskId, message, FailureResultImpl())
-                } else if (status == StatusCode.CANCELLED) {
+                } else if (status == BazelStatus.CANCEL) {
                   bspBuildConsole.finishSubtask(taskId, message, SkippedResultImpl())
                 } else {
                   bspBuildConsole.finishSubtask(taskId, message, SuccessResultImpl())
