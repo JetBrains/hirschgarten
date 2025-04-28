@@ -109,7 +109,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "scala_library",
           ruleType = RuleType.LIBRARY,
-          languageClasses = setOf(LanguageClass.SCALA),
+          languageClasses = setOf(LanguageClass.SCALA, LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/scala_targets/"),
         data = scalaBuildTarget,

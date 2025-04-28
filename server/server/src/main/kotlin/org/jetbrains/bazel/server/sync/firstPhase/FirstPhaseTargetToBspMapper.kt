@@ -58,12 +58,11 @@ class FirstPhaseTargetToBspMapper(private val bazelPathsResolver: BazelPathsReso
         else -> RuleType.LIBRARY
       }
 
-    val languagesForTarget = Language.allOfKind(kind).mapNotNull { LanguageClass.fromLanguage(it) }
-    val languagesForSources = srcs.flatMap { Language.allOfSource(it) }.distinct().mapNotNull { LanguageClass.fromLanguage(it) }
+    val languageClasses = inferLanguages().mapNotNull { LanguageClass.fromLanguage(it) }.toSet()
 
     return TargetKind(
       kindString = kind,
-      languageClasses = (languagesForTarget + languagesForSources).toSet(),
+      languageClasses = languageClasses,
       ruleType = ruleType,
     )
   }
