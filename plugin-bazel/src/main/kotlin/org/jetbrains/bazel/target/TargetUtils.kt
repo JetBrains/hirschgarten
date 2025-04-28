@@ -230,8 +230,6 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   @InternalApi
   override fun loadState(state: TargetUtilsState) {
-    var hasError = false
-
     try {
       labelToTargetInfo =
         state.labelToTargetInfo
