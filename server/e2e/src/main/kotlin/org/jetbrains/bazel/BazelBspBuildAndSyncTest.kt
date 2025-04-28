@@ -2,9 +2,11 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsParams
@@ -70,14 +72,14 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
     val srcMainBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//src:main"),
-        listOf("library"),
-        listOf("java"),
+        listOf(),
         emptyList(),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = false,
-        ),
+        kind =
+          TargetKind(
+            kindString = "java_library",
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
         baseDirectory = Path("\$WORKSPACE/src/"),
         data = exampleExampleJvmBuildTarget,
         sources =

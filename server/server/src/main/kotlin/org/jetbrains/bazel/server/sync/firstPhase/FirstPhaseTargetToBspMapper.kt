@@ -1,14 +1,16 @@
 package org.jetbrains.bazel.server.sync.firstPhase
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
+import org.jetbrains.bazel.commons.Language
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.server.model.FirstPhaseProject
-import org.jetbrains.bazel.server.model.Language
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -39,41 +41,44 @@ class FirstPhaseTargetToBspMapper(private val bazelPathsResolver: BazelPathsReso
     return BuildTarget(
       id = label,
       tags = inferTags(),
-      languageIds = inferLanguages().map { it.id }.toList(),
       dependencies = interestingDeps.map { Label.parse(it) },
-      capabilities = inferCapabilities(),
+      kind = inferKind(),
       sources = calculateSources(project),
       resources = calculateResources(project),
+      noBuild = isManual, // TODO lol, it's different from the aspect sync??
       baseDirectory = bazelPathsResolver.toDirectoryPath(label, project.repoMapping),
     )
   }
 
-  private fun Target.inferTags(): List<String> {
-    val typeTag = inferTypeTagFromTargetKind()
-    val manualTag = if (isManual) BuildTargetTag.MANUAL else null
+  private fun Target.inferKind(): TargetKind {
+    val ruleType =
+      when {
+        isBinary -> RuleType.BINARY
+        isTest -> RuleType.TEST
+        else -> RuleType.LIBRARY
+      }
 
-    return listOfNotNull(typeTag, manualTag)
+    val languagesForTarget = Language.allOfKind(kind).mapNotNull { LanguageClass.fromLanguage(it) }
+    val languagesForSources = srcs.flatMap { Language.allOfSource(it) }.distinct().mapNotNull { LanguageClass.fromLanguage(it) }
+
+    return TargetKind(
+      kindString = kind,
+      languageClasses = (languagesForTarget + languagesForSources).toSet(),
+      ruleType = ruleType,
+    )
   }
 
-  private fun Target.inferTypeTagFromTargetKind(): String =
-    when {
-      isBinary -> BuildTargetTag.APPLICATION
-      isTest -> BuildTargetTag.TEST
-      else -> BuildTargetTag.LIBRARY
-    }
+  private fun Target.inferTags(): List<String> {
+    val manualTag = if (isManual) BuildTargetTag.MANUAL else null
+
+    return listOfNotNull(manualTag)
+  }
 
   private fun Target.inferLanguages(): Set<Language> {
     val languagesForTarget = Language.allOfKind(kind)
     val languagesForSources = srcs.flatMap { Language.allOfSource(it) }.toHashSet()
     return languagesForTarget + languagesForSources
   }
-
-  private fun Target.inferCapabilities(): BuildTargetCapabilities =
-    BuildTargetCapabilities(
-      canCompile = !isManual,
-      canRun = isBinary,
-      canTest = isTest,
-    )
 
   private fun Target.isSupported(): Boolean {
     val isRuleSupported = Language.allOfKind(kind).isNotEmpty()

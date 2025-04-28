@@ -3,12 +3,15 @@ package org.jetbrains.bazel
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.BazelStatus
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.Diagnostic
@@ -23,7 +26,6 @@ import org.jetbrains.bsp.protocol.ScalacOptionsItem
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import java.util.UUID
@@ -98,17 +100,16 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
     val target =
       BuildTarget(
         Label.parse("$targetPrefix//scala_targets:library"),
-        listOf("library"),
-        listOf("scala"),
+        listOf(),
         listOf(
           Label.synthetic("scala-compiler-2.12.14.jar"),
           Label.synthetic("scala-library-2.12.14.jar"),
           Label.synthetic("scala-reflect-2.12.14.jar"),
         ),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = false,
+        TargetKind(
+          kindString = "scala_library",
+          ruleType = RuleType.LIBRARY,
+          languageClasses = setOf(LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/scala_targets/"),
         data = scalaBuildTarget,
@@ -176,7 +177,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
     val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it != Label.synthetic("bsp-workspace-root") }
     val compileParams = CompileParams(expectedTargetIdentifiers, originId = UUID.randomUUID().toString())
 
-    val expectedCompilerResult = CompileResult(StatusCode.OK)
+    val expectedCompilerResult = CompileResult(BazelStatus.SUCCESS)
     val expectedDiagnostic =
       Diagnostic(
         Range(Position(4, 2), Position(4, 2)),

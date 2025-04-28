@@ -2,16 +2,14 @@ package org.jetbrains.bazel.bazelrunner
 
 import org.jetbrains.bazel.bazelrunner.outputs.OutputCollector
 import org.jetbrains.bazel.commons.BazelStatus
-import org.jetbrains.bsp.protocol.StatusCode
 
 class BazelProcessResult(
   private val stdoutCollector: OutputCollector,
   private val stderrCollector: OutputCollector,
   val bazelStatus: BazelStatus,
 ) {
-  val isSuccess: Boolean get() = bspStatusCode == StatusCode.OK
+  val isSuccess: Boolean get() = bazelStatus == BazelStatus.SUCCESS
   val isNotSuccess: Boolean get() = !isSuccess
-  val bspStatusCode: StatusCode get() = bazelStatus.toBspStatusCode()
   val stdoutLines: List<String> get() = stdoutCollector.lines()
 
   /**

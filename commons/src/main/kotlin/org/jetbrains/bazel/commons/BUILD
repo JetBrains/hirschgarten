@@ -13,7 +13,6 @@ kt_jvm_library(
     exports = ["//commons/src/main/kotlin/org/jetbrains/bazel/label"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/label",
-        "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/proto:bsp_target_info_java_proto",
     ],
