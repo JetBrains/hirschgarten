@@ -60,7 +60,9 @@ class PythonProjectSync : ProjectSyncHook {
   override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isPythonSupportEnabled
 
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
-    val pythonTargets = environment.buildTargets.calculatePythonTargets()
+    // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1960
+    val bspBuildTargets = environment.server.workspaceBuildTargets()
+    val pythonTargets = bspBuildTargets.calculatePythonTargets()
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
 
     val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)

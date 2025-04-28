@@ -40,8 +40,10 @@ import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
 import org.jetbrains.bazel.sync.status.SyncFatalFailureException
 import org.jetbrains.bazel.sync.status.SyncPartialFailureException
 import org.jetbrains.bazel.sync.status.SyncStatusService
+import org.jetbrains.bazel.ui.console.ids.BASE_PROJECT_SYNC_SUBTASK_ID
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bazel.ui.console.syncConsole
+import org.jetbrains.bazel.ui.console.withSubtask
 import java.util.concurrent.CancellationException
 
 private val log = logger<ProjectSyncTask>()
@@ -171,7 +173,13 @@ class ProjectSyncTask(private val project: Project) {
       project.connection.runWithServer { server ->
         bspTracer.spanBuilder("collect.project.details.ms").use {
           // if this bazel build fails, we still want the sync hooks to be executed
-          val buildTargets = BaseProjectSync(project).execute(syncScope, buildProject, server, PROJECT_SYNC_TASK_ID)
+          val bazelProject =
+            project.syncConsole.withSubtask(
+              taskId = PROJECT_SYNC_TASK_ID,
+              subtaskId = BASE_PROJECT_SYNC_SUBTASK_ID,
+              message = BazelPluginBundle.message("console.task.base.sync"),
+            ) { server.runSync(buildProject, PROJECT_SYNC_TASK_ID) }
+
           val environment =
             ProjectSyncHookEnvironment(
               project = project,
@@ -179,14 +187,14 @@ class ProjectSyncTask(private val project: Project) {
               diff = diff,
               taskId = PROJECT_SYNC_TASK_ID,
               progressReporter = progressReporter,
-              buildTargets = buildTargets,
+              buildTargets = bazelProject.targets,
               syncScope = syncScope,
             )
 
           project.projectSyncHooks.forEach {
             it.onSync(environment)
           }
-          buildTargets.hasError
+          bazelProject.hasError
         }
       }
 
