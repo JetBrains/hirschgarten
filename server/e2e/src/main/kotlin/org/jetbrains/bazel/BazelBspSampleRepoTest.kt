@@ -1178,7 +1178,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             TargetKind(
               ruleType = RuleType.BINARY,
               kindString = "filegroup",
-              languageClasses = setOf(LanguageClass.JAVA),
+              languageClasses = emptySet(),
             ),
           baseDirectory = Path("$workspaceDir/target_without_java_info/"),
           sources = emptyList(),
@@ -1192,7 +1192,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             TargetKind(
               ruleType = RuleType.BINARY,
               kindString = "genrule",
-              languageClasses = setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
+              languageClasses = emptySet(),
             ),
           baseDirectory = Path("$workspaceDir/target_without_java_info/"),
           sources = emptyList(),

@@ -9,6 +9,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.Language
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
@@ -1029,39 +1030,15 @@ class BazelProjectMapper(
 
   private fun resolveDirectDependencies(target: TargetInfo): List<Label> = target.dependenciesList.map { it.label() }
 
-  // TODO: this is a re-creation of `Language.allOfKind`. To be removed when this logic is merged with client-side
-  private val languagesFromKinds: Map<String, Set<LanguageClass>> =
-    mapOf(
-      "java_library" to setOf(LanguageClass.JAVA),
-      "java_binary" to setOf(LanguageClass.JAVA),
-      "java_test" to setOf(LanguageClass.JAVA),
-      // a workaround to register this target type as Java module in IntelliJ IDEA
-      "intellij_plugin_debug_target" to setOf(LanguageClass.JAVA),
-      "kt_jvm_library" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
-      "kt_jvm_binary" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
-      "kt_jvm_test" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
-      // rules_jvm from IntelliJ monorepo
-      "jvm_library" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
-      "jvm_binary" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
-      "jvm_resources" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
-      "android_binary" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
-      "android_library" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
-      "android_local_test" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
-      // TODO this should include kotlin probably, but I'm leaving it as it was
-      "kt_android_library" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
-      "kt_android_local_test" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
-      "go_binary" to setOf(LanguageClass.GO),
-    )
-
   private fun inferLanguages(target: TargetInfo, transitiveCompileTimeJarsTargetKinds: Set<String>): Set<LanguageClass> =
     buildSet {
-      // TODO It's a hack preserved from before TargetKind refactorking, to be removed
-      if (transitiveCompileTimeJarsTargetKinds.contains(target.kind)) {
-        add(LanguageClass.JAVA)
-      }
-      languagesFromKinds[target.kind]?.let {
-        addAll(it)
-      }
+      // TODO(andrzej): It's a hack preserved from before TargetKind refactoring, to be removed
+      Language
+        .allOfKind(
+          target.kind,
+          transitiveCompileTimeJarsTargetKinds,
+        ).mapNotNull { LanguageClass.fromLanguage(it) }
+        .also { addAll(it) }
       for (source in target.sourcesList) {
         val extension = Path.of(source.relativePath).extension
         LanguageClass.fromExtension(extension)?.let {

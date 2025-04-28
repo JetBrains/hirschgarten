@@ -119,7 +119,7 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         session.client.clearDiagnostics()
         val result = session.server.buildTargetCompile(transformedParams)
         println(session.client.logMessageNotifications)
-        assertEquals(BazelStatus.FATAL_ERROR, result.statusCode)
+        assertEquals(BazelStatus.BUILD_ERROR, result.statusCode)
         assertEquals(2, session.client.publishDiagnosticsNotifications.size)
         val noSuchMethodError =
           session.client.publishDiagnosticsNotifications.find {

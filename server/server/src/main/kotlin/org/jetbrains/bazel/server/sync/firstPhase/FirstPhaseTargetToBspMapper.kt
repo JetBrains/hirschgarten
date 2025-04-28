@@ -1,12 +1,13 @@
 package org.jetbrains.bazel.server.sync.firstPhase
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
+import org.jetbrains.bazel.commons.Language
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.server.model.FirstPhaseProject
-import org.jetbrains.bazel.server.model.Language
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -57,12 +58,12 @@ class FirstPhaseTargetToBspMapper(private val bazelPathsResolver: BazelPathsReso
         else -> RuleType.LIBRARY
       }
 
-    val languagesForTarget = Language.allOfKind(kind)
-    val languagesForSources = srcs.flatMap { Language.allOfSource(it) }.toHashSet()
+    val languagesForTarget = Language.allOfKind(kind).mapNotNull { LanguageClass.fromLanguage(it) }
+    val languagesForSources = srcs.flatMap { Language.allOfSource(it) }.distinct().mapNotNull { LanguageClass.fromLanguage(it) }
 
     return TargetKind(
       kindString = kind,
-      languageClasses = emptySet(),
+      languageClasses = (languagesForTarget + languagesForSources).toSet(),
       ruleType = ruleType,
     )
   }

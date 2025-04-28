@@ -56,6 +56,22 @@ enum class LanguageClass(val languageName: String, private val recognizedFilenam
       return null
     }
 
+    /**
+     * This is temporarily for converting from [Language] to [LanguageClass].
+     * TODO(andrzej): merge [Language] and [LanguageClass] into one
+     */
+    fun fromLanguage(language: Language): LanguageClass? =
+      when (language) {
+        Language.JAVA -> JAVA
+        Language.GO -> GO
+        Language.SCALA -> SCALA
+        Language.CPP -> C
+        Language.KOTLIN -> KOTLIN
+        Language.PYTHON -> PYTHON
+        Language.THRIFT -> THRIFT
+        Language.ANDROID -> ANDROID
+      }
+
     /** Returns the LanguageClass associated with the given filename extension, if it's recognized.  */
     fun fromExtension(filenameExtension: String): LanguageClass? = RECOGNIZED_EXTENSIONS[filenameExtension]
   }
