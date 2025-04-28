@@ -67,7 +67,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   }
 
   @Test
-  fun `should return resource root with type test for resources item coming from a build target having test tag`() {
+  fun `should return resource root with type test for resources item coming from a build target having test target kind`() {
     // given
     val resourceFilePath = Files.createTempFile(projectBasePath, "resource", "File.txt")
     resourceFilePath.toFile().deleteOnExit()
@@ -75,11 +75,11 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     val buildTarget =
       BuildTarget(
         Label.parse("//target"),
-        listOf("test"),
+        listOf(),
         listOf(),
         TargetKind(
-          kindString = "java_binary",
-          ruleType = RuleType.BINARY,
+          kindString = "java_test",
+          ruleType = RuleType.TEST,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         emptyList(),

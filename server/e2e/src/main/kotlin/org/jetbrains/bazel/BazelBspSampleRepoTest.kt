@@ -836,7 +836,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "scala_binary",
           ruleType = RuleType.BINARY,
-          languageClasses = setOf(LanguageClass.SCALA),
+          languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/scala_targets/"),
         data = scalaBuildTarget,
@@ -906,7 +906,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "scala_binary",
           ruleType = RuleType.BINARY,
-          languageClasses = setOf(LanguageClass.SCALA),
+          languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/target_without_jvm_flags/"),
         data = scalaBuildTarget,
@@ -932,7 +932,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "scala_library",
           ruleType = RuleType.LIBRARY,
-          languageClasses = setOf(LanguageClass.SCALA),
+          languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/target_without_main_class/"),
         data = scalaBuildTarget,
@@ -958,7 +958,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "scala_binary",
           ruleType = RuleType.BINARY,
-          languageClasses = setOf(LanguageClass.SCALA),
+          languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/target_without_args/"),
         data = scalaBuildTarget,
@@ -1028,7 +1028,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         TargetKind(
           kindString = "scala_test",
           ruleType = RuleType.TEST,
-          languageClasses = setOf(LanguageClass.SCALA),
+          languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/scala_targets/"),
         data = scalaBuildTarget,

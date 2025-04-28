@@ -88,11 +88,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem =
       BuildTarget(
         Label.parse("target"),
-        listOf("test"),
+        listOf(),
         emptyList(),
         TargetKind(
-          kindString = "java_binary",
-          ruleType = RuleType.BINARY,
+          kindString = "java_test",
+          ruleType = RuleType.TEST,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         listOf(sourceItem),

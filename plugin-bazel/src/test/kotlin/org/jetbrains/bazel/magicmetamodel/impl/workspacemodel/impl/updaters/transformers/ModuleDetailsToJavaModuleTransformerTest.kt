@@ -342,8 +342,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
           Label.parse("@maven//:lib1"),
         ),
         TargetKind(
-          kindString = "java_binary",
-          ruleType = RuleType.BINARY,
+          kindString = "java_library",
+          ruleType = RuleType.LIBRARY,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = module1Root,
@@ -404,14 +404,14 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val buildTarget2 =
       BuildTarget(
         buildTargetId2,
-        listOf("test"),
+        listOf(),
         listOf(
           Label.parse("module3"),
           Label.parse("@maven//:lib1"),
         ),
         TargetKind(
-          kindString = "java_binary",
-          ruleType = RuleType.BINARY,
+          kindString = "java_test",
+          ruleType = RuleType.TEST,
           languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = module2Root,
