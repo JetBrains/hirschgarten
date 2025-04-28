@@ -23,6 +23,7 @@ import org.jetbrains.bazel.workspacecontext.TargetShardSizeSpec
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.TransitiveCompileTimeJarsTargetKindsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.BazelProject
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
@@ -58,6 +59,7 @@ private val mockWorkspaceContext =
 
 private val mockBuildServer =
   BuildServerMock(
+    bazelProject = BazelProject(emptyMap(), false),
     workspaceBuildTargetsResult = WorkspaceBuildTargetsResult(emptyList()),
     workspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
     workspaceLibrariesResult = WorkspaceLibrariesResult(emptyList()),
