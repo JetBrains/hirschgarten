@@ -1,11 +1,11 @@
 if ! command -v vncserver &>/dev/null; then
-	echo "vncserver executable not found, vnc server is not started"
-	exit 0
+  echo "vncserver executable not found, vnc server is not started"
+  exit 0
 fi
 
 if [ ! -f ~/.vnc/passwd ]; then
-	vnc_pass="${JB_VNC_PASSWORD:-vncpassword}"
-	/usr/bin/expect <<EOF
+  vnc_pass="${JB_VNC_PASSWORD:-vncpassword}"
+  /usr/bin/expect <<EOF
 spawn /usr/bin/vncpasswd
 expect "Password:"
 send "$vnc_pass\r"

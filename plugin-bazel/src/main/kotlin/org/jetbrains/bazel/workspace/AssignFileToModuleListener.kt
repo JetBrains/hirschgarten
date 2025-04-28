@@ -149,7 +149,7 @@ private fun VFileEvent.process(project: Project) {
         storage = storage,
       )
     }
-  }.invokeOnCompletion { targetUtils.fireSyncListeners(false) }
+  }
 }
 
 private fun runInBackgroundWithProgress(project: Project, action: suspend () -> Unit): Job =

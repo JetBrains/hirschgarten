@@ -8,7 +8,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants
-import org.jetbrains.bazel.commons.constants.Constants.BAZELBSP_JSON_FILE_NAME
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import java.io.IOException
@@ -18,19 +17,6 @@ import kotlin.io.path.isRegularFile
 import kotlin.io.path.listDirectoryEntries
 
 private val log = logger<BazelProjectOpenProcessor>()
-
-val ALL_ELIGIBLE_FILES_GLOB =
-  buildString {
-    append("{")
-    append(BAZELBSP_JSON_FILE_NAME)
-    append(",")
-    append(Constants.WORKSPACE_FILE_NAMES.joinToString(","))
-    append(",")
-    append(Constants.BUILD_FILE_NAMES.joinToString(","))
-    append(",*.")
-    append(Constants.PROJECT_VIEW_FILE_EXTENSION)
-    append("}")
-  }
 
 val BUILD_FILE_GLOB = "{${Constants.BUILD_FILE_NAMES.joinToString(",")}}"
 
@@ -59,6 +45,8 @@ internal class BazelProjectOpenProcessor : BaseProjectOpenProcessor() {
   override fun calculateBeforeOpenCallback(originalVFile: VirtualFile): (Project) -> Unit =
     when {
       originalVFile.isProjectViewFile() -> projectViewFileBeforeOpenCallback(originalVFile)
+      // BUILD file at the root can be treated as a workspace file in this context
+      originalVFile.isBuildFile() && originalVFile.parent?.isWorkspaceRoot() == true -> { project -> }
       originalVFile.isBuildFile() -> buildFileBeforeOpenCallback(originalVFile)
       originalVFile.isWorkspaceFile() -> { project -> }
       originalVFile.isWorkspaceRoot() -> { project -> }

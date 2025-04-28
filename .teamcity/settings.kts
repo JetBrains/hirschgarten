@@ -117,6 +117,13 @@ object GitHub : Project({
 //    }
 //  }
 
+  ResultsAggregator.GitHub.triggers {
+    vcs {
+      branchFilter = ProjectBranchFilters.githubBranchFilter
+      triggerRules = ProjectTriggerRules.triggerRules
+    }
+  }
+
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =
     arrayListOf(
@@ -240,6 +247,13 @@ object Space : Project({
 //      branchFilter = ProjectBranchFilters.spaceBranchFilter
 //    }
 //  }
+
+  ResultsAggregator.Space.triggers {
+    vcs {
+      branchFilter = ProjectBranchFilters.spaceBranchFilter
+      triggerRules = ProjectTriggerRules.triggerRules
+    }
+  }
 
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =

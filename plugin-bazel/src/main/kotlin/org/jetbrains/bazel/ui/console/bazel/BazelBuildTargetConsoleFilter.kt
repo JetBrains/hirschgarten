@@ -5,11 +5,10 @@ import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
-import org.jetbrains.bazel.languages.starlark.references.BazelLabelReference
+import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 
 class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
   private val highlightGroupName = "highlightGroup"
@@ -33,16 +32,17 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
   private fun MatchResult.toFilterResultOrNull(line: String, entireLength: Int): Filter.Result? {
     val highlightGroup = groups[highlightGroupName] ?: return null
     val label = Label.parseOrNull(highlightGroup.value) as? ResolvedLabel ?: return null
-    val psi = BazelLabelReference.resolveLabel(project, label, null, false) ?: return null
-    val containingFile = psi.containingFile?.virtualFile ?: return null
-    val hyperLinkInfo = OpenFileHyperlinkInfo(project, containingFile, psi.calculateLineNumber() ?: 0, 0)
+    val psi = resolveLabel(project, label) ?: return null
+    val containingFile = psi.containingFile ?: return null
+    val document = PsiDocumentManager.getInstance(project).getDocument(containingFile) ?: return null
+    val textOffset = psi.textOffset
+    val documentLine = document.getLineNumber(textOffset)
+    val documentColumn = textOffset - document.getLineStartOffset(documentLine)
+    val hyperLinkInfo = OpenFileHyperlinkInfo(project, containingFile.virtualFile ?: return null, documentLine, documentColumn)
     val highlightStartOffset = entireLength - line.length + highlightGroup.range.first
     val highlightEndOffset = entireLength - line.length + highlightGroup.range.last + 1
     return Filter.Result(highlightStartOffset, highlightEndOffset, hyperLinkInfo)
   }
-
-  private fun PsiElement.calculateLineNumber(): Int? =
-    PsiDocumentManager.getInstance(project).getDocument(containingFile)?.getLineNumber(textOffset)
 }
 
 class BazelBuildTargetConsoleFilterProvider : ConsoleFilterProvider {

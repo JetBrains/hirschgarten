@@ -3,7 +3,6 @@ package org.jetbrains.bazel.jvm.sync
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
-import org.jetbrains.bazel.sync.scope.FullProjectSync
 
 class JvmSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
@@ -15,7 +14,6 @@ class JvmSyncHook : ProjectSyncHook {
       buildTargets = environment.buildTargets,
       syncScope = environment.syncScope,
     )
-    val targetListChanged = environment.syncScope is FullProjectSync
-    environment.diff.workspaceModelDiff.addPostApplyAction { task.postprocessingSubtask(targetListChanged) }
+    environment.diff.workspaceModelDiff.addPostApplyAction { task.postprocessingSubtask() }
   }
 }

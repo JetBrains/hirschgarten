@@ -57,7 +57,7 @@ class BazelProjectModelModifierTest : IdeStarterBaseProjectTest() {
         .openFile("BUILD")
         .assertFileContentsEqual("BUILD.expected", "BUILD")
         // Check that the added dependency to JUnit is navigatable
-        .navigateToFile(33, 17, "BUILD", 933, 1)
+        .navigateToFile(33, 17, "BUILD", 934, 9)
         .exitApp()
     createContext().runIDE(commands = commands, runTimeout = timeout)
   }

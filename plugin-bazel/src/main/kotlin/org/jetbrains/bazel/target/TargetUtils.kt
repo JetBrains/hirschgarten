@@ -78,8 +78,6 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
 
-  private var listeners: List<(Boolean) -> Unit> = emptyList()
-
   fun addFileToTargetIdEntry(path: Path, targets: List<Label>) {
     fileToTarget = fileToTarget + (path to targets)
   }
@@ -118,12 +116,6 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     fileToExecutableTargets = calculateFileToExecutableTargets(libraryItems)
 
     this.libraryModulesLookupTable = createLibraryModulesLookupTable(libraryModules)
-    updateComputedFields()
-  }
-
-  @InternalApi
-  fun addTargets(targetInfos: List<BuildTarget>) {
-    labelToTargetInfo = labelToTargetInfo + targetInfos.associateBy { it.id }
     updateComputedFields()
   }
 
@@ -176,16 +168,6 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   private fun updateComputedFields() {
     allTargetsAndLibrariesLabels = (allTargets() + allLibraries()).map { it.toShortString(project) }
-  }
-
-  @InternalApi
-  fun fireSyncListeners(targetListChanged: Boolean) {
-    listeners.forEach { it(targetListChanged) }
-  }
-
-  @InternalApi
-  fun registerSyncListener(listener: (targetListChanged: Boolean) -> Unit) {
-    listeners += listener
   }
 
   @PublicApi

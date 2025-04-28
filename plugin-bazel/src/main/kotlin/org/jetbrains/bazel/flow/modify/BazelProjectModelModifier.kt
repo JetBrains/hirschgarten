@@ -20,14 +20,15 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.languages.starlark.formatting.formatBuildFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
+import org.jetbrains.bazel.languages.starlark.references.findBuildFile
 import org.jetbrains.bazel.languages.starlark.rename.StarlarkElementGenerator
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
-import org.jetbrains.bazel.ui.widgets.findBuildFile
 import org.jetbrains.bazel.ui.widgets.jumpToBuildFile
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
@@ -84,7 +85,10 @@ class BazelProjectModelModifier(private val project: Project) : JavaProjectModel
 
   private suspend fun tryAddingModuleDependencyToBuildFile(from: Module, labelToInsert: Label?): Boolean {
     if (labelToInsert !is ResolvedLabel) return false
-    val targetRuleLabel = from.project.targetUtils.getTargetForModuleId(from.name) ?: return false
+    val targetRuleLabel =
+      from.project.targetUtils
+        .getTargetForModuleId(from.name)
+        ?.assumeResolved() ?: return false
     val targetBuildFile = readAction { findBuildFile(from.project, targetRuleLabel) } ?: return false
     val ruleTarget = readAction { targetBuildFile.findRuleTarget(targetRuleLabel.targetName) } ?: return false
     val argList = readAction { ruleTarget.getArgumentList() } ?: return false

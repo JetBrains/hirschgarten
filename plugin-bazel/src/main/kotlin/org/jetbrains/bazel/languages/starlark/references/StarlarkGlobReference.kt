@@ -64,8 +64,6 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
     return if (vf.isDirectory) manager.findDirectory(vf) else manager.findFile(vf)
   }
 
-  private fun findBuildFile(packageDir: VirtualFile): VirtualFile? = BUILD_FILE_NAMES.mapNotNull { packageDir.findChild(it) }.firstOrNull()
-
   private fun directoryFilter(base: String): (VirtualFile) -> Boolean =
     { file ->
       file.path == base || findBuildFile(file) == null

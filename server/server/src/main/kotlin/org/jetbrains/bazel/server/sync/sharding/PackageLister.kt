@@ -16,6 +16,7 @@
 package org.jetbrains.bazel.server.sync.sharding
 
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.toPath
@@ -88,8 +89,5 @@ internal object PackageLister {
   fun Path.isEligibleForTraversal(bazelInfo: BazelInfo, calculatedBazelSymlinks: List<Path>): Boolean =
     this != bazelInfo.dotBazelBsp() && !calculatedBazelSymlinks.any { it == this }
 
-  fun Path.containsBuildFile(): Boolean {
-    val possibleBuildFileNames = listOf("BUILD", "BUILD.bazel")
-    return possibleBuildFileNames.any { resolve(it).isRegularFile() }
-  }
+  fun Path.containsBuildFile(): Boolean = Constants.BUILD_FILE_NAMES.any { resolve(it).isRegularFile() }
 }
