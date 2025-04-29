@@ -30,7 +30,7 @@ object BazelFlag {
   @JvmStatic fun overrideRepository(
     repositoryName: String,
     path: String,
-    shouldUseInjectRepository: Boolean = false,
+    shouldUseInjectRepository: Boolean,
   ): String =
     if (shouldUseInjectRepository) {
       arg("inject_repository", "$repositoryName=$path")
