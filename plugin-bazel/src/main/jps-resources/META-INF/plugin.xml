@@ -98,6 +98,11 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.targetKindProvider"
                     interface="org.jetbrains.bazel.sync.TargetKindProvider"
                     dynamic="true"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelExperimentalSettingsProvider"
+                    interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"
+                    dynamic="true"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelGeneralSettingsProvider"
+                    interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"/>
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->

@@ -15,7 +15,7 @@ import com.intellij.psi.PsiMethod
 import org.jetbrains.bazel.config.workspaceName
 import org.jetbrains.bazel.runfiles.RunfilesUtils
 import org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
 
 class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurationProvider {
@@ -26,7 +26,7 @@ class JunitLocalJvmRunnerRunConfigurationProvider : LocalJvmRunnerRunConfigurati
     project: Project,
     callerPsiElement: PsiElement,
   ): RunConfiguration? =
-    if (project.bazelProjectSettings.useIntellijTestRunner) {
+    if (project.bazelJVMProjectSettings.useIntellijTestRunner) {
       createConfiguration(configurationName, project, callerPsiElement, module, environment)
     } else {
       null
