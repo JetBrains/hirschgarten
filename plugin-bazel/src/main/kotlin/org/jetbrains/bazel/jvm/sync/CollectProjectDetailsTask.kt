@@ -454,6 +454,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
     }
   }
 
-private fun List<BuildTarget>.calculateJavaTargetIds(): List<Label> = filter { it.languageIds.includesJava() }.map { it.id }
+private fun List<BuildTarget>.calculateJavaTargetIds(): List<Label> = filter { it.kind.includesJava() }.map { it.id }
 
-private fun List<BuildTarget>.calculateScalaTargetIds(): List<Label> = filter { it.languageIds.includesScala() }.map { it.id }
+private fun List<BuildTarget>.calculateScalaTargetIds(): List<Label> = filter { it.kind.includesScala() }.map { it.id }

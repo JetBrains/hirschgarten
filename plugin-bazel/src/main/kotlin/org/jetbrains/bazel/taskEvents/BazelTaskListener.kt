@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.taskEvents
 
 import com.intellij.build.events.MessageEvent
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.StatusCode
 import java.nio.file.Path
 
 typealias TaskId = String
@@ -41,7 +41,7 @@ interface BazelTaskListener {
     taskId: TaskId,
     parentId: TaskId?,
     message: String,
-    status: StatusCode,
+    status: BazelStatus,
     data: Any?,
   ) {
   }

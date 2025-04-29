@@ -2,12 +2,14 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -69,14 +71,13 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
     val manualTargetJavaLibrary =
       BuildTarget(
         Label.parse("$targetPrefix//manual_target:java_library"),
-        tags = listOf("library", "manual"),
-        languageIds = listOf("java"),
+        tags = listOf("manual"),
         dependencies = emptyList(),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = false,
+        kind =
+          TargetKind(
+            kindString = "java_library",
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/manual_target/"),
         data = jvmBuildTarget,
@@ -94,14 +95,13 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
     val manualTargetJavaBinary =
       BuildTarget(
         Label.parse("$targetPrefix//manual_target:java_binary"),
-        tags = listOf("application", "manual"),
-        languageIds = listOf("java"),
+        tags = listOf("manual"),
         dependencies = emptyList(),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = false,
-            canRun = true,
+        kind =
+          TargetKind(
+            kindString = "java_binary",
+            ruleType = RuleType.BINARY,
+            languageClasses = setOf(LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/manual_target/"),
         data = jvmBuildTarget,
@@ -119,14 +119,13 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
     val manualTargetJavaTest =
       BuildTarget(
         Label.parse("$targetPrefix//manual_target:java_test"),
-        tags = listOf("test", "manual"),
-        languageIds = listOf("java"),
+        tags = listOf("manual"),
         dependencies = emptyList(),
-        capabilities =
-          BuildTargetCapabilities(
-            canCompile = true,
-            canTest = true,
-            canRun = false,
+        kind =
+          TargetKind(
+            kindString = "java_test",
+            ruleType = RuleType.TEST,
+            languageClasses = setOf(LanguageClass.JAVA),
           ),
         baseDirectory = Path("\$WORKSPACE/manual_target/"),
         data = jvmBuildTarget,

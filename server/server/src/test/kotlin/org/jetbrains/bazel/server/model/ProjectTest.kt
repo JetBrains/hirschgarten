@@ -223,6 +223,7 @@ class ProjectTest {
       sourceDependencies = emptySet(),
       languageData = null,
       environmentVariables = emptyMap(),
+      kindString = "kindString",
     )
 
   private fun String.toMockLibrary(): Library =
@@ -240,6 +241,7 @@ class ProjectTest {
       label = this.toLabel(),
       tags = emptySet(),
       baseDirectory = Path("/path/to/$this"),
+      kindString = "kindString",
     )
 
   private fun String.toLabel(): Label = Label.parse(this)
