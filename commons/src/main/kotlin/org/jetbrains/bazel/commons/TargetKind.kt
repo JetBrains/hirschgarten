@@ -28,7 +28,7 @@ typealias Kind = TargetKind
  */
 data class TargetKind(
   val kindString: String,
-  val languageClasses: Set<LanguageClass> = emptySet(), // Not used... yet
+  val languageClasses: Set<LanguageClass> = emptySet(),
   val ruleType: RuleType,
 ) {
   // Used in extension functions
