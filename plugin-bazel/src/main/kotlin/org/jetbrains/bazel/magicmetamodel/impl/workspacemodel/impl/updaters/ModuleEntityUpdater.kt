@@ -4,13 +4,10 @@ import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.LibraryDependency
 import com.intellij.platform.workspace.jps.entities.LibraryId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
-import com.intellij.platform.workspace.jps.entities.ModuleCustomImlDataEntity
 import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
-import com.intellij.platform.workspace.jps.entities.customImlData
-import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.SymbolicEntityId
@@ -64,21 +61,7 @@ internal class ModuleEntityUpdater(
         this.type = entityToAdd.type
       }
 
-    val moduleEntity = builder.addEntity(moduleEntityBuilder)
-
-    val imlData =
-      ModuleCustomImlDataEntity(
-        customModuleOptions = emptyMap(),
-        entitySource = moduleEntity.entitySource,
-      ) {
-        this.rootManagerTagCustomData = null
-        this.module = moduleEntityBuilder
-      }
-
-    // TODO: use a separate entity instead of imlData
-    return builder.modifyModuleEntity(moduleEntity) {
-      this.customImlData = imlData
-    }
+    return builder.addEntity(moduleEntityBuilder)
   }
 
   private fun List<IntermediateLibraryDependency>.toLibraryModuleDependencies() =
