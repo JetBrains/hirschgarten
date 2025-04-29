@@ -103,6 +103,7 @@ class BazelBspAspectsManager(
 
   fun generateAspectsFromTemplates(
     rulesetLanguages: List<RulesetLanguage>,
+    externalRulesetNames: List<String>,
     workspaceContext: WorkspaceContext,
     toolchains: Map<RulesetLanguage, Label?>,
     bazelRelease: BazelRelease,
@@ -132,6 +133,8 @@ class BazelBspAspectsManager(
           "kotlinEnabled" to kotlinEnabled.toString(),
           "javaEnabled" to javaEnabled.toString(),
           "pythonEnabled" to pythonEnabled.toString(),
+          // https://github.com/JetBrains/intellij-community/tree/master/build/jvm-rules
+          "usesRulesJvm" to ("rules_jvm" in externalRulesetNames).toString(),
           "bazel8OrAbove" to bazel8OrAbove.toString(),
           "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl]?.toString()?.let { "\"" + it + "\"" } },
         )
