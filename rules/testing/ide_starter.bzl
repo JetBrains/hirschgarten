@@ -24,5 +24,6 @@ def ide_starter_test(deps = [], jvm_flags = [], resources = [], product_build_nu
         resources = resources + [
             "//plugin-bazel:plugin-bazel_zip",
         ],
+        tags = ["manual", "ide-starter-test"],
         **kwargs
     )

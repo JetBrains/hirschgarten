@@ -1,6 +1,6 @@
-load("@//rules/testing:junit5.bzl", "JUNIT5_DEPS")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
-load(":tests.bzl", "IDE_STARTER_DEPS")
+load("//rules/testing:ide_starter.bzl", "IDE_STARTER_DEPS")
+load("//rules/testing:junit5.bzl", "JUNIT5_DEPS")
 
 kt_jvm_library(
     name = "baseTest",

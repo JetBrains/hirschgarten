@@ -1,5 +1,5 @@
 load("@//rules/testing:intellij.bzl", "kt_intellij_junit4_test")
-load("//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:tests.bzl", "ide_starter_test")
+load("//rules/testing:ide_starter.bzl", "ide_starter_test")
 
 kt_intellij_junit4_test(
     name = "StarlarkArgumentReferenceTest",
@@ -26,7 +26,6 @@ ide_starter_test(
     size = "large",
     src = "ExternalRepoResolveTest.kt",
     classname = "org.jetbrains.bazel.languages.starlark.references.ExternalRepoResolveTest",
-    tags = ["manual"],
     deps = [
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
     ],
