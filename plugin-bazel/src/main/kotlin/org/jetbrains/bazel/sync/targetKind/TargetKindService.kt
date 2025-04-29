@@ -139,19 +139,13 @@ fun TargetKind.Companion.getKindsForLanguage(language: LanguageClass): Set<Targe
 /** If rule type isn't recognized, uses a heuristic to guess the rule type.  */
 fun TargetKind.Companion.guessRuleType(ruleName: String): RuleType? {
   val kind = fromRuleName(ruleName)
-  if (kind != null) {
-    return kind.ruleType
+  return when {
+    kind != null -> kind.ruleType
+    isTestSuite(ruleName) || ruleName.endsWith("_test") -> RuleType.TEST
+    ruleName.endsWith("_binary") -> RuleType.BINARY
+    ruleName.endsWith("_library") -> RuleType.LIBRARY
+    else -> RuleType.UNKNOWN
   }
-  if (isTestSuite(ruleName) || ruleName.endsWith("_test")) {
-    return RuleType.TEST
-  }
-  if (ruleName.endsWith("_binary")) {
-    return RuleType.BINARY
-  }
-  if (ruleName.endsWith("_library")) {
-    return RuleType.LIBRARY
-  }
-  return RuleType.UNKNOWN
 }
 
 private fun isTestSuite(ruleName: String): Boolean {
