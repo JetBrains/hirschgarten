@@ -44,7 +44,7 @@ interface TargetKindProvider {
      * example, any rule name starting with 'kt_jvm_' might be parsed as a kotlin rule of unknown
      * [RuleType].
      */
-    get() = { t: BspTargetInfo.TargetInfo -> null }
+    get() = { null }
 
   companion object {
     val ep: ExtensionPointName<TargetKindProvider> =
