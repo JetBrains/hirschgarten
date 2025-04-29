@@ -13,6 +13,9 @@ import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -69,6 +72,12 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
             IntermediateLibraryDependency(
               libraryName = "lib2",
             ),
+          ),
+        kind =
+          TargetKind(
+            kindString = "java_library",
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
           ),
       )
 
@@ -154,6 +163,12 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
               libraryName = "lib2",
             ),
           ),
+        kind =
+          TargetKind(
+            kindString = "java_library",
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
+          ),
       )
 
     val module2 =
@@ -171,6 +186,12 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
             IntermediateLibraryDependency(
               libraryName = "lib1",
             ),
+          ),
+        kind =
+          TargetKind(
+            kindString = "java_library",
+            ruleType = RuleType.LIBRARY,
+            languageClasses = setOf(LanguageClass.JAVA),
           ),
       )
 

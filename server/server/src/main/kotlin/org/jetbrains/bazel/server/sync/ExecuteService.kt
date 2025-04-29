@@ -10,6 +10,7 @@ import org.jetbrains.bazel.bazelrunner.HasEnvironment
 import org.jetbrains.bazel.bazelrunner.HasMultipleTargets
 import org.jetbrains.bazel.bazelrunner.HasProgramArguments
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
@@ -38,7 +39,6 @@ import org.jetbrains.bsp.protocol.MobileInstallStartType
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
-import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 import kotlin.io.path.Path
@@ -73,9 +73,9 @@ class ExecuteService(
   suspend fun compile(params: CompileParams): CompileResult =
     if (params.targets.isNotEmpty()) {
       val result = build(params.targets, params.originId, params.arguments ?: emptyList())
-      CompileResult(statusCode = result.bspStatusCode)
+      CompileResult(statusCode = result.bazelStatus)
     } else {
-      CompileResult(statusCode = StatusCode.ERROR)
+      CompileResult(statusCode = BazelStatus.FATAL_ERROR)
     }
 
   suspend fun analysisDebug(params: AnalysisDebugParams): AnalysisDebugResult {
@@ -84,9 +84,9 @@ class ExecuteService(
         val debugFlags =
           listOf(BazelFlag.noBuild(), BazelFlag.starlarkDebug(), BazelFlag.starlarkDebugPort(params.port))
         val result = build(params.targets, params.originId, debugFlags)
-        result.bspStatusCode
+        result.bazelStatus
       } else {
-        StatusCode.ERROR
+        BazelStatus.FATAL_ERROR
       }
     return AnalysisDebugResult(statusCode)
   }
@@ -118,7 +118,7 @@ class ExecuteService(
       val targets = listOf(params.target)
       val result = build(targets, params.originId)
       if (result.isNotSuccess) {
-        return RunResult(statusCode = result.bspStatusCode, originId = params.originId)
+        return RunResult(statusCode = result.bazelStatus, originId = params.originId)
       }
     }
     val command =
@@ -140,7 +140,7 @@ class ExecuteService(
           originId = params.originId,
           serverPidFuture = null,
         ).waitAndGetResult()
-    return RunResult(statusCode = bazelProcessResult.bspStatusCode, originId = params.originId)
+    return RunResult(statusCode = bazelProcessResult.bazelStatus, originId = params.originId)
   }
 
   /**
@@ -206,7 +206,7 @@ class ExecuteService(
           ).waitAndGetResult(true)
       }
 
-    return TestResult(statusCode = result.bspStatusCode, originId = params.originId)
+    return TestResult(statusCode = result.bazelStatus, originId = params.originId)
   }
 
   suspend fun mobileInstall(params: MobileInstallParams): MobileInstallResult {
@@ -232,7 +232,7 @@ class ExecuteService(
 
     val bazelProcessResult =
       bazelRunner.runBazelCommand(command, originId = params.originId, serverPidFuture = null).waitAndGetResult()
-    return MobileInstallResult(bazelProcessResult.bspStatusCode, params.originId)
+    return MobileInstallResult(bazelProcessResult.bazelStatus, params.originId)
   }
 
   private suspend fun build(

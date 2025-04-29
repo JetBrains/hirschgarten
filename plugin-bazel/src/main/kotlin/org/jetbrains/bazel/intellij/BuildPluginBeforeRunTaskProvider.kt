@@ -8,10 +8,10 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
-import org.jetbrains.bsp.protocol.StatusCode
 
 private val PROVIDER_ID = Key.create<BuildPluginBeforeRunTaskProvider.Task>("BuildPluginBeforeRunTaskProvider")
 
@@ -45,6 +45,6 @@ public class BuildPluginBeforeRunTaskProvider : BeforeRunTaskProvider<BuildPlugi
       runBlocking {
         runBuildTargetTask(targetIds, environment.project)
       }
-    return buildResult?.statusCode == StatusCode.OK
+    return buildResult?.statusCode == BazelStatus.SUCCESS
   }
 }

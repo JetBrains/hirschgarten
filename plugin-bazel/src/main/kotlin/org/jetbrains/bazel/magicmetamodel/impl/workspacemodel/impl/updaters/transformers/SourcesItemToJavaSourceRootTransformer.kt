@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
 
@@ -19,7 +20,7 @@ internal class SourcesItemToJavaSourceRootTransformer : WorkspaceModelEntityPart
   }
 
   private fun inferRootType(buildTarget: BuildTarget): SourceRootTypeId =
-    if (buildTarget.tags.contains("test")) JAVA_TEST_SOURCE_ROOT_TYPE else JAVA_SOURCE_ROOT_TYPE
+    if (buildTarget.kind.ruleType == RuleType.TEST) JAVA_TEST_SOURCE_ROOT_TYPE else JAVA_SOURCE_ROOT_TYPE
 
   private fun toJavaSourceRoot(sourceRoot: SourceRoot, rootType: SourceRootTypeId): JavaSourceRoot =
     JavaSourceRoot(

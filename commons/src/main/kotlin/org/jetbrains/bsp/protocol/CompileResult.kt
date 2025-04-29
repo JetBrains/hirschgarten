@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class CompileResult(val statusCode: StatusCode)
+import org.jetbrains.bazel.commons.BazelStatus
+
+data class CompileResult(val statusCode: BazelStatus)

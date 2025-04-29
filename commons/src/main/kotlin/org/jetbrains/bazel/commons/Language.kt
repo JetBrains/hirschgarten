@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.server.model
+package org.jetbrains.bazel.commons
 
 enum class Language(
   val id: String,
