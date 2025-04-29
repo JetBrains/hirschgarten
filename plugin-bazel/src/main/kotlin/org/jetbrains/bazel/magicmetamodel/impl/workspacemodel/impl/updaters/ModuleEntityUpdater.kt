@@ -1,5 +1,4 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
-
 import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.LibraryDependency
 import com.intellij.platform.workspace.jps.entities.LibraryId
@@ -16,7 +15,7 @@ import com.intellij.util.containers.Interner
 import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.bazel.jpsCompilation.utils.JpsConstants
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspacemodel.entities.BspDummyEntitySource
@@ -72,7 +71,7 @@ internal class ModuleEntityUpdater(
   private fun toEntitySource(entityToAdd: GenericModuleInfo): EntitySource =
     when {
       entityToAdd.isDummy -> BspDummyEntitySource
-      !workspaceModelEntityUpdaterConfig.project.bazelProjectSettings.enableBuildWithJps ||
+      !workspaceModelEntityUpdaterConfig.project.bazelJVMProjectSettings.enableBuildWithJps ||
         entityToAdd.kind.languageClasses.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspModuleEntitySource(entityToAdd.name)
 
       else ->
