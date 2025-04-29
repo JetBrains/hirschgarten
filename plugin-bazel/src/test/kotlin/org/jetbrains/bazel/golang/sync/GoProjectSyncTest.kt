@@ -10,6 +10,9 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.ProjectSyncHook
@@ -20,7 +23,6 @@ import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -180,9 +182,12 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     BuildTarget(
       info.targetId,
       listOf(info.type),
-      listOf("go"),
       info.dependencies,
-      BuildTargetCapabilities(),
+      TargetKind(
+        kindString = "go_binary",
+        ruleType = RuleType.BINARY,
+        languageClasses = setOf(LanguageClass.GO),
+      ),
       baseDirectory = Path("/targets_base_dir"),
       data =
         GoBuildTarget(

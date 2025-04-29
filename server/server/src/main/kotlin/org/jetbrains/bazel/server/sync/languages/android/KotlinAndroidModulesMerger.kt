@@ -91,6 +91,7 @@ class KotlinAndroidModulesMerger {
         sourceDependencies = kotlinModule.sourceDependencies + androidModule.sourceDependencies,
         languageData = kotlinAndroidLanguageData,
         environmentVariables = kotlinModule.environmentVariables + androidModule.environmentVariables,
+        kindString = parentModule.kindString,
       )
 
     return MergedKotlinAndroidModule(

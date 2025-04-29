@@ -3,9 +3,11 @@ package org.jetbrains.bazel
 import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
@@ -55,15 +57,14 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
     val exampleExampleBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//example:example"),
-        listOf("application"),
-        listOf("python"),
+        listOf(),
         listOf(
           Label.parse("$targetPrefix//lib:example_library"),
         ),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = true,
+        TargetKind(
+          kindString = "py_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.PYTHON),
         ),
         baseDirectory = Path("\$WORKSPACE/example/"),
         data = examplePythonBuildTarget,
@@ -85,13 +86,12 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
     val exampleExampleLibBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//lib:example_library"),
-        listOf("library"),
-        listOf("python"),
+        listOf(),
         listOf(Label.parse(pipDepId)),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = false,
+        TargetKind(
+          kindString = "py_library",
+          ruleType = RuleType.LIBRARY,
+          languageClasses = setOf(LanguageClass.PYTHON),
         ),
         baseDirectory = Path("\$WORKSPACE/lib/"),
         data = examplePythonBuildTarget,
@@ -108,13 +108,12 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
     val exampleExampleTestBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//test:test"),
-        listOf("test"),
-        listOf("python"),
         listOf(),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = true,
-          canRun = false,
+        listOf(),
+        TargetKind(
+          kindString = "py_test",
+          ruleType = RuleType.TEST,
+          languageClasses = setOf(LanguageClass.PYTHON),
         ),
         baseDirectory = Path("\$WORKSPACE/test/"),
         data = examplePythonBuildTarget,

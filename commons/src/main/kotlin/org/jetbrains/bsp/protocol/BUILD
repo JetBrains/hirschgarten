@@ -5,6 +5,8 @@ kt_jvm_library(
     srcs = glob(["**/*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
         "//commons/src/main/kotlin/org/jetbrains/bazel/label",
         "//commons/src/main/kotlin/org/jetbrains/bazel/workspacecontext",
     ],

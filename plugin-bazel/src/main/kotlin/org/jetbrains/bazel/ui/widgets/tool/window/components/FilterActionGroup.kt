@@ -7,14 +7,15 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.actionSystem.Toggleable
 import com.intellij.openapi.project.DumbAware
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
 import org.jetbrains.bsp.protocol.BuildTarget
 
 enum class TargetFilter(public val predicate: (BuildTarget) -> Boolean) {
   OFF({ true }),
-  CAN_RUN({ it.capabilities.canRun }),
-  CAN_TEST({ it.capabilities.canTest }),
+  CAN_RUN({ it.kind.ruleType == RuleType.BINARY }),
+  CAN_TEST({ it.kind.ruleType == RuleType.TEST }),
 }
 
 class FilterActionGroup(private val model: BazelTargetsPanelModel) :

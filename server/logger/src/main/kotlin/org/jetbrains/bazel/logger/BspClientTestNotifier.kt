@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.logger
 
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JoinedBuildClient
-import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TaskStartParams
@@ -71,7 +71,7 @@ class BspClientTestNotifier(private val bspClient: JoinedBuildClient, private va
     val taskFinishParams =
       TaskFinishParams(
         taskId,
-        status = StatusCode.OK,
+        status = BazelStatus.SUCCESS,
         originId = originId,
         data = testFinish,
         message = "Test $displayName finished",
