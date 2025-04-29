@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 The Bazel Authors. All rights reserved.
+ * Copyright 2016 The Bazel Authors. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.bazel.commons
+package org.jetbrains.bazel.sync
+
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 
 /** Contributes generic rules to [TargetKind].  */
-class GenericBazelRules : TargetKind.Provider {
+class GenericBazelRules : TargetKindProvider {
   /** Generic bazel rule types.  */
   enum class RuleTypes(
     val ruleName: String,

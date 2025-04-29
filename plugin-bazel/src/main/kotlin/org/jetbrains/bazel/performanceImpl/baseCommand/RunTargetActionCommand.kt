@@ -3,6 +3,7 @@ package org.jetbrains.bazel.performanceImpl.baseCommand
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.playback.PlaybackContext
 import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.runnerAction.RunTargetAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
@@ -16,7 +17,7 @@ abstract class RunTargetActionCommand(text: String, line: Int) : PlaybackCommand
   private suspend fun executeRunTargetAction(project: Project) {
     val id = getTargetId(project) ?: return
     val targetInfo = project.targetUtils.getBuildTargetForLabel(id) ?: return
-    if (targetInfo.capabilities.canTest) {
+    if (targetInfo.kind.ruleType == RuleType.TEST) {
       TestTargetAction(project, listOf(targetInfo)).doPerformAction(project)
     } else {
       RunTargetAction(project, targetInfo).doPerformAction(project)

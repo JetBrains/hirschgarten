@@ -9,6 +9,9 @@ import com.intellij.testFramework.runInEdtAndWait
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
@@ -56,6 +59,12 @@ class BazelKotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
               IntermediateModuleDependency("module3"),
             ),
           librariesDependencies = listOf(),
+          kind =
+            TargetKind(
+              kindString = "java_library",
+              ruleType = RuleType.LIBRARY,
+              languageClasses = setOf(LanguageClass.JAVA),
+            ),
           associates = associates.map { IntermediateModuleDependency(it) },
         )
 

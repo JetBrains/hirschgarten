@@ -1,3 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-data class TestResult(val originId: String? = null, val statusCode: StatusCode)
+import org.jetbrains.bazel.commons.BazelStatus
+
+data class TestResult(val originId: String? = null, val statusCode: BazelStatus)

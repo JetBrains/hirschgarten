@@ -9,6 +9,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
@@ -24,7 +25,6 @@ import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.GoLibrary
-import org.jetbrains.bazel.server.model.Language
 import org.jetbrains.bazel.server.model.Library
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.model.NonModuleTarget
@@ -226,7 +226,6 @@ class BazelProjectMapper(
           nonModuleTargetIds.contains(it) &&
             isTargetTreatedAsInternal(it.assumeResolved(), repoMapping)
         },
-        transitiveCompileTimeJarsTargetKinds,
         repoMapping,
       )
 
@@ -612,7 +611,7 @@ class BazelProjectMapper(
   private fun targetSupportsJdeps(targetInfo: TargetInfo, transitiveCompileTimeJarsTargetKinds: Set<String>): Boolean {
     if (targetInfo.kind in transitiveCompileTimeJarsTargetKinds) return false
     val languages = inferLanguages(targetInfo, transitiveCompileTimeJarsTargetKinds)
-    return setOf(Language.JAVA, Language.KOTLIN, Language.SCALA, Language.ANDROID).containsAll(languages)
+    return setOf(LanguageClass.JAVA, LanguageClass.KOTLIN, LanguageClass.SCALA, LanguageClass.ANDROID).containsAll(languages)
   }
 
   private val replacementRegex = "[^0-9a-zA-Z]".toRegex()
@@ -632,17 +631,14 @@ class BazelProjectMapper(
     )
   }
 
-  private fun createNonModuleTargets(
-    targets: Map<Label, TargetInfo>,
-    transitiveCompileTimeJarsTargetKinds: Set<String>,
-    repoMapping: RepoMapping,
-  ): List<NonModuleTarget> =
+  private fun createNonModuleTargets(targets: Map<Label, TargetInfo>, repoMapping: RepoMapping): List<NonModuleTarget> =
     targets
       .map { (label, targetInfo) ->
         NonModuleTarget(
           label = label,
           tags = targetTagsResolver.resolveTags(targetInfo),
           baseDirectory = bazelPathsResolver.toDirectoryPath(label.assumeResolved(), repoMapping),
+          kindString = targetInfo.kind,
         )
       }
 
@@ -779,7 +775,7 @@ class BazelProjectMapper(
   private fun TargetInfo.isCompilableByJps(): Boolean {
     val languages = inferLanguages(this, emptySet())
     if (languages.isEmpty()) return false
-    return setOf(Language.JAVA, Language.KOTLIN).containsAll(languages)
+    return setOf(LanguageClass.JAVA, LanguageClass.KOTLIN).containsAll(languages)
   }
 
   private fun collectReverseDepsJdepsJars(
@@ -1028,16 +1024,52 @@ class BazelProjectMapper(
       sourceDependencies = sourceDependencies,
       languageData = languageData,
       environmentVariables = environment,
+      kindString = target.kind,
     )
   }
 
   private fun resolveDirectDependencies(target: TargetInfo): List<Label> = target.dependenciesList.map { it.label() }
 
-  private fun inferLanguages(target: TargetInfo, transitiveCompileTimeJarsTargetKinds: Set<String>): Set<Language> {
-    val languagesForTarget = Language.allOfKind(target.kind, transitiveCompileTimeJarsTargetKinds)
-    val languagesForSources = target.sourcesList.flatMap { Language.allOfSource(it.relativePath) }.toHashSet()
-    return languagesForTarget + languagesForSources
-  }
+  // TODO: this is a re-creation of `Language.allOfKind`. To be removed when this logic is merged with client-side
+  private val languagesFromKinds: Map<String, Set<LanguageClass>> =
+    mapOf(
+      "java_library" to setOf(LanguageClass.JAVA),
+      "java_binary" to setOf(LanguageClass.JAVA),
+      "java_test" to setOf(LanguageClass.JAVA),
+      // a workaround to register this target type as Java module in IntelliJ IDEA
+      "intellij_plugin_debug_target" to setOf(LanguageClass.JAVA),
+      "kt_jvm_library" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
+      "kt_jvm_binary" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
+      "kt_jvm_test" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
+      "scala_library" to setOf(LanguageClass.JAVA, LanguageClass.SCALA),
+      "scala_binary" to setOf(LanguageClass.JAVA, LanguageClass.SCALA),
+      "scala_test" to setOf(LanguageClass.JAVA, LanguageClass.SCALA),
+      // rules_jvm from IntelliJ monorepo
+      "jvm_library" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
+      "jvm_binary" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
+      "jvm_resources" to setOf(LanguageClass.JAVA, LanguageClass.KOTLIN),
+      "android_binary" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
+      "android_library" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
+      "android_local_test" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
+      // TODO this should include kotlin probably, but I'm leaving it as it was
+      "kt_android_library" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
+      "kt_android_local_test" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
+      "go_binary" to setOf(LanguageClass.GO),
+      "py_binary" to setOf(LanguageClass.PYTHON),
+      "py_test" to setOf(LanguageClass.PYTHON),
+      "py_library" to setOf(LanguageClass.PYTHON),
+    )
+
+  private fun inferLanguages(target: TargetInfo, transitiveCompileTimeJarsTargetKinds: Set<String>): Set<LanguageClass> =
+    buildSet {
+      // TODO It's a hack preserved from before TargetKind refactorking, to be removed
+      if (transitiveCompileTimeJarsTargetKinds.contains(target.kind)) {
+        add(LanguageClass.JAVA)
+      }
+      languagesFromKinds[target.kind]?.let {
+        addAll(it)
+      }
+    }
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): List<SourceItem> {
     val sources =

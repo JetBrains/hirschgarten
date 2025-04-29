@@ -26,6 +26,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
@@ -36,6 +37,7 @@ import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.includesGo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
@@ -88,7 +90,7 @@ class GoProjectSync : ProjectSyncHook {
     }
   }
 
-  private fun WorkspaceBuildTargetsResult.calculateGoTargets(): List<BuildTarget> = targets.filter { it.languageIds.contains("go") }
+  private fun WorkspaceBuildTargetsResult.calculateGoTargets(): List<BuildTarget> = targets.filter { it.kind.includesGo() }
 
   private fun addModuleEntityFromTarget(
     builder: MutableEntityStorage,
@@ -144,7 +146,7 @@ class GoProjectSync : ProjectSyncHook {
     }
 
   private fun inferRootType(buildTarget: BuildTarget): String =
-    if (buildTarget.tags.contains("test")) GO_TEST_SOURCE_ROOT_TYPE else GO_SOURCE_ROOT_TYPE
+    if (buildTarget.kind.ruleType == RuleType.TEST) GO_TEST_SOURCE_ROOT_TYPE else GO_SOURCE_ROOT_TYPE
 
   private fun getResourceContentRootEntities(
     target: BuildTarget,

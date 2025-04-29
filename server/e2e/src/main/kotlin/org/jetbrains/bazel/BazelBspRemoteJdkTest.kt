@@ -2,9 +2,11 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -48,13 +50,12 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
     val exampleExampleBuildTarget =
       BuildTarget(
         Label.parse("$targetPrefix//example:example"),
-        listOf("application"),
-        listOf("java"),
+        listOf(),
         emptyList(),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = true,
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/example/"),
         data = exampleExampleJvmBuildTarget,
