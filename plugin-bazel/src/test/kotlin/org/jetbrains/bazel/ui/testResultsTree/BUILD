@@ -6,7 +6,6 @@ ide_starter_test(
     size = "large",
     src = "TestTargetActionResultsTreeTest.kt",
     classname = "org.jetbrains.bazel.ui.testResultsTree.TestTargetActionResultsTreeTest",
-    tags = ["manual"],
     deps = [
         ":testTargetActionTreeUtil",
     ],
@@ -17,7 +16,6 @@ ide_starter_test(
     size = "large",
     src = "RunAllTestsActionTest.kt",
     classname = "org.jetbrains.bazel.ui.testResultsTree.RunAllTestsActionTest",
-    tags = ["manual"],
     deps = [
         ":testTargetActionTreeUtil",
     ],

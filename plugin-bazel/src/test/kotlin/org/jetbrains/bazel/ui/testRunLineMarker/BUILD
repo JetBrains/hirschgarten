@@ -5,7 +5,6 @@ ide_starter_test(
     size = "large",
     src = "RunLineMarkerTest.kt",
     classname = "org.jetbrains.bazel.ui.testRunLineMarker.RunLineMarkerTest",
-    tags = ["manual"],
     deps = [
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
     ],

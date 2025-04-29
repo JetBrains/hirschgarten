@@ -5,7 +5,6 @@ ide_starter_test(
     size = "large",
     src = "BazelCoverageTest.kt",
     classname = "org.jetbrains.bazel.run.coverage.BazelCoverageTest",
-    tags = ["manual"],
     deps = [
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
     ],

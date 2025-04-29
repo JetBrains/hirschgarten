@@ -5,7 +5,6 @@ ide_starter_test(
     size = "large",
     src = "BazelProjectModelModifierTest.kt",
     classname = "org.jetbrains.bazel.flow.modify.BazelProjectModelModifierTest",
-    tags = ["manual"],
     deps = [
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
     ],

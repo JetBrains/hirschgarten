@@ -26,7 +26,6 @@ ide_starter_test(
     size = "large",
     src = "ExternalRepoResolveTest.kt",
     classname = "org.jetbrains.bazel.languages.starlark.references.ExternalRepoResolveTest",
-    tags = ["manual"],
     deps = [
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
     ],
