@@ -11,7 +11,7 @@ data class BuildTarget(
   val sources: List<SourceItem>,
   val resources: List<Path>,
   val baseDirectory: Path,
-  val noBuild: Boolean = false, // TODO no idea how it's used, it replaces the NO_BUILD tag for now
+  val noBuild: Boolean = false, // TODO https://youtrack.jetbrains.com/issue/BAZEL-1963
   var data: BuildTargetData? = null,
 )
 
