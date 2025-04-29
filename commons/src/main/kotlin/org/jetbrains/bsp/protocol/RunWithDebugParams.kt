@@ -1,8 +1,8 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.RunParams
-import org.jetbrains.bsp.protocol.StatusCode
 
 data class AnalysisDebugParams(
   val originId: String,
@@ -10,7 +10,7 @@ data class AnalysisDebugParams(
   val targets: List<Label>,
 )
 
-data class AnalysisDebugResult(val statusCode: StatusCode)
+data class AnalysisDebugResult(val statusCode: BazelStatus)
 
 data class RunWithDebugParams(
   val originId: String,

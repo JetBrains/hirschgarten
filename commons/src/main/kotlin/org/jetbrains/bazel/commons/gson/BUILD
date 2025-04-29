@@ -8,6 +8,7 @@ kt_jvm_library(
         "@maven//:com_google_code_gson_gson",
     ],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/label",
         "@maven//:com_google_code_gson_gson",
     ],
 )

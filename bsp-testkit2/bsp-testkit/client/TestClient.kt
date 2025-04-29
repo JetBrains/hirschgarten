@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.testkit.client
 
 import kotlinx.coroutines.test.runTest
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.server.connection.startServer
 import org.jetbrains.bsp.protocol.CompileParams
@@ -194,13 +195,13 @@ class TestClient(
         val getWorkspaceTargets = session.server.workspaceBuildTargets(WorkspaceBuildTargetsParams("originId"))
         val targets = getWorkspaceTargets.targets
         val targetIds = targets.map { it.id }
-        val javaTargetIds = targets.filter { it.languageIds.contains("java") }.map { it.id }
+        val javaTargetIds = targets.filter { it.kind.languageClasses.contains(LanguageClass.JAVA) }.map { it.id }
         session.server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
-        val scalaTargetIds = targets.filter { it.languageIds.contains("scala") }.map { it.id }
+        val scalaTargetIds = targets.filter { it.kind.languageClasses.contains(LanguageClass.SCALA) }.map { it.id }
         session.server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
-        val cppTargetIds = targets.filter { it.languageIds.contains("cpp") }.map { it.id }
+        val cppTargetIds = targets.filter { it.kind.languageClasses.contains(LanguageClass.C) }.map { it.id }
         session.server.buildTargetCppOptions(CppOptionsParams(cppTargetIds))
-        val pythonTargetIds = targets.filter { it.languageIds.contains("python") }.map { it.id }
+        val pythonTargetIds = targets.filter { it.kind.languageClasses.contains(LanguageClass.PYTHON) }.map { it.id }
         session.server.buildTargetPythonOptions(PythonOptionsParams(pythonTargetIds))
       }
     }

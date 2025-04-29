@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 
 data class TaskFinishParams(
@@ -7,7 +8,7 @@ data class TaskFinishParams(
   val originId: String,
   val eventTime: Long? = null,
   val message: String? = null,
-  val status: StatusCode,
+  val status: BazelStatus,
   val data: TaskFinishData? = null,
 )
 

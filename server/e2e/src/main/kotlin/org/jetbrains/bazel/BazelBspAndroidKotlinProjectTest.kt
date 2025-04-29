@@ -1,11 +1,13 @@
 package org.jetbrains.bazel
 
 import org.jetbrains.bazel.android.BazelBspAndroidProjectTestBase
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
 import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -80,8 +82,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
     val appBuildTarget =
       BuildTarget(
         Label.parse("@@//src/main:app"),
-        listOf("application"),
-        listOf("android", "java"),
+        listOf(),
         listOf(
           Label.parse("@@//src/main/java/com/example/myapplication:lib"),
           // TODO: ideally these non-existent dependencies should be filtered out somehow
@@ -89,11 +90,12 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
           Label.parse("@@//src/main/java/com/example/myapplication:lib_base"),
           Label.parse("@@//src/main/java/com/example/myapplication:lib_kt"),
         ),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = true,
-          canRun = true,
-        ),
+        kind =
+          TargetKind(
+            kindString = "java_binary",
+            ruleType = RuleType.BINARY,
+            languageClasses = setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
+          ),
         baseDirectory = Path("\$WORKSPACE/src/main/"),
         data = appAndroidBuildTargetData,
         sources = emptyList(),
@@ -103,17 +105,17 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
     val libBuildTarget =
       BuildTarget(
         Label.parse("@@//src/main/java/com/example/myapplication:lib"),
-        listOf("library"),
-        listOf("android", "java", "kotlin"),
+        listOf(),
         listOf(
           Label.parse("@@rules_jvm_external~~maven~maven//:androidx_appcompat_appcompat"),
           Label.synthetic("rules_kotlin_kotlin-stdlibs"),
         ),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = false,
-        ),
+        kind =
+          TargetKind(
+            kindString = "java_binary",
+            ruleType = RuleType.BINARY,
+            languageClasses = setOf(LanguageClass.JAVA, LanguageClass.ANDROID, LanguageClass.KOTLIN),
+          ),
         baseDirectory = Path("\$WORKSPACE/src/main/java/com/example/myapplication/"),
         data = libAndroidBuildTargetData,
         sources = emptyList(),
@@ -127,8 +129,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
     val libTestBuildTarget =
       BuildTarget(
         Label.parse("@@//src/test/java/com/example/myapplication:lib_test"),
-        listOf("test"),
-        listOf("android", "java", "kotlin"),
+        listOf(),
         listOf(
           Label.parse("@@//src/main/java/com/example/myapplication:lib"),
           Label.parse("@@//src/main/java/com/example/myapplication:lib_base"),
@@ -138,11 +139,12 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
           Label.parse("@@rules_robolectric~//bazel:android-all"),
           Label.synthetic("rules_kotlin_kotlin-stdlibs"),
         ),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canRun = false,
-          canTest = true,
-        ),
+        kind =
+          TargetKind(
+            kindString = "java_binary",
+            ruleType = RuleType.BINARY,
+            languageClasses = setOf(LanguageClass.JAVA, LanguageClass.ANDROID, LanguageClass.KOTLIN),
+          ),
         baseDirectory = Path("\$WORKSPACE/src/test/java/com/example/myapplication/"),
         data = libTestAndroidBuildTargetData,
         sources = emptyList(),
