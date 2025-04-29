@@ -48,7 +48,7 @@ class BazelStartupActivity : BazelProjectActivity() {
     BazelStartupActivityTracker.stopConfigurationPhase(this)
   }
 
-  private fun Project.updateTargetToolwindow() {
+  private suspend fun Project.updateTargetToolwindow() {
     val targets = targetUtils.allBuildTargets().associateBy { it.id }
     service<BazelTargetsPanelModel>().updateTargets(targets)
   }

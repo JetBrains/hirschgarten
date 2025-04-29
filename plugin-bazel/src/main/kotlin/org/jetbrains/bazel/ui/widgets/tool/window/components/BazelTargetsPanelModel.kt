@@ -1,7 +1,10 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.components
 
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.ui.widgets.tool.window.filter.TargetFilter
@@ -93,10 +96,11 @@ class BazelTargetsPanelModel(private val project: Project) {
   val hasAnyTargets: Boolean
     get() = targets.isNotEmpty()
 
-  fun updateTargets(newTargets: Map<Label, BuildTarget>, newInvalidTargets: List<Label> = emptyList()) {
-    targets = newTargets
-    invalidTargets = newInvalidTargets
+  suspend fun updateTargets(newTargets: Map<Label, BuildTarget>, newInvalidTargets: List<Label> = emptyList()) =
+    withContext(Dispatchers.EDT) {
+      targets = newTargets
+      invalidTargets = newInvalidTargets
 
-    updateVisibleTargets()
-  }
+      updateVisibleTargets()
+    }
 }
