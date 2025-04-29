@@ -58,7 +58,7 @@ enum class LanguageClass(val languageName: String, private val recognizedFilenam
 
     /**
      * This is temporarily for converting from [Language] to [LanguageClass].
-     * TODO(andrzej): merge [Language] and [LanguageClass] into one
+     * TODO(andrzej): https://youtrack.jetbrains.com/issue/BAZEL-1964
      */
     fun fromLanguage(language: Language): LanguageClass? =
       when (language) {
