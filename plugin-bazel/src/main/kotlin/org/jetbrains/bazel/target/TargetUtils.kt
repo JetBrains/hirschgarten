@@ -231,7 +231,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
           .mapKeys {
             it.key.toString()
           }.mapValues {
-            // don't store dependencies, sources, resources as not necessary.
+            // don't store dependencies, sources, resources as they are saved in the workspace model already
             bazelGson.toJson(it.value.copy(dependencies = emptyList(), sources = emptyList(), resources = emptyList()))
           },
       moduleIdToTarget = moduleIdToTarget.mapValues { it.value.toString() },
