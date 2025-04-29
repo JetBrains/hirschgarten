@@ -6,6 +6,7 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.toNioPathOrNull
@@ -32,7 +33,6 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.jetbrains.bsp.protocol.isExecutable
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 
@@ -243,6 +243,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
         state.fileToExecutableTargets.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
       updateComputedFields()
     } catch (e: Exception) {
+      log.warn(e)
       labelToTargetInfo = emptyMap()
       moduleIdToTarget = emptyMap()
       libraryIdToTarget = emptyMap()
@@ -251,6 +252,10 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       allTargetsAndLibrariesLabels = emptyList()
       updateComputedFields()
     }
+  }
+
+  companion object {
+    val log = logger<TargetUtils>()
   }
 }
 
