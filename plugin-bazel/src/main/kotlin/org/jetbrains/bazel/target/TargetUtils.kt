@@ -13,6 +13,7 @@ import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.util.xmlb.annotations.OptionTag
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModuleEntity
 import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +41,10 @@ private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
 @InternalApi
 data class TargetUtilsState(
+  // The new tag is here to not break the sync with the old persisted data
+  // The project that contains the old persisted data will be resynced and stored using the new tag
+  // https://youtrack.jetbrains.com/issue/BAZEL-1967
+  @OptionTag(tag = "labelToTargetInfoV2")
   var labelToTargetInfo: Map<String, String> = emptyMap(),
   var moduleIdToTarget: Map<String, String> = emptyMap(),
   var libraryIdToTarget: Map<String, String> = emptyMap(),
@@ -221,7 +226,14 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   @InternalApi
   override fun getState(): TargetUtilsState =
     TargetUtilsState(
-      labelToTargetInfo = labelToTargetInfo.mapKeys { it.key.toString() }.mapValues { bazelGson.toJson(it.value) },
+      labelToTargetInfo =
+        labelToTargetInfo
+          .mapKeys {
+            it.key.toString()
+          }.mapValues {
+            // don't store dependencies, sources, resources as not necessary.
+            bazelGson.toJson(it.value.copy(dependencies = emptyList(), sources = emptyList(), resources = emptyList()))
+          },
       moduleIdToTarget = moduleIdToTarget.mapValues { it.value.toString() },
       libraryIdToTarget = libraryIdToTarget.mapValues { it.value.toString() },
       fileToTarget = fileToTarget.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.toString() } },
