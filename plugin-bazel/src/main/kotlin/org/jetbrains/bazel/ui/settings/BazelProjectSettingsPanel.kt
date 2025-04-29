@@ -1,11 +1,14 @@
 package org.jetbrains.bazel.ui.settings
 
 import com.intellij.ide.projectView.ProjectView
+import com.intellij.openapi.extensions.BaseExtensionPointName
 import com.intellij.openapi.observable.util.whenTextChanged
+import com.intellij.openapi.options.BoundCompositeSearchableConfigurable
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurableProvider
-import com.intellij.openapi.options.SearchableConfigurable
+import com.intellij.openapi.options.UnnamedConfigurable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.SystemInfo
@@ -19,11 +22,15 @@ import org.jetbrains.bazel.sdkcompat.FileChooserDescriptorFactoryCompat
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
-import javax.swing.JComponent
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
-internal class BazelProjectSettingsConfigurable(private val project: Project) : SearchableConfigurable {
+class BazelProjectSettingsConfigurable(private val project: Project) :
+  BoundCompositeSearchableConfigurable<UnnamedConfigurable>(
+    displayName = BazelPluginBundle.message(DISPLAY_NAME_KEY),
+    helpTopic = "",
+  ),
+  Configurable.WithEpDependencies {
   private val projectViewPathField: TextFieldWithBrowseButton
   private val buildifierExecutablePathField: TextFieldWithBrowseButton
   private val runBuildifierOnSaveCheckBox: JBCheckBox
@@ -37,6 +44,28 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
     runBuildifierOnSaveCheckBox = initRunBuildifierOnSaveCheckBox()
     showExcludedDirectoriesAsSeparateNodeCheckBox = initShowExcludedDirectoriesAsSeparateNodeCheckBox()
   }
+
+  override fun getDependencies(): List<BaseExtensionPointName<*>> = listOf(BazelGeneralSettingsProvider.ep)
+
+  override fun createConfigurables(): List<UnnamedConfigurable> =
+    project.bazelGeneralSettingsProviders.map {
+      it.createConfigurable(project)
+    }
+
+  override fun createPanel(): DialogPanel =
+    panel {
+      row(BazelPluginBundle.message("project.settings.project.view.label")) { cell(projectViewPathField).align(Align.FILL) }
+      row(BazelPluginBundle.message("project.settings.buildifier.label")) {
+        cell(buildifierExecutablePathField).align(Align.FILL).validationInfo { buildifierExecutableValidationInfo() }
+      }
+      row { cell(runBuildifierOnSaveCheckBox).align(Align.FILL) }
+      row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
+
+      // add settings from extensions
+      configurables
+        .sortedBy { c -> (c as? Configurable)?.displayName ?: "" }
+        .forEach { appendDslConfigurable(it) }
+    }
 
   private fun initProjectViewFileField(): TextFieldWithBrowseButton =
     TextFieldWithBrowseButton().apply {
@@ -95,19 +124,10 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
       }
     }
 
-  override fun createComponent(): JComponent =
-    panel {
-      row(BazelPluginBundle.message("project.settings.project.view.label")) { cell(projectViewPathField).align(Align.FILL) }
-      row(BazelPluginBundle.message("project.settings.buildifier.label")) {
-        cell(buildifierExecutablePathField).align(Align.FILL).validationInfo { buildifierExecutableValidationInfo() }
-      }
-      row { cell(runBuildifierOnSaveCheckBox).align(Align.FILL) }
-      row { cell(showExcludedDirectoriesAsSeparateNodeCheckBox).align(Align.FILL) }
-    }
-
   override fun isModified(): Boolean = currentProjectSettings != project.bazelProjectSettings
 
   override fun apply() {
+    super<BoundCompositeSearchableConfigurable>.apply()
     val isProjectViewPathChanged = currentProjectSettings.projectViewPath != project.bazelProjectSettings.projectViewPath
     val showExcludedDirectoriesAsSeparateNodeChanged =
       currentProjectSettings.showExcludedDirectoriesAsSeparateNode != project.bazelProjectSettings.showExcludedDirectoriesAsSeparateNode
@@ -125,7 +145,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
   }
 
   override fun reset() {
-    super.reset()
+    super<BoundCompositeSearchableConfigurable>.reset()
     projectViewPathField.text = savedProjectViewPath()
     buildifierExecutablePathField.text = getBuildifierExecPathPlaceholderMessage()
     runBuildifierOnSaveCheckBox.isSelected = project.bazelProjectSettings.runBuildifierOnSave
@@ -150,7 +170,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
 
   override fun disposeUIResources() {
     projectViewPathField.dispose()
-    super.disposeUIResources()
+    super<BoundCompositeSearchableConfigurable>.disposeUIResources()
   }
 
   companion object {
