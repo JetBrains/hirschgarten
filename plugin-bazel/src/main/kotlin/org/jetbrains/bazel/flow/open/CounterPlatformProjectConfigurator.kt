@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.flow.open
 
-import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
@@ -8,10 +8,10 @@ import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.DirectoryProjectConfigurator
 import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.platform.backend.workspace.impl.WorkspaceModelInternal
+import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.workspaceModel.ide.JpsProjectLoadingManager
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.coroutines.BazelCoroutineService
 
 /**
  * Clean up any modules showing up due to the platform hack
@@ -26,18 +26,26 @@ class CounterPlatformProjectConfigurator : DirectoryProjectConfigurator {
   ) = configureProject(project)
 
   fun configureProject(project: Project) {
-    if (!project.isBazelProject || !Registry.`is`("ide.create.fake.module.on.project.import", true)) return
+    removeFakeModulesAndLibraries(project)
+    // https://youtrack.jetbrains.com/issue/BAZEL-1933
+    JpsProjectLoadingManager.getInstance(project).jpsProjectLoaded {
+      removeFakeModulesAndLibraries(project)
+    }
+  }
+}
 
-    val workspaceModel = WorkspaceModel.getInstance(project) as WorkspaceModelInternal
-    val fakeModules =
-      workspaceModel.entityStorage.current.entities(ModuleEntity::class.java)
+private fun removeFakeModulesAndLibraries(project: Project) {
+  if (!project.isBazelProject || !Registry.`is`("ide.create.fake.module.on.project.import", true)) return
 
-    BazelCoroutineService.getInstance(project).start {
-      writeAction {
-        workspaceModel.updateProjectModel("Counter platform fake modules") {
-          fakeModules.forEach { fakeModule -> it.removeEntity(fakeModule) }
-        }
-      }
+  val workspaceModel = WorkspaceModel.getInstance(project)
+  WriteAction.runAndWait<Throwable> {
+    /**
+     * Not using asynchronous [WorkspaceModel.update] here to be extra sure that scanning can't start in between
+     */
+    @Suppress("UsagesOfObsoleteApi")
+    workspaceModel.updateProjectModel("Remove fake modules and libraries from the project") { storage ->
+      storage.entities(ModuleEntity::class.java).forEach { storage.removeEntity(it) }
+      storage.entities(LibraryEntity::class.java).forEach { storage.removeEntity(it) }
     }
   }
 }
