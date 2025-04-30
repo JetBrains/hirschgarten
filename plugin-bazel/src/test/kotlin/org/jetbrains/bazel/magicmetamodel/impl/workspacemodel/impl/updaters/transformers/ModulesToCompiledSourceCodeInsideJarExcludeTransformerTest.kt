@@ -52,7 +52,6 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
         "com/example/weird_casing.java",
         "com/example/weird_casing.class",
       )
-    entity.namesInsideJarToExclude shouldBe emptyList()
   }
 
   @Test
@@ -94,28 +93,6 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
         "com/example/weird_casing.kt",
         "com/example/weird_casing.class",
         "com/example/Weird_casingKt.class",
-      )
-    entity.namesInsideJarToExclude shouldBe emptyList()
-  }
-
-  @Test
-  fun `should add excludes for xml resources but not for other ones`() {
-    // given
-    val resourceRoots =
-      listOf(
-        Path("/src/resources/plugin.xml"),
-        Path("/src/resources/plugin.info"),
-      )
-    val module = createModuleWithRoots(emptyList(), resourceRoots)
-
-    // when
-    val entity = ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(listOf(module))
-
-    // then
-    entity.relativePathsInsideJarToExclude shouldBe emptyList()
-    entity.namesInsideJarToExclude shouldBe
-      setOf(
-        "plugin.xml",
       )
   }
 
