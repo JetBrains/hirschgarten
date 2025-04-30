@@ -189,6 +189,7 @@ class BazelProjectMapper(
           ),
           transitiveCompileTimeJarsTargetKinds,
           repoMapping,
+          workspaceContext,
         )
       }
     val mergedModulesFromBazel =
@@ -227,6 +228,7 @@ class BazelProjectMapper(
             isTargetTreatedAsInternal(it.assumeResolved(), repoMapping)
         },
         repoMapping,
+        workspaceContext,
       )
 
     val workspaceName = targets.values.map { it.workspaceName }.firstOrNull() ?: "_main"
@@ -630,12 +632,16 @@ class BazelProjectMapper(
     )
   }
 
-  private fun createNonModuleTargets(targets: Map<Label, TargetInfo>, repoMapping: RepoMapping): List<NonModuleTarget> =
+  private fun createNonModuleTargets(
+    targets: Map<Label, TargetInfo>,
+    repoMapping: RepoMapping,
+    workspaceContext: WorkspaceContext,
+  ): List<NonModuleTarget> =
     targets
       .map { (label, targetInfo) ->
         NonModuleTarget(
           label = label,
-          tags = targetTagsResolver.resolveTags(targetInfo),
+          tags = targetTagsResolver.resolveTags(targetInfo, workspaceContext),
           baseDirectory = bazelPathsResolver.toDirectoryPath(label.assumeResolved(), repoMapping),
           kindString = targetInfo.kind,
         )
@@ -973,6 +979,7 @@ class BazelProjectMapper(
     generatedLibraries: Map<Label, Collection<Library>>,
     transitiveCompileTimeJarsTargetKinds: Set<String>,
     repoMapping: RepoMapping,
+    workspaceContext: WorkspaceContext,
   ): List<Module> =
     withContext(Dispatchers.Default) {
       targetsToImport
@@ -985,6 +992,7 @@ class BazelProjectMapper(
               generatedLibraries[it.label()].orEmpty(),
               transitiveCompileTimeJarsTargetKinds,
               repoMapping,
+              workspaceContext,
             )
           }
         }.awaitAll()
@@ -997,13 +1005,14 @@ class BazelProjectMapper(
     extraLibraries: Collection<Library>,
     transitiveCompileTimeJarsTargetKinds: Set<String>,
     repoMapping: RepoMapping,
+    workspaceContext: WorkspaceContext,
   ): Module {
     val label = target.label().assumeResolved()
     val resolvedDependencies = resolveDirectDependencies(target)
     // extra libraries can override some library versions, so they should be put before
     val directDependencies = extraLibraries.map { it.label } + resolvedDependencies
     val languages = inferLanguages(target, transitiveCompileTimeJarsTargetKinds)
-    val tags = targetTagsResolver.resolveTags(target)
+    val tags = targetTagsResolver.resolveTags(target, workspaceContext)
     val baseDirectory = bazelPathsResolver.toDirectoryPath(label, repoMapping)
     val languagePlugin = languagePluginsService.getPlugin(languages)
     val sources = resolveSourceSet(target, languagePlugin)

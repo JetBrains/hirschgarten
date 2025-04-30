@@ -24,6 +24,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
+import org.jetbrains.bsp.protocol.BuildTargetTag
 
 private val dependencyInterner: Interner<ModuleDependencyItem> = Interner.createWeakInterner()
 private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInterner()
@@ -42,15 +43,23 @@ internal class ModuleEntityUpdater(
         !entityToAdd.isLibraryModule &&
           workspaceModelEntityUpdaterConfig.project.targetUtils.isLibraryModule(it.libraryName)
       }
-    val modulesDependencies =
-      (entityToAdd.modulesDependencies + libraryModulesDependencies.toLibraryModuleDependencies()).map {
-        toModuleDependencyItemModuleDependency(it)
-      }
+    val allLibrariesDependencies =
+      librariesDependencies.map { toLibraryDependency(it) } +
+        libraryModulesDependencies.toLibraryModuleDependencies().map { toModuleDependencyItemModuleDependency(it) }
+    val modulesDependencies = entityToAdd.modulesDependencies.map { toModuleDependencyItemModuleDependency(it) }
+    val isLibsOverModules = isLibrariesOverModules(entityToAdd)
     val dependencies =
-      defaultDependencies +
-        modulesDependencies +
-        librariesDependencies.map { toLibraryDependency(it) } +
-        associatesDependencies
+      if (isLibsOverModules) {
+        defaultDependencies +
+          allLibrariesDependencies +
+          modulesDependencies +
+          associatesDependencies
+      } else {
+        defaultDependencies +
+          modulesDependencies +
+          allLibrariesDependencies +
+          associatesDependencies
+      }
 
     val moduleEntityBuilder =
       ModuleEntity(
@@ -62,6 +71,12 @@ internal class ModuleEntityUpdater(
       }
 
     return builder.addEntity(moduleEntityBuilder)
+  }
+
+  private fun isLibrariesOverModules(entityToAdd: GenericModuleInfo): Boolean {
+    val targetUtils = workspaceModelEntityUpdaterConfig.project.targetUtils
+    val buildTarget = targetUtils.getTargetForModuleId(entityToAdd.name)?.let { targetUtils.getBuildTargetForLabel(it) } ?: return false
+    return buildTarget.tags.contains(BuildTargetTag.LIBRARIES_OVER_MODULES)
   }
 
   private fun List<IntermediateLibraryDependency>.toLibraryModuleDependencies() =
