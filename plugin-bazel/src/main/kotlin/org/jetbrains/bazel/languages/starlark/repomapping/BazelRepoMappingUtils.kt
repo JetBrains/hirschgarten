@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.repomapping
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Canonical
@@ -11,12 +12,13 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.utils.allAncestorsSequence
 import java.nio.file.Path
+import kotlin.io.path.isRegularFile
 import kotlin.io.path.relativeToOrNull
 
-fun findContainingBazelRepo(project: Project, path: Path): Path? {
-  val repositoryPaths = project.repositoryPaths
-  return path.allAncestorsSequence().firstOrNull { it in repositoryPaths }
-}
+fun findContainingBazelRepo(path: Path): Path? =
+  path.allAncestorsSequence().firstOrNull {
+    it.resolve(Constants.MODULE_BAZEL_FILE_NAME).isRegularFile()
+  }
 
 fun calculateLabel(
   project: Project,
@@ -24,7 +26,7 @@ fun calculateLabel(
   targetName: String? = null,
 ): ResolvedLabel? {
   val targetBaseDirectory = buildFile.parent ?: return null
-  val containingRepoPath = findContainingBazelRepo(project, targetBaseDirectory) ?: return null
+  val containingRepoPath = findContainingBazelRepo(targetBaseDirectory) ?: return null
   val containingCanonicalRepoName =
     project.canonicalRepoNameToPath.entries
       .firstOrNull { (_, repoPath) ->
