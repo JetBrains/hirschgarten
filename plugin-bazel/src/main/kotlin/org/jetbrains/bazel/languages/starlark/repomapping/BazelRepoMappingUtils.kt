@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.repomapping
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Canonical
@@ -17,7 +17,9 @@ import kotlin.io.path.relativeToOrNull
 
 fun findContainingBazelRepo(path: Path): Path? =
   path.allAncestorsSequence().firstOrNull {
-    it.resolve(Constants.MODULE_BAZEL_FILE_NAME).isRegularFile()
+    WORKSPACE_FILE_NAMES.any { workspaceFileName ->
+      it.resolve(workspaceFileName).isRegularFile()
+    }
   }
 
 fun calculateLabel(
