@@ -5,11 +5,9 @@ import com.intellij.ide.actions.searcheverywhere.SearchEverywhereContributor
 import com.intellij.ide.actions.searcheverywhere.SearchEverywhereContributorFactory
 import com.intellij.ide.actions.searcheverywhere.SearchEverywherePreviewProvider
 import com.intellij.ide.actions.searcheverywhere.WeightedSearchEverywhereContributor
-import com.intellij.ide.util.EditorHelper
 import com.intellij.navigation.ItemPresentation
 import com.intellij.navigation.PsiElementNavigationItem
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
@@ -17,12 +15,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.codeStyle.NameUtil
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.util.Processor
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
@@ -33,7 +30,7 @@ class LabelSearchEverywhereContributor(private val project: Project) :
   SearchEverywherePreviewProvider {
   private val listCellRenderer: ListCellRenderer<LabelWithPreview> =
     SimpleListCellRenderer.create { label, value, index ->
-      label.text = value.displayName
+      label.text = value.label.toShortString(project)
       label.icon = BazelPluginIcons.bazel
     }
 
@@ -62,9 +59,7 @@ class LabelSearchEverywhereContributor(private val project: Project) :
       if (progressIndicator.isCanceled) break
       val fullString = label.toString()
       if (matcher.matches(fullString)) {
-        val targetElement = runReadAction { resolveLabel(project, label) } ?: continue
-        val displayName = label.toShortString(project)
-        val foundItemDescriptor = FoundItemDescriptor(LabelWithPreview(displayName, targetElement), matcher.matchingDegree(fullString))
+        val foundItemDescriptor = FoundItemDescriptor(LabelWithPreview(label, project), matcher.matchingDegree(fullString))
         if (!runReadAction { consumer.process(foundItemDescriptor) }) break
       }
     }
@@ -76,17 +71,15 @@ class LabelSearchEverywhereContributor(private val project: Project) :
     searchText: String,
   ): Boolean {
     BazelCoroutineService.getInstance(project).start {
-      withContext(Dispatchers.EDT) {
-        EditorHelper.openInEditor(selected.element, true, true)
-      }
+      jumpToBuildFile(project, selected.label)
     }
     return true
   }
 
   override fun getElementsRenderer(): ListCellRenderer<in LabelWithPreview> = listCellRenderer
 
-  class LabelWithPreview(val displayName: String, val element: PsiElement) : PsiElementNavigationItem {
-    override fun getTargetElement(): PsiElement = element
+  class LabelWithPreview(val label: Label, private val project: Project) : PsiElementNavigationItem {
+    override fun getTargetElement(): PsiElement? = runReadAction { resolveLabel(project, label) }
 
     override fun getName(): String? = null
 
