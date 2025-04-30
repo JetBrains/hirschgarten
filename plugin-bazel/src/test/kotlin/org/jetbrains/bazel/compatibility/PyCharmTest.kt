@@ -19,9 +19,9 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
   override val projectInfo: ProjectInfoSpec
     get() =
       GitProjectInfo(
-        repositoryUrl = "https://github.com/abrams27/simpleBazelProjectsForTesting.git",
-        commitHash = "febe0d80ab883e49e14bad76aaa9e8e857ae14e1",
-        branchName = "abrams/python-to-multi-lang",
+        repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+        commitHash = "fbdb88d9d08d46ae8db57e23dd4034862b4075df",
+        branchName = "main",
         projectHomeRelativePath = { it.resolve("simpleMultiLanguageTest") },
         isReusable = false,
         configureProjectBeforeUse = ::configureProjectBeforeUse,
