@@ -3,11 +3,32 @@ package org.jetbrains.bazel.server.sync
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.server.model.Tag
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bazel.workspacecontext.provider.DefaultWorkspaceContextProvider
+import org.jetbrains.bsp.protocol.FeatureFlags
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import java.nio.file.Path
+import kotlin.io.path.createTempDirectory
 
 class TargetTagsResolverTest {
+  private lateinit var workspaceRoot: Path
+  private lateinit var projectViewFile: Path
+  private lateinit var dotBazelBspDirPath: Path
+  private lateinit var workspaceContext: WorkspaceContext
+
+  @BeforeEach
+  fun beforeEach() {
+    workspaceRoot = createTempDirectory("workspaceRoot")
+    projectViewFile = workspaceRoot.resolve("projectview.bazelproject")
+    dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp")
+    workspaceContext =
+      DefaultWorkspaceContextProvider(workspaceRoot, projectViewFile, dotBazelBspDirPath, FeatureFlags())
+        .readWorkspaceContext()
+  }
+
   @Test
   fun `should map executable targets`() {
     val targetInfo =
@@ -17,7 +38,7 @@ class TargetTagsResolverTest {
           it.executable = true
         }.build()
 
-    val tags = TargetTagsResolver().resolveTags(targetInfo)
+    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
     tags shouldBe setOf(Tag.APPLICATION)
   }
@@ -32,7 +53,7 @@ class TargetTagsResolverTest {
           executable = false
         }.build()
 
-    val tags = TargetTagsResolver().resolveTags(targetInfo)
+    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
     tags shouldBe setOf(Tag.LIBRARY)
   }
@@ -47,7 +68,7 @@ class TargetTagsResolverTest {
           it.executable = true
         }.build()
 
-    val tags = TargetTagsResolver().resolveTags(targetInfo)
+    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
     tags shouldBe setOf(Tag.TEST)
   }
@@ -61,7 +82,7 @@ class TargetTagsResolverTest {
           it.kind = "intellij_plugin_debug_target"
         }.build()
 
-    val tags = TargetTagsResolver().resolveTags(targetInfo)
+    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
     tags shouldBe setOf(Tag.INTELLIJ_PLUGIN, Tag.APPLICATION)
   }
@@ -76,7 +97,7 @@ class TargetTagsResolverTest {
           it.addTags("manual")
         }.build()
 
-    val tags = TargetTagsResolver().resolveTags(targetInfo)
+    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
     tags shouldBe setOf(Tag.LIBRARY, Tag.NO_IDE, Tag.MANUAL)
   }
@@ -92,7 +113,7 @@ class TargetTagsResolverTest {
           it.addTags("manual")
         }.build()
 
-    val tags = TargetTagsResolver().resolveTags(targetInfo)
+    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
     tags shouldBe setOf(Tag.APPLICATION, Tag.NO_IDE, Tag.MANUAL)
   }
@@ -109,7 +130,7 @@ class TargetTagsResolverTest {
           it.kind = name
         }.build()
 
-    val tags = TargetTagsResolver().resolveTags(targetInfo)
+    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
     tags shouldBe setOf(Tag.LIBRARY)
   }
@@ -124,7 +145,7 @@ class TargetTagsResolverTest {
           executable = false
         }.build()
 
-    val tags = TargetTagsResolver().resolveTags(targetInfo)
+    val tags = TargetTagsResolver().resolveTags(targetInfo, workspaceContext)
 
     tags shouldBe setOf(Tag.APPLICATION)
   }

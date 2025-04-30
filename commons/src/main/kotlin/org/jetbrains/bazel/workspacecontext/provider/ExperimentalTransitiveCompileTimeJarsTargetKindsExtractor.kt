@@ -7,5 +7,5 @@ import org.jetbrains.bazel.workspacecontext.TransitiveCompileTimeJarsTargetKinds
 internal object ExperimentalTransitiveCompileTimeJarsTargetKindsExtractor :
   ExecutionContextEntityExtractor<TransitiveCompileTimeJarsTargetKindsSpec> {
   override fun fromProjectView(projectView: ProjectView): TransitiveCompileTimeJarsTargetKindsSpec =
-    TransitiveCompileTimeJarsTargetKindsSpec(projectView.transitiveCompileTimeJarsTargetKinds?.values ?: emptyList())
+    TransitiveCompileTimeJarsTargetKindsSpec(projectView.transitiveCompileTimeJarsTargetKinds?.values.orEmpty())
 }
