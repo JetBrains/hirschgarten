@@ -8,6 +8,7 @@ import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import com.intellij.util.concurrency.annotations.RequiresReadLock
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Label
@@ -24,6 +25,7 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
  * @param acceptOnlyFileTarget `true` if [Label.target] always refers to a file on disk (e.g., in `load` statements).
  * @see ExternalRepoResolveTest
  */
+@RequiresReadLock
 fun resolveLabel(
   project: Project,
   label: Label,
@@ -127,7 +129,7 @@ private fun findReferredAbsolutePackage(
   val canonicalLabel = label.toCanonicalLabel(project) ?: return null
   val foundRepoRoot =
     if (canonicalLabel.repo is Main && containingFile != null) {
-      findContainingBazelRepo(project, containingFile.toNioPathOrNull() ?: return null)
+      findContainingBazelRepo(containingFile.toNioPathOrNull() ?: return null)
     } else {
       project.canonicalRepoNameToPath[canonicalLabel.repoName]
     }

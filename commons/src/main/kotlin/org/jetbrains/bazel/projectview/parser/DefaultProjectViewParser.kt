@@ -6,6 +6,7 @@ import org.jetbrains.bazel.projectview.parser.sections.AndroidMinSdkSectionParse
 import org.jetbrains.bazel.projectview.parser.sections.EnableNativeAndroidRulesParser
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalAddTransitiveCompileTimeJarsParser
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSectionParser
+import org.jetbrains.bazel.projectview.parser.sections.ExperimentalPrioritizeLibrariesOverModulesTargetKindsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ImportRunConfigurationsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewAllowManualTargetsSyncSectionParser
@@ -56,6 +57,7 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         addTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsParser.parse(rawSections),
         transitiveCompileTimeJarsTargetKinds = ExperimentalTransitiveCompileTimeJarsTargetKindsSectionParser.parse(rawSections),
         noPruneTransitiveCompileTimeJarsPatterns = ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSectionParser.parse(rawSections),
+        prioritizeLibrariesOverModulesTargetKinds = ExperimentalPrioritizeLibrariesOverModulesTargetKindsSectionParser.parse(rawSections),
         enableNativeAndroidRules = EnableNativeAndroidRulesParser.parse(rawSections),
         androidMinSdkSection = AndroidMinSdkSectionParser.parse(rawSections),
         shardSync = ShardSyncParser.parse(rawSections),
