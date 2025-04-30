@@ -14,7 +14,7 @@ def kt_test(name, src, classname = "", deps = [], **kwargs):
         fail("'src' has to be a string with file name!")
 
     if (classname == ""):
-        classname = _guess_classname(name)
+        classname = _guess_classname(src)
 
     kt_jvm_test(
         name = name,
@@ -24,10 +24,11 @@ def kt_test(name, src, classname = "", deps = [], **kwargs):
         **kwargs
     )
 
-def _guess_classname(name):
+def _guess_classname(src):
     package = _guess_class_package()
 
-    return package + "." + name
+    file_name, _, _ = src.rpartition(".")
+    return package + "." + file_name
 
 def _guess_class_package():
     package_name = native.package_name()

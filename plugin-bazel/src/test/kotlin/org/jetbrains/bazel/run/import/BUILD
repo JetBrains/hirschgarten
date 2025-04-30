@@ -1,12 +1,7 @@
-load("//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:tests.bzl", "ide_starter_test")
+load("//rules/testing:ide_starter.bzl", "IDE_ID", "ide_starter_test")
 
 ide_starter_test(
     name = "ImportRunConfigurationsSyncHookTest",
-    size = "large",
     src = "ImportRunConfigurationsSyncHookTest.kt",
-    classname = "org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHookTest",
-    tags = ["manual"],
-    deps = [
-        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
-    ],
+    ide_ids = [IDE_ID.IC],
 )
