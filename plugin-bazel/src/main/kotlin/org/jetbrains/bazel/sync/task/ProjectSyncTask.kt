@@ -167,11 +167,12 @@ class ProjectSyncTask(private val project: Project) {
     buildProject: Boolean,
   ): SyncResultStatus {
     val diff = AllProjectStructuresProvider(project).newDiff()
-    val hasError =
+    val syncStatus =
       project.connection.runWithServer { server ->
         bspTracer.spanBuilder("collect.project.details.ms").use {
-          // if this bazel build fails, we still want the sync hooks to be executed
           val buildTargets = BaseProjectSync(project).execute(syncScope, buildProject, server, PROJECT_SYNC_TASK_ID)
+          // If the Bazel build fails but returns >0 targets, we still want the sync hooks to be executed
+          if (buildTargets.hasError && buildTargets.targets.isEmpty()) return@use SyncResultStatus.FAILURE
           val environment =
             ProjectSyncHookEnvironment(
               project = project,
@@ -186,19 +187,13 @@ class ProjectSyncTask(private val project: Project) {
           project.projectSyncHooks.forEach {
             it.onSync(environment)
           }
-          buildTargets.hasError
-        }
-      }
 
-    val syncStatus =
-      if (hasError) {
-        if (diff.isInvalid()) {
-          SyncResultStatus.FAILURE
-        } else {
-          SyncResultStatus.PARTIAL_SUCCESS
+          if (buildTargets.hasError) {
+            SyncResultStatus.PARTIAL_SUCCESS
+          } else {
+            SyncResultStatus.SUCCESS
+          }
         }
-      } else {
-        SyncResultStatus.SUCCESS
       }
 
     if (syncStatus != SyncResultStatus.FAILURE) {
