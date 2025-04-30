@@ -1,11 +1,11 @@
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
-load("//rules/testing:ide_starter.bzl", "ide_starter_test")
+load("//rules/testing:ide_starter.bzl", "IDE_ID", "ide_starter_test")
 
 ide_starter_test(
     name = "testResultsTree",
-    size = "large",
     src = "TestTargetActionResultsTreeTest.kt",
     classname = "org.jetbrains.bazel.ui.testResultsTree.TestTargetActionResultsTreeTest",
+    ide_ids = [IDE_ID.IC],
     deps = [
         ":testTargetActionTreeUtil",
     ],
@@ -13,9 +13,9 @@ ide_starter_test(
 
 ide_starter_test(
     name = "runAllTestsActionTest",
-    size = "large",
     src = "RunAllTestsActionTest.kt",
     classname = "org.jetbrains.bazel.ui.testResultsTree.RunAllTestsActionTest",
+    ide_ids = [IDE_ID.IC],
     deps = [
         ":testTargetActionTreeUtil",
     ],
