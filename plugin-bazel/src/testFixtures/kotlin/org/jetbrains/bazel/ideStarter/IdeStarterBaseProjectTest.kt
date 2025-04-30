@@ -39,13 +39,22 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(ExperimentalPathApi::class)
 abstract class IdeStarterBaseProjectTest {
   protected abstract val projectInfo: ProjectInfoSpec
-  protected open val ideInfo: IdeInfo = IdeProductProvider.IC
+
+  protected val ideInfo: IdeInfo =
+    when (System.getProperty("bazel.ide.starter.test.ide.id")) {
+      "IC" -> IdeProductProvider.IC
+      "PY" -> IdeProductProvider.PY
+      else -> error("IDE id is not set properly. Please use ide_starter_test rule to setup the test.")
+    }
 
   protected open val projectName: String
     get() = System.getProperty("bazel.ide.starter.test.project.name") ?: javaClass.simpleName
 
-  private val testCase: TestCase<ProjectInfoSpec>
-    get() = TestCase(ideInfo, projectInfo).withBuildNumber(System.getProperty("bazel.ide.starter.test.platform.build.number"))
+  private val ideBuildNumber =
+    System.getProperty("bazel.ide.starter.test.ide.build.number")
+      ?: error("IDE build number is not set properly. Please use ide_starter_test rule to setup the test.")
+
+  private val testCase = TestCase(ideInfo, projectInfo).withBuildNumber(ideBuildNumber)
 
   protected open val timeout: Duration
     get() = (System.getProperty("bazel.ide.starter.test.timeout.seconds")?.toIntOrNull() ?: 600).seconds
