@@ -17,7 +17,6 @@ data class CompiledSourceCodeInsideJarExcludeId(val id: Int) : SymbolicEntityId<
 
 interface CompiledSourceCodeInsideJarExcludeEntity : WorkspaceEntityWithSymbolicId {
   public val relativePathsInsideJarToExclude: Set<String>
-  public val namesInsideJarToExclude: Set<String>
 
   public val excludeId: CompiledSourceCodeInsideJarExcludeId
   override val symbolicId: CompiledSourceCodeInsideJarExcludeId
@@ -28,7 +27,6 @@ interface CompiledSourceCodeInsideJarExcludeEntity : WorkspaceEntityWithSymbolic
   interface Builder : WorkspaceEntity.Builder<CompiledSourceCodeInsideJarExcludeEntity> {
     override var entitySource: EntitySource
     var relativePathsInsideJarToExclude: MutableSet<String>
-    var namesInsideJarToExclude: MutableSet<String>
     var excludeId: CompiledSourceCodeInsideJarExcludeId
   }
 
@@ -38,21 +36,19 @@ interface CompiledSourceCodeInsideJarExcludeEntity : WorkspaceEntityWithSymbolic
     @JvmName("create")
     operator fun invoke(
       relativePathsInsideJarToExclude: Set<String>,
-      namesInsideJarToExclude: Set<String>,
       excludeId: CompiledSourceCodeInsideJarExcludeId,
       entitySource: EntitySource,
       init: (Builder.() -> Unit)? = null,
     ): Builder {
       val builder = builder()
       builder.relativePathsInsideJarToExclude = relativePathsInsideJarToExclude.toMutableWorkspaceSet()
-      builder.namesInsideJarToExclude = namesInsideJarToExclude.toMutableWorkspaceSet()
       builder.excludeId = excludeId
       builder.entitySource = entitySource
       init?.invoke(builder)
       return builder
     }
   }
-//endregion
+  //endregion
 }
 
 //region generated code
@@ -93,7 +89,7 @@ interface LibraryCompiledSourceCodeInsideJarExcludeEntity : WorkspaceEntity {
       return builder
     }
   }
-//endregion
+  //endregion
 }
 
 //region generated code
