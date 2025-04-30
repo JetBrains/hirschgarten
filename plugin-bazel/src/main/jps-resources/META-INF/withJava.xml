@@ -6,6 +6,7 @@
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.configuration.JavaSourceTypeIconProvider"/>
         <psiElementConfigurationLocator implementation="org.jetbrains.bazel.java.junit.JavaPsiElementConfigurationLocator"/>
         <unresolvedImportChecker implementation ="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker"/>
+      <bazelCoverageClassNodeDecoratorPsiElementClassifier implementation="org.jetbrains.bazel.java.coverage.JavaBazelCoverageClassNodeDecoratorPsiElementClassifier"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
