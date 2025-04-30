@@ -6,7 +6,6 @@ import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ide.projectView.ProjectViewNodeDecorator
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPsiElementPointer
 import org.jetbrains.bazel.sdkcompat.shouldShowCoverageInProjectView
@@ -23,7 +22,6 @@ class BazelCoverageClassNodeDecorator(private val project: Project) : ProjectVie
         else -> null
       } ?: return
 
-    if (psiElement !is PsiClass) return
     if (BazelCoverageClassNodeDecoratorPsiElementClassifier.ep.extensionList.none { it.shouldShowCoverageForElement(psiElement) }) return
 
     val psiFile = psiElement.containingFile ?: return
