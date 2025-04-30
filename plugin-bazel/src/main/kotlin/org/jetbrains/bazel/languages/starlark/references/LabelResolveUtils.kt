@@ -127,7 +127,7 @@ private fun findReferredAbsolutePackage(
   val canonicalLabel = label.toCanonicalLabel(project) ?: return null
   val foundRepoRoot =
     if (canonicalLabel.repo is Main && containingFile != null) {
-      findContainingBazelRepo(project, containingFile.toNioPathOrNull() ?: return null)
+      findContainingBazelRepo(containingFile.toNioPathOrNull() ?: return null)
     } else {
       project.canonicalRepoNameToPath[canonicalLabel.repoName]
     }
