@@ -10,13 +10,16 @@ import com.intellij.navigation.ItemPresentation
 import com.intellij.navigation.PsiElementNavigationItem
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.util.ProgressIndicatorUtils
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.codeStyle.NameUtil
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.util.Processor
+import com.intellij.util.containers.ContainerUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.assets.BazelPluginIcons
@@ -58,16 +61,24 @@ class LabelSearchEverywhereContributor(private val project: Project) :
         .withCaseSensitivity(NameUtil.MatchingCaseSensitivity.NONE)
         .build()
 
-    for (label in project.targetUtils.allTargets()) {
-      if (progressIndicator.isCanceled) break
-      val fullString = label.toString()
-      if (matcher.matches(fullString)) {
-        val targetElement = runReadAction { resolveLabel(project, label) } ?: continue
+    val foundItems =
+      project.targetUtils.allTargets().mapNotNull { label ->
+        val fullString = label.toString()
+        if (!matcher.matches(fullString)) return@mapNotNull null
+        val targetElement = runReadAction { resolveLabel(project, label) } ?: return@mapNotNull null
         val displayName = label.toShortString(project)
-        val foundItemDescriptor = FoundItemDescriptor(LabelWithPreview(displayName, targetElement), matcher.matchingDegree(fullString))
-        if (!runReadAction { consumer.process(foundItemDescriptor) }) break
+        FoundItemDescriptor(LabelWithPreview(displayName, targetElement), matcher.matchingDegree(fullString))
       }
+
+    // Copied from AbstractGotoSEContributor
+    if (ModalityState.defaultModalityState() == ModalityState.nonModal()) {
+      @Suppress("UsagesOfObsoleteApi", "DEPRECATION")
+      ProgressIndicatorUtils.yieldToPendingWriteActions()
     }
+    @Suppress("UsagesOfObsoleteApi", "DEPRECATION")
+    ProgressIndicatorUtils.runInReadActionWithWriteActionPriority({
+      ContainerUtil.process(foundItems, consumer)
+    }, progressIndicator)
   }
 
   override fun processSelectedItem(
