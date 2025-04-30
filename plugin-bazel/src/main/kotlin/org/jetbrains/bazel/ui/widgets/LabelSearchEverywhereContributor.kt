@@ -8,13 +8,16 @@ import com.intellij.ide.actions.searcheverywhere.WeightedSearchEverywhereContrib
 import com.intellij.navigation.ItemPresentation
 import com.intellij.navigation.PsiElementNavigationItem
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.util.ProgressIndicatorUtils
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.codeStyle.NameUtil
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.util.Processor
+import com.intellij.util.containers.ContainerUtil
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
@@ -55,14 +58,25 @@ class LabelSearchEverywhereContributor(private val project: Project) :
         .withCaseSensitivity(NameUtil.MatchingCaseSensitivity.NONE)
         .build()
 
-    for (label in project.targetUtils.allTargets()) {
-      if (progressIndicator.isCanceled) break
-      val fullString = label.toString()
-      if (matcher.matches(fullString)) {
-        val foundItemDescriptor = FoundItemDescriptor(LabelWithPreview(label, project), matcher.matchingDegree(fullString))
-        if (!runReadAction { consumer.process(foundItemDescriptor) }) break
+    val foundItems =
+      project.targetUtils.allTargets().mapNotNull { label ->
+        val fullString = label.toString()
+        if (matcher.matches(fullString)) {
+          FoundItemDescriptor(LabelWithPreview(label, project), matcher.matchingDegree(fullString))
+        } else {
+          null
+        }
       }
+
+    // Copied from AbstractGotoSEContributor
+    if (ModalityState.defaultModalityState() == ModalityState.nonModal()) {
+      @Suppress("UsagesOfObsoleteApi", "DEPRECATION")
+      ProgressIndicatorUtils.yieldToPendingWriteActions()
     }
+    @Suppress("UsagesOfObsoleteApi", "DEPRECATION")
+    ProgressIndicatorUtils.runInReadActionWithWriteActionPriority({
+      ContainerUtil.process(foundItems, consumer)
+    }, progressIndicator)
   }
 
   override fun processSelectedItem(
