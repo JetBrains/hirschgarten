@@ -24,7 +24,6 @@ kt_intellij_junit4_test(
 ide_starter_test(
     name = "ExternalRepoResolveTest",
     src = "ExternalRepoResolveTest.kt",
-    classname = "org.jetbrains.bazel.languages.starlark.references.ExternalRepoResolveTest",
     ide_ids = [IDE_ID.IC],
 )
 
