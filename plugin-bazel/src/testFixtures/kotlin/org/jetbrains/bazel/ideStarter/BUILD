@@ -4,7 +4,8 @@ load("//rules/testing:junit5.bzl", "JUNIT5_DEPS")
 
 kt_jvm_library(
     name = "baseTest",
+    testonly = 1,
     srcs = ["IdeStarterBaseProjectTest.kt"],
     visibility = ["//visibility:public"],
-    deps = IDE_STARTER_DEPS + JUNIT5_DEPS,
+    deps = ["//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/resourceUtil"] + IDE_STARTER_DEPS + JUNIT5_DEPS,
 )

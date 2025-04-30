@@ -26,9 +26,6 @@ ide_starter_test(
     src = "ExternalRepoResolveTest.kt",
     classname = "org.jetbrains.bazel.languages.starlark.references.ExternalRepoResolveTest",
     ide_ids = [IDE_ID.IC],
-    deps = [
-        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
-    ],
 )
 
 kt_intellij_junit4_test(

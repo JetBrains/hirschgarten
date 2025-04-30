@@ -23,9 +23,10 @@ ide_starter_test(
 
 kt_jvm_library(
     name = "testTargetActionTreeUtil",
+    testonly = 1,
     srcs = ["TestTargetTreeUtil.kt"],
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
-        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
+        "//plugin-bazel/src/testFixtures/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
     ],
 )

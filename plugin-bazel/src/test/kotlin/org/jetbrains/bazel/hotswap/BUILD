@@ -7,6 +7,5 @@ ide_starter_test(
     ide_ids = [IDE_ID.IC],
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
-        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
     ],
 )

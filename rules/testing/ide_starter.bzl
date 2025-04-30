@@ -4,7 +4,6 @@ load("//rules/testing:junit5.bzl", "kt_junit5_test")
 INTELLIJ_BAZEL_PLUGIN_ZIP = "plugin-bazel/plugin-bazel.zip"
 
 IDE_STARTER_DEPS = [
-    "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/resourceUtil",
     "@maven//:com_jetbrains_intellij_tools_ide_metrics_collector",
     "@maven//:com_jetbrains_intellij_tools_ide_metrics_collector_starter",
     "@maven//:com_jetbrains_intellij_tools_ide_starter_driver",
@@ -12,6 +11,10 @@ IDE_STARTER_DEPS = [
     "@maven//:com_jetbrains_intellij_tools_ide_starter_squashed",
     "@maven//:org_apache_httpcomponents_httpclient",
     "@maven//:org_kodein_di_kodein_di",
+]
+
+IDE_STARTER_BASE_TEST_DEPS = [
+    "//plugin-bazel/src/testFixtures/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
 ]
 
 IDE_STARTER_RESOURCES = [
@@ -47,7 +50,7 @@ def ide_starter_test(name, ide_ids, deps = [], jvm_flags = [], resources = [], *
 
         kt_junit5_test(
             name = name + ide_id,
-            deps = deps + IDE_STARTER_DEPS,
+            deps = deps + IDE_STARTER_DEPS + IDE_STARTER_BASE_TEST_DEPS,
             size = "large",
             jvm_flags = jvm_flags + [
                 "-Dbazel.ide.starter.test.ide.id=%s" % ide_id,

@@ -5,7 +5,4 @@ ide_starter_test(
     src = "ImportRunConfigurationsSyncHookTest.kt",
     classname = "org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHookTest",
     ide_ids = [IDE_ID.IC],
-    deps = [
-        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
-    ],
 )
