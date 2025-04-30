@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.fastbuild
 
+import com.intellij.execution.ExecutionManager
 import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.components.service
@@ -13,7 +14,10 @@ import com.intellij.task.ProjectTaskContext
 import com.intellij.task.ProjectTaskRunner
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.run.BazelProcessHandler
+import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.server.sync.ExecuteService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bsp.protocol.FastBuildParams
@@ -38,6 +42,7 @@ class BazelFastBuildProjectTaskRunner: ProjectTaskRunner() {
     return Registry.`is`(FastBuildUtils.fastBuildEnabledKey) &&
       project.isBazelProject &&
       project.isTrusted() &&
+      getRunningBazelConfigs(project).isNotEmpty() &&
       canRun(projectTask)
   }
 
@@ -54,12 +59,14 @@ class BazelFastBuildProjectTaskRunner: ProjectTaskRunner() {
       }
       val targetUtils = project.service<TargetUtils>()
       val results = ArrayList<Promise<Result>>()
+
       moduleBuildTasks.flatMap { it.files.toList() }.forEach { file ->
         val tempDir = Files.createTempDirectory(file.name)
         val buildCommand = project.connection.runWithServer {
           it.fastBuildFile(FastBuildParams(targetUtils.getTargetsForFile(file).first(), file.toNioPath(), tempDir))
         } ?: TODO()
-        results.add(FastBuildUtils.fastBuildFiles(project, buildCommand, file))
+        val tempFastBuildDir = getRunningBazelConfigs(project).first().fastBuildPath
+        results.add(FastBuildUtils.fastBuildFiles(project, buildCommand, file, tempFastBuildDir))
 
       }
 
@@ -67,4 +74,7 @@ class BazelFastBuildProjectTaskRunner: ProjectTaskRunner() {
     }
     return result
   }
+
+  private fun getRunningBazelConfigs(project: Project): List<BazelProcessHandler> = ExecutionManager.getInstance(project)
+    .getRunningProcesses().mapNotNull { it as? BazelProcessHandler }
 }

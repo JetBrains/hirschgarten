@@ -21,6 +21,7 @@ import org.jetbrains.bazel.taskEvents.BazelTaskEventsService
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import kotlin.io.path.Path
 
 abstract class GoDebuggableCommandLineState(
   val environment: ExecutionEnvironment,
@@ -62,7 +63,7 @@ abstract class GoDebuggableCommandLineState(
         }
       }
 
-    handler = BazelProcessHandler(project, runDeferred)
+    handler = BazelProcessHandler(project, runDeferred, Path("."))
 
     handler.addProcessListener(runtimeErrorsListener)
 

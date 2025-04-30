@@ -48,7 +48,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, prot
         }
       }
 
-    handler = BazelProcessHandler(project, runDeferred)
+    handler = BazelProcessHandler(project, runDeferred, configuration.fastCompileTempDir)
     val runListener = createAndAddTaskListener(handler)
 
     with(BazelTaskEventsService.getInstance(project)) {

@@ -52,7 +52,7 @@ object FastBuildUtils {
 
   const val fastBuildEnabledKey = "bsp.enable.jvm.fastbuild"
 
-  fun fastBuildFiles(project: Project, fastBuildCommand: FastBuildCommand, file: VirtualFile): Promise<ProjectTaskRunner.Result> {
+  fun fastBuildFiles(project: Project, fastBuildCommand: FastBuildCommand, file: VirtualFile, tmpFastBuild: Path): Promise<ProjectTaskRunner.Result> {
     val promise = AsyncPromise<ProjectTaskRunner.Result>()
       val compileTask = CompilerTask(project, "Recompile", false, false, true, false)
       val compileScope = OneProjectItemCompileScope(project, file)
@@ -130,7 +130,7 @@ object FastBuildUtils {
         }
         compileTask.setEndCompilationStamp(ExitStatus.SUCCESS, System.currentTimeMillis())
 
-        processAndHotswapOutput(fastBuildCommand.outputFile, fastBuildCommand.originalOutputFile, project)
+        processAndHotswapOutput(fastBuildCommand.outputFile, tmpFastBuild, project)
         promise.setResult(TaskRunnerResults.SUCCESS)
       }, null)
     return promise
@@ -139,18 +139,18 @@ object FastBuildUtils {
   /**
    * Unzips the jar and uses the files within to hotswap
    */
-  fun processAndHotswapOutput(outputJar: Path, originalOutputJar: Path, project: Project) {
+  fun processAndHotswapOutput(outputJar: Path, tmpFastBuildDir: Path, project: Project) {
     ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Hotswapping", true) {
       override fun run(indicator: ProgressIndicator) {
-        val unzip = outputJar.parent.resolve("unzip").also { it.toFile().mkdir() }
         val files = buildList {
           ZipFile(outputJar.toFile()).use { zipFile ->
             zipFile.entries().iterator().forEach {
               if (it.isDirectory || !it.name.endsWith(".class")) {
                 return@forEach
               }
-              val output = unzip.resolve(it.name)
+              val output = tmpFastBuildDir.resolve(it.name)
               output.parent.toFile().mkdirs()
+
               zipFile.getInputStream(it).use { it.copyTo(output.outputStream())}
               add(it.name)
             }
@@ -163,41 +163,16 @@ object FastBuildUtils {
               return@let it.substringBeforeLast('.')
             }
             it
-          } to HotSwapFile(unzip.resolve(it).toFile())
+          } to HotSwapFile(tmpFastBuildDir.resolve(it).toFile())
         }
 
         indicator.checkCanceled()
 //        span.end()
-
         //updateRuntimeJar(originalOutputJar, outputJar.parent, unzip, files)
         hotswapFile(project, hotswapMap)
       }
     })
 
-  }
-
-
-  //This does not seem to work, there is still a problem where unloaded classes (which is common in Kotlin for example)
-  //will not be updated, even if we replace the jar with the updated class files. Need to figure out a way to get this to work
-  fun updateRuntimeJar(runtimeJarPath: Path, tempDir: Path, updatedFilesRoot: Path, updatedFiles: List<String>) {
-    val tempJarPath = tempDir.resolve(runtimeJarPath.name)
-    ZipOutputStream(tempJarPath.toFile().outputStream()).use { tempJar ->
-      ZipFile(runtimeJarPath.toFile()).use { runtimeJar ->
-        runtimeJar.entries().iterator().forEach { runtimeEntry ->
-          if (updatedFiles.contains(runtimeEntry.name)) {
-            tempJar.putNextEntry(ZipEntry(runtimeEntry.name))
-            updatedFilesRoot.resolve(runtimeEntry.name).toFile().inputStream().use { it.copyTo(tempJar) }
-          } else {
-            tempJar.putNextEntry(runtimeEntry)
-            runtimeJar.getInputStream(runtimeEntry).use { it.copyTo(tempJar) }
-          }
-          tempJar.closeEntry()
-        }
-      }
-    }
-    Files.copy(tempJarPath,
-      runtimeJarPath,
-      StandardCopyOption.REPLACE_EXISTING)
   }
 
   fun hotswapFile(project: Project, hotswapMap: Map<String, HotSwapFile>) {

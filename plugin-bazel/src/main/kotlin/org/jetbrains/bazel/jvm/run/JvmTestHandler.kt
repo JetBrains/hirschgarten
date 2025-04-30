@@ -21,6 +21,7 @@ import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.TestParams
 import java.util.UUID
+import kotlin.io.path.pathString
 
 class JvmTestHandler : BazelRunHandler {
   override val name: String = "Jvm BSP Test Handler"
@@ -72,7 +73,7 @@ class JvmTestWithDebugCommandLineState(
         targets = targetIds,
         originId = originId,
         workingDirectory = settings.workingDirectory,
-        arguments = transformProgramArguments(settings.programArguments),
+        arguments = transformProgramArguments(settings.programArguments) + listOf("--wrapper_script_flag=--main_advice_classpath=${configuration.fastCompileTempDir.pathString}"),
         environmentVariables = settings.env.envs,
         debug = DebugType.JDWP(getConnectionPort()),
         testFilter = settings.testFilter,

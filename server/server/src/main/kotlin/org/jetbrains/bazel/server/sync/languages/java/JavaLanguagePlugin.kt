@@ -89,7 +89,7 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
           add("@${targetParams1.pathString}")
         }
       }
-      return FastBuildCommand(builder, args, buildOutputJar, targetJar)
+      return FastBuildCommand(builder, args, buildOutputJar)
     }
     return null
   }

@@ -15,6 +15,8 @@ import org.jdom.Element
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
+import java.nio.file.Files
+import java.nio.file.Path
 
 // Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BazelRunConfiguration.
 class BazelRunConfiguration internal constructor(
@@ -41,6 +43,8 @@ class BazelRunConfiguration internal constructor(
 
   var handler: BazelRunHandler? = null
     private set
+
+  val fastCompileTempDir: Path by lazy { Files.createTempDirectory(name).also { it.toFile().deleteOnExit() } }
 
   private fun updateHandlerIfDifferentProvider(newProvider: RunHandlerProvider) {
     if (newProvider == handlerProvider) return

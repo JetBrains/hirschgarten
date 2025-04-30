@@ -100,9 +100,7 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
       val args = module.builderArgs
         .plus("--flagfile=${buildParams.pathString}")
 
-      val runtimeJar = targetJar.parent.resolve(targetJar.name.replace("-kt.jar", ".jar"))
-
-      return FastBuildCommand(builder.path, args, buildOutputJar, runtimeJar)
+      return FastBuildCommand(builder.path, args, buildOutputJar)
     }
     return null
   }

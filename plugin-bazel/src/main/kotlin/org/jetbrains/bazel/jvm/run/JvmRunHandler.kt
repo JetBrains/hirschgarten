@@ -22,6 +22,7 @@ import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import java.util.UUID
+import kotlin.io.path.pathString
 
 class JvmRunHandler(val configuration: BazelRunConfiguration) : BazelRunHandler {
   private val buildToolName: String = BazelPluginConstants.BAZEL_DISPLAY_NAME
@@ -76,7 +77,7 @@ class JvmRunWithDebugCommandLineState(
       RunParams(
         targetId,
         originId = originId,
-        arguments = transformProgramArguments(settings.programArguments),
+        arguments = transformProgramArguments(settings.programArguments) + listOf("--wrapper_script_flag=--main_advice_classpath=${configuration.fastCompileTempDir.pathString}"),
         environmentVariables = settings.env.envs,
         workingDirectory = settings.workingDirectory,
         additionalBazelParams = settings.additionalBazelParams,

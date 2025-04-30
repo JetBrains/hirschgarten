@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
+import kotlin.io.path.Path
 
 class StarlarkDebugConfigurationState(
   val project: Project,
@@ -16,7 +17,7 @@ class StarlarkDebugConfigurationState(
   val futureProxy = CompletableDeferred<AnalysisDebugResult>()
 
   override fun startProcess(): BazelProcessHandler =
-    BazelProcessHandler(project, futureProxy).apply {
+    BazelProcessHandler(project, futureProxy, Path(".")).apply {
       startNotify()
     }
 }

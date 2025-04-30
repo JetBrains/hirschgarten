@@ -7,9 +7,10 @@ import kotlinx.coroutines.Deferred
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import java.io.OutputStream
+import java.nio.file.Path
 import kotlin.coroutines.cancellation.CancellationException
 
-open class BazelProcessHandler(private val project: Project, private val runDeferred: Deferred<*>) : ProcessHandler() {
+open class BazelProcessHandler(private val project: Project, private val runDeferred: Deferred<*>, val fastBuildPath: Path) : ProcessHandler() {
   override fun startNotify() {
     super.startNotify()
     runDeferred.invokeOnCompletion { e ->
