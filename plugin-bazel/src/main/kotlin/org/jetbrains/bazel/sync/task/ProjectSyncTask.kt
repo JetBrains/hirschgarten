@@ -179,7 +179,7 @@ class ProjectSyncTask(private val project: Project) {
               subtaskId = BASE_PROJECT_SYNC_SUBTASK_ID,
               message = BazelPluginBundle.message("console.task.base.sync"),
             ) { server.runSync(buildProject, PROJECT_SYNC_TASK_ID) }
-          if (bazelProject.hasError && bazelProject.buildTargets.isEmpty()) return@use SyncResultStatus.FAILURE
+          if (bazelProject.hasError && bazelProject.targets.isEmpty()) return@use SyncResultStatus.FAILURE
           val environment =
             ProjectSyncHookEnvironment(
               project = project,
@@ -195,7 +195,7 @@ class ProjectSyncTask(private val project: Project) {
             it.onSync(environment)
           }
 
-          if (buildTargets.hasError) {
+          if (bazelProject.hasError) {
             SyncResultStatus.PARTIAL_SUCCESS
           } else {
             SyncResultStatus.SUCCESS
