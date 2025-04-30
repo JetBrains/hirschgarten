@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.compatibility
 
-import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
@@ -27,8 +26,6 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
         isReusable = false,
         configureProjectBeforeUse = ::configureProjectBeforeUse,
       )
-
-  override val ideInfo = IdeProductProvider.PY
 
   @Test
   fun openBazelProject() {
