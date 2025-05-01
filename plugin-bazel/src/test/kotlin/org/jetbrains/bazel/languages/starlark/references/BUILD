@@ -40,6 +40,5 @@ kt_intellij_junit4_test(
     deps = [
         "//plugin-bazel",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
-        "@maven//:io_ktor_ktor_utils_jvm",
     ],
 )
