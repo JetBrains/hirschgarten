@@ -32,3 +32,14 @@ kt_intellij_junit4_test(
     src = "StarlarkClassnameReferenceTest.kt",
     deps = ["//plugin-bazel"],
 )
+
+kt_intellij_junit4_test(
+    name = "StarlarkScopeTest",
+    src = "StarlarkScopeTest.kt",
+    data = ["//plugin-bazel/src/test/testData/starlark/references"],
+    deps = [
+        "@maven//:io_ktor_ktor_utils_jvm",
+        "//plugin-bazel",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
+    ],
+)
