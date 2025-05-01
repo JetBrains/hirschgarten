@@ -7,7 +7,9 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesi
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 
-class StarlarkForStatement(node: ASTNode) : StarlarkBaseElement(node), StarlarkStatementContainer {
+class StarlarkForStatement(node: ASTNode) :
+  StarlarkBaseElement(node),
+  StarlarkStatementContainer {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitForStatement(this)
 
   fun getLoopVariables(): List<StarlarkTargetExpression> =
