@@ -6,6 +6,7 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.DefaultWorkspaceContextProvider
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
+import org.jetbrains.bsp.protocol.BazelProject
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
@@ -41,7 +42,6 @@ import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -55,17 +55,9 @@ class BspServerApi(
   private val executeService: ExecuteService,
   val workspaceContextProvider: DefaultWorkspaceContextProvider,
 ) : JoinedBuildServer {
-  override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult =
-    projectSyncService.workspaceBuildTargets(
-      build = false,
-      originId = params.originId,
-    )
+  override suspend fun runSync(build: Boolean, originId: String): BazelProject = projectSyncService.runSync(build, originId)
 
-  override suspend fun workspaceBuildAndGetBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult =
-    projectSyncService.workspaceBuildTargets(
-      build = true,
-      originId = params.originId,
-    )
+  override suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult = projectSyncService.workspaceBuildTargets()
 
   override suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult =
     projectSyncService.workspaceBuildTargetsPartial(

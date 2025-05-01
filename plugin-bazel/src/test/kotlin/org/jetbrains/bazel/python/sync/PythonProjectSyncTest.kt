@@ -71,12 +71,13 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add module with dependencies to workspace model diff`() {
     // given
+    val pythonTestTargets = generateTestSet()
     val server =
       BuildServerMock(
+        workspaceBuildTargetsResult = pythonTestTargets.buildTargets,
         dependencySourcesResult = DependencySourcesResult(emptyList()),
       )
     val diff = AllProjectStructuresProvider(project).newDiff()
-    val pythonTestTargets = generateTestSet()
 
     // when
     runBlocking {
@@ -89,7 +90,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
-            buildTargets = pythonTestTargets.buildTargets,
+            // TODO: not used yet, https://youtrack.jetbrains.com/issue/BAZEL-1960
+            buildTargets = emptyMap(),
           )
         hook.onSync(environment)
       }
@@ -109,12 +111,13 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add module with sources to workspace model diff`() {
     // given
+    val pythonTestTargets = generateTestSetWithSources()
     val server =
       BuildServerMock(
+        workspaceBuildTargetsResult = pythonTestTargets.buildTargets,
         dependencySourcesResult = DependencySourcesResult(emptyList()),
       )
     val diff = AllProjectStructuresProvider(project).newDiff()
-    val pythonTestTargets = generateTestSetWithSources()
 
     // when
     runBlocking {
@@ -127,7 +130,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
-            buildTargets = pythonTestTargets.buildTargets,
+            // TODO: not used yet, https://youtrack.jetbrains.com/issue/BAZEL-1960
+            buildTargets = emptyMap(),
           )
         hook.onSync(environment)
       }

@@ -56,7 +56,9 @@ class GoProjectSync : ProjectSyncHook {
   override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isGoSupportEnabled
 
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
-    val goTargets = environment.buildTargets.calculateGoTargets()
+    // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1961
+    val bspBuildTargets = environment.server.workspaceBuildTargets()
+    val goTargets = bspBuildTargets.calculateGoTargets()
     val idToGoTargetMap = goTargets.associateBy({ it.id }, { it })
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
 

@@ -245,6 +245,7 @@ class BazelProjectMapper(
       hasError = hasError,
       workspaceName = workspaceName,
       workspaceContext = workspaceContext,
+      targets = targets,
     )
   }
 

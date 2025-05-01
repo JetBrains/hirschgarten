@@ -10,6 +10,7 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import kotlinx.html.emptyMap
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -74,9 +75,13 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add VgoStandaloneModuleEntities to workspace model diff`() {
     // given
-    val server = BuildServerMock(workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()))
-    val diff = AllProjectStructuresProvider(project).newDiff()
     val goTestTargets = generateTestSet()
+    val server =
+      BuildServerMock(
+        workspaceBuildTargetsResult = goTestTargets.buildTargets,
+        workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()),
+      )
+    val diff = AllProjectStructuresProvider(project).newDiff()
 
     // when
     runBlocking {
@@ -89,7 +94,8 @@ class GoProjectSyncTest : MockProjectBaseTest() {
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
-            buildTargets = goTestTargets.buildTargets,
+            // TODO: not used yet, https://youtrack.jetbrains.com/issue/BAZEL-1961
+            buildTargets = emptyMap(),
           )
         hook.onSync(environment)
       }
@@ -109,9 +115,13 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add dependencies to workspace model diff`() {
     // given
-    val server = BuildServerMock(workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()))
-    val diff = AllProjectStructuresProvider(project).newDiff()
     val goTestTargets = generateTestSet()
+    val server =
+      BuildServerMock(
+        workspaceBuildTargetsResult = goTestTargets.buildTargets,
+        workspaceGoLibrariesResult = WorkspaceGoLibrariesResult(emptyList()),
+      )
+    val diff = AllProjectStructuresProvider(project).newDiff()
 
     // when
     runBlocking {
@@ -124,7 +134,8 @@ class GoProjectSyncTest : MockProjectBaseTest() {
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
-            buildTargets = goTestTargets.buildTargets,
+            // TODO: not used yet, https://youtrack.jetbrains.com/issue/BAZEL-1961
+            buildTargets = emptyMap(),
           )
         hook.onSync(environment)
       }
