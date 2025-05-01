@@ -44,6 +44,7 @@ abstract class IdeStarterBaseProjectTest {
     when (System.getProperty("bazel.ide.starter.test.ide.id")) {
       "IC" -> IdeProductProvider.IC
       "PY" -> IdeProductProvider.PY
+      "CL" -> IdeProductProvider.CL
       else -> error("IDE id is not set properly. Please use ide_starter_test rule to setup the test.")
     }
 
