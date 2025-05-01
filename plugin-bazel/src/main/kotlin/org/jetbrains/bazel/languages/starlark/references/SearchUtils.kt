@@ -43,24 +43,26 @@ object SearchUtils {
       is StarlarkFile, is StarlarkCallable -> element
       // Default values of parameters refer to the parent scope of the function, not the function scope.
       is StarlarkParameterList -> findScopeRoot(element.parent.parent)
-      else -> when (val parent = element.parent) {
-        null -> null
-        is StarlarkCompExpression -> {
-          // In a comprehension, the first 'for' resolves using the scope that contains the
-          // comprehension, while all later 'for's resolve within the comprehension's scope.
-          val inFirstFor = generateSequence(element) { it.prevSibling }
-            .filter { it.elementType == StarlarkTokenTypes.FOR_KEYWORD || it.elementType == StarlarkTokenTypes.IF_KEYWORD }
-            .take(2)
-            .count() == 1
-          if (inFirstFor) {
-            findScopeRoot(parent)
-          } else {
-            parent
+      else ->
+        when (val parent = element.parent) {
+          null -> null
+          is StarlarkCompExpression -> {
+            // In a comprehension, the first 'for' resolves using the scope that contains the
+            // comprehension, while all later 'for's resolve within the comprehension's scope.
+            val inFirstFor =
+              generateSequence(element) { it.prevSibling }
+                .filter { it.elementType == StarlarkTokenTypes.FOR_KEYWORD || it.elementType == StarlarkTokenTypes.IF_KEYWORD }
+                .take(2)
+                .count() == 1
+            if (inFirstFor) {
+              findScopeRoot(parent)
+            } else {
+              parent
+            }
           }
-        }
 
-        else -> findScopeRoot(parent)
-      }
+          else -> findScopeRoot(parent)
+        }
     }
 
   private fun processBindingsInScope(
@@ -71,19 +73,30 @@ object SearchUtils {
     when (element) {
       is StarlarkFile -> element.searchInLoads(processor) && element.children.all { processBindingsInScope(it, processor) }
 
-      is StarlarkCallable -> if (elementIsScopeRoot) {
-        element.searchInParameters(processor) && (element !is StarlarkFunctionDeclaration || processBindingsInScope(
-          element.getStatementList(),
-          processor,
-        ))
-      } else {
-        element !is StarlarkFunctionDeclaration || processor.process(element)
-      }
+      is StarlarkCallable ->
+        if (elementIsScopeRoot) {
+          element.searchInParameters(processor) &&
+            (
+              element !is StarlarkFunctionDeclaration ||
+                processBindingsInScope(
+                  element.getStatementList(),
+                  processor,
+                )
+            )
+        } else {
+          element !is StarlarkFunctionDeclaration || processor.process(element)
+        }
 
-      is StarlarkStatementContainer -> element.getStatementLists()
-        .all { processBindingsInScope(it, processor) } && (element !is StarlarkForStatement || element.searchInLoopVariables(
-        processor,
-      ))
+      is StarlarkStatementContainer ->
+        element
+          .getStatementLists()
+          .all { processBindingsInScope(it, processor) } &&
+          (
+            element !is StarlarkForStatement ||
+              element.searchInLoopVariables(
+                processor,
+              )
+          )
 
       is StarlarkCompExpression -> element.searchInComprehension(processor)
       is StarlarkStatementList -> element.children.all { processBindingsInScope(it, processor) }
