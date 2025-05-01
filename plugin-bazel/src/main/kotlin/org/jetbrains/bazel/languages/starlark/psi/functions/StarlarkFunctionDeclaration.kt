@@ -5,6 +5,7 @@ import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementList
 import javax.swing.Icon
 
 class StarlarkFunctionDeclaration(node: ASTNode) :
@@ -20,4 +21,6 @@ class StarlarkFunctionDeclaration(node: ASTNode) :
     getParameters().filter { it is StarlarkMandatoryParameter || it is StarlarkOptionalParameter }
 
   override fun getParameters(): List<StarlarkParameter> = findChildByClass(StarlarkParameterList::class.java)?.getParameters().orEmpty()
+
+  fun getStatementList(): StarlarkStatementList = findChildByClass(StarlarkStatementList::class.java)!!
 }
