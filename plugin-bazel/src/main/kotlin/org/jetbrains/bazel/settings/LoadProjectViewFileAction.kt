@@ -28,7 +28,7 @@ internal class LoadProjectViewFileAction :
     val projectViewFile = e.getPsiFile()?.virtualFile ?: return
     project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectViewFile.toNioPath().toAbsolutePath())
     withContext(Dispatchers.EDT) {
-      ActionUtil.performActionDumbAwareWithCallbacks(ResyncAction(), e)
+      ActionUtil.performAction(ResyncAction(), e)
     }
   }
 
