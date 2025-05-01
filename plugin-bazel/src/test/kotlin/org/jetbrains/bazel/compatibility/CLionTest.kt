@@ -18,9 +18,9 @@ class CLionTest : IdeStarterBaseProjectTest() {
   override val projectInfo: ProjectInfoSpec
     get() =
       GitProjectInfo(
-        repositoryUrl = "https://github.com/abrams27/simpleBazelProjectsForTesting.git",
-        commitHash = "ff10700191ca0e9228889429a1155448b52ba759",
-        branchName = "abrams/cpp",
+        repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+        commitHash = "c31b0af902b45f7664becec1e5574c4308a6b252",
+        branchName = "main",
         projectHomeRelativePath = { it.resolve("simpleMultiLanguageTest") },
         isReusable = false,
         configureProjectBeforeUse = ::configureProjectBeforeUse,
