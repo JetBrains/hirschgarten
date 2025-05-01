@@ -24,7 +24,6 @@ import org.jetbrains.bsp.protocol.PythonOptionsParams
 import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceNameResult
 import org.jetbrains.bsp.testkit.JsonComparator
@@ -102,7 +101,7 @@ class TestClient(
 
   fun testWorkspaceTargets(timeout: Duration, expectedResult: WorkspaceBuildTargetsResult) {
     test(timeout) { session ->
-      val result = session.server.workspaceBuildTargets(WorkspaceBuildTargetsParams("originId"))
+      val result = session.server.workspaceBuildTargets()
       assertJsonEquals(expectedResult, result)
     }
   }
@@ -192,7 +191,7 @@ class TestClient(
   fun testResolveProject(timeout: Duration) {
     runTest(timeout = timeout) {
       test(timeout) { session ->
-        val getWorkspaceTargets = session.server.workspaceBuildTargets(WorkspaceBuildTargetsParams("originId"))
+        val getWorkspaceTargets = session.server.workspaceBuildTargets()
         val targets = getWorkspaceTargets.targets
         val targetIds = targets.map { it.id }
         val javaTargetIds = targets.filter { it.kind.languageClasses.contains(LanguageClass.JAVA) }.map { it.id }

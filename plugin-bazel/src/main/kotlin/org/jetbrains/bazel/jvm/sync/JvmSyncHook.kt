@@ -11,7 +11,6 @@ class JvmSyncHook : ProjectSyncHook {
       project = environment.project,
       server = environment.server,
       progressReporter = environment.progressReporter,
-      buildTargets = environment.buildTargets,
       syncScope = environment.syncScope,
     )
     environment.diff.workspaceModelDiff.addPostApplyAction { task.postprocessingSubtask() }

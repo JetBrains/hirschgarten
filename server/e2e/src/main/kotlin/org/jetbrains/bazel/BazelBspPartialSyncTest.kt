@@ -12,7 +12,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
@@ -46,7 +45,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep("should do an initial sync on 1 target and then partial sync on another target") {
       testClient.test(3.minutes) { session ->
         // initial sync
-        val workspaceBuildTargetsResult = session.server.workspaceBuildTargets(WorkspaceBuildTargetsParams("originId"))
+        val workspaceBuildTargetsResult = session.server.workspaceBuildTargets()
         testClient.assertJsonEquals(expectedWorkspaceBuildTargetsResult(), workspaceBuildTargetsResult)
 
         // partial sync

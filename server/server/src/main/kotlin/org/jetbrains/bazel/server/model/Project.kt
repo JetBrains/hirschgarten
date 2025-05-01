@@ -2,6 +2,7 @@ package org.jetbrains.bazel.server.model
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
@@ -36,6 +37,7 @@ data class AspectSyncProject(
   override val workspaceContext: WorkspaceContext,
   val workspaceName: String,
   val hasError: Boolean = false,
+  val targets: Map<Label, BspTargetInfo.TargetInfo>,
 ) : Project {
   private val moduleMap: Map<Label, Module> = modules.associateBy(Module::label)
 
