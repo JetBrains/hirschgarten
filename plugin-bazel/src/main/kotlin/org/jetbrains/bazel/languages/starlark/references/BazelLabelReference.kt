@@ -25,6 +25,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLitera
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
+import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRepo
 import org.jetbrains.bazel.target.targetUtils
 
 // Tested in ExternalRepoResolveTest
@@ -168,7 +169,12 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
         val bzlFiles = starlarkFiles.filter { it.name.endsWith(".bzl") }
         val relativePaths =
           bzlFiles.mapNotNull { file ->
-            VfsUtilCore.getRelativePath(file, project.rootDir)
+            val repoPath = findContainingBazelRepo(project, file.toNioPath())
+            if (repoPath != null) {
+              file.path.substring(repoPath.toString().length + 1)
+            } else {
+              VfsUtilCore.getRelativePath(file, project.rootDir)
+            }
           }
         cache = relativePaths
         cacheOld = false
