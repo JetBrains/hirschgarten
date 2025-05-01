@@ -15,7 +15,7 @@ class StarlarkLoadReference(element: StarlarkStringLiteralExpression, val loaded
     val loadedFile = loadedFileReference.resolve() as? StarlarkFile ?: return null
     val name = element.getStringContents()
     val processor = StarlarkResolveNameProcessor(mutableListOf(), name)
-    loadedFile.searchInTopLevel(processor, null)
+    SearchUtils.searchInFile(loadedFile, processor)
     return processor.result.firstOrNull()
   }
 
@@ -23,7 +23,7 @@ class StarlarkLoadReference(element: StarlarkStringLiteralExpression, val loaded
     val element = myElement ?: return emptyArray()
     val loadedFile = loadedFileReference.resolve() as? StarlarkFile ?: return emptyArray()
     val processor = StarlarkCompletionProcessor(mutableMapOf(), element, element.getQuote())
-    loadedFile.searchInTopLevel(processor, null)
+    SearchUtils.searchInFile(loadedFile, processor)
     return processor.results.values.toTypedArray()
   }
 
