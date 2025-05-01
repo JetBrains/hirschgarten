@@ -151,6 +151,14 @@ sealed class PyCharmPluginTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:PyCharmTest"
 )
 
+sealed class CLionPluginTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Sync project in CLion test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:CLion"
+)
+
 object HotswapTestGitHub : HotswapTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
@@ -244,5 +252,13 @@ object PyCharmTestGitHub : PyCharmPluginTest(
 )
 
 object PyCharmTestSpace : PyCharmPluginTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object CLionTestGitHub : CLionPluginTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object CLionTestSpace : CLionPluginTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )
