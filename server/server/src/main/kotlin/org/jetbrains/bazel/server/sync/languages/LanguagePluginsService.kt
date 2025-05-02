@@ -10,7 +10,6 @@ import org.jetbrains.bazel.server.sync.languages.go.GoLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.python.PythonLanguagePlugin
-import org.jetbrains.bazel.server.sync.languages.python.PythonModule
 import org.jetbrains.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
@@ -54,14 +53,6 @@ class LanguagePluginsService(
     module.languageData?.let {
       when (it) {
         is CppModule -> it
-        else -> null
-      }
-    }
-
-  fun extractPythonModule(module: Module): PythonModule? =
-    module.languageData?.let {
-      when (it) {
-        is PythonModule -> it
         else -> null
       }
     }

@@ -27,8 +27,6 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
-import org.jetbrains.bsp.protocol.PythonOptionsParams
-import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
@@ -70,7 +68,6 @@ class BuildServerMock(
   private val jvmBinaryJarsResult: JvmBinaryJarsResult? = null,
   private val workspaceBuildTargetsPartial: WorkspaceBuildTargetsResult? = null,
   private val workspaceBuildTargetsFirstPhase: WorkspaceBuildTargetsResult? = null,
-  private val pythonOptionsResult: PythonOptionsResult? = null,
   private val bazelResolveLocalToRemote: BazelResolveLocalToRemoteResult? = null,
   private val bazelResolveRemoteToLocal: BazelResolveRemoteToLocalResult? = null,
   private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = null,
@@ -127,8 +124,6 @@ class BuildServerMock(
 
   override suspend fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult =
     wrapInFuture(workspaceBuildTargetsFirstPhase)
-
-  override suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult = wrapInFuture(pythonOptionsResult)
 
   override suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
     wrapInFuture(bazelResolveLocalToRemote)

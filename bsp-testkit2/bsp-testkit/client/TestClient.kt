@@ -20,8 +20,6 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
-import org.jetbrains.bsp.protocol.PythonOptionsParams
-import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -125,18 +123,6 @@ class TestClient(
     }
   }
 
-  fun testPythonOptions(
-    timeout: Duration,
-    params: PythonOptionsParams,
-    expectedResult: PythonOptionsResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.buildTargetPythonOptions(transformedParams)
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
   fun testInverseSources(
     timeout: Duration,
     params: InverseSourcesParams,
@@ -200,8 +186,6 @@ class TestClient(
         session.server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
         val cppTargetIds = targets.filter { it.kind.languageClasses.contains(LanguageClass.C) }.map { it.id }
         session.server.buildTargetCppOptions(CppOptionsParams(cppTargetIds))
-        val pythonTargetIds = targets.filter { it.kind.languageClasses.contains(LanguageClass.PYTHON) }.map { it.id }
-        session.server.buildTargetPythonOptions(PythonOptionsParams(pythonTargetIds))
       }
     }
   }
