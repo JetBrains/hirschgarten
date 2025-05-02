@@ -4,6 +4,7 @@ import com.intellij.build.BuildViewManager
 import com.intellij.build.SyncViewManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.platform.util.progress.SequentialProgressReporter
 import org.jetbrains.bazel.config.rootDir
 
 @Service(Service.Level.PROJECT)
@@ -47,4 +48,11 @@ suspend fun <T> TaskConsole.withSubtask(
   val result = block(subtaskId)
   finishSubtask(subtaskId, message)
   return result
+}
+
+
+suspend fun <T> Project.withSubtask(reporter: SequentialProgressReporter, taskId: String, subtaskId: String, text: String, block: suspend (subtaskId: String) -> T) {
+  reporter.indeterminateStep(text) {
+    syncConsole.withSubtask(taskId, subtaskId, text, block)
+  }
 }

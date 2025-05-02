@@ -15,6 +15,7 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.task.query
+import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -22,15 +23,17 @@ import java.nio.file.Path
 
 class DirectoriesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
-    val directories = query("workspace/directories") { environment.server.workspaceDirectories() }
-    val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).getBazelSymlinksToExclude()
-    val entity = createEntity(environment.project, directories, additionalExcludes)
+    environment.withSubtask("Collect project directories") {
+      val directories = query("workspace/directories") { environment.server.workspaceDirectories() }
+      val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).getBazelSymlinksToExclude()
+      val entity = createEntity(environment.project, directories, additionalExcludes)
 
-    environment.diff.workspaceModelDiff.mutableEntityStorage
-      .addEntity(entity)
+      environment.diff.workspaceModelDiff.mutableEntityStorage
+        .addEntity(entity)
 
-    environment.diff.workspaceModelDiff.addPostApplyAction {
-      removeExcludedVcsMappings(environment.project)
+      environment.diff.workspaceModelDiff.addPostApplyAction {
+        removeExcludedVcsMappings(environment.project)
+      }
     }
   }
 

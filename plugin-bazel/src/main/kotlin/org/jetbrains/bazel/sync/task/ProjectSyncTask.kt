@@ -46,6 +46,8 @@ import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import java.util.concurrent.CancellationException
 
+private const val PROJECT_SYNC_HOOKS_TASK_ID = "project-sync-hooks-task-id"
+
 private val log = logger<ProjectSyncTask>()
 
 class ProjectSyncTask(private val project: Project) {
@@ -180,19 +182,26 @@ class ProjectSyncTask(private val project: Project) {
               message = BazelPluginBundle.message("console.task.base.sync"),
             ) { server.runSync(buildProject, PROJECT_SYNC_TASK_ID) }
           if (bazelProject.hasError && bazelProject.targets.isEmpty()) return@use SyncResultStatus.FAILURE
-          val environment =
-            ProjectSyncHookEnvironment(
-              project = project,
-              server = server,
-              diff = diff,
-              taskId = PROJECT_SYNC_TASK_ID,
-              progressReporter = progressReporter,
-              buildTargets = bazelProject.targets,
-              syncScope = syncScope,
-            )
+          project.withSubtask(
+            reporter = progressReporter,
+            taskId = PROJECT_SYNC_TASK_ID,
+            subtaskId = PROJECT_SYNC_HOOKS_TASK_ID,
+            text = "Execute sync hooks",
+          ) {
+            val environment =
+              ProjectSyncHookEnvironment(
+                project = project,
+                server = server,
+                diff = diff,
+                taskId = PROJECT_SYNC_HOOKS_TASK_ID,
+                progressReporter = progressReporter,
+                buildTargets = bazelProject.targets,
+                syncScope = syncScope,
+              )
 
-          project.projectSyncHooks.forEach {
-            it.onSync(environment)
+            project.projectSyncHooks.forEach {
+              it.onSync(environment)
+            }
           }
 
           if (bazelProject.hasError) {
