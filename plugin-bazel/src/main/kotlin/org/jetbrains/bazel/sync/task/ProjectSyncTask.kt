@@ -47,6 +47,7 @@ import org.jetbrains.bazel.ui.console.withSubtask
 import java.util.concurrent.CancellationException
 
 private const val PROJECT_SYNC_HOOKS_TASK_ID = "project-sync-hooks-task-id"
+private const val PROJECT_PRE_SYNC_HOOKS_TASK_ID = "project-pre-sync-hooks-task-id"
 
 private val log = logger<ProjectSyncTask>()
 
@@ -153,16 +154,23 @@ class ProjectSyncTask(private val project: Project) {
     }
 
   private suspend fun executePreSyncHooks(progressReporter: SequentialProgressReporter) {
+    project.withSubtask(
+      reporter = progressReporter,
+      taskId = PROJECT_SYNC_TASK_ID,
+      subtaskId = PROJECT_PRE_SYNC_HOOKS_TASK_ID,
+      text = "Execute pre sync hooks",
+    ) {
     val environment =
       ProjectPreSyncHook.ProjectPreSyncHookEnvironment(
         project = project,
-        taskId = PROJECT_SYNC_TASK_ID,
+        taskId = PROJECT_PRE_SYNC_HOOKS_TASK_ID,
         progressReporter = progressReporter,
       )
 
     project.projectPreSyncHooks.forEach {
       it.onPreSync(environment)
     }
+      }
   }
 
   private suspend fun executeSyncHooks(
