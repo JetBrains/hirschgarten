@@ -156,7 +156,7 @@ sealed class CLionPluginTest(
 ) : IdeStarterTests(
   name = "Sync project in CLion test",
   vcsRoot = vcsRoot,
-  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:CLion"
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:CLionTest"
 )
 
 object HotswapTestGitHub : HotswapTest(
