@@ -7,7 +7,6 @@ import kotlin.io.path.isRegularFile
 
 class RegenerateProjectViewFileContentPreSyncHook : ProjectPreSyncHook {
   override suspend fun onPreSync(environment: ProjectPreSyncHook.ProjectPreSyncHookEnvironment) {
-    environment.withSubtask("Regenerate project view file content if necessary") {
       val project = environment.project
       if (project.bazelProjectSettings.projectViewPath?.isRegularFile() != true) {
         val projectViewFilePath =
@@ -20,5 +19,4 @@ class RegenerateProjectViewFileContentPreSyncHook : ProjectPreSyncHook {
         project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectViewFilePath)
       }
     }
-  }
 }
