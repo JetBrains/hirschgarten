@@ -50,8 +50,13 @@ suspend fun <T> TaskConsole.withSubtask(
   return result
 }
 
-
-suspend fun <T> Project.withSubtask(reporter: SequentialProgressReporter, taskId: String, subtaskId: String, text: String, block: suspend (subtaskId: String) -> T) {
+suspend fun <T> Project.withSubtask(
+  reporter: SequentialProgressReporter,
+  taskId: String,
+  subtaskId: String,
+  text: String,
+  block: suspend (subtaskId: String) -> T,
+) {
   reporter.indeterminateStep(text) {
     syncConsole.withSubtask(taskId, subtaskId, text, block)
   }

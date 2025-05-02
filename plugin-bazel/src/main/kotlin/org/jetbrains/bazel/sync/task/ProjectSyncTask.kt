@@ -49,6 +49,7 @@ import java.util.concurrent.CancellationException
 private const val PROJECT_PRE_SYNC_HOOKS_TASK_ID = "project-pre-sync-hooks-task-id"
 private const val PROJECT_SYNC_HOOKS_TASK_ID = "project-sync-hooks-task-id"
 private const val PROJECT_POST_SYNC_HOOKS_TASK_ID = "project-post-sync-hooks-task-id"
+private const val APPLY_CHANGES_TASK_ID = "apply-changes-task-id"
 
 private val log = logger<ProjectSyncTask>()
 
@@ -159,19 +160,19 @@ class ProjectSyncTask(private val project: Project) {
       reporter = progressReporter,
       taskId = PROJECT_SYNC_TASK_ID,
       subtaskId = PROJECT_PRE_SYNC_HOOKS_TASK_ID,
-      text = "Execute pre sync hooks",
+      text = BazelPluginBundle.message("console.task.execute.pre.sync.hooks"),
     ) {
-    val environment =
-      ProjectPreSyncHook.ProjectPreSyncHookEnvironment(
-        project = project,
-        taskId = PROJECT_PRE_SYNC_HOOKS_TASK_ID,
-        progressReporter = progressReporter,
-      )
+      val environment =
+        ProjectPreSyncHook.ProjectPreSyncHookEnvironment(
+          project = project,
+          taskId = PROJECT_PRE_SYNC_HOOKS_TASK_ID,
+          progressReporter = progressReporter,
+        )
 
-    project.projectPreSyncHooks.forEach {
-      it.onPreSync(environment)
-    }
+      project.projectPreSyncHooks.forEach {
+        it.onPreSync(environment)
       }
+    }
   }
 
   private suspend fun executeSyncHooks(
@@ -195,7 +196,7 @@ class ProjectSyncTask(private val project: Project) {
             reporter = progressReporter,
             taskId = PROJECT_SYNC_TASK_ID,
             subtaskId = PROJECT_SYNC_HOOKS_TASK_ID,
-            text = "Execute sync hooks",
+            text = BazelPluginBundle.message("console.task.execute.sync.hooks"),
           ) {
             val environment =
               ProjectSyncHookEnvironment(
@@ -222,7 +223,14 @@ class ProjectSyncTask(private val project: Project) {
       }
 
     if (syncStatus != SyncResultStatus.FAILURE) {
-      diff.applyAll(syncScope, PROJECT_SYNC_TASK_ID)
+      project.withSubtask(
+        reporter = progressReporter,
+        taskId = PROJECT_SYNC_TASK_ID,
+        subtaskId = APPLY_CHANGES_TASK_ID,
+        text = BazelPluginBundle.message("console.task.apply.changes"),
+      ) {
+        diff.applyAll(syncScope, APPLY_CHANGES_TASK_ID)
+      }
     }
     return syncStatus
   }
@@ -232,7 +240,7 @@ class ProjectSyncTask(private val project: Project) {
       reporter = progressReporter,
       taskId = PROJECT_SYNC_TASK_ID,
       subtaskId = PROJECT_POST_SYNC_HOOKS_TASK_ID,
-      text = "Execute post sync hooks",
+      text = BazelPluginBundle.message("console.task.execute.post.sync.hooks"),
     ) {
       val environment =
         ProjectPostSyncHook.ProjectPostSyncHookEnvironment(
