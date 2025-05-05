@@ -6,6 +6,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.JavaSdk
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
+import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.ProjectRootManager
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToBaseJdkName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
@@ -46,7 +48,8 @@ object SdkUtils {
 
   private fun isValidJdk(sdk: Sdk): Boolean {
     val homePath = sdk.homePath ?: return false
-    return javaSdkInstance.isValidSdkHome(homePath)
+    return javaSdkInstance.isValidSdkHome(homePath) &&
+      (sdk as? ProjectJdkImpl)?.rootProvider?.getUrls(OrderRootType.CLASSES)?.size != 0
   }
 
   fun getProjectJdkOrMostRecentJdk(project: Project): Sdk? =
