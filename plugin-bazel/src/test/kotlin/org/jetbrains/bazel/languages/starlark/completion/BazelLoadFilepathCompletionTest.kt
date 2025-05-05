@@ -11,7 +11,7 @@ import org.junit.runners.JUnit4
 @RunWith(JUnit4::class)
 class BazelLoadFilepathCompletionTest : BasePlatformTestCase() {
   @Test
-  fun `should complete basic filePath` ()  {
+  fun `should complete basic filePath`() {
     project.isBazelProject = true
     project.rootDir = myFixture.tempDirFixture.getFile(".")!!
 

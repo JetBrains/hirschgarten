@@ -64,3 +64,9 @@ kt_intellij_junit4_test(
     src = "StarlarkFileCompletionTest.kt",
     deps = ["//plugin-bazel"],
 )
+
+kt_intellij_junit4_test(
+    name = "BazelLoadFilepathCompletionTest",
+    src = "BazelLoadFilepathCompletionTest.kt",
+    deps = ["//plugin-bazel"],
+)

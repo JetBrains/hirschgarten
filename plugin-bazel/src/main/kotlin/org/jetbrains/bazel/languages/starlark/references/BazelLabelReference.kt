@@ -2,6 +2,8 @@ package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.project.ProjectManagerListener
@@ -135,60 +137,55 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
 
   private fun isLoadFilenameCompletionLocation(): Boolean = element.parent is StarlarkFilenameLoadValue
 
-  private object BzlFileCache {
-    private class BzlFileCacheInstance(val project: Project) {
-      private var cache: List<String> = listOf()
-      private var cacheOld: Boolean = true
-      private var listener: MessageBusConnection? = null
+  @Service(Service.Level.PROJECT)
+  private class BzlFileCacheService(val project: Project) {
+    private var cachedBzlFilePaths: List<String> = listOf()
+    private var cacheIsOutDated: Boolean = true
+    private var listener: MessageBusConnection? = null
 
-      private fun init() {
-        listener =
-          project.messageBus.connect().apply {
-            subscribe(
-              FileTypeIndex.INDEX_CHANGE_TOPIC,
-              FileTypeIndex.IndexChangeListener { fileType ->
-                cacheOld = fileType is StarlarkFileType || cacheOld
-              },
-            )
+    private fun init() {
+      listener =
+        project.messageBus.connect().apply {
+          subscribe(
+            FileTypeIndex.INDEX_CHANGE_TOPIC,
+            FileTypeIndex.IndexChangeListener { fileType ->
+              cacheIsOutDated = fileType is StarlarkFileType || cacheIsOutDated
+            },
+          )
 
-            subscribe(
-              ProjectManager.TOPIC,
-              object : ProjectManagerListener {
-                override fun projectClosing(project: Project) {
-                  listener?.disconnect()
-                  listener = null
-                }
-              },
-            )
-          }
-      }
-
-      private fun updateCache() {
-        val starlarkFiles = FileTypeIndex.getFiles(StarlarkFileType, GlobalSearchScope.allScope(project))
-        val bzlFiles = starlarkFiles.filter { it.name.endsWith(".bzl") }
-        val relativePaths =
-          bzlFiles.mapNotNull { file ->
-              VfsUtilCore.getRelativePath(file, project.rootDir)
-          }
-        cache = relativePaths
-        cacheOld = false
-      }
-
-      fun get(): List<String> {
-        if (listener == null) {
-          init()
+          subscribe(
+            ProjectManager.TOPIC,
+            object : ProjectManagerListener {
+              override fun projectClosing(project: Project) {
+                listener?.disconnect()
+                listener = null
+              }
+            },
+          )
         }
-        if (cacheOld) {
-          updateCache()
-        }
-
-        return cache
-      }
     }
 
-    private val instances = mutableMapOf<Project, BzlFileCacheInstance>()
+    private fun updateCache() {
+      val starlarkFiles = FileTypeIndex.getFiles(StarlarkFileType, GlobalSearchScope.allScope(project))
+      val bzlFiles = starlarkFiles.filter { it.name.endsWith(".bzl") }
+      val relativePaths =
+        bzlFiles.mapNotNull { file ->
+          VfsUtilCore.getRelativePath(file, project.rootDir)
+        }
+      cachedBzlFilePaths = relativePaths
+      cacheIsOutDated = false
+    }
 
-    fun get(project: Project): List<String> = instances.getOrPut(project) { BzlFileCacheInstance(project) }.get()
+    fun getPaths(): List<String> {
+      if (listener == null) {
+        init()
+      }
+      if (cacheIsOutDated) {
+        updateCache()
+      }
+
+      return cachedBzlFilePaths
+    }
   }
 
   private fun filePathToLabel(relativeFilePath: String): String {
@@ -200,7 +197,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
   }
 
   private fun loadFilenameCompletion(): Array<LookupElement> {
-    val relativePaths = BzlFileCache.get(element.project)
+    val relativePaths = element.project.service<BzlFileCacheService>().getPaths()
     val lookupElements =
       relativePaths.map { file ->
         fileLookupElement(filePathToLabel(file))
