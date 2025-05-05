@@ -35,12 +35,7 @@ internal class BazelJVMProjectSettingsService :
   var settings: BazelJVMProjectSettings = BazelJVMProjectSettings()
 
   override fun getState(): BazelJVMProjectSettings =
-    BazelJVMProjectSettings(
-      hotSwapEnabled = settings.hotSwapEnabled,
-      enableLocalJvmActions = settings.enableLocalJvmActions,
-      enableBuildWithJps = settings.enableBuildWithJps,
-      useIntellijTestRunner = settings.useIntellijTestRunner,
-    )
+settings
 
   override fun loadState(settingsState: BazelJVMProjectSettings) {
     this.settings =
