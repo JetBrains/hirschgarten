@@ -4,5 +4,6 @@ kt_jvm_binary(
     name = "Foo",
     srcs = ["Foo.kt"],
     kotlinc_opts = "//:my_kt_kotlinc_options",
+    javac_opts = "//:my_kt_javac_options",
     main_class = "Foo",
 )
