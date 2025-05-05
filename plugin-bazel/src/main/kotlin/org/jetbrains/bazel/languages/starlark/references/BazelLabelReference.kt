@@ -140,7 +140,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
   @Service(Service.Level.PROJECT)
   private class BzlFileCacheService(val project: Project) {
     private var cachedBzlFilePaths: List<String> = listOf()
-    private var cacheIsOutDated: Boolean = true
+    private var cacheIsOutdated: Boolean = true
     private var listener: MessageBusConnection? = null
 
     private fun init() {
@@ -149,7 +149,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
           subscribe(
             FileTypeIndex.INDEX_CHANGE_TOPIC,
             FileTypeIndex.IndexChangeListener { fileType ->
-              cacheIsOutDated = fileType is StarlarkFileType || cacheIsOutDated
+              cacheIsOutdated = fileType is StarlarkFileType || cacheIsOutdated
             },
           )
 
@@ -173,14 +173,14 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
           VfsUtilCore.getRelativePath(file, project.rootDir)
         }
       cachedBzlFilePaths = relativePaths
-      cacheIsOutDated = false
+      cacheIsOutdated = false
     }
 
     fun getPaths(): List<String> {
       if (listener == null) {
         init()
       }
-      if (cacheIsOutDated) {
+      if (cacheIsOutdated) {
         updateCache()
       }
 
