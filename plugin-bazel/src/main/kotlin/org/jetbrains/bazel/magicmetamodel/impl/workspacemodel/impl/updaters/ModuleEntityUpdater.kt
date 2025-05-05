@@ -4,13 +4,10 @@ import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.LibraryDependency
 import com.intellij.platform.workspace.jps.entities.LibraryId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
-import com.intellij.platform.workspace.jps.entities.ModuleCustomImlDataEntity
 import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
-import com.intellij.platform.workspace.jps.entities.customImlData
-import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.SymbolicEntityId
@@ -27,6 +24,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
+import org.jetbrains.bsp.protocol.BuildTargetTag
 
 private val dependencyInterner: Interner<ModuleDependencyItem> = Interner.createWeakInterner()
 private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInterner()
@@ -45,15 +43,23 @@ internal class ModuleEntityUpdater(
         !entityToAdd.isLibraryModule &&
           workspaceModelEntityUpdaterConfig.project.targetUtils.isLibraryModule(it.libraryName)
       }
-    val modulesDependencies =
-      (entityToAdd.modulesDependencies + libraryModulesDependencies.toLibraryModuleDependencies()).map {
-        toModuleDependencyItemModuleDependency(it)
-      }
+    val allLibrariesDependencies =
+      librariesDependencies.map { toLibraryDependency(it) } +
+        libraryModulesDependencies.toLibraryModuleDependencies().map { toModuleDependencyItemModuleDependency(it) }
+    val modulesDependencies = entityToAdd.modulesDependencies.map { toModuleDependencyItemModuleDependency(it) }
+    val isLibsOverModules = isLibrariesOverModules(entityToAdd)
     val dependencies =
-      defaultDependencies +
-        modulesDependencies +
-        librariesDependencies.map { toLibraryDependency(it) } +
-        associatesDependencies
+      if (isLibsOverModules) {
+        defaultDependencies +
+          allLibrariesDependencies +
+          modulesDependencies +
+          associatesDependencies
+      } else {
+        defaultDependencies +
+          modulesDependencies +
+          allLibrariesDependencies +
+          associatesDependencies
+      }
 
     val moduleEntityBuilder =
       ModuleEntity(
@@ -64,21 +70,13 @@ internal class ModuleEntityUpdater(
         this.type = entityToAdd.type
       }
 
-    val moduleEntity = builder.addEntity(moduleEntityBuilder)
+    return builder.addEntity(moduleEntityBuilder)
+  }
 
-    val imlData =
-      ModuleCustomImlDataEntity(
-        customModuleOptions = entityToAdd.capabilities.asMap() + entityToAdd.languageIdsAsSingleEntryMap,
-        entitySource = moduleEntity.entitySource,
-      ) {
-        this.rootManagerTagCustomData = null
-        this.module = moduleEntityBuilder
-      }
-
-    // TODO: use a separate entity instead of imlData
-    return builder.modifyModuleEntity(moduleEntity) {
-      this.customImlData = imlData
-    }
+  private fun isLibrariesOverModules(entityToAdd: GenericModuleInfo): Boolean {
+    val targetUtils = workspaceModelEntityUpdaterConfig.project.targetUtils
+    val buildTarget = targetUtils.getTargetForModuleId(entityToAdd.name)?.let { targetUtils.getBuildTargetForLabel(it) } ?: return false
+    return buildTarget.tags.contains(BuildTargetTag.LIBRARIES_OVER_MODULES)
   }
 
   private fun List<IntermediateLibraryDependency>.toLibraryModuleDependencies() =
@@ -90,7 +88,7 @@ internal class ModuleEntityUpdater(
     when {
       entityToAdd.isDummy -> BspDummyEntitySource
       !workspaceModelEntityUpdaterConfig.project.bazelProjectSettings.enableBuildWithJps ||
-        entityToAdd.languageIds.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspModuleEntitySource(entityToAdd.name)
+        entityToAdd.kind.languageClasses.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspModuleEntitySource(entityToAdd.name)
 
       else ->
         LegacyBridgeJpsEntitySourceFactory.getInstance(workspaceModelEntityUpdaterConfig.project).createEntitySourceForModule(

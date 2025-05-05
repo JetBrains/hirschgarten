@@ -31,6 +31,7 @@ import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.PythonSdkUpdater
 import com.jetbrains.python.sdk.detectSystemWideSdks
 import com.jetbrains.python.sdk.guessedLanguageLevel
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
@@ -60,7 +61,9 @@ class PythonProjectSync : ProjectSyncHook {
   override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isPythonSupportEnabled
 
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
-    val pythonTargets = environment.buildTargets.calculatePythonTargets()
+    // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1960
+    val bspBuildTargets = environment.server.workspaceBuildTargets()
+    val pythonTargets = bspBuildTargets.calculatePythonTargets()
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
 
     val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
@@ -87,7 +90,10 @@ class PythonProjectSync : ProjectSyncHook {
     }
   }
 
-  private fun WorkspaceBuildTargetsResult.calculatePythonTargets(): List<BuildTarget> = targets.filter { it.languageIds.contains("python") }
+  private fun WorkspaceBuildTargetsResult.calculatePythonTargets(): List<BuildTarget> =
+    targets.filter {
+      it.kind.languageClasses.contains(LanguageClass.PYTHON)
+    }
 
   private suspend fun calculateAndAddSdksWithProgress(
     targets: List<BuildTarget>,

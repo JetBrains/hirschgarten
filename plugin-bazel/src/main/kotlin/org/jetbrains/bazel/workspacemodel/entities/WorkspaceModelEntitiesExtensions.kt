@@ -1,19 +1,18 @@
 package org.jetbrains.bazel.workspacemodel.entities
 
-public typealias LanguageIds = List<String>
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.TargetKind
 
-public fun LanguageIds.includesKotlin(): Boolean = contains("kotlin")
+fun TargetKind.includesKotlin(): Boolean = languageClasses.contains(LanguageClass.KOTLIN)
 
-public fun LanguageIds.includesJava(): Boolean = contains("java")
+fun TargetKind.includesJava(): Boolean = languageClasses.contains(LanguageClass.JAVA)
 
-public fun LanguageIds.includesScala(): Boolean = contains("scala")
+fun TargetKind.includesScala(): Boolean = languageClasses.contains(LanguageClass.SCALA)
 
-public fun LanguageIds.includesAndroid(): Boolean = contains("android")
+fun TargetKind.includesAndroid(): Boolean = languageClasses.contains(LanguageClass.ANDROID)
 
-public fun LanguageIds.includesGo(): Boolean = contains("go")
+fun TargetKind.includesGo(): Boolean = languageClasses.contains(LanguageClass.GO)
 
-public fun LanguageIds.includesJavaOrScala(): Boolean = includesJava() || includesScala()
+fun TargetKind.isJvmTarget(): Boolean = (includesJava() || includesKotlin() || includesScala()) && !includesAndroid()
 
-public fun LanguageIds.isJvmTarget(): Boolean = (includesJava() || includesKotlin() || includesScala()) && !includesAndroid()
-
-public fun LanguageIds.isJvmOrAndroidTarget(): Boolean = includesJava() || includesKotlin() || includesScala() || includesAndroid()
+fun TargetKind.isJvmOrAndroidTarget(): Boolean = includesJava() || includesKotlin() || includesScala() || includesAndroid()

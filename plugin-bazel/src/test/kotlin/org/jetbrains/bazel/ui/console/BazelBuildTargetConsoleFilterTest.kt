@@ -233,7 +233,7 @@ proto_library(
     result!!.resultItems.size shouldBe 1
     val hyperLink = (result.resultItems[0].hyperlinkInfo as OpenFileHyperlinkInfo)
     hyperLink.virtualFile?.toNioPath().toString() shouldContain "plugin-bazel"
-    hyperLink.descriptor?.offset shouldBe 1
+    hyperLink.descriptor?.offset shouldBe 25
     result.resultItems[0].highlightStartOffset shouldBe 100 + TEST_LINE_PREFIX.length
     result.resultItems[0].highlightEndOffset shouldBe 100 + TEST_LINE_PREFIX.length + bazelTarget.length
   }

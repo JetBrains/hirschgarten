@@ -75,6 +75,7 @@ data class WorkspaceContext(
   val experimentalAddTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJars,
   val experimentalTransitiveCompileTimeJarsTargetKinds: TransitiveCompileTimeJarsTargetKindsSpec,
   val experimentalNoPruneTransitiveCompileTimeJarsPatterns: NoPruneTransitiveCompileTimeJarsPatternsSpec,
+  val experimentalPrioritizeLibrariesOverModulesTargetKinds: PrioritizeLibrariesOverModulesTargetKindsSpec,
   val enableNativeAndroidRules: EnableNativeAndroidRules,
   val androidMinSdkSpec: AndroidMinSdkSpec,
   val shardSync: ShardSyncSpec,

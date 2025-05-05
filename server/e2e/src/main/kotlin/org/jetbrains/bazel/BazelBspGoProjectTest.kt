@@ -2,12 +2,14 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.GoLibraryItem
 import org.jetbrains.bsp.protocol.SourceItem
@@ -68,12 +70,12 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     createGoBuildTarget(
       targetDirectory = "example",
       targetName = "hello",
-      tags = listOf("application"),
-      capabilities =
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = true,
+      tags = listOf(),
+      kind =
+        TargetKind(
+          kindString = "go_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.GO),
         ),
       dependencies =
         listOf(
@@ -94,12 +96,12 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     createGoBuildTarget(
       targetDirectory = "lib",
       targetName = "go_default_library",
-      tags = listOf("library"),
-      capabilities =
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = false,
+      tags = listOf(),
+      kind =
+        TargetKind(
+          kindString = "go_library",
+          ruleType = RuleType.LIBRARY,
+          languageClasses = setOf(LanguageClass.GO),
         ),
       importPath = "example.com/lib",
       sources =
@@ -115,12 +117,12 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     createGoBuildTarget(
       targetDirectory = "lib",
       targetName = "go_default_test",
-      tags = listOf("test"),
-      capabilities =
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = true,
-          canRun = false,
+      tags = listOf(),
+      kind =
+        TargetKind(
+          kindString = "go_test",
+          ruleType = RuleType.TEST,
+          languageClasses = setOf(LanguageClass.GO),
         ),
       importPath = "testmain",
       sources =
@@ -136,7 +138,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     targetDirectory: String,
     targetName: String,
     tags: List<String>,
-    capabilities: BuildTargetCapabilities,
+    kind: TargetKind,
     importPath: String,
     sdkHomePath: Path = defaultSdkHomePath,
     dependencies: List<Label> = listOf(),
@@ -153,9 +155,8 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       BuildTarget(
         Label.parse("$targetPrefix//$targetDirectory:$targetName"),
         tags = tags,
-        languageIds = listOf("go"),
         dependencies = dependencies,
-        capabilities = capabilities,
+        kind = kind,
         baseDirectory = Path("\$WORKSPACE/$targetDirectory/"),
         data = goBuildTarget,
         sources = sources,

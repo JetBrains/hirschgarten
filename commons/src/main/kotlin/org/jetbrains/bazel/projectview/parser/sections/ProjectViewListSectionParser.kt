@@ -2,6 +2,7 @@ package org.jetbrains.bazel.projectview.parser.sections
 
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection
+import org.jetbrains.bazel.projectview.model.sections.ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSection
 import org.jetbrains.bazel.projectview.model.sections.ImportRunConfigurationsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
@@ -102,6 +103,16 @@ object ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSectionParser :
 
   override fun createInstance(values: List<String>): ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection =
     ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection(values)
+}
+
+object ExperimentalPrioritizeLibrariesOverModulesTargetKindsSectionParser :
+  ProjectViewListSectionParser<String, ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection>(
+    ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection.SECTION_NAME,
+  ) {
+  override fun mapRawValues(rawValue: String): String = rawValue
+
+  override fun createInstance(values: List<String>): ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection =
+    ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection(values)
 }
 
 object ImportRunConfigurationsSectionParser :

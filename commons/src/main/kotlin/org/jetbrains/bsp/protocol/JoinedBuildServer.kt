@@ -1,9 +1,15 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
+data class BazelProject(val targets: Map<Label, BspTargetInfo.TargetInfo>, val hasError: Boolean)
+
 interface JoinedBuildServer {
-  suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult
+  suspend fun runSync(build: Boolean, originId: String): BazelProject
+
+  suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult
 
   suspend fun buildTargetInverseSources(params: InverseSourcesParams): InverseSourcesResult
 
@@ -29,8 +35,6 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult
 
-  suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult
-
   suspend fun workspaceLibraries(): WorkspaceLibrariesResult
 
   suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult
@@ -46,8 +50,6 @@ interface JoinedBuildServer {
   suspend fun buildTargetMobileInstall(params: MobileInstallParams): MobileInstallResult
 
   suspend fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult
-
-  suspend fun workspaceBuildAndGetBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult
 
   suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult
 

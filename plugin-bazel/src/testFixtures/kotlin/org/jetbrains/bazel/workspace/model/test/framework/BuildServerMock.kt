@@ -3,6 +3,7 @@ package org.jetbrains.bazel.workspace.model.test.framework
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
+import org.jetbrains.bsp.protocol.BazelProject
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
@@ -26,8 +27,6 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
-import org.jetbrains.bsp.protocol.PythonOptionsParams
-import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
@@ -38,7 +37,6 @@ import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -48,6 +46,7 @@ import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceNameResult
 
 class BuildServerMock(
+  private val bazelProject: BazelProject? = null,
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
   private val inverseSourcesResult: InverseSourcesResult? = null,
   private val dependencySourcesResult: DependencySourcesResult? = null,
@@ -67,17 +66,16 @@ class BuildServerMock(
   private val runResultWithDebug: RunResult? = null,
   private val mobileInstallResult: MobileInstallResult? = null,
   private val jvmBinaryJarsResult: JvmBinaryJarsResult? = null,
-  private val workspaceBuildTargetsResultAndBuild: WorkspaceBuildTargetsResult? = null,
   private val workspaceBuildTargetsPartial: WorkspaceBuildTargetsResult? = null,
   private val workspaceBuildTargetsFirstPhase: WorkspaceBuildTargetsResult? = null,
-  private val pythonOptionsResult: PythonOptionsResult? = null,
   private val bazelResolveLocalToRemote: BazelResolveLocalToRemoteResult? = null,
   private val bazelResolveRemoteToLocal: BazelResolveRemoteToLocalResult? = null,
   private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = null,
   private val workspaceContextResult: WorkspaceContext? = null,
 ) : JoinedBuildServer {
-  override suspend fun workspaceBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult =
-    wrapInFuture(workspaceBuildTargetsResult)
+  override suspend fun runSync(build: Boolean, originId: String): BazelProject = wrapInFuture(bazelProject)
+
+  override suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult = wrapInFuture(workspaceBuildTargetsResult)
 
   override suspend fun buildTargetInverseSources(inverseSourcesParams: InverseSourcesParams): InverseSourcesResult =
     wrapInFuture(inverseSourcesResult)
@@ -121,16 +119,11 @@ class BuildServerMock(
 
   override suspend fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): JvmBinaryJarsResult = wrapInFuture(jvmBinaryJarsResult)
 
-  override suspend fun workspaceBuildAndGetBuildTargets(params: WorkspaceBuildTargetsParams): WorkspaceBuildTargetsResult =
-    wrapInFuture(workspaceBuildTargetsResultAndBuild)
-
   override suspend fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): WorkspaceBuildTargetsResult =
     wrapInFuture(workspaceBuildTargetsPartial)
 
   override suspend fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult =
     wrapInFuture(workspaceBuildTargetsFirstPhase)
-
-  override suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult = wrapInFuture(pythonOptionsResult)
 
   override suspend fun bazelResolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
     wrapInFuture(bazelResolveLocalToRemote)

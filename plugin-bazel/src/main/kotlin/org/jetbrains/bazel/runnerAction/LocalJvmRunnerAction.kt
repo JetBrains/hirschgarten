@@ -13,6 +13,7 @@ import com.intellij.openapi.util.Key
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
@@ -23,7 +24,6 @@ import org.jetbrains.bazel.ui.console.ConsoleService
 import org.jetbrains.bazel.ui.console.TaskConsole
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmEnvironmentItem
-import org.jetbrains.bsp.protocol.StatusCode
 import javax.swing.Icon
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -46,7 +46,7 @@ abstract class LocalJvmRunnerAction(
 
   private suspend fun preBuild(project: Project): Boolean {
     val buildResult = runBuildTargetTask(listOf(targetInfo.id), project)
-    return buildResult?.statusCode == StatusCode.OK
+    return buildResult?.statusCode == BazelStatus.SUCCESS
   }
 
   private fun calculateConfigurationSettings(

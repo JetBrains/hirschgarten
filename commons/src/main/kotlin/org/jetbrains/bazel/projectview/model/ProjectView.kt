@@ -5,6 +5,7 @@ import org.jetbrains.bazel.projectview.model.sections.AndroidMinSdkSection
 import org.jetbrains.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection
+import org.jetbrains.bazel.projectview.model.sections.ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSection
 import org.jetbrains.bazel.projectview.model.sections.ImportRunConfigurationsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
@@ -56,6 +57,8 @@ data class ProjectView(
   val transitiveCompileTimeJarsTargetKinds: ExperimentalTransitiveCompileTimeJarsTargetKindsSection? = null,
   /** used alongside with [addTransitiveCompileTimeJars] with the list of transitive compile time jars patterns to not prune */
   val noPruneTransitiveCompileTimeJarsPatternsSection: ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection? = null,
+  /** libraries get higher precedence in the IDE than modules (JVM-related) */
+  val prioritizeLibrariesOverModulesTargetKindsSection: ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection? = null,
   /** enable native (non-starlarkified) Android rules */
   val enableNativeAndroidRules: EnableNativeAndroidRulesSection? = null,
   /** Override the minimum Android SDK version globally for the whole project */
@@ -84,6 +87,7 @@ data class ProjectView(
     private val addTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJarsSection? = null,
     private val transitiveCompileTimeJarsTargetKinds: ExperimentalTransitiveCompileTimeJarsTargetKindsSection? = null,
     private val noPruneTransitiveCompileTimeJarsPatterns: ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection? = null,
+    private val prioritizeLibrariesOverModulesTargetKinds: ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection? = null,
     private val enableNativeAndroidRules: EnableNativeAndroidRulesSection? = null,
     private val androidMinSdkSection: AndroidMinSdkSection? = null,
     private val shardSync: ShardSyncSection? = null,
@@ -111,6 +115,7 @@ data class ProjectView(
       val addTransitiveCompileTimeJars = combineAddTransitiveCompileTimeJarsSection(importedProjectViews)
       val transitiveCompileTimeJarsTargetKinds = combineTransitiveCompileTimeJarsTargetKindsSection(importedProjectViews)
       val noPruneTransitiveCompileTimeJarsPatterns = combineNoPruneTransitiveCompileTimeJarsPatternsSection(importedProjectViews)
+      val prioritizeLibrariesOverModulesTargetKinds = combinePrioritizeLibrariesOverModulesTargetKindsSection(importedProjectViews)
       val enableNativeAndroidRules = combineEnableNativeAndroidRulesSection(importedProjectViews)
       val androidMinSdkSection = combineAndroidMinSdkSection(importedProjectViews)
       val shardSyncSection = combineShardSyncSection(importedProjectViews)
@@ -134,6 +139,7 @@ data class ProjectView(
           " addTransitiveCompileTimeJars: {}," +
           " transitiveCompileTimeJarsTargetKinds: {}," +
           " noPruneTransitiveCompileTimeJarsPatterns: {}," +
+          " prioritizeLibrariesOverModulesTargetKinds: {}," +
           " enableNativeAndroidRules: {}," +
           " androidMinSdkSection: {}," +
           " shardSync: {}," +
@@ -154,6 +160,7 @@ data class ProjectView(
         addTransitiveCompileTimeJars,
         transitiveCompileTimeJarsTargetKinds,
         noPruneTransitiveCompileTimeJarsPatterns,
+        prioritizeLibrariesOverModulesTargetKinds,
         enableNativeAndroidRules,
         androidMinSdkSection,
         shardSyncSection,
@@ -175,6 +182,7 @@ data class ProjectView(
         addTransitiveCompileTimeJars,
         transitiveCompileTimeJarsTargetKinds,
         noPruneTransitiveCompileTimeJarsPatterns,
+        prioritizeLibrariesOverModulesTargetKinds,
         enableNativeAndroidRules,
         androidMinSdkSection,
         shardSyncSection,
@@ -216,6 +224,19 @@ data class ProjectView(
           ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection::values,
         )
       return createInstanceOfListSectionOrNull(patterns, ::ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection)
+    }
+
+    private fun combinePrioritizeLibrariesOverModulesTargetKindsSection(
+      importedProjectViews: List<ProjectView>,
+    ): ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection? {
+      val targetKinds =
+        combineListValuesWithImported(
+          importedProjectViews,
+          prioritizeLibrariesOverModulesTargetKinds,
+          ProjectView::prioritizeLibrariesOverModulesTargetKindsSection,
+          ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection::values,
+        )
+      return createInstanceOfListSectionOrNull(targetKinds, ::ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection)
     }
 
     private fun combineEnableNativeAndroidRulesSection(importedProjectViews: List<ProjectView>): EnableNativeAndroidRulesSection? =

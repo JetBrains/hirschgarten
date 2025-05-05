@@ -262,8 +262,8 @@ class BepServer(
       return
     }
 
-    val statusCode = BazelStatus.fromExitCode(event.finished.exitCode.code).toBspStatusCode()
-    val isSuccess = statusCode.value == 1
+    val statusCode = BazelStatus.fromExitCode(event.finished.exitCode.code)
+    val isSuccess = statusCode == BazelStatus.SUCCESS
     val errors = if (isSuccess) 0 else 1
     val report = CompileReport(target, errors, 0)
     val finishParams =

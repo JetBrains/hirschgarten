@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.file.Path
@@ -20,5 +21,5 @@ internal class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntity
     )
 
   private fun BuildTarget.inferRootType(): SourceRootTypeId =
-    if (tags.contains("test")) JAVA_TEST_RESOURCE_ROOT_TYPE else JAVA_RESOURCE_ROOT_TYPE
+    if (kind.ruleType == RuleType.TEST) JAVA_TEST_RESOURCE_ROOT_TYPE else JAVA_RESOURCE_ROOT_TYPE
 }

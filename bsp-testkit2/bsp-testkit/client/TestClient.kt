@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.testkit.client
 
 import kotlinx.coroutines.test.runTest
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.server.connection.startServer
 import org.jetbrains.bsp.protocol.CompileParams
@@ -19,11 +20,8 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
-import org.jetbrains.bsp.protocol.PythonOptionsParams
-import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceNameResult
 import org.jetbrains.bsp.testkit.JsonComparator
@@ -101,7 +99,7 @@ class TestClient(
 
   fun testWorkspaceTargets(timeout: Duration, expectedResult: WorkspaceBuildTargetsResult) {
     test(timeout) { session ->
-      val result = session.server.workspaceBuildTargets(WorkspaceBuildTargetsParams("originId"))
+      val result = session.server.workspaceBuildTargets()
       assertJsonEquals(expectedResult, result)
     }
   }
@@ -121,18 +119,6 @@ class TestClient(
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetCppOptions(transformedParams)
-      assertJsonEquals(expectedResult, result)
-    }
-  }
-
-  fun testPythonOptions(
-    timeout: Duration,
-    params: PythonOptionsParams,
-    expectedResult: PythonOptionsResult,
-  ) {
-    val transformedParams = applyJsonTransform(params)
-    test(timeout) { session ->
-      val result = session.server.buildTargetPythonOptions(transformedParams)
       assertJsonEquals(expectedResult, result)
     }
   }
@@ -191,17 +177,15 @@ class TestClient(
   fun testResolveProject(timeout: Duration) {
     runTest(timeout = timeout) {
       test(timeout) { session ->
-        val getWorkspaceTargets = session.server.workspaceBuildTargets(WorkspaceBuildTargetsParams("originId"))
+        val getWorkspaceTargets = session.server.workspaceBuildTargets()
         val targets = getWorkspaceTargets.targets
         val targetIds = targets.map { it.id }
-        val javaTargetIds = targets.filter { it.languageIds.contains("java") }.map { it.id }
+        val javaTargetIds = targets.filter { it.kind.languageClasses.contains(LanguageClass.JAVA) }.map { it.id }
         session.server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
-        val scalaTargetIds = targets.filter { it.languageIds.contains("scala") }.map { it.id }
+        val scalaTargetIds = targets.filter { it.kind.languageClasses.contains(LanguageClass.SCALA) }.map { it.id }
         session.server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
-        val cppTargetIds = targets.filter { it.languageIds.contains("cpp") }.map { it.id }
+        val cppTargetIds = targets.filter { it.kind.languageClasses.contains(LanguageClass.C) }.map { it.id }
         session.server.buildTargetCppOptions(CppOptionsParams(cppTargetIds))
-        val pythonTargetIds = targets.filter { it.languageIds.contains("python") }.map { it.id }
-        session.server.buildTargetPythonOptions(PythonOptionsParams(pythonTargetIds))
       }
     }
   }

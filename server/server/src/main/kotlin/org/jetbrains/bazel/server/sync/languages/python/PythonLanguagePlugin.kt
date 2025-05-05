@@ -5,13 +5,11 @@ import org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.label.label
-import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
-import org.jetbrains.bsp.protocol.PythonOptionsItem
 import java.nio.file.Path
 
 class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<PythonModule>() {
@@ -58,12 +56,6 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
         interpreter = interpreter,
       )
   }
-
-  fun toPythonOptionsItem(module: Module, pythonModule: PythonModule): PythonOptionsItem =
-    PythonOptionsItem(
-      module.label,
-      emptyList(),
-    )
 
   override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     if (targetInfo.hasPythonTargetInfo()) {

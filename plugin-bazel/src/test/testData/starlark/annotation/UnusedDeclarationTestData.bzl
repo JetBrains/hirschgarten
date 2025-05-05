@@ -29,3 +29,13 @@ top_level()
 {x: x for x in [1, 2, 3] if x > 2}
 {x: x for x, <weak_warning descr="Variable \"y\" is never used">y</weak_warning>, z in [(1, 2, 3), (4, 5, 6)] if z > 5}
 {x: x for (x, <weak_warning descr="Variable \"y\" is never used">y</weak_warning>, z) in [(1, 2, 3), (4, 5, 6)] if z > 5}
+
+def new_scope():
+    for x in []:
+        x
+    for x, y in []:
+        x + y
+    for (x, y) in []:
+        x + y
+
+new_scope()

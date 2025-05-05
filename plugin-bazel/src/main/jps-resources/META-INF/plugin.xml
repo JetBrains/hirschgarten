@@ -110,6 +110,9 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.psiElementConfigurationLocator"
                         interface="org.jetbrains.bazel.jvm.junit.PsiElementConfigurationLocator"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bazel.targetKindProvider"
+                        interface="org.jetbrains.bazel.sync.TargetKindProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->

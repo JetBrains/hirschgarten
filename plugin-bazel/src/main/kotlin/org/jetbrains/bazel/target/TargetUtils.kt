@@ -6,20 +6,25 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.util.xmlb.annotations.OptionTag
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModuleEntity
 import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
@@ -28,9 +33,7 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetTag
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.jetbrains.bsp.protocol.isExecutable
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 
@@ -38,7 +41,11 @@ private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
 @InternalApi
 data class TargetUtilsState(
-  var labelToTargetInfo: Map<String, BuildTargetState> = emptyMap(),
+  // The new tag is here to not break the sync with the old persisted data
+  // The project that contains the old persisted data will be resynced and stored using the new tag
+  // https://youtrack.jetbrains.com/issue/BAZEL-1967
+  @OptionTag(tag = "labelToTargetInfoV2")
+  var labelToTargetInfo: Map<String, String> = emptyMap(),
   var moduleIdToTarget: Map<String, String> = emptyMap(),
   var libraryIdToTarget: Map<String, String> = emptyMap(),
   var fileToTarget: Map<String, List<String>> = emptyMap(),
@@ -82,6 +89,13 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   fun removeFileToTargetIdEntry(path: Path) {
     fileToTarget = fileToTarget - path
+  }
+
+  @InternalApi
+  @TestOnly
+  fun setTargets(labelToTargetInfo: Map<Label, BuildTarget>) {
+    this.labelToTargetInfo = labelToTargetInfo
+    updateComputedFields()
   }
 
   @InternalApi
@@ -140,7 +154,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   ): Set<Label> =
     resultCache.getOrPut(target) {
       val targetInfo = labelToTargetInfo[target]
-      if (targetInfo?.capabilities?.isExecutable == true) {
+      if (targetInfo?.kind?.isExecutable == true) {
         return@getOrPut setOf(target)
       }
 
@@ -176,7 +190,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   @InternalApi
   fun getExecutableTargetsForFile(file: VirtualFile): List<Label> {
     val executableDirectTargets =
-      getTargetsForFile(file).filter { label -> labelToTargetInfo[label]?.capabilities?.isExecutable == true }
+      getTargetsForFile(file).filter { label -> labelToTargetInfo[label]?.kind?.isExecutable == true }
     if (executableDirectTargets.isEmpty()) {
       return fileToExecutableTargets.getOrDefault(file.toNioPathOrNull(), emptySet()).toList()
     }
@@ -185,7 +199,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   @PublicApi // // https://youtrack.jetbrains.com/issue/BAZEL-1632
   @Suppress("UNUSED")
-  fun isLibrary(target: Label): Boolean = BuildTargetTag.LIBRARY in getBuildTargetForLabel(target)?.tags.orEmpty()
+  fun isLibrary(target: Label): Boolean = getBuildTargetForLabel(target)?.kind?.ruleType == RuleType.LIBRARY
 
   @PublicApi
   fun getTargetForModuleId(moduleId: String): Label? = moduleIdToTarget[moduleId]
@@ -212,7 +226,14 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   @InternalApi
   override fun getState(): TargetUtilsState =
     TargetUtilsState(
-      labelToTargetInfo = labelToTargetInfo.mapKeys { it.key.toString() }.mapValues { it.value.toState() },
+      labelToTargetInfo =
+        labelToTargetInfo
+          .mapKeys {
+            it.key.toString()
+          }.mapValues {
+            // don't store dependencies, sources, resources as they are saved in the workspace model already
+            bazelGson.toJson(it.value.copy(dependencies = emptyList(), sources = emptyList(), resources = emptyList()))
+          },
       moduleIdToTarget = moduleIdToTarget.mapValues { it.value.toString() },
       libraryIdToTarget = libraryIdToTarget.mapValues { it.value.toString() },
       fileToTarget = fileToTarget.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.toString() } },
@@ -221,17 +242,32 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   @InternalApi
   override fun loadState(state: TargetUtilsState) {
-    labelToTargetInfo =
-      state.labelToTargetInfo
-        .mapKeys { Label.parse(it.key) }
-        .mapValues { it.value.fromState() }
-    moduleIdToTarget = state.moduleIdToTarget.mapValues { Label.parse(it.value) }
-    libraryIdToTarget = state.libraryIdToTarget.mapValues { Label.parse(it.value) }
-    fileToTarget =
-      state.fileToTarget.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
-    fileToExecutableTargets =
-      state.fileToExecutableTargets.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
-    updateComputedFields()
+    try {
+      labelToTargetInfo =
+        state.labelToTargetInfo
+          .mapKeys { Label.parse(it.key) }
+          .mapValues { bazelGson.fromJson(it.value, BuildTarget::class.java) }
+      moduleIdToTarget = state.moduleIdToTarget.mapValues { Label.parse(it.value) }
+      libraryIdToTarget = state.libraryIdToTarget.mapValues { Label.parse(it.value) }
+      fileToTarget =
+        state.fileToTarget.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
+      fileToExecutableTargets =
+        state.fileToExecutableTargets.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
+      updateComputedFields()
+    } catch (e: Exception) {
+      log.warn(e)
+      labelToTargetInfo = emptyMap()
+      moduleIdToTarget = emptyMap()
+      libraryIdToTarget = emptyMap()
+      fileToTarget = emptyMap()
+      fileToExecutableTargets = emptyMap()
+      allTargetsAndLibrariesLabels = emptyList()
+      updateComputedFields()
+    }
+  }
+
+  companion object {
+    val log = logger<TargetUtils>()
   }
 }
 

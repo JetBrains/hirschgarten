@@ -3,10 +3,12 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -45,10 +47,13 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem =
       BuildTarget(
         Label.parse("target"),
-        listOf("library"),
-        listOf("java"),
+        listOf(),
         emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
+        ),
         listOf(sourceItem),
         emptyList(),
         baseDirectory = Path("base/dir"),
@@ -83,10 +88,13 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem =
       BuildTarget(
         Label.parse("target"),
-        listOf("test"),
-        listOf("java"),
+        listOf(),
         emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_test",
+          ruleType = RuleType.TEST,
+          languageClasses = setOf(LanguageClass.JAVA),
+        ),
         listOf(sourceItem),
         emptyList(),
         baseDirectory = Path("base/dir"),
@@ -129,10 +137,13 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem =
       BuildTarget(
         Label.parse("target"),
-        listOf("library"),
-        listOf("java"),
+        listOf(),
         emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
+        ),
         listOf(sourceItem1, sourceItem2),
         emptyList(),
         baseDirectory = Path("base/dir"),
@@ -182,10 +193,13 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem1 =
       BuildTarget(
         Label.parse("target"),
-        listOf("library"),
-        listOf("java"),
+        listOf(),
         emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
+        ),
         listOf(sourceItem1),
         emptyList(),
         baseDirectory = Path("base/dir"),
@@ -193,10 +207,13 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem2 =
       BuildTarget(
         Label.parse("target"),
-        listOf("library"),
-        listOf("java"),
+        listOf(),
         emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
+        ),
         listOf(sourceItem2),
         emptyList(),
         baseDirectory = Path("base/dir"),
@@ -247,10 +264,13 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem1 =
       BuildTarget(
         Label.parse("target"),
-        listOf("library"),
-        listOf("java"),
+        listOf(),
         emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
+        ),
         listOf(sourceItem1),
         emptyList(),
         baseDirectory = Path("base/dir"),
@@ -259,10 +279,13 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItem2 =
       BuildTarget(
         Label.parse("target"),
-        listOf("library"),
-        listOf("java"),
+        listOf(),
         emptyList(),
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "java_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.JAVA),
+        ),
         listOf(sourceItem2),
         emptyList(),
         baseDirectory = Path("base/dir"),

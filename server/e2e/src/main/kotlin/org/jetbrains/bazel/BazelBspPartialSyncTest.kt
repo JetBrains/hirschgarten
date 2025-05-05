@@ -2,15 +2,16 @@ package org.jetbrains.bazel
 
 import org.jetbrains.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
@@ -44,7 +45,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep("should do an initial sync on 1 target and then partial sync on another target") {
       testClient.test(3.minutes) { session ->
         // initial sync
-        val workspaceBuildTargetsResult = session.server.workspaceBuildTargets(WorkspaceBuildTargetsParams("originId"))
+        val workspaceBuildTargetsResult = session.server.workspaceBuildTargets()
         testClient.assertJsonEquals(expectedWorkspaceBuildTargetsResult(), workspaceBuildTargetsResult)
 
         // partial sync
@@ -64,13 +65,12 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
         val javaTargetsJavaBinary =
           BuildTarget(
             partialSyncTargetId,
-            listOf("application"),
-            listOf("java"),
+            listOf(),
             emptyList(),
-            BuildTargetCapabilities(
-              canCompile = true,
-              canTest = false,
-              canRun = true,
+            TargetKind(
+              kindString = "java_binary",
+              languageClasses = setOf(LanguageClass.JAVA),
+              ruleType = RuleType.BINARY,
             ),
             baseDirectory = Path("\$WORKSPACE/java_targets/"),
             data = jvmBuildTarget,
@@ -104,13 +104,12 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
     val javaTargetsJavaLibrary =
       BuildTarget(
         Label.parse("$targetPrefix//java_targets:java_library"),
-        listOf("library"),
-        listOf("java"),
         listOf(),
-        BuildTargetCapabilities(
-          canCompile = true,
-          canTest = false,
-          canRun = false,
+        listOf(),
+        TargetKind(
+          kindString = "java_library",
+          ruleType = RuleType.LIBRARY,
+          languageClasses = setOf(LanguageClass.JAVA),
         ),
         baseDirectory = Path("\$WORKSPACE/java_targets/"),
         data = jvmBuildTarget,

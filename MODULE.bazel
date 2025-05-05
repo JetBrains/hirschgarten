@@ -25,11 +25,11 @@ maven.install(
         "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.3",
         "com.google.code.gson:gson:2.12.1",
         "com.google.guava:guava:31.0.1-jre",
-        "com.jetbrains.intellij.tools:ide-metrics-collector-starter:251.23774.200-EAP-SNAPSHOT",
-        "com.jetbrains.intellij.tools:ide-metrics-collector:251.23774.200-EAP-SNAPSHOT",
-        "com.jetbrains.intellij.tools:ide-starter-driver:251.23774.200-EAP-SNAPSHOT",
-        "com.jetbrains.intellij.tools:ide-starter-junit5:251.23774.200-EAP-SNAPSHOT",
-        "com.jetbrains.intellij.tools:ide-starter-squashed:251.23774.200-EAP-SNAPSHOT",
+        "com.jetbrains.intellij.tools:ide-metrics-collector-starter:251.23774.435",
+        "com.jetbrains.intellij.tools:ide-metrics-collector:251.23774.435",
+        "com.jetbrains.intellij.tools:ide-starter-driver:251.23774.435",
+        "com.jetbrains.intellij.tools:ide-starter-junit5:251.23774.435",
+        "com.jetbrains.intellij.tools:ide-starter-squashed:251.23774.435",
         "commons-io:commons-io:jar:2.18.0",
         "io.grpc:grpc-protobuf:1.71.0",
         "io.grpc:grpc-stub:1.71.0",
@@ -427,11 +427,11 @@ http_jar(
 
 # SDK 251
 
-SDK_251_PLUGIN_REPOSITORY_VERSION = "251.23774.200"
+SDK_251_PLUGIN_REPOSITORY_VERSION = "251.23774.435"
 
-SDK_251_INTELLIJ_REPOSITORY_VERSION = "251.23774.200-EAP-SNAPSHOT"
+SDK_251_INTELLIJ_REPOSITORY_VERSION = "251.23774.435"
 
-SDK_251_INTELLIJ_REPOSITORY = "snapshots"  # releases or snapshots
+SDK_251_INTELLIJ_REPOSITORY = "releases"  # releases or snapshots
 
 SDK_251_CLION_REPOSITORY_VERSION = "251.20015.45-EAP-SNAPSHOT"
 
@@ -439,7 +439,7 @@ SDK_251_CLION_REPOSITORY = "snapshots"  # releases or snapshots
 
 IC_251_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_251_INTELLIJ_REPOSITORY, SDK_251_INTELLIJ_REPOSITORY_VERSION, SDK_251_INTELLIJ_REPOSITORY_VERSION)
 
-IC_251_SHA = "1cc5f8e24b8337d9dcac75c6aa26274e93d36e47be0a1b528dc81590c3743a31"
+IC_251_SHA = "799cdefa47aa213c166b2883f5a020053a60a9263727aee1f12d98475e277e47"
 
 http_archive(
     name = "intellij_ce_2025_1",
@@ -450,7 +450,7 @@ http_archive(
 
 IC_251_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_251_INTELLIJ_REPOSITORY, SDK_251_INTELLIJ_REPOSITORY_VERSION, SDK_251_INTELLIJ_REPOSITORY_VERSION)
 
-IC_251_SOURCES_SHA = "e244229d021973cccb055f24908a9c54ea82de84c95035e4647dae012e1898ff"
+IC_251_SOURCES_SHA = "3f07824aa6f19f6533ea3f140b5f6e0a3ece1089e8a43ca22b4c2ce24ddcf511"
 
 http_jar(
     name = "intellij_ce_2025_1_sources",
@@ -458,9 +458,10 @@ http_jar(
     url = IC_251_SOURCES_URL,
 )
 
-DEVKIT_251_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_251_PLUGIN_REPOSITORY_VERSION, SDK_251_PLUGIN_REPOSITORY_VERSION)
+# DEVKIT_251_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_251_PLUGIN_REPOSITORY_VERSION, SDK_251_PLUGIN_REPOSITORY_VERSION)
+DEVKIT_251_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/251.23774.460/DevKit-251.23774.460.zip"
 
-DEVKIT_251_SHA = "f3953afd1020941123b1e98c9035d168a7fe9df4e712adfa281f30088aa5c429"
+DEVKIT_251_SHA = "3417717e56a089b84616e743f3e7c88ea22cfd3acbac33dfa0d381f2a8ee8376"
 
 http_archive(
     name = "devkit_2025_1",
@@ -471,7 +472,7 @@ http_archive(
 
 PYTHON_PLUGIN_251_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_251_PLUGIN_REPOSITORY_VERSION, SDK_251_PLUGIN_REPOSITORY_VERSION)
 
-PYTHON_PLUGIN_251_SHA = "93bce7409a0dac9b36ef3eacb3ba5802c368267bcde4dae436da862eca32f11e"
+PYTHON_PLUGIN_251_SHA = "361d6c2cac7b47b97eb19f900ed7dd5de5220f4cc96da85b853c706749fa9e1d"
 
 http_archive(
     name = "python_2025_1",
@@ -482,7 +483,7 @@ http_archive(
 
 GO_PLUGIN_251_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_251_PLUGIN_REPOSITORY_VERSION, SDK_251_PLUGIN_REPOSITORY_VERSION)
 
-GO_PLUGIN_251_SHA = "c3f28a277f8118880fbadfe18312e2e3d1a6510a623e6fc104fcac52664b27df"
+GO_PLUGIN_251_SHA = "d6455605c57ccd0859af871f902e68db3078542c48d6d099327e36d80983683e"
 
 http_archive(
     name = "go_2025_1",
@@ -504,7 +505,7 @@ http_archive(
 
 ANDROID_PLUGIN_251_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.android/%s/org.jetbrains.android-%s.zip" % (SDK_251_PLUGIN_REPOSITORY_VERSION, SDK_251_PLUGIN_REPOSITORY_VERSION)
 
-ANDROID_PLUGIN_251_SHA = "09770e20b5d068652105b02bfad3e3a2c86cbe14ec51f4517aa91b76f42653f8"
+ANDROID_PLUGIN_251_SHA = "a5cf4f65db4f9bb27d113af340013972d8bffc635a56efc2d496b60f8c4b7b34"
 
 http_archive(
     name = "android_2025_1",
@@ -525,7 +526,7 @@ http_jar(
 
 CODE_WITH_ME_251_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_251_INTELLIJ_REPOSITORY, SDK_251_INTELLIJ_REPOSITORY_VERSION, SDK_251_INTELLIJ_REPOSITORY_VERSION)
 
-CODE_WITH_ME_251_SHA = "0182ad7dfc8f25bea3983e3465e999d9ec54f81b2b5e05d60e03f6acc813c23a"
+CODE_WITH_ME_251_SHA = "edb7ed3b981c0155edb13b02cba2a5b158ded3ffa7f1d5f8b475139c91761277"
 
 http_jar(
     name = "code_with_me_2025_1",

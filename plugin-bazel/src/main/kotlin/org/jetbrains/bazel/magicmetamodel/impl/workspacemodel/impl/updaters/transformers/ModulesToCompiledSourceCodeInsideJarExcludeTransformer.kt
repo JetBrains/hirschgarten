@@ -3,23 +3,12 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
 import java.util.Locale
-import kotlin.io.path.name
-
-// IntelliJ plugins use XML files like plugin.xml, and .properties for internationalization.
-// We want Java/Kotlin resolve to prefer actual files over files inside JARs.
-// TODO: check if this helps with other projects (that use, e.g., Spring or generated GraphQL) and expand this list when needed
-private val RESOURCE_EXTENSIONS_TO_EXCLUDE_IN_JAR =
-  listOf(
-    ".xml",
-    ".properties",
-  )
 
 // https://youtrack.jetbrains.com/issue/BAZEL-1672
 class ModulesToCompiledSourceCodeInsideJarExcludeTransformer {
   fun transform(moduleDetails: Collection<ModuleDetails>): CompiledSourceCodeInsideJarExclude =
     CompiledSourceCodeInsideJarExclude(
       calculateRelativePathsInsideJarToExclude(moduleDetails),
-      calculateNamesInsideJarToExclude(moduleDetails),
     )
 
   private fun calculateRelativePathsInsideJarToExclude(moduleDetails: Collection<ModuleDetails>): Set<String> =
@@ -49,14 +38,6 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformer {
           if (packagePrefix.isNotEmpty()) "$packagePrefix/$className" else className
         }
       }.toSet()
-
-  private fun calculateNamesInsideJarToExclude(moduleDetails: Collection<ModuleDetails>): Set<String> =
-    moduleDetails
-      .asSequence()
-      .flatMap { moduleDetails -> moduleDetails.target.resources }
-      .map { resource -> resource.name }
-      .filter { name -> RESOURCE_EXTENSIONS_TO_EXCLUDE_IN_JAR.any { extension -> name.endsWith(extension) } }
-      .toSet()
 
   private fun String.capitalize() = replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString() }
 }

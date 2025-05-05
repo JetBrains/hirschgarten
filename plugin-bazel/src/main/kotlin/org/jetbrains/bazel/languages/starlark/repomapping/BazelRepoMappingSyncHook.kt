@@ -29,11 +29,6 @@ val Project.canonicalRepoNameToPath: Map<String, Path>
     BazelRepoMappingService.getInstance(this).canonicalRepoNameToPath.takeIf { it.isNotEmpty() }
       ?: mapOf("" to rootDir.toNioPath())
 
-val Project.repositoryPaths: Set<Path>
-  get() =
-    BazelRepoMappingService.getInstance(this).repositoryPaths.takeIf { it.isNotEmpty() }
-      ?: setOf(rootDir.toNioPath())
-
 class BazelRepoMappingSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     val bazelRepoMappingService = BazelRepoMappingService.getInstance(environment.project)
@@ -70,13 +65,6 @@ internal class BazelRepoMappingService : PersistentStateComponent<BazelRepoMappi
 
   @Volatile
   internal var canonicalRepoNameToPath: Map<String, Path> = emptyMap()
-    set(value) {
-      field = value
-      repositoryPaths = canonicalRepoNameToPath.values.toSet()
-    }
-
-  @Volatile
-  internal var repositoryPaths: Set<Path> = emptySet()
 
   override fun getState(): BazelRepoMappingServiceState? =
     BazelRepoMappingServiceState(

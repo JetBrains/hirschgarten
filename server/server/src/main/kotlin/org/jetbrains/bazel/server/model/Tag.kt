@@ -8,4 +8,5 @@ enum class Tag {
   NO_IDE,
   NO_BUILD,
   MANUAL,
+  LIBRARIES_OVER_MODULES, // used with the setting `experimental_prioritize_libraries_over_modules_target_kinds`
 }

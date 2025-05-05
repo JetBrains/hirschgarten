@@ -18,6 +18,9 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.ProjectSyncHook
@@ -31,7 +34,6 @@ import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
@@ -69,12 +71,13 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add module with dependencies to workspace model diff`() {
     // given
+    val pythonTestTargets = generateTestSet()
     val server =
       BuildServerMock(
+        workspaceBuildTargetsResult = pythonTestTargets.buildTargets,
         dependencySourcesResult = DependencySourcesResult(emptyList()),
       )
     val diff = AllProjectStructuresProvider(project).newDiff()
-    val pythonTestTargets = generateTestSet()
 
     // when
     runBlocking {
@@ -87,7 +90,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
-            buildTargets = pythonTestTargets.buildTargets,
+            // TODO: not used yet, https://youtrack.jetbrains.com/issue/BAZEL-1960
+            buildTargets = emptyMap(),
           )
         hook.onSync(environment)
       }
@@ -107,12 +111,13 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
   @Test
   fun `should add module with sources to workspace model diff`() {
     // given
+    val pythonTestTargets = generateTestSetWithSources()
     val server =
       BuildServerMock(
+        workspaceBuildTargetsResult = pythonTestTargets.buildTargets,
         dependencySourcesResult = DependencySourcesResult(emptyList()),
       )
     val diff = AllProjectStructuresProvider(project).newDiff()
-    val pythonTestTargets = generateTestSetWithSources()
 
     // when
     runBlocking {
@@ -125,7 +130,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             diff = diff,
             taskId = "test",
             progressReporter = reporter,
-            buildTargets = pythonTestTargets.buildTargets,
+            // TODO: not used yet, https://youtrack.jetbrains.com/issue/BAZEL-1960
+            buildTargets = emptyMap(),
           )
         hook.onSync(environment)
       }
@@ -212,9 +218,12 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       BuildTarget(
         info.targetId,
         listOf(info.type),
-        listOf("python"),
         info.dependencies,
-        BuildTargetCapabilities(),
+        TargetKind(
+          kindString = "python_binary",
+          ruleType = RuleType.BINARY,
+          languageClasses = setOf(LanguageClass.PYTHON),
+        ),
         baseDirectory = Path("/targets_base_dir"),
         data =
           PythonBuildTarget(
