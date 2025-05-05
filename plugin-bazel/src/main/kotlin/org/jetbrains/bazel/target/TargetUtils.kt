@@ -70,8 +70,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   private var libraryIdToTarget: Map<String, Label> = emptyMap()
 
-  var fileToTarget: Map<Path, List<Label>> = hashMapOf()
-    private set
+  private val fileToTarget = mutableMapOf<Path, List<Label>>()
 
   private var fileToExecutableTargets: Map<Path, List<Label>> = hashMapOf()
 
@@ -83,12 +82,14 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
 
+  fun getFileToTargetMap(): Map<Path, List<Label>> = fileToTarget
+
   fun addFileToTargetIdEntry(path: Path, targets: List<Label>) {
-    fileToTarget = fileToTarget + (path to targets)
+    fileToTarget.put(path, targets)
   }
 
   fun removeFileToTargetIdEntry(path: Path) {
-    fileToTarget = fileToTarget.toMutableMap().apply { remove(path) }
+    fileToTarget.remove(path)
   }
 
   @InternalApi
@@ -117,7 +118,10 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
           library.id.formatAsModuleName(project) to library.id
         }.orEmpty()
 
-    this.fileToTarget = fileToTarget
+    this.fileToTarget.apply {
+      clear()
+      putAll(fileToTarget)
+    }
     fileToExecutableTargets = calculateFileToExecutableTargets(libraryItems)
 
     this.libraryModulesLookupTable = createLibraryModulesLookupTable(libraryModules)
@@ -249,8 +253,8 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
           .mapValues { bazelGson.fromJson(it.value, BuildTarget::class.java) }
       moduleIdToTarget = state.moduleIdToTarget.mapValues { Label.parse(it.value) }
       libraryIdToTarget = state.libraryIdToTarget.mapValues { Label.parse(it.value) }
-      fileToTarget =
-        state.fileToTarget.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
+      fileToTarget.clear()
+      fileToTarget.putAll(state.fileToTarget.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } })
       fileToExecutableTargets =
         state.fileToExecutableTargets.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
       updateComputedFields()
@@ -259,7 +263,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       labelToTargetInfo = emptyMap()
       moduleIdToTarget = emptyMap()
       libraryIdToTarget = emptyMap()
-      fileToTarget = emptyMap()
+      fileToTarget.clear()
       fileToExecutableTargets = emptyMap()
       allTargetsAndLibrariesLabels = emptyList()
       updateComputedFields()

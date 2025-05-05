@@ -313,7 +313,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   }
 
   private fun VirtualFileUrl.belongsToTarget(target: Label): Boolean =
-    project.targetUtils.fileToTarget[this.toPath()]?.contains(target) ?: false
+    project.targetUtils.getFileToTargetMap()[this.toPath()]?.contains(target) ?: false
 
   private fun Label.createModule(contentRootFiles: List<VirtualFile> = emptyList()) {
     val moduleName = this.formatAsModuleName(project)

@@ -20,7 +20,7 @@ class BazelProjectStatisticsCollector : ProjectUsagesCollector() {
     return if (projectProperties.isBazelProject) {
       setOf(
         Const.COUNT_TARGETS.metric(targetUtils.labelToTargetInfo.size),
-        Const.COUNT_FILES.metric(targetUtils.fileToTarget.size),
+        Const.COUNT_FILES.metric(targetUtils.getFileToTargetMap().size),
       )
     } else {
       emptySet()

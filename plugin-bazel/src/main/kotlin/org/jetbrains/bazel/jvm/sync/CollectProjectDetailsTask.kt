@@ -360,7 +360,7 @@ class CollectProjectDetailsTask(
 
   private fun checkSharedSources() {
     if (project.isSharedSourceSupportEnabled) return
-    val fileToTarget = project.targetUtils.fileToTarget
+    val fileToTarget = project.targetUtils.getFileToTargetMap()
     for ((file, targets) in fileToTarget) {
       if (targets.size <= 1) continue
       if (!file.isSourceFile()) continue
