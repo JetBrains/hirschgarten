@@ -78,14 +78,14 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   fun `source file creation`() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
 
-    file.assertModelStatus(
+    file.assertFileBelongsToTargets(
       target1 to false,
       target2 to false,
     )
 
     createEvent(file).process().assertNotNullAndAwait()
 
-    file.assertModelStatus(
+    file.assertFileBelongsToTargets(
       target1 to true,
       target2 to true,
     )
@@ -96,7 +96,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "java")
     createEvent(file).process().assertNotNullAndAwait()
 
-    file.assertModelStatus(
+    file.assertFileBelongsToTargets(
       target1 to true,
       target2 to true,
       target4 to false,
@@ -105,7 +105,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     runTestWriteAction { file.rename(requestor, "bbb.java") }
     renameEvent(file, "aaa.java", "bbb.java").process().assertNotNullAndAwait()
 
-    file.assertModelStatus(
+    file.assertFileBelongsToTargets(
       target1 to true,
       target2 to false,
       target4 to true,
@@ -119,7 +119,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     val pack = src.createDirectory("package")
     createEvent(file).process().assertNotNullAndAwait()
 
-    file.assertModelStatus(
+    file.assertFileBelongsToTargets(
       target1 to true,
       target2 to true,
       target3 to false,
@@ -129,7 +129,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     runTestWriteAction { file.move(requestor, pack) }
     moveEvent.process().assertNotNullAndAwait()
 
-    file.assertModelStatus(
+    file.assertFileBelongsToTargets(
       target1 to false,
       target2 to true,
       target3 to true,
@@ -142,7 +142,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     val file = src.createFile("aaa", "java")
     createEvent(file).process().assertNotNullAndAwait()
 
-    file.assertModelStatus(
+    file.assertFileBelongsToTargets(
       target1 to true,
       target2 to true,
       target4 to false,
@@ -151,12 +151,12 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     val newFile = runTestWriteAction { file.copy(requestor, src, "bbb.java") }
     copyEvent(newFile, src, "bbb.java").process().assertNotNullAndAwait()
 
-    file.assertModelStatus(
+    file.assertFileBelongsToTargets(
       target1 to true,
       target2 to true,
       target4 to false,
     )
-    newFile.assertModelStatus(
+    newFile.assertFileBelongsToTargets(
       target1 to true,
       target2 to false,
       target4 to true,
@@ -169,7 +169,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     val file = src.createFile("aaa", "java")
     createEvent(file).process().assertNotNullAndAwait()
 
-    file.assertModelStatus(
+    file.assertFileBelongsToTargets(
       target1 to true,
       target2 to true,
     )
@@ -177,7 +177,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     runTestWriteAction { file.delete(requestor) }
     deleteEvent(file).process().assertNotNullAndAwait()
 
-    file.assertModelStatus(
+    file.assertFileBelongsToTargets(
       target1 to false,
       target2 to false,
     )
@@ -249,7 +249,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
     // should not be added to target1's model
     doesModuleContainFile(target1, fileUrl).shouldBeFalse()
     // but the rest of the actions should happen normally
-    file.assertModelStatus(target2 to true)
+    file.assertFileBelongsToTargets(target2 to true)
     fileUrl.belongsToTarget(target1).shouldBeTrue()
   }
 
@@ -301,12 +301,12 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
 
   private fun VFileEvent.process(): Job? = AssignFileToModuleListener().testableAfter(listOf(this))[project]
 
-  private fun VirtualFile.assertModelStatus(vararg expectedStates: Pair<Label, Boolean>) {
-    this.toVirtualFileUrl(virtualFileUrlManager).assertModelStatus(*expectedStates)
+  private fun VirtualFile.assertFileBelongsToTargets(vararg expectedBelongingStatus: Pair<Label, Boolean>) {
+    this.toVirtualFileUrl(virtualFileUrlManager).assertFileBelongsToTargets(*expectedBelongingStatus)
   }
 
-  private fun VirtualFileUrl.assertModelStatus(vararg expectedStates: Pair<Label, Boolean>) {
-    expectedStates.forEach { (target, shouldBeAdded) ->
+  private fun VirtualFileUrl.assertFileBelongsToTargets(vararg expectedBelongingStatus: Pair<Label, Boolean>) {
+    expectedBelongingStatus.forEach { (target, shouldBeAdded) ->
       doesModuleContainFile(target, this).shouldBe(shouldBeAdded)
       this.belongsToTarget(target).shouldBe(shouldBeAdded)
     }
