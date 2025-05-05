@@ -44,8 +44,13 @@ class ReopenWithoutResync : IdeStarterBaseProjectTest() {
       .runIdeWithDriver(runTimeout = timeout, commands = commands)
       .useDriverAndCloseIde {
         ideFrame {
+          wait(10.seconds)
           val buildView = x { byType("com.intellij.build.BuildView") }
-          assert(buildView.getAllTexts().any { it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress")) })
+          assert(
+            buildView.getAllTexts().any {
+              it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress"))
+            },
+          ) { "Build view does not contain sync text" }
         }
         takeScreenshot("whileSyncing")
         waitForIndicators(10.minutes)
@@ -53,13 +58,17 @@ class ReopenWithoutResync : IdeStarterBaseProjectTest() {
         // simulating reopening project
         welcomeScreen { clickRecentProject("simpleKotlinTest") }
         ideFrame {
-          wait(3.seconds)
+          wait(10.seconds)
           takeScreenshot("afterReopeningProject")
           try {
             val buildView = x { byType("com.intellij.build.BuildView") }
-            assert(!buildView.getAllTexts().any { it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress")) })
+            assert(
+              !buildView.getAllTexts().any {
+                it.text.contains(BazelPluginBundle.message("console.task.sync.in.progress"))
+              },
+            ) { "Build view contains sync text" }
           } catch (e: Exception) {
-            assert(e is WaitForException)
+            assert(e is WaitForException) { "Unknown exception: ${e.message}" }
           }
         }
       }
