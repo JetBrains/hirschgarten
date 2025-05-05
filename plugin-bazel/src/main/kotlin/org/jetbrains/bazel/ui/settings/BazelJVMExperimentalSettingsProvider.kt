@@ -15,7 +15,7 @@ class BazelJVMExperimentalSettingsProvider : BazelSettingsProvider {
   override fun createConfigurable(project: Project): UnnamedConfigurable = BazelJVMExperimentalSettings(project)
 }
 
-class BazelJVMExperimentalSettings(private val project: Project) : UnnamedConfigurable {
+class BazelJVMExperimentalConfigurable(private val project: Project) : UnnamedConfigurable {
   private val enableLocalJvmActionsCheckBox: JBCheckBox
   private val enableBuildWithJpsCheckBox: JBCheckBox
   private val useIntellijTestRunnerCheckBox: JBCheckBox
