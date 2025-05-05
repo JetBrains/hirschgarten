@@ -1,9 +1,11 @@
 load("//aspects:utils/utils.bzl", "create_struct", "file_location", "is_external", "map", "update_sync_output_groups", "filter_not_none", "do_starlark_string_expansion")
 load("//aspects:rules/java/java_info.bzl", "java_info_in_target", "get_java_info")
 #if( $kotlinEnabled == "true" )
-load("//aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider")
+load("//aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider", "get_additional_javac_options")
 #else
 def get_kt_jvm_provider(target):
+    return None
+def get_additional_javac_options(ctx, target):
     return None
 #end
 
@@ -128,14 +130,14 @@ def get_jvm_provider(target):
         return get_java_info(target)
     return None
 
-def get_javac_opts(ctx):
+def get_javac_opts(target, ctx):
     # Copy the list so that it's possible to append to it
     javac_opts = [opt for opt in getattr(ctx.rule.attr, "javacopts", [])]
     for export in getattr(ctx.rule.attr, "add_exports", []):
         javac_opts.append("--add-exports=" + export + "=ALL-UNNAMED")
     for open in getattr(ctx.rule.attr, "add_opens", []):
         javac_opts.append("--add-opens=" + open + "=ALL-UNNAMED")
-    return javac_opts
+    return javac_opts + get_additional_javac_options(ctx, target)
 
 def extract_jvm_info(target, ctx, output_groups, **kwargs):
     provider = get_jvm_provider(target)
@@ -156,7 +158,7 @@ def extract_jvm_info(target, ctx, output_groups, **kwargs):
 
     generated_jars, resolve_files_generated_jars = get_generated_jars(provider)
 
-    javac_opts = get_javac_opts(ctx)
+    javac_opts = get_javac_opts(target, ctx)
     raw_jvm_flags = getattr(ctx.rule.attr, "jvm_flags", [])
     data_deps = getattr(ctx.rule.attr, "data", [])
     jvm_flags = do_starlark_string_expansion(ctx, "jvm_flags", raw_jvm_flags, data_deps)

@@ -1,4 +1,4 @@
-load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain", "kt_kotlinc_options")
+load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain", "kt_kotlinc_options", "kt_javac_options")
 
 define_kt_toolchain(
     name = "my_kotlin_toolchain",
@@ -11,4 +11,10 @@ kt_kotlinc_options(
     visibility = ["//visibility:public"],
     x_no_call_assertions = True,
     x_no_param_assertions = True,
+)
+
+kt_javac_options(
+    name = "my_kt_javac_options",
+    visibility = ["//visibility:public"],
+    x_ep_disable_all_checks = True,
 )

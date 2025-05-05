@@ -10,6 +10,9 @@ import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.JavacOptionsItem
+import org.jetbrains.bsp.protocol.JavacOptionsParams
+import org.jetbrains.bsp.protocol.JavacOptionsResult
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
@@ -41,6 +44,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     listOf(
       compareWorkspaceTargetsResults(),
       compareBazelWorkspaceNameResults(),
+      compareJavacOptionsResult(),
     )
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
@@ -286,6 +290,29 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         }
       testClient.testWorkspaceName(140.seconds, WorkspaceNameResult(workspaceName = workspaceName))
     }
+
+  private fun compareJavacOptionsResult(): BazelBspTestScenarioStep {
+    val stepName = "javac options results"
+    val target = Label.parse("$targetPrefix//kotlinc_test:Foo")
+    val params = JavacOptionsParams(listOf(target))
+
+    val expectedResult =
+      JavacOptionsResult(
+        listOf(
+          JavacOptionsItem(
+            target,
+            listOfNotNull(
+              "-XepDisableAllChecks",
+              "--add-exports=java.desktop/sun.font=ALL-UNNAMED".takeIf { isBzlmod },
+              "--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED".takeIf { isBzlmod },
+            ),
+          ),
+        ),
+      )
+    return BazelBspTestScenarioStep(
+      stepName,
+    ) { testClient.testJavacOptions(30.seconds, params, expectedResult) }
+  }
 
   companion object {
     @JvmStatic
