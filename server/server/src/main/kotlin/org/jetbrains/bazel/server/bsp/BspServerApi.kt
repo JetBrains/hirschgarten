@@ -30,8 +30,6 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
-import org.jetbrains.bsp.protocol.PythonOptionsParams
-import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
@@ -92,9 +90,6 @@ class BspServerApi(
     projectSyncService.buildTargetJavacOptions(params)
 
   override suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult = projectSyncService.buildTargetCppOptions(params)
-
-  override suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult =
-    projectSyncService.buildTargetPythonOptions(params)
 
   override suspend fun buildTargetJvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult =
     projectSyncService.jvmRunEnvironment(params)

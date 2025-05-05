@@ -12,9 +12,6 @@ import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
-import org.jetbrains.bsp.protocol.PythonOptionsItem
-import org.jetbrains.bsp.protocol.PythonOptionsParams
-import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
@@ -33,7 +30,6 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
     listOf(
       workspaceBuildTargets(),
       dependencySourcesResults(),
-      pythonOptionsResults(),
     )
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
@@ -180,19 +176,6 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
         dependencySourcesParams,
         expectedDependencies,
       )
-    }
-  }
-
-  private fun pythonOptionsResults(): BazelBspTestScenarioStep {
-    val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it != Label.synthetic("bsp-workspace-root") }
-    val expectedPythonOptionsItems = expectedTargetIdentifiers.map { PythonOptionsItem(it, emptyList()) }
-    val expectedPythonOptionsResult = PythonOptionsResult(expectedPythonOptionsItems)
-    val pythonOptionsParams = PythonOptionsParams(expectedTargetIdentifiers)
-
-    return BazelBspTestScenarioStep(
-      "pythonOptions results",
-    ) {
-      testClient.testPythonOptions(30.seconds, pythonOptionsParams, expectedPythonOptionsResult)
     }
   }
 }
