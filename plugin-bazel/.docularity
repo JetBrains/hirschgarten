@@ -1,0 +1,239 @@
+<docularity module="BazelIntelliJPlugin">
+  <overview>
+    <summary>Enables importing and working with Bazel projects in IntelliJ IDEA.</summary>
+    <description>This IntelliJ IDEA plugin, developed by JetBrains as an Early Access Program (EAP) product, allows users to import, build, run, test, and debug Bazel projects. It provides comprehensive support for Java and Kotlin, including Starlark language features like syntax highlighting, code completion, navigation, and debugging. The plugin leverages the Build Server Protocol (BSP) for project import and communication with the Bazel server, aiming to offer a focused and efficient development experience, especially for large monorepos, through features like project views.</description>
+  </overview>
+
+  <responsibilities>
+    <responsibility name="BazelProjectImport">
+      Handles the initial import of Bazel projects into IntelliJ IDEA. This includes selecting a Bazel workspace folder and processing `.bazelproject` (project view) files to define a focused subset of large projects. It sets up the IntelliJ project structure based on the Bazel build graph.
+    </responsibility>
+    <responsibility name="BazelProjectSync">
+      Manages the synchronization between the Bazel project model and the IntelliJ project model. It automatically detects changes in Bazel build files (e.g., BUILD, .bzl, WORKSPACE, MODULE.bazel) and project view files, offering to resynchronize the project to reflect these changes. This ensures the IDE's understanding of the project (modules, dependencies, source roots) stays up-to-date.
+    </responsibility>
+    <responsibility name="BazelTargetManagementAndExecution">
+      Provides UI elements, such as a target tree and gutter icons, for users to discover, search, and interact with Bazel targets. It enables running and debugging runnable and testable targets (e.g., `java_binary`, `*_test` rules) directly from the IDE, and displays test results within the IntelliJ test runner UI.
+    </responsibility>
+    <responsibility name="StarlarkLanguageSupport">
+      Offers rich language support for Starlark files (`.bzl`, `BUILD`, `WORKSPACE`, `MODULE.bazel`). This includes syntax highlighting, code completion for rules and attributes, navigation to definitions (e.g., loaded symbols, rule arguments), reference resolution, and a Starlark debugger for `.bzl` files.
+    </responsibility>
+    <responsibility name="BazelrcFileSupport">
+      Provides support for `.bazelrc` files, including parsing, syntax highlighting, code completion for Bazel commands and flags, annotations for deprecated or invalid flags, and quick fixes for common issues.
+    </responsibility>
+    <responsibility name="ProjectViewFileSupport">
+      Supports `.bazelproject` files by providing parsing, syntax highlighting, and commenting capabilities. This allows users to effectively manage the scope of their imported Bazel projects.
+    </responsibility>
+    <responsibility name="JavaLanguageIntegration">
+      Integrates Bazel with Java-specific IntelliJ features. This includes setting up Java SDKs, managing Java module dependencies, providing run/debug line markers for Java tests and main methods, and offering a custom Java class finder for Bazel-generated sources. It also handles Java hotswapping during debug sessions.
+    </responsibility>
+    <responsibility name="KotlinLanguageIntegration">
+      Integrates Bazel with Kotlin-specific IntelliJ features. This includes configuring Kotlin facets, managing Kotlin module dependencies, and providing run/debug line markers for Kotlin tests and main methods.
+    </responsibility>
+    <responsibility name="PythonLanguageIntegration">
+      Provides support for Python projects managed by Bazel, including project synchronization to set up Python SDKs and dependencies, and enabling Python debugging for Bazel targets.
+    </responsibility>
+    <responsibility name="GoLanguageIntegration">
+      Offers support for Go projects managed by Bazel, including project synchronization for Go modules and SDKs, and enabling Go debugging for Bazel targets.
+    </responsibility>
+    <responsibility name="CoverageIntegration">
+      Integrates with IntelliJ's code coverage tools to allow users to run Bazel test targets with coverage and view the results within the IDE, including line-by-line coverage highlighting.
+    </responsibility>
+    <responsibility name="IDESettingsAndNotifications">
+      Provides project-specific and application-level settings panels for configuring Bazel plugin behavior (e.g., update channels, experimental features). It also delivers notifications to the user regarding sync status, errors, and suggestions (e.g., enabling K2 mode for Kotlin).
+    </responsibility>
+  </responsibilities>
+
+  <concepts>
+    <concept name="BazelProject">A software project managed by the Bazel build system. The plugin allows IntelliJ IDEA to understand and interact with the structure and build processes of such projects.</concept>
+    <concept name="ProjectViewFile">A `.bazelproject` file that specifies a focused subset of a large Bazel project to be imported into IntelliJ IDEA. It defines included/excluded directories and targets, helping to manage IDE performance and user focus.</concept>
+    <concept name="BazelTarget">A fundamental unit within a Bazel project, typically defined in a BUILD file, representing a piece of software to be built (e.g., a library, a binary, a test). Targets are identified by unique Labels.</concept>
+    <concept name="Label">A unique identifier for a Bazel target, typically in the format `@@repo_name//path/to/package:target_name` or `//path/to/package:target_name` for targets in the main repository.</concept>
+    <concept name="Starlark">The Python-like configuration language used for Bazel's BUILD files, `.bzl` extension files, `WORKSPACE`, and `MODULE.bazel` files. The plugin provides extensive language support for Starlark.</concept>
+    <concept name="BazelrcFile">A configuration file (typically `.bazelrc`) used to specify default options and configurations for Bazel commands, allowing for project-specific or user-specific Bazel behavior.</concept>
+    <concept name="BuildServerProtocol (BSP)">An LSP-like protocol used by the plugin to communicate with the Bazel server (or a BSP server wrapping Bazel) for project import, target discovery, build, test, and debug operations.</concept>
+    <concept name="ProjectSync">The process of aligning IntelliJ IDEA's project model (modules, libraries, dependencies, source roots) with the structure defined by the Bazel build system. This is crucial for IDE features like code navigation, completion, and refactoring to work correctly.</concept>
+    <concept name="RunConfiguration">IntelliJ IDEA's mechanism for defining how a specific program or test should be executed or debugged. The plugin provides Bazel-specific run configuration types.</concept>
+    <concept name="HotSwap">A debugging feature, primarily for Java, that allows developers to reload changed class files into a running JVM without restarting the application, speeding up the development cycle.</concept>
+    <concept name="WorkspaceModel">IntelliJ IDEA's internal, declarative representation of the project structure, which the plugin populates and updates based on information from Bazel via BSP.</concept>
+    <concept name="RepoMapping">The mechanism by which Bazel resolves repository names (apparent names used in `load` statements vs. canonical names used internally) to their actual filesystem paths, crucial for multi-repository projects.</concept>
+  </concepts>
+
+  <publicAPI>
+    <entryPoint type="INTERFACE" name="org.jetbrains.bazel.sync.ProjectSyncHook">
+      <description>Extension point for performing custom actions during the Bazel project synchronization process. Implementations can modify the project structure diff or interact with the BSP server.</description>
+      <parameters>
+        <parameter name="environment" type="ProjectSyncHookEnvironment">Provides context for the sync operation, including the project, BSP server, and project structure diff.</parameter>
+      </parameters>
+      <return type="void">The method is suspendable and returns upon completion of the hook's logic.</return>
+    </entryPoint>
+    <entryPoint type="INTERFACE" name="org.jetbrains.bazel.sync.ProjectPreSyncHook">
+      <description>Extension point for actions to be executed before the main Bazel project synchronization process begins. Useful for preparatory tasks like code generation.</description>
+      <parameters>
+        <parameter name="environment" type="ProjectPreSyncHookEnvironment">Provides context for the pre-sync operation.</parameter>
+      </parameters>
+      <return type="void">The method is suspendable.</return>
+    </entryPoint>
+    <entryPoint type="INTERFACE" name="org.jetbrains.bazel.sync.ProjectPostSyncHook">
+      <description>Extension point for actions to be executed after the main Bazel project synchronization process and project model updates have completed. Useful for cleanup or post-processing tasks.</description>
+      <parameters>
+        <parameter name="environment" type="ProjectPostSyncHookEnvironment">Provides context for the post-sync operation.</parameter>
+      </parameters>
+      <return type="void">The method is suspendable.</return>
+    </entryPoint>
+    <entryPoint type="SERVICE" name="org.jetbrains.bazel.target.TargetUtils">
+      <description>A project service providing utilities for querying and managing Bazel target information within the IDE.</description>
+      <parameters/>
+      <return type="TargetUtils">An instance of the TargetUtils service.</return>
+    </entryPoint>
+    <entryPoint type="METHOD" name="org.jetbrains.bazel.target.TargetUtils.allTargets">
+      <description>Retrieves a list of all Bazel targets known to the plugin for the current project.</description>
+      <parameters/>
+      <return type="List&lt;Label&gt;">A list of labels representing all known targets.</return>
+    </entryPoint>
+    <entryPoint type="METHOD" name="org.jetbrains.bazel.target.TargetUtils.getTargetsForFile">
+      <description>Retrieves Bazel targets that include the specified virtual file as a source or resource.</description>
+      <parameters>
+        <parameter name="file" type="VirtualFile">The virtual file to find associated targets for.</parameter>
+      </parameters>
+      <return type="List&lt;Label&gt;">A list of labels for targets associated with the file.</return>
+    </entryPoint>
+    <entryPoint type="EXTENSION_PROPERTY" name="org.jetbrains.bazel.config.BazelProjectPropertiesKt.isBazelProject">
+      <description>Extension property on `com.intellij.openapi.project.Project` to check if it's a Bazel-managed project.</description>
+      <parameters/>
+      <return type="Boolean">True if the project is recognized as a Bazel project, false otherwise.</return>
+    </entryPoint>
+    <entryPoint type="INTERFACE" name="org.jetbrains.bazel.runnerAction.LocalJvmRunnerRunConfigurationProvider">
+      <description>Extension point for providing custom run configurations when using the local JVM runner for Bazel targets (e.g., for JUnit tests).</description>
+      <parameters>
+        <parameter name="configurationName" type="String">The suggested name for the run configuration.</parameter>
+        <parameter name="environment" type="JvmEnvironmentItem">JVM environment details for the target.</parameter>
+        <parameter name="module" type="Module">The IntelliJ module associated with the target.</parameter>
+        <parameter name="project" type="Project">The current project.</parameter>
+        <parameter name="callerPsiElement" type="PsiElement">The PSI element from which the run action was invoked (e.g., a test method).</parameter>
+      </parameters>
+      <return type="RunConfiguration?">A custom run configuration instance, or null if this provider cannot handle it.</return>
+    </entryPoint>
+  </publicAPI>
+
+  <dependencies>
+    <dependency module="com.intellij.modules.platform">Core IntelliJ Platform functionality.</dependency>
+    <dependency module="com.intellij.modules.lang">Basic language support within IntelliJ.</dependency>
+    <dependency module="BuildServerProtocol">The plugin relies on a BSP server (often `bazel-bsp`) to communicate with Bazel for project structure, build commands, and other operations.</dependency>
+    <dependency module="com.intellij.modules.java">Optional, for Java language support, including compilation, debugging, and hotswap.</dependency>
+    <dependency module="org.jetbrains.kotlin">Optional, for Kotlin language support, including facet configuration and compilation.</dependency>
+    <dependency module="com.intellij.modules.python">Optional, for Python language support, including project sync and debugging.</dependency>
+    <dependency module="org.jetbrains.plugins.go">Optional, for Go language support, including project sync and debugging.</dependency>
+    <dependency module="JUnit">Optional, for enhanced JUnit test integration when running tests locally.</dependency>
+  </dependencies>
+
+  <usagePatterns>
+    <pattern name="ProjectImportAndSync">
+      <description>User opens a Bazel project directory. The plugin, using BSP, discovers targets and dependencies. Project view files (`.bazelproject`) can scope this import. The IDE's project model is then synchronized with Bazel's structure. Subsequent changes to build files trigger re-sync prompts.</description>
+      <example><![CDATA[
+// 1. User action: File > Open > Select Bazel workspace directory.
+// 2. Plugin: Detects WORKSPACE or MODULE.bazel.
+// 3. Plugin: Reads projectview.bazelproject if present, or uses defaults.
+// 4. Plugin (BazelOpenProjectProvider, ProjectSyncTask):
+//    - Initiates BSP connection.
+//    - BSP server (e.g., bazel-bsp): Provides target list, sources, dependencies.
+//    - Plugin (JvmSyncHook, PythonProjectSync, etc.): Updates IntelliJ Workspace Model (modules, libraries, content roots).
+// 5. IDE: Project structure is now usable for navigation, completion, etc.
+// 6. User action: Modifies a BUILD file.
+// 7. Plugin (AssignFileToModuleListener, BazelProjectAware): Detects change, prompts for re-sync.
+      ]]></example>
+    </pattern>
+    <pattern name="TargetExecutionAndDebugging">
+      <description>User selects a Bazel target (e.g., `java_binary`, `*_test`) from the Bazel tool window or gutter icons to run or debug. The plugin creates a Bazel-specific run configuration and invokes the appropriate Bazel command (e.g., `bazel run`, `bazel test`) via BSP, displaying results or attaching a debugger.</description>
+      <example><![CDATA[
+// Scenario: Running a Java test
+// 1. User action: Clicks run gutter icon next to a Java test method.
+// 2. Plugin (BazelJavaRunLineMarkerContributor): Provides "Run 'testName' with Bazel" action.
+// 3. Plugin (TestTargetAction):
+//    - Creates a BazelRunConfiguration.
+//    - Configures it with the target label and test filter.
+// 4. Plugin (BazelTestCommandLineState):
+//    - Prepares for execution.
+//    - Sends BSP `buildTarget/test` request to Bazel server.
+// 5. Bazel server: Compiles and runs the test.
+// 6. Plugin (BazelTestTaskListener): Receives test events via BSP, updates IntelliJ test runner UI.
+      ]]></example>
+    </pattern>
+    <pattern name="StarlarkDevelopment">
+      <description>User edits Bazel build files (`BUILD`, `.bzl`). The plugin provides Starlark language features: syntax highlighting, code completion for rules and attributes, navigation (e.g., Ctrl+Click on a loaded symbol navigates to its definition), and Starlark debugging capabilities for `.bzl` files.</description>
+      <example><![CDATA[
+// Scenario: Editing a BUILD file
+// 1. User action: Opens a BUILD file.
+// 2. Plugin (StarlarkSyntaxHighlighter): Provides syntax highlighting.
+// 3. User action: Types "java_bi".
+// 4. Plugin (BazelNativeRulesCompletionContributor): Suggests "java_binary".
+// 5. User action: Selects "java_binary", types "(".
+// 6. Plugin (BazelNativeRulesArgumentCompletionContributor): Suggests "name = \"\"", "srcs = []", etc.
+// 7. User action: Ctrl+Clicks on a symbol loaded via `load("@//path:defs.bzl", "my_macro")`.
+// 8. Plugin (StarlarkLoadReference): Resolves and navigates to `my_macro` definition in `defs.bzl`.
+      ]]></example>
+    </pattern>
+    <pattern name="JavaHotSwap">
+      <description>During a Java debug session for a Bazel target, if the user modifies and saves a Java source file, the plugin attempts to recompile the changed classes using Bazel and then hot-swap them into the running JVM, allowing for faster iteration without restarting the debug session.</description>
+      <example><![CDATA[
+// 1. User action: Starts a debug session for a `java_binary` target.
+// 2. User action: Modifies a `.java` file included in the target and saves it.
+// 3. Plugin (BazelHotSwapProjectTaskRunnerProvider, ClassFileManifestBuilder):
+//    - Detects file change.
+//    - Triggers a Bazel build for the affected target(s) to get updated .class files.
+//    - Identifies changed class files by comparing manifests.
+// 4. Plugin (BazelHotSwapManager):
+//    - Copies changed .class files to a temporary location.
+//    - Uses IntelliJ's HotSwapManager to reload these classes into the running debugger session.
+// 5. Debugger: Continues with updated code if hotswap is successful.
+      ]]></example>
+    </pattern>
+  </usagePatterns>
+
+  <constraints>
+    <constraint type="REQUIREMENT">A Bazel installation (either Bazel itself or Bazelisk) must be available on the system and typically on the PATH, or configured via the `bazel_binary` setting in the project view file.</constraint>
+    <constraint type="REQUIREMENT">A Build Server Protocol (BSP) compatible server for Bazel (e.g., `bazel-bsp`) is required for project import, synchronization, and most build/test/debug actions. The plugin manages the lifecycle of this BSP server.</constraint>
+    <constraint type="ASSUMPTION">Project view files (`.bazelproject`) are expected to follow a specific syntax. Incorrect syntax can lead to import or scoping issues.</constraint>
+    <constraint type="ASSUMPTION">Starlark files (BUILD, .bzl, WORKSPACE, MODULE.bazel) must adhere to valid Starlark syntax for language-specific features like completion and navigation to function correctly.</constraint>
+    <constraint type="INVARIANT">The plugin primarily targets Java and Kotlin development with Bazel. While support for other languages like Python and Go is being developed, it might be less comprehensive initially.</constraint>
+    <constraint type="REQUIREMENT">For Starlark debugging, the Bazel server must be started with appropriate debug flags, which the plugin handles when initiating a Starlark debug session.</constraint>
+  </constraints>
+
+  <testing>
+    <strategy>The testing strategy combines unit tests for isolated components (lexers, parsers, specific utility functions), integration tests for interactions between components (e.g., reference resolution, quick fixes), and end-to-end UI tests using the IntelliJ TestFramework (IdeStarter) for simulating user workflows. Key properties ensured by tests include:
+    - Correct parsing and interpretation of Bazel configuration files (`.bazelproject`, `.bazelrc`).
+    - Accurate symbol resolution and navigation within Starlark files.
+    - Successful project import and synchronization, reflecting the Bazel build structure in the IDE.
+    - Correct execution and debugging of various Bazel target types (Java, Kotlin, Python, Go tests and binaries).
+    - Proper functioning of UI elements like gutter run markers, the Bazel tool window, and settings panels.
+    - Robustness of features like HotSwap and Code Coverage.
+    - Prevention of regressions in the public API.
+    Performance metrics for sync and indexing are also collected.
+    Coverage Gaps: Comprehensive testing across all supported Bazel versions and a wide variety of real-world project structures remains a challenge. Interactions with other third-party plugins are not extensively tested. Full testing of all Starlark language features and edge cases in complex build configurations is ongoing.
+    </strategy>
+    <tests>
+      <test name="BazelrcParsingAndAnnotationTests">Ensures `.bazelrc` files are parsed correctly, and flags are annotated with warnings for deprecation, unknown status, or no-op effects. Quick fixes for these issues are also tested. (e.g., `BazelrcParsingTest`, `BazelrcAnnotationTest`, `BazelrcQuickFixTest`)</test>
+      <test name="ProjectViewParsingTests">Validates that `.bazelproject` files are parsed correctly, including all supported sections like `directories` and `targets`. (e.g., `ProjectViewParsingAllSectionsTest`)</test>
+      <test name="StarlarkReferenceResolutionTests">Verifies that Starlark symbols (variables, functions, loaded symbols, rule arguments, labels in strings) resolve to their correct definitions, including those in external repositories. (e.g., `StarlarkArgumentReferenceTest`, `ExternalRepoResolveTest`, `StarlarkClassnameReferenceTest`)</test>
+      <test name="StarlarkCompletionTests">Checks that code completion works as expected for Starlark keywords, global functions, native rules, rule arguments, loaded symbols, and file paths. (e.g., `BazelNativeRulesCompletionContributorTest`, `StarlarkFileCompletionTest`)</test>
+      <test name="ProjectSyncAndExecutionTests">End-to-end tests verifying project import, synchronization, building, running, and testing of targets for supported languages (Java, Kotlin, Python, Go). (e.g., `PythonProjectSyncTest`, `RunAllTestsActionTest`, `TestTargetActionResultsTreeTest`)</test>
+      <test name="DebuggingFunctionalityTests">Confirms that debugging works for supported languages, including Starlark debugging, Java HotSwap, and correct breakpoint handling. (e.g., `HotSwapTest`, `StarlarkDebugBreakpointHandlingTest`)</test>
+      <test name="CoverageFunctionalityTest">Ensures that code coverage can be collected for test targets and the results are correctly displayed in the IDE. (e.g., `BazelCoverageTest`)</test>
+      <test name="PublicApiIntegrityTest">A dedicated test (`PublicApiCheckTest`) that uses reflection to ensure the plugin's public API (classes and members annotated with `@PublicApi`) does not change unintentionally, preventing breakage for dependent plugins.</test>
+    </tests>
+  </testing>
+
+  <issues>
+    <issue severity="MEDIUM">Performance on very large monorepos during initial import or full synchronization can be suboptimal, though project views and phased sync aim to mitigate this.</issue>
+    <issue severity="LOW">Starlark debugger's expression evaluation is limited; it primarily supports top-level scope variables and may not provide detailed error messages for all evaluation failures.</issue>
+    <issue severity="MEDIUM">Full compatibility with all Bazel versions and all features of the Build Server Protocol (BSP) is an ongoing effort. Variations in BSP server implementations might lead to unexpected behavior.</issue>
+    <issue severity="LOW">Support for Windows-specific Bazel features or behaviors (e.g., advanced symlink handling) might be less mature compared to Linux/macOS.</issue>
+    <issue severity="MEDIUM">Shared source files across multiple Bazel targets can sometimes lead to resolution issues or red code in the IDE if not correctly handled by the project model (e.g., through dummy modules or careful scoping).</issue>
+    <issue severity="LOW">The mechanism for changing plugin update channels involves manually patching the plugin version, which could be fragile if IntelliJ's internal plugin management changes.</issue>
+  </issues>
+
+  <notes>
+    <note type="CONTEXTUAL">The plugin is currently in an Early Access Program (EAP), indicating active development, potential for breaking changes, and that some features may be experimental or incomplete.</note>
+    <note type="CONTEXTUAL">Core communication with the Bazel build system is facilitated through the Build Server Protocol (BSP), requiring a BSP-compliant server endpoint for Bazel.</note>
+    <note type="HISTORICAL">The plugin includes awareness of Google's internal Bazel plugin for IntelliJ, with some run handlers designed to provide compatibility or similar behavior for users migrating from or familiar with that environment.</note>
+  </notes>
+</docularity>
