@@ -6,7 +6,7 @@ load("//aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider", "get_additional_ja
 def get_kt_jvm_provider(target):
     return None
 def get_additional_javac_options(ctx, target):
-    return None
+    return []
 #end
 
 def map_with_resolve_files(f, xs):
