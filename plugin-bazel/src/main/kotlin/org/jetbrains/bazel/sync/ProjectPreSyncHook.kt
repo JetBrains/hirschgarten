@@ -46,4 +46,4 @@ val Project.projectPreSyncHooks: List<ProjectPreSyncHook>
       .filter { it.isEnabled(this) }
 
 suspend fun <T> ProjectPreSyncHook.ProjectPreSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: String) -> T) =
-  project.withSubtask(progressReporter, taskId, text, text, block)
+  project.withSubtask(progressReporter, taskId, text, block)

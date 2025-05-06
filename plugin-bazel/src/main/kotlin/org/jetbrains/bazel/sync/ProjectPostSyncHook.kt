@@ -47,4 +47,4 @@ val Project.projectPostSyncHooks: List<ProjectPostSyncHook>
     ProjectPostSyncHook.ep.extensionList.filter { it.isEnabled(this) }
 
 suspend fun <T> ProjectPostSyncHook.ProjectPostSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: String) -> T) =
-  project.withSubtask(progressReporter, taskId, text, text, block)
+  project.withSubtask(progressReporter, taskId, text, block)
