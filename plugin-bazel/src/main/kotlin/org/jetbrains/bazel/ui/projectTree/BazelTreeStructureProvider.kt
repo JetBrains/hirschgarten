@@ -45,12 +45,46 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
   ): Collection<AbstractTreeNode<*>> {
     val project = parent.project ?: return children
     if (!project.isBazelProject) return children
-
+    val newSettings = wrapViewSettings(settings)
     return when (parent) {
-      is ProjectViewProjectNode -> calculateChildrenForProjectNode(project, children, settings)
+      is ProjectViewProjectNode -> calculateChildrenForProjectNode(project, children, newSettings)
       else -> children.removeModuleAndModuleGroupNodes()
     }
   }
+
+  private fun wrapViewSettings(settings: ViewSettings): ViewSettings =
+    object : ViewSettings by settings {
+      override fun isAbbreviatePackageNames(): Boolean = false
+
+      override fun isFlattenPackages(): Boolean = false
+
+      /**
+       * this is to mitigate the issue of incorrectly compacting the middle packages.
+       *
+       * Refer to [this issue](https://youtrack.jetbrains.com/issue/BAZEL-1879) for more info.
+       *
+       * TODO: remove this when the issue is addressed in IJ Platform
+       */
+      override fun isHideEmptyMiddlePackages(): Boolean = false
+
+      override fun isCompactDirectories(): Boolean = settings.isCompactDirectories
+
+      override fun isShowLibraryContents(): Boolean = settings.isShowLibraryContents
+
+      override fun isFoldersAlwaysOnTop(): Boolean = settings.isFoldersAlwaysOnTop
+
+      override fun isShowMembers(): Boolean = settings.isShowMembers
+
+      override fun isStructureView(): Boolean = settings.isStructureView
+
+      override fun isShowModules(): Boolean = settings.isShowModules
+
+      override fun isShowScratchesAndConsoles(): Boolean = settings.isShowScratchesAndConsoles
+
+      override fun isFlattenModules(): Boolean = settings.isFlattenModules
+
+      override fun isShowURL(): Boolean = settings.isShowURL
+    }
 
   private fun calculateChildrenForProjectNode(
     project: Project,
@@ -73,7 +107,7 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
         null
       }
 
-    val rootDirectoryNode = BspDirectoryNode(project, rootDirectory, settings, rootDirectoryNodeFilter)
+    val rootDirectoryNode = BazelDirectoryNode(project, rootDirectory, settings, rootDirectoryNodeFilter)
     val externalLibrariesNode = children.filterIsInstance<ExternalLibrariesNode>().firstOrNull()
 
     val excludedDirectoriesNode =
@@ -133,9 +167,9 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
 }
 
 /**
- * Custom PsiDirectoryNode for BSP projects to show the project view with full contents during initial sync.
+ * Custom PsiDirectoryNode for Bazel projects to show the project view with full contents during initial sync.
  */
-private class BspDirectoryNode(
+private class BazelDirectoryNode(
   project: Project,
   directory: PsiDirectory,
   viewSettings: ViewSettings?,
@@ -149,7 +183,7 @@ private class BspDirectoryNode(
         if (psiChild is PsiFileSystemItem && filter?.shouldShow(psiChild) == false) return@mapNotNull null
 
         when (psiChild) {
-          is PsiDirectory -> BspDirectoryNode(project, psiChild, settings)
+          is PsiDirectory -> BazelDirectoryNode(project, psiChild, settings)
           is PsiFile -> PsiFileNode(project, psiChild, settings)
           else -> null
         }
