@@ -20,7 +20,6 @@ import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.run.state.GenericRunState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
@@ -30,7 +29,7 @@ import org.jetbrains.bsp.protocol.JoinedBuildServer
 class PythonDebugCommandLineState(
   env: ExecutionEnvironment,
   originId: OriginId,
-  private val settings: GenericRunState,
+  private val programArguments: String?,
 ) : BazelCommandLineStateBase(env, originId) {
   val target: Label? = (env.runProfile as? BazelRunConfiguration)?.targets?.singleOrNull()
   private val scriptName = target?.let { PythonDebugUtils.guessRunScriptName(env.project, it) }
@@ -44,7 +43,7 @@ class PythonDebugCommandLineState(
       CompileParams(
         targets = listOf(targetId),
         originId = originId,
-        arguments = transformProgramArguments(settings.programArguments),
+        arguments = transformProgramArguments(programArguments),
       )
 
     server.buildTargetCompile(buildParams)

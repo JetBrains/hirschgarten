@@ -107,6 +107,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/performanceImpl",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/projectAware",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/sync/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
