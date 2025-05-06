@@ -19,8 +19,8 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.python.BazelPyDebugPositionConverter
-import org.jetbrains.bazel.python.PythonDebugCommandLineState
+import org.jetbrains.bazel.python.debug.BazelPyDebugPositionConverter
+import org.jetbrains.bazel.python.debug.PythonDebugCommandLineState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.concurrency.AsyncPromise
