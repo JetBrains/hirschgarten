@@ -1064,6 +1064,8 @@ class BazelProjectMapper(
       "kt_android_library" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
       "kt_android_local_test" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
       "go_binary" to setOf(LanguageClass.GO),
+      "go_test" to setOf(LanguageClass.GO),
+      "go_library" to setOf(LanguageClass.GO),
       "py_binary" to setOf(LanguageClass.PYTHON),
       "py_test" to setOf(LanguageClass.PYTHON),
       "py_library" to setOf(LanguageClass.PYTHON),

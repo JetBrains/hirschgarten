@@ -19,5 +19,7 @@
                 implementation="org.jetbrains.bazel.ui.ideStarter.UITestCommandProvider"/>
         <performancePlugin.commandProvider
                 implementation="org.jetbrains.bazel.python.sync.ideStarter.PyCharmCheckImportedModulesProvider"/>
+        <performancePlugin.commandProvider
+                implementation="org.jetbrains.bazel.golang.sync.ideStarter.GoLandCheckImportedModulesProvider"/>
     </extensions>
 </idea-plugin>

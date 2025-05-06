@@ -7,6 +7,7 @@ import com.goide.vgo.project.workspaceModel.VgoWorkspaceModelUpdater
 import com.goide.vgo.project.workspaceModel.entities.VgoDependencyEntity
 import com.goide.vgo.project.workspaceModel.entities.VgoStandaloneModuleEntity
 import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
@@ -59,6 +60,9 @@ class GoProjectSync : ProjectSyncHook {
     // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1961
     val bspBuildTargets = environment.server.workspaceBuildTargets()
     val goTargets = bspBuildTargets.calculateGoTargets()
+
+    thisLogger().warn("XD1: $bspBuildTargets")
+    thisLogger().warn("XD2: $goTargets")
     val idToGoTargetMap = goTargets.associateBy({ it.id }, { it })
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
 

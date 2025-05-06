@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.config
 
 import com.intellij.openapi.util.registry.Registry
+import com.intellij.util.PlatformUtils
 import org.jetbrains.bsp.protocol.FeatureFlags
 
 private const val PYTHON_SUPPORT = "bsp.python.support"
@@ -26,7 +27,7 @@ object BazelFeatureFlags {
     get() = Registry.`is`(ANDROID_SUPPORT)
 
   val isGoSupportEnabled: Boolean
-    get() = Registry.`is`(GO_SUPPORT)
+    get() = Registry.`is`(GO_SUPPORT) || PlatformUtils.isGoIde()
 
   val isBuildProjectOnSyncEnabled: Boolean
     get() = Registry.`is`(BUILD_PROJECT_ON_SYNC)
