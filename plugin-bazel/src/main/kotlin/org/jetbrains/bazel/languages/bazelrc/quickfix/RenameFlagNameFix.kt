@@ -1,33 +1,27 @@
 package org.jetbrains.bazel.languages.bazelrc.quickfix
 
-import com.intellij.codeInspection.LocalQuickFixAndIntentionActionOnPsiElement
 import com.intellij.codeInspection.util.IntentionFamilyName
-import com.intellij.codeInspection.util.IntentionName
-import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.project.Project
+import com.intellij.modcommand.ActionContext
+import com.intellij.modcommand.ModPsiUpdater
+import com.intellij.modcommand.Presentation
+import com.intellij.modcommand.PsiUpdateModCommandAction
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcElementGenerator
 
-class RenameFlagNameFix(element: PsiElement, val flag: Flag) : LocalQuickFixAndIntentionActionOnPsiElement(element) {
-  override fun invoke(
-    project: Project,
-    file: PsiFile,
-    editor: Editor?,
-    startElement: PsiElement,
-    endElement: PsiElement,
-  ) {
+class RenameFlagNameFix(element: PsiElement, val flag: Flag) : PsiUpdateModCommandAction<PsiElement>(element) {
+  override fun invoke(context: ActionContext, element: PsiElement, updater: ModPsiUpdater) {
     val target =
       when {
-        startElement.text.startsWith("--no") -> "no${flag.option.name}"
+        element.text.startsWith("--no") -> "no${flag.option.name}"
         else -> flag.option.name
       }
 
-    startElement.replace(BazelrcElementGenerator(project).createFlagName(target))
+    element.replace(BazelrcElementGenerator(context.project).createFlagName(target))
   }
 
-  override fun getText(): @IntentionName String = """Replace with "${flag.option.name}" variant"""
+  override fun getPresentation(context: ActionContext, element: PsiElement): Presentation? = 
+    Presentation.of("""Replace with "${flag.option.name}" variant""")
 
   override fun getFamilyName(): @IntentionFamilyName String = "Replace old flag names with new ones."
 }
