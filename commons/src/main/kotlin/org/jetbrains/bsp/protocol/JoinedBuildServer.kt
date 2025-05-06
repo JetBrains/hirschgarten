@@ -35,8 +35,6 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult
 
-  suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult
-
   suspend fun workspaceLibraries(): WorkspaceLibrariesResult
 
   suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult

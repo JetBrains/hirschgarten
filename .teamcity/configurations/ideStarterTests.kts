@@ -63,6 +63,14 @@ sealed class HotswapTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/hotswap"
 )
 
+sealed class ReopenWithoutResyncTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Reopen without Resync test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/reopen/noResync"
+)
+
 sealed class ExternalRepoResolveTest(
   vcsRoot: GitVcsRoot,
 ) : IdeStarterTests(
@@ -164,6 +172,14 @@ object HotswapTestGitHub : HotswapTest(
 )
 
 object HotswapTestSpace : HotswapTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object ReopenWithoutResyncTestGitHub : ReopenWithoutResyncTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object ReopenWithoutResyncTestSpace : ReopenWithoutResyncTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )
 
