@@ -54,7 +54,7 @@ object BazelFeatureFlags {
     get() = Registry.`is`(EXECUTE_SECOND_PHASE_ON_SYNC) || Registry.`is`(EXECUTE_SECOND_PHASE_ON_SYNC_BSP)
 
   val addDummyModules: Boolean
-    get() = Registry.`is`(ADD_DUMMY_MODULES) || Registry.`is`(ADD_DUMMY_MODULES_BSP) && !enableBazelJavaClassFinder
+    get() = (Registry.`is`(ADD_DUMMY_MODULES) || Registry.`is`(ADD_DUMMY_MODULES_BSP)) && !enableBazelJavaClassFinder
 
   val excludeCompiledSourceCodeInsideJars: Boolean
     get() = Registry.`is`(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS) || Registry.`is`(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS_BSP)
