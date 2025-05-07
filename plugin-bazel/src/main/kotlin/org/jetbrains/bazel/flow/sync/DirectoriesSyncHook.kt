@@ -6,6 +6,7 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vcs.ProjectLevelVcsManager
 import com.intellij.openapi.vcs.VcsDirectoryMapping
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
@@ -71,6 +72,7 @@ class DirectoriesSyncHook : ProjectSyncHook {
   private suspend fun isExcludedPath(project: Project, mapping: VcsDirectoryMapping): Boolean {
     if (mapping.isDefaultMapping) return false
     val file = LocalFileSystem.getInstance().findFileByPath(mapping.directory) ?: return false
+    if (VfsUtilCore.isAncestor(file, project.rootDir, false)) return false
     val projectFileIndex = ProjectFileIndex.getInstance(project)
     return readAction { projectFileIndex.isExcluded(file) }
   }
