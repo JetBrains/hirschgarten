@@ -10,6 +10,7 @@ import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
 
 class StarlarkVisibilityReference(element: StarlarkStringLiteralExpression) :
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), false) {
@@ -18,26 +19,17 @@ class StarlarkVisibilityReference(element: StarlarkStringLiteralExpression) :
   override fun getVariants(): Array<LookupElement> {
     val project = element.project
     if (!project.isBazelProject) return emptyArray()
-
+    val icon = PlatformIcons.VARIABLE_ICON
     val shortTargets = project.targetUtils.allTargetsAndLibrariesLabels
-    val targetVisibilities = shortTargets.map { visibilityLookupElement(it) }.toTypedArray()
-    val pkgVisibilities = shortTargets.map { visibilityLookupElement("$it:__pkg__") }.toTypedArray()
-    val subpkgVisibilities = shortTargets.map { visibilityLookupElement("$it:__subpackages__") }.toTypedArray()
+    val targetVisibilities = shortTargets.map { it.getCompletionLookupElemenent(icon) }.toTypedArray()
+    val pkgVisibilities = shortTargets.map { "$it:__pkg__".getCompletionLookupElemenent(icon) }.toTypedArray()
+    val subpkgVisibilities = shortTargets.map { "$it:__subpackages__".getCompletionLookupElemenent(icon) }.toTypedArray()
 
     val predefined =
       listOf(
-        visibilityLookupElement("//visibility:public", 1.0),
-        visibilityLookupElement("//visibility:private", 1.0),
+        "//visibility:public".getCompletionLookupElemenent(icon, 1.0),
+        "//visibility:private".getCompletionLookupElemenent(icon, 1.0),
       )
     return pkgVisibilities + subpkgVisibilities + targetVisibilities + predefined
   }
-
-  private fun visibilityLookupElement(name: String, priority: Double = 0.0): LookupElement =
-    PrioritizedLookupElement.withPriority(
-      LookupElementBuilder
-        .create("\"" + name + "\"")
-        .withIcon(PlatformIcons.VARIABLE_ICON)
-        .withPresentableText(name),
-      priority,
-    )
-}
+  }

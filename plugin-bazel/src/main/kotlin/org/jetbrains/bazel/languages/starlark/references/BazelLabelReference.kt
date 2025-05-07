@@ -16,6 +16,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
@@ -64,7 +65,8 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     val lookupElements =
       allFiles
         .map {
-          fileLookupElement(VfsUtilCore.getRelativePath(it, currentDirectory)!!)
+          VfsUtilCore.getRelativePath(it, currentDirectory)!!
+            .getCompletionLookupElemenent(PlatformIcons.FILE_ICON)
         }.toTypedArray()
     return lookupElements
   }
@@ -87,12 +89,6 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     }
   }
 
-  private fun fileLookupElement(name: String): LookupElement =
-    LookupElementBuilder
-      .create("\"" + name + "\"")
-      .withIcon(PlatformIcons.FILE_ICON)
-      .withPresentableText(name)
-
   private fun VirtualFile.isBazelFile(): Boolean = BUILD_FILE_NAMES.any { name == it }
 
   private fun isTargetCompletionLocation(): Boolean { // TODO: Correct target completion location validation.
@@ -105,15 +101,9 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     val targetUtils = project.targetUtils
     return targetUtils
       .allTargetsAndLibrariesLabels
-      .map { targetLookupElement(it) }
+      .map { it.getCompletionLookupElemenent(PlatformIcons.PACKAGE_ICON) }
       .toTypedArray()
   }
-
-  private fun targetLookupElement(name: String): LookupElement =
-    LookupElementBuilder
-      .create("\"" + name + "\"")
-      .withIcon(PlatformIcons.PACKAGE_ICON)
-      .withPresentableText(name)
 
   private fun isInNameArgument(): Boolean {
     val parent = element.parent ?: return false
