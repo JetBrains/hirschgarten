@@ -20,12 +20,9 @@ import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
-import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRule
 import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRuleArgument
 import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRules
-import org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesCompletionContributor
 import org.jetbrains.bazel.languages.starlark.documentation.BazelNativeRuleArgumentDocumentationSymbol
-import org.jetbrains.bazel.languages.starlark.documentation.BazelNativeRuleDocumentationSymbol
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
