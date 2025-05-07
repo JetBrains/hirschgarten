@@ -7,5 +7,5 @@
     </linearGradient>
   </defs>
   <rect width="40" height="40" fill="none"/>
-  <path d="M20,32.5l18.5-18.5v6l-18.5,18.5-18.5-18.5v-6l18.5,18.5Zm9.5-31l-9.5,9.25-9.5-9.25-9,9,18.5,18.5,18.5-18.5-9-9Z" fill="url(#linear-gradient)"/>
+  <path d="M20,32.5l18.5-18.5v6l-18.5,18.5-18.5-18.5v-6l18.5,18.5Zm9.5-31l-9.5,9.5-9.5-9.5-9,9,18.5,18.5,18.5-18.5-9-9Z" fill="url(#linear-gradient)"/>
 </svg>
