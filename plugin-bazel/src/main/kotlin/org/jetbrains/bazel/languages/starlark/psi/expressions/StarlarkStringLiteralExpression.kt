@@ -6,7 +6,6 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiReference
-import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
@@ -25,7 +24,8 @@ fun String.getCompletionLookupElemenent(icon: Icon, priority: Double = 0.0): Loo
       .create("\"" + this + "\"")
       .withIcon(icon)
       .withPresentableText(this)
-      .withInsertHandler { context, _ -> // This prevents inserting a duplicate quote at the end.
+      .withInsertHandler { context, _ ->
+        // This prevents inserting a duplicate quote at the end.
         val document = context.document
         val offset = context.tailOffset
         if (offset < document.textLength && document.charsSequence[offset] == '"') {
