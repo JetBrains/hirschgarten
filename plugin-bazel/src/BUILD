@@ -66,6 +66,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/debug",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extensionPoints",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/fastbuild",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow/modify/ideStarter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow/open",

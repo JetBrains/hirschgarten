@@ -17,6 +17,7 @@ private const val SYMLINK_SCAN_MAX_DEPTH = "bazel.symlink.scan.max.depth"
 private const val SHUTDOWN_BEFORE_SHARD_BUILD = "bazel.shutdown.before.shard.build"
 private const val ENABLE_BAZEL_JAVA_CLASS_FINDER = "bazel.enable.custom.java.class.finder"
 private const val MERGE_SOURCE_ROOTS = "bazel.merge.source.roots"
+private const val FAST_BUILD_ENABLED = "bazel.enable.jvm.fastbuild"
 
 object BazelFeatureFlags {
   val isPythonSupportEnabled: Boolean
@@ -63,6 +64,9 @@ object BazelFeatureFlags {
 
   val mergeSourceRoots: Boolean
     get() = Registry.`is`(MERGE_SOURCE_ROOTS)
+
+  val fastBuildEnabled: Boolean
+    get() = Registry.`is`(FAST_BUILD_ENABLED)
 }
 
 object FeatureFlagsProvider {
