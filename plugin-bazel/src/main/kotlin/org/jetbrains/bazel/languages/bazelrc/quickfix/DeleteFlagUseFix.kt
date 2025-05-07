@@ -11,12 +11,15 @@ import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 
 class DeleteFlagUseFix(element: PsiElement, val flag: Flag) : PsiUpdateModCommandAction<PsiElement>(element) {
-  override fun invoke(context: ActionContext, element: PsiElement, updater: ModPsiUpdater) {
+  override fun invoke(
+    context: ActionContext,
+    element: PsiElement,
+    updater: ModPsiUpdater,
+  ) {
     element.parentOfType<BazelrcFlag>()?.delete()
   }
 
-  override fun getPresentation(context: ActionContext, element: PsiElement): Presentation? = 
-    Presentation.of("""Delete NO_OP flag use""")
+  override fun getPresentation(context: ActionContext, element: PsiElement): Presentation? = Presentation.of("""Delete NO_OP flag use""")
 
   override fun getFamilyName(): @IntentionFamilyName String = "Delete NO_OP flag declarations"
 }

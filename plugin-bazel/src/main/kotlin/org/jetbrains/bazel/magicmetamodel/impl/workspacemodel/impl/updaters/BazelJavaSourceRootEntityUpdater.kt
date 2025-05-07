@@ -3,7 +3,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.workspacemodel.entities.BazelJavaSourceRootEntity
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.PackageNameId
 import java.nio.file.Path
@@ -30,7 +30,7 @@ internal class BazelJavaSourceRootEntityUpdater(private val workspaceModelEntity
         BazelJavaSourceRootEntity(
           packageNameId = PackageNameId(packageName),
           sourceRoots = sourceRootUrls,
-          entitySource = BspProjectEntitySource,
+          entitySource = BazelProjectEntitySource,
         )
       }.map {
         workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(it)

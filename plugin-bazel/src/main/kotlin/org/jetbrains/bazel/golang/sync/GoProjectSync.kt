@@ -37,7 +37,7 @@ import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
-import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.includesGo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -67,7 +67,7 @@ class GoProjectSync : ProjectSyncHook {
       val moduleEntities =
         goTargets.map {
           val moduleName = it.id.formatAsModuleName(environment.project)
-          val moduleSourceEntity = BspModuleEntitySource(moduleName)
+          val moduleSourceEntity = BazelModuleEntitySource(moduleName)
 
           val moduleEntity =
             addModuleEntityFromTarget(
@@ -99,7 +99,7 @@ class GoProjectSync : ProjectSyncHook {
     builder: MutableEntityStorage,
     target: BuildTarget,
     moduleName: String,
-    entitySource: BspModuleEntitySource,
+    entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
     project: Project,
   ): ModuleEntity {
@@ -127,7 +127,7 @@ class GoProjectSync : ProjectSyncHook {
 
   private fun getSourceContentRootEntities(
     target: BuildTarget,
-    entitySource: BspModuleEntitySource,
+    entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
     target.sources.map { source ->
@@ -153,7 +153,7 @@ class GoProjectSync : ProjectSyncHook {
 
   private fun getResourceContentRootEntities(
     target: BuildTarget,
-    entitySource: BspModuleEntitySource,
+    entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
     target.resources.map { resource ->
@@ -186,7 +186,7 @@ class GoProjectSync : ProjectSyncHook {
     moduleId: ModuleId,
     virtualFileUrlManager: VirtualFileUrlManager,
     idToGoTargetMap: Map<Label, BuildTarget>,
-    entitySource: BspModuleEntitySource,
+    entitySource: BazelModuleEntitySource,
   ): VgoStandaloneModuleEntity.Builder {
     val goBuildInfo = extractGoBuildTarget(inputEntity)
 

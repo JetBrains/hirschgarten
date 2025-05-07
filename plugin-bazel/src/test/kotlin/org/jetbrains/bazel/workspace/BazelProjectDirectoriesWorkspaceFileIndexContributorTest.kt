@@ -14,8 +14,8 @@ import io.kotest.inspectors.shouldForAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.io.path.createDirectories
@@ -72,7 +72,7 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelB
         projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
         includedRoots = emptyList(),
         excludedRoots = emptyList(),
-        entitySource = BspProjectEntitySource,
+        entitySource = BazelProjectEntitySource,
       )
 
     // when
@@ -103,7 +103,7 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelB
         projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
         includedRoots = listOf(projectRoot),
         excludedRoots = emptyList(),
-        entitySource = BspProjectEntitySource,
+        entitySource = BazelProjectEntitySource,
       )
 
     // when
@@ -135,7 +135,7 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelB
         projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
         includedRoots = listOf(dir1),
         excludedRoots = emptyList(),
-        entitySource = BspProjectEntitySource,
+        entitySource = BazelProjectEntitySource,
       )
 
     // when
@@ -167,7 +167,7 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelB
         projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
         includedRoots = listOf(dir1),
         excludedRoots = listOf(dir1Dir3, dir4),
-        entitySource = BspProjectEntitySource,
+        entitySource = BazelProjectEntitySource,
       )
 
     // when

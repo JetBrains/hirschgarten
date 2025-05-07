@@ -45,7 +45,7 @@ import org.jetbrains.bazel.target.moduleEntity
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.isSourceFile
-import org.jetbrains.bazel.workspacemodel.entities.BspDummyEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
@@ -174,7 +174,7 @@ private suspend fun processFileCreated(
 
   val existingModule =
     readAction { ProjectFileIndex.getInstance(project).getModuleForFile(newFile) }.let {
-      if (it?.moduleEntity?.entitySource != BspDummyEntitySource) it else null
+      if (it?.moduleEntity?.entitySource != BazelDummyEntitySource) it else null
     }
 
   val url = newFile.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
