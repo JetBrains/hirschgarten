@@ -19,8 +19,8 @@ class GoLandTest : IdeStarterBaseProjectTest() {
   override val projectInfo: ProjectInfoSpec
     get() =
       GitProjectInfo(
-        repositoryUrl = "https://github.com/abrams27/simpleBazelProjectsForTesting.git",
-        commitHash = "50726682f68bf6cae1cef9648bdc85321b1f3af7",
+        repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
+        commitHash = "dd2e2031a5ba21e2f6660d7107803899826e26a3",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("simpleMultiLanguageTest") },
         isReusable = false,
