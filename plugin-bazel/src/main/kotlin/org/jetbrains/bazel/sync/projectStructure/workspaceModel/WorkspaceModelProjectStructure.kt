@@ -68,7 +68,7 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
               }
           }
           if (workspaceModelUpdated) return@useWithScope
-          if (!workspaceModelUpdated && attemptIdx >= MAX_REPLACE_WSM_ATTEMPTS) {
+          if (!workspaceModelUpdated && attemptIdx + 1 >= MAX_REPLACE_WSM_ATTEMPTS) {
             project.syncConsole.addMessage(
               subtaskId,
               BazelPluginBundle.message("console.task.model.apply.changes.attempt.0.fallback", MAX_REPLACE_WSM_ATTEMPTS),
