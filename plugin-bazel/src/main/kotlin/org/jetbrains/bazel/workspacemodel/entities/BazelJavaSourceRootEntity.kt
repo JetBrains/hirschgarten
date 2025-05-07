@@ -52,7 +52,5 @@ public interface BazelJavaSourceRootEntity : WorkspaceEntity {
 fun MutableEntityStorage.modifyBazelJavaSourceRootEntity(
   entity: BazelJavaSourceRootEntity,
   modification: BazelJavaSourceRootEntity.Builder.() -> Unit,
-): BazelJavaSourceRootEntity {
-  return modifyEntity(BazelJavaSourceRootEntity.Builder::class.java, entity, modification)
-}
+): BazelJavaSourceRootEntity = modifyEntity(BazelJavaSourceRootEntity.Builder::class.java, entity, modification)
 //endregion

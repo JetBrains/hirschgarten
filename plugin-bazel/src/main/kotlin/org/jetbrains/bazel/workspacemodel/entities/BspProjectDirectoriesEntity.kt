@@ -49,7 +49,5 @@ public interface BspProjectDirectoriesEntity : WorkspaceEntity {
 fun MutableEntityStorage.modifyBspProjectDirectoriesEntity(
   entity: BspProjectDirectoriesEntity,
   modification: BspProjectDirectoriesEntity.Builder.() -> Unit,
-): BspProjectDirectoriesEntity {
-  return modifyEntity(BspProjectDirectoriesEntity.Builder::class.java, entity, modification)
-}
+): BspProjectDirectoriesEntity = modifyEntity(BspProjectDirectoriesEntity.Builder::class.java, entity, modification)
 //endregion
