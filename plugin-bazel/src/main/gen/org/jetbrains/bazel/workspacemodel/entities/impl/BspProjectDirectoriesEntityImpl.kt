@@ -22,8 +22,8 @@ import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDirectoriesEntityData) : BspProjectDirectoriesEntity,
-  WorkspaceEntityBase(dataSource) {
+internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDirectoriesEntityData) : BspProjectDirectoriesEntity, WorkspaceEntityBase(
+  dataSource) {
 
   private companion object {
 
@@ -62,9 +62,8 @@ internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjec
   }
 
 
-  internal class Builder(result: BspProjectDirectoriesEntityData?) :
-    ModifiableWorkspaceEntityBase<BspProjectDirectoriesEntity, BspProjectDirectoriesEntityData>(result),
-    BspProjectDirectoriesEntity.Builder {
+  internal class Builder(result: BspProjectDirectoriesEntityData?) : ModifiableWorkspaceEntityBase<BspProjectDirectoriesEntity, BspProjectDirectoriesEntityData>(
+    result), BspProjectDirectoriesEntity.Builder {
     internal constructor() : this(BspProjectDirectoriesEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -72,7 +71,8 @@ internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjec
         if (existsInBuilder(builder)) {
           this.diff = builder
           return
-        } else {
+        }
+        else {
           error("Entity BspProjectDirectoriesEntity is already created in a different builder")
         }
       }
@@ -164,7 +164,8 @@ internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjec
         if (collection_includedRoots !is MutableWorkspaceList) return collection_includedRoots
         if (diff == null || modifiable.get()) {
           collection_includedRoots.setModificationUpdateAction(includedRootsUpdater)
-        } else {
+        }
+        else {
           collection_includedRoots.cleanModificationUpdateAction()
         }
         return collection_includedRoots
@@ -186,7 +187,8 @@ internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjec
         if (collection_excludedRoots !is MutableWorkspaceList) return collection_excludedRoots
         if (diff == null || modifiable.get()) {
           collection_excludedRoots.setModificationUpdateAction(excludedRootsUpdater)
-        } else {
+        }
+        else {
           collection_excludedRoots.cleanModificationUpdateAction()
         }
         return collection_excludedRoots
@@ -230,7 +232,8 @@ internal class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectD
   }
 
   override fun getMetadata(): EntityMetadata {
-    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity") as EntityMetadata
+    return MetadataStorageImpl.getMetadataByTypeFqn(
+      "org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity") as EntityMetadata
   }
 
   override fun clone(): BspProjectDirectoriesEntityData {
