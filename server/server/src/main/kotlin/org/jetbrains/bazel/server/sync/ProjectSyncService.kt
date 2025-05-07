@@ -51,6 +51,7 @@ class ProjectSyncService(
     return BazelProject(
       targets = project.targets,
       hasError = project.hasError,
+      bazelInfo = bazelInfo,
     )
   }
 

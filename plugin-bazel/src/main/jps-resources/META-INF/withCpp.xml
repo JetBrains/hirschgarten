@@ -1,5 +1,29 @@
 <idea-plugin>
-    <extensions defaultExtensionNs="org.jetbrains.bazel">
-<!--        <projectSyncHook implementation="org.jetbrains.bazel.impl.flow.sync.languages.cpp.CppProjectSync"/>-->
-    </extensions>
+
+
+
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <projectSyncHook implementation="org.jetbrains.bazel.cpp.sync.CppProjectSync"/>
+
+    <cpp.sync.flag.BazelCompilerFlagsProcessorProvider implementation="org.jetbrains.bazel.cpp.sync.flag.IncludeRootFlagsProcessorProvider"/>
+    <cpp.sync.flag.BazelCompilerFlagsProcessorProvider implementation="org.jetbrains.bazel.cpp.sync.flag.SysrootFlagProcessorProvider"/>
+
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <registryKey key="bazel.sync.resolve.virtual.includes"
+                 description="Apply heuristics to detect correct location of headers which are accessed from _virtual_includes during build. (requires re-sync)"
+                 defaultValue="true"/>
+    <registryKey defaultValue="false" description="Filter out some incompatible compiler flags (-include)" key="bazel.sync.workspace.filter.out.incompatible.flags"/>
+
+    <applicationService serviceInterface="org.jetbrains.bazel.cpp.sync.compiler.CompilerVersionChecker"
+                        serviceImplementation="org.jetbrains.bazel.cpp.sync.compiler.CompilerVersionCheckerImpl"/>
+    <applicationService serviceInterface="org.jetbrains.bazel.cpp.sync.compiler.CompilerWrapperProvider"
+                        serviceImplementation="org.jetbrains.bazel.cpp.sync.compiler.CompilerWrapperProviderImpl"/>
+    <applicationService serviceInterface="org.jetbrains.bazel.cpp.sync.xcode.XCodeCompilerSettingProvider"
+                        serviceImplementation="org.jetbrains.bazel.cpp.sync.xcode.XCodeCompilerSettingProviderImpl"/>
+
+
+  </extensions>
+
 </idea-plugin>

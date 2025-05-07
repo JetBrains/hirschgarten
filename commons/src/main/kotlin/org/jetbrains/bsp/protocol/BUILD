@@ -9,5 +9,6 @@ kt_jvm_library(
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons/gson",
         "//commons/src/main/kotlin/org/jetbrains/bazel/label",
         "//commons/src/main/kotlin/org/jetbrains/bazel/workspacecontext",
+        "//server/bazelrunner/src/main/kotlin/org/jetbrains/bazel/bazelrunner/utils",
     ],
 )

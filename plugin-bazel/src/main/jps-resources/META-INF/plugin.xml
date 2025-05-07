@@ -113,6 +113,8 @@
         <extensionPoint qualifiedName="org.jetbrains.bazel.targetKindProvider"
                         interface="org.jetbrains.bazel.sync.TargetKindProvider"
                         dynamic="true"/>
+      <extensionPoint qualifiedName="org.jetbrains.bazel.cpp.sync.flag.BazelCompilerFlagsProcessorProvider"
+                      interface="org.jetbrains.bazel.cpp.sync.flag.BazelCompilerFlagsProcessorProvider"/>
     </extensionPoints>
 
     <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -183,6 +185,8 @@
         <registryKey defaultValue="true" description="Python modules support" key="bsp.python.support"/>
         <registryKey defaultValue="false" description="Android modules support" key="bsp.android.support"/>
         <registryKey defaultValue="false" description="Go modules support" key="bsp.go.support"/>
+        <registryKey defaultValue="false" description="CPP modules support" key="bazel.cpp.support"/>
+
         <registryKey defaultValue="true"
                      description="Shorten module/library names by hashing the first parts and retaining the others"
                      key="bsp.shorten.module.library.names"/>

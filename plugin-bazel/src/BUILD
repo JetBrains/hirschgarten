@@ -64,6 +64,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/buildTask",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/cpp/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/debug",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extensionPoints",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow",

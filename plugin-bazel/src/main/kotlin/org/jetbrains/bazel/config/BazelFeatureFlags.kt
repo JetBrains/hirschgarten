@@ -6,6 +6,7 @@ import org.jetbrains.bsp.protocol.FeatureFlags
 private const val PYTHON_SUPPORT = "bsp.python.support"
 private const val ANDROID_SUPPORT = "bsp.android.support"
 private const val GO_SUPPORT = "bsp.go.support"
+private const val CPP_SUPPORT = "bazel.cpp.support"
 private const val BUILD_PROJECT_ON_SYNC = "bsp.build.project.on.sync"
 private const val SHORTEN_MODULE_LIBRARY_NAMES = "bsp.shorten.module.library.names"
 private const val WRAP_LIBRARIES_INSIDE_MODULES = "bsp.wrap.libraries.inside.modules"
@@ -27,6 +28,9 @@ object BazelFeatureFlags {
 
   val isGoSupportEnabled: Boolean
     get() = Registry.`is`(GO_SUPPORT)
+
+  val isCPPSupportEnabled: Boolean
+    get() = Registry.`is`(CPP_SUPPORT)
 
   val isBuildProjectOnSyncEnabled: Boolean
     get() = Registry.`is`(BUILD_PROJECT_ON_SYNC)
@@ -72,6 +76,7 @@ object FeatureFlagsProvider {
         isPythonSupportEnabled = isPythonSupportEnabled,
         isAndroidSupportEnabled = isAndroidSupportEnabled,
         isGoSupportEnabled = isGoSupportEnabled,
+        isCPPSupportEnabled,
         isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
         bazelSymlinksScanMaxDepth = symlinkScanMaxDepth,
         bazelShutDownBeforeShardBuild = shutDownBeforeShardBuild,

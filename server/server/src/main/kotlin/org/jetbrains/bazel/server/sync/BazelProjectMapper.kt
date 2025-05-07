@@ -972,6 +972,12 @@ class BazelProjectMapper(
       "go_library",
       "go_binary",
       "go_test",
+      "cc_library",
+      "cc_binary",
+      "cc_import",
+      "cc_test",
+      "cc_shared_library",
+      "cc_static_library",
     )
 
   private suspend fun createModules(

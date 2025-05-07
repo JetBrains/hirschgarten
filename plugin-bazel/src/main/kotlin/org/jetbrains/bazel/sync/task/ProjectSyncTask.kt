@@ -44,9 +44,17 @@ import org.jetbrains.bazel.ui.console.ids.BASE_PROJECT_SYNC_SUBTASK_ID
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
+import org.jetbrains.bsp.protocol.BazelProject
 import java.util.concurrent.CancellationException
 
 private val log = logger<ProjectSyncTask>()
+
+private lateinit var bazelProjectInternal: BazelProject
+var Project.bazelProject: BazelProject
+  get() = bazelProjectInternal
+  set(value) {
+    bazelProjectInternal = value
+  }
 
 class ProjectSyncTask(private val project: Project) {
   suspend fun sync(syncScope: ProjectSyncScope, buildProject: Boolean) {
@@ -201,7 +209,7 @@ class ProjectSyncTask(private val project: Project) {
                 buildTargets = bazelProject.targets,
                 syncScope = syncScope,
               )
-
+            bazelProjectInternal = bazelProject
             project.projectSyncHooks.forEach {
               it.onSync(environment)
             }

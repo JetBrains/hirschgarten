@@ -26,7 +26,7 @@ enum class Language(
   ),
   Python("//aspects:rules/python/python_info.bzl", listOf("rules_python"), listOf("extract_python_info"), true, true, listOf("PyInfo")),
   Scala("//aspects:rules/scala/scala_info.bzl", listOf("io_bazel_rules_scala", "rules_scala"), listOf("extract_scala_info"), true, false),
-  Cpp("//aspects:rules/cpp/cpp_info.bzl", listOf("rules_cc"), listOf("extract_cpp_info", "extract_c_toolchain_info"), false, false),
+  Cpp("//aspects:rules/cpp/cpp_info.bzl", listOf("rules_cc"), listOf("extract_cpp_info", "extract_c_toolchain_info"), false, true),
   Kotlin("//aspects:rules/kt/kt_info.bzl", listOf("io_bazel_rules_kotlin", "rules_kotlin"), listOf("extract_kotlin_info"), true, false),
   Jvm(
     "//aspects:rules/jvm/jvm_info.bzl",

@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.workspace.model.test.framework
 
+import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
@@ -58,10 +60,20 @@ private val mockWorkspaceContext =
     shardingApproachSpec = ShardingApproachSpec(null),
     importRunConfigurations = ImportRunConfigurationsSpec(emptyList()),
   )
-
+private val mockBazelInfo =
+  BazelInfo(
+    execRoot = Path("execRoot"),
+    outputBase = Path("outputBase"),
+    workspaceRoot = Path("workspaceRoot"),
+    bazelBin = Path("bazel-bin"),
+    release = BazelRelease(7),
+    isBzlModEnabled = true,
+    isWorkspaceEnabled = true,
+    externalAutoloads = emptyList(),
+  )
 private val mockBuildServer =
   BuildServerMock(
-    bazelProject = BazelProject(emptyMap(), false),
+    bazelProject = BazelProject(emptyMap(), mockBazelInfo, false),
     workspaceBuildTargetsResult = WorkspaceBuildTargetsResult(emptyList()),
     workspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
     workspaceLibrariesResult = WorkspaceLibrariesResult(emptyList()),

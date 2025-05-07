@@ -5,7 +5,7 @@ import com.google.common.collect.Ordering
 import org.jetbrains.bazel.label.Label
 
 /** A key that uniquely identifies a target in the target map */
-data class TargetKey(val label: Label, val aspectIds: List<String>) : Comparable<TargetKey> {
+data class TargetKey(val label: Label, val aspectIds: List<String> = listOf()) : Comparable<TargetKey> {
   override fun compareTo(other: TargetKey): Int =
     ComparisonChain
       .start()

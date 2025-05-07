@@ -8,12 +8,12 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPsiElementPointer
+import com.intellij.util.PlatformUtils
 import org.jetbrains.bazel.sdkcompat.shouldShowCoverageInProjectView
 
 class BazelCoverageClassNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
   override fun decorate(node: ProjectViewNode<*>, data: PresentationData) {
-    if (!project.shouldShowCoverageInProjectView()) return
-
+    if (!project.shouldShowCoverageInProjectView() || PlatformUtils.isCLion()) return
     val nodeValue = node.value
     val psiElement =
       when (nodeValue) {

@@ -1,10 +1,15 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
-data class BazelProject(val targets: Map<Label, BspTargetInfo.TargetInfo>, val hasError: Boolean)
+data class BazelProject(
+  val targets: Map<Label, BspTargetInfo.TargetInfo>,
+  val bazelInfo: BazelInfo,
+  val hasError: Boolean,
+)
 
 interface JoinedBuildServer {
   suspend fun runSync(build: Boolean, originId: String): BazelProject
