@@ -178,30 +178,54 @@
         <!--                    serviceImplementation="org.jetbrains.bazel.services.SingleFileSourcesTrackerImpl"-->
         <!--                    overrides="true"/>-->
 
-        <registryKey defaultValue="false" description="Build project on initial project sync"
+        <registryKey defaultValue="false" description="[Deprecated: Please use 'bazel.build.project.on.sync' instead] Build project on initial project sync"
                      key="bsp.build.project.on.sync"/>
-        <registryKey defaultValue="true" description="Python modules support" key="bsp.python.support"/>
-        <registryKey defaultValue="false" description="Android modules support" key="bsp.android.support"/>
-        <registryKey defaultValue="false" description="Go modules support" key="bsp.go.support"/>
+        <registryKey defaultValue="false" description="Build project on initial project sync"
+                   key="bazel.build.project.on.sync"/>
+        <registryKey defaultValue="true" description="[Deprecated: Please use 'bazel.python.support' instead] Python modules support" key="bsp.python.support"/>
+        <registryKey defaultValue="true" description="Python modules support" key="bazel.python.support"/>
+        <registryKey defaultValue="false" description="[Deprecated: Please use 'bazel.android.support' instead] Android modules support" key="bsp.android.support"/>
+        <registryKey defaultValue="false" description="Android modules support" key="bazel.android.support"/>
+        <registryKey defaultValue="false" description="[Deprecated: Please use 'bazel.go.support' instead] Go modules support" key="bsp.go.support"/>
+        <registryKey defaultValue="false" description="Go modules support" key="bazel.go.support"/>
+        <registryKey defaultValue="true"
+                     description="[Deprecated: Please use 'bazel.shorten.module.library.names' instead] Shorten module/library names by hashing the first parts and retaining the others"
+                     key="bsp.shorten.module.library.names"/>
         <registryKey defaultValue="true"
                      description="Shorten module/library names by hashing the first parts and retaining the others"
-                     key="bsp.shorten.module.library.names"/>
+                     key="bazel.shorten.module.library.names"/>
+        <registryKey defaultValue="false"
+                     description="[Deprecated: Please use 'bazel.wrap.libraries.inside.modules' instead] Wrap libraries inside modules to form a proper dependency graph between libraries. Enabled by default with K2 mode"
+                     key="bsp.wrap.libraries.inside.modules"/>
         <registryKey defaultValue="false"
                      description="Wrap libraries inside modules to form a proper dependency graph between libraries. Enabled by default with K2 mode"
-                     key="bsp.wrap.libraries.inside.modules"/>
+                     key="bazel.wrap.libraries.inside.modules"/>
         <registryKey defaultValue="true"
-                     description="Execute second phase of the phased sync. `bsp.use.phased.sync` has to be enabled to use this flag. It should be used only for testing purposes."
+                     description="[Deprecated: Please use 'bazel.execute.second.phase.on.sync' instead] Execute second phase of the phased sync. `bsp.use.phased.sync` has to be enabled to use this flag. It should be used only for testing purposes."
                      key="bsp.execute.second.phase.on.sync"/>
         <registryKey defaultValue="true"
-                     description="Add the so-called &quot;dummy&quot; modules to make Java resolve work correctly."
+                     description="Execute second phase of the phased sync. `bsp.use.phased.sync` has to be enabled to use this flag. It should be used only for testing purposes."
+                     key="bazel.execute.second.phase.on.sync"/>
+        <registryKey defaultValue="true"
+                     description="[Deprecated: Please use 'bazel.add.dummy.modules' instead] Add the so-called &quot;dummy&quot; modules to make Java resolve work correctly."
                      key="bsp.add.dummy.modules"/>
         <registryKey defaultValue="true"
-                     description="Exclude class files inside jars (and source files inside source jars) if they match up with a source file in the current project."
+                     description="Add the so-called &quot;dummy&quot; modules to make Java resolve work correctly."
+                     key="bazel.add.dummy.modules"/>
+        <registryKey defaultValue="true"
+                     description="[Deprecated: Please use 'bazel.exclude.compiled.source.code.inside.jars' instead] Exclude class files inside jars (and source files inside source jars) if they match up with a source file in the current project."
                      key="bsp.exclude.compiled.source.code.inside.jars"/>
+        <registryKey defaultValue="true"
+                     description="Exclude class files inside jars (and source files inside source jars) if they match up with a source file in the current project."
+                     key="bazel.exclude.compiled.source.code.inside.jars"/>
+        <!-- https://youtrack.jetbrains.com/issue/BAZEL-1734 -->
+        <registryKey defaultValue="false"
+                     description="[Deprecated: Please use 'bazel.enable.partial.sync' instead] Enable partial sync action for a target."
+                     key="bsp.enable.partial.sync"/>
         <!-- https://youtrack.jetbrains.com/issue/BAZEL-1734 -->
         <registryKey defaultValue="false"
                      description="Enable partial sync action for a target."
-                     key="bsp.enable.partial.sync"/>
+                     key="bazel.enable.partial.sync"/>
 
         <statusBarWidgetFactory id="BazelFileTargetsWidget"
                                 implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetFactory"/>
