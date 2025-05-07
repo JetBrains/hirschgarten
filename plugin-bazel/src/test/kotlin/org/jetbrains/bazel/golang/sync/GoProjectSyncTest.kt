@@ -69,6 +69,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   @BeforeEach
   override fun beforeEach() {
     // given
+    super.beforeEach()
     hook = GoProjectSync()
   }
 

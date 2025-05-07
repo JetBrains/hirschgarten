@@ -20,6 +20,7 @@ import org.jetbrains.bazel.run.state.HasEnv
 import org.jetbrains.bazel.run.state.HasProgramArguments
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.task.query
+import org.jetbrains.bazel.sync.withSubtask
 import java.nio.file.Path
 
 private const val GOOGLE_BAZEL_RUN_CONFIG_TYPE = "BlazeCommandRunConfigurationType"
@@ -28,31 +29,33 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
   private val log = logger<ImportRunConfigurationsSyncHook>()
 
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
-    val project = environment.project
-    val workspaceContext =
-      query("workspace/context") {
-        environment.server.workspaceContext()
-      }
-
-    val runManager = RunManager.getInstance(project)
-    val shouldSetSelectedConfiguration = runManager.selectedConfiguration == null
-
-    val runConfigurationPaths =
-      workspaceContext.importRunConfigurations.values.mapNotNull { pathString ->
-        project.rootDir.resolveFromRootOrRelative(pathString)
-      }
-    val runConfigurations =
-      runConfigurationPaths.mapNotNull { runConfigurationPath ->
-        try {
-          importRunConfiguration(project, runConfigurationPath.toNioPath())
-        } catch (e: Exception) {
-          log.warn("Could not import $runConfigurationPath", e)
-          null
+    environment.withSubtask("Import run configurations") {
+      val project = environment.project
+      val workspaceContext =
+        query("workspace/context") {
+          environment.server.workspaceContext()
         }
-      }
 
-    if (shouldSetSelectedConfiguration) {
-      runManager.selectedConfiguration = runConfigurations.firstOrNull()
+      val runManager = RunManager.getInstance(project)
+      val shouldSetSelectedConfiguration = runManager.selectedConfiguration == null
+
+      val runConfigurationPaths =
+        workspaceContext.importRunConfigurations.values.mapNotNull { pathString ->
+          project.rootDir.resolveFromRootOrRelative(pathString)
+        }
+      val runConfigurations =
+        runConfigurationPaths.mapNotNull { runConfigurationPath ->
+          try {
+            importRunConfiguration(project, runConfigurationPath.toNioPath())
+          } catch (e: Exception) {
+            log.warn("Could not import $runConfigurationPath", e)
+            null
+          }
+        }
+
+      if (shouldSetSelectedConfiguration) {
+        runManager.selectedConfiguration = runConfigurations.firstOrNull()
+      }
     }
   }
 

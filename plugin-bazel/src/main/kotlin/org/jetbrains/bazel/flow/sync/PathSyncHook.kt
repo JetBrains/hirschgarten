@@ -11,18 +11,21 @@ import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.workspaceName
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.task.query
+import org.jetbrains.bazel.sync.withSubtask
 
 class PathSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) =
     coroutineScope {
-      val bazelBinPathService = BazelBinPathService.getInstance(environment.project)
-      val bazelBinPathResult =
-        query("workspace/bazelBinPath") { environment.server.workspaceBazelBinPath() }
-      bazelBinPathService.bazelBinPath = bazelBinPathResult.path
-      val bazelWorkspaceResult =
-        query("workspace/bazelWorkspaceName") { environment.server.workspaceName() }
+      environment.withSubtask("Collect bazel workspace info") {
+        val bazelBinPathService = BazelBinPathService.getInstance(environment.project)
+        val bazelBinPathResult =
+          query("workspace/bazelBinPath") { environment.server.workspaceBazelBinPath() }
+        bazelBinPathService.bazelBinPath = bazelBinPathResult.path
+        val bazelWorkspaceResult =
+          query("workspace/bazelWorkspaceName") { environment.server.workspaceName() }
 
-      environment.project.workspaceName = bazelWorkspaceResult.workspaceName
+        environment.project.workspaceName = bazelWorkspaceResult.workspaceName
+      }
     }
 }
 
