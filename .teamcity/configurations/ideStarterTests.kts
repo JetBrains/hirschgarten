@@ -159,6 +159,14 @@ sealed class PyCharmPluginTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:PyCharmTest"
 )
 
+sealed class GoLandPluginTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Sync project in GoLand test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:GoLandTest"
+)
+
 object HotswapTestGitHub : HotswapTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
@@ -260,5 +268,13 @@ object PyCharmTestGitHub : PyCharmPluginTest(
 )
 
 object PyCharmTestSpace : PyCharmPluginTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object GoLandTestGitHub : GoLandPluginTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object GoLandTestSpace : GoLandPluginTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )
