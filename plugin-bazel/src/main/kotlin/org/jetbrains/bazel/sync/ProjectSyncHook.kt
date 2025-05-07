@@ -7,6 +7,7 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
+import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 
 /**
@@ -55,3 +56,6 @@ val Project.projectSyncHooks: List<ProjectSyncHook>
     ProjectSyncHook.ep
       .extensionList
       .filter { it.isEnabled(this) }
+
+suspend fun <T> ProjectSyncHook.ProjectSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: String) -> T) =
+  project.withSubtask(progressReporter, taskId, text, block)
