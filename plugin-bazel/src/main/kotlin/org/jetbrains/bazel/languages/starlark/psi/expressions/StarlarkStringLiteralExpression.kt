@@ -18,12 +18,12 @@ import org.jetbrains.bazel.languages.starlark.references.StarlarkVisibilityRefer
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 import javax.swing.Icon
 
-fun String.getCompletionLookupElemenent(icon: Icon, priority: Double = 0.0): LookupElement =
+fun getCompletionLookupElemenent(name: String, icon: Icon, priority: Double = 0.0): LookupElement =
   PrioritizedLookupElement.withPriority(
     LookupElementBuilder
-      .create("\"" + this + "\"")
+      .create("\"" + name + "\"")
       .withIcon(icon)
-      .withPresentableText(this)
+      .withPresentableText(name)
       .withInsertHandler { context, _ ->
         // This prevents inserting a duplicate quote at the end.
         val document = context.document

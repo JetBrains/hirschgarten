@@ -19,14 +19,14 @@ class StarlarkVisibilityReference(element: StarlarkStringLiteralExpression) :
     if (!project.isBazelProject) return emptyArray()
     val icon = PlatformIcons.VARIABLE_ICON
     val shortTargets = project.targetUtils.allTargetsAndLibrariesLabels
-    val targetVisibilities = shortTargets.map { it.getCompletionLookupElemenent(icon) }.toTypedArray()
-    val pkgVisibilities = shortTargets.map { "$it:__pkg__".getCompletionLookupElemenent(icon) }.toTypedArray()
-    val subpkgVisibilities = shortTargets.map { "$it:__subpackages__".getCompletionLookupElemenent(icon) }.toTypedArray()
+    val targetVisibilities = shortTargets.map { getCompletionLookupElemenent(it, icon) }.toTypedArray()
+    val pkgVisibilities = shortTargets.map { getCompletionLookupElemenent("$it:__pkg__", icon) }.toTypedArray()
+    val subpkgVisibilities = shortTargets.map { getCompletionLookupElemenent("$it:__subpackages__", icon) }.toTypedArray()
 
     val predefined =
       listOf(
-        "//visibility:public".getCompletionLookupElemenent(icon, 1.0),
-        "//visibility:private".getCompletionLookupElemenent(icon, 1.0),
+        getCompletionLookupElemenent("//visibility:public", icon, 1.0),
+        getCompletionLookupElemenent("//visibility:private", icon, 1.0),
       )
     return pkgVisibilities + subpkgVisibilities + targetVisibilities + predefined
   }
