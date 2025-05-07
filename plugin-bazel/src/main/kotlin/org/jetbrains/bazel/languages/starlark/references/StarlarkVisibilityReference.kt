@@ -1,14 +1,16 @@
 package org.jetbrains.bazel.languages.starlark.references
 
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
 import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
 import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
 
 class StarlarkVisibilityReference(element: StarlarkStringLiteralExpression) :
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), false) {
@@ -30,4 +32,4 @@ class StarlarkVisibilityReference(element: StarlarkStringLiteralExpression) :
       )
     return pkgVisibilities + subpkgVisibilities + targetVisibilities + predefined
   }
-}
+  }

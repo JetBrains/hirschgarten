@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VfsUtilCore
@@ -64,8 +65,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     val lookupElements =
       allFiles
         .map {
-          VfsUtilCore
-            .getRelativePath(it, currentDirectory)!!
+          VfsUtilCore.getRelativePath(it, currentDirectory)!!
             .getCompletionLookupElemenent(PlatformIcons.FILE_ICON)
         }.toTypedArray()
     return lookupElements
