@@ -8,7 +8,7 @@ import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import java.nio.file.Path
 import kotlin.jvm.internal.Reflection
 import kotlin.reflect.KClass
@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
 val bazelGson: Gson =
   GsonBuilder()
     .registerTypeHierarchyAdapter(Path::class.java, PathSerializer)
-    .registerTypeHierarchyAdapter(Label::class.java, LabelSerializer)
+    .registerTypeHierarchyAdapter(TargetPattern::class.java, TargetPatternSerializer)
     .registerTypeAdapterFactory(SealedClassTypeAdapterFactory())
     .create()
 
@@ -136,10 +136,10 @@ class SealedClassTypeAdapterFactory : TypeAdapterFactory {
     }
 }
 
-object LabelSerializer : TypeAdapter<Label?>() {
-  override fun read(jsonReader: JsonReader): Label? = jsonReader.nextString().let { Label.parseOrNull(it) }
+object TargetPatternSerializer : TypeAdapter<TargetPattern?>() {
+  override fun read(jsonReader: JsonReader): TargetPattern? = jsonReader.nextString().let { TargetPattern.parseOrNull(it) }
 
-  override fun write(out: JsonWriter, value: Label?) {
+  override fun write(out: JsonWriter, value: TargetPattern?) {
     out.value(value.toString())
   }
 }
