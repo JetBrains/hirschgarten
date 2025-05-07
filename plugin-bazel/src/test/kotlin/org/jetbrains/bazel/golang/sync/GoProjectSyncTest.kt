@@ -22,7 +22,7 @@ import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDi
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
@@ -214,7 +214,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   private fun generateVgoStandaloneResult(info: GeneratedTargetInfo, expectedRoot: VirtualFileUrl): ExpectedVgoStandaloneModuleEntity =
     ExpectedVgoStandaloneModuleEntity(
       moduleId = ModuleId(info.targetId.formatAsModuleName(project)),
-      entitySource = BspProjectEntitySource,
+      entitySource = BazelProjectEntitySource,
       importPath = info.importPath,
       root = expectedRoot,
     )
@@ -226,7 +226,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   ): ExpectedVgoDependencyEntity =
     ExpectedVgoDependencyEntity(
       importPath = dependencyInfo.importPath,
-      entitySource = BspProjectEntitySource,
+      entitySource = BazelProjectEntitySource,
       isMainModule = false,
       internal = true,
       module = generateVgoStandaloneResult(parentInfo, expectedRoot),
