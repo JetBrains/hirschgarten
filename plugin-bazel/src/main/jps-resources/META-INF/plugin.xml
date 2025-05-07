@@ -520,4 +520,7 @@
         </action>
 
     </actions>
+    <extensions defaultExtensionNs="com.intellij.platform.backend.documentation">
+        <targetProvider implementation="org.jetbrains.bazel.languages.starlark.documentation.BazelDocumentationTargetProvider"/>
+    </extensions>
 </idea-plugin>
