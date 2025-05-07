@@ -101,7 +101,10 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
   fun parseAndReport(testXmlUri: String) {
     val testSuites = parseTestXml(testXmlUri, TestSuites::class.java)
     if (testSuites != null) {
-      testSuites.testsuite.forEach { processSuite(it) }
+      testSuites
+        .testsuite
+        .filter { it.testcase.isNotEmpty() }
+        .forEach { processSuite(it) }
     } else {
       val fallbackTestSuites =
         parseTestXml(testXmlUri, FallbackTestXmlParser.IncompleteTestSuites::class.java)
