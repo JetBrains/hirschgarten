@@ -57,6 +57,11 @@ suspend fun <T> Project.withSubtask(
   block: suspend (subtaskId: String) -> T,
 ) {
   reporter.indeterminateStep(text) {
-    syncConsole.withSubtask(taskId, text, text, block)
+    syncConsole.withSubtask(
+      taskId = taskId,
+      subtaskId = text,
+      message = text,
+      block = block,
+    )
   }
 }
