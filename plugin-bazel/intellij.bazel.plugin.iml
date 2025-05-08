@@ -27,11 +27,7 @@
     <orderEntry type="library" scope="PROVIDED" name="studio-platform" level="project" />
     <orderEntry type="module" module-name="intellij.android.common" />
     <orderEntry type="module" module-name="intellij.android.core" />
-    <orderEntry type="module" module-name="intellij.android.deploy" />
-    <orderEntry type="module" module-name="intellij.android.execution.common" />
     <orderEntry type="module" module-name="intellij.android.jps.model" />
-    <orderEntry type="module" module-name="intellij.android.projectSystem" />
-    <orderEntry type="module" module-name="intellij.android.render-resources" />
     <orderEntry type="module" module-name="intellij.bazel.commons" exported="" />
     <orderEntry type="module" module-name="intellij.bazel.protobuf" exported="" />
     <orderEntry type="module" module-name="intellij.bazel.sdkcompat" exported="" />
