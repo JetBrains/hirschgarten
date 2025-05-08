@@ -33,6 +33,11 @@ class BazelPyImportResolver : PyImportResolver {
     }
   }
 
+  /**
+   * In rare cases, both a directory and a file match the import.
+   * When both `aaa/bbb/ccc` and `aaa/bbb/ccc.py` exist, Python chooses the directory when `import aaa.bbb.ccc` is used.
+   * For that reason this function chooses the directory as well.
+   */
   private fun Project.findDirectoryOrPythonFile(pathRelativeToRoot: String): PsiElement? =
     PsiManager.getInstance(this).let { psi ->
       rootDir.findFileByRelativePath(pathRelativeToRoot)?.let { psi.findDirectory(it) }
