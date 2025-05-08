@@ -39,9 +39,9 @@ import java.io.File
 
 // See com.google.idea.blaze.cpp.BlazeCWorkspace
 // todo: this should become a service for persistence and caching
-/* todo: Consider integrate this use ProjectStructureDiff. CLion doesn't use workspace model.
-    Thus instead of using [AllProjectStructuresDiff], OCWorkspace.commit is directly called.
-    This can cause various problems. */
+// todo: Consider integrate this use ProjectStructureDiff. CLion doesn't use workspace model.
+//   Thus instead of using [AllProjectStructuresDiff], OCWorkspace.commit is directly called.
+//  This can cause various problems.
 class BazelCWorkspace(val project: Project) {
   val serializationVersion = 1
   var resolverResult = BazelConfigurationResolverResult.empty()

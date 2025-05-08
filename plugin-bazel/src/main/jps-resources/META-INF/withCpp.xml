@@ -20,8 +20,7 @@
                         serviceImplementation="org.jetbrains.bazel.cpp.sync.compiler.CompilerVersionCheckerImpl"/>
     <applicationService serviceInterface="org.jetbrains.bazel.cpp.sync.compiler.CompilerWrapperProvider"
                         serviceImplementation="org.jetbrains.bazel.cpp.sync.compiler.CompilerWrapperProviderImpl"/>
-    <applicationService serviceInterface="org.jetbrains.bazel.cpp.sync.xcode.XCodeCompilerSettingProvider"
-                        serviceImplementation="org.jetbrains.bazel.cpp.sync.xcode.XCodeCompilerSettingProviderImpl"/>
+
 
 
   </extensions>
