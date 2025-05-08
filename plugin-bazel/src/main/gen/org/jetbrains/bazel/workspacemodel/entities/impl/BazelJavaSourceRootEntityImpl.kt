@@ -27,8 +27,8 @@ import org.jetbrains.bazel.workspacemodel.entities.PackageNameId
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class BazelJavaSourceRootEntityImpl(private val dataSource: BazelJavaSourceRootEntityData) : BazelJavaSourceRootEntity, WorkspaceEntityBase(
-  dataSource) {
+internal class BazelJavaSourceRootEntityImpl(private val dataSource: BazelJavaSourceRootEntityData) : BazelJavaSourceRootEntity,
+                                                                                                      WorkspaceEntityBase(dataSource) {
 
   private companion object {
 
@@ -61,8 +61,8 @@ internal class BazelJavaSourceRootEntityImpl(private val dataSource: BazelJavaSo
   }
 
 
-  internal class Builder(result: BazelJavaSourceRootEntityData?) : ModifiableWorkspaceEntityBase<BazelJavaSourceRootEntity, BazelJavaSourceRootEntityData>(
-    result), BazelJavaSourceRootEntity.Builder {
+  internal class Builder(result: BazelJavaSourceRootEntityData?) :
+    ModifiableWorkspaceEntityBase<BazelJavaSourceRootEntity, BazelJavaSourceRootEntityData>(result), BazelJavaSourceRootEntity.Builder {
     internal constructor() : this(BazelJavaSourceRootEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -239,7 +239,8 @@ internal class BazelJavaSourceRootEntityData : WorkspaceEntityData<BazelJavaSour
 
   override fun getMetadata(): EntityMetadata {
     return MetadataStorageImpl.getMetadataByTypeFqn(
-      "org.jetbrains.bazel.workspacemodel.entities.BazelJavaSourceRootEntity") as EntityMetadata
+      "org.jetbrains.bazel.workspacemodel.entities.BazelJavaSourceRootEntity"
+    ) as EntityMetadata
   }
 
   override fun clone(): BazelJavaSourceRootEntityData {

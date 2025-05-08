@@ -55,8 +55,9 @@ interface CompiledSourceCodeInsideJarExcludeEntity : WorkspaceEntityWithSymbolic
 fun MutableEntityStorage.modifyCompiledSourceCodeInsideJarExcludeEntity(
   entity: CompiledSourceCodeInsideJarExcludeEntity,
   modification: CompiledSourceCodeInsideJarExcludeEntity.Builder.() -> Unit,
-): CompiledSourceCodeInsideJarExcludeEntity =
-  modifyEntity(CompiledSourceCodeInsideJarExcludeEntity.Builder::class.java, entity, modification)
+): CompiledSourceCodeInsideJarExcludeEntity {
+  return modifyEntity(CompiledSourceCodeInsideJarExcludeEntity.Builder::class.java, entity, modification)
+}
 //endregion
 
 interface LibraryCompiledSourceCodeInsideJarExcludeEntity : WorkspaceEntity {
@@ -96,6 +97,7 @@ interface LibraryCompiledSourceCodeInsideJarExcludeEntity : WorkspaceEntity {
 fun MutableEntityStorage.modifyLibraryCompiledSourceCodeInsideJarExcludeEntity(
   entity: LibraryCompiledSourceCodeInsideJarExcludeEntity,
   modification: LibraryCompiledSourceCodeInsideJarExcludeEntity.Builder.() -> Unit,
-): LibraryCompiledSourceCodeInsideJarExcludeEntity =
-  modifyEntity(LibraryCompiledSourceCodeInsideJarExcludeEntity.Builder::class.java, entity, modification)
+): LibraryCompiledSourceCodeInsideJarExcludeEntity {
+  return modifyEntity(LibraryCompiledSourceCodeInsideJarExcludeEntity.Builder::class.java, entity, modification)
+}
 //endregion
