@@ -70,13 +70,21 @@ class BazelPyImportResolverTest : MockProjectBaseTest() {
     result.shouldBeNull()
   }
 
+  @Test
+  fun `should prioritise directories over files`() {
+    val result = tryResolve("dir1.conflict")
+    result.shouldNotBeNull()
+    result.shouldBeInstanceOf<PsiDirectory>()
+    result.virtualFile.name shouldBe "conflict"
+  }
+
   /**
    * ```
    * root
    *  |- file1.py
    *  |- dir1
-   *  |  |- file11.py
-   *  |  |- file12.py
+   *  |  |- conflict
+   *  |  |- conflict.py
    *  |- dir2
    *  |  |- dir21
    *  |  |  |- dir211
@@ -90,8 +98,8 @@ class BazelPyImportResolverTest : MockProjectBaseTest() {
       root.createChildData(this, "file1.py")
 
       val dir1 = root.createChildDirectory(this, "dir1")
-      dir1.createChildData(this, "file11.py")
-      dir1.createChildData(this, "file12.py")
+      dir1.createChildDirectory(this, "conflict")
+      dir1.createChildData(this, "conflict.py")
 
       val dir2 = root.createChildDirectory(this, "dir2")
       val dir21 = dir2.createChildDirectory(this, "dir21")
