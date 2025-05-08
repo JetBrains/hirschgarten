@@ -17,7 +17,6 @@ package org.jetbrains.bazel.hotswap
 
 import com.intellij.debugger.impl.HotSwapProgress
 import com.intellij.execution.RunCanceledByUserException
-import com.intellij.execution.application.ApplicationConfiguration
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
@@ -29,7 +28,7 @@ import org.jetbrains.bazel.config.BazelHotSwapBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.hotswap.BazelHotSwapManager.HotSwappableDebugSession
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.runnerAction.LocalJvmRunnerAction
+import org.jetbrains.bazel.run.config.HotswappableRunConfiguration
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.target.targetUtils
@@ -75,14 +74,14 @@ object ClassFileManifestBuilder {
   fun buildManifest(session: HotSwappableDebugSession, progress: HotSwapProgress?): ClassFileManifest.Diff? {
     val env = session.env
     val configuration = getConfiguration(env) ?: return null
-    val project = configuration.project
+    val project = configuration.getProject()
     if (!HotSwapUtils.canHotSwap(env, project)) {
       return null
     }
     val jvmEnvDeferred: Deferred<JvmEnvironmentResult?> =
       BazelCoroutineService.getInstance(project).startAsync {
         project.connection.runWithServer { server ->
-          val targets = configuration.getUserData(LocalJvmRunnerAction.targetsToPreBuild)?.take(1) ?: listOf()
+          val targets = configuration.getAffectedTargets()
           if (targets.isEmpty()) {
             progress?.addMessage(
               session.session,
@@ -153,7 +152,7 @@ object ClassFileManifestBuilder {
 
   private fun ExecutionEnvironment.getManifestRef(): AtomicReference<ClassFileManifest>? = getCopyableUserData(MANIFEST_KEY)
 
-  private fun getConfiguration(env: ExecutionEnvironment): ApplicationConfiguration? = env.runProfile as? ApplicationConfiguration
+  private fun getConfiguration(env: ExecutionEnvironment): HotswappableRunConfiguration? = env.runProfile as? HotswappableRunConfiguration
 }
 
 private sealed interface JvmEnvironmentResult {
