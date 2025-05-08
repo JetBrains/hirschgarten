@@ -19,7 +19,7 @@ data class BazelInfo(
    */
   val externalAutoloads: List<String>,
 ) {
-  fun shouldUseInjectRepository(): Boolean = release.major >= 8
+  fun shouldUseInjectRepository(): Boolean = isBzlModEnabled && release.major >= 8
 
   fun dotBazelBsp(): Path = workspaceRoot.resolve(DOT_BAZELBSP_DIR_NAME)
 }

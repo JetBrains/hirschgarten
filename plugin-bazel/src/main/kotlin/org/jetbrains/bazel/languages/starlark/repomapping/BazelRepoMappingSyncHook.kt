@@ -11,6 +11,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.task.query
+import org.jetbrains.bazel.sync.withSubtask
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -29,20 +30,17 @@ val Project.canonicalRepoNameToPath: Map<String, Path>
     BazelRepoMappingService.getInstance(this).canonicalRepoNameToPath.takeIf { it.isNotEmpty() }
       ?: mapOf("" to rootDir.toNioPath())
 
-val Project.repositoryPaths: Set<Path>
-  get() =
-    BazelRepoMappingService.getInstance(this).repositoryPaths.takeIf { it.isNotEmpty() }
-      ?: setOf(rootDir.toNioPath())
-
 class BazelRepoMappingSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
-    val bazelRepoMappingService = BazelRepoMappingService.getInstance(environment.project)
-    val bazelRepoMappingResult =
-      query("workspace/bazelRepoMapping") {
-        environment.server.workspaceBazelRepoMapping()
-      }
-    bazelRepoMappingService.apparentRepoNameToCanonicalName = bazelRepoMappingResult.apparentRepoNameToCanonicalName
-    bazelRepoMappingService.canonicalRepoNameToPath = bazelRepoMappingResult.canonicalRepoNameToPath
+    environment.withSubtask("Load bazel repo mapping") {
+      val bazelRepoMappingService = BazelRepoMappingService.getInstance(environment.project)
+      val bazelRepoMappingResult =
+        query("workspace/bazelRepoMapping") {
+          environment.server.workspaceBazelRepoMapping()
+        }
+      bazelRepoMappingService.apparentRepoNameToCanonicalName = bazelRepoMappingResult.apparentRepoNameToCanonicalName
+      bazelRepoMappingService.canonicalRepoNameToPath = bazelRepoMappingResult.canonicalRepoNameToPath
+    }
   }
 }
 
@@ -70,13 +68,6 @@ internal class BazelRepoMappingService : PersistentStateComponent<BazelRepoMappi
 
   @Volatile
   internal var canonicalRepoNameToPath: Map<String, Path> = emptyMap()
-    set(value) {
-      field = value
-      repositoryPaths = canonicalRepoNameToPath.values.toSet()
-    }
-
-  @Volatile
-  internal var repositoryPaths: Set<Path> = emptySet()
 
   override fun getState(): BazelRepoMappingServiceState? =
     BazelRepoMappingServiceState(

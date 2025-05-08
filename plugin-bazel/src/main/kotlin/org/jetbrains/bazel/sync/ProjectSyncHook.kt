@@ -3,10 +3,12 @@ package org.jetbrains.bazel.sync
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
+import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
+import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 
 /**
  * Represents a sync hook which will be executed on each sync (if `isEnabled` returns true).
@@ -45,7 +47,7 @@ interface ProjectSyncHook {
     val diff: AllProjectStructuresDiff,
     val taskId: String,
     val progressReporter: SequentialProgressReporter,
-    val buildTargets: WorkspaceBuildTargetsResult,
+    val buildTargets: Map<Label, BspTargetInfo.TargetInfo>,
   )
 }
 
@@ -54,3 +56,6 @@ val Project.projectSyncHooks: List<ProjectSyncHook>
     ProjectSyncHook.ep
       .extensionList
       .filter { it.isEnabled(this) }
+
+suspend fun <T> ProjectSyncHook.ProjectSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: String) -> T) =
+  project.withSubtask(progressReporter, taskId, text, block)

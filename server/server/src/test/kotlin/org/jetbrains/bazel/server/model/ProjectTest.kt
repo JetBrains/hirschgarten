@@ -18,6 +18,7 @@ import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
 import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
 import org.jetbrains.bazel.workspacecontext.NoPruneTransitiveCompileTimeJarsPatternsSpec
+import org.jetbrains.bazel.workspacecontext.PrioritizeLibrariesOverModulesTargetKindsSpec
 import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
 import org.jetbrains.bazel.workspacecontext.ShardingApproachSpec
 import org.jetbrains.bazel.workspacecontext.SyncFlagsSpec
@@ -49,6 +50,7 @@ class ProjectTest {
           bazelRelease = BazelRelease(0),
           workspaceContext = createMockWorkspaceContext(),
           workspaceName = "_main",
+          targets = emptyMap(),
         )
 
       val project2 =
@@ -62,6 +64,7 @@ class ProjectTest {
           bazelRelease = BazelRelease(0),
           workspaceContext = createMockWorkspaceContext(),
           workspaceName = "_main",
+          targets = emptyMap(),
         )
 
       // then
@@ -86,6 +89,7 @@ class ProjectTest {
           bazelRelease = BazelRelease(21),
           workspaceContext = createMockWorkspaceContext(),
           workspaceName = "_main",
+          targets = emptyMap(),
         )
 
       val project2 =
@@ -99,6 +103,7 @@ class ProjectTest {
           bazelRelease = BazelRelease(37),
           workspaceContext = createMockWorkspaceContext(),
           workspaceName = "_main",
+          targets = emptyMap(),
         )
 
       // then
@@ -131,6 +136,7 @@ class ProjectTest {
           bazelRelease = BazelRelease(1),
           workspaceContext = createMockWorkspaceContext(targetsPattern = "//..."),
           workspaceName = "_main",
+          targets = emptyMap(),
         )
 
       val project2 =
@@ -158,6 +164,7 @@ class ProjectTest {
           bazelRelease = BazelRelease(1),
           workspaceContext = createMockWorkspaceContext(targetsPattern = "//other/..."),
           workspaceName = "_main",
+          targets = emptyMap(),
         )
 
       // then
@@ -197,6 +204,7 @@ class ProjectTest {
           bazelRelease = BazelRelease(1),
           workspaceContext = createMockWorkspaceContext(targetsPattern = "//other/..."),
           workspaceName = "_main",
+          targets = emptyMap(),
         )
       val newProject = project1 + project2
 
@@ -223,6 +231,7 @@ class ProjectTest {
       sourceDependencies = emptySet(),
       languageData = null,
       environmentVariables = emptyMap(),
+      kindString = "kindString",
     )
 
   private fun String.toMockLibrary(): Library =
@@ -240,6 +249,7 @@ class ProjectTest {
       label = this.toLabel(),
       tags = emptySet(),
       baseDirectory = Path("/path/to/$this"),
+      kindString = "kindString",
     )
 
   private fun String.toLabel(): Label = Label.parse(this)
@@ -259,6 +269,7 @@ class ProjectTest {
       experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJars(false),
       experimentalTransitiveCompileTimeJarsTargetKinds = TransitiveCompileTimeJarsTargetKindsSpec(emptyList()),
       experimentalNoPruneTransitiveCompileTimeJarsPatterns = NoPruneTransitiveCompileTimeJarsPatternsSpec(emptyList()),
+      experimentalPrioritizeLibrariesOverModulesTargetKinds = PrioritizeLibrariesOverModulesTargetKindsSpec(emptyList()),
       enableNativeAndroidRules = EnableNativeAndroidRules(false),
       androidMinSdkSpec = AndroidMinSdkSpec(null),
       shardSync = ShardSyncSpec(false),

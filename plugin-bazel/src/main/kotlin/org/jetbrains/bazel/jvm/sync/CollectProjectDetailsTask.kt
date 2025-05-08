@@ -34,7 +34,9 @@ import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.sdkcompat.isSharedSourceSupportEnabled
 import org.jetbrains.bazel.server.client.IMPORT_SUBTASK_ID
+import org.jetbrains.bazel.sync.scope.FirstPhaseSync
 import org.jetbrains.bazel.sync.scope.FullProjectSync
+import org.jetbrains.bazel.sync.scope.PartialProjectSync
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.task.asyncQueryIf
 import org.jetbrains.bazel.sync.task.query
@@ -54,6 +56,8 @@ import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
@@ -78,11 +82,10 @@ class CollectProjectDetailsTask(
     server: JoinedBuildServer,
     syncScope: ProjectSyncScope,
     progressReporter: SequentialProgressReporter,
-    buildTargets: WorkspaceBuildTargetsResult,
   ) {
     val projectDetails =
       progressReporter.sizedStep(workSize = 50, text = BazelPluginBundle.message("progress.bar.collect.project.details")) {
-        collectModel(project, server, buildTargets)
+        collectModel(project, server, syncScope)
       }
 
     progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.bar.calculate.jdk.infos")) {
@@ -111,7 +114,7 @@ class CollectProjectDetailsTask(
   private suspend fun collectModel(
     project: Project,
     server: JoinedBuildServer,
-    buildTargets: WorkspaceBuildTargetsResult,
+    syncScope: ProjectSyncScope,
   ): ProjectDetails =
     try {
       project.syncConsole.startSubtask(
@@ -124,7 +127,8 @@ class CollectProjectDetailsTask(
         calculateProjectDetailsWithCapabilities(
           project = project,
           server = server,
-          buildTargets = buildTargets,
+          syncScope = syncScope,
+          taskId = taskId,
         )
 
       project.syncConsole.finishSubtask(IMPORT_SUBTASK_ID)
@@ -391,12 +395,14 @@ class CollectProjectDetailsTask(
 suspend fun calculateProjectDetailsWithCapabilities(
   project: Project,
   server: JoinedBuildServer,
-  buildTargets: WorkspaceBuildTargetsResult,
+  syncScope: ProjectSyncScope,
+  taskId: String,
 ): ProjectDetails =
   coroutineScope {
     try {
-      val javaTargetIds = buildTargets.targets.calculateJavaTargetIds()
-      val scalaTargetIds = buildTargets.targets.calculateScalaTargetIds()
+      val bspBuildTargets = queryWorkspaceBuildTargets(server, syncScope, taskId)
+      val javaTargetIds = bspBuildTargets.targets.calculateJavaTargetIds()
+      val scalaTargetIds = bspBuildTargets.targets.calculateScalaTargetIds()
       val libraries: WorkspaceLibrariesResult =
         query("workspace/libraries") {
           server.workspaceLibraries()
@@ -434,8 +440,8 @@ suspend fun calculateProjectDetailsWithCapabilities(
         }
 
       ProjectDetails(
-        targetIds = buildTargets.targets.map { it.id },
-        targets = buildTargets.targets.toSet(),
+        targetIds = bspBuildTargets.targets.map { it.id },
+        targets = bspBuildTargets.targets.toSet(),
         javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
         // TODO: Son
         scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
@@ -454,6 +460,25 @@ suspend fun calculateProjectDetailsWithCapabilities(
     }
   }
 
-private fun List<BuildTarget>.calculateJavaTargetIds(): List<Label> = filter { it.languageIds.includesJava() }.map { it.id }
+private fun List<BuildTarget>.calculateJavaTargetIds(): List<Label> = filter { it.kind.includesJava() }.map { it.id }
 
-private fun List<BuildTarget>.calculateScalaTargetIds(): List<Label> = filter { it.languageIds.includesScala() }.map { it.id }
+private fun List<BuildTarget>.calculateScalaTargetIds(): List<Label> = filter { it.kind.includesScala() }.map { it.id }
+
+private suspend fun queryWorkspaceBuildTargets(
+  server: JoinedBuildServer,
+  syncScope: ProjectSyncScope,
+  taskId: String,
+): WorkspaceBuildTargetsResult =
+  coroutineScope {
+    if (syncScope is PartialProjectSync) {
+      query("workspace/buildTargetsPartial") {
+        server.workspaceBuildTargetsPartial(WorkspaceBuildTargetsPartialParams(syncScope.targetsToSync))
+      }
+    } else if (syncScope is FirstPhaseSync) {
+      query("workspace/buildTargetsFirstPhase") {
+        server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams(taskId))
+      }
+    } else {
+      query("workspace/buildTargets") { server.workspaceBuildTargets() }
+    }
+  }

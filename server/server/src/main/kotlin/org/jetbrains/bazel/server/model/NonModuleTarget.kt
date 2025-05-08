@@ -7,4 +7,5 @@ data class NonModuleTarget(
   val label: Label,
   val tags: Set<Tag>,
   val baseDirectory: Path,
+  val kindString: String,
 )

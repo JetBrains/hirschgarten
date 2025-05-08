@@ -2,6 +2,7 @@ package org.jetbrains.bazel.server.sync
 
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.server.model.Tag
+import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 private val bazelTagToTagMapping =
   mapOf(
@@ -10,7 +11,7 @@ private val bazelTagToTagMapping =
   )
 
 class TargetTagsResolver {
-  fun resolveTags(targetInfo: BspTargetInfo.TargetInfo): Set<Tag> {
+  fun resolveTags(targetInfo: BspTargetInfo.TargetInfo, workspaceContext: WorkspaceContext): Set<Tag> {
     val typeTags =
       when {
         targetInfo.isTest() -> setOf(Tag.TEST)
@@ -19,8 +20,13 @@ class TargetTagsResolver {
         else -> setOf(Tag.LIBRARY)
       }
 
-    return typeTags + mapBazelTags(targetInfo.tagsList)
+    return typeTags + mapBazelTags(targetInfo.tagsList) + targetInfo.experimentalTags(workspaceContext)
   }
+
+  private fun BspTargetInfo.TargetInfo.experimentalTags(workspaceContext: WorkspaceContext): Set<Tag> =
+    buildSet {
+      if (kind in workspaceContext.experimentalPrioritizeLibrariesOverModulesTargetKinds.values) add(Tag.LIBRARIES_OVER_MODULES)
+    }
 
   // https://bazel.build/extending/rules#executable_rules_and_test_rules:
   // "Test rules must have names that end in _test."

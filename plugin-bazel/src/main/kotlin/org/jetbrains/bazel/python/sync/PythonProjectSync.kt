@@ -31,6 +31,7 @@ import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.PythonSdkUpdater
 import com.jetbrains.python.sdk.detectSystemWideSdks
 import com.jetbrains.python.sdk.guessedLanguageLevel
+import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
@@ -39,6 +40,7 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.task.query
+import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.utils.StringUtils
@@ -60,34 +62,41 @@ class PythonProjectSync : ProjectSyncHook {
   override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isPythonSupportEnabled
 
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
-    val pythonTargets = environment.buildTargets.calculatePythonTargets()
-    val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
+    environment.withSubtask("Process Python targets") {
+      // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1960
+      val bspBuildTargets = environment.server.workspaceBuildTargets()
+      val pythonTargets = bspBuildTargets.calculatePythonTargets()
+      val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
 
-    val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
-    val sourceDependencies = calculateDependenciesSources(pythonTargets.map { it.id }, environment)
-    val defaultSdk = getSystemSdk()
+      val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
+      val sourceDependencies = calculateDependenciesSources(pythonTargets.map { it.id }, environment)
+      val defaultSdk = getSystemSdk()
 
-    pythonTargets.forEach {
-      val moduleName = it.id.formatAsModuleName(environment.project)
-      val moduleSourceEntity = BspModuleEntitySource(moduleName)
-      val targetSourceDependencies = sourceDependencies[it.id] ?: emptyList()
-      val sourceDependencyLibrary =
-        calculateSourceDependencyLibrary(it.id, targetSourceDependencies, moduleSourceEntity, virtualFileUrlManager)
+      pythonTargets.forEach {
+        val moduleName = it.id.formatAsModuleName(environment.project)
+        val moduleSourceEntity = BspModuleEntitySource(moduleName)
+        val targetSourceDependencies = sourceDependencies[it.id] ?: emptyList()
+        val sourceDependencyLibrary =
+          calculateSourceDependencyLibrary(it.id, targetSourceDependencies, moduleSourceEntity, virtualFileUrlManager)
 
-      addModuleEntityFromTarget(
-        builder = environment.diff.workspaceModelDiff.mutableEntityStorage,
-        target = it,
-        moduleName = moduleName,
-        entitySource = moduleSourceEntity,
-        virtualFileUrlManager = virtualFileUrlManager,
-        project = environment.project,
-        sdk = sdks[it.id] ?: defaultSdk,
-        sourceDependencyLibrary = sourceDependencyLibrary,
-      )
+        addModuleEntityFromTarget(
+          builder = environment.diff.workspaceModelDiff.mutableEntityStorage,
+          target = it,
+          moduleName = moduleName,
+          entitySource = moduleSourceEntity,
+          virtualFileUrlManager = virtualFileUrlManager,
+          project = environment.project,
+          sdk = sdks[it.id] ?: defaultSdk,
+          sourceDependencyLibrary = sourceDependencyLibrary,
+        )
+      }
     }
   }
 
-  private fun WorkspaceBuildTargetsResult.calculatePythonTargets(): List<BuildTarget> = targets.filter { it.languageIds.contains("python") }
+  private fun WorkspaceBuildTargetsResult.calculatePythonTargets(): List<BuildTarget> =
+    targets.filter {
+      it.kind.languageClasses.contains(LanguageClass.PYTHON)
+    }
 
   private suspend fun calculateAndAddSdksWithProgress(
     targets: List<BuildTarget>,

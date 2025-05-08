@@ -1,5 +1,10 @@
 load("@${rulesetName}//kotlin/internal:defs.bzl", "KtCompilerPluginInfo", "KtJvmInfo")
+#if( $usesRulesJvm == "true" )
+load("@rules_jvm//:rules/impl/kotlinc-options.bzl", "KotlincOptions", "kotlinc_options_to_flags")
+#else
 load("@${rulesetName}//kotlin/internal:opts.bzl", "KotlincOptions", "kotlinc_options_to_flags")
+#end
+load("@${rulesetName}//kotlin/internal:opts.bzl", "JavacOptions", "javac_options_to_flags")
 load("//aspects:utils/utils.bzl", "COMPILE_DEPS", "collect_targets_from_attrs", "convert_struct_to_dict", "create_struct", "file_location", "filter_not_none", "log_warn", "map")
 
 KOTLIN_TOOLCHAIN_TYPE = "@${rulesetName}//kotlin/internal:kt_toolchain_type"
@@ -33,16 +38,7 @@ def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
     additional_associates_labels = [associate.id for associate in additional_associates]
 
     kotlin_toolchain = ctx.toolchains[KOTLIN_TOOLCHAIN_TYPE]
-    toolchain_kotlinc_opts = kotlin_toolchain.kotlinc_options
-    kotlinc_opts_target = getattr(rule_attrs, "kotlinc_opts", None)
-    kotlinc_opts = kotlinc_opts_target[KotlincOptions] if kotlinc_opts_target and KotlincOptions in kotlinc_opts_target else toolchain_kotlinc_opts
-    kotlinc_opts_dict = convert_struct_to_dict(kotlinc_opts)
-
-    # Inject default JVM target version if necessary
-
-    # if not specifically set, the default value of "jvm_target" in kotlinc_opts is an empty string.
-    if not kotlinc_opts_dict.get("jvm_target") and getattr(kotlin_toolchain, "jvm_target", ""):
-        kotlinc_opts_dict["jvm_target"] = getattr(kotlin_toolchain, "jvm_target")
+    kotlinc_opts = get_kotlinc_options(ctx, target)
 
     stdlibs_files = []
     if hasattr(kotlin_toolchain, "jvm_stdlibs"):
@@ -68,7 +64,7 @@ def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
         language_version = language_version,
         api_version = api_version,
         associates = associates_labels + additional_associates_labels,
-        kotlinc_opts = kotlinc_options_to_flags(create_struct(**kotlinc_opts_dict)),
+        kotlinc_opts = kotlinc_opts,
         stdlibs = stdlibs,
         kotlinc_plugin_infos = kt_compiler_plugin_infos,
     )
@@ -111,3 +107,21 @@ def extract_kt_compiler_plugin_option(option):
         plugin_id = plugin_id,
         option_value = option_value,
     )
+
+def get_kotlinc_options(ctx, target):
+    kotlin_toolchain = ctx.toolchains[KOTLIN_TOOLCHAIN_TYPE]
+    toolchain_kotlinc_opts = kotlin_toolchain.kotlinc_options
+    kotlinc_opts_target = getattr(ctx.rule.attr, "kotlinc_opts", None)
+    kotlinc_opts = kotlinc_opts_target[KotlincOptions] if kotlinc_opts_target and KotlincOptions in kotlinc_opts_target else toolchain_kotlinc_opts
+    kotlinc_opts_dict = convert_struct_to_dict(kotlinc_opts)
+    # if not specifically set, the default value of "jvm_target" in kotlinc_opts is an empty string.
+    if not kotlinc_opts_dict.get("jvm_target") and getattr(kotlin_toolchain, "jvm_target", ""):
+        kotlinc_opts_dict["jvm_target"] = getattr(kotlin_toolchain, "jvm_target")
+    return kotlinc_options_to_flags(create_struct(**kotlinc_opts_dict))
+
+def get_additional_javac_options(ctx, target):
+    kotlin_toolchain = ctx.toolchains[KOTLIN_TOOLCHAIN_TYPE]
+    toolchain_javac_opts = kotlin_toolchain.javac_options
+    javac_opts_target = getattr(ctx.rule.attr, "javac_opts", None)
+    javac_opts = javac_opts_target[JavacOptions] if javac_opts_target and JavacOptions in javac_opts_target else toolchain_javac_opts
+    return javac_options_to_flags(javac_opts)

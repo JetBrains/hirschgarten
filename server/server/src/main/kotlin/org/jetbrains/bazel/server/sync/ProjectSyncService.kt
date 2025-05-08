@@ -6,6 +6,7 @@ import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
+import org.jetbrains.bsp.protocol.BazelProject
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
@@ -24,8 +25,6 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
-import org.jetbrains.bsp.protocol.PythonOptionsParams
-import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
@@ -46,8 +45,17 @@ class ProjectSyncService(
   private val bazelInfo: BazelInfo,
   private val workspaceContextProvider: WorkspaceContextProvider,
 ) {
-  suspend fun workspaceBuildTargets(build: Boolean, originId: String): WorkspaceBuildTargetsResult {
+  suspend fun runSync(build: Boolean, originId: String): BazelProject {
     val project = projectProvider.refreshAndGet(build = build, originId = originId)
+
+    return BazelProject(
+      targets = project.targets,
+      hasError = project.hasError,
+    )
+  }
+
+  suspend fun workspaceBuildTargets(): WorkspaceBuildTargetsResult {
+    val project = projectProvider.get() as? AspectSyncProject ?: return WorkspaceBuildTargetsResult(emptyList())
     return bspMapper.workspaceTargets(project)
   }
 
@@ -131,11 +139,6 @@ class ProjectSyncService(
   suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return CppOptionsResult(emptyList())
     return bspMapper.buildTargetCppOptions(project, params)
-  }
-
-  suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult {
-    val project = projectProvider.get() as? AspectSyncProject ?: return PythonOptionsResult(emptyList())
-    return bspMapper.buildTargetPythonOptions(project, params)
   }
 
   suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult {

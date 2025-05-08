@@ -27,8 +27,8 @@ import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarEx
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSource: CompiledSourceCodeInsideJarExcludeEntityData) : CompiledSourceCodeInsideJarExcludeEntity, WorkspaceEntityBase(
-  dataSource) {
+internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSource: CompiledSourceCodeInsideJarExcludeEntityData) :
+  CompiledSourceCodeInsideJarExcludeEntity, WorkspaceEntityBase(dataSource) {
 
   private companion object {
 
@@ -44,12 +44,6 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
     get() {
       readField("relativePathsInsideJarToExclude")
       return dataSource.relativePathsInsideJarToExclude
-    }
-
-  override val namesInsideJarToExclude: Set<String>
-    get() {
-      readField("namesInsideJarToExclude")
-      return dataSource.namesInsideJarToExclude
     }
 
   override val excludeId: CompiledSourceCodeInsideJarExcludeId
@@ -69,8 +63,9 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
   }
 
 
-  internal class Builder(result: CompiledSourceCodeInsideJarExcludeEntityData?) : ModifiableWorkspaceEntityBase<CompiledSourceCodeInsideJarExcludeEntity, CompiledSourceCodeInsideJarExcludeEntityData>(
-    result), CompiledSourceCodeInsideJarExcludeEntity.Builder {
+  internal class Builder(result: CompiledSourceCodeInsideJarExcludeEntityData?) :
+    ModifiableWorkspaceEntityBase<CompiledSourceCodeInsideJarExcludeEntity, CompiledSourceCodeInsideJarExcludeEntityData>(result),
+    CompiledSourceCodeInsideJarExcludeEntity.Builder {
     internal constructor() : this(CompiledSourceCodeInsideJarExcludeEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -104,9 +99,6 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
       if (!getEntityData().isRelativePathsInsideJarToExcludeInitialized()) {
         error("Field CompiledSourceCodeInsideJarExcludeEntity#relativePathsInsideJarToExclude should be initialized")
       }
-      if (!getEntityData().isNamesInsideJarToExcludeInitialized()) {
-        error("Field CompiledSourceCodeInsideJarExcludeEntity#namesInsideJarToExclude should be initialized")
-      }
       if (!getEntityData().isExcludeIdInitialized()) {
         error("Field CompiledSourceCodeInsideJarExcludeEntity#excludeId should be initialized")
       }
@@ -121,18 +113,14 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
       if (collection_relativePathsInsideJarToExclude is MutableWorkspaceSet<*>) {
         collection_relativePathsInsideJarToExclude.cleanModificationUpdateAction()
       }
-      val collection_namesInsideJarToExclude = getEntityData().namesInsideJarToExclude
-      if (collection_namesInsideJarToExclude is MutableWorkspaceSet<*>) {
-        collection_namesInsideJarToExclude.cleanModificationUpdateAction()
-      }
     }
 
     // Relabeling code, move information from dataSource to this builder
     override fun relabel(dataSource: WorkspaceEntity, parents: Set<WorkspaceEntity>?) {
       dataSource as CompiledSourceCodeInsideJarExcludeEntity
       if (this.entitySource != dataSource.entitySource) this.entitySource = dataSource.entitySource
-      if (this.relativePathsInsideJarToExclude != dataSource.relativePathsInsideJarToExclude) this.relativePathsInsideJarToExclude = dataSource.relativePathsInsideJarToExclude.toMutableSet()
-      if (this.namesInsideJarToExclude != dataSource.namesInsideJarToExclude) this.namesInsideJarToExclude = dataSource.namesInsideJarToExclude.toMutableSet()
+      if (this.relativePathsInsideJarToExclude != dataSource.relativePathsInsideJarToExclude) this.relativePathsInsideJarToExclude =
+        dataSource.relativePathsInsideJarToExclude.toMutableSet()
       if (this.excludeId != dataSource.excludeId) this.excludeId = dataSource.excludeId
       updateChildToParentReferences(parents)
     }
@@ -169,28 +157,6 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
         relativePathsInsideJarToExcludeUpdater.invoke(value)
       }
 
-    private val namesInsideJarToExcludeUpdater: (value: Set<String>) -> Unit = { value ->
-
-      changedProperty.add("namesInsideJarToExclude")
-    }
-    override var namesInsideJarToExclude: MutableSet<String>
-      get() {
-        val collection_namesInsideJarToExclude = getEntityData().namesInsideJarToExclude
-        if (collection_namesInsideJarToExclude !is MutableWorkspaceSet) return collection_namesInsideJarToExclude
-        if (diff == null || modifiable.get()) {
-          collection_namesInsideJarToExclude.setModificationUpdateAction(namesInsideJarToExcludeUpdater)
-        }
-        else {
-          collection_namesInsideJarToExclude.cleanModificationUpdateAction()
-        }
-        return collection_namesInsideJarToExclude
-      }
-      set(value) {
-        checkModificationAllowed()
-        getEntityData(true).namesInsideJarToExclude = value
-        namesInsideJarToExcludeUpdater.invoke(value)
-      }
-
     override var excludeId: CompiledSourceCodeInsideJarExcludeId
       get() = getEntityData().excludeId
       set(value) {
@@ -205,20 +171,17 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityData<CompiledSourceCodeInsideJarExcludeEntity>(), SoftLinkable {
+internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityData<CompiledSourceCodeInsideJarExcludeEntity>(),
+                                                              SoftLinkable {
   lateinit var relativePathsInsideJarToExclude: MutableSet<String>
-  lateinit var namesInsideJarToExclude: MutableSet<String>
   lateinit var excludeId: CompiledSourceCodeInsideJarExcludeId
 
   internal fun isRelativePathsInsideJarToExcludeInitialized(): Boolean = ::relativePathsInsideJarToExclude.isInitialized
-  internal fun isNamesInsideJarToExcludeInitialized(): Boolean = ::namesInsideJarToExclude.isInitialized
   internal fun isExcludeIdInitialized(): Boolean = ::excludeId.isInitialized
 
   override fun getLinks(): Set<SymbolicEntityId<*>> {
     val result = HashSet<SymbolicEntityId<*>>()
     for (item in relativePathsInsideJarToExclude) {
-    }
-    for (item in namesInsideJarToExclude) {
     }
     result.add(excludeId)
     return result
@@ -227,8 +190,6 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
   override fun index(index: WorkspaceMutableIndex<SymbolicEntityId<*>>) {
     for (item in relativePathsInsideJarToExclude) {
     }
-    for (item in namesInsideJarToExclude) {
-    }
     index.index(this, excludeId)
   }
 
@@ -236,8 +197,6 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
     // TODO verify logic
     val mutablePreviousSet = HashSet(prev)
     for (item in relativePathsInsideJarToExclude) {
-    }
-    for (item in namesInsideJarToExclude) {
     }
     val removedItem_excludeId = mutablePreviousSet.remove(excludeId)
     if (!removedItem_excludeId) {
@@ -283,14 +242,14 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
 
   override fun getMetadata(): EntityMetadata {
     return MetadataStorageImpl.getMetadataByTypeFqn(
-      "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity") as EntityMetadata
+      "org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeEntity"
+    ) as EntityMetadata
   }
 
   override fun clone(): CompiledSourceCodeInsideJarExcludeEntityData {
     val clonedEntity = super.clone()
     clonedEntity as CompiledSourceCodeInsideJarExcludeEntityData
     clonedEntity.relativePathsInsideJarToExclude = clonedEntity.relativePathsInsideJarToExclude.toMutableWorkspaceSet()
-    clonedEntity.namesInsideJarToExclude = clonedEntity.namesInsideJarToExclude.toMutableWorkspaceSet()
     return clonedEntity
   }
 
@@ -299,7 +258,7 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
-    return CompiledSourceCodeInsideJarExcludeEntity(relativePathsInsideJarToExclude, namesInsideJarToExclude, excludeId, entitySource) {
+    return CompiledSourceCodeInsideJarExcludeEntity(relativePathsInsideJarToExclude, excludeId, entitySource) {
     }
   }
 
@@ -316,7 +275,6 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
 
     if (this.entitySource != other.entitySource) return false
     if (this.relativePathsInsideJarToExclude != other.relativePathsInsideJarToExclude) return false
-    if (this.namesInsideJarToExclude != other.namesInsideJarToExclude) return false
     if (this.excludeId != other.excludeId) return false
     return true
   }
@@ -328,7 +286,6 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
     other as CompiledSourceCodeInsideJarExcludeEntityData
 
     if (this.relativePathsInsideJarToExclude != other.relativePathsInsideJarToExclude) return false
-    if (this.namesInsideJarToExclude != other.namesInsideJarToExclude) return false
     if (this.excludeId != other.excludeId) return false
     return true
   }
@@ -336,7 +293,6 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
   override fun hashCode(): Int {
     var result = entitySource.hashCode()
     result = 31 * result + relativePathsInsideJarToExclude.hashCode()
-    result = 31 * result + namesInsideJarToExclude.hashCode()
     result = 31 * result + excludeId.hashCode()
     return result
   }
@@ -344,7 +300,6 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
   override fun hashCodeIgnoringEntitySource(): Int {
     var result = javaClass.hashCode()
     result = 31 * result + relativePathsInsideJarToExclude.hashCode()
-    result = 31 * result + namesInsideJarToExclude.hashCode()
     result = 31 * result + excludeId.hashCode()
     return result
   }

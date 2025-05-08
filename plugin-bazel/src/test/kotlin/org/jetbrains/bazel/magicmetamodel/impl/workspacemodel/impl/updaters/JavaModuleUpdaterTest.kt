@@ -23,6 +23,9 @@ import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import org.jetbrains.bazel.commons.LanguageClass
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
@@ -76,6 +79,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                   libraryName = "lib2",
                   isProjectLevelLibrary = false,
                 ),
+              ),
+            kind =
+              TargetKind(
+                kindString = "java_library",
+                ruleType = RuleType.LIBRARY,
+                languageClasses = setOf(LanguageClass.JAVA),
               ),
           )
 
@@ -324,6 +333,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                   moduleName = "module3",
                 ),
               ),
+            kind =
+              TargetKind(
+                kindString = "java_library",
+                ruleType = RuleType.LIBRARY,
+                languageClasses = setOf(LanguageClass.JAVA),
+              ),
             librariesDependencies =
               listOf(
                 IntermediateLibraryDependency(
@@ -395,6 +410,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                 IntermediateModuleDependency(
                   moduleName = "module3",
                 ),
+              ),
+            kind =
+              TargetKind(
+                kindString = "java_library",
+                ruleType = RuleType.LIBRARY,
+                languageClasses = setOf(LanguageClass.JAVA),
               ),
             librariesDependencies =
               listOf(
@@ -732,7 +753,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             type = ModuleTypeId("JAVA_MODULE"),
             modulesDependencies = emptyList(),
             librariesDependencies = emptyList(),
-            languageIds = listOf("java"),
+            kind =
+              TargetKind(
+                kindString = "java_library",
+                ruleType = RuleType.LIBRARY,
+                languageClasses = setOf(LanguageClass.JAVA),
+              ),
           )
 
         val baseDirContentRootPath = Path("/root/dir/")
@@ -785,7 +811,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             type = ModuleTypeId("JAVA_MODULE"),
             modulesDependencies = emptyList(),
             librariesDependencies = emptyList(),
-            languageIds = listOf("java"),
+            kind =
+              TargetKind(
+                kindString = "java_library",
+                ruleType = RuleType.LIBRARY,
+                languageClasses = setOf(LanguageClass.JAVA),
+              ),
           )
 
         val baseDirContentRootPath1 = Path("/root/dir1/")
@@ -810,7 +841,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             type = ModuleTypeId("JAVA_MODULE"),
             modulesDependencies = emptyList(),
             librariesDependencies = emptyList(),
-            languageIds = listOf("java"),
+            kind =
+              TargetKind(
+                kindString = "java_library",
+                ruleType = RuleType.LIBRARY,
+                languageClasses = setOf(LanguageClass.JAVA),
+              ),
           )
 
         val baseDirContentRootPath2 = Path("/root/dir2/")

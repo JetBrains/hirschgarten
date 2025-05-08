@@ -29,6 +29,7 @@ object ProjectViewSection {
       "experimental_add_transitive_compile_time_jars" to Parser.Scalar.Boolean,
       "experimental_no_prune_transitive_compile_time_jars_patterns" to Parser.List.String,
       "experimental_transitive_compile_time_jars_target_kinds" to Parser.List.String,
+      "experimental_prioritize_libraries_over_modules_target_kinds" to Parser.List.String,
       "ide_java_home_override" to Parser.Scalar.String,
       "import_depth" to Parser.Scalar.Integer,
       "shard_approach" to Parser.Scalar.String,

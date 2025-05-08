@@ -39,6 +39,8 @@ class WorkspaceContextConstructor(
         ExperimentalNoPruneTransitiveCompileTimeJarsPatternsExtractor.fromProjectView(
           projectView,
         ),
+      experimentalPrioritizeLibrariesOverModulesTargetKinds =
+        ExperimentalPrioritizeLibrariesOverModulesTargetKindsExtractor.fromProjectView(projectView),
       enableNativeAndroidRules = EnableNativeAndroidRulesExtractor.fromProjectView(projectView),
       androidMinSdkSpec = AndroidMinSdkSpecExtractor.fromProjectView(projectView),
       shardSync = ShardSyncSpecExtractor.fromProjectView(projectView),

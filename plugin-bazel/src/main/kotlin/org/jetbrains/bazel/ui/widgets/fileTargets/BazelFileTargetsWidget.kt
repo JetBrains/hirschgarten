@@ -101,7 +101,7 @@ class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(proje
       ResyncTargetAction.createIfEnabled(id)?.let { resyncTargetAction -> it.add(resyncTargetAction) }
       it.add(CopyTargetIdAction.FromTargetInfo(this))
       it.addSeparator()
-      if (capabilities.canCompile) {
+      if (!noBuild) {
         it.add(BuildTargetAction(id))
       }
       it.fillWithEligibleActions(project, this, false)

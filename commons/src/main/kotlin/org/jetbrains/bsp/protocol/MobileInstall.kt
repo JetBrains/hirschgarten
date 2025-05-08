@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.protocol
 
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
@@ -21,4 +22,4 @@ public data class MobileInstallParams(
   val adbPath: Path?,
 )
 
-public data class MobileInstallResult(val statusCode: StatusCode, var originId: String? = null)
+public data class MobileInstallResult(val statusCode: BazelStatus, var originId: String? = null)

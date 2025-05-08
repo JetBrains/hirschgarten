@@ -1,9 +1,10 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetCapabilities
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -408,9 +409,12 @@ private fun mockTarget(id: String, dependencies: List<String>): BuildTarget =
   BuildTarget(
     Label.parse(id),
     emptyList(),
-    emptyList(),
     dependencies.map { Label.parse(it) },
-    BuildTargetCapabilities(),
+    TargetKind(
+      kindString = "java_binary",
+      ruleType = RuleType.BINARY,
+      languageClasses = setOf(),
+    ),
     emptyList(),
     emptyList(),
     Path("base/dir"),

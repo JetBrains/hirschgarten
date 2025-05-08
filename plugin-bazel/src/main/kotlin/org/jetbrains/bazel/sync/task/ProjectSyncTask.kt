@@ -40,8 +40,10 @@ import org.jetbrains.bazel.sync.status.SyncAlreadyInProgressException
 import org.jetbrains.bazel.sync.status.SyncFatalFailureException
 import org.jetbrains.bazel.sync.status.SyncPartialFailureException
 import org.jetbrains.bazel.sync.status.SyncStatusService
+import org.jetbrains.bazel.ui.console.ids.BASE_PROJECT_SYNC_SUBTASK_ID
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bazel.ui.console.syncConsole
+import org.jetbrains.bazel.ui.console.withSubtask
 import java.util.concurrent.CancellationException
 
 private val log = logger<ProjectSyncTask>()
@@ -149,15 +151,21 @@ class ProjectSyncTask(private val project: Project) {
     }
 
   private suspend fun executePreSyncHooks(progressReporter: SequentialProgressReporter) {
-    val environment =
-      ProjectPreSyncHook.ProjectPreSyncHookEnvironment(
-        project = project,
-        taskId = PROJECT_SYNC_TASK_ID,
-        progressReporter = progressReporter,
-      )
+    project.withSubtask(
+      reporter = progressReporter,
+      taskId = PROJECT_SYNC_TASK_ID,
+      text = BazelPluginBundle.message("console.task.execute.pre.sync.hooks"),
+    ) {
+      val environment =
+        ProjectPreSyncHook.ProjectPreSyncHookEnvironment(
+          project = project,
+          taskId = it,
+          progressReporter = progressReporter,
+        )
 
-    project.projectPreSyncHooks.forEach {
-      it.onPreSync(environment)
+      project.projectPreSyncHooks.forEach {
+        it.onPreSync(environment)
+      }
     }
   }
 
@@ -167,56 +175,72 @@ class ProjectSyncTask(private val project: Project) {
     buildProject: Boolean,
   ): SyncResultStatus {
     val diff = AllProjectStructuresProvider(project).newDiff()
-    val hasError =
+    val syncStatus =
       project.connection.runWithServer { server ->
         bspTracer.spanBuilder("collect.project.details.ms").use {
           // if this bazel build fails, we still want the sync hooks to be executed
-          val buildTargets = BaseProjectSync(project).execute(syncScope, buildProject, server, PROJECT_SYNC_TASK_ID)
-          val environment =
-            ProjectSyncHookEnvironment(
-              project = project,
-              server = server,
-              diff = diff,
+          val bazelProject =
+            project.syncConsole.withSubtask(
               taskId = PROJECT_SYNC_TASK_ID,
-              progressReporter = progressReporter,
-              buildTargets = buildTargets,
-              syncScope = syncScope,
-            )
+              subtaskId = BASE_PROJECT_SYNC_SUBTASK_ID,
+              message = BazelPluginBundle.message("console.task.base.sync"),
+            ) { server.runSync(buildProject, PROJECT_SYNC_TASK_ID) }
+          if (bazelProject.hasError && bazelProject.targets.isEmpty()) return@use SyncResultStatus.FAILURE
+          project.withSubtask(
+            reporter = progressReporter,
+            taskId = PROJECT_SYNC_TASK_ID,
+            text = BazelPluginBundle.message("console.task.execute.sync.hooks"),
+          ) {
+            val environment =
+              ProjectSyncHookEnvironment(
+                project = project,
+                server = server,
+                diff = diff,
+                taskId = it,
+                progressReporter = progressReporter,
+                buildTargets = bazelProject.targets,
+                syncScope = syncScope,
+              )
 
-          project.projectSyncHooks.forEach {
-            it.onSync(environment)
+            project.projectSyncHooks.forEach {
+              it.onSync(environment)
+            }
           }
-          buildTargets.hasError
-        }
-      }
 
-    val syncStatus =
-      if (hasError) {
-        if (diff.isInvalid()) {
-          SyncResultStatus.FAILURE
-        } else {
-          SyncResultStatus.PARTIAL_SUCCESS
+          if (bazelProject.hasError) {
+            SyncResultStatus.PARTIAL_SUCCESS
+          } else {
+            SyncResultStatus.SUCCESS
+          }
         }
-      } else {
-        SyncResultStatus.SUCCESS
       }
 
     if (syncStatus != SyncResultStatus.FAILURE) {
-      diff.applyAll(syncScope, PROJECT_SYNC_TASK_ID)
+      project.withSubtask(
+        reporter = progressReporter,
+        taskId = PROJECT_SYNC_TASK_ID,
+        text = BazelPluginBundle.message("console.task.apply.changes"),
+      ) { diff.applyAll(syncScope, it) }
     }
     return syncStatus
   }
 
   private suspend fun executePostSyncHooks(progressReporter: SequentialProgressReporter) {
-    val environment =
-      ProjectPostSyncHook.ProjectPostSyncHookEnvironment(
-        project = project,
-        taskId = PROJECT_SYNC_TASK_ID,
-        progressReporter = progressReporter,
-      )
+    project.withSubtask(
+      reporter = progressReporter,
+      taskId = PROJECT_SYNC_TASK_ID,
+      text = BazelPluginBundle.message("console.task.execute.post.sync.hooks"),
+    ) {
+      val environment =
+        ProjectPostSyncHook.ProjectPostSyncHookEnvironment(
+          project = project,
+          taskId = it,
+          progressReporter = progressReporter,
+        )
 
-    project.projectPostSyncHooks.forEach {
-      it.onPostSync(environment)
+      project.projectPostSyncHooks.forEach {
+        it.onPostSync(environment)
+      }
     }
   }
 

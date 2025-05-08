@@ -6,12 +6,12 @@ import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.openapi.util.Key
+import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.TaskId
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
-import org.jetbrains.bsp.protocol.StatusCode
 import org.jetbrains.bsp.protocol.TestFinish
 import org.jetbrains.bsp.protocol.TestStart
 import org.jetbrains.bsp.protocol.TestStatus
@@ -69,7 +69,7 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
     taskId: TaskId,
     parentId: TaskId?,
     message: String,
-    status: StatusCode,
+    status: BazelStatus,
     data: Any?,
   ) {
     when (data) {
