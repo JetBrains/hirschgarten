@@ -23,7 +23,8 @@ class BazelRunConfiguration internal constructor(
   configurationType: BazelRunConfigurationType,
 ) : LocatableConfigurationBase<RunProfileState>(project, configurationType, name),
   RunConfigurationWithSuppressedDefaultDebugAction,
-  SMRunnerConsolePropertiesProvider {
+  SMRunnerConsolePropertiesProvider,
+  HotswappableRunConfiguration {
   private val logger: Logger = logger<BazelRunConfiguration>()
 
   /** The BSP-specific parts of the last serialized state of this run configuration. */
@@ -142,6 +143,8 @@ class BazelRunConfiguration internal constructor(
 
   override fun createTestConsoleProperties(executor: Executor): SMTRunnerConsoleProperties =
     SMTRunnerConsoleProperties(this, "BSP", executor)
+
+  override fun getTargetsToBuild(): List<Label> = targets
 
   companion object {
     private const val TARGET_TAG = "bsp-target"
