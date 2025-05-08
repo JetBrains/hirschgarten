@@ -84,6 +84,7 @@ class BazelPyImportResolverTest : MockProjectBaseTest() {
    *  |- file1.py
    *  |- dir1
    *  |  |- conflict
+   *  |  |  |- __init__.py
    *  |  |- conflict.py
    *  |- dir2
    *  |  |- dir21
@@ -98,7 +99,7 @@ class BazelPyImportResolverTest : MockProjectBaseTest() {
       root.createChildData(this, "file1.py")
 
       val dir1 = root.createChildDirectory(this, "dir1")
-      dir1.createChildDirectory(this, "conflict")
+      dir1.createChildDirectory(this, "conflict").also { it.createChildData(this, "__init__.py") }
       dir1.createChildData(this, "conflict.py")
 
       val dir2 = root.createChildDirectory(this, "dir2")
