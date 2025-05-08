@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
@@ -55,7 +56,7 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
   private fun initHotSwapEnabledCheckBox(): JBCheckBox =
     JBCheckBox(BazelPluginBundle.message("project.settings.plugin.hotswap.enabled.checkbox.text")).apply {
       // hotswap now only works with local JVM actions
-      isEnabled = currentProjectSettings.enableLocalJvmActions
+      isEnabled = currentProjectSettings.enableLocalJvmActions && !BazelFeatureFlags.fastBuildEnabled
       isSelected = currentProjectSettings.hotSwapEnabled
       addItemListener {
         if (currentProjectSettings.enableLocalJvmActions) {

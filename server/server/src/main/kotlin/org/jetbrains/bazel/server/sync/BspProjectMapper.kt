@@ -48,6 +48,7 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
+import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.ScalacOptionsItem
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
@@ -338,4 +339,7 @@ class BspProjectMapper(
     val resolve = languagePluginsService.goLanguagePlugin::resolveRemoteToLocal
     return resolve(params)
   }
+
+  suspend fun jvmBuilderParams(project: Project): JvmToolchainInfo =
+    JvmToolchainQuery.jvmToolchainQuery(bspInfo, bazelRunner, project.workspaceContext)
 }
