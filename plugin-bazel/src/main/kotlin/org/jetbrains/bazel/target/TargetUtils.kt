@@ -253,10 +253,11 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
           .mapValues { bazelGson.fromJson(it.value, BuildTarget::class.java) }
       moduleIdToTarget = state.moduleIdToTarget.mapValues { Label.parse(it.value) }
       libraryIdToTarget = state.libraryIdToTarget.mapValues { Label.parse(it.value) }
-      fileToTarget.clear()
-      fileToTarget.putAll(state.fileToTarget.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } })
-      fileToExecutableTargets =
-        state.fileToExecutableTargets.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
+      fileToTarget.apply {
+        clear()
+        putAll(state.fileToTarget.mapToPathsAndLabels())
+      }
+      fileToExecutableTargets = state.fileToExecutableTargets.mapToPathsAndLabels()
       updateComputedFields()
     } catch (e: Exception) {
       log.warn(e)
@@ -269,6 +270,11 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       updateComputedFields()
     }
   }
+
+  private fun Map<String, List<String>>.mapToPathsAndLabels(): Map<Path, List<Label>> =
+    this
+      .mapKeys { it.key.toNioPathOrNull()!! }
+      .mapValues { it.value.map { label -> Label.parse(label) } }
 
   companion object {
     val log = logger<TargetUtils>()
