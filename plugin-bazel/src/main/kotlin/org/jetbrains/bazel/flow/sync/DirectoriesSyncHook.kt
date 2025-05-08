@@ -17,8 +17,8 @@ import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.withSubtask
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import java.nio.file.Path
 
@@ -54,7 +54,7 @@ class DirectoriesSyncHook : ProjectSyncHook {
       projectRoot = project.rootDir.toVirtualFileUrl(virtualFileUrlManager),
       includedRoots = includedRoots,
       excludedRoots = excludedRoots,
-      entitySource = BspProjectEntitySource,
+      entitySource = BazelProjectEntitySource,
     )
   }
 

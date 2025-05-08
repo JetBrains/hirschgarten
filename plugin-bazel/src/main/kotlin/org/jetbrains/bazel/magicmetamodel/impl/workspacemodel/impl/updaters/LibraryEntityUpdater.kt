@@ -17,7 +17,7 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.jps.model.serialization.library.JpsLibraryTableSerializer
 
@@ -104,7 +104,7 @@ internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfi
 
 internal fun calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig): EntitySource =
   when {
-    !workspaceModelEntityUpdaterConfig.project.bazelProjectSettings.enableBuildWithJps -> BspProjectEntitySource
+    !workspaceModelEntityUpdaterConfig.project.bazelProjectSettings.enableBuildWithJps -> BazelProjectEntitySource
     else ->
       LegacyBridgeJpsEntitySourceFactory
         .getInstance(workspaceModelEntityUpdaterConfig.project)

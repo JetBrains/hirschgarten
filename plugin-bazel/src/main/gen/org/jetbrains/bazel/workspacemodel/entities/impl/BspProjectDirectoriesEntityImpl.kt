@@ -22,8 +22,8 @@ import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDirectoriesEntityData) : BspProjectDirectoriesEntity,
-                                                                                                          WorkspaceEntityBase(dataSource) {
+internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDirectoriesEntityData) : BspProjectDirectoriesEntity, WorkspaceEntityBase(
+  dataSource) {
 
   private companion object {
 
@@ -62,9 +62,8 @@ internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjec
   }
 
 
-  internal class Builder(result: BspProjectDirectoriesEntityData?) :
-    ModifiableWorkspaceEntityBase<BspProjectDirectoriesEntity, BspProjectDirectoriesEntityData>(result),
-    BspProjectDirectoriesEntity.Builder {
+  internal class Builder(result: BspProjectDirectoriesEntityData?) : ModifiableWorkspaceEntityBase<BspProjectDirectoriesEntity, BspProjectDirectoriesEntityData>(
+    result), BspProjectDirectoriesEntity.Builder {
     internal constructor() : this(BspProjectDirectoriesEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -234,8 +233,7 @@ internal class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectD
 
   override fun getMetadata(): EntityMetadata {
     return MetadataStorageImpl.getMetadataByTypeFqn(
-      "org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity"
-    ) as EntityMetadata
+      "org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity") as EntityMetadata
   }
 
   override fun clone(): BspProjectDirectoriesEntityData {
