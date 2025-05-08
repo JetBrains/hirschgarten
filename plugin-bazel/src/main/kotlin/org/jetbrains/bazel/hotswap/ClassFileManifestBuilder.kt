@@ -81,7 +81,7 @@ object ClassFileManifestBuilder {
     val jvmEnvDeferred: Deferred<JvmEnvironmentResult?> =
       BazelCoroutineService.getInstance(project).startAsync {
         project.connection.runWithServer { server ->
-          val targets = configuration.getTargetsToBuild()
+          val targets = configuration.getAffectedTargets()
           if (targets.isEmpty()) {
             progress?.addMessage(
               session.session,

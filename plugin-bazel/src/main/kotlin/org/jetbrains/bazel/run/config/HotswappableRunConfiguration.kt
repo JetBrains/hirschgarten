@@ -6,5 +6,5 @@ import org.jetbrains.bazel.label.Label
 interface HotswappableRunConfiguration {
   fun getProject(): Project
 
-  fun getTargetsToBuild(): List<Label>
+  fun getAffectedTargets(): List<Label>
 }

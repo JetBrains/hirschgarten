@@ -144,7 +144,7 @@ class BazelRunConfiguration internal constructor(
   override fun createTestConsoleProperties(executor: Executor): SMTRunnerConsoleProperties =
     SMTRunnerConsoleProperties(this, "BSP", executor)
 
-  override fun getTargetsToBuild(): List<Label> = targets
+  override fun getAffectedTargets(): List<Label> = targets
 
   companion object {
     private const val TARGET_TAG = "bsp-target"
