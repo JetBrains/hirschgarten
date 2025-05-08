@@ -82,7 +82,6 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
             subtaskId,
             BazelPluginBundle.message("console.task.model.apply.changes.attempt.0.1.failed", attemptIdx + 1, MAX_REPLACE_WSM_ATTEMPTS),
           )
-          delay(1.seconds)
         }
       }
     }
