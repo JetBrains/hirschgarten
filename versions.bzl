@@ -1,6 +1,6 @@
-"""Developer versions of plugins."""
+"""Release versions of plugins. The file is swaped with versions.bzl on CI during release"""
 
-INTELLIJ_BAZEL_VERSION = "9999.9.9"
+INTELLIJ_BAZEL_VERSION = "2025.1.7"
 
 PLATFORM_VERSION = "251"
 SINCE_VERSION = "251.23774.435"
