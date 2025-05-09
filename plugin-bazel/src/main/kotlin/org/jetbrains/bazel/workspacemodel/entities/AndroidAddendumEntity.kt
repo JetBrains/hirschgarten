@@ -73,9 +73,7 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
 fun MutableEntityStorage.modifyAndroidAddendumEntity(
   entity: AndroidAddendumEntity,
   modification: AndroidAddendumEntity.Builder.() -> Unit,
-): AndroidAddendumEntity {
-  return modifyEntity(AndroidAddendumEntity.Builder::class.java, entity, modification)
-}
+): AndroidAddendumEntity = modifyEntity(AndroidAddendumEntity.Builder::class.java, entity, modification)
 
 var ModuleEntity.Builder.androidAddendumEntity: @Child AndroidAddendumEntity.Builder?
   by WorkspaceEntity.extensionBuilder(AndroidAddendumEntity::class.java)

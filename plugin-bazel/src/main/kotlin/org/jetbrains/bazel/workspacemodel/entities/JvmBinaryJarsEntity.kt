@@ -47,9 +47,7 @@ interface JvmBinaryJarsEntity : WorkspaceEntity {
 fun MutableEntityStorage.modifyJvmBinaryJarsEntity(
   entity: JvmBinaryJarsEntity,
   modification: JvmBinaryJarsEntity.Builder.() -> Unit,
-): JvmBinaryJarsEntity {
-  return modifyEntity(JvmBinaryJarsEntity.Builder::class.java, entity, modification)
-}
+): JvmBinaryJarsEntity = modifyEntity(JvmBinaryJarsEntity.Builder::class.java, entity, modification)
 
 var ModuleEntity.Builder.jvmBinaryJarsEntity: @Child JvmBinaryJarsEntity.Builder?
   by WorkspaceEntity.extensionBuilder(JvmBinaryJarsEntity::class.java)
