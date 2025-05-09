@@ -133,8 +133,10 @@
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.PathSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.ui.widgets.tool.window.components.BazelToolwindowSyncHook"
                          order="after BazelRepoMappingSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.target.sync.TargetUtilsSyncHook" id="TargetUtilsSyncHook"/>
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
+      <projectStructureProvider implementation="org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStructureProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

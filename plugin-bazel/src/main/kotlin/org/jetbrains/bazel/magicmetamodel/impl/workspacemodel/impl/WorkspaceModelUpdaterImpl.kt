@@ -21,6 +21,7 @@ class WorkspaceModelUpdaterImpl(
   projectBasePath: Path,
   project: Project,
   isAndroidSupportEnabled: Boolean,
+  libraryModules: List<JavaModule> = emptyList(),
 ) : WorkspaceModelUpdater {
   private val workspaceModelEntityUpdaterConfig =
     WorkspaceModelEntityUpdaterConfig(
@@ -30,7 +31,7 @@ class WorkspaceModelUpdaterImpl(
       project = project,
     )
   private val javaModuleUpdater =
-    JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled)
+    JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled, libraryModules)
 
   init {
     // store generated IML files outside the project directory
