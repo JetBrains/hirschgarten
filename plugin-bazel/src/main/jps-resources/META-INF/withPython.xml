@@ -14,4 +14,8 @@
         <runHandlerProvider implementation="org.jetbrains.bazel.python.run.PythonBazelTestHandler$Provider"
                             id="PythonBazelTestHandlerProvider"/>
     </extensions>
+
+    <extensions defaultExtensionNs="Pythonid">
+        <importResolver implementation="org.jetbrains.bazel.python.resolve.BazelPyImportResolver"/>
+    </extensions>
 </idea-plugin>
