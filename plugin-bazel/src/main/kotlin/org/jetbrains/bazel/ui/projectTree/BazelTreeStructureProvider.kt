@@ -31,7 +31,7 @@ import com.intellij.psi.PsiManager
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 
 internal class BazelTreeStructureProvider : TreeStructureProvider {
   // We want to get rid of all the module (group) nodes from the project view tree;
@@ -160,7 +160,7 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
 
   private val directoriesContainingIncludedDirectoriesValue =
     CachedValue { storage ->
-      val bspProjectDirectories = storage.entities<BspProjectDirectoriesEntity>().firstOrNull() ?: return@CachedValue emptySet()
+      val bspProjectDirectories = storage.entities<BazelProjectDirectoriesEntity>().firstOrNull() ?: return@CachedValue emptySet()
 
       val result =
         bspProjectDirectories.includedRoots
