@@ -24,6 +24,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
+import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bsp.protocol.BuildTargetTag
 
 private val dependencyInterner: Interner<ModuleDependencyItem> = Interner.createWeakInterner()
@@ -32,7 +33,10 @@ private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInter
 internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
+  libraryModules: List<JavaModule> = emptyList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<GenericModuleInfo, ModuleEntity> {
+  val libraryModuleLookupTable = libraryModules.map { it.genericModuleInfo.name }.toHashSet()
+
   override suspend fun addEntity(entityToAdd: GenericModuleInfo): ModuleEntity =
     addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
 
@@ -40,8 +44,7 @@ internal class ModuleEntityUpdater(
     val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
     val (libraryModulesDependencies, librariesDependencies) =
       entityToAdd.librariesDependencies.partition {
-        !entityToAdd.isLibraryModule &&
-          workspaceModelEntityUpdaterConfig.project.targetUtils.isLibraryModule(it.libraryName)
+        !entityToAdd.isLibraryModule && it.libraryName.addLibraryModulePrefix() in libraryModuleLookupTable
       }
     val allLibrariesDependencies =
       librariesDependencies.map { toLibraryDependency(it) } +

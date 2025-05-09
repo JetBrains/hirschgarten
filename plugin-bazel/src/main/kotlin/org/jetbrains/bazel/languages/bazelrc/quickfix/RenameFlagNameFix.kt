@@ -10,7 +10,11 @@ import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcElementGenerator
 
 class RenameFlagNameFix(element: PsiElement, val flag: Flag) : PsiUpdateModCommandAction<PsiElement>(element) {
-  override fun invoke(context: ActionContext, element: PsiElement, updater: ModPsiUpdater) {
+  override fun invoke(
+    context: ActionContext,
+    element: PsiElement,
+    updater: ModPsiUpdater,
+  ) {
     val target =
       when {
         element.text.startsWith("--no") -> "no${flag.option.name}"
@@ -20,7 +24,7 @@ class RenameFlagNameFix(element: PsiElement, val flag: Flag) : PsiUpdateModComma
     element.replace(BazelrcElementGenerator(context.project).createFlagName(target))
   }
 
-  override fun getPresentation(context: ActionContext, element: PsiElement): Presentation? = 
+  override fun getPresentation(context: ActionContext, element: PsiElement): Presentation? =
     Presentation.of("""Replace with "${flag.option.name}" variant""")
 
   override fun getFamilyName(): @IntentionFamilyName String = "Replace old flag names with new ones."
