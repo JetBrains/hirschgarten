@@ -28,6 +28,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.connection.connection
+import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
@@ -44,6 +45,7 @@ import org.jetbrains.bazel.ui.console.ids.BASE_PROJECT_SYNC_SUBTASK_ID
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
+import java.nio.file.NoSuchFileException
 import java.util.concurrent.CancellationException
 
 private val log = logger<ProjectSyncTask>()
@@ -94,6 +96,14 @@ class ProjectSyncTask(private val project: Project) {
             PROJECT_SYNC_TASK_ID,
             BazelPluginBundle.message("console.task.sync.fatalfailure"),
             FailureResultImpl(),
+          )
+        } catch (e: NoSuchFileException) {
+          val missingFile = e.message.toString()
+          val projectViewFile = project.bazelProjectSettings.projectViewPath.toString()
+          project.syncConsole.finishTask(
+            PROJECT_SYNC_TASK_ID,
+            BazelPluginBundle.message("console.task.sync.failed"),
+            FailureResultImpl(BazelPluginBundle.message("console.task.sync.import.fail", missingFile, projectViewFile)),
           )
         } catch (e: Exception) {
           project.syncConsole.finishTask(
