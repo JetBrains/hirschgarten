@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.python.resolve
 
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.psi.impl.PyImportResolver
@@ -56,7 +57,7 @@ class BazelPyImportResolver : PyImportResolver {
   private fun findDirectoryOrPythonFile(pathRelativeToRoot: String, context: PyQualifiedNameResolveContext): PsiElement? {
     val rootDir = context.project.rootDir
     val psiManager = context.psiManager
-    val directory = rootDir.findFileByRelativePath(pathRelativeToRoot)
+    val directory = rootDir.findFileByRelativePath(pathRelativeToRoot)?.directoryOrNull()
 
     // case 1
     if (directory?.findChild("__init__.py") != null) {
@@ -64,7 +65,7 @@ class BazelPyImportResolver : PyImportResolver {
     }
 
     // case 2
-    val file = rootDir.findFileByRelativePath("$pathRelativeToRoot.py")
+    val file = rootDir.findFileByRelativePath("$pathRelativeToRoot.py")?.fileOrNull()
     if (file != null) return psiManager.findFile(file)
 
     // case 3
@@ -77,3 +78,7 @@ class BazelPyImportResolver : PyImportResolver {
     return null
   }
 }
+
+private fun VirtualFile.fileOrNull(): VirtualFile? = if (!isDirectory) this else null
+
+private fun VirtualFile.directoryOrNull(): VirtualFile? = if (isDirectory) this else null

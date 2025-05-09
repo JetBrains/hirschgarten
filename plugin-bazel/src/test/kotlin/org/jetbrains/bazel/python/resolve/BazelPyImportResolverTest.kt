@@ -78,14 +78,35 @@ class BazelPyImportResolverTest : MockProjectBaseTest() {
     result.virtualFile.name shouldBe "conflict"
   }
 
+  @Test
+  fun `should ignore directories that look like Python files`() {
+    val result = tryResolve("dir1.directory")
+    result.shouldBeNull()
+  }
+
+  @Test
+  fun `should ignore files that have no extension`() {
+    val result = tryResolve("dir1.file")
+    result.shouldBeNull()
+  }
+
+  @Test
+  fun `should ignore files that have non-Python extension`() {
+    val result = tryResolve("file2")
+    result.shouldBeNull()
+  }
+
   /**
    * ```
    * root
    *  |- file1.py
+   *  |- file2.java
    *  |- dir1
    *  |  |- conflict
    *  |  |  |- __init__.py
+   *  |  |- directory.py (this is a directory, not a file)
    *  |  |- conflict.py
+   *  |  |- file
    *  |- dir2
    *  |  |- dir21
    *  |  |  |- dir211
@@ -97,10 +118,13 @@ class BazelPyImportResolverTest : MockProjectBaseTest() {
       val root = project.rootDir
 
       root.createChildData(this, "file1.py")
+      root.createChildData(this, "file2.java")
 
       val dir1 = root.createChildDirectory(this, "dir1")
       dir1.createChildDirectory(this, "conflict").also { it.createChildData(this, "__init__.py") }
+      dir1.createChildDirectory(this, "directory.py")
       dir1.createChildData(this, "conflict.py")
+      dir1.createChildData(this, "file")
 
       val dir2 = root.createChildDirectory(this, "dir2")
       val dir21 = dir2.createChildDirectory(this, "dir21")
