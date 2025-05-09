@@ -9,7 +9,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.io.toNioPathOrNull
+import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
@@ -35,6 +35,7 @@ import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 
 private const val MAX_EXECUTABLE_TARGET_IDS = 10
@@ -264,7 +265,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       labelToTargetInfo = emptyMap()
       moduleIdToTarget = emptyMap()
       libraryIdToTarget = emptyMap()
-      fileToTarget.clear()
+      fileToTarget.clear() // loadState function can be called multiple times, clearing is necessary to avoid duplicate/outdated entries
       fileToExecutableTargets = emptyMap()
       allTargetsAndLibrariesLabels = emptyList()
       updateComputedFields()
@@ -273,7 +274,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   private fun Map<String, List<String>>.mapToPathsAndLabels(): Map<Path, List<Label>> =
     this
-      .mapKeys { it.key.toNioPathOrNull()!! }
+      .mapKeys { Paths.get(FileUtilRt.toSystemDependentName(it.key)) }
       .mapValues { it.value.map { label -> Label.parse(label) } }
 
   companion object {
