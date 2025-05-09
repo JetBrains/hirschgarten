@@ -11,7 +11,6 @@ import com.intellij.platform.workspace.jps.JpsFileEntitySource
 import com.intellij.platform.workspace.jps.JpsGlobalFileEntitySource
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import kotlinx.coroutines.delay
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.performance.bspTracer
@@ -26,7 +25,6 @@ import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BazelEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
-import kotlin.time.Duration.Companion.seconds
 
 private const val MAX_REPLACE_WSM_ATTEMPTS = 3
 
