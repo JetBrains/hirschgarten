@@ -40,7 +40,7 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
       addItemListener {
         currentProjectSettings = currentProjectSettings.copy(enableLocalJvmActions = isSelected)
         useIntellijTestRunnerCheckBox.isEnabled = isSelected
-        hotswapEnabledCheckBox.isEnabled = isSelected
+        hotswapEnabledCheckBox.isEnabled = isSelected && !BazelFeatureFlags.fastBuildEnabled
       }
     }
 
