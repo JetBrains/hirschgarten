@@ -315,7 +315,7 @@
                 fieldName="INSTANCE"
                 language="Starlark"
                 fileNames="BUILD;WORKSPACE"
-                extensions="bzl;bazel;bzlmod"
+                extensions="bzl;bazel;bzlmod;star"
                 patterns="*.bzl.template"/>
         <lang.fileViewProviderFactory
                 language="Starlark"
