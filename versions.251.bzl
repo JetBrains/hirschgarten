@@ -1,6 +1,6 @@
 """Release versions of plugins. The file is swaped with versions.bzl on CI during release"""
 
-INTELLIJ_BAZEL_VERSION = "2025.1.7-EAP"
+INTELLIJ_BAZEL_VERSION = "2025.1.8-EAP"
 
 PLATFORM_VERSION = "251"
 SINCE_VERSION = "251.23774.435"
