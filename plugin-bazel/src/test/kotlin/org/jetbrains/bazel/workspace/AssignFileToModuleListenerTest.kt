@@ -42,7 +42,7 @@ import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -317,7 +317,7 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
 
   private fun Label.createModule(contentRootFiles: List<VirtualFile> = emptyList()) {
     val moduleName = this.formatAsModuleName(project)
-    val entitySource = BspModuleEntitySource(moduleName)
+    val entitySource = BazelModuleEntitySource(moduleName)
     val contentRoots =
       contentRootFiles.map {
         ContentRootEntity(
