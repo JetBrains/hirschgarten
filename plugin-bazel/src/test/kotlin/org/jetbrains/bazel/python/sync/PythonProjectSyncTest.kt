@@ -32,7 +32,7 @@ import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEn
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
@@ -255,7 +255,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
       moduleEntity =
         ModuleEntity(
           name = targetInfo.targetId.formatAsModuleName(project),
-          entitySource = BspProjectEntitySource,
+          entitySource = BazelProjectEntitySource,
           dependencies = moduleDependencies + sdkDependency,
         ) {
           type = ModuleTypeId("PYTHON_MODULE")

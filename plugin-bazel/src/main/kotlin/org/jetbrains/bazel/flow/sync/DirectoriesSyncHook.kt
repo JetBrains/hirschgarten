@@ -6,6 +6,7 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vcs.ProjectLevelVcsManager
 import com.intellij.openapi.vcs.VcsDirectoryMapping
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
@@ -15,22 +16,25 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.task.query
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
+import org.jetbrains.bazel.sync.withSubtask
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import java.nio.file.Path
 
 class DirectoriesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
-    val directories = query("workspace/directories") { environment.server.workspaceDirectories() }
-    val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).getBazelSymlinksToExclude()
-    val entity = createEntity(environment.project, directories, additionalExcludes)
+    environment.withSubtask("Collect project directories") {
+      val directories = query("workspace/directories") { environment.server.workspaceDirectories() }
+      val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).getBazelSymlinksToExclude()
+      val entity = createEntity(environment.project, directories, additionalExcludes)
 
-    environment.diff.workspaceModelDiff.mutableEntityStorage
-      .addEntity(entity)
+      environment.diff.workspaceModelDiff.mutableEntityStorage
+        .addEntity(entity)
 
-    environment.diff.workspaceModelDiff.addPostApplyAction {
-      removeExcludedVcsMappings(environment.project)
+      environment.diff.workspaceModelDiff.addPostApplyAction {
+        removeExcludedVcsMappings(environment.project)
+      }
     }
   }
 
@@ -38,7 +42,7 @@ class DirectoriesSyncHook : ProjectSyncHook {
     project: Project,
     directories: WorkspaceDirectoriesResult,
     additionalExcludes: List<Path>,
-  ): BspProjectDirectoriesEntity.Builder {
+  ): BazelProjectDirectoriesEntity.Builder {
     val virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
 
     val includedRoots = directories.includedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) }
@@ -46,11 +50,11 @@ class DirectoriesSyncHook : ProjectSyncHook {
       directories.excludedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) } +
         additionalExcludes.map { it.toVirtualFileUrl(virtualFileUrlManager) }
 
-    return BspProjectDirectoriesEntity(
+    return BazelProjectDirectoriesEntity(
       projectRoot = project.rootDir.toVirtualFileUrl(virtualFileUrlManager),
       includedRoots = includedRoots,
       excludedRoots = excludedRoots,
-      entitySource = BspProjectEntitySource,
+      entitySource = BazelProjectEntitySource,
     )
   }
 
@@ -68,6 +72,7 @@ class DirectoriesSyncHook : ProjectSyncHook {
   private suspend fun isExcludedPath(project: Project, mapping: VcsDirectoryMapping): Boolean {
     if (mapping.isDefaultMapping) return false
     val file = LocalFileSystem.getInstance().findFileByPath(mapping.directory) ?: return false
+    if (VfsUtilCore.isAncestor(file, project.rootDir, false)) return false
     val projectFileIndex = ProjectFileIndex.getInstance(project)
     return readAction { projectFileIndex.isExcluded(file) }
   }

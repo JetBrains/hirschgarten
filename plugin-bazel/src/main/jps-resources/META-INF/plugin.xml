@@ -168,7 +168,10 @@
         <projectViewNodeDecorator
                 implementation="org.jetbrains.bazel.ui.projectTree.BazelProjectViewNodeDecorator"/>
         <projectTaskRunner
+                id="BazelProjectTaskRunner"
                 implementation="org.jetbrains.bazel.buildTask.BazelProjectTaskRunner"/>
+        <projectTaskRunner implementation="org.jetbrains.bazel.fastbuild.BazelFastBuildProjectTaskRunner"
+                           order="before BazelProjectTaskRunner"/>
         <programRunner implementation="org.jetbrains.bazel.jvm.run.BazelJvmDebugRunner"/>
 
         <directoryProjectConfigurator
@@ -202,6 +205,10 @@
         <registryKey defaultValue="false"
                      description="Enable partial sync action for a target."
                      key="bsp.enable.partial.sync"/>
+
+        <registryKey defaultValue="false"
+                     description="Enables a fast compile mechanism for Java by delegating directly to the Bazel builder"
+                     key="bazel.enable.jvm.fastbuild" />
 
         <statusBarWidgetFactory id="BazelFileTargetsWidget"
                                 implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetFactory"/>
@@ -267,6 +274,7 @@
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
         <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook" id="BazelRepoMappingSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.fastbuild.ToolchainInfoSyncHook"/>
 
         <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook"/>
 
@@ -307,7 +315,7 @@
                 fieldName="INSTANCE"
                 language="Starlark"
                 fileNames="BUILD;WORKSPACE"
-                extensions="bzl;bazel;bzlmod"
+                extensions="bzl;bazel;bzlmod;star"
                 patterns="*.bzl.template"/>
         <lang.fileViewProviderFactory
                 language="Starlark"

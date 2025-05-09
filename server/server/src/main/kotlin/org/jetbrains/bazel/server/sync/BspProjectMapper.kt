@@ -48,10 +48,8 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
+import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.jetbrains.bsp.protocol.PythonOptionsItem
-import org.jetbrains.bsp.protocol.PythonOptionsParams
-import org.jetbrains.bsp.protocol.PythonOptionsResult
 import org.jetbrains.bsp.protocol.ScalacOptionsItem
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
@@ -302,17 +300,6 @@ class BspProjectMapper(
     return CppOptionsResult(items)
   }
 
-  fun buildTargetPythonOptions(project: AspectSyncProject, params: PythonOptionsParams): PythonOptionsResult {
-    val modules = BspMappings.getModules(project, params.targets)
-    val items = modules.mapNotNull(::extractPythonOptionsItem)
-    return PythonOptionsResult(items)
-  }
-
-  private fun extractPythonOptionsItem(module: Module): PythonOptionsItem? =
-    languagePluginsService.extractPythonModule(module)?.let {
-      languagePluginsService.pythonLanguagePlugin.toPythonOptionsItem(module, it)
-    }
-
   fun buildTargetScalacOptions(project: AspectSyncProject, params: ScalacOptionsParams): ScalacOptionsResult {
     val items =
       params.targets
@@ -352,4 +339,7 @@ class BspProjectMapper(
     val resolve = languagePluginsService.goLanguagePlugin::resolveRemoteToLocal
     return resolve(params)
   }
+
+  suspend fun jvmBuilderParams(project: Project): JvmToolchainInfo =
+    JvmToolchainQuery.jvmToolchainQuery(bspInfo, bazelRunner, project.workspaceContext)
 }

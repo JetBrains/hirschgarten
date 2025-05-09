@@ -202,8 +202,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     return executableDirectTargets
   }
 
-  @PublicApi // // https://youtrack.jetbrains.com/issue/BAZEL-1632
-  @Suppress("UNUSED")
+  @PublicApi
   fun isLibrary(target: Label): Boolean = getBuildTargetForLabel(target)?.kind?.ruleType == RuleType.LIBRARY
 
   @PublicApi

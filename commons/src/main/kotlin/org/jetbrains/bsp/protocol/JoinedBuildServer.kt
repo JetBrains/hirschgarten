@@ -35,8 +35,6 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult
 
-  suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult
-
   suspend fun workspaceLibraries(): WorkspaceLibrariesResult
 
   suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult
@@ -59,9 +57,11 @@ interface JoinedBuildServer {
 
   suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult
 
-  suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult
+  suspend fun workspaceBazelPaths(): WorkspaceBazelPathsResult
 
   suspend fun workspaceName(): WorkspaceNameResult
 
   suspend fun workspaceContext(): WorkspaceContext
+
+  suspend fun jvmToolchainInfo(): JvmToolchainInfo
 }

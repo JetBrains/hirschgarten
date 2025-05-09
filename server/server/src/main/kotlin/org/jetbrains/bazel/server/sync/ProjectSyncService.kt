@@ -25,11 +25,10 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
-import org.jetbrains.bsp.protocol.PythonOptionsParams
-import org.jetbrains.bsp.protocol.PythonOptionsResult
+import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.ScalacOptionsResult
-import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
+import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -101,7 +100,8 @@ class ProjectSyncService(
     return bspMapper.workspaceBazelRepoMapping(project)
   }
 
-  fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = WorkspaceBazelBinPathResult(bazelInfo.bazelBin.toString())
+  fun workspaceBazelPaths(): WorkspaceBazelPathsResult =
+    WorkspaceBazelPathsResult(bazelInfo.bazelBin.toString(), bazelInfo.execRoot.toString())
 
   suspend fun workspaceName(): WorkspaceNameResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return WorkspaceNameResult(null)
@@ -143,14 +143,14 @@ class ProjectSyncService(
     return bspMapper.buildTargetCppOptions(project, params)
   }
 
-  suspend fun buildTargetPythonOptions(params: PythonOptionsParams): PythonOptionsResult {
-    val project = projectProvider.get() as? AspectSyncProject ?: return PythonOptionsResult(emptyList())
-    return bspMapper.buildTargetPythonOptions(project, params)
-  }
-
   suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return ScalacOptionsResult(emptyList())
     return bspMapper.buildTargetScalacOptions(project, params)
+  }
+
+  suspend fun buildJvmToolchainInfo(): JvmToolchainInfo {
+    val project = projectProvider.get()
+    return bspMapper.jvmBuilderParams(project)
   }
 
   fun resolveLocalToRemote(params: BazelResolveLocalToRemoteParams): BazelResolveLocalToRemoteResult =
