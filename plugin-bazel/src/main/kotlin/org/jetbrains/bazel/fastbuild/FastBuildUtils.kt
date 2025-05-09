@@ -62,6 +62,8 @@ import kotlin.io.path.relativeTo
 import kotlin.io.path.writer
 
 object FastBuildUtils {
+  const val HOTSWAP_COMPLETED_WITHOUT_ERRORS_CONTENT = "Hotswap completed without errors"
+
   private val logger = Logger.getInstance(FastBuildUtils::class.java)
 
   fun fastBuildFilesPromise(project: Project, files: List<VirtualFile>): Promise<ProjectTaskRunner.Result> {
@@ -292,7 +294,7 @@ object FastBuildUtils {
 
             "--output_deps_proto" -> {
               os.writeLn(line)
-              os.writeLn(tempDir.resolve("output.jdpes").pathString)
+              os.writeLn(tempDir.resolve("output.jdeps").pathString)
               ips.readLine()
             }
 
@@ -417,7 +419,7 @@ object FastBuildUtils {
           .getNotificationGroup("HotSwap Messages")
           .createNotification(
             "Hotswap successful",
-            "Hotswap completed without errors",
+            HOTSWAP_COMPLETED_WITHOUT_ERRORS_CONTENT,
             NotificationType.INFORMATION,
           ).setImportant(false)
           .notify(project)
