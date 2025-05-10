@@ -2,8 +2,10 @@ package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
@@ -22,6 +24,10 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLite
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
+import org.jetbrains.bazel.languages.starlark.repomapping.apparentRepoNameToCanonicalName
+import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToApparentName
+import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
+import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRepo
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 
@@ -128,28 +134,56 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
 
   private fun isLoadFilenameCompletionLocation(): Boolean = element.parent is StarlarkFilenameLoadValue
 
-  private fun filePathToLabel(relativeFilePath: String): String {
+  private fun filePathToLabel(relativeFilePath: String, repoName: String): String {
     val lastSlash = relativeFilePath.lastIndexOf('/')
     if (lastSlash == -1) {
       return "//:$relativeFilePath"
     }
-    return "//" + relativeFilePath.substring(0, lastSlash) + ":" + relativeFilePath.substring(lastSlash + 1)
+    return "@" + repoName + "//" + relativeFilePath.substring(0, lastSlash) + ":" + relativeFilePath.substring(lastSlash + 1)
+  }
+
+  private fun collectBzlFiles(directory: VirtualFile, result: MutableList<String>, projectFileIndex: ProjectFileIndex) {
+    if (projectFileIndex.isExcluded(directory)) return
+
+    directory.children.forEach { file ->
+      when {
+        file.isDirectory -> {
+          collectBzlFiles(file, result, projectFileIndex)
+        }
+        file.name.endsWith(".bzl") -> {
+          result.add(file.path)
+        }
+      }
+    }
   }
 
   private fun loadFilenameCompletion(): Array<LookupElement> {
-    val starlarkFiles = FileTypeIndex.getFiles(StarlarkFileType, GlobalSearchScope.projectScope(element.project))
-    val bzlFiles = starlarkFiles.filter { it.name.endsWith(".bzl") }
-    val relativePaths =
-      bzlFiles.mapNotNull { file ->
-        VfsUtilCore.getRelativePath(file, element.project.rootDir)
+    val canonicalRepoNameToPath = element.project.canonicalRepoNameToPath
+    val apparentRepoNameToCanonicalName = element.project.apparentRepoNameToCanonicalName
+    val canonicalRepoNameToApparentName = element.project.canonicalRepoNameToApparentName
+    val projectFileIndex = ProjectFileIndex.getInstance(element.project)
+
+    val myRepo = findContainingBazelRepo(element.containingFile.originalFile.virtualFile.toNioPath())
+    val lookupElements = mutableListOf<LookupElement>()
+    
+    // apparentName -> canonicalName -> Path
+    for ((canonicalName, repoPath) in canonicalRepoNameToPath) {
+      val apparentName = canonicalRepoNameToApparentName[canonicalName] ?: continue
+      val virtualFile = LocalFileSystem.getInstance().findFileByNioFile(repoPath) ?: continue
+      var result = mutableListOf<String>()
+      collectBzlFiles(virtualFile, result, projectFileIndex)
+
+
+      result.forEach { file ->
+        val relativeFilePath = file.removePrefix(virtualFile.path + "/")
+        lookupElements.add(fileLookupElement(filePathToLabel(relativeFilePath, apparentName)))
       }
-    val lookupElements =
-      relativePaths.map { file ->
-        fileLookupElement(filePathToLabel(file))
-      }
+    }
+
     return lookupElements.toTypedArray()
   }
 
   companion object {
+    private val LOG = logger<BazelLabelReference>()
   }
 }
