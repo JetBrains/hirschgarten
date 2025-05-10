@@ -29,9 +29,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, prot
   /** Run the actual BSP command or throw an exception if the server does not support running the configuration */
   protected abstract suspend fun startBsp(server: JoinedBuildServer)
 
-  final override fun startProcess(): BazelProcessHandler = doStartProcess(false)
-
-  private fun doStartProcess(runningTests: Boolean): BazelProcessHandler {
+  final override fun startProcess(): BazelProcessHandler {
     val configuration = environment.runProfile as BazelRunConfiguration
     val project = configuration.project
 
@@ -50,10 +48,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, prot
         }
       }
 
-    handler = when (runningTests) {
-      true -> BazelTestProcessHandler(project, runDeferred)
-      false -> BazelProcessHandler(project, runDeferred)
-    }
+    handler = BazelProcessHandler(project, runDeferred)
     val runListener = createAndAddTaskListener(handler)
 
     with(BazelTaskEventsService.getInstance(project)) {
@@ -71,7 +66,7 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, prot
   protected fun executeWithTestConsole(executor: Executor): ExecutionResult {
     val configuration = environment.runProfile as BazelRunConfiguration
     val properties = configuration.createTestConsoleProperties(executor)
-    val handler = doStartProcess(true)
+    val handler = startProcess().also { it.switchToTestingMode() }
 
     val console: BaseTestsOutputConsoleView =
       SMTestRunnerConnectionUtil.createAndAttachConsole(
