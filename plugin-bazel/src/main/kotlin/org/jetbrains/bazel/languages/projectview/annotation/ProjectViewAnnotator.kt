@@ -8,7 +8,9 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.projectview.language.ProjectViewImport
 import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSectionParser
+import org.jetbrains.bazel.languages.projectview.language.ProjectViewSectionParser.Item
+import org.jetbrains.bazel.languages.projectview.language.ProjectViewSectionParser.Result
+import org.jetbrains.bazel.languages.projectview.language.ProjectViewSectionParser.Scope
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiImport
 import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewPsiSection
 import org.jetbrains.kotlin.idea.base.codeInsight.handlers.fixers.range
@@ -17,11 +19,12 @@ class ProjectViewAnnotator : Annotator {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
     when (element) {
       is ProjectViewPsiSection -> {
-        ProjectViewSection.KEYWORD_MAP[element.getKeyword()]?.let { parser ->
-          val itemElements = element.getItems()
-          parser.parse(itemElements.map { it.text }).fold(
-            onSuccess = {
-              it.textAttributesKey?.let { textAttributesKey ->
+        val itemElements = element.getItems()
+        val parser = ProjectViewSection.KEYWORD_MAP[element.getKeyword()]
+        parser?.parse(itemElements.map { Item(it.text) })?.let {
+          when (it) {
+            is Result.Success -> {
+              it.value.textAttributesKey?.let { textAttributesKey ->
                 itemElements.forEach { itemElement ->
                   createInformationAnnotation(
                     holder,
@@ -30,21 +33,24 @@ class ProjectViewAnnotator : Annotator {
                   )
                 }
               }
-            },
-            onFailure = {
-              val errorScope =
-                when (it) {
-                  is ProjectViewSectionParser.ScalarValueException -> itemElements.first()
-                  else -> element
+            }
+            is Result.Failure -> {
+              val errorScope = it.scope
+              val errorElement =
+                when (errorScope) {
+                  is Scope.Item -> itemElements[errorScope.id]
+                  Scope.Section -> element
                 }
-              createErrorAnnotation(holder, it.message ?: "", errorScope.range)
-            },
-          )
+              createErrorAnnotation(holder, it.message, errorElement.range)
+            }
+          }
         }
       }
       is ProjectViewPsiImport -> {
         ProjectViewImport.KEYWORD_MAP[element.getKeyword()]?.let { import ->
-          import.parse(element.getPath()).onFailure { createErrorAnnotation(holder, it.message ?: "", element.range) }
+          import.parse(element.getPath()).onFailure {
+            createErrorAnnotation(holder, it.message ?: "", element.range)
+          }
         }
       }
     }

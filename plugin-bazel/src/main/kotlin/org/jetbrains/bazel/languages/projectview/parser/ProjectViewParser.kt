@@ -33,7 +33,7 @@ class ProjectViewParser(private val builder: PsiBuilder) {
             is ProjectViewSectionParser.ScalarSectionParser<*> -> {
               parseItem(ProjectViewElementTypes.SECTION_ITEM)
             }
-            is ProjectViewSectionParser.ListSectionParser<*> -> {
+            is ProjectViewSectionParser.ListSectionParser -> {
               skipToNextLine()
               parseListItems()
             }
