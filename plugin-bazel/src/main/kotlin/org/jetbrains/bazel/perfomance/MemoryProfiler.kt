@@ -5,6 +5,7 @@ package org.jetbrains.bazel.performance
 import com.intellij.openapi.application.PathManager
 import com.intellij.platform.diagnostic.telemetry.FilteredMetricsExporter
 import com.intellij.platform.diagnostic.telemetry.MetricsExporterEntry
+import com.intellij.platform.diagnostic.telemetry.Scope
 import com.intellij.platform.diagnostic.telemetry.TelemetryManager
 import com.intellij.platform.diagnostic.telemetry.belongsToScope
 import com.intellij.platform.diagnostic.telemetry.exporters.RollingFileSupplier
@@ -20,6 +21,9 @@ import javax.management.NotificationListener
 import kotlin.io.path.div
 import kotlin.math.max
 import kotlin.time.Duration
+import org.jetbrains.bazel.performance.telemetry.Scope as BazelScope
+
+fun BazelScope.toScope(): Scope = Scope(name)
 
 private const val MB = 1024 * 1024
 
@@ -47,7 +51,7 @@ object MemoryProfiler : NotificationListener {
     val metricsExporter = TelemetryMeterJsonExporter(RollingFileSupplier(basePath))
     val filteredMetricsExporter =
       FilteredMetricsExporter(SynchronizedClearableLazy { metricsExporter }) { metric ->
-        metric.belongsToScope(bspScope)
+        metric.belongsToScope(bspScope.toScope())
       }
     TelemetryManager
       .getInstance()

@@ -8,8 +8,10 @@ import com.intellij.openapi.util.UserDataHolderEx
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.util.PlatformUtils
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
+import org.jetbrains.bazel.bazelrunner.ProcessSpawner
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelProjectProperties
+import org.jetbrains.bazel.performance.telemetry.TelemetryManager
 import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
 import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.sdkcompat.setFindInFilesNonIndexable
@@ -38,6 +40,8 @@ class BazelStartupActivity : BazelProjectActivity() {
       log.info("Bazel startup activity executed already for project: $project")
       return
     }
+    ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
+    TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
 
     log.info("Executing Bazel startup activity for project: $project")
     BazelStartupActivityTracker.startConfigurationPhase(project)

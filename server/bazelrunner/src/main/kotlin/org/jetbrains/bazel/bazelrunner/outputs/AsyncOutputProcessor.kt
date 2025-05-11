@@ -1,10 +1,11 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
+import org.jetbrains.bazel.bazelrunner.SpawnedProcess
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 
-class AsyncOutputProcessor(process: Process, vararg loggers: OutputHandler) : OutputProcessor(process, *loggers) {
+class AsyncOutputProcessor(process: SpawnedProcess, vararg loggers: OutputHandler) : OutputProcessor(process, *loggers) {
   private val isRunning = AtomicBoolean(true)
 
   override fun isRunning(): Boolean = isRunning.get()

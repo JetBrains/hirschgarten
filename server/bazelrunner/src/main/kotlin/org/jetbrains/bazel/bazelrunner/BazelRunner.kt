@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.bazelrunner
 
-import com.intellij.execution.configurations.GeneralCommandLine
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.enableWorkspace
@@ -158,19 +157,27 @@ class BazelRunner(
     val finishCallback = executionDescriptor.finishCallback
     val processArgs = executionDescriptor.command
 
-    var commandLine = GeneralCommandLine(processArgs).withWorkDirectory(workspaceRoot?.toFile())
+    val processSpawner = ProcessSpawner.getInstance()
+    var environment = emptyMap<String, String>()
+    var workDir = workspaceRoot
 
     // Run needs to be handled separately because the resulting process is not run in the sandbox
     if (command is BazelCommand.Run) {
-      command.workingDirectory?.also { commandLine = commandLine.withWorkDirectory(it.toFile()) }
-      commandLine = commandLine.withEnvironment(command.environment)
+      command.workingDirectory?.also { workDir = it }
+      environment = command.environment
       logInvocation(processArgs, command.environment, command.workingDirectory, originId, shouldLogInvocation = shouldLogInvocation)
     } else {
       logInvocation(processArgs, null, null, originId, shouldLogInvocation = shouldLogInvocation)
     }
 
-    val process = commandLine.createProcess()
-    createdProcessIdDeferred?.complete(process.pid())
+    val process =
+      processSpawner.spawnProcess(
+        command = processArgs.first(),
+        args = processArgs.drop(1),
+        environment = environment,
+        redirectErrorStream = false,
+      )
+
     val outputLogger = bspClientLogger.takeIf { logProcessOutput }?.copy(originId = originId)
 
     return BazelProcess(
