@@ -1,20 +1,16 @@
 package org.jetbrains.bazel.languages.projectview.language
 
 sealed interface ProjectViewImport {
-  fun parse(path: String): Result<String>
+  fun parse(path: String): Result<String> =
+    if (path == "") {
+      Result.failure(Exception("Path missing"))
+    } else {
+      Result.success(path)
+    }
 
-  private sealed interface SimpleImport : ProjectViewImport {
-    override fun parse(path: String): Result<String> =
-      if (path == "") {
-        Result.failure(Exception("Path missing"))
-      } else {
-        Result.success(path)
-      }
-  }
+  data object Import : ProjectViewImport
 
-  data object Import : SimpleImport
-
-  data object TryImport : SimpleImport
+  data object TryImport : ProjectViewImport
 
   companion object {
     val KEYWORD_MAP: Map<ProjectViewSyntaxKey, ProjectViewImport> =
@@ -22,11 +18,5 @@ sealed interface ProjectViewImport {
         "import" to Import,
         "try_import" to TryImport,
       )
-  }
-
-  sealed interface ParsingResult<out T> {
-    data class Ok<out T>(val result: T) : ParsingResult<T>
-
-    data class Error(val message: String) : ParsingResult<Nothing>
   }
 }
