@@ -406,6 +406,10 @@
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"/>
 
+        <annotator
+                language="ProjectView"
+                implementationClass="org.jetbrains.bazel.languages.projectview.annotation.ProjectViewAnnotator"/>
+
         <formattingService
                 implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService"/>
         <actionOnSave id="StarlarkFormattingActionOnSave"

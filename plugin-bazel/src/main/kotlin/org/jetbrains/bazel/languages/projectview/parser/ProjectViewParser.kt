@@ -6,6 +6,7 @@ import com.intellij.psi.tree.IElementType
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementType
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementTypes
 import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection
+import org.jetbrains.bazel.languages.projectview.language.ProjectViewSectionParser
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewTokenType
 
 class ProjectViewParser(private val builder: PsiBuilder) {
@@ -27,15 +28,17 @@ class ProjectViewParser(private val builder: PsiBuilder) {
         ProjectViewSection.KEYWORD_MAP[builder.tokenText]?.let { parser ->
           builder.advanceLexer()
           expect(ProjectViewTokenType.COLON)
+
           when (parser) {
-            is ProjectViewSection.Parser.Scalar -> {
+            is ProjectViewSectionParser.ScalarSectionParser<*> -> {
               parseItem(ProjectViewElementTypes.SECTION_ITEM)
             }
-            is ProjectViewSection.Parser.List<*> -> {
+            is ProjectViewSectionParser.ListSectionParser<*> -> {
               skipToNextLine()
               parseListItems()
             }
           }
+
           marker.done(ProjectViewElementTypes.SECTION)
           return
         }
@@ -98,9 +101,17 @@ class ProjectViewParser(private val builder: PsiBuilder) {
     }
   }
 
+  /** Skip to the next line. If the current token is not newline, then mark an error */
   fun skipToNextLine() {
+    if (matches(ProjectViewTokenType.NEWLINE)) {
+      return
+    }
+
+    val marker = builder.mark()
+
     while (!builder.eof()) {
       if (matches(ProjectViewTokenType.NEWLINE)) {
+        marker.error("Illegal identifier in the same line as section list keyword.")
         return
       }
       builder.advanceLexer()

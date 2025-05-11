@@ -1,43 +1,36 @@
 package org.jetbrains.bazel.languages.projectview.language
 
-object ProjectViewSection {
-  sealed interface Parser {
-    sealed interface Scalar : Parser {
-      data object Integer : Scalar
+import com.intellij.openapi.editor.colors.TextAttributesKey
 
-      data object Boolean : Scalar
+sealed class ProjectViewSection(open val textAttributesKey: TextAttributesKey?) {
+  data class Scalar<out T>(val item: T, override val textAttributesKey: TextAttributesKey?) : ProjectViewSection(textAttributesKey)
 
-      data object String : Scalar
-    }
+  data class List<out T>(val items: kotlin.collections.List<T>, override val textAttributesKey: TextAttributesKey?) :
+    ProjectViewSection(textAttributesKey)
 
-    sealed interface List<T : Scalar> : Parser {
-      data object String : List<Scalar.String>
-    }
+  companion object {
+    /** A map of registered section keywords. */
+    val KEYWORD_MAP: Map<ProjectViewSyntaxKey, ProjectViewSectionParser> =
+      mapOf(
+        "allow_manual_targets_sync" to ProjectViewSectionParser.ScalarSectionParser.Boolean,
+        "android_min_sdk" to ProjectViewSectionParser.ScalarSectionParser.Int,
+        "bazel_binary" to ProjectViewSectionParser.ScalarSectionParser.Path,
+        "build_flags" to ProjectViewSectionParser.ListSectionParser.Identifiers,
+        "derive_targets_from_directories" to ProjectViewSectionParser.ScalarSectionParser.Boolean,
+        "directories" to ProjectViewSectionParser.ListSectionParser.Paths,
+        "enable_native_android_rules" to ProjectViewSectionParser.ScalarSectionParser.Boolean,
+        "enabled_rules" to ProjectViewSectionParser.ListSectionParser.Identifiers,
+        "experimental_add_transitive_compile_time_jars" to ProjectViewSectionParser.ScalarSectionParser.Boolean,
+        "experimental_no_prune_transitive_compile_time_jars_patterns" to ProjectViewSectionParser.ListSectionParser.Identifiers,
+        "experimental_transitive_compile_time_jars_target_kinds" to ProjectViewSectionParser.ListSectionParser.Identifiers,
+        "ide_java_home_override" to ProjectViewSectionParser.ScalarSectionParser.Path,
+        "import_depth" to ProjectViewSectionParser.ScalarSectionParser.Int,
+        "shard_approach" to ProjectViewSectionParser.ScalarSectionParser.Identifier,
+        "shard_sync" to ProjectViewSectionParser.ScalarSectionParser.Boolean,
+        "sync_flags" to ProjectViewSectionParser.ListSectionParser.Identifiers,
+        "target_shard_size" to ProjectViewSectionParser.ScalarSectionParser.Int,
+        "targets" to ProjectViewSectionParser.ListSectionParser.Paths,
+        "import_run_configurations" to ProjectViewSectionParser.ListSectionParser.Identifiers,
+      )
   }
-
-  /** A map of registered section keywords. */
-  val KEYWORD_MAP: Map<ProjectViewSyntaxKey, Parser> =
-    mapOf(
-      "allow_manual_targets_sync" to Parser.Scalar.Boolean,
-      "android_min_sdk" to Parser.Scalar.Integer,
-      "bazel_binary" to Parser.Scalar.String,
-      "build_flags" to Parser.List.String,
-      "derive_targets_from_directories" to Parser.Scalar.Boolean,
-      "directories" to Parser.List.String,
-      "enable_native_android_rules" to Parser.Scalar.Boolean,
-      "enabled_rules" to Parser.List.String,
-      "experimental_add_transitive_compile_time_jars" to Parser.Scalar.Boolean,
-      "experimental_no_prune_transitive_compile_time_jars_patterns" to Parser.List.String,
-      "experimental_transitive_compile_time_jars_target_kinds" to Parser.List.String,
-      "experimental_prioritize_libraries_over_modules_target_kinds" to Parser.List.String,
-      "ide_java_home_override" to Parser.Scalar.String,
-      "import_depth" to Parser.Scalar.Integer,
-      "shard_approach" to Parser.Scalar.String,
-      "shard_sync" to Parser.Scalar.Boolean,
-      "sync_flags" to Parser.List.String,
-      "target_shard_size" to Parser.Scalar.Integer,
-      "targets" to Parser.List.String,
-      "import_run_configurations" to Parser.List.String,
-      "test_sources" to Parser.List.String, // used by Google's plugin
-    )
 }

@@ -1,0 +1,20 @@
+import import_path
+
+target_shard_size: <info>50</info>
+
+shard_sync: <info>true</info>
+
+directories:
+  directoryA
+  directoryB
+
+<error descr="Path missing">import
+</error>
+
+<error descr="Empty section">shard_sync: </error>
+
+<error descr="Empty section">targets:
+
+</error>import_depth: <error descr="Invalid number">apple</error>
+
+shard_sync: <error descr="Invalid boolean">pear</error>
