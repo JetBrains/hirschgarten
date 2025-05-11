@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bazel.commons
 
-import org.jetbrains.annotations.VisibleForTesting
+import com.google.common.annotations.VisibleForTesting
 
 /** Validates package paths in blaze labels / target expressions.  */
 object PackagePathValidator {

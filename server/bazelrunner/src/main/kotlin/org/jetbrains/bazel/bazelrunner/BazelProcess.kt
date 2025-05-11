@@ -12,7 +12,7 @@ import java.time.Duration
 import java.util.concurrent.CompletableFuture
 
 class BazelProcess internal constructor(
-  val process: Process,
+  val process: SpawnedProcess,
   private val logger: BspClientLogger? = null,
   private val serverPidFuture: CompletableFuture<Long>?,
   private val finishCallback: () -> Unit = {},

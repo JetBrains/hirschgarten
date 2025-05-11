@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.server.sync.languages.java
 
-import com.intellij.execution.configurations.GeneralCommandLine
+import org.jetbrains.bazel.bazelrunner.ProcessSpawner
+import org.jetbrains.bazel.bazelrunner.SpawnedProcess
+import org.jetbrains.bazel.bazelrunner.spawnProcess
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
@@ -29,16 +31,20 @@ class JdkVersionResolver {
   }
 
   private fun firstLineOfJavaVersionOutput(javaPath: Path): String? {
+    val processSpawner = ProcessSpawner.getInstance()
     val process =
-      GeneralCommandLine(javaPath.toString(), "-version")
-        .withRedirectErrorStream(true)
-        .createProcess()
+      processSpawner.spawnProcess(
+        command = javaPath.toString(),
+        args = listOf("-version"),
+        environment = emptyMap(),
+        redirectErrorStream = true,
+      )
     val result = process.waitFor()
 
     return if (result == 0) readLines(process).firstOrNull() else null
   }
 
-  private fun readLines(process: Process) =
+  private fun readLines(process: SpawnedProcess) =
     process.inputStream
       .bufferedReader()
       .use { it.readText() }
