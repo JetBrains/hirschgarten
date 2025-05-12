@@ -36,6 +36,11 @@ config_setting(
     values = {"define": "ij_product=intellij-2025.1"},
 )
 
+config_setting(
+    name = "intellij-2025.2",
+    values = {"define": "ij_product=intellij-2025.2"},
+)
+
 # The purpose of this rule is to hide the versioning
 # complexity from users of this api.
 # There will be additional versions added in the future

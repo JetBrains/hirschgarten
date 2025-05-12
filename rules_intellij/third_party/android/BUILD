@@ -16,6 +16,7 @@ java_library(
     exports = select_for_plugin_api({
         "intellij-2024.3": ["@android_2024_3//:android"],
         "intellij-2025.1": ["@android_2025_1//:android"],
+        "intellij-2025.2": ["@android_2025_2//:android"],
         "default": [],
     }),
 )
