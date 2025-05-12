@@ -20,6 +20,10 @@ java_library(
             "@json_2025_1//jar",
             "@json_split_2025_1//jar",
         ],
+        "intellij-2025.2": [
+            "@json_2025_2//jar",
+            "@json_split_2025_2//jar",
+        ],
         "default": [],
     }),
 )

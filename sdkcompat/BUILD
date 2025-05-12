@@ -11,5 +11,6 @@ java_library(
     exports = select_for_plugin_api({
         "intellij-2024.3": ["//sdkcompat/v243"],
         "intellij-2025.1": ["//sdkcompat/v251"],
+        "intellij-2025.2": ["//sdkcompat/v252"],
     }),
 )
