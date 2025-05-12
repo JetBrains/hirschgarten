@@ -59,7 +59,7 @@ abstract class IdeStarterBaseProjectTest {
   protected open val timeout: Duration
     get() = (System.getProperty("bazel.ide.starter.test.timeout.seconds")?.toIntOrNull() ?: 600).seconds
 
-  protected fun createContext(): IDETestContext =
+  protected open fun createContext(): IDETestContext =
     Starter
       .newContext(projectName, testCase)
       .executeRightAfterIdeOpened(true)
