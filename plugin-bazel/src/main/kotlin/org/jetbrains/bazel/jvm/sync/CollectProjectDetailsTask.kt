@@ -241,6 +241,7 @@ class CollectProjectDetailsTask(
                 projectDetails = projectDetails,
                 targetIdToModuleDetails = targetIdToModuleDetails,
                 targetIdToTargetInfo = targetIdToTargetInfo,
+                // TODO: remove usage, https://youtrack.jetbrains.com/issue/BAZEL-2015
                 fileToTarget = targetUtilsDiff.fileToTarget,
                 projectBasePath = projectBasePath,
                 project = project,
@@ -249,6 +250,7 @@ class CollectProjectDetailsTask(
             targetIdToModuleEntityMap
           }
 
+        // TODO: remove this: https://youtrack.jetbrains.com/issue/BAZEL-2015/
         targetUtilsDiff.libraryItems = projectDetails.libraries
 
         val modulesToLoad = targetIdToModuleEntitiesMap.values.flatten().distinctBy { module -> module.getModuleName() }
