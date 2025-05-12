@@ -84,7 +84,7 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
         }
 
         step("Apply hotswap") {
-          x { byAccessibleName("Code changed:") }.click()
+          ui.x { byAccessibleName("Code changed:") }.waitVisible().click()
         }
 
         step("Agree to the 'Reload Changed Classes' dialog") {
