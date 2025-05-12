@@ -11,20 +11,15 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
-import com.intellij.psi.search.FileTypeIndex
-import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.PlatformIcons
 import org.jetbrains.bazel.commons.constants.Constants.BUILD_FILE_NAMES
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
-import org.jetbrains.bazel.languages.starlark.repomapping.apparentRepoNameToCanonicalName
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToApparentName
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRepo
@@ -134,15 +129,11 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
 
   private fun isLoadFilenameCompletionLocation(): Boolean = element.parent is StarlarkFilenameLoadValue
 
-  private fun filePathToLabel(relativeFilePath: String, repoName: String): String {
-    val lastSlash = relativeFilePath.lastIndexOf('/')
-    if (lastSlash == -1) {
-      return "//:$relativeFilePath"
-    }
-    return "@" + repoName + "//" + relativeFilePath.substring(0, lastSlash) + ":" + relativeFilePath.substring(lastSlash + 1)
-  }
-
-  private fun collectBzlFiles(directory: VirtualFile, result: MutableList<String>, projectFileIndex: ProjectFileIndex) {
+  private fun collectBzlFiles(
+    directory: VirtualFile,
+    result: MutableList<String>,
+    projectFileIndex: ProjectFileIndex,
+  ) {
     if (projectFileIndex.isExcluded(directory)) return
 
     directory.children.forEach { file ->
@@ -157,26 +148,49 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     }
   }
 
+  private fun filePathToLabel(relativeFilePath: String, repoName: String?): String {
+    val lastSlash = relativeFilePath.lastIndexOf('/')
+    if (lastSlash == -1) {
+      return "//:$relativeFilePath"
+    }
+
+    val beforeColon = relativeFilePath.substring(0, lastSlash)
+    val afterColon = relativeFilePath.substring(lastSlash + 1)
+
+    if (repoName == null) {
+      return "//$beforeColon:$afterColon"
+    } else {
+      return "@$repoName//$beforeColon:$afterColon"
+    }
+  }
+
   private fun loadFilenameCompletion(): Array<LookupElement> {
     val canonicalRepoNameToPath = element.project.canonicalRepoNameToPath
-    val apparentRepoNameToCanonicalName = element.project.apparentRepoNameToCanonicalName
     val canonicalRepoNameToApparentName = element.project.canonicalRepoNameToApparentName
     val projectFileIndex = ProjectFileIndex.getInstance(element.project)
 
-    val myRepo = findContainingBazelRepo(element.containingFile.originalFile.virtualFile.toNioPath())
+    val myRepo =
+      findContainingBazelRepo(
+        element.containingFile.originalFile.virtualFile
+          .toNioPath(),
+      )
     val lookupElements = mutableListOf<LookupElement>()
-    
-    // apparentName -> canonicalName -> Path
+
     for ((canonicalName, repoPath) in canonicalRepoNameToPath) {
       val apparentName = canonicalRepoNameToApparentName[canonicalName] ?: continue
+      val repoName =
+        if (myRepo == repoPath) {
+          apparentName
+        } else {
+          null
+        }
+
       val virtualFile = LocalFileSystem.getInstance().findFileByNioFile(repoPath) ?: continue
-      var result = mutableListOf<String>()
+      val result = mutableListOf<String>()
       collectBzlFiles(virtualFile, result, projectFileIndex)
-
-
       result.forEach { file ->
         val relativeFilePath = file.removePrefix(virtualFile.path + "/")
-        lookupElements.add(fileLookupElement(filePathToLabel(relativeFilePath, apparentName)))
+        lookupElements.add(fileLookupElement(filePathToLabel(relativeFilePath, repoName)))
       }
     }
 
