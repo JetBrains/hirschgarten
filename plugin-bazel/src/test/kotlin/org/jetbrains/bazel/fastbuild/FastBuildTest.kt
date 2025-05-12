@@ -1,6 +1,11 @@
 package org.jetbrains.bazel.fastbuild
 
+import com.intellij.driver.client.Remote
+import com.intellij.driver.client.service
+import com.intellij.driver.sdk.VirtualFile
+import com.intellij.driver.sdk.findFile
 import com.intellij.driver.sdk.openFile
+import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.toggleLineBreakpoint
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitVisible
@@ -84,7 +89,8 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
         }
 
         step("Apply hotswap") {
-          ui.x { byAccessibleName("Code changed:") }.waitVisible().click()
+          val projectTaskManager = service<ProjectTaskManager>(singleProject())
+          projectTaskManager.compile(arrayOf(checkNotNull(driver.findFile("Calculator.java"))))
         }
 
         step("Agree to the 'Reload Changed Classes' dialog") {
@@ -106,3 +112,11 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
     }
   }
 }
+
+@Remote(value = "com.intellij.task.ProjectTaskManager")
+interface ProjectTaskManager {
+  fun compile(files: Array<VirtualFile>): Promise
+}
+
+@Remote(value = "org.jetbrains.concurrency.Promise")
+interface Promise
