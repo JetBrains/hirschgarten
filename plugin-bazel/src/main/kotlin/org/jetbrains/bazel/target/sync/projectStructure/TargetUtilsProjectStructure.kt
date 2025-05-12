@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.target.sync.projectStructure
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.projectStructure.ProjectStructureDiff
@@ -26,7 +27,7 @@ class TargetUtilsProjectStructureDiff : ProjectStructureDiff {
     project.syncConsole.withSubtask(
       taskId = taskId,
       subtaskId = "apply-changes-on-target-utils",
-      message = "XD",
+      message = BazelPluginBundle.message("console.task.apply.changes.on.target.utils.message"),
     ) {
       project.targetUtils.saveTargets(
         targets = bspTargets,
