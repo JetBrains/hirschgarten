@@ -29,12 +29,12 @@ import org.jetbrains.bazel.workspacemodel.entities.AndroidTargetType
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendumEntityData) : AndroidAddendumEntity,
-                                                                                              WorkspaceEntityBase(dataSource) {
+internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendumEntityData) : AndroidAddendumEntity, WorkspaceEntityBase(
+  dataSource) {
 
   private companion object {
-    internal val MODULE_CONNECTION_ID: ConnectionId =
-      ConnectionId.create(ModuleEntity::class.java, AndroidAddendumEntity::class.java, ConnectionId.ConnectionType.ONE_TO_ONE, false)
+    internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(ModuleEntity::class.java, AndroidAddendumEntity::class.java,
+                                                                          ConnectionId.ConnectionType.ONE_TO_ONE, false)
 
     private val connections = listOf<ConnectionId>(
       MODULE_CONNECTION_ID,
@@ -103,8 +103,8 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
   }
 
 
-  internal class Builder(result: AndroidAddendumEntityData?) :
-    ModifiableWorkspaceEntityBase<AndroidAddendumEntity, AndroidAddendumEntityData>(result), AndroidAddendumEntity.Builder {
+  internal class Builder(result: AndroidAddendumEntityData?) : ModifiableWorkspaceEntityBase<AndroidAddendumEntity, AndroidAddendumEntityData>(
+    result), AndroidAddendumEntity.Builder {
     internal constructor() : this(AndroidAddendumEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -189,8 +189,7 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
       if (this.androidTargetType != dataSource.androidTargetType) this.androidTargetType = dataSource.androidTargetType
       if (this.manifest != dataSource?.manifest) this.manifest = dataSource.manifest
       if (this.manifestOverrides != dataSource.manifestOverrides) this.manifestOverrides = dataSource.manifestOverrides.toMutableMap()
-      if (this.resourceDirectories != dataSource.resourceDirectories) this.resourceDirectories =
-        dataSource.resourceDirectories.toMutableList()
+      if (this.resourceDirectories != dataSource.resourceDirectories) this.resourceDirectories = dataSource.resourceDirectories.toMutableList()
       if (this.resourceJavaPackage != dataSource?.resourceJavaPackage) this.resourceJavaPackage = dataSource.resourceJavaPackage
       if (this.assetsDirectories != dataSource.assetsDirectories) this.assetsDirectories = dataSource.assetsDirectories.toMutableList()
       if (this.apk != dataSource?.apk) this.apk = dataSource.apk
@@ -398,9 +397,8 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
-    return AndroidAddendumEntity(
-      androidSdkName, androidTargetType, manifestOverrides, resourceDirectories, assetsDirectories, entitySource
-    ) {
+    return AndroidAddendumEntity(androidSdkName, androidTargetType, manifestOverrides, resourceDirectories, assetsDirectories,
+                                 entitySource) {
       this.manifest = this@AndroidAddendumEntityData.manifest
       this.resourceJavaPackage = this@AndroidAddendumEntityData.resourceJavaPackage
       this.apk = this@AndroidAddendumEntityData.apk

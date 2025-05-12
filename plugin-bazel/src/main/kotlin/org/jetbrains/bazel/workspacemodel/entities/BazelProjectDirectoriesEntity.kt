@@ -8,21 +8,21 @@ import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 
-public interface BspProjectDirectoriesEntity : WorkspaceEntity {
+public interface BazelProjectDirectoriesEntity : WorkspaceEntity {
   public val projectRoot: VirtualFileUrl
   public val includedRoots: List<VirtualFileUrl>
   public val excludedRoots: List<VirtualFileUrl>
 
   //region generated code
   @GeneratedCodeApiVersion(3)
-  interface Builder : WorkspaceEntity.Builder<BspProjectDirectoriesEntity> {
+  interface Builder : WorkspaceEntity.Builder<BazelProjectDirectoriesEntity> {
     override var entitySource: EntitySource
     var projectRoot: VirtualFileUrl
     var includedRoots: MutableList<VirtualFileUrl>
     var excludedRoots: MutableList<VirtualFileUrl>
   }
 
-  companion object : EntityType<BspProjectDirectoriesEntity, Builder>() {
+  companion object : EntityType<BazelProjectDirectoriesEntity, Builder>() {
     @JvmOverloads
     @JvmStatic
     @JvmName("create")
@@ -46,10 +46,8 @@ public interface BspProjectDirectoriesEntity : WorkspaceEntity {
 }
 
 //region generated code
-fun MutableEntityStorage.modifyBspProjectDirectoriesEntity(
-  entity: BspProjectDirectoriesEntity,
-  modification: BspProjectDirectoriesEntity.Builder.() -> Unit,
-): BspProjectDirectoriesEntity {
-  return modifyEntity(BspProjectDirectoriesEntity.Builder::class.java, entity, modification)
-}
+fun MutableEntityStorage.modifyBazelProjectDirectoriesEntity(
+  entity: BazelProjectDirectoriesEntity,
+  modification: BazelProjectDirectoriesEntity.Builder.() -> Unit,
+): BazelProjectDirectoriesEntity = modifyEntity(BazelProjectDirectoriesEntity.Builder::class.java, entity, modification)
 //endregion

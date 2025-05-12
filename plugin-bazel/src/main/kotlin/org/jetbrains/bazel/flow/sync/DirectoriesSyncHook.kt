@@ -17,8 +17,8 @@ import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.withSubtask
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import java.nio.file.Path
 
@@ -42,7 +42,7 @@ class DirectoriesSyncHook : ProjectSyncHook {
     project: Project,
     directories: WorkspaceDirectoriesResult,
     additionalExcludes: List<Path>,
-  ): BspProjectDirectoriesEntity.Builder {
+  ): BazelProjectDirectoriesEntity.Builder {
     val virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
 
     val includedRoots = directories.includedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) }
@@ -50,11 +50,11 @@ class DirectoriesSyncHook : ProjectSyncHook {
       directories.excludedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) } +
         additionalExcludes.map { it.toVirtualFileUrl(virtualFileUrlManager) }
 
-    return BspProjectDirectoriesEntity(
+    return BazelProjectDirectoriesEntity(
       projectRoot = project.rootDir.toVirtualFileUrl(virtualFileUrlManager),
       includedRoots = includedRoots,
       excludedRoots = excludedRoots,
-      entitySource = BspProjectEntitySource,
+      entitySource = BazelProjectEntitySource,
     )
   }
 

@@ -5,7 +5,7 @@ import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
 import org.jetbrains.bazel.utils.isSourceFile
-import org.jetbrains.bazel.workspacemodel.entities.BspDummyEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 
 /**
  * If a source file is added to a dummy module and is not associated with any other module, it should not be indexed or analyzed.
@@ -28,7 +28,7 @@ class DummyModuleExclusionWorkspaceFileIndexContributor : WorkspaceFileIndexCont
     registrar: WorkspaceFileSetRegistrar,
     storage: EntityStorage,
   ) {
-    if (entity.entitySource != BspDummyEntitySource) return
+    if (entity.entitySource != BazelDummyEntitySource) return
     // Since we register the exclusion at contentRootUrl,
     // it will be overridden if we add a file as a file-based source root at a subdirectory of contentRootUrl.
     entity.contentRoots.map { contentRoot ->

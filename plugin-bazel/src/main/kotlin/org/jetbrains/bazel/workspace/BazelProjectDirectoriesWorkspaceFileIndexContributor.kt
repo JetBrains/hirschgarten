@@ -6,13 +6,13 @@ import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileKind
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 
-class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexContributor<BspProjectDirectoriesEntity> {
-  override val entityClass: Class<BspProjectDirectoriesEntity> = BspProjectDirectoriesEntity::class.java
+class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexContributor<BazelProjectDirectoriesEntity> {
+  override val entityClass: Class<BazelProjectDirectoriesEntity> = BazelProjectDirectoriesEntity::class.java
 
   override fun registerFileSets(
-    entity: BspProjectDirectoriesEntity,
+    entity: BazelProjectDirectoriesEntity,
     registrar: WorkspaceFileSetRegistrar,
     storage: EntityStorage,
   ) {
@@ -21,7 +21,7 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexC
     registrar.registerAllOtherDirectoriesAsExcluded(entity)
   }
 
-  private fun WorkspaceFileSetRegistrar.registerIncludedDirectories(entity: BspProjectDirectoriesEntity) =
+  private fun WorkspaceFileSetRegistrar.registerIncludedDirectories(entity: BazelProjectDirectoriesEntity) =
     entity.includedRoots.forEach {
       registerFileSet(
         root = it,
@@ -31,7 +31,7 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexC
       )
     }
 
-  private fun WorkspaceFileSetRegistrar.registerExcludedDirectories(entity: BspProjectDirectoriesEntity) =
+  private fun WorkspaceFileSetRegistrar.registerExcludedDirectories(entity: BazelProjectDirectoriesEntity) =
     entity.excludedRoots.forEach {
       registerExcludedRoot(
         excludedRoot = it,
@@ -39,7 +39,7 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexC
       )
     }
 
-  private fun WorkspaceFileSetRegistrar.registerAllOtherDirectoriesAsExcluded(entity: BspProjectDirectoriesEntity) {
+  private fun WorkspaceFileSetRegistrar.registerAllOtherDirectoriesAsExcluded(entity: BazelProjectDirectoriesEntity) {
     val includedRoots = entity.includedRoots.mapNotNull { it.virtualFile }.toSet()
     registerExclusionCondition(
       root = entity.projectRoot,

@@ -44,7 +44,7 @@ import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.utils.StringUtils
-import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
@@ -74,7 +74,7 @@ class PythonProjectSync : ProjectSyncHook {
 
       pythonTargets.forEach {
         val moduleName = it.id.formatAsModuleName(environment.project)
-        val moduleSourceEntity = BspModuleEntitySource(moduleName)
+        val moduleSourceEntity = BazelModuleEntitySource(moduleName)
         val targetSourceDependencies = sourceDependencies[it.id] ?: emptyList()
         val sourceDependencyLibrary =
           calculateSourceDependencyLibrary(it.id, targetSourceDependencies, moduleSourceEntity, virtualFileUrlManager)
@@ -200,7 +200,7 @@ class PythonProjectSync : ProjectSyncHook {
     builder: MutableEntityStorage,
     target: BuildTarget,
     moduleName: String,
-    entitySource: BspModuleEntitySource,
+    entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
     project: Project,
     sdk: Sdk?,
@@ -242,7 +242,7 @@ class PythonProjectSync : ProjectSyncHook {
 
   private fun getContentRootEntities(
     target: BuildTarget,
-    entitySource: BspModuleEntitySource,
+    entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> {
     val sourceContentRootEntities = getSourceContentRootEntities(target, entitySource, virtualFileUrlManager)
@@ -253,7 +253,7 @@ class PythonProjectSync : ProjectSyncHook {
 
   private fun getSourceContentRootEntities(
     target: BuildTarget,
-    entitySource: BspModuleEntitySource,
+    entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
     target.sources.map { source ->
@@ -276,7 +276,7 @@ class PythonProjectSync : ProjectSyncHook {
 
   private fun getResourceContentRootEntities(
     target: BuildTarget,
-    entitySource: BspModuleEntitySource,
+    entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
     target.resources.map { resource ->

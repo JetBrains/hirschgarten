@@ -31,7 +31,7 @@ import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEn
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bazel.workspacemodel.entities.BspProjectEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
@@ -150,7 +150,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module1",
-                entitySource = BspProjectEntitySource,
+                entitySource = BazelProjectEntitySource,
                 dependencies =
                   listOf(
                     ModuleDependency(
@@ -192,7 +192,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                   JavaModuleSettingsEntity(
                     inheritedCompilerOutput = false,
                     excludeOutput = true,
-                    entitySource = BspProjectEntitySource,
+                    entitySource = BazelProjectEntitySource,
                   ) {
                     this.compilerOutput = Path("compiler/output").toVirtualFileUrl(virtualFileUrlManager)
                   }
@@ -483,7 +483,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module1",
-                entitySource = BspProjectEntitySource,
+                entitySource = BazelProjectEntitySource,
                 dependencies =
                   listOf(
                     ModuleDependency(
@@ -525,7 +525,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                   JavaModuleSettingsEntity(
                     inheritedCompilerOutput = false,
                     excludeOutput = true,
-                    entitySource = BspProjectEntitySource,
+                    entitySource = BazelProjectEntitySource,
                   ) {
                     this.compilerOutput = Path("compiler/output1").toVirtualFileUrl(virtualFileUrlManager)
                   }
@@ -537,7 +537,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module2",
-                entitySource = BspProjectEntitySource,
+                entitySource = BazelProjectEntitySource,
                 dependencies =
                   listOf(
                     ModuleDependency(
@@ -564,7 +564,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                   JavaModuleSettingsEntity(
                     inheritedCompilerOutput = false,
                     excludeOutput = true,
-                    entitySource = BspProjectEntitySource,
+                    entitySource = BazelProjectEntitySource,
                   ) {
                     this.compilerOutput = Path("compiler/output2").toVirtualFileUrl(virtualFileUrlManager)
                   }
@@ -801,7 +801,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module1",
-                entitySource = BspProjectEntitySource,
+                entitySource = BazelProjectEntitySource,
                 dependencies = emptyList(),
               ) {
                 type = ModuleTypeId("JAVA_MODULE")
@@ -896,7 +896,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module1",
-                entitySource = BspProjectEntitySource,
+                entitySource = BazelProjectEntitySource,
                 dependencies = emptyList(),
               ) {
                 type = ModuleTypeId("JAVA_MODULE")
@@ -907,7 +907,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module2",
-                entitySource = BspProjectEntitySource,
+                entitySource = BazelProjectEntitySource,
                 dependencies = emptyList(),
               ) {
                 type = ModuleTypeId("JAVA_MODULE")
