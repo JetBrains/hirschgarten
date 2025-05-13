@@ -1,3 +1,4 @@
+load("@npm//:defs.bzl", "npm_link_all_packages")
 load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
 
 define_kt_toolchain(
@@ -13,3 +14,5 @@ alias(
     name = "format",
     actual = "//tools/format",
 )
+
+npm_link_all_packages(name = "node_modules")
