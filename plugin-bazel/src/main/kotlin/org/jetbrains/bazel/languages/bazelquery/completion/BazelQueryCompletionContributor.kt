@@ -55,8 +55,7 @@ private val wordsOrCommandsTokens =
   )
 
 private class BazelWordCompletionProvider : CompletionProvider<CompletionParameters>() {
-  private val separator = if (SystemInfo.isWindows) "\\" else "/"
-  private val startPathSign = "$separator$separator"
+  private val startTargetSign = "//"
 
   companion object {
     val psiPattern =
@@ -99,12 +98,12 @@ private class BazelWordCompletionProvider : CompletionProvider<CompletionParamet
           functionLookupElement(
             it,
             when {
-              it.startsWith(startPathSign) &&
+              it.startsWith(startTargetSign) &&
                 (it.endsWith(":all") || it.endsWith(":all-targets")) -> 0.1
 
-              it.startsWith(startPathSign) -> 0.3
+              it.startsWith(startTargetSign) -> 0.3
 
-              !it.startsWith(startPathSign) &&
+              !it.startsWith(startTargetSign) &&
                 (it.endsWith(":all") || it.endsWith(":all-targets")) -> 0.2
 
               else -> 0.4
