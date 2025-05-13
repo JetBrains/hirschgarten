@@ -36,7 +36,6 @@ class LabelTest {
     normalized shouldBe "@//path/to/target:targetName"
     label.targetName shouldBe "targetName"
     label.packagePath.toString() shouldBe "path/to/target"
-    label.assumeBazelLabel().repo shouldBe Main
     label.isMainWorkspace shouldBe true
   }
 
@@ -98,7 +97,6 @@ class LabelTest {
     normalized shouldBe "@//path/to/target:targetName"
     label.targetName shouldBe "targetName"
     label.packagePath.toString() shouldBe "path/to/target"
-    label.assumeBazelLabel().repo shouldBe Main
     label.isMainWorkspace shouldBe true
   }
 
@@ -142,14 +140,12 @@ class LabelTest {
     label.toString() shouldBe "@//:target"
     label.targetName shouldBe "target"
     label.packagePath.toString() shouldBe ""
-    label.repo shouldBe Main
     label.isMainWorkspace shouldBe true
 
     val label2 = TargetPattern.parse("target").assumeBazelLabel()
     label2.toString() shouldBe "@//target:target"
     label2.target shouldBe SingleTarget("target")
     label2.packagePath.toString() shouldBe "target"
-    label.repo shouldBe Main
     label2.isMainWorkspace shouldBe true
   }
 

@@ -2,9 +2,8 @@ package org.jetbrains.bazel.server.paths
 
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
+import org.jetbrains.bazel.label.BazelLabel
 import org.jetbrains.bazel.label.Canonical
-import org.jetbrains.bazel.label.Main
-import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import java.io.File
@@ -99,14 +98,14 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
       else -> bazelInfo.workspaceRoot.resolve(path).toFile()
     }
 
-  fun toDirectoryPath(label: ResolvedLabel, repoMapping: RepoMapping): Path {
+  fun toDirectoryPath(label: BazelLabel, repoMapping: RepoMapping): Path {
     val repoPath = (repoMapping as? BzlmodRepoMapping)?.let { label.toRepoPath(repoMapping) } ?: label.toRepoPathForBazel7()
     return repoPath.resolve(label.packagePath.toString())
   }
 
-  private fun ResolvedLabel.toRepoPath(repoMapping: BzlmodRepoMapping): Path? {
+  private fun BazelLabel.toRepoPath(repoMapping: BzlmodRepoMapping): Path? {
     val canonicalName =
-      if (repo is Canonical || repo is Main) {
+      if (repo is Canonical || repo.isMain) {
         repo.repoName
       } else {
         repoMapping.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
@@ -114,8 +113,8 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
     return repoMapping.canonicalRepoNameToPath[canonicalName]
   }
 
-  private fun ResolvedLabel.toRepoPathForBazel7(): Path =
-    if (repo is Main) {
+  private fun BazelLabel.toRepoPathForBazel7(): Path =
+    if (repo.isMain) {
       bazelInfo.workspaceRoot
     } else {
       relativePathToExecRootAbsolute(Path("external", repo.repoName, *packagePath.pathSegments.toTypedArray()))

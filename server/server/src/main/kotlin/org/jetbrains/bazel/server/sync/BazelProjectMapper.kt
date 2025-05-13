@@ -13,9 +13,9 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bazel.label.BazelLabel
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.ResolvedLabel
-import org.jetbrains.bazel.label.assumeResolved
+import org.jetbrains.bazel.label.assumeBazelLabel
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
@@ -225,7 +225,7 @@ class BazelProjectMapper(
       createNonModuleTargets(
         targets.filterKeys {
           nonModuleTargetIds.contains(it) &&
-            isTargetTreatedAsInternal(it.assumeResolved(), repoMapping)
+            isTargetTreatedAsInternal(it.assumeBazelLabel(), repoMapping)
         },
         repoMapping,
         workspaceContext,
@@ -643,7 +643,7 @@ class BazelProjectMapper(
         NonModuleTarget(
           label = label,
           tags = targetTagsResolver.resolveTags(targetInfo, workspaceContext),
-          baseDirectory = bazelPathsResolver.toDirectoryPath(label.assumeResolved(), repoMapping),
+          baseDirectory = bazelPathsResolver.toDirectoryPath(label.assumeBazelLabel(), repoMapping),
           kindString = targetInfo.kind,
         )
       }
@@ -875,7 +875,7 @@ class BazelProjectMapper(
       .map { bazelPathsResolver.resolve(it) }
 
   private fun getGoRootPath(targetInfo: TargetInfo, repoMapping: RepoMapping): Path =
-    bazelPathsResolver.toDirectoryPath(targetInfo.label().assumeResolved(), repoMapping)
+    bazelPathsResolver.toDirectoryPath(targetInfo.label().assumeBazelLabel(), repoMapping)
 
   private fun selectTargetsToImport(
     workspaceContext: WorkspaceContext,
@@ -923,7 +923,7 @@ class BazelProjectMapper(
       is RepoMappingDisabled -> emptySet()
     }
 
-  private fun isTargetTreatedAsInternal(target: ResolvedLabel, repoMapping: RepoMapping): Boolean =
+  private fun isTargetTreatedAsInternal(target: BazelLabel, repoMapping: RepoMapping): Boolean =
     target.isMainWorkspace || target.repo.repoName in externalRepositoriesTreatedAsInternal(repoMapping)
 
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
@@ -933,7 +933,7 @@ class BazelProjectMapper(
     transitiveCompileTimeJarsTargetKinds: Set<String>,
     featureFlags: FeatureFlags,
   ): Boolean =
-    isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
+    isTargetTreatedAsInternal(target.label().assumeBazelLabel(), repoMapping) &&
       (
         shouldImportTargetKind(target.kind, transitiveCompileTimeJarsTargetKinds) ||
           target.hasJvmTargetInfo() &&
@@ -1008,7 +1008,7 @@ class BazelProjectMapper(
     repoMapping: RepoMapping,
     workspaceContext: WorkspaceContext,
   ): Module {
-    val label = target.label().assumeResolved()
+    val label = target.label().assumeBazelLabel()
     val resolvedDependencies = resolveDirectDependencies(target)
     // extra libraries can override some library versions, so they should be put before
     val directDependencies = extraLibraries.map { it.label } + resolvedDependencies

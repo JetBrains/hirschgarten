@@ -78,33 +78,20 @@ data class AllPackagesBeneath(override val pathSegments: List<String>) : Package
 
 sealed interface RepoType {
   val repoName: String
-}
 
-sealed interface CanonicalOrMain : RepoType
-
-/**
- * Targets in the main workspace are special-cased because they can be referred to
- * using both syntaxes and there's no need to use a repository mapping to resolve the label.
- */
-data object Main : CanonicalOrMain {
-  override val repoName: String = ""
-
-  override fun toString(): String = "@"
+  val isMain: Boolean
+    get() = repoName == ""
 }
 
 /**
  * See https://bazel.build/external/overview#canonical-repo-name
  */
-@ConsistentCopyVisibility
-data class Canonical internal constructor(override val repoName: String) : CanonicalOrMain {
-  init {
-    require(repoName.isNotEmpty())
-  }
+data class Canonical(override val repoName: String) : RepoType {
 
   override fun toString(): String = "@@$repoName"
 
   companion object {
-    fun createCanonicalOrMain(repoName: String): RepoType = if (repoName.isEmpty()) Main else Canonical(repoName)
+    val main = Canonical("")
   }
 }
 
@@ -112,11 +99,8 @@ data class Canonical internal constructor(override val repoName: String) : Canon
  * See https://bazel.build/external/overview#apparent-repo-name
  */
 data class Apparent(override val repoName: String) : RepoType {
-  init {
-    require(repoName.isNotEmpty())
-  }
 
-  override fun toString(): String = "@$repoName"
+  override fun toString(): String = if (repoName == "") "" else "@$repoName"
 }
 
 // single target, repo can be resolved or not, can be synthetic
@@ -129,6 +113,20 @@ sealed interface Label : TargetPattern {
 
   companion object {
     fun synthetic(targetName: String): SyntheticLabel = SyntheticLabel(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))
+    fun parse(value: String): Label {
+      return when (val targetPattern = TargetPattern.parse(value)) {
+        is BazelLabel -> targetPattern
+        is SyntheticLabel -> targetPattern
+        else -> error("Target pattern $value is not a valid label")
+      }
+    }
+    fun parseOrNull(value: String?): Label? {
+      return try {
+        value?.let { parse(it) }
+      } catch (e: Exception) {
+        null
+      }
+    }
   }
 }
 
@@ -145,18 +143,28 @@ data class ApparentLabel(
 
 // single target, repo must be resolved, not synthetic. Uniquely identifies a real Bazel target
 data class CanonicalLabel(
-  override val repo: CanonicalOrMain,
+  override val repo: Canonical,
   override val packagePath: Package,
   override val target: SingleTarget,
 ) : BazelLabel {
   override fun toString(): String = "$repo//${joinPackagePathAndTarget(packagePath, target)}"
+
+  companion object {
+    fun fromParts(
+      repo: String,
+      packagePath: Package,
+      target: SingleTarget,
+    ): CanonicalLabel {
+      return CanonicalLabel(Canonical(repo), packagePath, target)
+    }
+  }
 }
 
 /**
  * Synthethic label is a label of a target which is not present in the Bazel target graph.
  */
 data class SyntheticLabel(override val target: SingleTarget) : Label {
-  override val repo: Main = Main
+  override val repo: Canonical = Canonical.main
   override val packagePath: Package = Package(listOf())
 
   override fun toString(): String = "$target$SYNTHETIC_TAG"
@@ -218,7 +226,7 @@ sealed interface TargetPattern : Comparable<TargetPattern> {
     }
 
   val isMainWorkspace: Boolean
-    get() = (this as? AbsoluteTargetPattern)?.repo is Main || this is SyntheticLabel || (this as? CanonicalLabel)?.repo is Main
+    get() = (this as? AbsoluteTargetPattern)?.repo?.isMain == true || this is SyntheticLabel || (this as? BazelLabel)?.repo?.isMain == true
 
   val isRelative: Boolean
     get() = this is RelativeTargetPattern
@@ -274,18 +282,17 @@ sealed interface TargetPattern : Comparable<TargetPattern> {
 
       val repo =
         when {
-          repoName.isEmpty() -> Main
           value.startsWith("@@") -> Canonical(repoName)
           else -> Apparent(repoName)
         }
 
-      if (packageType is Package && target is SingleTarget) {
-        return when (repo) {
-          is CanonicalOrMain -> CanonicalLabel(repo, packageType, target)
+      return if (packageType is Package && target is SingleTarget) {
+        when (repo) {
+          is Canonical -> CanonicalLabel(repo, packageType, target)
           is Apparent -> ApparentLabel(repo, packageType, target)
         }
       } else {
-        return AbsoluteTargetPattern(repo, packageType, target)
+        AbsoluteTargetPattern(repo, packageType, target)
       }
     }
 
@@ -321,13 +328,13 @@ fun TargetPattern.assumeBazelLabel(): BazelLabel =
 
       val repo =
         when (this) {
-          is RelativeTargetPattern -> Main
+          is RelativeTargetPattern -> Canonical.main
           is AbsoluteTargetPattern -> this.repo
           else -> error("Impossible state")
         }
 
       when (repo) {
-        is CanonicalOrMain -> CanonicalLabel(repo, singlePackagePath, singleTarget)
+        is Canonical -> CanonicalLabel(repo, singlePackagePath, singleTarget)
         is Apparent -> ApparentLabel(repo, singlePackagePath, singleTarget)
       }
     }

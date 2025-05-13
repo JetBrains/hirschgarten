@@ -4,11 +4,11 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Apparent
+import org.jetbrains.bazel.label.ApparentLabel
 import org.jetbrains.bazel.label.Canonical
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.Package
-import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.utils.allAncestorsSequence
 import java.nio.file.Path
@@ -26,7 +26,7 @@ fun calculateLabel(
   project: Project,
   buildFile: Path,
   targetName: String? = null,
-): ResolvedLabel? {
+): CanonicalLabel? {
   val targetBaseDirectory = buildFile.parent ?: return null
   val containingRepoPath = findContainingBazelRepo(targetBaseDirectory) ?: return null
   val containingCanonicalRepoName =
@@ -35,11 +35,20 @@ fun calculateLabel(
         repoPath == containingRepoPath
       }?.key ?: return null
 
-  val relativeTargetBaseDirectory = targetBaseDirectory.relativeToOrNull(containingRepoPath) ?: return null
-  return ResolvedLabel(
-    repo = Canonical.createCanonicalOrMain(containingCanonicalRepoName),
-    packagePath = Package(relativeTargetBaseDirectory.segments()),
-    target = targetName?.let { SingleTarget(targetName) } ?: AmbiguousEmptyTarget,
+  val packagePath = targetBaseDirectory.relativeToOrNull(containingRepoPath)?.segments() ?: return null
+
+  val target = if (targetName != null) {
+    targetName
+  } else {
+    if (packagePath.isEmpty()) {
+      return null
+    }
+    packagePath.last()
+  }
+  return CanonicalLabel(
+    repo = Canonical(containingCanonicalRepoName),
+    packagePath = Package(packagePath),
+    target = SingleTarget(target),
   )
 }
 
@@ -53,54 +62,42 @@ private fun Path.segments(): List<String> {
  * We should show apparent labels in the UI, where possible, to avoid confusing the user with labels containing symbols such as `~` or `+`.
  * If conversion to an apparent label fails, fall back to the original label.
  */
-fun Label.toApparentLabelOrThis(project: Project): Label = toApparentLabel(project) ?: this
+fun Label.toApparentLabelOrThis(project: Project): Label = (this as? CanonicalLabel)?.toApparentLabel(project) ?: this
 
 /**
  * Converts this [Label]'s repository either to [Apparent] or to [Main].
  */
-fun Label.toApparentLabel(project: Project): ResolvedLabel? {
-  if (this !is ResolvedLabel) return null
-  if (this.repo !is Canonical) return this
+fun CanonicalLabel.toApparentLabel(project: Project): ApparentLabel? {
   val apparentRepoName = project.canonicalRepoNameToApparentName[this.repo.repoName] ?: return null
-  return this.copy(repo = Apparent(apparentRepoName))
+  return ApparentLabel(
+    repo = Apparent(apparentRepoName),
+    packagePath = this.packagePath,
+    target = this.target,
+  )
 }
 
 /**
- * Converts this [Label]'s repository either to [Canonical] or to [Main].
+ * Converts this [Label]'s repository to [Canonical].
  */
-fun Label.toCanonicalLabel(project: Project): ResolvedLabel? {
-  if (this !is ResolvedLabel) return null
-  val repo =
-    if (repo !is Apparent) {
-      repo
-    } else {
+fun ApparentLabel.toCanonicalLabel(project: Project): CanonicalLabel? {
       val canonicalRepoName = project.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
-      Canonical.createCanonicalOrMain(canonicalRepoName)
-    }
-  val target = this.singleTarget() ?: return null
-  return this.copy(repo = repo, target = target)
-}
-
-fun Label.singleTarget(): SingleTarget? {
-  val oldTarget = target
-  return when (oldTarget) {
-    is AmbiguousEmptyTarget -> SingleTarget(packagePath.pathSegments.lastOrNull() ?: return null)
-    is SingleTarget -> oldTarget
-    else -> return null
-  }
+      return CanonicalLabel(
+        repo = Canonical(canonicalRepoName),
+        packagePath = this.packagePath,
+        target = this.target,
+      )
 }
 
 fun Label.toShortString(project: Project): String {
   val label = this.toApparentLabelOrThis(project)
-  if (label !is ResolvedLabel) return label.toString()
 
-  val repoPart = if (label.repo !is Main) label.repo.toString() else ""
+  val repoPart = if (!label.repo.isMain) label.repo.toString() else ""
   val packagePart = label.packagePath.toString()
   val targetPart =
-    when {
-      label.target is AmbiguousEmptyTarget -> ""
-      label.target is SingleTarget && (label.target as SingleTarget).targetName == (label.packagePath as? Package)?.name() -> ""
-      else -> ":${label.target}"
+    if (label.target.targetName == (label.packagePath as? Package)?.name()) {
+      ""
+    } else {
+      ":${label.target}"
     }
   return "$repoPart//$packagePart$targetPart"
 }

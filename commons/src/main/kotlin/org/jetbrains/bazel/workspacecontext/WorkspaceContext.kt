@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.workspacecontext
 
 import org.jetbrains.bazel.executioncontext.api.ExecutionContext
-import org.jetbrains.bazel.label.assumeResolved
 
 /**
  * Representation of `ExecutionContext` used during server lifetime.
@@ -93,7 +92,6 @@ val WorkspaceContext.externalRepositoriesTreatedAsInternal: List<String>
     targets.values
       .mapNotNull {
         it
-          .assumeResolved()
           .repo.repoName
           .takeIf { repoName -> repoName.isNotEmpty() }
       }.distinct()
