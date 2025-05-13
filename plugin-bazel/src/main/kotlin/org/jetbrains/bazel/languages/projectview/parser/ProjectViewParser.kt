@@ -25,15 +25,15 @@ class ProjectViewParser(private val builder: PsiBuilder) {
     val marker = builder.mark()
     when (getCurrentTokenType()) {
       ProjectViewTokenType.SECTION_KEYWORD -> {
-        ProjectViewSection.KEYWORD_MAP[builder.tokenText]?.let { parser ->
+        ProjectViewSection.KEYWORD_MAP[builder.tokenText]?.let { meta ->
           builder.advanceLexer()
           expect(ProjectViewTokenType.COLON)
 
-          when (parser) {
-            is ProjectViewSectionParser.ScalarSectionParser<*> -> {
+          when (meta.parser) {
+            is ProjectViewSectionParser.Scalar<*> -> {
               parseItem(ProjectViewElementTypes.SECTION_ITEM)
             }
-            is ProjectViewSectionParser.ListSectionParser -> {
+            is ProjectViewSectionParser.List<*> -> {
               skipToNextLine()
               parseListItems()
             }

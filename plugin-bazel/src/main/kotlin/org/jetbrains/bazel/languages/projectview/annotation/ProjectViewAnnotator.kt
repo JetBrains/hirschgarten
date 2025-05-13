@@ -20,11 +20,11 @@ class ProjectViewAnnotator : Annotator {
     when (element) {
       is ProjectViewPsiSection -> {
         val itemElements = element.getItems()
-        val parser = ProjectViewSection.KEYWORD_MAP[element.getKeyword()]
-        parser?.parse(itemElements.map { Item(it.text) })?.let {
+        val meta = ProjectViewSection.KEYWORD_MAP[element.getKeyword()]
+        meta?.parser?.parse(itemElements.map { Item(it.text) })?.let {
           when (it) {
             is Result.Success -> {
-              it.value.textAttributesKey?.let { textAttributesKey ->
+              meta.textAttributesKey?.let { textAttributesKey ->
                 itemElements.forEach { itemElement ->
                   createInformationAnnotation(
                     holder,

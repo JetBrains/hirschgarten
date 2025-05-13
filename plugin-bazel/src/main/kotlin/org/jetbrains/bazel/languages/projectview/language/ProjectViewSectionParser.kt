@@ -1,15 +1,12 @@
 package org.jetbrains.bazel.languages.projectview.language
 
-import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
-import org.jetbrains.bazel.languages.projectview.language.ProjectViewSection.Scalar
-
-sealed interface ProjectViewSectionParser {
+sealed interface ProjectViewSectionParser<out SectionT : ProjectViewSection> {
   /**
    * An unparsed section is modelled as a sequence of items.
    */
   data class Item(val value: String)
 
-  fun parse(items: Iterable<Item>): Result {
+  fun parse(items: Iterable<Item>): Result<SectionT> {
     val iterator = items.iterator()
 
     return if (iterator.hasNext()) {
@@ -19,27 +16,20 @@ sealed interface ProjectViewSectionParser {
     }
   }
 
-  fun parseNonEmpty(head: Item, tail: Iterator<Item>): Result
+  fun parseNonEmpty(head: Item, tail: Iterator<Item>): Result<SectionT>
 
-  sealed interface ScalarSectionParser<out T> : ProjectViewSectionParser {
-    override fun parseNonEmpty(head: Item, tail: Iterator<Item>): Result =
+  sealed interface Scalar<T> : ProjectViewSectionParser<ProjectViewSection.Scalar<T>> {
+    override fun parseNonEmpty(head: Item, tail: Iterator<Item>): Result<ProjectViewSection.Scalar<T>> =
       if (tail.hasNext()) {
         Result.Failure("A scalar section should contain a single item", Scope.Section)
       } else {
         parseValue(head).fold(onSuccess = { Result.Success(it) }, onFailure = { Result.Failure(it.message ?: "", Scope.Item(0)) })
       }
 
-    fun parseValue(item: Item): kotlin.Result<Scalar<T>>
+    fun parseValue(item: Item): kotlin.Result<ProjectViewSection.Scalar<T>>
 
-    data object Int : ScalarSectionParser<kotlin.Int> {
-      override fun parseValue(item: Item): kotlin.Result<Scalar<kotlin.Int>> =
-        item.value.toIntOrNull()?.let {
-          kotlin.Result.success(Scalar(it, DefaultLanguageHighlighterColors.NUMBER))
-        } ?: kotlin.Result.failure(Exception("Invalid number"))
-    }
-
-    data object Boolean : ScalarSectionParser<kotlin.Boolean> {
-      override fun parseValue(item: Item): kotlin.Result<Scalar<kotlin.Boolean>> {
+    data object Boolean : Scalar<kotlin.Boolean> {
+      override fun parseValue(item: Item): kotlin.Result<ProjectViewSection.Scalar.Boolean> {
         val boolean =
           when (item.value) {
             "true" -> true
@@ -47,44 +37,55 @@ sealed interface ProjectViewSectionParser {
             else -> null
           }
 
-        return boolean?.let { kotlin.Result.success(Scalar(it, DefaultLanguageHighlighterColors.KEYWORD)) }
+        return boolean?.let { kotlin.Result.success(ProjectViewSection.Scalar.Boolean(it)) }
           ?: kotlin.Result.failure(Exception("Invalid boolean"))
       }
     }
 
-    data object Identifier : Simple
+    data object Identifier : Scalar<String> {
+      override fun parseValue(item: Item): kotlin.Result<ProjectViewSection.Scalar.Identifier> =
+        kotlin.Result.success(ProjectViewSection.Scalar.Identifier(item.value))
+    }
 
-    data object Path : Simple
+    data object Int : Scalar<kotlin.Int> {
+      override fun parseValue(item: Item): kotlin.Result<ProjectViewSection.Scalar.Int> =
+        item.value.toIntOrNull()?.let {
+          kotlin.Result.success(ProjectViewSection.Scalar.Int(it))
+        } ?: kotlin.Result.failure(Exception("Invalid number"))
+    }
 
-    private sealed interface Simple : ScalarSectionParser<String> {
-      override fun parseValue(item: Item): kotlin.Result<Scalar<String>> =
-        kotlin.Result.success(
-          Scalar(
-            item.value,
-            null,
+    data object Path : Scalar<String> {
+      override fun parseValue(item: Item): kotlin.Result<ProjectViewSection.Scalar.Path> =
+        kotlin.Result.success(ProjectViewSection.Scalar.Path(item.value))
+    }
+  }
+
+  sealed interface List<T> : ProjectViewSectionParser<ProjectViewSection.List<T>> {
+    override fun parseNonEmpty(head: Item, tail: Iterator<Item>): Result<ProjectViewSection.List<T>>
+
+    data object Identifiers : List<String> {
+      override fun parseNonEmpty(head: Item, tail: Iterator<Item>): Result<ProjectViewSection.List<String>> =
+        Result.Success(
+          ProjectViewSection.List.Identifiers(
+            listOf(head.value) + tail.asSequence().map { it.value }.toList(),
+          ),
+        )
+    }
+
+    data object Paths : List<String> {
+      override fun parseNonEmpty(head: Item, tail: Iterator<Item>): Result<ProjectViewSection.List<String>> =
+        Result.Success(
+          ProjectViewSection.List.Paths(
+            listOf(head.value) + tail.asSequence().map { it.value }.toList(),
           ),
         )
     }
   }
 
-  sealed interface ListSectionParser : ProjectViewSectionParser {
-    override fun parseNonEmpty(head: Item, tail: Iterator<Item>): Result =
-      Result.Success(
-        ProjectViewSection.List<String>(
-          listOf(head.value) + tail.asSequence().map { it.value }.toList(),
-          null,
-        ),
-      )
+  sealed interface Result<out T : ProjectViewSection> {
+    data class Success<out T : ProjectViewSection>(val value: T) : Result<T>
 
-    data object Identifiers : ListSectionParser
-
-    data object Paths : ListSectionParser
-  }
-
-  sealed interface Result {
-    data class Success(val value: ProjectViewSection) : Result
-
-    data class Failure(val message: String, val scope: Scope) : Result
+    data class Failure(val message: String, val scope: Scope) : Result<Nothing>
   }
 
   sealed interface Scope {
