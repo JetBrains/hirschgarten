@@ -292,7 +292,7 @@ object FastBuildUtils {
 
             "--output_deps_proto" -> {
               os.writeLn(line)
-              os.writeLn(tempDir.resolve("output.jdpes").pathString)
+              os.writeLn(tempDir.resolve("output.jdeps").pathString)
               ips.readLine()
             }
 
