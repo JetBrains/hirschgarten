@@ -254,7 +254,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       moduleIdToTarget = state.moduleIdToTarget.mapValues { Label.parse(it.value) }
       libraryIdToTarget = state.libraryIdToTarget.mapValues { Label.parse(it.value) }
       fileToTarget.apply {
-        clear()
+        clear() // loadState function can be called multiple times, clearing is necessary to avoid duplicate/outdated entries
         putAll(state.fileToTarget.mapToPathsAndLabels())
       }
       fileToExecutableTargets = state.fileToExecutableTargets.mapToPathsAndLabels()
@@ -264,7 +264,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       labelToTargetInfo = emptyMap()
       moduleIdToTarget = emptyMap()
       libraryIdToTarget = emptyMap()
-      fileToTarget.clear() // loadState function can be called multiple times, clearing is necessary to avoid duplicate/outdated entries
+      fileToTarget.clear()
       fileToExecutableTargets = emptyMap()
       allTargetsAndLibrariesLabels = emptyList()
       updateComputedFields()
