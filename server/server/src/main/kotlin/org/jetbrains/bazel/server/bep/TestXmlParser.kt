@@ -101,7 +101,9 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
   fun parseAndReport(testXmlUri: String) {
     val testSuites = parseTestXml(testXmlUri, TestSuites::class.java)
     if (testSuites != null) {
-      testSuites.testsuite.forEach { processSuite(it) }
+      testSuites
+        .testsuite
+        .forEach { processSuite(it) }
     } else {
       val fallbackTestSuites =
         parseTestXml(testXmlUri, FallbackTestXmlParser.IncompleteTestSuites::class.java)
@@ -133,19 +135,26 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
 
   /**
    * Convert each TestSuite into a series of taskStart and taskFinish notification to the client.
-   * The parents field in each notification's TaskId will be used to indicate the parent-child relationship.
+   * The `parents` field in each notification's TaskId will be used to indicate the parent-child relationship.
+   *
+   * Test suite is a collection of test cases (usually a test class).
+   * If the number of tests inside is not zero, but no test case results are found, it means the test suite was filtered out by Bazel -
+   * this happens when the user chooses to run only one test class, not the whole Bazel target.
+   * In that case, there is no point in showing such an empty suite to the user.
+   *
    * @param suite TestSuite to be processed.
    */
   private fun processSuite(suite: TestSuite) {
-    val suiteTaskId = TaskId(UUID.randomUUID().toString(), parents = emptyList())
-
-    val suiteData = JUnitStyleTestSuiteData(suite.time, null, suite.systemErr?.toString())
     val suiteStatus =
       when {
+        suite.tests > 0 && suite.testcase.isEmpty() -> return
         suite.failures > 0 -> TestStatus.FAILED
         suite.errors > 0 -> TestStatus.FAILED
         else -> TestStatus.PASSED
       }
+
+    val suiteTaskId = TaskId(UUID.randomUUID().toString(), parents = emptyList())
+    val suiteData = JUnitStyleTestSuiteData(suite.time, null, suite.systemErr?.toString())
 
     bspClientTestNotifier.startTest(suite.name, suiteTaskId)
     suite.testcase.forEach { case ->
