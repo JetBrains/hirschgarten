@@ -7,7 +7,7 @@ import kotlinx.coroutines.Deferred
 
 class BazelTestProcessHandler(project: Project, runDeferred: Deferred<*>) : BazelProcessHandler(project, runDeferred) {
   override fun destroyProcessImpl() {
-    // when there are no tests in the test console, it will wrongly show cancelled run as "No tests were found"
+    // send a fake terminated test to the test console - otherwise it will show "No tests were found" instead of "Terminated"
     notifyTextAvailable(ServiceMessageBuilder.testSuiteStarted("Run cancelled").toString() + "\n", ProcessOutputType.STDOUT)
     super.destroyProcessImpl()
   }
