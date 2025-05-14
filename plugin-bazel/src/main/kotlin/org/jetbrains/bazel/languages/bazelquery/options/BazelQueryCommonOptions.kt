@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.bazelquery.options
 
 data class BazelQueryOption(val name: String, val values: List<String> = emptyList())
 
+// TODO: refactoring to reuse code from bazelrc KnownFlags - BAZEL-2029
 object BazelQueryCommonOptions {
   // Default value is always first in the list
   private val knownFlags =

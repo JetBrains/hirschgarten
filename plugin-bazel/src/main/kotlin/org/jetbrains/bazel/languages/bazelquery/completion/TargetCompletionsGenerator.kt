@@ -11,7 +11,7 @@ class TargetCompletionsGenerator(private val project: Project) {
   private val separator = "/"
   private val startTargetSign = "//"
 
-  // TODO: check if it is possible to also consider external targets
+  // TODO: check if it is possible to also consider external targets - BAZEL-2028
   private val allTargets =
     project.targetUtils
       .allTargets()
