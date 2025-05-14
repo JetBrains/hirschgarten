@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.server.sync.languages.go
 
 import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
@@ -21,7 +22,9 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, priva
         GoBuildTarget(
           sdkHomePath = sdkHomePath,
           importPath = importPath,
-          generatedLibraries = generatedLibraries,
+          generatedLibraries = generatedLibraries.distinct(),
+          generatedSources = generatedSources.distinct(),
+          libraryLabels = libraryLabels,
         )
       }
 
@@ -38,9 +41,10 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, priva
     val goTargetInfo = targetInfo.goTargetInfo
     return GoModule(
       sdkHomePath = calculateSdkPath(goTargetInfo.sdkHomePath),
-      importPath = goTargetInfo.importpath,
+      importPath = goTargetInfo.importPath,
       generatedSources = goTargetInfo.generatedSourcesList.mapNotNull { bazelPathsResolver.resolve(it) },
       generatedLibraries = goTargetInfo.generatedLibrariesList.mapNotNull { bazelPathsResolver.resolve(it) },
+      libraryLabels = goTargetInfo.libraryLabelsList.mapNotNull { Label.parseOrNull(it) },
     )
   }
 

@@ -4,16 +4,23 @@
         <runLineMarkerContributor
                 implementationClass="org.jetbrains.bazel.golang.ui.gutters.BazelGoRunLineMarkerContributor"
                 language="go"/>
+        <documentationProvider implementation="org.jetbrains.bazel.golang.resolve.GoPackageDocumentationProvider"/>
+      <!--<additionalLibraryRootsProvider implementation="org.jetbrains.bazel.golang.sync.GoAdditionalLibraryRootsProvider"/>-->
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.bazel">
         <projectSyncHook implementation="org.jetbrains.bazel.golang.sync.GoProjectSync"/>
         <runHandlerProvider
                 implementation="org.jetbrains.bazel.golang.debug.GoBazelRunHandler$GoBazelRunHandlerProvider"/>
+        <targetKindProvider implementation="org.jetbrains.bazel.golang.targetKinds.GoBazelRules"/>
     </extensions>
     <extensions defaultExtensionNs="com.goide">
         <dlv.positionConverterFactory
                 implementation="org.jetbrains.bazel.golang.debug.BazelDlvPosConverterFactory"
                 order="first"/>
+        <packageFactory implementation="org.jetbrains.bazel.golang.resolve.BazelGoPackageFactory"/>
+        <importResolver implementation="org.jetbrains.bazel.golang.resolve.BazelGoImportResolver"
+                        id="Bazel.ImportResolver"
+                        order="first"/>
     </extensions>
 </idea-plugin>

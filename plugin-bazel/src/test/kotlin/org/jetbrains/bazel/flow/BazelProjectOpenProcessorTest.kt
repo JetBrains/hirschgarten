@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.flow
 
 import io.kotest.matchers.collections.shouldContain
-import org.jetbrains.bazel.flow.open.BUILD_FILE_GLOB
+import org.jetbrains.bazel.utils.BUILD_FILE_GLOB
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

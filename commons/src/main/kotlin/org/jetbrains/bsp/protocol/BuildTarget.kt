@@ -43,6 +43,8 @@ data class GoBuildTarget(
   val sdkHomePath: Path?,
   val importPath: String,
   val generatedLibraries: List<Path>,
+  val generatedSources: List<Path>,
+  val libraryLabels: List<Label>,
 ) : BuildTargetData
 
 data class CppBuildTarget(

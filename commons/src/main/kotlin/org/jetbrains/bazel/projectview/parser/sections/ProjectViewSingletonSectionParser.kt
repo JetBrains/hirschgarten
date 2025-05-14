@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.projectview.model.sections.AndroidMinSdkSection
 import org.jetbrains.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
+import org.jetbrains.bazel.projectview.model.sections.GazelleTargetSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
@@ -140,4 +141,12 @@ object ShardingApproachParser : ProjectViewSingletonSectionParser<String, Shardi
   override fun mapRawValue(rawValue: String): String = rawValue
 
   override fun createInstance(value: String): ShardingApproachSection = ShardingApproachSection(value)
+}
+
+object GazelleTargetParser : ProjectViewSingletonSectionParser<String, GazelleTargetSection>(
+  GazelleTargetSection.SECTION_NAME,
+) {
+  override fun mapRawValue(rawValue: String): String = rawValue
+
+  override fun createInstance(value: String): GazelleTargetSection = GazelleTargetSection(value)
 }

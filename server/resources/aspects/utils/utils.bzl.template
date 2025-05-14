@@ -277,6 +277,7 @@ COMPILE_DEPS = [
     "jars",
     "exports",
     "associates",
+    "embed", # from rules_go
     "proc_macro_deps",
     ${cppDeps}
 ]

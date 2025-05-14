@@ -2,7 +2,11 @@ package org.jetbrains.bazel.languages.starlark.psi
 
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.platform.ide.progress.ModalTaskOwner.project
 import com.intellij.psi.FileViewProvider
+import com.intellij.psi.PsiManager
 import com.intellij.util.Processor
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
@@ -10,6 +14,8 @@ import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
+import org.jetbrains.bazel.utils.VfsUtils
+import java.nio.file.Path
 
 open class StarlarkFile(viewProvider: FileViewProvider) :
   PsiFileBase(viewProvider, StarlarkLanguage),
@@ -27,4 +33,13 @@ open class StarlarkFile(viewProvider: FileViewProvider) :
 
   fun searchInLoads(processor: Processor<StarlarkElement>): Boolean =
     findChildrenByClass(StarlarkLoadStatement::class.java).flatMap { it.getLoadedSymbolsPsi() }.all(processor::process)
+
+  companion object {
+    fun findBuildFile(packageDirectory: Path, project: Project): StarlarkFile? {
+      val vf = LocalFileSystem.getInstance().findFileByPath(packageDirectory.toFile().path) ?: return null
+      val buildFile = VfsUtils.getContainingBuildFile(vf) ?: return null
+      val psiFile = PsiManager.getInstance(project).findFile(buildFile) as? StarlarkFile ?: return null
+      return if (psiFile.isBuildFile()) psiFile else null
+    }
+  }
 }

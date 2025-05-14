@@ -107,6 +107,12 @@ class ProjectResolver(
         bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, toolchains)
       }
 
+      measured("Run Gazelle target") {
+        workspaceContext.gazelleTarget.value?.also { gazelleTarget ->
+          runGazelleTarget(workspaceContext, gazelleTarget)
+        }
+      }
+
       val targetsToSync =
         requestedTargetsToSync
           ?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
@@ -175,7 +181,7 @@ class ProjectResolver(
     originId: String?,
   ): BazelBspAspectsManagerResult =
     coroutineScope {
-      val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, SYNC_ARTIFACT_OUTPUT_GROUP)
+      val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, SYNC_ARTIFACT_OUTPUT_GROUP, GO_SOURCE_OUTPUT_GROUP)
       if (build) {
         outputGroups.add(BUILD_ARTIFACT_OUTPUT_GROUP)
       }
@@ -288,6 +294,17 @@ class ProjectResolver(
     }
   }
 
+  private suspend fun runGazelleTarget(workspaceContext: WorkspaceContext, gazelleTarget: Label) {
+    bazelRunner.run {
+      val command =
+        buildBazelCommand(workspaceContext) {
+          run(gazelleTarget)
+        }
+      runBazelCommand(command, serverPidFuture = null)
+        .waitAndGetResult()
+    }
+  }
+
   fun releaseMemory() {
     bazelPathsResolver.clear()
     System.gc()
@@ -302,5 +319,8 @@ class ProjectResolver(
 
     // this output group is for artifacts which are only needed during build
     private const val BUILD_ARTIFACT_OUTPUT_GROUP = "bsp-build-artifact"
+
+    // language-specific output groups
+    private const val GO_SOURCE_OUTPUT_GROUP = "bazel-sources-go"
   }
 }

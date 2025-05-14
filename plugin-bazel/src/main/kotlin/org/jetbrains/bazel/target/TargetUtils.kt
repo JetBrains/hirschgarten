@@ -81,6 +81,8 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
     @InternalApi get
 
+  private var targetDependentsGraph: TargetDependentsGraph = TargetDependentsGraph(emptyMap(), emptyList())
+
   private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
 
   fun addFileToTargetIdEntry(path: Path, targets: List<Label>) {
@@ -118,15 +120,15 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
         }.orEmpty()
 
     this.fileToTarget = fileToTarget
-    fileToExecutableTargets = calculateFileToExecutableTargets(libraryItems)
+    targetDependentsGraph = TargetDependentsGraph(labelToTargetInfo, libraryItems)
+    fileToExecutableTargets = calculateFileToExecutableTargets()
 
     this.libraryModulesLookupTable = createLibraryModulesLookupTable(libraryModules)
     updateComputedFields()
   }
 
-  private suspend fun calculateFileToExecutableTargets(libraryItems: List<LibraryItem>?): Map<Path, List<Label>> =
+  private suspend fun calculateFileToExecutableTargets(): Map<Path, List<Label>> =
     withContext(Dispatchers.Default) {
-      val targetDependentsGraph = TargetDependentsGraph(labelToTargetInfo, libraryItems)
       val targetToTransitiveRevertedDependenciesCache = ConcurrentHashMap<Label, Set<Label>>()
       fileToTarget
         .map { (path, targets) ->
@@ -221,6 +223,9 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
    */
   @InternalApi
   fun isLibraryModule(name: String): Boolean = name.addLibraryModulePrefix() in libraryModulesLookupTable
+
+  @InternalApi
+  fun getDirectDependentLabels(label: Label) = targetDependentsGraph.directDependentIds(label)
 
   @InternalApi
   override fun getState(): TargetUtilsState =

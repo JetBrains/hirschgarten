@@ -3,22 +3,17 @@ package org.jetbrains.bazel.flow.open
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import java.io.IOException
-import java.nio.file.Path
+import org.jetbrains.bazel.utils.VfsUtils
 import javax.swing.Icon
 import kotlin.io.path.isRegularFile
-import kotlin.io.path.listDirectoryEntries
 
 private val log = logger<BazelProjectOpenProcessor>()
-
-val BUILD_FILE_GLOB = "{${Constants.BUILD_FILE_NAMES.joinToString(",")}}"
 
 /**
  * Refrain from using [VirtualFile.getChildren] as it causes performance issues in large projects, such as [BAZEL-1717](https://youtrack.jetbrains.com/issue/BAZEL-1717)
@@ -46,32 +41,15 @@ internal class BazelProjectOpenProcessor : BaseProjectOpenProcessor() {
     when {
       originalVFile.isProjectViewFile() -> projectViewFileBeforeOpenCallback(originalVFile)
       // BUILD file at the root can be treated as a workspace file in this context
-      originalVFile.isBuildFile() && originalVFile.parent?.isWorkspaceRoot() == true -> { project -> }
+      originalVFile.isBuildFile() && originalVFile.parent?.isWorkspaceRoot() == true -> { _ -> }
       originalVFile.isBuildFile() -> buildFileBeforeOpenCallback(originalVFile)
-      originalVFile.isWorkspaceFile() -> { project -> }
-      originalVFile.isWorkspaceRoot() -> { project -> }
+      originalVFile.isWorkspaceFile() -> { _ -> }
+      originalVFile.isWorkspaceRoot() -> { _ -> }
       else -> {
-        val buildFile = originalVFile.getContainingBuildFile()
+        val buildFile = VfsUtils.getContainingBuildFile(originalVFile)
         buildFile?.let { buildFileBeforeOpenCallback(it) } ?: {}
       }
     }
-
-  private fun VirtualFile.getContainingBuildFile(): VirtualFile? {
-    try {
-      if (!isDirectory) return null
-      val path = toNioPath()
-      return path
-        .listDirectoryEntries(
-          glob = BUILD_FILE_GLOB,
-        ).firstOrNull { it.isRegularFile() }
-        ?.toVirtualFile()
-    } catch (e: IOException) {
-      log.warn("Cannot retrieve Bazel BUILD file from directory $this", e)
-      return null
-    }
-  }
-
-  private fun Path.toVirtualFile(): VirtualFile? = LocalFileSystem.getInstance().findFileByNioFile(this)
 
   private fun buildFileBeforeOpenCallback(originalVFile: VirtualFile): (Project) -> Unit =
     fun(project) {

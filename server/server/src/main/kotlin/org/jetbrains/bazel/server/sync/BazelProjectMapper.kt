@@ -451,7 +451,7 @@ class BazelProjectMapper(
           target.goTargetInfo.generatedLibrariesList.map {
             GoLibrary(
               label = label,
-              goImportPath = target.goTargetInfo.importpath,
+              goImportPath = target.goTargetInfo.importPath,
               goRoot = bazelPathsResolver.resolve(it).parent,
             )
           }
@@ -726,7 +726,7 @@ class BazelProjectMapper(
   ): GoLibrary =
     GoLibrary(
       label = label,
-      goImportPath = targetInfo.goTargetInfo?.importpath,
+      goImportPath = targetInfo.goTargetInfo?.importPath,
       goRoot = getGoRootPath(targetInfo, repoMapping),
     )
 
@@ -1064,6 +1064,9 @@ class BazelProjectMapper(
       "kt_android_library" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
       "kt_android_local_test" to setOf(LanguageClass.JAVA, LanguageClass.ANDROID),
       "go_binary" to setOf(LanguageClass.GO),
+      "go_test" to setOf(LanguageClass.GO),
+      "go_library" to setOf(LanguageClass.GO),
+      "go_source" to setOf(LanguageClass.GO),
       "py_binary" to setOf(LanguageClass.PYTHON),
       "py_test" to setOf(LanguageClass.PYTHON),
       "py_library" to setOf(LanguageClass.PYTHON),

@@ -135,6 +135,7 @@
                          order="after BazelRepoMappingSyncHook"/>
         <projectStructureProvider
                 implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
+        <targetKindProvider implementation="org.jetbrains.bazel.sync.GenericBazelRules"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

@@ -1,5 +1,7 @@
 package org.jetbrains.bazel.utils
 
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
 import java.nio.file.Path
 
 fun Path.allAncestorsSequence(): Sequence<Path> = generateSequence(this) { it.parent }
@@ -49,3 +51,5 @@ fun Collection<Path>.commonAncestor(): Path? {
 }
 
 fun Set<Path>.filterPathsThatDontContainEachOther(): List<Path> = filter { path -> !path.parent.isUnder(this) }
+
+fun Path.toVirtualFile(): VirtualFile? = LocalFileSystem.getInstance().findFileByNioFile(this)
