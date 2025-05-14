@@ -10,7 +10,6 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import kotlinx.html.emptyMap
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind

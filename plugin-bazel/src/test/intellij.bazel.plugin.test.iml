@@ -8,13 +8,59 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Guava" level="project" />
+    <orderEntry type="library" name="grpc-core" level="project" />
+    <orderEntry type="library" name="grpc-protobuf" level="project" />
+    <orderEntry type="library" name="grpc-stub" level="project" />
+    <orderEntry type="library" name="jackson" level="project" />
+    <orderEntry type="library" name="jackson-databind" level="project" />
+    <orderEntry type="library" name="jackson-module-kotlin" level="project" />
+    <orderEntry type="library" name="javax.annotation-api" level="project" />
+    <orderEntry type="library" name="protobuf4" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="kotlinc.analysis-api" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="kotlinc.kotlin-compiler-common" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="kotlinc.kotlin-compiler-fe10" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="kotlinc.kotlin-compiler-ir" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="kotlinc.kotlin-gradle-statistics" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="kotlinc.kotlin-jps-common" level="project" />
+    <orderEntry type="library" scope="TEST" name="Guava" level="project" />
+    <orderEntry type="library" scope="TEST" name="io.kotest.assertions.core.jvm" level="project" />
+    <orderEntry type="library" scope="TEST" name="kodein-di-jvm" level="project" />
+    <orderEntry type="library" scope="TEST" name="kotlin-reflect" level="project" />
+    <orderEntry type="library" scope="TEST" name="opentelemetry" level="project" />
     <orderEntry type="module" module-name="intellij.bazel.plugin" scope="TEST" />
     <orderEntry type="module" module-name="intellij.bazel.plugin.testFixtures" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.testFramework" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.java.testFramework" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.platform.util.classLoader" scope="TEST" />
-    <orderEntry type="library" scope="TEST" name="io.kotest.assertions.core.jvm" level="project" />
-    <orderEntry type="module" module-name="intellij.tools.ide.starter" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.bazel.protobuf" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.driver.client" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.driver.model" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.driver.sdk" />
+    <orderEntry type="module" module-name="intellij.driver.sdk" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.driver.tests" scope="TEST" />
     <orderEntry type="module" module-name="intellij.go.impl" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.ide.starter.extended" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.ide.starter.extended.allure" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.java" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.java.rt" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.java.testFramework" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.backend.workspace" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.debugger" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.editor.ui" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.ide.progress" />
+    <orderEntry type="module" module-name="intellij.platform.smRunner" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.testFramework" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.util" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.util.classLoader" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.util.progress" />
+    <orderEntry type="module" module-name="intellij.platform.workspace.jps" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.python.psi" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.python.psi.impl" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector.starter" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.tools.ide.starter" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.tools.ide.starter" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.tools.ide.starter.junit5" scope="TEST" />
+    <orderEntry type="module" module-name="kotlin.base.facet" scope="TEST" />
+    <orderEntry type="module" module-name="kotlin.base.psi" scope="TEST" />
+    <orderEntry type="module" module-name="kotlin.code-insight.impl-base" scope="TEST" />
   </component>
 </module>

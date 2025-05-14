@@ -15,7 +15,7 @@ data class WorkspaceModelEntityUpdaterConfig(
   val project: Project,
 )
 
-internal sealed interface WorkspaceModelEntityUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity>
+sealed interface WorkspaceModelEntityUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity>
 
 internal interface WorkspaceModelEntityWithParentModuleUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity> :
   WorkspaceModelEntityUpdater<E, R> {
@@ -25,7 +25,7 @@ internal interface WorkspaceModelEntityWithParentModuleUpdater<in E : WorkspaceM
   suspend fun addEntity(entityToAdd: E, parentModuleEntity: ModuleEntity): R
 }
 
-internal interface WorkspaceModelEntityWithoutParentModuleUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity> :
+interface WorkspaceModelEntityWithoutParentModuleUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity> :
   WorkspaceModelEntityUpdater<E, R> {
   suspend fun addEntities(entitiesToAdd: List<E>): List<R> = entitiesToAdd.mapNotNull { addEntity(it) }
 

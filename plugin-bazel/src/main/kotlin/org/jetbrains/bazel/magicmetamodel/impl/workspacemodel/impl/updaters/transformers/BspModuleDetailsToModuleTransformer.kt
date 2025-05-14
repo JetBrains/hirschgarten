@@ -11,7 +11,7 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.ScalacOptionsItem
 
-internal data class BspModuleDetails(
+data class BspModuleDetails(
   val target: BuildTarget,
   val javacOptions: JavacOptionsItem?,
   val scalacOptions: ScalacOptionsItem?,
@@ -21,7 +21,7 @@ internal data class BspModuleDetails(
   val libraryDependencies: List<Label>?,
 )
 
-internal class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<Label, BuildTarget>, private val project: Project) :
+class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<Label, BuildTarget>, private val project: Project) :
   WorkspaceModelEntityTransformer<BspModuleDetails, GenericModuleInfo> {
   override fun transform(inputEntity: BspModuleDetails): GenericModuleInfo =
     GenericModuleInfo(
@@ -43,7 +43,7 @@ internal class BspModuleDetailsToModuleTransformer(private val targetsMap: Map<L
     inputEntity.libraryDependencies?.map { it.toLibraryDependency(project, true) } ?: emptyList()
 }
 
-internal class BuildTargetToModuleDependencyTransformer(
+class BuildTargetToModuleDependencyTransformer(
   private val allTargetsIds: Set<Label>,
   private val targetsMap: Map<Label, BuildTarget>,
   private val project: Project,

@@ -5,12 +5,12 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
 
-internal val JAVA_SOURCE_ROOT_TYPE = SourceRootTypeId("java-source")
-internal val JAVA_TEST_SOURCE_ROOT_TYPE = SourceRootTypeId("java-test")
-internal val JAVA_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-resource")
-internal val JAVA_TEST_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-test-resource")
+val JAVA_SOURCE_ROOT_TYPE = SourceRootTypeId("java-source")
+val JAVA_TEST_SOURCE_ROOT_TYPE = SourceRootTypeId("java-test")
+val JAVA_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-resource")
+val JAVA_TEST_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-test-resource")
 
-internal class SourcesItemToJavaSourceRootTransformer : WorkspaceModelEntityPartitionTransformer<BuildTarget, JavaSourceRoot> {
+class SourcesItemToJavaSourceRootTransformer : WorkspaceModelEntityPartitionTransformer<BuildTarget, JavaSourceRoot> {
   override fun transform(inputEntity: BuildTarget): List<JavaSourceRoot> {
     val rootType = inferRootType(inputEntity)
 

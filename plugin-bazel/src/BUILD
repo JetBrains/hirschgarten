@@ -19,11 +19,36 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
 )
 
+load("@rules_java//java:java_library.bzl", "java_library")
+
+package(default_visibility = ["//visibility:public"])
+
+
+java_library(
+    name = "lib",
+    testonly = 1,
+    srcs = glob(["src/**/*.java"]),
+    exports = ["//rules_intellij/testing/src/com/google/idea/testing/runfiles"],
+    deps = [
+        "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
+        "@maven//:org_junit_jupiter_junit_jupiter",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+        "@maven//:org_junit_platform_junit_platform_console",
+        "@maven//:org_junit_platform_junit_platform_engine",
+        "@maven//:org_junit_platform_junit_platform_launcher",
+        "@maven//:org_junit_platform_junit_platform_suite_api",
+        "@maven//:org_junit_platform_junit_platform_suite_engine",
+        "@maven//:org_junit_vintage_junit_vintage_engine",
+    ],
+)
+
+
 kt_jvm_library(
     name = "test_fixtures",
     testonly = 1,
     srcs = glob([
         "testFixtures/kotlin/**/*.kt",
+        "testFixtures/java/**/*.java",
     ]),
     visibility = ["//visibility:public"],
     deps = [

@@ -21,7 +21,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.jps.model.serialization.library.JpsLibraryTableSerializer
 
-internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithoutParentModuleUpdater<Library, LibraryEntity> {
   //  a snippet of adding module library entity in case we want it back
   //  private fun addModuleLibraryEntity(
@@ -102,7 +102,7 @@ internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfi
   }
 }
 
-internal fun calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig): EntitySource =
+fun calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig): EntitySource =
   when {
     !workspaceModelEntityUpdaterConfig.project.bazelProjectSettings.enableBuildWithJps -> BazelProjectEntitySource
     else ->

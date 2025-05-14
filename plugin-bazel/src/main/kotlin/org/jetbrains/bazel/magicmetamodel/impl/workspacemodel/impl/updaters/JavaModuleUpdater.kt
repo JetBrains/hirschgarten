@@ -21,7 +21,7 @@ import org.jetbrains.bazel.workspacemodel.entities.includesJava
 import org.jetbrains.bazel.workspacemodel.entities.includesKotlin
 import java.nio.file.Path
 
-internal class JavaModuleWithSourcesUpdater(
+class JavaModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val projectBasePath: Path,
   private val isAndroidSupportEnabled: Boolean,
@@ -144,7 +144,7 @@ internal fun JavaModule.isRoot(projectBasePath: Path): Boolean =
   // TODO - that is a temporary predicate
   sourceRoots.isEmpty() && resourceRoots.isEmpty() && baseDirContentRoot?.path == projectBasePath
 
-internal class JavaModuleWithoutSourcesUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+class JavaModuleWithoutSourcesUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
   override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater =
@@ -160,7 +160,7 @@ internal class JavaModuleWithoutSourcesUpdater(private val workspaceModelEntityU
       } ?: listOf()
 }
 
-internal class JavaModuleUpdater(
+class JavaModuleUpdater(
   workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   projectBasePath: Path,
   isAndroidSupportEnabled: Boolean,

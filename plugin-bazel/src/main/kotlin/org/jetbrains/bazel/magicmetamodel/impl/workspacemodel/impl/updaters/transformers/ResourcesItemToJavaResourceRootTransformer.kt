@@ -6,7 +6,7 @@ import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.file.Path
 
-internal class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartitionTransformer<BuildTarget, ResourceRoot> {
+class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartitionTransformer<BuildTarget, ResourceRoot> {
   override fun transform(inputEntity: BuildTarget): List<ResourceRoot> {
     val rootType = inputEntity.inferRootType()
     return inputEntity.resources
