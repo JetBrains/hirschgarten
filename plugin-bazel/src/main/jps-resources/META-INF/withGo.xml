@@ -1,19 +1,25 @@
 <idea-plugin>
-    <extensions defaultExtensionNs="com.intellij">
-        <programRunner implementation="org.jetbrains.bazel.golang.debug.BazelGoDebugRunner"/>
-        <runLineMarkerContributor
-                implementationClass="org.jetbrains.bazel.golang.ui.gutters.BazelGoRunLineMarkerContributor"
-                language="go"/>
-    </extensions>
-
-    <extensions defaultExtensionNs="org.jetbrains.bazel">
-        <projectSyncHook implementation="org.jetbrains.bazel.golang.sync.GoProjectSync"/>
-        <runHandlerProvider
-                implementation="org.jetbrains.bazel.golang.debug.GoBazelRunHandler$GoBazelRunHandlerProvider"/>
-    </extensions>
-    <extensions defaultExtensionNs="com.goide">
-        <dlv.positionConverterFactory
-                implementation="org.jetbrains.bazel.golang.debug.BazelDlvPosConverterFactory"
-                order="first"/>
-    </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <programRunner
+      implementation="org.jetbrains.bazel.golang.debug.BazelGoDebugRunner"
+    />
+    <runLineMarkerContributor
+      implementationClass="org.jetbrains.bazel.golang.ui.gutters.BazelGoRunLineMarkerContributor"
+      language="go"
+    />
+  </extensions>
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <projectSyncHook
+      implementation="org.jetbrains.bazel.golang.sync.GoProjectSync"
+    />
+    <runHandlerProvider
+      implementation="org.jetbrains.bazel.golang.debug.GoBazelRunHandler$GoBazelRunHandlerProvider"
+    />
+  </extensions>
+  <extensions defaultExtensionNs="com.goide">
+    <dlv.positionConverterFactory
+      implementation="org.jetbrains.bazel.golang.debug.BazelDlvPosConverterFactory"
+      order="first"
+    />
+  </extensions>
 </idea-plugin>

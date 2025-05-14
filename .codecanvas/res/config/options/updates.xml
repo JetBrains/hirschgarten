@@ -1,9 +1,9 @@
 <application>
-    <component name="UpdatesConfigurable">
-        <option name="OBSOLETE_CUSTOM_REPOSITORIES_CLEAN_NEEDED" value="false" />
-        <pluginHosts>
-            <!-- Bazel -->
-            <item value="https://plugins.jetbrains.com/plugins/nightly/22977" />
-        </pluginHosts>
-    </component>
+  <component name="UpdatesConfigurable">
+    <option name="OBSOLETE_CUSTOM_REPOSITORIES_CLEAN_NEEDED" value="false" />
+    <pluginHosts>
+      <!-- Bazel -->
+      <item value="https://plugins.jetbrains.com/plugins/nightly/22977" />
+    </pluginHosts>
+  </component>
 </application>

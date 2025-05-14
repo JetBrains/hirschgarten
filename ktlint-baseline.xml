@@ -1,53 +1,73 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <baseline version="1.0">
-    <file name="plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/completion/StarlarkParamsCompletionContributor.kt">
-        <error line="3" column="1" source="standard:no-wildcard-imports" />
-    </file>
-    <file name="plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/parser/ParsingContext.kt">
-        <error line="4" column="1" source="standard:no-wildcard-imports" />
-    </file>
-    <file name="plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/notifications/BazelBspAttachSourcerProvider.kt">
-        <error line="1" column="1" source="standard:filename" />
-    </file>
-    <file name="protocol/src/main/kotlin/org/jetbrains/bsp/protocol/WorkspaceInvalidTargets.kt">
-        <error line="1" column="1" source="standard:filename" />
-    </file>
-    <file name="sdkcompat/v243/Dummy.kt">
-        <error line="1" column="1" source="standard:no-empty-file" />
-    </file>
-    <file name="sdkcompat/v243/org/jetbrains/bazel/sdkcompat/Dummy.kt">
-        <error line="1" column="1" source="standard:no-empty-file" />
-    </file>
-    <file name="sdkcompat/v251/Dummy.kt">
-        <error line="1" column="1" source="standard:no-empty-file" />
-    </file>
-    <file name="sdkcompat/v251/org/jetbrains/bazel/sdkcompat/Dummy.kt">
-        <error line="1" column="1" source="standard:no-empty-file" />
-    </file>
-    <file name="server/example/kotlincplugin/User.kt">
-        <error line="3" column="1" source="standard:no-wildcard-imports" />
-    </file>
-    <file name="server/example/kotlincplugin/UserIsOpenTest.kt">
-        <error line="1" column="1" source="standard:filename" />
-        <error line="3" column="1" source="standard:no-wildcard-imports" />
-    </file>
-    <file name="server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/generator/sections/ProjectViewSingletonSectionGenerator.kt">
-        <error line="22" column="140" source="standard:max-line-length" />
-    </file>
-    <file name="server/executioncontext/projectview/src/test/kotlin/org/jetbrains/bazel/projectview/parser/splitter/ProjectViewSectionSplitterTest.kt">
-        <error line="212" column="7" source="standard:indent" />
-    </file>
-    <file name="server/server/src/main/kotlin/org/jetbrains/bazel/server/benchmark/telemetry.kt">
-        <error line="1" column="1" source="standard:filename" />
-    </file>
-    <file name="server/server/src/main/kotlin/org/jetbrains/bazel/server/benchmark/trace.kt">
-        <error line="1" column="1" source="standard:filename" />
-    </file>
-    <file name="server/server/src/test/kotlin/org/jetbrains/bazel/server/sync/DependencyMapperTest.kt">
-        <error line="17" column="141" source="standard:max-line-length" />
-    </file>
-    <file name="server/server/src/test/kotlin/org/jetbrains/bazel/server/sync/dependencygraph/DependencyGraphTest.kt">
-        <error line="213" column="141" source="standard:max-line-length" />
-        <error line="270" column="141" source="standard:max-line-length" />
-    </file>
+  <file
+    name="plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/completion/StarlarkParamsCompletionContributor.kt"
+  >
+    <error line="3" column="1" source="standard:no-wildcard-imports" />
+  </file>
+  <file
+    name="plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/parser/ParsingContext.kt"
+  >
+    <error line="4" column="1" source="standard:no-wildcard-imports" />
+  </file>
+  <file
+    name="plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/notifications/BazelBspAttachSourcerProvider.kt"
+  >
+    <error line="1" column="1" source="standard:filename" />
+  </file>
+  <file
+    name="protocol/src/main/kotlin/org/jetbrains/bsp/protocol/WorkspaceInvalidTargets.kt"
+  >
+    <error line="1" column="1" source="standard:filename" />
+  </file>
+  <file name="sdkcompat/v243/Dummy.kt">
+    <error line="1" column="1" source="standard:no-empty-file" />
+  </file>
+  <file name="sdkcompat/v243/org/jetbrains/bazel/sdkcompat/Dummy.kt">
+    <error line="1" column="1" source="standard:no-empty-file" />
+  </file>
+  <file name="sdkcompat/v251/Dummy.kt">
+    <error line="1" column="1" source="standard:no-empty-file" />
+  </file>
+  <file name="sdkcompat/v251/org/jetbrains/bazel/sdkcompat/Dummy.kt">
+    <error line="1" column="1" source="standard:no-empty-file" />
+  </file>
+  <file name="server/example/kotlincplugin/User.kt">
+    <error line="3" column="1" source="standard:no-wildcard-imports" />
+  </file>
+  <file name="server/example/kotlincplugin/UserIsOpenTest.kt">
+    <error line="1" column="1" source="standard:filename" />
+    <error line="3" column="1" source="standard:no-wildcard-imports" />
+  </file>
+  <file
+    name="server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bazel/projectview/generator/sections/ProjectViewSingletonSectionGenerator.kt"
+  >
+    <error line="22" column="140" source="standard:max-line-length" />
+  </file>
+  <file
+    name="server/executioncontext/projectview/src/test/kotlin/org/jetbrains/bazel/projectview/parser/splitter/ProjectViewSectionSplitterTest.kt"
+  >
+    <error line="212" column="7" source="standard:indent" />
+  </file>
+  <file
+    name="server/server/src/main/kotlin/org/jetbrains/bazel/server/benchmark/telemetry.kt"
+  >
+    <error line="1" column="1" source="standard:filename" />
+  </file>
+  <file
+    name="server/server/src/main/kotlin/org/jetbrains/bazel/server/benchmark/trace.kt"
+  >
+    <error line="1" column="1" source="standard:filename" />
+  </file>
+  <file
+    name="server/server/src/test/kotlin/org/jetbrains/bazel/server/sync/DependencyMapperTest.kt"
+  >
+    <error line="17" column="141" source="standard:max-line-length" />
+  </file>
+  <file
+    name="server/server/src/test/kotlin/org/jetbrains/bazel/server/sync/dependencygraph/DependencyGraphTest.kt"
+  >
+    <error line="213" column="141" source="standard:max-line-length" />
+    <error line="270" column="141" source="standard:max-line-length" />
+  </file>
 </baseline>

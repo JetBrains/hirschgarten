@@ -1,10 +1,19 @@
 <idea-plugin>
-    <extensions defaultExtensionNs="org.jetbrains.bazel">
-        <runHandlerProvider order="before JvmRunHandlerProvider" implementation="org.jetbrains.bazel.intellij.IntellijPluginRunHandlerProvider" />
-    </extensions>
-    <extensions defaultExtensionNs="com.intellij">
-        <stepsBeforeRunProvider implementation="org.jetbrains.bazel.intellij.BuildPluginBeforeRunTaskProvider" />
-        <stepsBeforeRunProvider implementation="org.jetbrains.bazel.intellij.CopyPluginToSandboxBeforeRunTaskProvider" />
-        <programRunner implementation="org.jetbrains.bazel.intellij.IntellijPluginDebuggerRunner" />
-    </extensions>
+  <extensions defaultExtensionNs="org.jetbrains.bazel">
+    <runHandlerProvider
+      order="before JvmRunHandlerProvider"
+      implementation="org.jetbrains.bazel.intellij.IntellijPluginRunHandlerProvider"
+    />
+  </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <stepsBeforeRunProvider
+      implementation="org.jetbrains.bazel.intellij.BuildPluginBeforeRunTaskProvider"
+    />
+    <stepsBeforeRunProvider
+      implementation="org.jetbrains.bazel.intellij.CopyPluginToSandboxBeforeRunTaskProvider"
+    />
+    <programRunner
+      implementation="org.jetbrains.bazel.intellij.IntellijPluginDebuggerRunner"
+    />
+  </extensions>
 </idea-plugin>
