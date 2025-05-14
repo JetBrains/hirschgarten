@@ -266,11 +266,10 @@ class TestXmlParserTest {
     TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
 
     // then
-    client.taskStartCalls.size shouldBe 18
+    client.taskStartCalls.size shouldBe 17 // one of the test suites in the XML is empty, so we hide it
 
     val expectedNames =
       listOf(
-        "com.example.testing.base.Tests",
         "com.example.optimization.TestSuite1",
         "test1",
         "test2",
@@ -373,11 +372,10 @@ class TestXmlParserTest {
     TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
 
     // then
-    client.taskStartCalls.size shouldBe 17
+    client.taskStartCalls.size shouldBe 16 // one of the test suites in the XML is empty, so we hide it
 
     val expectedNames =
       listOf(
-        "com.example.testing.base.Tests",
         "com.example.optimization.TestSuite1",
         "test1",
         "test2",
