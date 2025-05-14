@@ -8,7 +8,7 @@ import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.isBazelProject
 
-class BazelProjectViewNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
+private class BazelProjectViewNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
   override fun decorate(node: ProjectViewNode<*>, data: PresentationData) {
     if (project.isBazelProject) {
       decorateForBsp(node, data)
