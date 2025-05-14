@@ -1,7 +1,9 @@
 lockfileVersion: '6.0'
+
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
+
 devDependencies:
   '@prettier/plugin-xml':
     specifier: ^0.10.0
@@ -9,28 +11,34 @@ devDependencies:
   prettier:
     specifier: ^2.8.7
     version: 2.8.8
+
 packages:
+
   /@prettier/plugin-xml@0.10.0:
     resolution: {integrity: sha512-8Pmkik2wH4sT6cVdeRN3MpzniFxzOWH0fLRnLJwMXSPMyz9ZKdVm4bg5oAWG96LABue0/W4cCr+oXuEslTTAUA==}
     dependencies:
       '@xml-tools/parser': 1.0.11
       prettier: 2.8.8
     dev: true
+
   /@xml-tools/parser@1.0.11:
     resolution: {integrity: sha512-aKqQ077XnR+oQtHJlrAflaZaL7qZsulWc/i/ZEooar5JiWj1eLt0+Wg28cpa+XLney107wXqneC+oG1IZvxkTA==}
     dependencies:
       chevrotain: 7.1.1
     dev: true
+
   /chevrotain@7.1.1:
     resolution: {integrity: sha512-wy3mC1x4ye+O+QkEinVJkPf5u2vsrDIYW9G7ZuwFl6v/Yu0LwUuT2POsb+NUWApebyxfkQq6+yDfRExbnI5rcw==}
     dependencies:
       regexp-to-ast: 0.5.0
     dev: true
+
   /prettier@2.8.8:
     resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
     engines: {node: '>=10.13.0'}
     hasBin: true
     dev: true
+
   /regexp-to-ast@0.5.0:
     resolution: {integrity: sha512-tlbJqcMHnPKI9zSrystikWKwHkBqu2a/Sgw01h3zFjvYrMxEDYHzzoMZnUrbIfpTFEsoRnnviOXNCzFiSc54Qw==}
     dev: true
