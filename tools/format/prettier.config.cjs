@@ -1,6 +1,6 @@
 const config = {
   tabWidth: 2,
-  printWidth: 80,
+  printWidth: 120,
   xmlWhitespaceSensitivity: "ignore",
   bracketSameLine: true,
   singleAttributePerLine: true,

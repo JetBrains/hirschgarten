@@ -11,7 +11,6 @@ plugin-bazel/src/test/testData/**/*.bzl rules-lint-ignored
 .teamcity/** rules-lint-ignored
 # exclude pnpm lock file, otherwise it will trigger lock regeneration after each format
 pnpm-lock.yaml rules-lint-ignored
-.teamcity/** rules-lint-ignored
 plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/bazelrc/lexer/_BazelrcLexer.java rules-lint-ignored
 plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/lexer/_StarlarkLexer.java rules-lint-ignored
 # exclude test projects for e2e tests
