@@ -84,8 +84,7 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         } catch (_: NoSuchFileException) {
           throw ProjectViewParser.ImportNotFound(it)
         }
-      }
-      .toList()
+      }.toList()
 
   private fun findTryImportedProjectViews(rawSections: ProjectViewRawSections): List<ProjectView> =
     rawSections

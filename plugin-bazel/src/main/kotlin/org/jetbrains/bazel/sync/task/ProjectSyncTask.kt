@@ -46,7 +46,6 @@ import org.jetbrains.bazel.ui.console.ids.BASE_PROJECT_SYNC_SUBTASK_ID
 import org.jetbrains.bazel.ui.console.ids.PROJECT_SYNC_TASK_ID
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
-import java.nio.file.NoSuchFileException
 import java.util.concurrent.CancellationException
 
 private val log = logger<ProjectSyncTask>()
