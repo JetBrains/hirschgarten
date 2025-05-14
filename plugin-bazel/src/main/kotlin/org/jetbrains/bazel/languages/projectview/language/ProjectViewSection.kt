@@ -39,5 +39,6 @@ object ProjectViewSection {
       "targets" to Parser.List.String,
       "import_run_configurations" to Parser.List.String,
       "test_sources" to Parser.List.String, // used by Google's plugin
+      "gazelle_target" to Parser.Scalar.String,
     )
 }
