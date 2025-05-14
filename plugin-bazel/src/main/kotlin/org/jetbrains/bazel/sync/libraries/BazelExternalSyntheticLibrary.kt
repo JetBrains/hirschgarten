@@ -37,13 +37,7 @@ class BazelExternalSyntheticLibrary(private val presentableText: String, files: 
   ItemPresentation {
   private val files: Set<Path> = files.toSet()
   private val validFiles: MutableSet<VirtualFile> =
-    Sets.newConcurrentHashSet(
-      files
-        .stream()
-        .map { VfsUtils.resolveVirtualFile(it.toFile(), true) }
-        .filter(Objects::nonNull)
-        .collect(toSet()),
-    )
+    Sets.newConcurrentHashSet(files.mapNotNull { VfsUtils.resolveVirtualFile(it.toFile(), true) })
 
   override fun getPresentableText(): String = presentableText
 

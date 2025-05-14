@@ -41,7 +41,6 @@ import java.util.Objects
 import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Predicate
-import javax.annotation.Nullable
 
 private const val GO_TARGET_TO_FILE_MAP_KEY = "BazelGoTargetToFileMap"
 
@@ -195,7 +194,6 @@ class BazelGoPackage : GoPackage {
    * @param buildElement  the PsiElement representing the build file or directory
    * @return the corresponding resolved [PsiElement], or `null` if it cannot be found
    */
-  @Nullable
   private fun getLastElement(
     name: String,
     label: Label,
