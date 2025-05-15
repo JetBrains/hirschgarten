@@ -39,6 +39,7 @@ internal class BazelJavaSourceRootEntityUpdater(private val workspaceModelEntity
 
   companion object {
     fun shouldAddBazelJavaSourceRootEntity(root: JavaSourceRoot): Boolean {
+      if (BazelFeatureFlags.fbsrSupportedInPlatform) return false
       if (root.sourcePath.extension != "java") return false
       if (BazelFeatureFlags.enableBazelJavaClassFinder) return true
       return root.generated
