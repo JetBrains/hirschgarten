@@ -1,13 +1,10 @@
 package org.jetbrains.bazel.sync.libraries
 
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
-import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.newvfs.events.VFileDeleteEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
-import com.intellij.util.asDisposable
 import com.intellij.vfs.AsyncVfsEventsListener
 import com.intellij.vfs.AsyncVfsEventsPostProcessor
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +18,7 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
   private var libraries: Map<Class<out BazelExternalLibraryProvider>, BazelExternalSyntheticLibrary> = mapOf()
 
   init {
-    if (!project.isBazelProject) {
+    if (project.isBazelProject) {
       initializeVariables()
       initializeListeners()
     }

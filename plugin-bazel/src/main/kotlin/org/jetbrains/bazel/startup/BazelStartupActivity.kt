@@ -3,6 +3,7 @@ package org.jetbrains.bazel.startup
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.util.PlatformUtils
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProjectInitialized
 import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
@@ -83,7 +84,12 @@ class BazelStartupActivity : BazelProjectActivity() {
     }
   }
 
-  private fun Project.isProjectInIncompleteState() = targetUtils.allTargets().isEmpty() || !workspaceModelLoadedFromCache
+  /**
+   * [workspaceModelLoadedFromCache] is always false with GoLand
+   * TODO: BAZEL-2038
+   */
+  private fun Project.isProjectInIncompleteState() =
+    targetUtils.allTargets().isEmpty() || !PlatformUtils.isGoIde() && !workspaceModelLoadedFromCache
 
   private fun Project.updateProjectProperties() {
     isBazelProjectInitialized = true
