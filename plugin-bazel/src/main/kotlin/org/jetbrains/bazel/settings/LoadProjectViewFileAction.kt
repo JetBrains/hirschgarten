@@ -16,6 +16,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.sdkcompat.ActionUtilCompat
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.settings.bazel.setProjectViewPath
 
 internal class LoadProjectViewFileAction :
   SuspendableAction(
@@ -26,7 +27,7 @@ internal class LoadProjectViewFileAction :
   DumbAware {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val projectViewFile = e.getPsiFile()?.virtualFile ?: return
-    project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectViewFile.toNioPath().toAbsolutePath())
+    project.setProjectViewPath(projectViewFile.toNioPath().toAbsolutePath(), openProjectViewInEditor = false)
     withContext(Dispatchers.EDT) {
       ActionUtilCompat.performAction(ResyncAction(), e)
     }
