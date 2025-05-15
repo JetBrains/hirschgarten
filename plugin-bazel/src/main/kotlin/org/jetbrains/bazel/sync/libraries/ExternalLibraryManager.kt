@@ -4,6 +4,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.AdditionalLibraryRootsProvider
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.newvfs.events.VFileDeleteEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.util.asDisposable
@@ -14,7 +15,7 @@ import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 
 @Service(Service.Level.PROJECT)
-class ExternalLibraryManager(private val project: Project, private val cs: CoroutineScope) : Disposable {
+class ExternalLibraryManager(private val project: Project, private val cs: CoroutineScope) {
   @Volatile
   private var duringSync: Boolean = false
   private var libraries: Map<Class<out BazelExternalLibraryProvider>, BazelExternalSyntheticLibrary> = mapOf()
@@ -78,10 +79,6 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
 
   fun getLibrary(providerClass: Class<out BazelExternalLibraryProvider>): BazelExternalSyntheticLibrary? =
     if (duringSync) null else libraries[providerClass]
-
-  override fun dispose() {
-    cs.asDisposable().dispose()
-  }
 
   companion object {
     @JvmStatic
