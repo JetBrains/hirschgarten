@@ -10,6 +10,7 @@ import com.intellij.util.asDisposable
 import com.intellij.vfs.AsyncVfsEventsListener
 import com.intellij.vfs.AsyncVfsEventsPostProcessor
 import kotlinx.coroutines.CoroutineScope
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 
 @Service(Service.Level.PROJECT)
@@ -19,14 +20,16 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
   private var libraries: Map<Class<out BazelExternalLibraryProvider>, BazelExternalSyntheticLibrary> = mapOf()
 
   init {
-    initializeVariables()
-    initializeListeners()
+    if (!project.isBazelProject) {
+      initializeVariables()
+      initializeListeners()
+    }
   }
 
   private fun initializeVariables() {
     this.libraries =
       AdditionalLibraryRootsProvider.EP_NAME
-        .extensions
+        .extensionList
         .mapNotNull { it as? BazelExternalLibraryProvider }
         .mapNotNull { provider ->
           val files = provider.getLibraryFiles(project)
