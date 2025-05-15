@@ -67,7 +67,6 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
       } else {
         loadRunConfigurationXmlNormally(project, runConfigurationXml)
       }
-    RunManager.getInstance(project).setTemporaryConfiguration(settings) // TODO: do we need this?
     return settings
   }
 
@@ -96,7 +95,8 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
       }
 
     val factory = runConfigurationType<BazelRunConfigurationType>().configurationFactories.first()
-    val settings = RunManager.getInstance(project).createConfiguration(name, factory)
+    val runManager = RunManager.getInstance(project)
+    val settings = runManager.createConfiguration(name, factory)
     val configuration = settings.configuration as BazelRunConfiguration
     val targets = listOf(target)
     val runHandler =
@@ -107,6 +107,8 @@ internal class ImportRunConfigurationsSyncHook : ProjectSyncHook {
     (state as? HasBazelParams)?.additionalBazelParams = additionalBazelParams
     (state as? HasProgramArguments)?.programArguments = programArguments
     (state as? HasEnv)?.env?.set(EnvironmentVariablesData.create(envsMap, true))
+
+    runManager.addConfiguration(settings)
     return settings
   }
 
