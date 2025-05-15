@@ -12,7 +12,7 @@ import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import javax.swing.JComponent
 
 class BazelJVMExperimentalSettingsProvider : BazelSettingsProvider {
-  override fun createConfigurable(project: Project): UnnamedConfigurable = BazelJVMExperimentalSettings(project)
+  override fun createConfigurable(project: Project): UnnamedConfigurable = BazelJVMExperimentalConfigurable(project)
 }
 
 class BazelJVMExperimentalConfigurable(private val project: Project) : UnnamedConfigurable {
@@ -97,5 +97,4 @@ class BazelJVMExperimentalConfigurable(private val project: Project) : UnnamedCo
         currentJVMProjectSettings = currentJVMProjectSettings.copy(enableBuildWithJps = isSelected)
       }
     }
-
 }

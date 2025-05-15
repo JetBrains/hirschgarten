@@ -7,7 +7,7 @@ import com.intellij.task.ProjectTaskContext
 import com.intellij.task.ProjectTaskRunner
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.concurrency.Promise
 
 class BazelFastBuildProjectTaskRunner : ProjectTaskRunner() {
@@ -20,7 +20,7 @@ class BazelFastBuildProjectTaskRunner : ProjectTaskRunner() {
   ): Boolean =
     BazelFeatureFlags.fastBuildEnabled &&
       projectTask is ModuleFilesBuildTask &&
-      !project.bazelProjectSettings.enableBuildWithJps &&
+      !project.bazelJVMProjectSettings.enableBuildWithJps &&
       project.isBazelProject
 
   override fun run(
