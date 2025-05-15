@@ -34,8 +34,7 @@ internal class BazelJVMProjectSettingsService :
   PersistentStateComponent<BazelJVMProjectSettings> {
   var settings: BazelJVMProjectSettings = BazelJVMProjectSettings()
 
-  override fun getState(): BazelJVMProjectSettings =
-settings
+  override fun getState(): BazelJVMProjectSettings = settings
 
   override fun loadState(settingsState: BazelJVMProjectSettings) {
     this.settings =
