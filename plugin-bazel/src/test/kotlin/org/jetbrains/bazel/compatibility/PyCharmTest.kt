@@ -63,7 +63,9 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
       selectedGutterIcon.click()
       val heavyWeightWindow = popup(xQuery { byClass("HeavyWeightWindow") })
       val texts = heavyWeightWindow.getAllTexts()
+      assert(2 == texts.size)
       assert(texts.any { it.text.contains("Run using Bazel") })
+      assert(texts.any { it.text.contains("Debug run using Bazel") })
     }
   }
 
