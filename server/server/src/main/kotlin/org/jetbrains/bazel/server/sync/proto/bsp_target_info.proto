@@ -122,8 +122,7 @@ message GoTargetInfo {
   FileLocation sdk_home_path = 2;
   repeated FileLocation generated_sources = 3;
   repeated FileLocation generated_libraries = 4;
-  string rule_kind = 5;
-  repeated string library_labels = 6;
+  repeated string library_labels = 5;
 }
 
 message TargetInfo {

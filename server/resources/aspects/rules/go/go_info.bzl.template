@@ -5,7 +5,8 @@ def extract_go_info(target, ctx, output_groups, **kwargs):
     extracted_import_path = get_go_import_path(ctx)
     sdk_home_path = _extract_sdk(ctx)
     sources = []
-    if ctx.rule.kind in [
+    rule_kind = ctx.rule.kind
+    if rule_kind in [
         "go_binary",
         "go_library",
         "go_test",
@@ -15,7 +16,7 @@ def extract_go_info(target, ctx, output_groups, **kwargs):
         "go_appengine_test",
     ]:
         sources = [f for src in getattr(ctx.rule.attr, "srcs", []) for f in src.files.to_list()]
-    elif ctx.rule.kind == "go_wrap_cc":
+    elif rule_kind == "go_wrap_cc":
         genfiles = target.files.to_list()
         go_genfiles = [f for f in genfiles if f.basename.endswith(".go")]
         if go_genfiles:
@@ -24,8 +25,6 @@ def extract_go_info(target, ctx, output_groups, **kwargs):
         extracted_generated_sources = _extract_generated_go_sources(target, ctx)
         if extracted_generated_sources:
             sources = extracted_generated_sources
-
-    rule_kind = ctx.rule.kind
 
     library_labels = []
     if rule_kind in ("go_test", "go_library", "go_appengine_test"):
@@ -44,7 +43,6 @@ def extract_go_info(target, ctx, output_groups, **kwargs):
         sdk_home_path = sdk_home_path,
         generated_sources = [file_location(f) for f in sources],
         generated_libraries = [],
-        rule_kind = rule_kind,
         library_labels = library_labels,
     )
 

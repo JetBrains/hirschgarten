@@ -19,8 +19,6 @@ object VfsUtils {
   /**
    * Attempts to resolve the given file path to a [VirtualFile].
    *
-   * WARNING: Refreshing files on the EDT may freeze the IDE.
-   *
    * @param refreshIfNeeded whether to refresh the file in the VFS, if it is not already cached.
    *                        Will only refresh if called on the EDT.
    */

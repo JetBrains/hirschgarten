@@ -23,6 +23,7 @@ class SyncCache(project: Project) {
     )
   }
 
+  @Synchronized
   fun getOrCompute(key: String, compute: () -> Any): Any = map.getOrPut(key, compute)
 
   companion object {
