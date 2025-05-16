@@ -64,10 +64,6 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
   suspend fun waitForExit(serverPidFuture: CompletableFuture<Long>?): Int =
     coroutineScope {
       try {
-        var isFinished = false
-        while (!isFinished && isActive) {
-          isFinished = withContext(Dispatchers.IO) { process.waitFor(500, TimeUnit.MILLISECONDS) }
-        }
         return@coroutineScope process.awaitExit()
       } catch (e: CancellationException) {
         OSProcessUtil.killProcessTree(process)
