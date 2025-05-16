@@ -9,7 +9,6 @@ import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.startOffset
