@@ -15,7 +15,9 @@
  */
 package com.google.idea.testing.runfiles;
 
+import com.intellij.openapi.util.text.StringUtil;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /** A utlility class that knows how to locate Bazel's runfiles root directory. */
 public class Runfiles {
@@ -24,7 +26,21 @@ public class Runfiles {
 
   /** Returns the runtime location of a data dependency. */
   public static Path runfilesPath(String relativePath) {
-    return Path.of(getUserValue("TEST_SRCDIR"), getUserValue("TEST_WORKSPACE"), relativePath);
+    String testSrcdir = getUserValue("TEST_SRCDIR");
+    String testWorkspace = getUserValue("TEST_WORKSPACE");
+
+    // Hack to make tests run under JPS
+    if (testSrcdir == null || testWorkspace == null) {
+      relativePath = StringUtil.trimStart(relativePath, "/");
+      Path currentDir = Paths.get("").toAbsolutePath();
+      // in JPS this will be
+      while (!currentDir.endsWith("bazel")) {
+        currentDir = currentDir.getParent();
+      }
+      return currentDir.resolve(relativePath);
+    }
+
+    return Path.of(testSrcdir, testWorkspace, relativePath);
   }
 
   /** Returns the runtime location of data dependencies. */

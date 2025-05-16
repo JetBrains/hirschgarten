@@ -6,6 +6,5 @@ kt_intellij_junit4_test(
     associates = ["//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/repomapping"],
     deps = [
         "//plugin-bazel",
-        "//plugin-bazel/src:test_fixtures",
     ],
 )

@@ -38,7 +38,6 @@
     <orderEntry type="module" module-name="intellij.driver.tests" scope="TEST" />
     <orderEntry type="module" module-name="intellij.go.impl" scope="TEST" />
     <orderEntry type="module" module-name="intellij.ide.starter.extended" scope="TEST" />
-    <orderEntry type="module" module-name="intellij.ide.starter.extended.allure" scope="TEST" />
     <orderEntry type="module" module-name="intellij.java" scope="TEST" />
     <orderEntry type="module" module-name="intellij.java.rt" scope="TEST" />
     <orderEntry type="module" module-name="intellij.java.testFramework" scope="TEST" />

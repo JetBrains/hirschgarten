@@ -21,6 +21,7 @@ package com.google.idea.testing;
 import com.google.common.io.Files;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.util.BuildNumber;
 import com.intellij.util.PlatformUtils;
@@ -107,7 +108,8 @@ public class BlazeTestSystemProperties {
     String apiVersionFilePath = System.getProperty("blaze.idea.api.version.file");
     String runfilesWorkspaceRoot = System.getProperty("user.dir");
     if (apiVersionFilePath == null) {
-      throw new RuntimeException("No api_version_file found in runfiles directory");
+      // we're running from JPS
+      return ApplicationInfo.getInstance().getApiVersion();
     }
     if (runfilesWorkspaceRoot == null) {
       throw new RuntimeException("Runfiles workspace root not found");

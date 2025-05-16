@@ -1,3 +1,4 @@
+load("@rules_java//java:java_library.bzl", "java_library")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("//rules_intellij/testing:test_defs_kt.bzl", "intellij_integration_test_suite")
 
@@ -19,29 +20,7 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
 )
 
-load("@rules_java//java:java_library.bzl", "java_library")
-
 package(default_visibility = ["//visibility:public"])
-
-
-java_library(
-    name = "lib",
-    testonly = 1,
-    srcs = glob(["src/**/*.java"]),
-    exports = ["//rules_intellij/testing/src/com/google/idea/testing/runfiles"],
-    deps = [
-        "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
-        "@maven//:org_junit_jupiter_junit_jupiter",
-        "@maven//:org_junit_jupiter_junit_jupiter_api",
-        "@maven//:org_junit_platform_junit_platform_console",
-        "@maven//:org_junit_platform_junit_platform_engine",
-        "@maven//:org_junit_platform_junit_platform_launcher",
-        "@maven//:org_junit_platform_junit_platform_suite_api",
-        "@maven//:org_junit_platform_junit_platform_suite_engine",
-        "@maven//:org_junit_vintage_junit_vintage_engine",
-    ],
-)
-
 
 kt_jvm_library(
     name = "test_fixtures",
@@ -55,12 +34,19 @@ kt_jvm_library(
         ":plugin-bazel-lib",
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
-        "//rules_intellij/testing:lib",
+        "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
         "@maven//:io_kotest_kotest_assertions_shared_jvm",
         "@maven//:io_kotest_kotest_common_jvm",
         "@maven//:org_junit_jupiter_junit_jupiter",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+        "@maven//:org_junit_platform_junit_platform_console",
+        "@maven//:org_junit_platform_junit_platform_engine",
+        "@maven//:org_junit_platform_junit_platform_launcher",
+        "@maven//:org_junit_platform_junit_platform_suite_api",
+        "@maven//:org_junit_platform_junit_platform_suite_engine",
+        "@maven//:org_junit_vintage_junit_vintage_engine",
         "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_test",
     ],
 )

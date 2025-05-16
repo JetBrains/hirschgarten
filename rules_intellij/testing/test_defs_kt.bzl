@@ -128,9 +128,12 @@ def intellij_unit_test_suite(
     deps = kwargs.pop("deps", [])
     deps.extend([
         "@maven//:org_junit_jupiter_junit_jupiter",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
         "@maven//:org_junit_platform_junit_platform_console",
         "@maven//:org_junit_platform_junit_platform_suite_engine",
         "@maven//:org_junit_platform_junit_platform_suite_api",
+        "@maven//:org_junit_vintage_junit_vintage_engine",
+        "@maven//:org_junit_platform_junit_platform_engine",
     ])
 
     jvm_flags = list(kwargs.pop("jvm_flags", []))
@@ -232,7 +235,6 @@ def intellij_integration_test_suite(
 
     deps = list(deps)
     deps.extend([
-        "//rules_intellij/testing:lib",
         "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
         "@maven//:org_junit_jupiter_junit_jupiter",
         "@maven//:org_junit_jupiter_junit_jupiter_engine",
