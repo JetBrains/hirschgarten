@@ -36,7 +36,7 @@ private val bazelExperimentalProjectSettingsPage =
   SettingsPage(
     id = BazelExperimentalProjectSettingsConfigurable.ID,
     displayNameKey = BazelExperimentalProjectSettingsConfigurable.DISPLAY_NAME_KEY,
-    optionBundleKeys = BazelExperimentalProjectSettingsConfigurable.SearchIndex.keys,
+    optionBundleKeys = BazelExperimentalProjectSettingsConfigurable.keys(),
   )
 
 private val bazelApplicationSettingsPage =

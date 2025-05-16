@@ -46,10 +46,8 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
   companion object {
     const val ID = "bazel.experimental.project.settings"
     const val DISPLAY_NAME_KEY = "project.settings.experimental.settings"
-  }
 
-  object SearchIndex { // the companion object of a Configurable is not allowed to have non-const members
-    val keys =
+    fun keys() =
       listOf(
         "project.settings.plugin.enable.local.jvm.actions.checkbox.text",
         "project.settings.plugin.hotswap.enabled.checkbox.text",
