@@ -167,6 +167,14 @@ sealed class FastBuildTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/fastbuild"
 )
 
+sealed class ProjectViewOpenTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Project view open test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/settings:project_view_open_test"
+)
+
 object HotswapTestGitHub : HotswapTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
@@ -276,5 +284,13 @@ object FastBuildTestGitHub : FastBuildTest(
 )
 
 object FastBuildTestSpace : FastBuildTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object ProjectViewOpenTestGitHub : ProjectViewOpenTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object ProjectViewOpenTestSpace : ProjectViewOpenTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )

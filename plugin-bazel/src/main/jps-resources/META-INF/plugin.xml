@@ -382,6 +382,45 @@
                               language="Starlark"/>
 
     <fileType
+      name="BazelQuery"
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.BazelQueryFileType"
+      fieldName="INSTANCE"
+      language="BazelQuery"
+
+      extensions="bazelquery"
+    />
+
+    <lang.parserDefinition
+      language="BazelQuery"
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.parser.BazelQueryParserDefinition"/>
+
+    <lang.syntaxHighlighterFactory
+      language="BazelQuery"
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.highlighting.BazelQuerySyntaxHighlighterFactory"/>
+
+    <completion.contributor
+      language="BazelQuery"
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.completion.BazelQueryCompletionContributor"/>
+
+
+    <fileType
+      name="BazelQueryFlags"
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.BazelQueryFlagsFileType"
+      fieldName="INSTANCE"
+      language="BazelQueryFlags"
+
+      extensions="bazelqueryflags"
+    />
+
+    <lang.parserDefinition
+      language="BazelQueryFlags"
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.parser.BazelQueryFlagsParserDefinition"/>
+
+    <lang.syntaxHighlighterFactory
+      language="BazelQueryFlags"
+      implementationClass="org.jetbrains.bazel.languages.bazelquery.highlighting.BazelQuerySyntaxHighlighterFactory"/>
+
+    <fileType
       name="Bazelrc"
       implementationClass="org.jetbrains.bazel.languages.bazelrc.BazelrcFileType"
       fieldName="INSTANCE"
