@@ -72,3 +72,6 @@ common --experimental_rule_extension_api
 build --host_cxxopt=-std=c++14 --cxxopt=-std=c++14
 
 common --symlink_prefix=out/bazel-
+
+test:fast -- //... -//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/... -//server/server/src/test/kotlin/org/jetbrains/bazel/server/sync/...
+test:slow --jobs=1 //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/... //server/server/src/test/kotlin/org/jetbrains/bazel/server/sync/...
