@@ -24,6 +24,7 @@ import org.jetbrains.bazel.projectview.parser.sections.ShardingApproachParser
 import org.jetbrains.bazel.projectview.parser.sections.TargetShardSizeParser
 import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSections
 import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewSectionSplitter
+import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -77,8 +78,13 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
       .map(String::trim)
       .map(::toProjectViewPath)
       .onEach { log.debug("Parsing imported file {}.", it) }
-      .map(this::parse)
-      .toList()
+      .map {
+        try {
+          parse(it)
+        } catch (_: NoSuchFileException) {
+          throw ProjectViewParser.ImportNotFound(it)
+        }
+      }.toList()
 
   private fun findTryImportedProjectViews(rawSections: ProjectViewRawSections): List<ProjectView> =
     rawSections
