@@ -28,7 +28,8 @@ val flagTokenPattern =
       BazelrcLine::class.java,
     )!!
 
-private val labelFlagRe = Regex("^--(?:no)?[@/].*$")
+private val labelFlagRe = Regex("^(--|--(?:no)?[@/].*|-)$")
+private val targetFlagRe = Regex("^(-//.*|//.*)")
 
 @Suppress("UnstableApiUsage")
 class BazelrcFlagAnnotator : Annotator {
@@ -36,6 +37,16 @@ class BazelrcFlagAnnotator : Annotator {
 
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
     if (!flagTokenPattern.accepts(element) || isLabel(element)) {
+      return
+    }
+
+    if (isTarget(element)) {
+      // Apply default identifier highlighting to targets to make them appear as plain text
+      holder
+        .newSilentAnnotation(HighlightSeverity.INFORMATION)
+        .range(element.textRange)
+        .textAttributes(BazelrcHighlightingColors.IDENTIFIER)
+        .create()
       return
     }
 
@@ -115,6 +126,8 @@ class BazelrcFlagAnnotator : Annotator {
     }
 
   private fun isLabel(e: PsiElement) = labelFlagRe.matches(e.text)
+
+  private fun isTarget(e: PsiElement) = targetFlagRe.matches(e.text)
 
   private fun isHidden(flag: Flag) = flag.option.metadataTags.contains(OptionMetadataTag.HIDDEN)
 
