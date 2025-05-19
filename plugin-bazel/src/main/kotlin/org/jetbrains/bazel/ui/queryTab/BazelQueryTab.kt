@@ -1,18 +1,25 @@
 package org.jetbrains.bazel.ui.queryTab
 
+import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.configurations.PathEnvironmentVariableUtil
 import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.HyperlinkInfo
 import com.intellij.execution.filters.HyperlinkInfoBase
 import com.intellij.execution.impl.ConsoleViewImpl
+import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.icons.AllIcons
+import com.intellij.ide.BrowserUtil
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteIntentReadAction
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.SystemInfo
+import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.CollapsiblePanel
@@ -31,11 +38,9 @@ import org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilter
 import org.jetbrains.bazel.utils.BazelWorkingDirectoryManager
 import java.awt.BorderLayout
 import java.awt.Dimension
-import java.io.OutputStreamWriter
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.ButtonGroup
-import javax.swing.ImageIcon
 import javax.swing.JButton
 import javax.swing.JCheckBox
 import javax.swing.JLabel
@@ -91,9 +96,6 @@ class BazelQueryTab(private val project: Project) : JPanel() {
   // Bazel Runner
   private val queryEvaluator = QueryEvaluator(project.baseDir)
 
-  // Graph Window Manager
-  private val graphWindowManager = GraphWindowManager()
-
   // UI elements
   private val editorTextField = LanguageTextField(BazelQueryLanguage, project, "")
   private val directoryField = JBTextField().apply { isEditable = false }
@@ -136,29 +138,55 @@ class BazelQueryTab(private val project: Project) : JPanel() {
   }
 
   // Graph visualization
-  private fun convertDotToImageIcon(dotContent: String): ImageIcon? =
+  private fun showGraph(dotContent: String) {
+    val dotUtilName = if (SystemInfo.isUnix) "dot" else "dot.exe"
+    val dotFullPath =
+      PathEnvironmentVariableUtil.findInPath(dotUtilName)
+        ?: run {
+          val notificationText =
+            if (SystemInfo.isUnix) {
+              "Probably graphviz is missing. You could install graphviz using `apt install graphviz` or `brew install graphviz`"
+            } else {
+              "Probably graphviz is missing. You can download it from https://graphviz.org/download/."
+            }
+
+          NotificationGroupManager
+            .getInstance()
+            .getNotificationGroup("Bazel")
+            .createNotification(notificationText, NotificationType.ERROR)
+            .notify(project)
+          return
+        }
+
     try {
-      val process =
-        ProcessBuilder("dot", "-Tpng")
-          .redirectErrorStream(true)
-          .start()
+      val svgFile = FileUtil.createTempFile("bazelqueryGraph", ".svg", true)
+      val dotFile = FileUtil.createTempFile("tempDot", ".dot", true)
+      FileUtil.writeToFile(dotFile, dotContent)
 
-      OutputStreamWriter(process.outputStream).use { writer ->
-        writer.write(dotContent)
-        writer.flush()
+      val commandLine =
+        GeneralCommandLine()
+          .withExePath(dotFullPath.absolutePath)
+          .withParameters("-Tsvg", "-o${svgFile.absolutePath}", dotFile.absolutePath)
+
+      val processHandler = OSProcessHandler(commandLine)
+      processHandler.startNotify()
+      val success = processHandler.waitFor()
+
+      if (!success) {
+        throw Exception()
       }
 
-      val pngBytes = process.inputStream.readBytes()
-      val exitCode = process.waitFor()
-      if (exitCode == 0) {
-        ImageIcon(pngBytes)
-      } else {
-        null
+      ApplicationManager.getApplication().invokeLater {
+        BrowserUtil.browse(svgFile)
       }
-    } catch (e: Exception) {
-      e.printStackTrace()
-      null
+    } catch (_: Exception) {
+      NotificationGroupManager
+        .getInstance()
+        .getNotificationGroup("Bazel")
+        .createNotification("Failed to generate graph visualization", NotificationType.ERROR)
+        .notify(project)
     }
+  }
 
   private fun initializeUI() {
     fun createDirectorySelectionPanel() =
@@ -324,17 +352,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
                 addLinksToResult(res, hyperlinkInfoList)
                 showInConsole(res, hyperlinkInfoList)
                 if (res.startsWith("digraph")) {
-                  val imageIcon = convertDotToImageIcon(res)
-                  if (imageIcon != null) {
-                    graphWindowManager.openImageInNewWindow(imageIcon)
-                  } else {
-                    // System.err.println("Failed to generate graph visualization")
-                    NotificationGroupManager
-                      .getInstance()
-                      .getNotificationGroup("Bazel")
-                      .createNotification("Failed to generate graph visualization", NotificationType.ERROR)
-                      .notify(project)
-                  }
+                  showGraph(res)
                 }
               }
             } else {
