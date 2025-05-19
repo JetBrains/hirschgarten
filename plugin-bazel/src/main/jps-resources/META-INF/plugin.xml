@@ -215,6 +215,8 @@
     <ignoredFileProvider implementation="org.jetbrains.bazel.workspace.BazelProjectExcludesIgnoredFileProvider"/>
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
+    <workspaceModel.fileIndexContributor
+      implementation="org.jetbrains.bazel.workspace.PackageMarkerEntityWorkspaceFileIndexContributor"/>
 
     <postStartupActivity
       implementation="org.jetbrains.bazel.startup.BazelStartupActivity"/>
