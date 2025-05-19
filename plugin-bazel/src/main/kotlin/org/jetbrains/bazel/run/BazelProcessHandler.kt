@@ -36,7 +36,6 @@ open class BazelProcessHandler(private val project: Project, private val runDefe
 
   override fun destroyProcessImpl() {
     runDeferred.cancel()
-    notifyProcessTerminated(1)
   }
 
   override fun detachProcessImpl() {
