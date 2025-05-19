@@ -278,6 +278,13 @@ class BazelGoPackage : GoPackage {
       return builder.build()
     }
 
+    /**
+     * Workaround for https://github.com/bazelbuild/intellij/issues/2057. External workspace symlinks
+     * can be changed externally by practically any bazel command. Such changes to symlinks will make
+     * IntelliJ red. This helper resolves such symlink to an actual location.
+     *
+     * @see com.google.idea.blaze.java.libraries.JarCache.patchExternalFilePath()
+     */
     private fun toRealFile(maybeExternal: Path): Path {
       val externalString = maybeExternal.toFile().toString()
       return if (externalString.contains("/external/") &&
