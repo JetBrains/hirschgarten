@@ -24,12 +24,11 @@ import javax.swing.Icon
 class BazelGoSdkLibraryRootProvider : AdditionalLibraryRootsProvider() {
   override fun getAdditionalProjectLibraries(project: Project): Collection<SyntheticLibrary> {
     if (!project.isBazelProject) return emptySet()
-    val result = mutableSetOf<SyntheticLibrary>()
     val sdk = GoSdkService.getInstance(project).getSdk(null)
     if (sdk.isValid) {
-      result.add(GoSdkLibrary(sdk))
+      return setOf(GoSdkLibrary(sdk))
     }
-    return result
+    return emptySet()
   }
 
   override fun getRootsToWatch(project: Project): Collection<VirtualFile> {
@@ -66,7 +65,7 @@ class BazelGoSdkLibraryRootProvider : AdditionalLibraryRootsProvider() {
 
     override fun getSourceRoots(): Collection<VirtualFile> = myRoots
 
-    override fun getPresentableText(): String = "Go SDK $myVersion"
+    override fun getPresentableText(): String = "Go SDK $myVersion (from Bazel plugin)"
 
     override fun getIcon(unused: Boolean): Icon = GoIcons.ICON
 
