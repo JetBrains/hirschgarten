@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.python
+package org.jetbrains.bazel.python.run
 
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.configurations.RunProfile
@@ -19,6 +19,8 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.python.debug.BazelPyDebugPositionConverter
+import org.jetbrains.bazel.python.debug.PythonDebugCommandLineState
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.concurrency.AsyncPromise
@@ -31,7 +33,7 @@ class PythonBspDebugRunner : PyDebugRunner() {
   override fun canRun(executorId: String, profile: RunProfile): Boolean =
     executorId == DefaultDebugExecutor.EXECUTOR_ID &&
       profile is BazelRunConfiguration &&
-      profile.handler is PythonBazelRunHandler &&
+      profile.handler is PythonBazelHandler &&
       profile.targets.size == 1 &&
       profile.project.basePath != null
 

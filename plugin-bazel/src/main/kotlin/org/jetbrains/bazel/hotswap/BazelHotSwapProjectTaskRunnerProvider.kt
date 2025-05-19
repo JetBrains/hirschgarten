@@ -4,7 +4,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.task.ProjectTask
 import com.intellij.task.ProjectTaskContext
 import org.jetbrains.bazel.buildTask.AdditionalProjectTaskRunnerProvider
-import org.jetbrains.bazel.config.isBazelProject
 
 class BazelHotSwapProjectTaskRunnerProvider : AdditionalProjectTaskRunnerProvider {
   override fun preRun(
@@ -12,7 +11,7 @@ class BazelHotSwapProjectTaskRunnerProvider : AdditionalProjectTaskRunnerProvide
     projectTaskContext: ProjectTaskContext,
     vararg tasks: ProjectTask,
   ) {
-    if (!project.isBazelProject) return
+    if (!HotSwapUtils.isHotSwapEligible(project)) return
     val hotSwappableDebugSession = BazelHotSwapManager.createHotSwappableDebugSession(project)
     hotSwappableDebugSession?.let { ClassFileManifestBuilder.initStateIfNotExists(it, project) }
   }
@@ -22,7 +21,7 @@ class BazelHotSwapProjectTaskRunnerProvider : AdditionalProjectTaskRunnerProvide
     projectTaskContext: ProjectTaskContext,
     vararg tasks: ProjectTask,
   ) {
-    if (!project.isBazelProject) return
+    if (!HotSwapUtils.isHotSwapEligible(project)) return
     BazelHotSwapManager.reloadChangedClasses(project)
   }
 }

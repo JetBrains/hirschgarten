@@ -44,7 +44,7 @@ class StarlarkDeclarationAnnotator : StarlarkAnnotator() {
       } else {
         GlobalSearchScope.fileScope(element.containingFile)
       }
-    return ReferencesSearch.search(element, scope).none()
+    return ReferencesSearch.search(element, scope).asIterable().none()
   }
 
   private fun PsiElement.isTopLevelTarget() = this is StarlarkTargetExpression && isTopLevel()

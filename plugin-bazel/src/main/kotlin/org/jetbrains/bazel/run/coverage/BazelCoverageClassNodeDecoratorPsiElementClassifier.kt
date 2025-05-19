@@ -10,7 +10,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPsiElementPointer
 import org.jetbrains.bazel.sdkcompat.shouldShowCoverageInProjectView
 
-class BazelCoverageClassNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
+private class BazelCoverageClassNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
   override fun decorate(node: ProjectViewNode<*>, data: PresentationData) {
     if (!project.shouldShowCoverageInProjectView()) return
 
@@ -34,12 +34,12 @@ class BazelCoverageClassNodeDecorator(private val project: Project) : ProjectVie
   }
 }
 
-interface BazelCoverageClassNodeDecoratorPsiElementClassifier {
+internal interface BazelCoverageClassNodeDecoratorPsiElementClassifier {
   fun shouldShowCoverageForElement(psiElement: PsiElement): Boolean
 
   companion object {
     val ep =
-      ExtensionPointName.create<BazelCoverageClassNodeDecoratorPsiElementClassifier>(
+      ExtensionPointName<BazelCoverageClassNodeDecoratorPsiElementClassifier>(
         "org.jetbrains.bazel.bazelCoverageClassNodeDecoratorPsiElementClassifier",
       )
   }

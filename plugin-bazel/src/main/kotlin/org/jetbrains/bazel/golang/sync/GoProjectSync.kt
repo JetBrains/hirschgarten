@@ -34,9 +34,10 @@ import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.bazel.sync.task.query
+import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
-import org.jetbrains.bazel.workspacemodel.entities.BspModuleEntitySource
+import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.includesGo
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -56,37 +57,39 @@ class GoProjectSync : ProjectSyncHook {
   override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isGoSupportEnabled
 
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
-    // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1961
-    val bspBuildTargets = environment.server.workspaceBuildTargets()
-    val goTargets = bspBuildTargets.calculateGoTargets()
-    val idToGoTargetMap = goTargets.associateBy({ it.id }, { it })
-    val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
+    environment.withSubtask("Process Go targets") {
+      // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1961
+      val bspBuildTargets = environment.server.workspaceBuildTargets()
+      val goTargets = bspBuildTargets.calculateGoTargets()
+      val idToGoTargetMap = goTargets.associateBy({ it.id }, { it })
+      val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
 
-    val moduleEntities =
-      goTargets.map {
-        val moduleName = it.id.formatAsModuleName(environment.project)
-        val moduleSourceEntity = BspModuleEntitySource(moduleName)
+      val moduleEntities =
+        goTargets.map {
+          val moduleName = it.id.formatAsModuleName(environment.project)
+          val moduleSourceEntity = BazelModuleEntitySource(moduleName)
 
-        val moduleEntity =
-          addModuleEntityFromTarget(
-            builder = environment.diff.workspaceModelDiff.mutableEntityStorage,
-            target = it,
-            moduleName = moduleName,
-            entitySource = moduleSourceEntity,
-            virtualFileUrlManager = virtualFileUrlManager,
-            project = environment.project,
-          )
-        val vgoModule =
-          prepareVgoModule(environment, it, moduleEntity.symbolicId, virtualFileUrlManager, idToGoTargetMap, moduleSourceEntity)
-        environment.diff.workspaceModelDiff.mutableEntityStorage
-          .addEntity(vgoModule)
-        moduleEntity
+          val moduleEntity =
+            addModuleEntityFromTarget(
+              builder = environment.diff.workspaceModelDiff.mutableEntityStorage,
+              target = it,
+              moduleName = moduleName,
+              entitySource = moduleSourceEntity,
+              virtualFileUrlManager = virtualFileUrlManager,
+              project = environment.project,
+            )
+          val vgoModule =
+            prepareVgoModule(environment, it, moduleEntity.symbolicId, virtualFileUrlManager, idToGoTargetMap, moduleSourceEntity)
+          environment.diff.workspaceModelDiff.mutableEntityStorage
+            .addEntity(vgoModule)
+          moduleEntity
+        }
+
+      environment.diff.workspaceModelDiff.addPostApplyAction {
+        calculateAndAddGoSdk(environment.progressReporter, goTargets, environment.project, environment.taskId)
+        restoreGoModulesRegistry(environment.project)
+        enableGoSupportInTargets(moduleEntities, environment.project, environment.taskId)
       }
-
-    environment.diff.workspaceModelDiff.addPostApplyAction {
-      calculateAndAddGoSdk(environment.progressReporter, goTargets, environment.project, environment.taskId)
-      restoreGoModulesRegistry(environment.project)
-      enableGoSupportInTargets(moduleEntities, environment.project, environment.taskId)
     }
   }
 
@@ -96,7 +99,7 @@ class GoProjectSync : ProjectSyncHook {
     builder: MutableEntityStorage,
     target: BuildTarget,
     moduleName: String,
-    entitySource: BspModuleEntitySource,
+    entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
     project: Project,
   ): ModuleEntity {
@@ -124,7 +127,7 @@ class GoProjectSync : ProjectSyncHook {
 
   private fun getSourceContentRootEntities(
     target: BuildTarget,
-    entitySource: BspModuleEntitySource,
+    entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
     target.sources.map { source ->
@@ -150,7 +153,7 @@ class GoProjectSync : ProjectSyncHook {
 
   private fun getResourceContentRootEntities(
     target: BuildTarget,
-    entitySource: BspModuleEntitySource,
+    entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
     target.resources.map { resource ->
@@ -183,7 +186,7 @@ class GoProjectSync : ProjectSyncHook {
     moduleId: ModuleId,
     virtualFileUrlManager: VirtualFileUrlManager,
     idToGoTargetMap: Map<Label, BuildTarget>,
-    entitySource: BspModuleEntitySource,
+    entitySource: BazelModuleEntitySource,
   ): VgoStandaloneModuleEntity.Builder {
     val goBuildInfo = extractGoBuildTarget(inputEntity)
 

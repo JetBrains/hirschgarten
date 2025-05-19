@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.python
+package org.jetbrains.bazel.python.debug
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
