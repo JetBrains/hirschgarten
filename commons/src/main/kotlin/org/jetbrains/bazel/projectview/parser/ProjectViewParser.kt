@@ -2,6 +2,7 @@ package org.jetbrains.bazel.projectview.parser
 
 import org.jetbrains.bazel.projectview.model.ProjectView
 import java.nio.file.Files
+import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 
 /**
@@ -14,21 +15,12 @@ interface ProjectViewParser {
   /**
    * Parses file under `projectViewFilePath`.
    *
-   * @param projectViewFilePath path to file with project view
-   * @return
+   * @param projectViewFilePath path to a file with a project view
+   * @return parsed `ProjectView` instance.
+   * **Some fields in the returned `ProjectView` might be empty**
    *
-   * `ProjectView` if parsing has finished with
-   * success, it means:
-   *
-   * 1) file under `projectViewFilePath` was successfully parsed (not all values
-   * have to be provided -- some fields in `ProjectView` might be `
-   * Optional.empty`). <br></br>
-   *
-   * @throws Exception if:
-   *
-   * 1) file under `projectViewFilePath` doesn't exist
-   *
-   * 2) any other fail happen
+   * @throws NoSuchFileException file under `projectViewFilePath` doesn't exist
+   * @throws Exception any other fail happened
    */
   fun parse(projectViewFilePath: Path): ProjectView = parse(Files.readString(projectViewFilePath))
 
@@ -58,4 +50,6 @@ interface ProjectViewParser {
    * @throws Exception if any failure happens
    */
   fun parse(projectViewFileContent: String): ProjectView
+
+  class ImportNotFound(missingFile: Path) : NoSuchFileException(missingFile.toString())
 }
