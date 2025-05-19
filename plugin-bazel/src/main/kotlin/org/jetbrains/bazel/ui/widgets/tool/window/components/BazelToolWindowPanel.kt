@@ -14,18 +14,21 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import com.intellij.ui.components.JBTabbedPane
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.ui.queryTab.BazelQueryTab
 import org.jetbrains.bazel.ui.widgets.tool.window.filter.FilterActionGroup
 import java.nio.file.Path
 import javax.swing.SwingConstants
 
 class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, true) {
   private val model = project.service<BazelTargetsPanelModel>()
-  val panel = BazelTargetsPanel(project, model)
+  val targetsPanel = BazelTargetsPanel(project, model)
+  val queryTab = BazelQueryTab(project)
 
   init {
     val actionManager = ActionManager.getInstance()
@@ -48,8 +51,12 @@ class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, t
         orientation = SwingConstants.HORIZONTAL
       }
 
-    this.toolbar = actionToolbar.component
-    setContent(panel)
+    val tabbedPane =
+      JBTabbedPane().apply {
+        addTab("Loaded Targets", targetsPanel)
+        addTab("Bazel Query", queryTab)
+      }
+    setContent(tabbedPane)
   }
 }
 
