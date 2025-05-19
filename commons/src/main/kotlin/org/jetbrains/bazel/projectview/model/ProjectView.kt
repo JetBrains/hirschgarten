@@ -151,8 +151,8 @@ data class ProjectView(
           " targetShardSize: {}," +
           " shardingApproach: {}," +
           " importRunConfigurationsSection: {}," +
-          " gazelleTarget: {}",
-        "", // preserve Git blame
+          " gazelleTarget: {}," +
+          "", // preserve Git blame
         targets,
         bazelBinary,
         buildFlags,
