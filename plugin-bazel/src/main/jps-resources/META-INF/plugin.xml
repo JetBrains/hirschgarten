@@ -36,6 +36,7 @@
   <depends optional="true" config-file="withJunit.xml">JUnit</depends>
   <depends optional="true" config-file="withKotlin.xml">org.jetbrains.kotlin</depends>
   <depends optional="true" config-file="withPython.xml">com.intellij.modules.python</depends>
+  <depends optional="true" config-file="withTerminal.xml">org.jetbrains.plugins.terminal</depends>
 
   <extensionPoints>
     <extensionPoint qualifiedName="org.jetbrains.bazel.sourceTypeIconProvider"

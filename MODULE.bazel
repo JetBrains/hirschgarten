@@ -593,3 +593,43 @@ http_jar(
     sha256 = TOML_GRAZIE_251_SHA,
     url = TOML_GRAZIE_251_URL,
 )
+
+_TERMINAL_BUILD_FILE = """
+
+
+java_import(
+
+
+   name = "terminal",
+
+
+   jars = glob(["terminal/lib/*.jar"]),
+
+
+   visibility = ["//visibility:public"],
+
+
+)
+
+
+"""
+
+_TERMINAL_251_VERSION = "251.25410.123"
+
+_TERMINAL_243_VERSION = "243.23654.19"
+
+TERMINAL_PLUGIN_251_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.terminal/%s/org.jetbrains.plugins.terminal-%s.zip" % (_TERMINAL_251_VERSION, _TERMINAL_251_VERSION)
+
+TERMINAL_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.terminal/%s/org.jetbrains.plugins.terminal-%s.zip" % (_TERMINAL_243_VERSION, _TERMINAL_243_VERSION)
+
+http_archive(
+    name = "terminal_2025_1",
+    build_file_content = _TERMINAL_BUILD_FILE,
+    url = TERMINAL_PLUGIN_251_URL,
+)
+
+http_archive(
+    name = "terminal_2024_3",
+    build_file_content = _TERMINAL_BUILD_FILE,
+    url = TERMINAL_PLUGIN_243_URL,
+)
