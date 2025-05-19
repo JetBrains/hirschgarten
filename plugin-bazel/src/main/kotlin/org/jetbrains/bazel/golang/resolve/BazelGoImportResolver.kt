@@ -160,7 +160,8 @@ private fun getGoTargetMap(project: Project): Map<String, Label> =
         .filter { t -> extractGoBuildTarget(t)?.importPath?.isNotBlank() == true }
         .groupBy { t -> extractGoBuildTarget(t)?.importPath.orEmpty() }
         .mapValues { (_, targets) ->
-          // Resolve duplicates by choosing the target with the most sources
+          // duplicates are possible (e.g., same target with different aspects)
+          // choose the one with the most sources (though they're probably the same)
           targets.maxByOrNull { extractGoBuildTarget(it)?.generatedSources?.size ?: 0 }?.id
         }
     } as Map<String, Label>
