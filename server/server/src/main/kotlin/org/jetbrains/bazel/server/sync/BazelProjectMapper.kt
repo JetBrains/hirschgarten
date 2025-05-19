@@ -924,7 +924,7 @@ class BazelProjectMapper(
     }
 
   private fun isTargetTreatedAsInternal(target: ResolvedLabel, repoMapping: RepoMapping): Boolean =
-    target.isMainWorkspace || target.repo.repoName in externalRepositoriesTreatedAsInternal(repoMapping)
+    target.isMainWorkspace || target.repo.repoName in externalRepositoriesTreatedAsInternal(repoMapping) || target.isGazelleGenerated
 
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
   private fun isWorkspaceTarget(

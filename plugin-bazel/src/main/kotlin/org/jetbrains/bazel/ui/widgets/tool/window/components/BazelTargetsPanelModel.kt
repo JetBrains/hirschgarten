@@ -94,8 +94,8 @@ class BazelTargetsPanelModel(private val project: Project) {
     get() = targets.isNotEmpty()
 
   fun updateTargets(newTargets: Map<Label, BuildTarget>, newInvalidTargets: List<Label> = emptyList()) {
-    targets = newTargets
-    invalidTargets = newInvalidTargets
+    targets = newTargets.filterKeys { it.isMainWorkspace }
+    invalidTargets = newInvalidTargets.filter { it.isMainWorkspace }
 
     updateVisibleTargets()
   }
