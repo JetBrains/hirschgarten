@@ -33,7 +33,6 @@ package org.jetbrains.bazel.golang.resolve
 import com.goide.psi.impl.GoPackage
 import com.goide.psi.impl.imports.GoImportReference
 import com.goide.psi.impl.imports.GoImportResolver
-import com.google.common.base.Preconditions
 import com.google.common.collect.ImmutableList
 import com.intellij.codeInsight.navigation.CtrlMouseHandler
 import com.intellij.lang.documentation.DocumentationProviderEx
@@ -137,8 +136,8 @@ fun doResolve(importPath: String, project: Project): BazelGoPackage? {
   if (!project.isBazelProject) return null
   val targetUtils = project.targetUtils
 
-  val goPackageMap = Preconditions.checkNotNull(getGoPackageMap(project))
-  val goTargetMap = Preconditions.checkNotNull(getGoTargetMap(project))
+  val goPackageMap = getGoPackageMap(project)
+  val goTargetMap = getGoTargetMap(project)
   val targetLabel = goTargetMap[importPath] ?: return null
   val target = targetUtils.getBuildTargetForLabel(targetLabel) ?: return null
   return goPackageMap
