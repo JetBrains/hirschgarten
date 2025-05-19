@@ -56,6 +56,10 @@ class BazelRunner(
     fun fileQuery(filePath: Path, builder: BazelCommand.FileQuery.() -> Unit = {}) =
       BazelCommand.FileQuery(bazelBinary, filePath.toString()).apply { builder() }
 
+    /** Purest form of `query`, asking for exact string to execute instead of `Label`s */
+    fun queryExpression(expression: String, builder: BazelCommand.QueryExpression.() -> Unit = {}) =
+      BazelCommand.QueryExpression(bazelBinary, expression).apply { builder() }
+
     fun cquery(builder: BazelCommand.CQuery.() -> Unit = {}) =
       BazelCommand.CQuery(bazelBinary).apply { builder() }.also { inheritWorkspaceOptions = true }
 
