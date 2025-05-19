@@ -48,8 +48,6 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
   data class MergedRoots(val mergedSourceRoots: List<JavaSourceRoot>, val mergedResourceRoots: List<ResourceRoot>?) : Result
 
   fun transform(inputEntity: JavaModule): Result {
-    if (!BazelFeatureFlags.mergeSourceRoots) return DummyModulesToAdd(emptyList())
-
     val buildFileDirectory = inputEntity.baseDirContentRoot?.path
     val (relevantSourceRoots, irrelevantSourceRoots) = inputEntity.sourceRoots.partition { it.isRelevant() }
     val sourceRootsForParentDirs = calculateSourceRootsForParentDirs(relevantSourceRoots)
