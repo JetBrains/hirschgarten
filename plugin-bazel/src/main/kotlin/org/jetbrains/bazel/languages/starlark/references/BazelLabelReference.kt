@@ -5,7 +5,6 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
@@ -129,25 +128,6 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
 
   private fun isLoadFilenameCompletionLocation(): Boolean = element.parent is StarlarkFilenameLoadValue
 
-  private fun collectBzlFiles(
-    directory: VirtualFile,
-    result: MutableList<String>,
-    projectFileIndex: ProjectFileIndex,
-  ) {
-    if (projectFileIndex.isExcluded(directory)) return
-
-    directory.children.forEach { file ->
-      when {
-        file.isDirectory -> {
-          collectBzlFiles(file, result, projectFileIndex)
-        }
-        file.name.endsWith(".bzl") -> {
-          result.add(file.path)
-        }
-      }
-    }
-  }
-
   private fun filePathToLabel(relativeFilePath: String, repoName: String?): String {
     val lastSlash = relativeFilePath.lastIndexOf('/')
     if (lastSlash == -1) {
@@ -157,43 +137,35 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     val beforeColon = relativeFilePath.substring(0, lastSlash)
     val afterColon = relativeFilePath.substring(lastSlash + 1)
 
-    if (repoName == null) {
-      return "//$beforeColon:$afterColon"
+    return if (repoName == null) {
+      "//$beforeColon:$afterColon"
     } else {
-      return "@$repoName//$beforeColon:$afterColon"
+      "@$repoName//$beforeColon:$afterColon"
     }
   }
 
   private fun loadFilenameCompletion(): Array<LookupElement> {
-    val canonicalRepoNameToPath = element.project.canonicalRepoNameToPath
-    val canonicalRepoNameToApparentName = element.project.canonicalRepoNameToApparentName
-    val projectFileIndex = ProjectFileIndex.getInstance(element.project)
-
-    val myRepo =
+    val repoNameToBzlFiles = element.project.getService(BazelFileService::class.java).getApparentRepoNameToFiles()
+    val myRepoPath =
       findContainingBazelRepo(
         element.containingFile.originalFile.virtualFile
           .toNioPath(),
       )
-    val lookupElements = mutableListOf<LookupElement>()
 
-    for ((canonicalName, repoPath) in canonicalRepoNameToPath) {
-      val apparentName = canonicalRepoNameToApparentName[canonicalName] ?: continue
-      val repoName =
-        if (myRepo == repoPath) {
-          apparentName
-        } else {
+    val lookupElements = mutableListOf<LookupElement>()
+    for ((repoName, bzlFiles) in repoNameToBzlFiles) {
+      val repoPath = element.project.canonicalRepoNameToPath[repoName]
+      val apparentRepoName =
+        if (myRepoPath == repoPath) {
           null
+        } else {
+          element.project.canonicalRepoNameToApparentName[repoName]
         }
 
-      val virtualFile = LocalFileSystem.getInstance().findFileByNioFile(repoPath) ?: continue
-      val result = mutableListOf<String>()
-      collectBzlFiles(virtualFile, result, projectFileIndex)
-      result.forEach { file ->
-        val relativeFilePath = file.removePrefix(virtualFile.path + "/")
-        lookupElements.add(fileLookupElement(filePathToLabel(relativeFilePath, repoName)))
+      for (filePath in bzlFiles) {
+        lookupElements.add(fileLookupElement(filePathToLabel(filePath, apparentRepoName)))
       }
     }
-
     return lookupElements.toTypedArray()
   }
 
