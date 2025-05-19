@@ -23,7 +23,6 @@ import com.google.common.collect.ImmutableSet
 import com.google.common.collect.ImmutableSet.toImmutableSet
 import com.google.common.collect.Streams
 import com.intellij.openapi.module.Module
-import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.FileIndexFacade
 import com.intellij.openapi.vfs.VirtualFile
@@ -373,7 +372,6 @@ class BazelGoPackage : GoPackage {
     if (!isValid) return true
     val fileIndexFacade = FileIndexFacade.getInstance(project)
     for (file in files()) {
-      ProgressIndicatorProvider.checkCanceled()
       val virtualFile = file.virtualFile
       if (virtualFile.isValid &&
         virtualFileFilter.test(virtualFile) &&
@@ -409,6 +407,9 @@ class BazelGoPackage : GoPackage {
 
   override fun toString(): String = "Package: $importPath"
 
+  /**
+   * need to override these because [GoPackage] uses [GoPackage#myDirectories] directly in their implementations
+   */
   override fun isValid(): Boolean = getDirectories().size == directories.size
 
   override fun equals(other: Any?): Boolean {
