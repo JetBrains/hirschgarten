@@ -5,6 +5,13 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 
+/**
+ * Cache for storing arbitrary project data after sync.
+ *
+ * TODO: This is just a simple version inspired from OG, it needs redesigning.
+ *
+ * [BAZEL-2041](https://youtrack.jetbrains.com/issue/BAZEL-2041) Redesign project SyncCache
+ */
 @Service(Service.Level.PROJECT)
 class SyncCache(project: Project) {
   private val map = mutableMapOf<String, Any>()
