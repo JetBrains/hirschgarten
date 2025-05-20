@@ -23,7 +23,7 @@ During compilation for different IDEA targets, the dependency is switched:
 - Bazel build against 2025.1 compiles `sdkcompat/v251`
 - Bazel build against 2024.3 compiles `sdkcompat/v243`
 
-<img src="../files/sdkcompat/sdkcompat_structure.png" width="600">
+![SDK Compatibility Structure](../files/sdkcompat/sdkcompat_structure.png)
 
 **Note:** AI Assistant also publishes for different IDEA versions, but they still build from IDEA master (which they can afford because the used API surface is not very large).
 Bazel plugin uses a lot of IDEA internals, so, e.g., the plugin built against IDEA master will crash on 2025.1.
@@ -34,11 +34,11 @@ Bazel plugin uses a lot of IDEA internals, so, e.g., the plugin built against ID
 
 Let's say we dislike the naming of `AsyncDirectoryProjectConfigurator.configure`:
 
-<img src="../files/sdkcompat/before_rename.png" width="600">
+![Before Rename](../files/sdkcompat/before_rename.png)
 
 You rename it to a much better name, `configureRenamed`, and then safe-push:
 
-<img src="../files/sdkcompat/after_rename.png" width="600">
+![After Rename](../files/sdkcompat/after_rename.png)
 
 ### Safe-push fails
 
@@ -64,15 +64,15 @@ This is because we use Bazel to compile the Bazel plugin against 2025.1 and 2024
 
 First install the Bazel plugin from Marketplace and restart IDEA:
 
-<img src="../files/sdkcompat/bazel_plugin_marketplace.png" width="600">
+![Bazel Plugin in Marketplace](../files/sdkcompat/bazel_plugin_marketplace.png)
 
 Then click on "File -> Open..." and choose `ultimate/plugins/bazel/MODULE.bazel`:
 
-<img src="../files/sdkcompat/module_bazel_in_finder.png" width="600">
+![Module Bazel in Finder](../files/sdkcompat/module_bazel_in_finder.png)
 
 Click "Open as Project" as this dialog appears:
 
-<img src="../files/sdkcompat/open_as_project.png" width="600">
+![Open as Project](../files/sdkcompat/open_as_project.png)
 
 Then wait for the project to import (which will take a while).
 
@@ -80,19 +80,19 @@ Then wait for the project to import (which will take a while).
 
 Open the file that failed the build earlier. You should now see the same error in the IDE that we previously got in the safe-push:
 
-<img src="../files/sdkcompat/error_after_rename.png" width="600">
+![Error After Rename](../files/sdkcompat/error_after_rename.png)
 
 Right-click the code of the file (i.e., the opened editor) and click on "Jump to BUILD file" in the context menu:
 
-<img src="../files/sdkcompat/jump_to_build_file.png" width="300">
+![Jump to BUILD File](../files/sdkcompat/jump_to_build_file.png)
 
 Then add a new line to the `deps` array: `"//sdkcompat",` (if it is not added yet; otherwise, do nothing)
 
-<img src="../files/sdkcompat/add_dependency_on_sdkcompat.png" width="600">
+![Add Dependency on SDK Compat](../files/sdkcompat/add_dependency_on_sdkcompat.png)
 
 Then resync the project so that IDEA knows about this change we've just done:
 
-<img src="../files/sdkcompat/resync.png" width="300">
+![Resync Project](../files/sdkcompat/resync.png)
 
 ### `v251` and `v243` folders of sdkcompat
 
@@ -109,7 +109,7 @@ Because the default target for Bazel build is 2025.1, this is the currently impo
 Here we'll add a `configureCompat` method that the Bazel plugin code will override. Because in 2025.1 the method
 used to be called `configure`, we'll call `configureCompat` from there.
 
-<img src="../files/sdkcompat/bazel_sdkcompat.png" width="600">
+![Bazel SDK Compatibility](../files/sdkcompat/bazel_sdkcompat.png)
 
 Copy the same file to `sdkcompat/v243`, because the implementation is going to be the same for 2024.3.
 (If not, then you can change `build --define=ij_product=intellij-2025.1` to `build --define=ij_product=intellij-2024.3`
@@ -118,11 +118,11 @@ inside `ultimate/plugins/bazel/.bazelrc` and then re-import the project to devel
 Then open the problematic file and change the superclass from `AsyncDirectoryProjectConfigurator` to `AsyncDirectoryProjectConfiguratorCompat`.
 Now we also override `configureCompat` instead of `configureRenamed`.
 
-<img src="../files/sdkcompat/class_fixed.png" width="600">
+![Class Fixed](../files/sdkcompat/class_fixed.png)
 
 To check that the Bazel build is now fixed, click "Build Project" under "Build" and see if there's any compilation errors left.
 
-<img src="../files/sdkcompat/check_bazel_build.png" width="600">
+![Check Bazel Build](../files/sdkcompat/check_bazel_build.png)
 
 ### `master` folder of sdkcompat
 
@@ -131,7 +131,7 @@ To check that the Bazel build is now fixed, click "Build Project" under "Build" 
 After having changed the superclass from `AsyncDirectoryProjectConfigurator` to the newly-added `AsyncDirectoryProjectConfiguratorCompat`
 we now have a broken JPS build, because `sdkcompat/master` doesn't have `AsyncDirectoryProjectConfiguratorCompat` yet! Let's implement it:
 
-<img src="../files/sdkcompat/master_sdkcompat.png" width="600">
+![Master SDK Compatibility](../files/sdkcompat/master_sdkcompat.png)
 
 We add the same `configureCompat` method as in `v251` and `v243`, so that the Bazel plugin code compiles without errors for any IDEA target. 
 Then we implement the new-and-shiny `configureRenamed` method by calling `configureCompat` from it.
