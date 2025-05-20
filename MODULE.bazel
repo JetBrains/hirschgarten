@@ -716,42 +716,21 @@ http_jar(
     url = JSON_SPLIT_252_URL,
 )
 
-TOML_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/toml/toml/%s/toml-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
+TOML_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.toml.lang/%s/org.toml.lang-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-TOML_252_SHA = "0f4533a351a7f45abed2f73f3ac758d62f6d4544c541b1ba5fb069f68d59e93a"
+TOML_PLUGIN_252_SHA = "598a0b42ca86e471e553d32b2d4300602e130153bf7fc15da0ed913b149930a6"
 
-http_jar(
-    name = "toml_2025_2",
-    sha256 = TOML_252_SHA,
-    url = TOML_252_URL,
+_TOML_BUILD_FILE = """
+java_import(
+    name = "toml",
+    jars = glob(["toml/lib/toml.jar", "toml/lib/modules/*.jar"]),
+    visibility = ["//visibility:public"],
 )
+"""
 
-TOML_CORE_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/toml/toml-core/%s/toml-core-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
-
-TOML_CORE_252_SHA = "8c713d047410dabcc76e7de405407a96bb41659210350dceeb1308f2bbbf8bb9"
-
-http_jar(
-    name = "toml_core_2025_2",
-    sha256 = TOML_CORE_252_SHA,
-    url = TOML_CORE_252_URL,
-)
-
-TOML_JSON_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/toml/toml-json/%s/toml-json-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
-
-TOML_JSON_252_SHA = "1b0258e4fd2f8f5d84b30f9b20b536897e8cb21717ad2fc516f356861f9a7708"
-
-http_jar(
-    name = "toml_json_2025_2",
-    sha256 = TOML_JSON_252_SHA,
-    url = TOML_JSON_252_URL,
-)
-
-TOML_GRAZIE_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/toml/toml-grazie/%s/toml-grazie-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
-
-TOML_GRAZIE_252_SHA = "67b1a2d4f1b2a0aa789b6f79ef8af5f4cb6d49616906835426376ce044061812"
-
-http_jar(
-    name = "toml_grazie_2025_2",
-    sha256 = TOML_GRAZIE_252_SHA,
-    url = TOML_GRAZIE_252_URL,
+http_archive(
+    name = "toml_plugin_2025_2",
+    build_file_content = _TOML_BUILD_FILE,
+    sha256 = TOML_PLUGIN_252_SHA,
+    url = TOML_PLUGIN_252_URL,
 )
