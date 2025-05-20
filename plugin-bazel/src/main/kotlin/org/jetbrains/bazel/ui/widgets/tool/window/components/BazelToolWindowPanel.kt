@@ -19,7 +19,6 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
-import org.jetbrains.bazel.ui.widgets.tool.window.filter.FilterActionGroup
 import java.nio.file.Path
 import javax.swing.SwingConstants
 
