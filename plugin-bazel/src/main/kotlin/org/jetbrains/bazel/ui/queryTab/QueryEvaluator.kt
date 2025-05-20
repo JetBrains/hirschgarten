@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 internal class BazelFlag(value: String) {
   val value = withDoubleHyphen(value)
-  
+
   companion object {
     fun withDoubleHyphen(flagToParse: String): String {
       val flag = flagToParse.trim()
@@ -78,7 +78,6 @@ internal class QueryEvaluator(private var currentRunnerDirFile: VirtualFile) {
   // before a result of previous is received.
   fun orderEvaluation(command: String, flags: List<BazelFlag>) {
     if (currentProcess.get() != null) throw IllegalStateException("Trying to start new process before result of previous is received")
-
 
     val commandToRun =
       bazelRunner.buildBazelCommand(workspaceContext) {
