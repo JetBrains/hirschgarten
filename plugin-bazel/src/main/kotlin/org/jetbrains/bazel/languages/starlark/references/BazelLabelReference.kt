@@ -28,7 +28,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     if (!project.isBazelProject || isInNameArgument()) return null
     val label = Label.parseOrNull(element.getStringContents()) ?: return null
     val acceptOnlyFileTarget = element.getParentOfType<StarlarkLoadStatement>(strict = true) != null
-    return resolveLabel(project, label, element.containingFile.originalFile.virtualFile, acceptOnlyFileTarget)
+    return resolveTargetPattern(project, label, element.containingFile.originalFile.virtualFile, acceptOnlyFileTarget)
   }
 
   override fun getVariants(): Array<LookupElement> {

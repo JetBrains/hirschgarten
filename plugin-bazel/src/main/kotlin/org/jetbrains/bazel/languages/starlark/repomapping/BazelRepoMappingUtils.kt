@@ -79,7 +79,7 @@ fun CanonicalLabel.toApparentLabel(project: Project): ApparentLabel? {
 /**
  * Converts this [Label]'s repository to [Canonical].
  */
-fun ApparentLabel.toCanonicalLabel(project: Project): CanonicalLabel? {
+fun Label.toCanonicalLabel(project: Project): CanonicalLabel? {
       val canonicalRepoName = project.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
       return CanonicalLabel(
         repo = Canonical(canonicalRepoName),
@@ -94,7 +94,7 @@ fun Label.toShortString(project: Project): String {
   val repoPart = if (!label.repo.isMain) label.repo.toString() else ""
   val packagePart = label.packagePath.toString()
   val targetPart =
-    if (label.target.targetName == (label.packagePath as? Package)?.name()) {
+    if (label.target.targetName == label.packagePath.name()) {
       ""
     } else {
       ":${label.target}"

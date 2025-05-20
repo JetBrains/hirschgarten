@@ -14,7 +14,7 @@ import org.jetbrains.bazel.action.getEditor
 import org.jetbrains.bazel.action.getPsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.starlark.references.resolveLabel
+import org.jetbrains.bazel.languages.starlark.references.resolveTargetPattern
 import org.jetbrains.bazel.target.targetUtils
 
 class BazelJumpToBuildFileAction(private val target: Label?) :
@@ -53,7 +53,7 @@ class BazelJumpToBuildFileAction(private val target: Label?) :
 suspend fun jumpToBuildFile(project: Project, target: Label) {
   val buildFile =
     readAction {
-      resolveLabel(project, target)
+      resolveTargetPattern(project, target)
     } ?: return
   withContext(Dispatchers.EDT) {
     EditorHelper.openInEditor(buildFile, true, true)

@@ -100,14 +100,18 @@ data class Canonical(override val repoName: String) : RepoType {
  */
 data class Apparent(override val repoName: String) : RepoType {
 
-  override fun toString(): String = if (repoName == "") "" else "@$repoName"
+  override fun toString(): String = "@$repoName"
+
+  companion object {
+    val main = Apparent("")
+  }
 }
 
 // single target, repo can be resolved or not, can be synthetic
 sealed interface Label : TargetPattern {
   override val target: SingleTarget
   override val packagePath: Package
-  val repo: RepoType
+  override val repo: RepoType
 
   val repoName: String get() = repo.repoName
 
@@ -117,7 +121,7 @@ sealed interface Label : TargetPattern {
       return when (val targetPattern = TargetPattern.parse(value)) {
         is BazelLabel -> targetPattern
         is SyntheticLabel -> targetPattern
-        else -> error("Target pattern $value is not a valid label")
+        else -> targetPattern.assumeBazelLabel()
       }
     }
     fun parseOrNull(value: String?): Label? {
@@ -171,7 +175,7 @@ data class SyntheticLabel(override val target: SingleTarget) : Label {
 }
 
 data class AbsoluteTargetPattern(
-  val repo: RepoType,
+  override val repo: RepoType,
   override val packagePath: PackageType,
   override val target: TargetType,
 ) : TargetPattern {
@@ -179,6 +183,7 @@ data class AbsoluteTargetPattern(
 }
 
 data class RelativeTargetPattern(override val packagePath: PackageType, override val target: TargetType) : TargetPattern {
+  override val repo: RepoType = Apparent.main
   override fun toString(): String = joinPackagePathAndTarget(packagePath, target)
 
   fun resolve(base: AbsoluteTargetPattern): AbsoluteTargetPattern {
@@ -214,6 +219,7 @@ sealed interface TargetPattern : Comparable<TargetPattern> {
   @PublicApi
   val packagePath: PackageType
   val target: TargetType
+  val repo: RepoType
 
   val targetName: String get() =
     when (target) {
@@ -307,6 +313,12 @@ sealed interface TargetPattern : Comparable<TargetPattern> {
 
 fun TargetPattern.asRelative(): RelativeTargetPattern? = this as? RelativeTargetPattern
 
+fun TargetPattern.asBazelLabel(): BazelLabel? = try {
+  assumeBazelLabel()
+} catch (_: Exception) {
+  null
+}
+
 fun TargetPattern.assumeBazelLabel(): BazelLabel =
   when (this) {
     is ApparentLabel -> this
@@ -328,7 +340,7 @@ fun TargetPattern.assumeBazelLabel(): BazelLabel =
 
       val repo =
         when (this) {
-          is RelativeTargetPattern -> Canonical.main
+          is RelativeTargetPattern -> Apparent.main
           is AbsoluteTargetPattern -> this.repo
           else -> error("Impossible state")
         }
@@ -349,5 +361,7 @@ fun TargetPattern.assumeLabel(): Label =
 private fun joinPackagePathAndTarget(packagePath: PackageType, target: TargetType) =
   when (target) {
     is AmbiguousEmptyTarget -> packagePath.toString()
+    // If it was parsed as Label
+    is SingleTarget -> if (packagePath.pathSegments.lastOrNull() == target.targetName) packagePath.toString() else "$packagePath:$target"
     else -> "$packagePath:$target"
   }

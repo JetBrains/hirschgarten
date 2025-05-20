@@ -12,12 +12,11 @@ import com.intellij.util.concurrency.annotations.RequiresReadLock
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.Main
-import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.label.TargetPattern
+import org.jetbrains.bazel.label.asBazelLabel
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRepo
-import org.jetbrains.bazel.languages.starlark.repomapping.singleTarget
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
 
 /**
@@ -26,20 +25,20 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
  * @see ExternalRepoResolveTest
  */
 @RequiresReadLock
-fun resolveLabel(
+fun resolveTargetPattern(
   project: Project,
-  label: Label,
+  targetPattern: TargetPattern,
   containingFile: VirtualFile? = null,
   acceptOnlyFileTarget: Boolean = false,
 ): PsiElement? {
-  val buildOrSource = resolveBuildFileOrSourceFile(project, label, containingFile) ?: return null
+  val buildOrSource = resolveBuildFileOrSourceFile(project, targetPattern, containingFile) ?: return null
   return when (buildOrSource) {
     is BuildFilePsi -> {
       val buildFile = buildOrSource.file
       if (!acceptOnlyFileTarget) {
-        resolveBuildFileTarget(buildFile, label)?.let { return it }
+        resolveBuildFileTarget(buildFile, targetPattern)?.let { return it }
       }
-      resolveFileTarget(project, buildFile, label)?.let { return it }
+      resolveFileTarget(project, buildFile, targetPattern)?.let { return it }
       // Fall back to the BUILD file, as opposed to a specific target inside it.
       // The reference may still be valid, e.g., if a macro in the file creates a target with a custom name,
       // in which case we can't determine which macro actually corresponds to the target with that name.
@@ -57,22 +56,22 @@ private class SourceFile(val file: VirtualFile) : BuildFileOrSourceFile
 
 private fun resolveBuildFileOrSourceFile(
   project: Project,
-  label: Label,
+  targetPattern: TargetPattern,
   containingFile: VirtualFile?,
 ): BuildFileOrSourceFile? =
-  when (label) {
-    is ResolvedLabel ->
+  when (targetPattern) {
+    is Label ->
       findBuildFile(
         project,
-        label,
+        targetPattern,
         containingFile,
       )?.let { BuildFilePsi(it) }
 
-    else -> resolveRelativePackageOrSourceFile(project, label, containingFile)
+    else -> resolveRelativePackageOrSourceFile(project, targetPattern, containingFile)
   }
 
-private fun resolveBuildFileTarget(buildFile: StarlarkFile, label: Label): PsiElement? {
-  val target = label.singleTarget() ?: return null
+private fun resolveBuildFileTarget(buildFile: StarlarkFile, label: TargetPattern): PsiElement? {
+  val target = label.asBazelLabel()?.target ?: return null
   val ruleTarget = buildFile.findRuleTarget(target.targetName) ?: return null
   return ruleTarget
     .getArgumentList()
@@ -83,7 +82,7 @@ private fun resolveBuildFileTarget(buildFile: StarlarkFile, label: Label): PsiEl
 
 fun findBuildFile(
   project: Project,
-  label: ResolvedLabel,
+  label: Label,
   containingFile: VirtualFile? = null,
 ): StarlarkFile? {
   val packageDir = findReferredAbsolutePackage(project, containingFile, label) ?: return null
@@ -92,13 +91,13 @@ fun findBuildFile(
 
 private fun resolveRelativePackageOrSourceFile(
   project: Project,
-  label: Label,
+  targetPattern: TargetPattern,
   containingFile: VirtualFile?,
 ): BuildFileOrSourceFile? {
   val containingPackage = findContainingPackage(containingFile) ?: return null
-  val referredPackage = containingPackage.findFileByRelativePath(label.packagePath.toString()) ?: return null
+  val referredPackage = containingPackage.findFileByRelativePath(targetPattern.packagePath.toString()) ?: return null
   if (referredPackage.isFile) {
-    if (label.target is AmbiguousEmptyTarget) return SourceFile(referredPackage)
+    if (targetPattern.target is AmbiguousEmptyTarget) return SourceFile(referredPackage)
     return null
   }
   return findBuildFilePsi(project, referredPackage)?.let { BuildFilePsi(it) }
@@ -112,7 +111,7 @@ private fun findContainingPackage(directory: VirtualFile?): VirtualFile? =
 private fun resolveFileTarget(
   project: Project,
   buildFilePsi: StarlarkFile,
-  label: Label,
+  label: TargetPattern,
 ): PsiFile? {
   // buildFilePsi may be excluded, in which case we can't get the parent PsiDirectory.
   // Therefore get virtualFile then parent and not vice-versa
@@ -124,11 +123,11 @@ private fun resolveFileTarget(
 private fun findReferredAbsolutePackage(
   project: Project,
   containingFile: VirtualFile?,
-  label: ResolvedLabel,
+  label: Label,
 ): VirtualFile? {
   val canonicalLabel = label.toCanonicalLabel(project) ?: return null
   val foundRepoRoot =
-    if (canonicalLabel.repo is Main && containingFile != null) {
+    if (canonicalLabel.repo.isMain && containingFile != null) {
       findContainingBazelRepo(containingFile.toNioPathOrNull() ?: return null)
     } else {
       project.canonicalRepoNameToPath[canonicalLabel.repoName]

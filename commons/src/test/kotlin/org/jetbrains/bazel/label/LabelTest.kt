@@ -9,17 +9,19 @@ import org.junit.jupiter.params.provider.ValueSource
 
 class LabelTest {
   @Test
-  fun `should normalize @@ main repo targets`() {
+  fun `should preserve canonical main repo targets`() {
     val label = TargetPattern.parse("@@//path/to/target:targetName")
     val normalized = label.toString()
-    normalized shouldBe "@//path/to/target:targetName"
+    normalized shouldBe "@@//path/to/target:targetName"
+    label.isMainWorkspace shouldBe true
+    label.isApparent shouldBe false
   }
 
   @Test
-  fun `should normalize @@ main repo targets without target name`() {
+  fun `should preserve @@ main repo targets without target name`() {
     val label = TargetPattern.parse("@@//path/to/target")
     val normalized = label.toString()
-    normalized shouldBe "@//path/to/target"
+    normalized shouldBe "@@//path/to/target"
   }
 
   @Test
@@ -116,16 +118,13 @@ class LabelTest {
 
   @Test
   fun `main workspace targets should be equal, no matter how they are created`() {
-    val label1 = TargetPattern.parse("@//path/to/target:target")
-    val label2 = TargetPattern.parse("//path/to/target:target")
-    val label3 = TargetPattern.parse("@@//path/to/target:target")
-
-    val label4 = TargetPattern.parse("@@//path/to/target")
-    val label5 = TargetPattern.parse("//path/to/target")
+    val label1 = Label.parse("@//path/to/target:target")
+    val label2 = Label.parse("//path/to/target:target")
+    val label3 = Label.parse("@//path/to/target")
+    val label4 = Label.parse("//path/to/target")
     label1 shouldBe label2
     label1 shouldBe label3
-
-    label4 shouldBe label5
+    label1 shouldBe label4
   }
 
   @Test

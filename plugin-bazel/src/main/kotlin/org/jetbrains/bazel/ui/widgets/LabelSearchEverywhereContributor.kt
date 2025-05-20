@@ -26,7 +26,7 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.languages.starlark.references.resolveLabel
+import org.jetbrains.bazel.languages.starlark.references.resolveTargetPattern
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
 import javax.swing.ListCellRenderer
@@ -65,7 +65,7 @@ class LabelSearchEverywhereContributor(private val project: Project) :
       project.targetUtils.allTargets().mapNotNull { label ->
         val fullString = label.toString()
         if (!matcher.matches(fullString)) return@mapNotNull null
-        val targetElement = runReadAction { resolveLabel(project, label) } ?: return@mapNotNull null
+        val targetElement = runReadAction { resolveTargetPattern(project, label) } ?: return@mapNotNull null
         val displayName = label.toShortString(project)
         FoundItemDescriptor(LabelWithPreview(displayName, targetElement), matcher.matchingDegree(fullString))
       }

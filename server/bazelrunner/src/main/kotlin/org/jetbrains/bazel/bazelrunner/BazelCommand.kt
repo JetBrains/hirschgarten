@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import java.io.IOException
 import java.nio.file.Files
@@ -42,10 +43,10 @@ interface HasWorkingDirectory {
 
 interface HasMultipleTargets {
   // Will be added as `bazel <command> -- target1 target2 ...`
-  val targets: MutableList<Label>
+  val targets: MutableList<TargetPattern>
 
   // Will be added as `bazel <command> -- <targets> -target1 -target2 ...`
-  val excludedTargets: MutableList<Label>
+  val excludedTargets: MutableList<TargetPattern>
 
   fun addTargetsFromSpec(targetsSpec: TargetsSpec) {
     targets.addAll(targetsSpec.values)
@@ -123,8 +124,8 @@ abstract class BazelCommand(val bazelBinary: String) {
     BazelCommand(bazelBinary),
     HasEnvironment,
     HasMultipleTargets {
-    override val targets: MutableList<Label> = mutableListOf()
-    override val excludedTargets: MutableList<Label> = mutableListOf()
+    override val targets: MutableList<TargetPattern> = mutableListOf()
+    override val excludedTargets: MutableList<TargetPattern> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
 
@@ -192,8 +193,8 @@ abstract class BazelCommand(val bazelBinary: String) {
     HasMultipleTargets,
     HasProgramArguments,
     HasAdditionalBazelOptions {
-    override val targets: MutableList<Label> = mutableListOf()
-    override val excludedTargets: MutableList<Label> = mutableListOf()
+    override val targets: MutableList<TargetPattern> = mutableListOf()
+    override val excludedTargets: MutableList<TargetPattern> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
     override val programArguments: MutableList<String> = mutableListOf()
@@ -220,8 +221,8 @@ abstract class BazelCommand(val bazelBinary: String) {
     HasEnvironment,
     HasMultipleTargets,
     HasProgramArguments {
-    override val targets: MutableList<Label> = mutableListOf()
-    override val excludedTargets: MutableList<Label> = mutableListOf()
+    override val targets: MutableList<TargetPattern> = mutableListOf()
+    override val excludedTargets: MutableList<TargetPattern> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
     override val programArguments: MutableList<String> = mutableListOf()
@@ -260,8 +261,8 @@ abstract class BazelCommand(val bazelBinary: String) {
   class Query(bazelBinary: String, private val allowManualTargetsSync: Boolean) :
     BazelCommand(bazelBinary),
     HasMultipleTargets {
-    override val targets: MutableList<Label> = mutableListOf()
-    override val excludedTargets: MutableList<Label> = mutableListOf()
+    override val targets: MutableList<TargetPattern> = mutableListOf()
+    override val excludedTargets: MutableList<TargetPattern> = mutableListOf()
 
     override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
       val commandLine = mutableListOf(bazelBinary)
@@ -297,8 +298,8 @@ abstract class BazelCommand(val bazelBinary: String) {
   class CQuery(bazelBinary: String) :
     BazelCommand(bazelBinary),
     HasMultipleTargets {
-    override val targets: MutableList<Label> = mutableListOf()
-    override val excludedTargets: MutableList<Label> = mutableListOf()
+    override val targets: MutableList<TargetPattern> = mutableListOf()
+    override val excludedTargets: MutableList<TargetPattern> = mutableListOf()
 
     override fun buildExecutionDescriptor(): BazelCommandExecutionDescriptor {
       val commandLine = mutableListOf(bazelBinary)

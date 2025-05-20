@@ -7,8 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.ResolvedLabel
-import org.jetbrains.bazel.languages.starlark.references.resolveLabel
+import org.jetbrains.bazel.languages.starlark.references.resolveTargetPattern
 
 class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
   private val highlightGroupName = "highlightGroup"
@@ -31,8 +30,8 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
 
   private fun MatchResult.toFilterResultOrNull(line: String, entireLength: Int): Filter.Result? {
     val highlightGroup = groups[highlightGroupName] ?: return null
-    val label = Label.parseOrNull(highlightGroup.value) as? ResolvedLabel ?: return null
-    val psi = resolveLabel(project, label) ?: return null
+    val label = Label.parseOrNull(highlightGroup.value) ?: return null
+    val psi = resolveTargetPattern(project, label) ?: return null
     val containingFile = psi.containingFile ?: return null
     val document = PsiDocumentManager.getInstance(project).getDocument(containingFile) ?: return null
     val textOffset = psi.textOffset

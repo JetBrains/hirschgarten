@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.projectview.generator.sections
 
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewExcludableListSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewTargetsSection
@@ -45,8 +46,8 @@ abstract class ProjectViewExcludableListSectionGenerator<V, in T : ProjectViewEx
 }
 
 object ProjectViewTargetsSectionGenerator :
-  ProjectViewExcludableListSectionGenerator<Label, ProjectViewTargetsSection>() {
-  override fun generatePrettyStringForValue(value: Label): String = value.toString()
+  ProjectViewExcludableListSectionGenerator<TargetPattern, ProjectViewTargetsSection>() {
+  override fun generatePrettyStringForValue(value: TargetPattern): String = value.toString()
 }
 
 object ProjectViewDirectoriesSectionGenerator :

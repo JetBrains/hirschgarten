@@ -16,6 +16,7 @@
 package org.jetbrains.bazel.server.sync.sharding
 
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 
 /**
  * A simple target batcher splitting based on the target strings. This will tend to split by
@@ -24,7 +25,7 @@ import org.jetbrains.bazel.label.Label
 class LexicographicTargetBatcher : BuildBatchingService {
   override fun calculateTargetBatches(
     targets: Set<Label>,
-    excludes: Set<Label>,
+    excludes: Set<TargetPattern>,
     suggestedShardSize: Int,
   ): List<List<Label>> {
     val sorted = targets.sortedBy { label -> label.toString() }

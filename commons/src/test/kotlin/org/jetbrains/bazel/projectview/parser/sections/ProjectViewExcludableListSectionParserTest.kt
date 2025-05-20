@@ -3,6 +3,7 @@ package org.jetbrains.bazel.projectview.parser.sections
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewExcludableListSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSection
@@ -21,9 +22,9 @@ class ProjectViewExcludableListSectionParserTest<V, T : ProjectViewExcludableLis
     private fun targetsSectionArguments(): Arguments {
       val parser = ProjectViewTargetsSectionParser
       val rawIncludedElementConstructor = { seed: String -> "//target:$seed" }
-      val elementMapper = { s: String -> Label.parse(s) }
+      val elementMapper = { s: String -> TargetPattern.parse(s) }
       val sectionConstructor =
-        createSectionConstructor({ values: List<Label>, excludedValues: List<Label> ->
+        createSectionConstructor({ values, excludedValues ->
           ProjectViewTargetsSection(
             values,
             excludedValues,

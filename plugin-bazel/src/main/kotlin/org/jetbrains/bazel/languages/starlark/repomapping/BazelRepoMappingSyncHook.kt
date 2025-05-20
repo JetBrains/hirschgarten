@@ -17,18 +17,15 @@ import kotlin.io.path.Path
 
 val Project.apparentRepoNameToCanonicalName: Map<String, String>
   get() =
-    BazelRepoMappingService.getInstance(this).apparentRepoNameToCanonicalName.takeIf { it.isNotEmpty() }
-      ?: mapOf("" to "")
+    BazelRepoMappingService.getInstance(this).apparentRepoNameToCanonicalName
 
 val Project.canonicalRepoNameToApparentName: Map<String, String>
   get() =
-    BazelRepoMappingService.getInstance(this).canonicalRepoNameToApparentName.takeIf { it.isNotEmpty() }
-      ?: mapOf("" to "")
+    BazelRepoMappingService.getInstance(this).canonicalRepoNameToApparentName
 
 val Project.canonicalRepoNameToPath: Map<String, Path>
   get() =
-    BazelRepoMappingService.getInstance(this).canonicalRepoNameToPath.takeIf { it.isNotEmpty() }
-      ?: mapOf("" to rootDir.toNioPath())
+    BazelRepoMappingService.getInstance(this).canonicalRepoNameToPath
 
 class BazelRepoMappingSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
@@ -55,12 +52,14 @@ internal data class BazelRepoMappingServiceState(
   reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
-internal class BazelRepoMappingService : PersistentStateComponent<BazelRepoMappingServiceState> {
+internal class BazelRepoMappingService(val project: Project) : PersistentStateComponent<BazelRepoMappingServiceState> {
+
   @Volatile
   internal var apparentRepoNameToCanonicalName: Map<String, String> = emptyMap()
     set(value) {
-      field = value
-      canonicalRepoNameToApparentName = value.entries.associate { (apparent, canonical) -> canonical to apparent }
+      val withMainRepo = value + ("" to "")
+      field = withMainRepo
+      canonicalRepoNameToApparentName = withMainRepo.entries.associate { (apparent, canonical) -> canonical to apparent }
     }
 
   @Volatile
@@ -68,8 +67,18 @@ internal class BazelRepoMappingService : PersistentStateComponent<BazelRepoMappi
 
   @Volatile
   internal var canonicalRepoNameToPath: Map<String, Path> = emptyMap()
+    set(value) {
+      val withMainRepo = value + ("" to project.rootDir.toNioPath())
+      field = withMainRepo
+    }
 
-  override fun getState(): BazelRepoMappingServiceState? =
+  init {
+    // Need to be initialized explicitly for the custom setters to kick in
+    apparentRepoNameToCanonicalName = emptyMap()
+    canonicalRepoNameToPath = emptyMap()
+  }
+
+  override fun getState(): BazelRepoMappingServiceState =
     BazelRepoMappingServiceState(
       apparentRepoNameToCanonicalName,
       canonicalRepoNameToPath.mapValues { (_, path) -> path.toString() },

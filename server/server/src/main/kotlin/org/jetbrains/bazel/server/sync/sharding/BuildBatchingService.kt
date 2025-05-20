@@ -16,6 +16,7 @@
 package org.jetbrains.bazel.server.sync.sharding
 
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 
 /**
  * A service for splitting up a large set of targets into batches, built one at a time.
@@ -36,7 +37,7 @@ interface BuildBatchingService {
    */
   fun calculateTargetBatches(
     targets: Set<Label>,
-    excludes: Set<Label>,
+    excludes: Set<TargetPattern>,
     suggestedShardSize: Int,
   ): List<List<Label>>
 
@@ -46,7 +47,7 @@ interface BuildBatchingService {
    */
   fun getShardedTargetList(
     targets: Set<Label>,
-    excludes: Set<Label>,
+    excludes: Set<TargetPattern>,
     suggestedShardSize: Int,
   ): ShardedTargetList {
     val targetBatches = calculateTargetBatches(targets, excludes, suggestedShardSize)

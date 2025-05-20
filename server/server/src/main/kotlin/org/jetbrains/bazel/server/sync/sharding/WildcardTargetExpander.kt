@@ -19,6 +19,7 @@ import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
@@ -86,8 +87,8 @@ object WildcardTargetExpander {
 
   /** Runs a Bazel query to expand the input target patterns to individual Bazel targets.  */
   suspend fun queryIndividualTargets(
-    includedPatterns: List<Label>,
-    excludedTargets: List<Label>,
+    includedPatterns: List<TargetPattern>,
+    excludedTargets: List<TargetPattern>,
     bazelRunner: BazelRunner,
     context: WorkspaceContext,
   ): ExpandedTargetsResult {

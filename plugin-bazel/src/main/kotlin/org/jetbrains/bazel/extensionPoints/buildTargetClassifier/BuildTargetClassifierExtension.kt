@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.extensionPoints.buildTargetClassifier
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.label.ApparentLabel
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toApparentLabelOrThis
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 
@@ -62,7 +62,7 @@ class TreeTargetClassifier(private val project: Project) : BuildTargetClassifier
   override fun calculateBuildTargetPath(buildTarget: Label): List<String> =
     buildTarget
       .toApparentLabelOrThis(project)
-      .let { listOf((it as? ResolvedLabel)?.repoName.orEmpty()) + it.packagePath.pathSegments }
+      .let { listOf((it as? ApparentLabel)?.repoName.orEmpty()) + it.packagePath.pathSegments }
       .filter { pathSegment -> pathSegment.isNotEmpty() }
 
   override fun calculateBuildTargetName(buildTarget: Label): String = buildTarget.targetName

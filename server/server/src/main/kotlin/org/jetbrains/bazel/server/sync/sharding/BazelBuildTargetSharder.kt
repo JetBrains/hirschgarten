@@ -19,6 +19,8 @@ import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
+import org.jetbrains.bazel.label.asBazelLabel
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
@@ -58,13 +60,14 @@ object BazelBuildTargetSharder {
         BazelStatus.SUCCESS,
       )
     }
+
     val includes = targets.values
     val excludes = targets.excludedValues
     val shardingApproach = getShardingApproach(context)
     return when (shardingApproach) {
       ShardingApproach.SHARD_ONLY ->
         ShardedTargetsResult(
-          shardTargetsToBatches(includes, excludes, getTargetShardSize(context)),
+          shardTargetsToBatches(includes.mapNotNull { it.asBazelLabel() }, excludes, getTargetShardSize(context)),
           BazelStatus.SUCCESS,
         )
 
@@ -168,7 +171,7 @@ object BazelBuildTargetSharder {
    */
   private fun shardTargetsToBatches(
     targets: List<Label>,
-    excludes: List<Label>,
+    excludes: List<TargetPattern>,
     shardSize: Int,
   ): ShardedTargetList = LexicographicTargetBatcher().getShardedTargetList(targets.toSet(), excludes.toSet(), shardSize)
 

@@ -1,14 +1,15 @@
 package org.jetbrains.bazel.projectview.model.sections
 
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import java.nio.file.Path
 
 sealed class ProjectViewExcludableListSection<T>(sectionName: String) : ProjectViewListSection<T>(sectionName) {
   abstract val excludedValues: List<T>
 }
 
-data class ProjectViewTargetsSection(override val values: List<Label>, override val excludedValues: List<Label>) :
-  ProjectViewExcludableListSection<Label>(SECTION_NAME) {
+data class ProjectViewTargetsSection(override val values: List<TargetPattern>, override val excludedValues: List<TargetPattern>) :
+  ProjectViewExcludableListSection<TargetPattern>(SECTION_NAME) {
   companion object {
     const val SECTION_NAME = "targets"
   }
