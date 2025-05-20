@@ -50,6 +50,7 @@ class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, t
         targetComponent = this@BazelToolWindowPanel.component
         orientation = SwingConstants.HORIZONTAL
       }
+    toolbar = actionToolbar.component
 
     val tabbedPane =
       JBTabbedPane().apply {
