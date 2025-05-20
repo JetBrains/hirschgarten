@@ -24,7 +24,7 @@ data class BazelProjectSettings(
   val useIntellijTestRunner: Boolean = false,
   val enableBuildWithJps: Boolean = false,
 ) {
-  fun withNewProjectViewPath(newProjectViewFilePath: Path): BazelProjectSettings = copy(projectViewPath = newProjectViewFilePath)
+  internal fun withNewProjectViewPath(newProjectViewFilePath: Path): BazelProjectSettings = copy(projectViewPath = newProjectViewFilePath)
 
   fun withNewBuildifierExecutablePath(newBuildifierExecutablePath: Path): BazelProjectSettings =
     copy(buildifierExecutablePath = newBuildifierExecutablePath)

@@ -52,7 +52,7 @@ class DefaultProjectViewParserTest {
       val projectViewFilePath = Path("/projectview/file9ImportsNotExisting.bazelproject")
 
       // when
-      val exception = shouldThrow<NoSuchFileException> { parser.parse(projectViewFilePath) }
+      val exception = shouldThrow<ProjectViewParser.ImportNotFound> { parser.parse(projectViewFilePath) }
 
       // then
       exception.message shouldBe "/projectview/does/not/exist.bazelproject"
