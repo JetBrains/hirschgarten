@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bazel.commons.LanguageClass
@@ -205,7 +204,7 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
       genericModuleInfo =
         GenericModuleInfo(
           name = name,
-          type = ModuleTypeId(StdModuleTypes.JAVA.id),
+          type = ModuleTypeId(BazelDummyModuleType.ID),
           kind =
             TargetKind(
               kindString = "java_library",
@@ -213,7 +212,11 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
               languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA, LanguageClass.KOTLIN),
             ),
           modulesDependencies = listOf(),
-          librariesDependencies = javaModule.genericModuleInfo.librariesDependencies,
+          librariesDependencies = if (!BazelFeatureFlags.fbsrSupportedInPlatform) {
+            javaModule.genericModuleInfo.librariesDependencies
+          } else {
+            emptyList()
+          },
           isDummy = true,
         ),
       baseDirContentRoot = ContentRoot(path = sourceRoot.sourcePath),
