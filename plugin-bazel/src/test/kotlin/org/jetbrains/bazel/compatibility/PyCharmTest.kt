@@ -8,6 +8,7 @@ import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.junit.jupiter.api.Test
 
 /**
@@ -32,8 +33,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
     val commands =
       CommandChain()
         .takeScreenshot("startSync")
-        // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1910
-        // .waitForBazelSync()
+        .waitForBazelSync()
         .waitForSmartMode()
         .checkImportedModules()
         .exitApp()

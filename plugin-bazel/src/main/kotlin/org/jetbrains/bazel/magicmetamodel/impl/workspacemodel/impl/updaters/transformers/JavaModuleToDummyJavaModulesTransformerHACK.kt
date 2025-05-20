@@ -48,8 +48,6 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
   data class MergedRoots(val mergedSourceRoots: List<JavaSourceRoot>, val mergedResourceRoots: List<ResourceRoot>?) : Result
 
   fun transform(inputEntity: JavaModule): Result {
-    if (!BazelFeatureFlags.addDummyModules && !BazelFeatureFlags.mergeSourceRoots) return DummyModulesToAdd(emptyList())
-
     val buildFileDirectory = inputEntity.baseDirContentRoot?.path
     val (relevantSourceRoots, irrelevantSourceRoots) = inputEntity.sourceRoots.partition { it.isRelevant() }
     val sourceRootsForParentDirs = calculateSourceRootsForParentDirs(relevantSourceRoots)
@@ -70,27 +68,23 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
         )
       }
     }
-    return if (!BazelFeatureFlags.addDummyModules) {
-      DummyModulesToAdd(emptyList())
-    } else {
-      val dummySourceRoots =
-        if (buildFileDirectory == null) {
-          mergedSourceRootVotes
-        } else {
-          mergedSourceRootVotes.restoreSourceRootFromPackagePrefix(limit = null)
-        }.keys.toList()
-      DummyModulesToAdd(
-        dummySourceRoots
-          .zip(calculateDummyJavaModuleNames(dummySourceRoots, projectBasePath))
-          .mapNotNull {
-            calculateDummyJavaSourceModule(
-              name = it.second,
-              sourceRoot = it.first,
-              javaModule = inputEntity,
-            )
-          }.distinctBy { it.genericModuleInfo.name },
-      )
-    }
+    val dummySourceRoots =
+      if (buildFileDirectory == null) {
+        mergedSourceRootVotes
+      } else {
+        mergedSourceRootVotes.restoreSourceRootFromPackagePrefix(limit = null)
+      }.keys.toList()
+    return DummyModulesToAdd(
+      dummySourceRoots
+        .zip(calculateDummyJavaModuleNames(dummySourceRoots, projectBasePath))
+        .mapNotNull {
+          calculateDummyJavaSourceModule(
+            name = it.second,
+            sourceRoot = it.first,
+            javaModule = inputEntity,
+          )
+        }.distinctBy { it.genericModuleInfo.name },
+    )
   }
 
   private fun JavaSourceRoot.isRelevant(): Boolean = this.sourcePath.extension in RELEVANT_EXTENSIONS || this.sourcePath.isDirectory()
@@ -239,7 +233,7 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
 private fun calculateSourceRootsForParentDirs(sourceRoots: List<JavaSourceRoot>): Map<JavaSourceRoot, Int> =
   sourceRoots
     .asSequence()
-    .filter { !BazelJavaSourceRootEntityUpdater.shouldAddBazelJavaSourceRootEntity(it) }
+    .filter { root -> !root.generated && !BazelJavaSourceRootEntityUpdater.shouldAddBazelJavaSourceRootEntity(root) }
     .mapNotNull {
       sourceRootForParentDir(it)
     }.groupingBy { it }

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.config
 
+import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.util.registry.Registry
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bsp.protocol.FeatureFlags
@@ -14,7 +15,7 @@ object BazelFeatureFlags {
   private const val SHORTEN_MODULE_LIBRARY_NAMES = "bsp.shorten.module.library.names"
   private const val WRAP_LIBRARIES_INSIDE_MODULES = "bsp.wrap.libraries.inside.modules"
   private const val EXECUTE_SECOND_PHASE_ON_SYNC = "bsp.execute.second.phase.on.sync"
-  private const val ADD_DUMMY_MODULES = "bsp.add.dummy.modules"
+  private const val ADD_DUMMY_MODULE_DEPENDENCIES = "bsp.add.dummy.module.dependencies"
   private const val EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS = "bsp.exclude.compiled.source.code.inside.jars"
   private const val ENABLE_PARTIAL_SYNC = "bsp.enable.partial.sync"
   private const val SYMLINK_SCAN_MAX_DEPTH = "bazel.symlink.scan.max.depth"
@@ -49,8 +50,13 @@ object BazelFeatureFlags {
   val executeSecondPhaseOnSync: Boolean
     get() = isEnabled(EXECUTE_SECOND_PHASE_ON_SYNC)
 
-  val addDummyModules: Boolean
-    get() = isEnabled(ADD_DUMMY_MODULES) && !enableBazelJavaClassFinder
+  val addDummyModuleDependencies: Boolean
+    get() =
+      (Registry.stringValue(ADD_DUMMY_MODULE_DEPENDENCIES).toBooleanStrictOrNull() ?: !fbsrSupportedInPlatform) &&
+        !enableBazelJavaClassFinder
+
+  // File-based source root problems fixed here: https://youtrack.jetbrains.com/issue/IDEA-371097
+  val fbsrSupportedInPlatform: Boolean = ApplicationInfo.getInstance().build.baselineVersion >= 252
 
   val excludeCompiledSourceCodeInsideJars: Boolean
     get() = isEnabled(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS)

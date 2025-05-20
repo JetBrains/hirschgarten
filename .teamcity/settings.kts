@@ -71,6 +71,7 @@ object GitHub : Project({
         buildType(IdeStarterTests.DisabledKotlinPluginTestGitHub)
         buildType(IdeStarterTests.PyCharmTestGitHub)
         buildType(IdeStarterTests.FastBuildTestGitHub)
+        buildType(IdeStarterTests.ProjectViewOpenTestGitHub)
         buildType(ServerE2eTests.SampleRepoGitHub)
         buildType(ServerE2eTests.LocalJdkGitHub)
         buildType(ServerE2eTests.RemoteJdkGitHub)
@@ -148,6 +149,7 @@ object GitHub : Project({
       IdeStarterTests.DisabledKotlinPluginTestGitHub,
       IdeStarterTests.PyCharmTestGitHub,
       IdeStarterTests.FastBuildTestGitHub,
+      IdeStarterTests.ProjectViewOpenTestGitHub,
       ServerE2eTests.SampleRepoGitHub,
       ServerE2eTests.LocalJdkGitHub,
       ServerE2eTests.RemoteJdkGitHub,
@@ -206,6 +208,7 @@ object Space : Project({
         buildType(IdeStarterTests.DisabledKotlinPluginTestSpace)
         buildType(IdeStarterTests.PyCharmTestSpace)
         buildType(IdeStarterTests.FastBuildTestSpace)
+        buildType(IdeStarterTests.ProjectViewOpenTestSpace)
         buildType(ServerE2eTests.SampleRepoSpace)
         buildType(ServerE2eTests.LocalJdkSpace)
         buildType(ServerE2eTests.RemoteJdkSpace)
@@ -283,6 +286,7 @@ object Space : Project({
       IdeStarterTests.DisabledKotlinPluginTestSpace,
       IdeStarterTests.PyCharmTestSpace,
       IdeStarterTests.FastBuildTestSpace,
+      IdeStarterTests.ProjectViewOpenTestSpace,
       ServerE2eTests.SampleRepoSpace,
       ServerE2eTests.LocalJdkSpace,
       ServerE2eTests.RemoteJdkSpace,
