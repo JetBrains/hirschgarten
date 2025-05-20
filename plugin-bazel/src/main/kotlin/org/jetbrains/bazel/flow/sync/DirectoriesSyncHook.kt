@@ -72,7 +72,11 @@ class DirectoriesSyncHook : ProjectSyncHook {
   private suspend fun isExcludedPath(project: Project, mapping: VcsDirectoryMapping): Boolean {
     if (mapping.isDefaultMapping) return false
     val file = LocalFileSystem.getInstance().findFileByPath(mapping.directory) ?: return false
+    // If the project root is a child of the VCS root, then keep it
     if (VfsUtilCore.isAncestor(file, project.rootDir, false)) return false
+    // Otherwise, if the VCS root is somewhere else (not inside our project directory), then remove it.
+    // Usually it is something like /private/var/tmp/_bazel_...
+    if (!VfsUtilCore.isAncestor(project.rootDir, file, false)) return true
     val projectFileIndex = ProjectFileIndex.getInstance(project)
     return readAction { projectFileIndex.isExcluded(file) }
   }

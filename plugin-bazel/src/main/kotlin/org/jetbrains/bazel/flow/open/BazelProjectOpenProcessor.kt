@@ -9,7 +9,7 @@ import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.settings.bazel.setProjectViewPath
 import java.io.IOException
 import java.nio.file.Path
 import javax.swing.Icon
@@ -83,14 +83,12 @@ internal class BazelProjectOpenProcessor : BaseProjectOpenProcessor() {
           overwrite = true,
           bazelPackageDir = bazelPackageDir.toNioPath(),
         )
-      project.bazelProjectSettings =
-        project.bazelProjectSettings.withNewProjectViewPath(outputProjectViewFilePath.toAbsolutePath())
+      project.setProjectViewPath(outputProjectViewFilePath.toAbsolutePath())
     }
 
   private fun projectViewFileBeforeOpenCallback(originalVFile: VirtualFile): (Project) -> Unit =
     { project ->
-      project.bazelProjectSettings =
-        project.bazelProjectSettings.withNewProjectViewPath(originalVFile.toNioPath().toAbsolutePath())
+      project.setProjectViewPath(originalVFile.toNioPath().toAbsolutePath())
     }
 }
 
