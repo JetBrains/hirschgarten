@@ -393,10 +393,15 @@ class BazelGoPackage : GoPackage {
 
   override fun canNavigate(): Boolean = getNavigableElement() is Navigatable
 
+  /**
+   * navigates to the target in the BUILD file or just the BUILD file
+   */
   override fun getNavigableElement(): PsiElement? {
     navigableElement?.takeIf { it.isValid }?.let { return it }
     val packageDirectory = project.rootDir.toNioPath().resolve(label.packagePath.toPath())
-    return StarlarkFile.findBuildFile(packageDirectory, project).also { navigableElement = it }
+    val buildFile = StarlarkFile.findBuildFile(packageDirectory, project)?.also { navigableElement = it }
+    buildFile?.findRuleTarget(label.targetName)?.also { navigableElement = it }
+    return navigableElement
   }
 
   override fun getCanonicalImport(contextModule: Module?): String = importPath
