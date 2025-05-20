@@ -46,7 +46,6 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
       message = BazelPluginBundle.message("console.task.model.apply.changes"),
     ) { subtaskId ->
       bspTracer.spanBuilder("apply.changes.on.workspace.model.ms").useWithScope {
-        var workspaceModelUpdated = false
         val workspaceModel = WorkspaceModel.getInstance(project) as WorkspaceModelInternal
         repeat(MAX_REPLACE_WSM_ATTEMPTS) { attemptIdx ->
           val snapshot = workspaceModel.getBuilderSnapshot()
@@ -56,7 +55,7 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
           // quickly return if there are no changes to apply
           if (!snapshot.areEntitiesChanged()) return@useWithScope
           val storageReplacement = snapshot.getStorageReplacement()
-          workspaceModelUpdated =
+          val workspaceModelUpdated =
             writeAction {
               bspTracer.spanBuilder("replaceprojectmodel.in.apply.on.workspace.model.ms").use {
                 workspaceModel.replaceWorkspaceModelCompat(
@@ -71,14 +70,12 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
             BazelPluginBundle.message("console.task.model.apply.changes.attempt.0.1.failed", attemptIdx + 1, MAX_REPLACE_WSM_ATTEMPTS),
           )
         }
-        if (!workspaceModelUpdated) {
-          project.syncConsole.addMessage(
-            subtaskId,
-            BazelPluginBundle.message("console.task.model.apply.changes.attempt.0.fallback", MAX_REPLACE_WSM_ATTEMPTS),
-          )
-          workspaceModel.update(BazelPluginBundle.message("console.task.model.apply.changes.wsm")) { builder ->
-            builder.replaceBySource({ it.isBazelRelevant(project, syncScope) }, mutableEntityStorage)
-          }
+        project.syncConsole.addMessage(
+          subtaskId,
+          BazelPluginBundle.message("console.task.model.apply.changes.attempt.0.fallback", MAX_REPLACE_WSM_ATTEMPTS),
+        )
+        workspaceModel.update(BazelPluginBundle.message("console.task.model.apply.changes.wsm")) { builder ->
+          builder.replaceBySource({ it.isBazelRelevant(project, syncScope) }, mutableEntityStorage)
         }
       }
     }
