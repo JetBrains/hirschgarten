@@ -590,7 +590,7 @@ http_jar(
 # SDK 252
 252
 
-SDK_252_PLUGIN_REPOSITORY_VERSION = "252.13776.70"
+SDK_252_PLUGIN_REPOSITORY_VERSION = "252.13776.59"
 
 SDK_252_INTELLIJ_REPOSITORY_VERSION = "252-EAP-SNAPSHOT"
 
@@ -621,10 +621,9 @@ http_jar(
     url = IC_252_SOURCES_URL,
 )
 
-# DEVKIT_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
-DEVKIT_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/251.23774.460/DevKit-251.23774.460.zip"
+DEVKIT_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-DEVKIT_252_SHA = "3417717e56a089b84616e743f3e7c88ea22cfd3acbac33dfa0d381f2a8ee8376"
+DEVKIT_252_SHA = "2b8fe2e2bdcda8d7e12b62576a850ca6d8b63261469aca64c3aae7f9c736566f"
 
 http_archive(
     name = "devkit_2025_2",
@@ -635,7 +634,7 @@ http_archive(
 
 PYTHON_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-PYTHON_PLUGIN_252_SHA = "361d6c2cac7b47b97eb19f900ed7dd5de5220f4cc96da85b853c706749fa9e1d"
+PYTHON_PLUGIN_252_SHA = "38c02ca3641068db65c85bf1caef36855291d1cab063fa1314cb7fed81fa0d85"
 
 http_archive(
     name = "python_2025_2",
@@ -646,7 +645,7 @@ http_archive(
 
 GO_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-GO_PLUGIN_252_SHA = "d6455605c57ccd0859af871f902e68db3078542c48d6d099327e36d80983683e"
+GO_PLUGIN_252_SHA = "7f3a784fbb166b56b71b288958e99b48e16632ae33f189ff3439923d10414787"
 
 http_archive(
     name = "go_2025_2",
@@ -668,7 +667,7 @@ http_archive(
 
 ANDROID_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.android/%s/org.jetbrains.android-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
-ANDROID_PLUGIN_252_SHA = "a5cf4f65db4f9bb27d113af340013972d8bffc635a56efc2d496b60f8c4b7b34"
+ANDROID_PLUGIN_252_SHA = "caefef5d11fd0800868424b60df5a2e7ef6c7673e56321fdc3d9469fdfbe40bf"
 
 http_archive(
     name = "android_2025_2",
