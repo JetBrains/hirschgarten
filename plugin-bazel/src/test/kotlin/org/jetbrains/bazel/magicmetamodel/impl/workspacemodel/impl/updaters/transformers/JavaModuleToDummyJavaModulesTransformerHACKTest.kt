@@ -479,7 +479,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest()
     val expectedModule =
       GenericModuleInfo(
         name = "$projectRootName.${srcPath.name}.${mainPath.name}.${javaPath.name}".addIntelliJDummyPrefix(),
-        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        type = ModuleTypeId(BazelDummyModuleType.ID),
         modulesDependencies = listOf(),
         kind =
           TargetKind(
