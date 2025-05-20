@@ -10,7 +10,7 @@ import java.io.IOException
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.listDirectoryEntries
 
-val BUILD_FILE_GLOB = "{${Constants.BUILD_FILE_NAMES.joinToString(",")}}"
+internal val BUILD_FILE_GLOB = "{${Constants.BUILD_FILE_NAMES.joinToString(",")}}"
 
 private val log = logger<VfsUtils>()
 

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sync
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -13,11 +14,11 @@ import org.jetbrains.bazel.sync.status.SyncStatusListener
  * [BAZEL-2041](https://youtrack.jetbrains.com/issue/BAZEL-2041) Redesign project SyncCache
  */
 @Service(Service.Level.PROJECT)
-class SyncCache(project: Project) {
-  private val map = mutableMapOf<String, Any>()
+class SyncCache(project: Project) : Disposable {
+  private var map = mutableMapOf<String, Any>()
 
   init {
-    project.messageBus.connect().subscribe(
+    project.messageBus.connect(this).subscribe(
       SyncStatusListener.TOPIC,
       object : SyncStatusListener {
         override fun syncStarted() {
@@ -34,10 +35,14 @@ class SyncCache(project: Project) {
   fun getOrCompute(key: String, compute: () -> Any): Any = map.getOrPut(key, compute)
 
   @Synchronized
-  fun clear() = map.clear()
+  fun clear() {
+    map = mutableMapOf()
+  }
 
   companion object {
     @JvmStatic
     fun getInstance(project: Project): SyncCache = project.service()
   }
+
+  override fun dispose() {}
 }
