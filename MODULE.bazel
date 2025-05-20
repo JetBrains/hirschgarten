@@ -716,6 +716,7 @@ http_jar(
     url = JSON_SPLIT_252_URL,
 )
 
+# From 252 python plugin requires toml plugin to be loaded
 TOML_PLUGIN_252_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.toml.lang/%s/org.toml.lang-%s.zip" % (SDK_252_PLUGIN_REPOSITORY_VERSION, SDK_252_PLUGIN_REPOSITORY_VERSION)
 
 TOML_PLUGIN_252_SHA = "598a0b42ca86e471e553d32b2d4300602e130153bf7fc15da0ed913b149930a6"
