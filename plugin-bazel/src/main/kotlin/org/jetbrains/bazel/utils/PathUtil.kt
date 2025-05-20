@@ -52,4 +52,4 @@ fun Collection<Path>.commonAncestor(): Path? {
 
 fun Set<Path>.filterPathsThatDontContainEachOther(): List<Path> = filter { path -> !path.parent.isUnder(this) }
 
-fun Path.toVirtualFile(): VirtualFile? = LocalFileSystem.getInstance().findFileByNioFile(this)
+fun Path.toVirtualFile(): VirtualFile? = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(this)
