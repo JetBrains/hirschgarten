@@ -23,7 +23,9 @@ import java.nio.file.Path
 /*
  *  All tokens must be treated as known by parser. The terminal stops suggesting if a token is unknown.
  *  Make token known by providing suggestion for it (sometimes we must provide empty suggestion like in ShellDataGenerators#getFileSuggestions).
- *  TODO Some options-args should be separated with space or =, we cannot do with both 2 for now, =sign alone not working for now
+ *  TODO Some options-args can be separated with both space or equal sign, some only with equal sign, some only with space. We cannot make both
+ *   space and equal sign work for a flag for now. Equal sign is not working for now. BAZEL-2042.
+ *  For flags syntax, check https://bazel.build/reference/command-line-reference#option-syntax
 */
 @Suppress("UnstableApiUsage")
 internal fun bazelQueryCommandSpec(): ShellCommandSpec =
@@ -36,7 +38,7 @@ internal fun bazelQueryCommandSpec(): ShellCommandSpec =
 
         allOptions(context)
 
-        // This dummyArgs surrounding is to make terminal still suggests even if we typed 'unknown tokens', e.g. options arguments like integer or comma-seperated
+        // This dummyArgs surrounding is to make terminal still suggests even if we typed 'unknown tokens', e.g., options arguments like integer or comma-seperated
         dummyArgs()
 
         queryCompletion()
@@ -169,17 +171,21 @@ private fun ShellCommandContext.booleanAndTriStateFlagSuggestion(flag: Flag, con
   val trueFlag = "--${flag.option.name}"
   val falseFlag = "--no${flag.option.name}"
 
+  // https://bazel.build/reference/command-line-reference#option-syntax
   option(trueFlag) {
     description(flagDescriptionHtml(flag, context.project))
     argument {
+      // Boolean flags can be provided as --<option> without any arguments, but not Tristate.
       if (flag is Flag.Boolean) {
         isOptional = true
       }
+      // Boolean and Tristate flags have these same arguments
       suggestions("true", "yes", "1", "false", "no", "0")
     }
     exclusiveOn = listOf(falseFlag)
   }
 
+  // Both Boolean and Tristate can be negated with --no<option>
   option(falseFlag) {
     description(flagDescriptionHtml(flag, context.project))
     exclusiveOn = listOf(trueFlag)
@@ -201,10 +207,5 @@ private fun isStartAndEndWithQuote(expression: String): Boolean =
     ((expression.startsWith('\'') && expression.endsWith('\'')) || (expression.startsWith('"') && expression.endsWith('"')))
 
 private val knownCommands = BazelQueryFunction.getAll()
-
-private fun BazelQueryFunction.argumentsMarkdown(): String =
-  arguments.joinToString(separator = "\n") { arg ->
-    "- `${arg.name}` (${arg.type}${if (arg.optional) ", optional" else ""}): ${arg.description}"
-  }
 
 private val knownOptions = BazelQueryCommonOptions.getAll()
