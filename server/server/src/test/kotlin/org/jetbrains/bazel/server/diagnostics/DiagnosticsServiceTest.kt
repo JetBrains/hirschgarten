@@ -754,6 +754,7 @@ class DiagnosticsServiceTest {
     val output =
       """
       SEVERE: Compilation failure: compile phase failed:
+      server/server/src/main/kotlin/org/jetbrains/bazel/server/diagnostics/CompilerDiagnosticParser.kt:10:1: error: example error.
       server/server/src/main/kotlin/org/jetbrains/bazel/server/diagnostics/CompilerDiagnosticParser.kt:57:12: error: none of the following candidates is applicable:
       fun <T> Pair<T, T>.toList(): List<T>
       fun <T> Triple<T, T, T>.toList(): List<T>
@@ -786,6 +787,10 @@ class DiagnosticsServiceTest {
             Path("/user/workspace/server/server/src/main/kotlin/org/jetbrains/bazel/server/diagnostics/CompilerDiagnosticParser.kt"),
           ),
           label,
+          errorDiagnostic(
+            Position(10, 1),
+            "example error.",
+          ),
           errorDiagnostic(
             Position(57, 12),
             """
