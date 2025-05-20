@@ -24,7 +24,7 @@ class SyncCache(project: Project) {
         }
 
         override fun syncFinished(canceled: Boolean) {
-          map.clear()
+          clear()
         }
       },
     )
@@ -32,6 +32,9 @@ class SyncCache(project: Project) {
 
   @Synchronized
   fun getOrCompute(key: String, compute: () -> Any): Any = map.getOrPut(key, compute)
+
+  @Synchronized
+  fun clear() = map.clear()
 
   companion object {
     @JvmStatic
