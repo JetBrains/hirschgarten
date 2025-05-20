@@ -537,4 +537,7 @@
     <listener class="org.jetbrains.bazel.workspace.AssignFileToModuleListener"
               topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
   </applicationListeners>
+  <extensions defaultExtensionNs="com.intellij.platform.backend.documentation">
+    <targetProvider implementation="org.jetbrains.bazel.languages.starlark.documentation.BazelNativeRulesTargetProvider"/>
+  </extensions>
 </idea-plugin>
