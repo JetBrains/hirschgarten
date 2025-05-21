@@ -90,7 +90,7 @@
                     interface="org.jetbrains.bazel.ui.notifications.UnresolvedImportChecker"
                     dynamic="true"/>
     <extensionPoint qualifiedName="org.jetbrains.bazel.psiElementConfigurationLocator"
-                    interface="org.jetbrains.bazel.jvm.junit.PsiElementConfigurationLocator"
+                    interface="org.jetbrains.bazel.junit.PsiElementConfigurationLocator"
                     dynamic="true"/>
     <extensionPoint qualifiedName="org.jetbrains.bazel.targetKindProvider"
                     interface="org.jetbrains.bazel.sync.TargetKindProvider"
