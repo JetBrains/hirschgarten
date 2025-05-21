@@ -31,7 +31,6 @@ class TestTargetAction(
           } else {
             ""
           },
-          BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       } else {
         BazelPluginBundle.message(
@@ -43,7 +42,6 @@ class TestTargetAction(
           } else {
             ""
           },
-          BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       }
     },
