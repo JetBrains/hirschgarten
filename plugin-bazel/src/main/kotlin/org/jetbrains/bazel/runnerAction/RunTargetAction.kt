@@ -18,13 +18,11 @@ class RunTargetAction(
         BazelPluginBundle.message(
           "target.debug.run.action.text",
           if (includeTargetNameInTextParam || includeTargetNameInText) targetInfo.id.toShortString(project) else "",
-          BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       } else {
         BazelPluginBundle.message(
           "target.run.action.text",
           if (includeTargetNameInTextParam || includeTargetNameInText) targetInfo.id.toShortString(project) else "",
-          BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       }
     },
