@@ -44,19 +44,15 @@ class BazelCoverageEngine : CoverageEngine() {
       config.createTimestamp(),
     )
 
-  @Deprecated("Deprecated in Java")
   override fun createCoverageSuite(
-    runner: CoverageRunner,
     name: String,
-    fileProvider: CoverageFileProvider,
-    filters: Array<out String?>?,
-    timestamp: Long,
-    suiteToMerge: String?,
-    coverageByTestEnabled: Boolean,
-    branchCoverage: Boolean,
-    trackTestFolders: Boolean,
     project: Project,
-  ): CoverageSuite? = BazelCoverageSuite(name, project, runner, fileProvider, timestamp)
+    runner: CoverageRunner,
+    fileProvider: CoverageFileProvider,
+    timestamp: Long
+  ): CoverageSuite {
+    return BazelCoverageSuite(name, project, runner, fileProvider, timestamp)
+  }
 
   @Deprecated("Deprecated in Java")
   override fun createCoverageSuite(
