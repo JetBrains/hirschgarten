@@ -6,6 +6,7 @@ import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.ide.impl.isTrusted
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -122,7 +123,7 @@ class ProjectSyncTask(private val project: Project) {
   private suspend fun preSync() {
     log.debug("Running pre sync tasks")
     saveAllFiles()
-    SyncStatusService.getInstance(project).startSync()
+    project.serviceAsync<SyncStatusService>().startSync()
   }
 
   private suspend fun doSync(syncScope: ProjectSyncScope, buildProject: Boolean) {
