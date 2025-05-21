@@ -595,23 +595,11 @@ http_jar(
 )
 
 _TERMINAL_BUILD_FILE = """
-
-
 java_import(
-
-
    name = "terminal",
-
-
    jars = glob(["terminal/lib/*.jar"]),
-
-
    visibility = ["//visibility:public"],
-
-
 )
-
-
 """
 
 _TERMINAL_251_VERSION = "251.25410.123"

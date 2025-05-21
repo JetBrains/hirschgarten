@@ -7,6 +7,7 @@ import com.intellij.terminal.completion.spec.ShellCommandSpec
 import com.intellij.terminal.completion.spec.ShellCompletionSuggestion
 import com.intellij.terminal.completion.spec.ShellRuntimeContext
 import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.config.BazelFeatureFlags.isQueryTerminalCompletionEnabled
 import org.jetbrains.bazel.languages.bazelquery.completion.TargetCompletionsGenerator
 import org.jetbrains.bazel.languages.bazelquery.documentation.BazelQueryFunctionDocumentationTarget
 import org.jetbrains.bazel.languages.bazelquery.functions.BazelQueryFunction
@@ -30,20 +31,22 @@ import java.nio.file.Path
 @Suppress("UnstableApiUsage")
 internal fun bazelQueryCommandSpec(): ShellCommandSpec =
   ShellCommandSpec("bazel") {
-    subcommands { context: ShellRuntimeContext ->
+    if (isQueryTerminalCompletionEnabled) {
+      subcommands { context: ShellRuntimeContext ->
 
-      subcommand("query") {
-        parserOptions = ShellCommandParserOptions.create(optionArgSeparators = listOf("=", " "))
-        description("Executes a dependency graph query.")
+        subcommand("query") {
+          parserOptions = ShellCommandParserOptions.create(optionArgSeparators = listOf("=", " "))
+          description("Executes a dependency graph query.")
 
-        allOptions(context)
+          allOptions(context)
 
-        // This dummyArgs surrounding is to make terminal still suggests even if we typed 'unknown tokens', e.g., options arguments like integer or comma-seperated
-        dummyArgs()
+          // This dummyArgs surrounding is to make terminal still suggests even if we typed 'unknown tokens', e.g., options arguments like integer or comma-seperated
+          dummyArgs()
 
-        queryCompletion()
+          queryCompletion()
 
-        dummyArgs()
+          dummyArgs()
+        }
       }
     }
   }
