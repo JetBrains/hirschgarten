@@ -72,3 +72,5 @@ common --experimental_rule_extension_api
 build --host_cxxopt=-std=c++14 --cxxopt=-std=c++14
 
 common --symlink_prefix=out/bazel-
+
+common --experimental_repository_downloader_retries=10

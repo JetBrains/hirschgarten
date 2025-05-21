@@ -34,11 +34,11 @@ Bazel plugin uses a lot of IDEA internals, so, e.g., the plugin built against ID
 
 Let's say we dislike the naming of `AsyncDirectoryProjectConfigurator.configure`:
 
-![](docs/files/sdkcompat/before_rename.png)
+![](sdkcompat_files/before_rename.png)
 
 You rename it to a much better name, `configureRenamed`, and then safe-push:
 
-![](../sdkcompat/after_rename.png)
+![](/sdkcompat_files/after_rename.png)
 
 ### Safe-push fails
 
