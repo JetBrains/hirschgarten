@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.projectview.findusages
 
-// import org.jetbrains.bazel.languages.starlark.references.BUILD_FILE_NAMES
 import com.intellij.openapi.application.QueryExecutorBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
