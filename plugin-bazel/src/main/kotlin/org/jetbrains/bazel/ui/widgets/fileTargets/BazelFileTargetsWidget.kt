@@ -94,7 +94,10 @@ class BazelFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(proje
     }
   }
 
-  private fun List<Label>.getTargetInfos(): List<BuildTarget> = this.mapNotNull { project.targetUtils.getBuildTargetForLabel(it) }
+  private fun List<Label>.getTargetInfos(): List<BuildTarget> {
+    val targetUtils = project.targetUtils
+    return this.mapNotNull { targetUtils.getBuildTargetForLabel(it) }
+  }
 
   private fun BuildTarget.calculatePopupGroup(): ActionGroup =
     DefaultActionGroup(id.toShortString(project), true).also {
