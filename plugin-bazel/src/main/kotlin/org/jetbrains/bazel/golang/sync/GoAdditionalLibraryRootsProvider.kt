@@ -25,7 +25,7 @@ import java.nio.file.Path
 import java.util.function.Predicate
 import kotlin.io.path.extension
 
-const val GO_EXTERNAL_LIBRARY_ROOT_NAME = "Go Libraries (from Bazel plugin)"
+internal const val GO_EXTERNAL_LIBRARY_ROOT_NAME = "Go Libraries (from Bazel plugin)"
 
 class GoAdditionalLibraryRootsProvider : BazelExternalLibraryProvider() {
   override val libraryName: String = GO_EXTERNAL_LIBRARY_ROOT_NAME
