@@ -4,7 +4,6 @@ import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.platform.ide.progress.ModalTaskOwner.project
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiManager
 import com.intellij.util.Processor
@@ -37,7 +36,7 @@ open class StarlarkFile(viewProvider: FileViewProvider) :
   companion object {
     fun findBuildFile(packageDirectory: Path, project: Project): StarlarkFile? {
       val vf = LocalFileSystem.getInstance().findFileByPath(packageDirectory.toFile().path) ?: return null
-      val buildFile = VfsUtils.getContainingBuildFile(vf) ?: return null
+      val buildFile = VfsUtils.getBuildFileForPackageDirectory(vf) ?: return null
       val psiFile = PsiManager.getInstance(project).findFile(buildFile) as? StarlarkFile ?: return null
       return if (psiFile.isBuildFile()) psiFile else null
     }

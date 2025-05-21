@@ -37,7 +37,7 @@ object VfsUtils {
     return if (shouldRefresh) localFileSystem.refreshAndFindFileByIoFile(file) else null
   }
 
-  fun getContainingBuildFile(packageDirectory: VirtualFile): VirtualFile? {
+  fun getBuildFileForPackageDirectory(packageDirectory: VirtualFile): VirtualFile? {
     try {
       if (!packageDirectory.isDirectory) return null
       val path = packageDirectory.toNioPath()

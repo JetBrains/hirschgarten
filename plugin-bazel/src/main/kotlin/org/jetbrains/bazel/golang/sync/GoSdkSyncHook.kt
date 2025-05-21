@@ -8,8 +8,7 @@ import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.sync.ProjectSyncHook
-import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
+import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
@@ -17,13 +16,11 @@ import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 /** From [com.goide.inspections.GoWrongSdkConfigurationNotificationProvider].  */
 private const val DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH = "DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH"
 
-class GoSdkSyncHook : ProjectSyncHook {
-  override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
+class GoSdkSyncHook : ProjectPostSyncHook {
+  override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
     val project = environment.project
-    environment.diff.workspaceModelDiff.addPostApplyAction {
-      calculateAndAddGoSdk(environment.progressReporter, project, environment.taskId)
-      PropertiesComponent.getInstance().setValue(DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH, true)
-    }
+    calculateAndAddGoSdk(environment.progressReporter, project, environment.taskId)
+    PropertiesComponent.getInstance().setValue(DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH, true)
   }
 
   private suspend fun calculateAndAddGoSdk(

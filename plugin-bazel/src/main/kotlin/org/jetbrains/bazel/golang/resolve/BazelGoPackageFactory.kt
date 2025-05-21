@@ -33,9 +33,9 @@ private const val GO_PACKAGE_FACTORY_KEY = "BazelGoPackageFactory"
 /** Updates and exposes a map of import paths to files. */
 class BazelGoPackageFactory : GoPackageFactory {
   override fun createPackage(goFile: GoFile): GoPackage? {
-    goFile.project.isBazelProject || return null
-    val virtualFile = goFile.virtualFile ?: return null
     val project = goFile.project
+    if (!project.isBazelProject) return null
+    val virtualFile = goFile.virtualFile ?: return null
     val fileToImportPathMap = getFileToImportPathMap(project)
     val importPath = fileToImportPathMap[virtualFile.toNioPath()]
     return if (importPath != null) doResolve(importPath, project) else null

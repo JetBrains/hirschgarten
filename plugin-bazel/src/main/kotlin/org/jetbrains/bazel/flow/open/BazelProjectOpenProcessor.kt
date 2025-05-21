@@ -46,7 +46,7 @@ internal class BazelProjectOpenProcessor : BaseProjectOpenProcessor() {
       originalVFile.isWorkspaceFile() -> { _ -> }
       originalVFile.isWorkspaceRoot() -> { _ -> }
       else -> {
-        val buildFile = VfsUtils.getContainingBuildFile(originalVFile)
+        val buildFile = VfsUtils.getBuildFileForPackageDirectory(originalVFile)
         buildFile?.let { buildFileBeforeOpenCallback(it) } ?: {}
       }
     }
