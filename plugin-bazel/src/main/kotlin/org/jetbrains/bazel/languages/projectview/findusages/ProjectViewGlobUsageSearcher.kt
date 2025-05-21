@@ -1,9 +1,12 @@
 package org.jetbrains.bazel.languages.projectview.findusages
 
+//import org.jetbrains.bazel.languages.starlark.references.BUILD_FILE_NAMES
+import com.google.devtools.build.lib.query2.proto.proto2api.Build.RuleDefinition
 import com.intellij.openapi.application.QueryExecutorBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
+import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReference
 import com.intellij.psi.PsiReferenceBase
 import com.intellij.psi.search.GlobalSearchScope
@@ -14,12 +17,9 @@ import com.intellij.testFramework.utils.vfs.getPsiFile
 import com.intellij.util.IncorrectOperationException
 import com.intellij.util.PathUtil
 import com.intellij.util.Processor
-import com.jetbrains.python.ast.findChildrenByType
-import org.jetbrains.annotations.Unmodifiable
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
-import org.jetbrains.bazel.languages.starlark.references.BUILD_FILE_NAMES
-import org.jetbrains.kotlin.psi.psiUtil.allChildren
 import java.nio.file.Path
+
 
 /**
  * Searches for references to a file in globs. These aren't picked up by a standard string search,
@@ -34,7 +34,7 @@ import java.nio.file.Path
  */
 class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, ReferencesSearch.SearchParameters>(true) {
   override fun processQuery(queryParameters: ReferencesSearch.SearchParameters, consumer: Processor<in PsiReference?>) {
-    val file = queryParameters.elementToSearch.containingFile
+      val file = queryParameters.elementToSearch.containingFile
 //    val file = ResolveUtil.asFileSystemItemSearch(element)
     if (file == null) {
       return
@@ -46,7 +46,11 @@ class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, ReferencesS
     }
     val relativePath = getRelativePathToChild(buildFile, file.virtualFile)?: return
 
-    val buildFilePsi = buildFile.getPsiFile(queryParameters.project)
+
+//    val buildFilePsi = buildFile.getPsiFile(queryParameters.project)
+    val psiManager = PsiManager.getInstance(queryParameters.project)
+    val buildFilePsi = psiManager.findFile(buildFile)
+
     val globs: Collection<StarlarkGlobExpression> =
       PsiTreeUtil.findChildrenOfType(buildFilePsi, StarlarkGlobExpression::class.java)
     for (glob in globs) {
@@ -73,6 +77,8 @@ class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, ReferencesS
     BUILD_FILE_NAMES.mapNotNull { packageDir.findChild(it) }.firstOrNull()
 
   companion object {
+    private val BUILD_FILE_NAMES = listOf("BUILD.bazel", "BUILD")
+
     private fun globReference(glob: StarlarkGlobExpression, file: PsiFileSystemItem): PsiReference =
       object : PsiReferenceBase.Immediate<StarlarkGlobExpression>(
         glob,
@@ -90,5 +96,7 @@ class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, ReferencesS
       }
       return (scope as LocalSearchScope).isInScope(buildFile)
     }
+
+
   }
 }

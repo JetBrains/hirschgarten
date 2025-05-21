@@ -377,6 +377,9 @@
       language="ProjectView"
       implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"/>
 
+    <referencesSearch
+            implementation="org.jetbrains.bazel.languages.projectview.findusages.ProjectViewGlobUsageSearcher"/>
+
     <formattingService
       implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService"/>
     <actionOnSave id="StarlarkFormattingActionOnSave"
