@@ -30,7 +30,6 @@ class RunWithCoverageAction(
           } else {
             ""
           },
-          BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       }
     },
