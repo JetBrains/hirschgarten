@@ -15,6 +15,7 @@ import org.jetbrains.bazel.sync.status.SyncStatusListener
 class ExternalLibraryManager(private val project: Project, private val cs: CoroutineScope) {
   @Volatile
   private var duringSync: Boolean = false
+  @Volatile
   private var libraries: Map<Class<out BazelExternalLibraryProvider>, BazelExternalSyntheticLibrary> = mapOf()
 
   init {
@@ -64,6 +65,11 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
       object : SyncStatusListener {
         override fun syncStarted() {
           duringSync = true
+        }
+
+        override fun targetUtilAvailable() {
+          initializeVariables()
+          duringSync = false
         }
 
         override fun syncFinished(canceled: Boolean) {

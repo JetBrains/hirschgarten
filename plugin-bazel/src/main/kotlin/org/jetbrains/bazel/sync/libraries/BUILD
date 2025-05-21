@@ -6,6 +6,7 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/status",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
