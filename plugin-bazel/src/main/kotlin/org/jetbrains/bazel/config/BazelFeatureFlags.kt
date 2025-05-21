@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.config
 
-import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.util.registry.Registry
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bsp.protocol.FeatureFlags
@@ -56,7 +55,7 @@ object BazelFeatureFlags {
         !enableBazelJavaClassFinder
 
   // File-based source root problems fixed here: https://youtrack.jetbrains.com/issue/IDEA-371097
-  val fbsrSupportedInPlatform: Boolean = ApplicationInfo.getInstance().build.baselineVersion >= 252
+  val fbsrSupportedInPlatform: Boolean = org.jetbrains.bazel.sdkcompat.fbsrSupportedInPlatform
 
   val excludeCompiledSourceCodeInsideJars: Boolean
     get() = isEnabled(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS)

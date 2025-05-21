@@ -6,7 +6,6 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileKind
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetData
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
-import java.lang.UnsupportedOperationException
 
 val fbsrSupportedInPlatform = false
 

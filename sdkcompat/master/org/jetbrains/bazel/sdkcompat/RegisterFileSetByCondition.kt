@@ -7,6 +7,8 @@ import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileKind
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetData
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
 
+val fbsrSupportedInPlatform = true
+
 fun WorkspaceFileSetRegistrar.registerFileSetByConditionCompat(
   root: VirtualFileUrl,
   kind: WorkspaceFileKind,
