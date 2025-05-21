@@ -150,7 +150,7 @@ class BazelBspServer(
       )
     val bazelToolchainManager = BazelToolchainManager(bazelRunner)
     val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver)
-    val targetTagsResolver = TargetTagsResolver()
+    val targetTagsResolver = TargetTagsResolver(bazelPathsResolver)
     val mavenCoordinatesResolver = MavenCoordinatesResolver()
     val kotlinAndroidModulesMerger = KotlinAndroidModulesMerger()
     val bazelProjectMapper =

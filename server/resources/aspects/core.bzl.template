@@ -117,8 +117,13 @@ def _bsp_target_info_aspect_impl(target, ctx):
 
     aspect_ids = get_aspect_ids(ctx, target)
 
-    default_info = target[DefaultInfo]
-    executable = default_info and default_info.files_to_run.executable != None
+    if DefaultInfo in target:
+      raw_executable_files = target[DefaultInfo].files_to_run.executable
+
+      if type(raw_executable_files) != "list":
+        raw_executable_files = [raw_executable_files]
+
+      executable_files = map(file_location, raw_executable_files)
 
     env = {}
     raw_env = getattr(rule_attrs, "env", None)
@@ -136,7 +141,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
         resources = resources,
         env = env,
         env_inherit = getattr(rule_attrs, "env_inherit", []),
-        executable = executable,
+        executable_files = executable_files,
         workspace_name = ctx.workspace_name,
     )
 
