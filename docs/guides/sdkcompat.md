@@ -38,7 +38,7 @@ Let's say we dislike the naming of `AsyncDirectoryProjectConfigurator.configure`
 
 You rename it to a much better name, `configureRenamed`, and then safe-push:
 
-![](/sdkcompat_files/after_rename.png)
+![](sdkcompat_files/after_rename.png)
 
 ### Safe-push fails
 
