@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions
 
 import com.intellij.lang.ASTNode
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
@@ -11,7 +12,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.references.StarlarkGlobReference
 import kotlin.concurrent.Volatile
-import com.intellij.openapi.util.TextRange
 
 class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitGlobExpression(this)
@@ -87,7 +87,5 @@ class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
     return TextRange(0, 4)
   }
 
-  fun matches(packageRelativePath: String, isDirectory: Boolean): Boolean {
-    return getReference().matches(packageRelativePath, isDirectory)
-  }
+  fun matches(packageRelativePath: String, isDirectory: Boolean): Boolean = getReference().matches(packageRelativePath, isDirectory)
 }
