@@ -8,15 +8,11 @@
       <additionalLibraryRootsProvider implementation="org.jetbrains.bazel.golang.sync.GoAdditionalLibraryRootsProvider"/>
       <additionalLibraryRootsProvider implementation="org.jetbrains.bazel.golang.sync.BazelGoSdkLibraryRootProvider"/>
       <treeStructureProvider implementation="org.jetbrains.bazel.golang.treeview.BazelGoTreeStructureProvider" order="last"/>
-      <projectServiceInitializer.essential
-        implementation="org.jetbrains.bazel.golang.sync.GoProjectServiceInitializer"
-        order="after moduleBridgeLoaderService"
-      />
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.bazel">
         <!--<projectSyncHook implementation="org.jetbrains.bazel.golang.sync.GoProjectSync"/>-->
-        <postProjectSyncHook implementation="org.jetbrains.bazel.golang.sync.GoSdkSyncHook"/>
+        <projectPostSyncHook implementation="org.jetbrains.bazel.golang.sync.GoSdkSyncHook"/>
         <runHandlerProvider
                 implementation="org.jetbrains.bazel.golang.debug.GoBazelRunHandler$GoBazelRunHandlerProvider"/>
         <targetKindProvider implementation="org.jetbrains.bazel.golang.targetKinds.GoBazelRules"/>
