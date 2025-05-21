@@ -23,7 +23,7 @@ During compilation for different IDEA targets, the dependency is switched:
 - Bazel build against 2025.1 compiles `sdkcompat/v251`
 - Bazel build against 2024.3 compiles `sdkcompat/v243`
 
-![](sdkcompat_files/sdkcompat_structure.png)
+![Sdk compat](sdkcompat_files/sdkcompat_structure.png)
 
 **Note:** AI Assistant also publishes for different IDEA versions, but they still build from IDEA master (which they can afford because the used API surface is not very large).
 Bazel plugin uses a lot of IDEA internals, so, e.g., the plugin built against IDEA master will crash on 2025.1.
