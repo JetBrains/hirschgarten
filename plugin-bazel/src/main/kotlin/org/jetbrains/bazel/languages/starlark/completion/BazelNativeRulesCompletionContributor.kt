@@ -9,6 +9,7 @@ import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.project.Project
 import com.intellij.patterns.PatternCondition
 import com.intellij.patterns.PlatformPatterns.psiComment
 import com.intellij.patterns.PlatformPatterns.psiElement
@@ -19,6 +20,7 @@ import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRule
 import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRules
+import org.jetbrains.bazel.languages.starlark.documentation.BazelNativeRuleDocumentationSymbol
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
@@ -52,7 +54,7 @@ class BazelNativeRulesCompletionContributor : CompletionContributor() {
       context: ProcessingContext,
       result: CompletionResultSet,
     ) {
-      BazelNativeRules.NATIVE_RULES_MAP.values.forEach { result.addElement(functionLookupElement(it)) }
+      BazelNativeRules.NATIVE_RULES_MAP.values.forEach { result.addElement(functionLookupElement(it, parameters.position.project)) }
     }
 
     private class NativeRuleInsertHandler<T : LookupElement>(val rule: BazelNativeRule) : InsertHandler<T> {
@@ -71,9 +73,9 @@ class BazelNativeRulesCompletionContributor : CompletionContributor() {
       }
     }
 
-    private fun functionLookupElement(rule: BazelNativeRule): LookupElement =
+    private fun functionLookupElement(rule: BazelNativeRule, project: Project): LookupElement =
       LookupElementBuilder
-        .create(rule.name)
+        .create(BazelNativeRuleDocumentationSymbol(rule, project), rule.name)
         .withIcon(PlatformIcons.FUNCTION_ICON)
         .withInsertHandler(NativeRuleInsertHandler(rule))
   }
