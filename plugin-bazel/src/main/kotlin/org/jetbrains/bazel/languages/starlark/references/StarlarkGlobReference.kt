@@ -82,4 +82,28 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
     }
     return strings
   }
+
+  /**
+   * Returns true iff the complete, resolved glob references the specified file.
+   *
+   *
+   * In particular, it's not concerned with individual patterns referencing the file, only
+   * whether the overall glob does (i.e. returns false if the file is explicitly excluded).
+   */
+  fun matches(packageRelativePath: String, isDirectory: Boolean): Boolean {
+    if (isDirectory && element.areDirectoriesExcluded()) {
+      return false
+    }
+    for (exclude in resolveListContents(element.getExcludes())) {
+      if (StarlarkUnixGlob.matches(exclude, packageRelativePath)) {
+        return false
+      }
+    }
+    for (include in resolveListContents(element.getIncludes())) {
+      if (StarlarkUnixGlob.matches(include, packageRelativePath)) {
+        return true
+      }
+    }
+    return false
+  }
 }

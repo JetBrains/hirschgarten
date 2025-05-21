@@ -11,6 +11,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.references.StarlarkGlobReference
 import kotlin.concurrent.Volatile
+import com.intellij.openapi.util.TextRange
 
 class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitGlobExpression(this)
@@ -33,7 +34,7 @@ class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
     var arg: StarlarkArgumentElement? = getKeywordArgument("include")
     if (arg == null) {
       val allArgs = getArguments()
-      if (allArgs.size != 0 && allArgs[0] is StarlarkArgumentExpression) {
+      if (allArgs.isNotEmpty() && allArgs[0] is StarlarkArgumentExpression) {
         arg = allArgs[0]
       }
     }
@@ -57,7 +58,7 @@ class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
   @Volatile
   private var reference: StarlarkGlobReference? = null
 
-  override fun getReference(): StarlarkGlobReference? {
+  override fun getReference(): StarlarkGlobReference {
     val ref: StarlarkGlobReference? = reference
     if (ref != null) {
       return ref
@@ -66,7 +67,27 @@ class StarlarkGlobExpression(node: ASTNode) : StarlarkBaseElement(node) {
       if (reference == null) {
         reference = StarlarkGlobReference(this)
       }
-      return reference
+      return reference!!
     }
+  }
+
+  /**
+   * The text range within the glob expression used for references. This is the text the user needs
+   * to click on for navigation support, and also the destination when finding usages in a glob.
+   */
+  fun getReferenceTextRange(): TextRange {
+    // Ideally, this would be either the full range of the expression,
+    // or the range of the specific pattern matching
+    // a given file. However, that leads to conflicts with the individual string references,
+    // causing unnecessary and expensive de-globbing.
+    // e.g. while typing the glob patterns, IJ will be looking for code-completion possibilities,
+    // and need to de-glob to do this
+    // (due to a lack of communication between the different code-completion components).
+
+    return TextRange(0, 4)
+  }
+
+  fun matches(packageRelativePath: String, isDirectory: Boolean): Boolean {
+    return getReference().matches(packageRelativePath, isDirectory)
   }
 }
