@@ -44,7 +44,6 @@ import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
-import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceNameResult
 
@@ -102,8 +101,6 @@ class BspServerApi(
   override suspend fun workspaceLibraries(): WorkspaceLibrariesResult = projectSyncService.workspaceBuildLibraries()
 
   override suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult = projectSyncService.workspaceBuildGoLibraries()
-
-  override suspend fun workspaceInvalidTargets(): WorkspaceInvalidTargetsResult = projectSyncService.workspaceInvalidTargets()
 
   override suspend fun workspaceDirectories(): WorkspaceDirectoriesResult = projectSyncService.workspaceDirectories()
 

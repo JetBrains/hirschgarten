@@ -99,7 +99,7 @@ class BuildTargetTree(
       }
 
     // Generate the tree with the current targets
-    generateTree(model.visibleTargets, model.invalidTargets, classifier)
+    generateTree(model.visibleTargets, classifier)
 
     // Notify the tree model that the structure has changed
     (treeModel as? DefaultTreeModel)?.reload()
@@ -107,11 +107,7 @@ class BuildTargetTree(
     expandPath(TreePath(rootNode.path))
   }
 
-  private fun generateTree(
-    targets: Collection<Label>,
-    invalidTargets: List<Label>,
-    classifier: BuildTargetClassifierExtension,
-  ) {
+  private fun generateTree(targets: Collection<Label>, classifier: BuildTargetClassifierExtension) {
     generateTreeFromIdentifiers(
       targets.map {
         BuildTargetTreeIdentifier(
@@ -120,15 +116,7 @@ class BuildTargetTree(
           classifier.calculateBuildTargetPath(it),
           classifier.calculateBuildTargetName(it),
         )
-      } +
-        invalidTargets.map {
-          BuildTargetTreeIdentifier(
-            it,
-            null,
-            classifier.calculateBuildTargetPath(it),
-            classifier.calculateBuildTargetName(it),
-          )
-        },
+      },
       classifier.separator,
     )
   }
