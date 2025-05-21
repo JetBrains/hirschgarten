@@ -213,8 +213,12 @@
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"/>
     <ignoredFileProvider implementation="org.jetbrains.bazel.workspace.BazelProjectExcludesIgnoredFileProvider"/>
+    <moduleType id="BAZEL_DUMMY_MODULE_TYPE"
+                implementationClass="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.BazelDummyModuleType"/>
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
+    <workspaceModel.fileIndexContributor
+      implementation="org.jetbrains.bazel.workspace.PackageMarkerEntityWorkspaceFileIndexContributor"/>
 
     <postStartupActivity
       implementation="org.jetbrains.bazel.startup.BazelStartupActivity"/>
