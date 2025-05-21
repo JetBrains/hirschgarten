@@ -106,6 +106,7 @@
     <orderEntry type="module" module-name="kotlin.project-wizard.idea" />
     <orderEntry type="module" module-name="intellij.platform.util.text.matching" />
     <orderEntry type="module" module-name="intellij.java.debugger.impl.shared" />
+    <orderEntry type="module" module-name="intellij.platform.projectModel.impl" />
     <orderEntry type="module" module-name="intellij.terminal" />
   </component>
 </module>

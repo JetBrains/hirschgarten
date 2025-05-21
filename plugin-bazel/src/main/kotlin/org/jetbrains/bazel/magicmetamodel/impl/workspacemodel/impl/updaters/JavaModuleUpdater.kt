@@ -13,6 +13,7 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.android.sdk.AndroidSdkType
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
@@ -20,7 +21,6 @@ import org.jetbrains.bazel.workspacemodel.entities.includesAndroid
 import org.jetbrains.bazel.workspacemodel.entities.includesJava
 import org.jetbrains.bazel.workspacemodel.entities.includesKotlin
 import java.nio.file.Path
-import kotlin.collections.List
 
 internal class JavaModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -40,24 +40,27 @@ internal class JavaModuleWithSourcesUpdater(
       moduleEntity = moduleEntity,
     )
 
-    if (entityToAdd.isRoot(projectBasePath)) {
-      // TODO https://youtrack.jetbrains.com/issue/BAZEL-664
+    if (entityToAdd.genericModuleInfo.isDummy && BazelFeatureFlags.fbsrSupportedInPlatform) {
+      val packageMarkerEntityUpdater =
+        PackageMarkerEntityUpdater(
+          workspaceModelEntityUpdaterConfig,
+        )
+      packageMarkerEntityUpdater.addEntities(entityToAdd.sourceRoots, moduleEntity)
     } else {
       val javaSourceEntityUpdater =
         JavaSourceEntityUpdater(
           workspaceModelEntityUpdaterConfig,
           entityToAdd.workspaceModelEntitiesFolderMarker,
         )
-
       javaSourceEntityUpdater.addEntities(entityToAdd.sourceRoots, moduleEntity)
+    }
 
-      val javaResourceEntityUpdater = JavaResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
-      javaResourceEntityUpdater.addEntities(entityToAdd.resourceRoots, moduleEntity)
+    val javaResourceEntityUpdater = JavaResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
+    javaResourceEntityUpdater.addEntities(entityToAdd.resourceRoots, moduleEntity)
 
-      if (entityToAdd.jvmBinaryJars.isNotEmpty()) {
-        val jvmBinaryJarsEntityUpdater = JvmBinaryJarsEntityUpdater(workspaceModelEntityUpdaterConfig)
-        jvmBinaryJarsEntityUpdater.addEntity(entityToAdd, moduleEntity)
-      }
+    if (entityToAdd.jvmBinaryJars.isNotEmpty()) {
+      val jvmBinaryJarsEntityUpdater = JvmBinaryJarsEntityUpdater(workspaceModelEntityUpdaterConfig)
+      jvmBinaryJarsEntityUpdater.addEntity(entityToAdd, moduleEntity)
     }
 
     if (entityToAdd.genericModuleInfo.kind.includesKotlin()) {
@@ -141,10 +144,6 @@ internal class JavaModuleWithSourcesUpdater(
       )
   }
 }
-
-internal fun JavaModule.isRoot(projectBasePath: Path): Boolean =
-  // TODO - that is a temporary predicate
-  sourceRoots.isEmpty() && resourceRoots.isEmpty() && baseDirContentRoot?.path == projectBasePath
 
 internal class JavaModuleWithoutSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,

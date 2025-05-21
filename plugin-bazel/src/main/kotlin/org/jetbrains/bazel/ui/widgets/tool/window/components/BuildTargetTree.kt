@@ -2,6 +2,7 @@ package org.jetbrains.bazel.ui.widgets.tool.window.components
 
 import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
+import com.intellij.ui.TreeUIHelper
 import com.intellij.ui.treeStructure.Tree
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BuildTargetClassifierExtension
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.ListTargetClassifier
@@ -74,6 +75,16 @@ class BuildTargetTree(
 
     // Initial tree generation
     updateTree()
+
+    // Initialize speed search
+    TreeUIHelper.getInstance().installTreeSpeedSearch(this, {
+      val lastPathComponent = (it.lastPathComponent as? DefaultMutableTreeNode)?.userObject ?: return@installTreeSpeedSearch null
+      when (lastPathComponent) {
+        is DirectoryNodeData -> lastPathComponent.name
+        is TargetNodeData -> lastPathComponent.displayName
+        else -> null
+      }
+    }, true)
 
     loadedTargetsMouseListener.registerKeyboardShortcutForPopup()
     addMouseListener(loadedTargetsMouseListener)
