@@ -67,7 +67,7 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
         }
 
         override fun syncFinished(canceled: Boolean) {
-          getInstance(project).initializeVariables()
+          initializeVariables()
           duringSync = false
         }
       },
