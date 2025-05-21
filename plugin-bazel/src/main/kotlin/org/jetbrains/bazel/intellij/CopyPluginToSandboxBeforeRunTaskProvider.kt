@@ -5,19 +5,17 @@ import com.intellij.execution.BeforeRunTaskProvider
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.components.service
 import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.util.Key
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.target.getModule
+import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import java.io.IOException
 import java.net.URI
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.copyTo
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
@@ -55,8 +53,9 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
 
     val pluginJars = mutableListOf<Path>()
 
+    val targetUtils = configuration.project.targetUtils
     for (target in runConfiguration.targets) {
-      val targetInfo = configuration.project.service<TargetUtils>().getBuildTargetForLabel(target)
+      val targetInfo = targetUtils.getBuildTargetForLabel(target)
       val module = targetInfo?.getModule(environment.project) ?: continue
       OrderEnumerator.orderEntries(module).librariesOnly().recursively().withoutSdk().forEachLibrary { library ->
         // Use URLs directly because getFiles will be empty until VFS refresh.

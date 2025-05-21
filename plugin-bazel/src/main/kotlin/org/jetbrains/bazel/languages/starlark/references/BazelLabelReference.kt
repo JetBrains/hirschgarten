@@ -97,8 +97,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
 
   private fun targetCompletion(): Array<LookupElement> {
     val project = element.project
-    val targetUtils = project.targetUtils
-    return targetUtils
+    return project.targetUtils
       .allTargetsAndLibrariesLabels
       .map { getCompletionLookupElemenent(it, PlatformIcons.PACKAGE_ICON) }
       .toTypedArray()
