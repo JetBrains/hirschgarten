@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.languages.projectview.findusages
 
 //import org.jetbrains.bazel.languages.starlark.references.BUILD_FILE_NAMES
-import com.google.devtools.build.lib.query2.proto.proto2api.Build.RuleDefinition
 import com.intellij.openapi.application.QueryExecutorBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReference
@@ -13,7 +13,6 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.testFramework.utils.vfs.getPsiFile
 import com.intellij.util.IncorrectOperationException
 import com.intellij.util.PathUtil
 import com.intellij.util.Processor
@@ -34,8 +33,8 @@ import java.nio.file.Path
  */
 class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, ReferencesSearch.SearchParameters>(true) {
   override fun processQuery(queryParameters: ReferencesSearch.SearchParameters, consumer: Processor<in PsiReference?>) {
-      val file = queryParameters.elementToSearch.containingFile
-//    val file = ResolveUtil.asFileSystemItemSearch(element)
+//      val file = queryParameters.elementToSearch.containingFile
+    val file = asFileSystemItemSearch(queryParameters.elementToSearch)
     if (file == null) {
       return
     }
@@ -78,6 +77,26 @@ class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, ReferencesS
 
   companion object {
     private val BUILD_FILE_NAMES = listOf("BUILD.bazel", "BUILD")
+
+    fun asFileSystemItemSearch(elementToSearch: PsiElement): PsiFileSystemItem? {
+      if (elementToSearch is PsiFileSystemItem) {
+        return elementToSearch
+      }
+      return asFileSearch(elementToSearch)
+    }
+
+    fun asFileSearch(elementToSearch: PsiElement): PsiFile? {
+      if (elementToSearch is PsiFile) {
+        return elementToSearch
+      }
+//      for (provider in  PsiFileProvider.EP_NAME.getExtensions()) {
+//        val file: PsiFile? = provider.asFileSearch(elementToSearch)
+//        if (file != null) {
+//          return file
+//        }
+//      }
+      return null
+    }
 
     private fun globReference(glob: StarlarkGlobExpression, file: PsiFileSystemItem): PsiReference =
       object : PsiReferenceBase.Immediate<StarlarkGlobExpression>(
