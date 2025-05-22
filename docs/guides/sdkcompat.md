@@ -2,7 +2,7 @@
 
 ## Intro
 
-The Bazel plugin currently compiles against three IDEA versions:
+The Bazel plugin currently compiles against four IDEA versions:
 - IDEA master (built with JPS)
 - 2024.3 (built with Bazel)
 - 2025.1 (built with Bazel)
