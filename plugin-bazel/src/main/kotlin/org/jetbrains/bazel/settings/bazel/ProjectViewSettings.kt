@@ -13,19 +13,18 @@ import java.nio.file.Path
 fun Project.setProjectViewPath(newProjectViewFilePath: Path, openProjectViewInEditor: Boolean = true) {
   this.bazelProjectSettings = bazelProjectSettings.withNewProjectViewPath(newProjectViewFilePath)
   if (openProjectViewInEditor) {
-    openProjectViewInEditor()
+    openProjectViewInEditor(this)
   }
 }
 
-private fun Project.openProjectViewInEditor() {
-  BazelCoroutineService.getInstance(this).start {
-    val projectViewPath = bazelProjectSettings.projectViewPath ?: return@start
+private fun openProjectViewInEditor(project: Project) {
+  BazelCoroutineService.getInstance(project).start {
+    val projectViewPath = project.bazelProjectSettings.projectViewPath ?: return@start
     val virtualFile = VirtualFileManager.getInstance().refreshAndFindFileByNioPath(projectViewPath) ?: return@start
     // README.md should still be the selected tab afterward
-    val openOptions = FileEditorOpenOptions(selectAsCurrent = false, requestFocus = false)
-    val fileEditorManager = FileEditorManagerEx.getInstanceEx(this)
+    val fileEditorManager = FileEditorManagerEx.getInstanceEx(project)
     withContext(Dispatchers.EDT) {
-      fileEditorManager.openFile(virtualFile, openOptions)
+      fileEditorManager.openFile(virtualFile, FileEditorOpenOptions(selectAsCurrent = false, requestFocus = false))
     }
   }
 }
