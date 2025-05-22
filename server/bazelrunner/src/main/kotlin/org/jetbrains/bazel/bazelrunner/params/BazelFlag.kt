@@ -42,8 +42,6 @@ object BazelFlag {
 
   @JvmStatic fun testOutputAll(): String = arg("test_output", "all")
 
-  @JvmStatic fun buildTagFilters(tags: List<String>): String = arg("build_tag_filters", tags.joinToString(","))
-
   @JvmStatic fun experimentalGoogleLegacyApi(): String = flag("experimental_google_legacy_api")
 
   @JvmStatic fun experimentalEnableAndroidMigrationApis(): String = flag("experimental_enable_android_migration_apis")
