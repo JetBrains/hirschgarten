@@ -8,8 +8,6 @@ import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetData
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
 import java.lang.UnsupportedOperationException
 
-val fbsrSupportedInPlatform = false
-
 fun WorkspaceFileSetRegistrar.registerFileSetByConditionCompat(
   root: VirtualFileUrl,
   kind: WorkspaceFileKind,
