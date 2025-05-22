@@ -35,28 +35,24 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
     }
     val project = element.getProject()
 
-    try {
-      val files: List<VirtualFile> =
-        StarlarkUnixGlob
-          .forPath(containingDirectory)
-          .addPatterns(includes)
-          .addExcludes(excludes)
-          .setExcludeDirectories(directoriesExcluded)
-          .setDirectoryFilter(directoryFilter(containingDirectory.path))
-          .glob()
+    val files: List<VirtualFile> =
+      StarlarkUnixGlob
+        .forPath(containingDirectory)
+        .addPatterns(includes)
+        .addExcludes(excludes)
+        .setExcludeDirectories(directoriesExcluded)
+        .setDirectoryFilter(directoryFilter(containingDirectory.path))
+        .glob()
 
-      val results: MutableList<ResolveResult> = arrayListOf()
-      for (file in files) {
-        val psiFile: PsiFileSystemItem? = resolveFile(file, project)
-        if (psiFile != null) {
-          results.add(PsiElementResolveResult(psiFile))
-        }
+    val results: MutableList<ResolveResult> = arrayListOf()
+    for (file in files) {
+      val psiFile: PsiFileSystemItem? = resolveFile(file, project)
+      if (psiFile != null) {
+        results.add(PsiElementResolveResult(psiFile))
       }
-
-      return results.toTypedArray()
-    } catch (_: Exception) {
-      return ResolveResult.EMPTY_ARRAY
     }
+
+    return results.toTypedArray()
   }
 
   fun resolveFile(vf: VirtualFile, project: Project): PsiFileSystemItem? {
