@@ -78,14 +78,7 @@ private class GoPackageFileSystemItem private constructor(private val name: Stri
       fun getInstance(element: PsiElement): PsiFileSystemItem? =
         when (element) {
           is PsiFileSystemItem -> element
-          is StarlarkCallExpression -> {
-            val name = element.name
-            if (name != null) {
-              GoPackageFileSystemItem(name, element)
-            } else {
-              null
-            }
-          }
+          is StarlarkCallExpression -> element.name?.let { GoPackageFileSystemItem(it, element) }
           else -> null
         }
     }
