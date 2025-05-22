@@ -31,7 +31,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
     get() =
       GitProjectInfo(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "40aa63abdaa598bfcaefb24933354cc56a186eeb",
+        commitHash = "a992706c09a5ec4ba50c86020b4ca67d13974eb8",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("simpleMultiLanguageTest") },
         isReusable = false,
@@ -51,11 +51,28 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
     createContext()
       .runIdeWithDriver(commands = commands, runTimeout = timeout)
       .useDriverAndCloseIde {
-        verifyRunLineMarkerText()
+        verifyRunLineMarkerText(listOf("Run using Bazel", "Debug run using Bazel"))
       }
   }
 
-  private fun Driver.verifyRunLineMarkerText() {
+  @Test
+  fun openBazelProjectWithTestFile() {
+    val commands =
+      CommandChain()
+        .takeScreenshot("startSync")
+        .waitForBazelSync()
+        .waitForSmartMode()
+        .checkImportedModules()
+        .openFile("python/test.py")
+
+    createContext()
+      .runIdeWithDriver(commands = commands, runTimeout = timeout)
+      .useDriverAndCloseIde {
+        verifyRunLineMarkerText(listOf("Test using Bazel", "Debug test using Bazel", "Run with Coverage using Bazel"))
+      }
+  }
+
+  private fun Driver.verifyRunLineMarkerText(expectedTexts: List<String>) {
     ideFrame {
       waitForIndicators(5.minutes)
       val gutterIcons = editorTabs().gutter().getGutterIcons()
@@ -63,9 +80,8 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
       selectedGutterIcon.click()
       val heavyWeightWindow = popup(xQuery { byClass("HeavyWeightWindow") })
       val texts = heavyWeightWindow.getAllTexts()
-      assert(2 == texts.size)
-      assert(texts.any { it.text.contains("Run using Bazel") })
-      assert(texts.any { it.text.contains("Debug run using Bazel") })
+      assert(texts.size == expectedTexts.size)
+      expectedTexts.forEach { expected -> assert(texts.any { actual -> actual.text.contains(expected) }) }
     }
   }
 
