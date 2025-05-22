@@ -7,8 +7,6 @@ import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReference
 import com.intellij.psi.PsiReferenceBase
-import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
@@ -91,10 +89,6 @@ private fun globReference(glob: StarlarkGlobExpression, file: PsiFileSystemItem)
   }
 
 private fun inScope(queryParameters: ReferencesSearch.SearchParameters, buildFile: VirtualFile): Boolean {
-  val scope = queryParameters.scopeDeterminedByUser
-  return when (scope) {
-    is GlobalSearchScope -> scope.contains(buildFile)
-    is LocalSearchScope -> scope.isInScope(buildFile)
-    else -> false
-  }
+  val scope = queryParameters.effectiveSearchScope
+  return scope.contains(buildFile)
 }
