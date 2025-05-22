@@ -122,7 +122,6 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
           baseDirectory = Path("base/dir"),
         ),
       javacOptions = null,
-      scalacOptions = null,
       libraryDependencies = null,
       moduleDependencies = emptyList(),
       defaultJdkName = null,

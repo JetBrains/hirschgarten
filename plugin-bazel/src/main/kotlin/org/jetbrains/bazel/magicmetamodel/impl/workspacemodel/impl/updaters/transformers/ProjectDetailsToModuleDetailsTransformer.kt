@@ -7,7 +7,6 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: ProjectDetails, private val libraryGraph: LibraryGraph) {
   private val targetsIndex = projectDetails.targets.associateBy { it.id }
   private val javacOptionsIndex = projectDetails.javacOptions.associateBy { it.target }
-  private val scalacOptionsIndex = projectDetails.scalacOptions.associateBy { it.target }
   private val jvmBinaryJarsIndex = projectDetails.jvmBinaryJars.groupBy { it.target }
 
   fun moduleDetailsForTargetId(targetId: Label): ModuleDetails {
@@ -16,7 +15,6 @@ class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: Proje
     return ModuleDetails(
       target = target,
       javacOptions = javacOptionsIndex[targetId],
-      scalacOptions = scalacOptionsIndex[targetId],
       libraryDependencies = allDependencies.libraryDependencies.takeIf { projectDetails.libraries != null }?.toList(),
       moduleDependencies = allDependencies.moduleDependencies.toList(),
       defaultJdkName = projectDetails.defaultJdkName,

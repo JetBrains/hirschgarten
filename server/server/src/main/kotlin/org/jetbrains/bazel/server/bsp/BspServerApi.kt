@@ -33,8 +33,6 @@ import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
-import org.jetbrains.bsp.protocol.ScalacOptionsParams
-import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
@@ -82,9 +80,6 @@ class BspServerApi(
   override suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult = executeService.runWithDebug(params)
 
   override suspend fun buildTargetMobileInstall(params: MobileInstallParams): MobileInstallResult = executeService.mobileInstall(params)
-
-  override suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult =
-    projectSyncService.buildTargetScalacOptions(params)
 
   override suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult =
     projectSyncService.buildTargetJavacOptions(params)
