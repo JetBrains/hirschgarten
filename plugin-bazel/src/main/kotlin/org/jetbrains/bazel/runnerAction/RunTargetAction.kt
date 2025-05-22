@@ -14,15 +14,17 @@ class RunTargetAction(
     targetInfos = listOf(targetInfo),
     text = { includeTargetNameInTextParam ->
       if (isDebugAction) {
-        BazelPluginBundle.message(
-          "target.debug.run.action.text",
-          if (includeTargetNameInTextParam || includeTargetNameInText) targetInfo.id.toShortString(project) else "",
-        )
+        BazelPluginBundle
+          .message(
+            "target.debug.run.action.text",
+            if (includeTargetNameInTextParam || includeTargetNameInText) targetInfo.id.toShortString(project) else "",
+          ).trim()
       } else {
-        BazelPluginBundle.message(
-          "target.run.action.text",
-          if (includeTargetNameInTextParam || includeTargetNameInText) targetInfo.id.toShortString(project) else "",
-        )
+        BazelPluginBundle
+          .message(
+            "target.run.action.text",
+            if (includeTargetNameInTextParam || includeTargetNameInText) targetInfo.id.toShortString(project) else "",
+          ).trim()
       }
     },
     isDebugAction = isDebugAction,
