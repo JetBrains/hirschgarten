@@ -13,11 +13,11 @@ class RunTargetAction(
 ) : BazelRunnerAction(
     targetInfos = listOf(targetInfo),
     text = { includeTargetNameInTextParam ->
-      if (isDebugAction) {
+      if (isDebugAction && !includeTargetNameInTextParam || !includeTargetNameInText) {
         BazelPluginBundle
           .message(
             "target.debug.run.action.text",
-            if (includeTargetNameInTextParam || includeTargetNameInText) targetInfo.id.toShortString(project) else "",
+            "",
           ).trim()
       } else {
         BazelPluginBundle

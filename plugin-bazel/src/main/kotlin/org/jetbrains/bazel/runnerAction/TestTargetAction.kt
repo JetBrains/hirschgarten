@@ -20,16 +20,10 @@ class TestTargetAction(
     text = { includeTargetNameInTextParam ->
       if (text != null) {
         text(includeTargetNameInTextParam || includeTargetNameInText)
-      } else if (isDebugAction) {
+      } else if (isDebugAction && !includeTargetNameInTextParam && !includeTargetNameInText) {
         BazelPluginBundle.message(
           "target.debug.test.action.text",
-          if (includeTargetNameInTextParam ||
-            includeTargetNameInText
-          ) {
-            targetInfos.joinToString(";") { it.id.toShortString(project) }
-          } else {
-            ""
-          },
+            "",
         )
       } else {
         BazelPluginBundle.message(
