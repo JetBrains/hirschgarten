@@ -11,7 +11,6 @@ import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
-import org.jetbrains.bsp.protocol.ScalaPlatform
 import java.nio.file.Path
 
 class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
@@ -58,11 +57,8 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
     val scalaBuildTarget =
       with(moduleData.sdk) {
         ScalaBuildTarget(
-          organization,
-          version,
-          binaryVersion,
-          ScalaPlatform.JVM,
-          compilerJars.toList(),
+          scalaVersion = version,
+          jars = compilerJars.toList(),
           jvmBuildTarget = moduleData.javaModule?.let(javaLanguagePlugin::toJvmBuildTarget),
         )
       }

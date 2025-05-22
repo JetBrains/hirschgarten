@@ -83,7 +83,6 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
             Label.parse("@//target3"),
           ),
         libraryDependencies = null,
-        scalacOptions = null,
       )
 
     val targetsMap = listOf("@//target1", "@//target2", "@//target3").toDefaultTargetsMap()
@@ -165,7 +164,6 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
           listOf(
             Label.parse("@maven//:test"),
           ),
-        scalacOptions = null,
       )
 
     val targetsMap = listOf("@//target1", "@//target2", "@//target3", "@//target4", "@//target5").toDefaultTargetsMap()
@@ -259,7 +257,6 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
             Label.parse("//target3"),
           ),
         libraryDependencies = null,
-        scalacOptions = null,
       )
 
     val target2Name = "@//target2"
@@ -298,7 +295,6 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
             Label.parse("//target3"),
           ),
         libraryDependencies = null,
-        scalacOptions = null,
       )
 
     val targetsMap = listOf("@//target1", "@//target2", "@//target3").toDefaultTargetsMap()

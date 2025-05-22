@@ -26,8 +26,6 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
-import org.jetbrains.bsp.protocol.ScalacOptionsParams
-import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
@@ -141,11 +139,6 @@ class ProjectSyncService(
   suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult {
     val project = projectProvider.get() as? AspectSyncProject ?: return CppOptionsResult(emptyList())
     return bspMapper.buildTargetCppOptions(project, params)
-  }
-
-  suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult {
-    val project = projectProvider.get() as? AspectSyncProject ?: return ScalacOptionsResult(emptyList())
-    return bspMapper.buildTargetScalacOptions(project, params)
   }
 
   suspend fun buildJvmToolchainInfo(): JvmToolchainInfo {

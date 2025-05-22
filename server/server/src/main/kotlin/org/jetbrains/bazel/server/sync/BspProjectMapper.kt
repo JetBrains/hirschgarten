@@ -50,9 +50,6 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.jetbrains.bsp.protocol.ScalacOptionsItem
-import org.jetbrains.bsp.protocol.ScalacOptionsParams
-import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -300,29 +297,10 @@ class BspProjectMapper(
     return CppOptionsResult(items)
   }
 
-  fun buildTargetScalacOptions(project: AspectSyncProject, params: ScalacOptionsParams): ScalacOptionsResult {
-    val items =
-      params.targets
-        .mapNotNull { project.findModule(it) }
-        .mapNotNull { toScalacOptionsItem(it) }
-    return ScalacOptionsResult(items)
-  }
-
   private fun resolveClasspath(cqueryResult: List<Path>): List<Path> =
     cqueryResult
       .map { bazelPathsResolver.resolveOutput(it) }
       .filter { it.toFile().exists() } // I'm surprised this is needed, but we literally test it in e2e tests
-
-  private fun toScalacOptionsItem(module: Module): ScalacOptionsItem? =
-    (module.languageData as? ScalaModule)?.let { scalaModule ->
-      scalaModule.javaModule?.let { javaModule ->
-        val javacOptions = toJavacOptionsItem(module, javaModule)
-        ScalacOptionsItem(
-          javacOptions.target,
-          scalaModule.scalacOpts,
-        )
-      }
-    }
 
   private fun toJavacOptionsItem(module: Module, javaModule: JavaModule): JavacOptionsItem =
     JavacOptionsItem(
