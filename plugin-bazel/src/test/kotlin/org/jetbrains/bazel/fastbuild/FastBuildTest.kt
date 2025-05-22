@@ -66,7 +66,7 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
           editorTabs {
             gutter().icons.first().click()
           }
-          popup().waitOneText("Debug run using Bazel").click()
+          popup().waitOneText("Debug run").click()
         }
 
         val resumeProgram = x { byAccessibleName("Resume Program") }
