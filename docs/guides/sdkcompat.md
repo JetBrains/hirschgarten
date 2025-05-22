@@ -98,7 +98,7 @@ Then resync the project so that IDEA knows about this change we've just done:
 
 ### `v243`, `v251`, `v252` folders of sdkcompat
 
-Because `sdkcompat/v252 `sdkcompat/v251` and `sdkcompat/v243` are only used when building `ultimate/plugins/bazel` with Bazel, we're going to use the imported subfolder (`ultimate/plugins/bazel`)
+Because `sdkcompat/v252`, `sdkcompat/v251`, and `sdkcompat/v243` are only used when building `ultimate/plugins/bazel` with Bazel, we're going to use the imported subfolder (`ultimate/plugins/bazel`)
 in this section.
 
 We know that the `configure` method was renamed to `configureRenamed` in IDEA master. Therefore, the Bazel plugin code
