@@ -56,8 +56,8 @@ plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow/exclude/BazelSymlinkExclud
 ```
 
 The reason? IDEA's "rename" refactoring changed the Bazel plugin code to use the new shiny `configureRenamed` method.
-But when compiling the Bazel plugin source code against IDEA 2025.1, this will cause the error above.
-That's because on IDEA 2025.1 the method is still named `configure`.
+But when compiling the Bazel plugin source code against IDEA 2025.2, this will cause the error above.
+That's because on IDEA 2025.2 the method is still named `configure`.
 
 ### Importing the Bazel plugin source as a Bazel project
 
