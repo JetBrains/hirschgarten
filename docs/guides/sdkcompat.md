@@ -6,6 +6,7 @@ The Bazel plugin currently compiles against three IDEA versions:
 - IDEA master (built with JPS)
 - 2024.3 (built with Bazel)
 - 2025.1 (built with Bazel)
+- 2025.2 (built with Bazel)
 
 The reason is that some big customers are still on old IDEA versions and we still want to deliver bugfixes and features to them.
 
@@ -20,6 +21,7 @@ but three different implementations. Those three implementations are put into th
 `ultimate/plugins/bazel/sdkcompat`.
 During compilation for different IDEA targets, the dependency is switched: 
 - JPS build against IDEA master compiles `sdkcompat/master`
+- Bazel build against 2025.2 compiles `sdkcompat/v252`
 - Bazel build against 2025.1 compiles `sdkcompat/v251`
 - Bazel build against 2024.3 compiles `sdkcompat/v243`
 
@@ -60,7 +62,7 @@ That's because on IDEA 2025.1 the method is still named `configure`.
 ### Importing the Bazel plugin source as a Bazel project
 
 In order to fix the error, you'll have to import the Bazel plugin subdirectory as a Bazel project.
-This is because we use Bazel to compile the Bazel plugin against 2025.1 and 2024.3.
+This is because we use Bazel to compile the Bazel plugin against 2025.2, 2025.1 and 2024.3.
 
 First install the Bazel plugin from Marketplace and restart IDEA:
 
@@ -94,9 +96,9 @@ Then resync the project so that IDEA knows about this change we've just done:
 
 ![Resync Project](sdkcompat/resync.png)
 
-### `v251` and `v243` folders of sdkcompat
+### Folders of sdkcompat
 
-Because `sdkcompat/v251` and `sdkcompat/v243` are only used when building `ultimate/plugins/bazel` with Bazel, we're going to use the imported subfolder (`ultimate/plugins/bazel`)
+Because `sdkcompat/v252 `sdkcompat/v251` and `sdkcompat/v243` are only used when building `ultimate/plugins/bazel` with Bazel, we're going to use the imported subfolder (`ultimate/plugins/bazel`)
 in this section.
 
 We know that the `configure` method was renamed to `configureRenamed` in IDEA master. Therefore, the Bazel plugin code
@@ -111,7 +113,7 @@ used to be called `configure`, we'll call `configureCompat` from there.
 
 ![Bazel SDK Compatibility](sdkcompat/bazel_sdkcompat.png)
 
-Copy the same file to `sdkcompat/v243`, because the implementation is going to be the same for 2024.3.
+Copy the same file to `sdkcompat/v243` (and all other existing sdkcompat folders), because the implementation is going to be the same for 2024.3.
 (If not, then you can change `build --define=ij_product=intellij-2025.1` to `build --define=ij_product=intellij-2024.3`
 inside `ultimate/plugins/bazel/.bazelrc` and then re-import the project to develop for the other IDEA target.)
 
