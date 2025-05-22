@@ -105,8 +105,8 @@ We know that the `configure` method was renamed to `configureRenamed` in IDEA ma
 can't depend on the `AsyncDirectoryProjectConfigurator` class anymore. We have to create a compatibility layer.
 Let's name it `AsyncDirectoryProjectConfiguratorCompat`. It should have the same method signatures in all IDEA versions. 
 
-Create a new `AsyncDirectoryProjectConfiguratorCompat.kt` in `sdkcompat/v251`.
-Because the default target for Bazel build is 2025.1, this is the currently imported subdirectory of `sdkcompat`.
+Create a new `AsyncDirectoryProjectConfiguratorCompat.kt` in `sdkcompat/v252`.
+Because the default target for Bazel build is 2025.2, this is the currently imported subdirectory of `sdkcompat`.
 
 Here we'll add a `configureCompat` method that the Bazel plugin code will override. Because in 2025.1 the method
 used to be called `configure`, we'll call `configureCompat` from there.
