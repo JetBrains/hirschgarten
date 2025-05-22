@@ -135,7 +135,7 @@ we now have a broken JPS build, because `sdkcompat/master` doesn't have `AsyncDi
 
 ![Master SDK Compatibility](sdkcompat/master_sdkcompat.png)
 
-We add the same `configureCompat` method as in `v251` and `v243`, so that the Bazel plugin code compiles without errors for any IDEA target. 
+We add the same `configureCompat` method as in `v252`, `v251`, and `v243`, so that the Bazel plugin code compiles without errors for any IDEA target. 
 Then we implement the new-and-shiny `configureRenamed` method by calling `configureCompat` from it.
 
 **The Bazel plugin code stays the same because the class and method signatures are the same for all sdkcompat directories!**
