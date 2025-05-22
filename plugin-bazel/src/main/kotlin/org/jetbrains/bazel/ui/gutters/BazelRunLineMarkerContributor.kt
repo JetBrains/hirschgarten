@@ -11,7 +11,7 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
 import org.jetbrains.bsp.protocol.BuildTarget
 
-private class BazelRunLineMakerInfo(text: String, actions: List<AnAction>) :
+private class BazelRunLineMarkerInfo(text: String, actions: List<AnAction>) :
   RunLineMarkerContributor.Info(null, actions.toTypedArray(), { text }) {
   override fun shouldReplace(other: RunLineMarkerContributor.Info): Boolean = true
 }
@@ -51,7 +51,7 @@ abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
       .flatMap { it.calculateEligibleActions(project, singleTestFilter, targetInfos.size > 1, psiElement) }
       .takeIf { it.isNotEmpty() }
       ?.let {
-        BazelRunLineMakerInfo(
+        BazelRunLineMarkerInfo(
           text = "Run",
           actions = it,
         )
