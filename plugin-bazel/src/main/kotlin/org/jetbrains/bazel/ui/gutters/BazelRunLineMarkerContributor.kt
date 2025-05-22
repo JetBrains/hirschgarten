@@ -5,17 +5,19 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.utils.fillWithEligibleActions
 import org.jetbrains.bsp.protocol.BuildTarget
 
-private class BspLineMakerInfo(text: String, actions: List<AnAction>) :
+private class BazelRunLineMakerInfo(text: String, actions: List<AnAction>) :
   RunLineMarkerContributor.Info(null, actions.toTypedArray(), { text }) {
   override fun shouldReplace(other: RunLineMarkerContributor.Info): Boolean = true
 }
 
-abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
+@PublicApi
+abstract class BazelRunLineMarkerContributor : RunLineMarkerContributor() {
   override fun getInfo(element: PsiElement): Info? = getSlowInfo(element)
 
   override fun getSlowInfo(element: PsiElement): Info? =
@@ -49,7 +51,7 @@ abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
       .flatMap { it.calculateEligibleActions(project, singleTestFilter, targetInfos.size > 1, psiElement) }
       .takeIf { it.isNotEmpty() }
       ?.let {
-        BspLineMakerInfo(
+        BazelRunLineMakerInfo(
           text = "Run",
           actions = it,
         )
