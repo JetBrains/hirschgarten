@@ -13,7 +13,7 @@ The reason is that some big customers are still on old IDEA versions and we stil
 If you rename a function or break an interface that the Bazel plugin depends on,
 you're going to have to fix it for all three builds, otherwise the Bazel plugin build will fail (and so will your safe push).
 
-## How does the Bazel plugin build for three IDEA versions?
+## How does the Bazel plugin build for four IDEA versions?
 
 Any function or class that differs between IDEA versions is not used from the Bazel plugin source code directly.
 Instead, we add a compatibility layer. It should have the same signatures (such that the calling code is the same),
