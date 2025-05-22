@@ -113,7 +113,7 @@ used to be called `configure`, we'll call `configureCompat` from there.
 
 ![Bazel SDK Compatibility](sdkcompat/bazel_sdkcompat.png)
 
-Copy the same file to `sdkcompat/v243` (and all other existing sdkcompat folders), because the implementation is going to be the same for 2024.3.
+Copy the same file to `sdkcompat/v251` and `sdkcompat/v243`, because the implementation is going to be the same for other IDEA versions.
 (If not, then you can change `build --define=ij_product=intellij-2025.1` to `build --define=ij_product=intellij-2024.3`
 inside `ultimate/plugins/bazel/.bazelrc` and then re-import the project to develop for the other IDEA target.)
 
