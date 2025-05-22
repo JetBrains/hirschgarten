@@ -14,6 +14,7 @@ import com.intellij.util.PathUtil
 import com.intellij.util.Processor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import java.nio.file.Path
+import org.jetbrains.bazel.commons.constants.Constants.BUILD_FILE_NAMES
 
 /**
  * Searches for references to a file in globs. These aren't picked up by a standard string search,
@@ -75,8 +76,6 @@ class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, ReferencesS
 
   private fun findBuildFile(packageDir: VirtualFile): VirtualFile? = BUILD_FILE_NAMES.firstNotNullOfOrNull { packageDir.findChild(it) }
 }
-
-private val BUILD_FILE_NAMES = listOf("BUILD.bazel", "BUILD")
 
 private fun globReference(glob: StarlarkGlobExpression, file: PsiFileSystemItem): PsiReference =
   object : PsiReferenceBase.Immediate<StarlarkGlobExpression>(
