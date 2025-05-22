@@ -278,6 +278,8 @@ COMPILE_DEPS = [
     "exports",
     "associates",
     "embed", # from rules_go
+    "compilers",  # From go_proto_library
+    "java_lib",  # From old proto_library rules
     "proc_macro_deps",
     ${cppDeps}
 ]
