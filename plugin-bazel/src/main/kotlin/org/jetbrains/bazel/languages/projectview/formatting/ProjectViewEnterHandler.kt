@@ -75,7 +75,7 @@ class ProjectViewEnterHandler : EnterHandlerDelegateAdapter() {
     var editor = editor
 
     if (editor is EditorWindow) {
-      file = InjectedLanguageManager.getInstance(file.project).getTopLevelFile(file) as ProjectViewPsiFile
+      file = InjectedLanguageManager.getInstance(file.project).getTopLevelFile(file)
       editor = InjectedLanguageEditorUtil.getTopLevelEditor(editor)
       offset = editor.caretModel.offset
     }
