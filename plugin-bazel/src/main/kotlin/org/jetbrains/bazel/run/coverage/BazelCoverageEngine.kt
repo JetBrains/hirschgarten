@@ -35,28 +35,41 @@ class BazelCoverageEngine : CoverageEngine() {
   override fun createCoverageEnabledConfiguration(configuration: RunConfigurationBase<*>): CoverageEnabledConfiguration =
     BazelCoverageEnabledConfiguration(configuration)
 
+  override fun createCoverageSuite(config: CoverageEnabledConfiguration): CoverageSuite? =
+    BazelCoverageSuite(
+      config.createSuiteName(),
+      config.configuration.project,
+      BazelCoverageRunner.getInstance(),
+      config.createFileProvider(),
+      config.createTimestamp(),
+    )
+
+  @Deprecated("Deprecated in Java")
   override fun createCoverageSuite(
-    name: String,
-    project: Project,
     runner: CoverageRunner,
+    name: String,
     fileProvider: CoverageFileProvider,
+    filters: Array<out String?>?,
     timestamp: Long,
-    config: CoverageEnabledConfiguration
-  ): CoverageSuite {
+    suiteToMerge: String?,
+    coverageByTestEnabled: Boolean,
+    branchCoverage: Boolean,
+    trackTestFolders: Boolean,
+    project: Project?,
+  ): CoverageSuite? {
+    if (project == null) return null
     return BazelCoverageSuite(name, project, runner, fileProvider, timestamp)
   }
 
+  @Deprecated("Deprecated in Java")
   override fun createCoverageSuite(
-    name: String,
-    project: Project,
     runner: CoverageRunner,
-    fileProvider: CoverageFileProvider,
-    timestamp: Long,
-  ): CoverageSuite {
-    return BazelCoverageSuite(name, project, runner, fileProvider, timestamp)
-  }
+    name: String,
+    coverageDataFileProvider: CoverageFileProvider,
+    config: CoverageEnabledConfiguration,
+  ): CoverageSuite = BazelCoverageSuite(name, config.configuration.project, runner, config.createFileProvider(), config.createTimestamp())
 
-  override fun createEmptyCoverageSuite(coverageRunner: CoverageRunner): CoverageSuite? = BazelCoverageSuite()
+  override fun createEmptyCoverageSuite(coverageRunner: CoverageRunner): CoverageSuite = BazelCoverageSuite()
 
   override fun getCoverageAnnotator(project: Project): CoverageAnnotator = BazelCoverageAnnotator.getInstance(project)
 
