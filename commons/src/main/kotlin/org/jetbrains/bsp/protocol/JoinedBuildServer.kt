@@ -29,8 +29,6 @@ interface JoinedBuildServer {
 
   suspend fun buildTargetJvmRunEnvironment(params: JvmRunEnvironmentParams): JvmRunEnvironmentResult
 
-  suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult
-
   suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult
 
   suspend fun buildTargetCppOptions(params: CppOptionsParams): CppOptionsResult

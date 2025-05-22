@@ -28,10 +28,7 @@ public data class KotlinBuildTarget(
 data class PythonBuildTarget(val version: String?, val interpreter: Path?) : BuildTargetData
 
 data class ScalaBuildTarget(
-  val scalaOrganization: String,
   val scalaVersion: String,
-  val scalaBinaryVersion: String,
-  val platform: ScalaPlatform,
   val jars: List<Path>,
   val jvmBuildTarget: JvmBuildTarget? = null,
 ) : BuildTargetData
