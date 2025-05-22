@@ -18,7 +18,11 @@ import org.jetbrains.bazel.languages.starlark.references.StarlarkVisibilityRefer
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 import javax.swing.Icon
 
-fun getCompletionLookupElemenent(name: String, icon: Icon, priority: Double = 0.0): LookupElement =
+fun getCompletionLookupElemenent(
+  name: String,
+  icon: Icon,
+  priority: Double = 0.0,
+): LookupElement =
   PrioritizedLookupElement.withPriority(
     LookupElementBuilder
       .create("\"" + name + "\"")
