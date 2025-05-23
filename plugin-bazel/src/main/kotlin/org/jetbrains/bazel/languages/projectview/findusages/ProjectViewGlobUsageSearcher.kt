@@ -27,7 +27,7 @@ import org.jetbrains.bazel.commons.constants.Constants.BUILD_FILE_NAMES
  *
  * This is always a local search (as glob references can't cross package boundaries).
  */
-class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, ReferencesSearch.SearchParameters>(true) {
+internal class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, ReferencesSearch.SearchParameters>(true) {
   override fun processQuery(queryParameters: ReferencesSearch.SearchParameters, consumer: Processor<in PsiReference?>) {
     val file = asFileSystemItemSearch(queryParameters.elementToSearch) ?: return
     val containingPackage = findContainingPackage(file.virtualFile) ?: return
@@ -48,7 +48,7 @@ class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, ReferencesS
     }
   }
 
-  fun getRelativePathToChild(parent: VirtualFile, child: VirtualFile): String? {
+  private fun getRelativePathToChild(parent: VirtualFile, child: VirtualFile): String? {
     val packageDirPath = Path.of(PathUtil.getParentPath(parent.path))
     val filePathPath = Path.of(child.path)
     return if (filePathPath.startsWith(packageDirPath)) {
@@ -58,7 +58,7 @@ class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, ReferencesS
     }
   }
 
-  fun findContainingPackage(directory: VirtualFile?): VirtualFile? =
+  private fun findContainingPackage(directory: VirtualFile?): VirtualFile? =
     directory?.let {
       if (findBuildFile(directory) != null) {
         directory
@@ -67,7 +67,7 @@ class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, ReferencesS
       }
     }
 
-  fun asFileSystemItemSearch(elementToSearch: PsiElement): PsiFileSystemItem? {
+  private fun asFileSystemItemSearch(elementToSearch: PsiElement): PsiFileSystemItem? {
     if (elementToSearch is PsiFileSystemItem) {
       return elementToSearch
     }
