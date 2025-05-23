@@ -10,10 +10,8 @@ import com.intellij.psi.PsiReferenceBase
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
-import com.intellij.util.PathUtil
 import com.intellij.util.Processor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
-import java.nio.file.Path
 import org.jetbrains.bazel.commons.constants.Constants.BUILD_FILE_NAMES
 
 /**
@@ -49,8 +47,8 @@ internal class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, Re
   }
 
   private fun getRelativePathToChild(parent: VirtualFile, child: VirtualFile): String? {
-    val packageDirPath = Path.of(PathUtil.getParentPath(parent.path))
-    val filePathPath = Path.of(child.path)
+    val packageDirPath = parent.parent.toNioPath() // Path.of(PathUtil.getParentPath(parent.path))
+    val filePathPath = child.toNioPath()
     return if (filePathPath.startsWith(packageDirPath)) {
       filePathPath.subpath(packageDirPath.nameCount, filePathPath.nameCount).toString()
     } else {
