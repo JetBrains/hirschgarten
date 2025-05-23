@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.projectview.findusages
 
 import com.intellij.openapi.application.QueryExecutorBase
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
@@ -33,7 +34,7 @@ internal class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, Re
     if (!inScope(queryParameters, buildFile)) {
       return
     }
-    val relativePath = getRelativePathToChild(buildFile, file.virtualFile) ?: return
+    val relativePath = VfsUtilCore.getRelativePath(file.virtualFile, buildFile.parent) ?: return
 
     val psiManager = PsiManager.getInstance(queryParameters.project)
     val buildFilePsi = psiManager.findFile(buildFile)
@@ -43,16 +44,6 @@ internal class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, Re
       if (glob.matches(relativePath, file.isDirectory)) {
         consumer.process(globReference(glob, file))
       }
-    }
-  }
-
-  private fun getRelativePathToChild(parent: VirtualFile, child: VirtualFile): String? {
-    val packageDirPath = parent.parent.toNioPath() // Path.of(PathUtil.getParentPath(parent.path))
-    val filePathPath = child.toNioPath()
-    return if (filePathPath.startsWith(packageDirPath)) {
-      filePathPath.subpath(packageDirPath.nameCount, filePathPath.nameCount).toString()
-    } else {
-      null
     }
   }
 
