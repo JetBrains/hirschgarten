@@ -51,7 +51,7 @@ class BazelStartupActivity : BazelProjectActivity() {
 }
 
 private suspend fun updateTargetToolwindow(project: Project) {
-  val targets = project.serviceAsync<TargetUtils>().allBuildTargets().associateBy { it.id }
+  val targets = project.serviceAsync<TargetUtils>().allBuildTargetAsLabelToTargetMap()
   project.serviceAsync<BazelTargetsPanelModel>().updateTargets(targets)
 }
 
@@ -87,5 +87,5 @@ private fun startupActivityExecutedAlready(project: Project): Boolean =
   !(project as UserDataHolderEx).replace(EXECUTED_FOR_PROJECT, null, true)
 
 private suspend fun isProjectInIncompleteState(project: Project): Boolean =
-  project.serviceAsync<TargetUtils>().allTargets().isEmpty() ||
+  project.serviceAsync<TargetUtils>().getTotalTargetCount() == 0 ||
     !(project.serviceAsync<WorkspaceModel>() as WorkspaceModelImpl).loadedFromCache
