@@ -484,6 +484,11 @@
       provider="org.jetbrains.bazel.ui.settings.BazelApplicationSettingsConfigurableProvider"
     />
 
+    <obsoleteStorage file="$WORKSPACE_FILE$" isProjectLevel="true">
+      <components>
+        <component>TargetUtils</component>
+      </components>
+    </obsoleteStorage>
     <projectViewNodeDecorator
       implementation="org.jetbrains.bazel.settings.ProjectViewFileNodeDecorator"/>
     <referencesSearch

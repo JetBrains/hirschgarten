@@ -12,6 +12,7 @@ import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.util.PathUtilRt
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -46,7 +47,7 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
-import org.jetbrains.bazel.utils.isSourceFile
+import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bazel.workspacemodel.entities.includesJava
@@ -232,8 +233,7 @@ class CollectProjectDetailsTask(
               if (syncScope is FullProjectSync) {
                 syncedTargetIdToTargetInfo
               } else {
-                project.targetUtils.labelToTargetInfo.mapKeys { it.key } +
-                  syncedTargetIdToTargetInfo
+                project.targetUtils.computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo)
               }
             val targetIdToModuleEntityMap =
               TargetIdToModuleEntitiesMap(
@@ -353,13 +353,19 @@ class CollectProjectDetailsTask(
 
   private fun checkSharedSources() {
     if (project.isSharedSourceSupportEnabled) return
-    if (!BazelFeatureFlags.checkSharedSources) return
-    val fileToTarget = project.targetUtils.fileToTargetWithoutLowPrioritySharedSources
-    for ((file, targets) in fileToTarget) {
-      if (targets.size <= 1) continue
-      if (!file.isSourceFile()) continue
-      if (IGNORED_NAMES_FOR_OVERLAPPING_SOURCES.any { file.endsWith(it) }) continue
-      warnOverlappingSources(targets[0], targets[1], file)
+    for ((file, labels) in project.targetUtils.getSharedFiles()) {
+      if (labels.size <= 1) {
+        continue
+      }
+
+      val fileName = PathUtilRt.getFileName(file.toString())
+      if (!SourceType.hasSourceFileExtension(fileName)) {
+        continue
+      }
+      if (IGNORED_NAMES_FOR_OVERLAPPING_SOURCES.any { fileName.endsWith(it) }) {
+        continue
+      }
+      warnOverlappingSources(firstTarget = labels[0], secondTarget = labels[1], fileName = fileName)
       break
     }
   }
@@ -367,7 +373,7 @@ class CollectProjectDetailsTask(
   private fun warnOverlappingSources(
     firstTarget: Label,
     secondTarget: Label,
-    source: Path,
+    fileName: String,
   ) {
     BazelBalloonNotifier.warn(
       BazelPluginBundle.message("widget.collect.targets.overlapping.sources.title"),
@@ -375,13 +381,13 @@ class CollectProjectDetailsTask(
         "widget.collect.targets.overlapping.sources.message",
         firstTarget.toString(),
         secondTarget.toString(),
-        source.fileName,
+        fileName,
       ),
     )
   }
 
   private companion object {
-    private val IGNORED_NAMES_FOR_OVERLAPPING_SOURCES = listOf("empty.kt")
+    private val IGNORED_NAMES_FOR_OVERLAPPING_SOURCES = arrayOf("empty.kt")
   }
 }
 
