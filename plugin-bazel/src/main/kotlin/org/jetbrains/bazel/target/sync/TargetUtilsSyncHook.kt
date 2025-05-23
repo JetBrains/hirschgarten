@@ -5,20 +5,24 @@ import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.target.sync.projectStructure.targetUtilsDiff
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.file.Path
-import kotlin.to
 
-class TargetUtilsSyncHook : ProjectSyncHook {
+private class TargetUtilsSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
     val bspTargets = environment.server.workspaceBuildTargets().targets
-    environment.diff.targetUtilsDiff.bspTargets = bspTargets
-    environment.diff.targetUtilsDiff.fileToTarget = calculateFileToTarget(bspTargets)
+    val targetUtilsDiff = environment.diff.targetUtilsDiff
+    targetUtilsDiff.bspTargets = bspTargets
+    targetUtilsDiff.fileToTarget = calculateFileToTarget(bspTargets)
   }
 
-  private fun calculateFileToTarget(targets: List<BuildTarget>): Map<Path, List<Label>> =
-    targets
-      .flatMap { it.toPairsPathToId() }
-      .groupBy { it.first }
-      .mapValues { it.value.map { pair -> pair.second } }
-
-  private fun BuildTarget.toPairsPathToId(): List<Pair<Path, Label>> = sources.map { it.path }.map { it to id }
+  private fun calculateFileToTarget(targets: List<BuildTarget>): Map<Path, List<Label>> {
+    val resultMap = HashMap<Path, MutableList<Label>>()
+    for (target in targets) {
+      for (source in target.sources) {
+        val path = source.path
+        val label = target.id
+        resultMap.computeIfAbsent(path) { ArrayList() }.add(label)
+      }
+    }
+    return resultMap
+  }
 }
