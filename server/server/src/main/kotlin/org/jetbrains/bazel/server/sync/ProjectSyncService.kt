@@ -32,7 +32,6 @@ import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
-import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceNameResult
 
@@ -84,13 +83,6 @@ class ProjectSyncService(
   suspend fun workspaceDirectories(): WorkspaceDirectoriesResult {
     val project = projectProvider.get()
     return bspMapper.workspaceDirectories(project)
-  }
-
-  fun workspaceInvalidTargets(): WorkspaceInvalidTargetsResult {
-    // TODO: BAZEL-1644
-    return WorkspaceInvalidTargetsResult(emptyList())
-//    val project = projectProvider.get() as? AspectSyncProject ?: return WorkspaceInvalidTargetsResult(emptyList())
-//    return bspMapper.workspaceInvalidTargets(project)
   }
 
   suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult {

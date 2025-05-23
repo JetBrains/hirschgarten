@@ -39,8 +39,6 @@ interface JoinedBuildServer {
 
   suspend fun workspaceDirectories(): WorkspaceDirectoriesResult
 
-  suspend fun workspaceInvalidTargets(): WorkspaceInvalidTargetsResult
-
   suspend fun buildTargetAnalysisDebug(params: AnalysisDebugParams): AnalysisDebugResult
 
   suspend fun buildTargetRunWithDebug(params: RunWithDebugParams): RunResult
