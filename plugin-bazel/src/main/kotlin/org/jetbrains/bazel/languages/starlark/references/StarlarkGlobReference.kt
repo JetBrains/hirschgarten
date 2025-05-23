@@ -10,6 +10,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
+import com.intellij.psi.impl.source.resolve.ResolveCache
 import org.jetbrains.bazel.languages.starlark.globbing.StarlarkUnixGlob
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
@@ -22,6 +23,19 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
   ),
   PsiPolyVariantReference {
   override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult> {
+    return ResolveCache.getInstance(element.project)
+      .resolveWithCaching(this, MyPolyVariantResolver, false, incompleteCode)
+  }
+
+  companion object {
+    private val MyPolyVariantResolver = ResolveCache.PolyVariantResolver<StarlarkGlobReference> { ref, incompleteCode ->
+      ref.doResolve()
+    }
+  }
+
+  // The actual resolution logic - this gets cached
+  private fun doResolve(): Array<ResolveResult> {
+    val project = element.getProject()
     val containingDirectory = element.containingFile.parent?.virtualFile
     if (containingDirectory == null) {
       return ResolveResult.EMPTY_ARRAY
@@ -33,7 +47,6 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
     if (includes.isEmpty()) {
       return ResolveResult.EMPTY_ARRAY
     }
-    val project = element.getProject()
 
     val files: List<VirtualFile> =
       StarlarkUnixGlob
@@ -54,6 +67,7 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
 
     return results.toTypedArray()
   }
+
 
   fun resolveFile(vf: VirtualFile, project: Project): PsiFileSystemItem? {
     val manager = PsiManager.getInstance(project)
