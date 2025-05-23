@@ -214,10 +214,6 @@ class BazelProjectMapper(
           .associateBy { it.label } +
           createGoLibraries(targetsAsLibraries, repoMapping)
       }
-    val invalidTargets =
-      measure("Save invalid target labels") {
-        removeDotBazelBspTarget(rootTargets) - targetsToImport.map { it.label() }.toSet()
-      }
 
     val nonModuleTargetIds =
       (removeDotBazelBspTarget(targets.keys) - mergedModulesFromBazel.map { it.label }.toSet() - librariesToImport.keys).toSet()
@@ -239,7 +235,6 @@ class BazelProjectMapper(
       modules = mergedModulesFromBazel.toList(),
       libraries = librariesToImport,
       goLibraries = goLibrariesToImport,
-      invalidTargets = invalidTargets,
       nonModuleTargets = nonModuleTargets,
       repoMapping = repoMapping,
       hasError = hasError,

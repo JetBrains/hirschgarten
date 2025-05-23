@@ -20,7 +20,6 @@ import org.jetbrains.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bazel.server.sync.languages.java.JavaModule
 import org.jetbrains.bazel.server.sync.languages.jvm.javaModule
 import org.jetbrains.bazel.server.sync.languages.scala.ScalaModule
-import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
@@ -54,14 +53,12 @@ import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
-import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import java.nio.file.Path
 import kotlin.io.path.relativeToOrNull
 
 class BspProjectMapper(
   private val languagePluginsService: LanguagePluginsService,
-  private val workspaceContextProvider: WorkspaceContextProvider,
   private val bazelPathsResolver: BazelPathsResolver,
   private val bazelRunner: BazelRunner,
   private val bspInfo: BspInfo,
@@ -75,9 +72,6 @@ class BspProjectMapper(
         }.filter { it.kind.isExecutable } // Filter out non-module targets that would just clutter the ui
     return WorkspaceBuildTargetsResult(buildTargets + nonModuleTargets, hasError = project.hasError)
   }
-
-  fun workspaceInvalidTargets(project: AspectSyncProject): WorkspaceInvalidTargetsResult =
-    WorkspaceInvalidTargetsResult(project.invalidTargets)
 
   fun workspaceLibraries(project: AspectSyncProject): WorkspaceLibrariesResult {
     val libraries =
