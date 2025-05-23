@@ -17,7 +17,7 @@ enum class SourceType(private val extensions: List<String>) {
   ;
 
   companion object {
-    fun fromExtension(extension: String): SourceType? = SourceType.entries.find { extension in it.extensions }
+    fun fromExtension(extension: String): SourceType? = entries.find { extension in it.extensions }
   }
 }
 
@@ -27,10 +27,11 @@ interface SourceTypeIconProvider {
   fun getIcon(): Icon?
 
   companion object {
-    val ep = ExtensionPointName<SourceTypeIconProvider>("org.jetbrains.bazel.sourceTypeIconProvider")
+    private val EP = ExtensionPointName<SourceTypeIconProvider>("org.jetbrains.bazel.sourceTypeIconProvider")
 
-    fun getIconBySourceType(sourceType: SourceType?): Icon? =
-      sourceType?.let { ep.extensionList.find { it.getSourceType() == sourceType }?.getIcon() }
+    fun getIconBySourceType(sourceType: SourceType?): Icon? {
+      return sourceType?.let { EP.extensionList.find { it.getSourceType() == sourceType }?.getIcon() }
+    }
   }
 }
 
