@@ -29,6 +29,7 @@ class LexicographicTargetBatcher : BuildBatchingService {
     suggestedShardSize: Int,
   ): List<List<Label>> {
     val sorted = targets.sortedBy { label -> label.toString() }
-    return sorted.chunked(suggestedShardSize).map { it + excludes }
+    // TODO: excludes are not used here
+    return sorted.chunked(suggestedShardSize)
   }
 }

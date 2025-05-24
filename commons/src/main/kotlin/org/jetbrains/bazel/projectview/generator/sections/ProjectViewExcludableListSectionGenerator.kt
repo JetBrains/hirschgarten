@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.projectview.generator.sections
 
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewExcludableListSection

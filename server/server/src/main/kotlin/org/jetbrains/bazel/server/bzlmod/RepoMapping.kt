@@ -6,7 +6,6 @@ import org.jetbrains.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bazel.bazelrunner.ShowRepoResult
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.label.ApparentLabel
-import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.SyntheticLabel
@@ -32,11 +31,11 @@ fun Label.canonicalize(repoMapping: RepoMapping): Label =
     is BzlmodRepoMapping -> {
       when (this) {
         is ApparentLabel -> {
-              val apparentRepoName = this.repoName
-              val canonicalRepoName =
-                repoMapping.apparentRepoNameToCanonicalName[apparentRepoName] ?: error("No canonical name found for $this")
-              CanonicalLabel.fromParts(canonicalRepoName, this.packagePath, this.target)
-            }
+          val apparentRepoName = this.repoName
+          val canonicalRepoName =
+            repoMapping.apparentRepoNameToCanonicalName[apparentRepoName] ?: error("No canonical name found for $this")
+          CanonicalLabel.fromParts(canonicalRepoName, this.packagePath, this.target)
+        }
         is CanonicalLabel -> this
         is SyntheticLabel -> this
       }

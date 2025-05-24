@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.projectview.model.sections
 
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.TargetPattern
 import java.nio.file.Path
 

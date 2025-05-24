@@ -2,7 +2,6 @@ package org.jetbrains.bazel.projectview.parser.sections
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewExcludableListSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewTargetsSection

@@ -3,7 +3,6 @@ package org.jetbrains.bazel.languages.starlark.repomapping
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.asBazelLabel
 import org.jetbrains.bazel.label.assumeBazelLabel
 import org.junit.Test
 import org.junit.runner.RunWith

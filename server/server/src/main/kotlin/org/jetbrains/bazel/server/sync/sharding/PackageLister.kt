@@ -19,6 +19,7 @@ import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.label.toPath
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.protocol.FeatureFlags
@@ -40,8 +41,8 @@ internal object PackageLister {
     pathResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
     featureFlags: FeatureFlags,
-    wildcardPatterns: List<Label>,
-  ): Map<Label, List<Label>> {
+    wildcardPatterns: List<TargetPattern>,
+  ): Map<TargetPattern, List<Label>> {
     val calculatedBazelSymlinks =
       BazelSymlinksCalculator.calculateBazelSymlinksToExclude(
         bazelInfo.workspaceRoot,

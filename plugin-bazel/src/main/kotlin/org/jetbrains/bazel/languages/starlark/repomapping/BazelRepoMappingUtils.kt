@@ -2,7 +2,6 @@ package org.jetbrains.bazel.languages.starlark.repomapping
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.constants.Constants.WORKSPACE_FILE_NAMES
-import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.ApparentLabel
 import org.jetbrains.bazel.label.Canonical
@@ -37,14 +36,15 @@ fun calculateLabel(
 
   val packagePath = targetBaseDirectory.relativeToOrNull(containingRepoPath)?.segments() ?: return null
 
-  val target = if (targetName != null) {
-    targetName
-  } else {
-    if (packagePath.isEmpty()) {
-      return null
+  val target =
+    if (targetName != null) {
+      targetName
+    } else {
+      if (packagePath.isEmpty()) {
+        return null
+      }
+      packagePath.last()
     }
-    packagePath.last()
-  }
   return CanonicalLabel(
     repo = Canonical(containingCanonicalRepoName),
     packagePath = Package(packagePath),
@@ -80,12 +80,12 @@ fun CanonicalLabel.toApparentLabel(project: Project): ApparentLabel? {
  * Converts this [Label]'s repository to [Canonical].
  */
 fun Label.toCanonicalLabel(project: Project): CanonicalLabel? {
-      val canonicalRepoName = project.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
-      return CanonicalLabel(
-        repo = Canonical(canonicalRepoName),
-        packagePath = this.packagePath,
-        target = this.target,
-      )
+  val canonicalRepoName = project.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
+  return CanonicalLabel(
+    repo = Canonical(canonicalRepoName),
+    packagePath = this.packagePath,
+    target = this.target,
+  )
 }
 
 fun Label.toShortString(project: Project): String {

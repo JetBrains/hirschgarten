@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.workspacecontext
 
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextExcludableListEntity
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.TargetPattern
 
 class IllegalTargetsSizeException(message: String) : IllegalArgumentException(message)

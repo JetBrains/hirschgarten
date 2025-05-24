@@ -37,8 +37,8 @@ object WildcardTargetExpander {
     pathResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
     featureFlags: FeatureFlags,
-    wildcardIncludes: List<Label>,
-  ): Map<Label, List<Label>> =
+    wildcardIncludes: List<TargetPattern>,
+  ): Map<TargetPattern, List<Label>> =
     PackageLister.expandPackageTargets(
       pathResolver,
       bazelInfo,
@@ -49,7 +49,7 @@ object WildcardTargetExpander {
   /** Runs a sharded Bazel query to expand wildcard targets to individual Bazel targets  */
   suspend fun expandToSingleTargets(
     packageTargets: List<Label>,
-    excludes: List<Label>,
+    excludes: List<TargetPattern>,
     bazelRunner: BazelRunner,
     bspClientLogger: BspClientLogger,
     context: WorkspaceContext,

@@ -87,7 +87,6 @@ sealed interface RepoType {
  * See https://bazel.build/external/overview#canonical-repo-name
  */
 data class Canonical(override val repoName: String) : RepoType {
-
   override fun toString(): String = "@@$repoName"
 
   companion object {
@@ -99,7 +98,6 @@ data class Canonical(override val repoName: String) : RepoType {
  * See https://bazel.build/external/overview#apparent-repo-name
  */
 data class Apparent(override val repoName: String) : RepoType {
-
   override fun toString(): String = "@$repoName"
 
   companion object {
@@ -117,20 +115,20 @@ sealed interface Label : TargetPattern {
 
   companion object {
     fun synthetic(targetName: String): SyntheticLabel = SyntheticLabel(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))
-    fun parse(value: String): Label {
-      return when (val targetPattern = TargetPattern.parse(value)) {
+
+    fun parse(value: String): Label =
+      when (val targetPattern = TargetPattern.parse(value)) {
         is BazelLabel -> targetPattern
         is SyntheticLabel -> targetPattern
         else -> targetPattern.assumeBazelLabel()
       }
-    }
-    fun parseOrNull(value: String?): Label? {
-      return try {
+
+    fun parseOrNull(value: String?): Label? =
+      try {
         value?.let { parse(it) }
       } catch (e: Exception) {
         null
       }
-    }
   }
 }
 
@@ -158,9 +156,7 @@ data class CanonicalLabel(
       repo: String,
       packagePath: Package,
       target: SingleTarget,
-    ): CanonicalLabel {
-      return CanonicalLabel(Canonical(repo), packagePath, target)
-    }
+    ): CanonicalLabel = CanonicalLabel(Canonical(repo), packagePath, target)
   }
 }
 
@@ -184,6 +180,7 @@ data class AbsoluteTargetPattern(
 
 data class RelativeTargetPattern(override val packagePath: PackageType, override val target: TargetType) : TargetPattern {
   override val repo: RepoType = Apparent.main
+
   override fun toString(): String = joinPackagePathAndTarget(packagePath, target)
 
   fun resolve(base: AbsoluteTargetPattern): AbsoluteTargetPattern {
@@ -313,11 +310,12 @@ sealed interface TargetPattern : Comparable<TargetPattern> {
 
 fun TargetPattern.asRelative(): RelativeTargetPattern? = this as? RelativeTargetPattern
 
-fun TargetPattern.asBazelLabel(): BazelLabel? = try {
-  assumeBazelLabel()
-} catch (_: Exception) {
-  null
-}
+fun TargetPattern.asBazelLabel(): BazelLabel? =
+  try {
+    assumeBazelLabel()
+  } catch (_: Exception) {
+    null
+  }
 
 fun TargetPattern.assumeBazelLabel(): BazelLabel =
   when (this) {

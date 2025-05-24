@@ -29,6 +29,7 @@ import org.jetbrains.bazel.workspacecontext.ShardingApproach
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
+import kotlin.collections.filterIsInstance
 import kotlin.math.min
 
 /**
@@ -116,8 +117,8 @@ object BazelBuildTargetSharder {
   private suspend fun expandWildcardTargets(
     pathsResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
-    includes: List<Label>,
-    excludes: List<Label>,
+    includes: List<TargetPattern>,
+    excludes: List<TargetPattern>,
     bazelRunner: BazelRunner,
     bspClientLogger: BspClientLogger,
     context: WorkspaceContext,
@@ -125,9 +126,9 @@ object BazelBuildTargetSharder {
   ): ExpandedTargetsResult {
     val wildcardIncludes = includes.filter { it.isWildcard }
     if (wildcardIncludes.isEmpty()) {
-      return ExpandedTargetsResult(includes, BazelStatus.SUCCESS)
+      return ExpandedTargetsResult(includes.filterIsInstance<Label>(), BazelStatus.SUCCESS)
     }
-    val expandedTargets: Map<Label, List<Label>> =
+    val expandedTargets: Map<TargetPattern, List<Label>> =
       WildcardTargetExpander.expandToNonRecursiveWildcardTargets(
         pathsResolver,
         bazelInfo,
@@ -139,9 +140,9 @@ object BazelBuildTargetSharder {
     val fullList = arrayListOf<Label>()
     for (target in includes) {
       val expanded = expandedTargets[target]
-      if (expanded == null) {
+      if (expanded == null && target is Label) {
         fullList.add(target)
-      } else {
+      } else if (expanded != null) {
         fullList.addAll(expanded)
       }
     }
@@ -158,7 +159,7 @@ object BazelBuildTargetSharder {
 
     // finally add back any explicitly-specified, unexcluded single targets which may have been
     // removed by the query (for example, because they have the 'manual' tag)
-    val singleTargets = includes.filter { !it.isWildcard }
+    val singleTargets = includes.filterIsInstance<Label>()
     return ExpandedTargetsResult.merge(
       result,
       ExpandedTargetsResult(singleTargets, result.buildResult),

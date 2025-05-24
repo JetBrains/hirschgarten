@@ -53,7 +53,6 @@ internal data class BazelRepoMappingServiceState(
 )
 @Service(Service.Level.PROJECT)
 internal class BazelRepoMappingService(val project: Project) : PersistentStateComponent<BazelRepoMappingServiceState> {
-
   @Volatile
   internal var apparentRepoNameToCanonicalName: Map<String, String> = emptyMap()
     set(value) {
