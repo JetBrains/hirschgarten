@@ -90,7 +90,7 @@
                     interface="org.jetbrains.bazel.ui.notifications.UnresolvedImportChecker"
                     dynamic="true"/>
     <extensionPoint qualifiedName="org.jetbrains.bazel.psiElementConfigurationLocator"
-                    interface="org.jetbrains.bazel.jvm.junit.PsiElementConfigurationLocator"
+                    interface="org.jetbrains.bazel.junit.PsiElementConfigurationLocator"
                     dynamic="true"/>
     <extensionPoint qualifiedName="org.jetbrains.bazel.targetKindProvider"
                     interface="org.jetbrains.bazel.sync.TargetKindProvider"
@@ -105,7 +105,6 @@
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook"/>
 
-    <projectSyncHook implementation="org.jetbrains.bazel.services.InvalidTargetsProjectSyncHook"/>
     <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
     <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
     <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"
@@ -213,8 +212,12 @@
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"/>
     <ignoredFileProvider implementation="org.jetbrains.bazel.workspace.BazelProjectExcludesIgnoredFileProvider"/>
+    <moduleType id="BAZEL_DUMMY_MODULE_TYPE"
+                implementationClass="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.BazelDummyModuleType"/>
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
+    <workspaceModel.fileIndexContributor
+      implementation="org.jetbrains.bazel.workspace.PackageMarkerEntityWorkspaceFileIndexContributor"/>
 
     <postStartupActivity
       implementation="org.jetbrains.bazel.startup.BazelStartupActivity"/>

@@ -9,17 +9,18 @@ import org.jetbrains.bazel.target.targetUtils
 class CheckNonModuleTargetsCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   override suspend fun doExecute(context: PlaybackContext) {
     val project = context.project
-    val loadedTargets = project.targetUtils.allTargets()
+    val targetUtils = project.targetUtils
+    val loadedTargets = targetUtils.allTargets()
     check(loadedTargets.toSet() == setOf(Label.parse("//:bin"), Label.parse("//:test"))) {
       "Expected targets: //:bin, //:test, actual: $loadedTargets"
     }
 
-    val binInfo = checkNotNull(project.targetUtils.getBuildTargetForLabel(Label.parse("//:bin"))) { "No info for //:bin" }
+    val binInfo = checkNotNull(targetUtils.getBuildTargetForLabel(Label.parse("//:bin"))) { "No info for //:bin" }
     check(binInfo.kind.ruleType == RuleType.BINARY) {
       "Expected //:bin to be runnable, actual: ${binInfo.kind.ruleType}"
     }
 
-    val testInfo = checkNotNull(project.targetUtils.getBuildTargetForLabel(Label.parse("//:test"))) { "No info for //:test" }
+    val testInfo = checkNotNull(targetUtils.getBuildTargetForLabel(Label.parse("//:test"))) { "No info for //:test" }
     check(testInfo.kind.ruleType == RuleType.TEST) {
       "Expected //:test to be testable, actual: ${testInfo.kind.ruleType}"
     }

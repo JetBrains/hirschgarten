@@ -21,10 +21,6 @@ import org.jetbrains.bsp.protocol.Position
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.Range
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
-import org.jetbrains.bsp.protocol.ScalaPlatform
-import org.jetbrains.bsp.protocol.ScalacOptionsItem
-import org.jetbrains.bsp.protocol.ScalacOptionsParams
-import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -85,10 +81,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
       )
     val scalaBuildTarget =
       ScalaBuildTarget(
-        "org.scala-lang",
         "2.12.14",
-        "2.12",
-        ScalaPlatform.JVM,
         listOf(
           Path("\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_compiler/scala-compiler-2.12.14.jar"),
           Path("\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_library/scala-library-2.12.14.jar"),
@@ -132,22 +125,6 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
     BazelBspTestScenarioStep(
       "compare workspace targets results",
     ) { testClient.testWorkspaceTargets(120.seconds, expectedWorkspaceBuildTargetsResult()) }
-
-  private fun scalaOptionsResults(): BazelBspTestScenarioStep {
-    val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it != Label.synthetic("bsp-workspace-root") }
-    val expectedScalaOptionsItems =
-      expectedTargetIdentifiers.map {
-        ScalacOptionsItem(
-          it,
-          emptyList(),
-        )
-      }
-    val expectedScalaOptionsResult = ScalacOptionsResult(expectedScalaOptionsItems)
-    val scalaOptionsParams = ScalacOptionsParams(expectedTargetIdentifiers)
-    return BazelBspTestScenarioStep("scalaOptions results") {
-      testClient.testScalacOptions(120.seconds, scalaOptionsParams, expectedScalaOptionsResult)
-    }
-  }
 
   // All expected diagnostics must be present, but there can be more
   private fun checkDiagnostics(

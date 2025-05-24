@@ -55,7 +55,6 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
-import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -422,23 +421,10 @@ suspend fun calculateProjectDetailsWithCapabilities(
           server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
         }
 
-      // Same for Scala
-      val scalacOptionsResult =
-        // TODO: Son
-        if (libraries == null) {
-          asyncQueryIf(scalaTargetIds.isNotEmpty(), "buildTarget/scalacOptions") {
-            server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
-          }
-        } else {
-          null
-        }
-
       ProjectDetails(
         targetIds = bspBuildTargets.targets.map { it.id },
         targets = bspBuildTargets.targets.toSet(),
         javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
-        // TODO: Son
-        scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
         libraries = libraries.libraries,
         jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
       )

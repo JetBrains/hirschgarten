@@ -20,7 +20,6 @@ import org.jetbrains.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bazel.server.sync.languages.java.JavaModule
 import org.jetbrains.bazel.server.sync.languages.jvm.javaModule
 import org.jetbrains.bazel.server.sync.languages.scala.ScalaModule
-import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
@@ -50,21 +49,16 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.jetbrains.bsp.protocol.ScalacOptionsItem
-import org.jetbrains.bsp.protocol.ScalacOptionsParams
-import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
-import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import java.nio.file.Path
 import kotlin.io.path.relativeToOrNull
 
 class BspProjectMapper(
   private val languagePluginsService: LanguagePluginsService,
-  private val workspaceContextProvider: WorkspaceContextProvider,
   private val bazelPathsResolver: BazelPathsResolver,
   private val bazelRunner: BazelRunner,
   private val bspInfo: BspInfo,
@@ -78,9 +72,6 @@ class BspProjectMapper(
         }.filter { it.kind.isExecutable } // Filter out non-module targets that would just clutter the ui
     return WorkspaceBuildTargetsResult(buildTargets + nonModuleTargets, hasError = project.hasError)
   }
-
-  fun workspaceInvalidTargets(project: AspectSyncProject): WorkspaceInvalidTargetsResult =
-    WorkspaceInvalidTargetsResult(project.invalidTargets)
 
   fun workspaceLibraries(project: AspectSyncProject): WorkspaceLibrariesResult {
     val libraries =
@@ -300,29 +291,10 @@ class BspProjectMapper(
     return CppOptionsResult(items)
   }
 
-  fun buildTargetScalacOptions(project: AspectSyncProject, params: ScalacOptionsParams): ScalacOptionsResult {
-    val items =
-      params.targets
-        .mapNotNull { project.findModule(it) }
-        .mapNotNull { toScalacOptionsItem(it) }
-    return ScalacOptionsResult(items)
-  }
-
   private fun resolveClasspath(cqueryResult: List<Path>): List<Path> =
     cqueryResult
       .map { bazelPathsResolver.resolveOutput(it) }
       .filter { it.toFile().exists() } // I'm surprised this is needed, but we literally test it in e2e tests
-
-  private fun toScalacOptionsItem(module: Module): ScalacOptionsItem? =
-    (module.languageData as? ScalaModule)?.let { scalaModule ->
-      scalaModule.javaModule?.let { javaModule ->
-        val javacOptions = toJavacOptionsItem(module, javaModule)
-        ScalacOptionsItem(
-          javacOptions.target,
-          scalaModule.scalacOpts,
-        )
-      }
-    }
 
   private fun toJavacOptionsItem(module: Module, javaModule: JavaModule): JavacOptionsItem =
     JavacOptionsItem(

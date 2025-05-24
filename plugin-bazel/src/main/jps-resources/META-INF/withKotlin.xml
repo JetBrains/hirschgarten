@@ -21,5 +21,10 @@
                 implementationClass="org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor"
                 language="kotlin"/>
     </extensions>
+
+  <projectListeners>
+    <listener class="org.jetbrains.bazel.sdkcompat.BazelMoveDeclarationsToFileRefactoringListener"
+              topic="org.jetbrains.kotlin.idea.refactoring.move.MoveDeclarationsToFileRefactoringListener"/>
+  </projectListeners>
 </idea-plugin>
 

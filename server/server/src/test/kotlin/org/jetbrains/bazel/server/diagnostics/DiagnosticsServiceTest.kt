@@ -749,6 +749,78 @@ class DiagnosticsServiceTest {
     diagnostics shouldContainExactlyInAnyOrder expected
   }
 
+  @Test
+  fun `should parse multi-line errors`() {
+    val output =
+      """
+      SEVERE: Compilation failure: compile phase failed:
+      server/server/src/main/kotlin/org/jetbrains/bazel/server/diagnostics/CompilerDiagnosticParser.kt:10:1: error: example error.
+      server/server/src/main/kotlin/org/jetbrains/bazel/server/diagnostics/CompilerDiagnosticParser.kt:57:12: error: none of the following candidates is applicable:
+      fun <T> Pair<T, T>.toList(): List<T>
+      fun <T> Triple<T, T, T>.toList(): List<T>
+      fun <T> Array<out T>.toList(): List<T>
+      fun ByteArray.toList(): List<Byte>
+      fun ShortArray.toList(): List<Short>
+      fun IntArray.toList(): List<Int>
+      fun LongArray.toList(): List<Long>
+      fun FloatArray.toList(): List<Float>
+      fun DoubleArray.toList(): List<Double>
+      fun BooleanArray.toList(): List<Boolean>
+      fun CharArray.toList(): List<Char>
+      fun <T> Enumeration<T>.toList(): List<T>
+      fun <T> Iterable<T>.toList(): List<T>
+      fun <K, V> Map<out K, V>.toList(): List<Pair<K, V>>
+      fun <T> Sequence<T>.toList(): List<T>
+      fun CharSequence.toList(): List<Char>
+                .toList()
+                 ^^^^^^
+      INFO: Build succeeded for only 179 of 366 top-level targets
+      """.trimIndent()
+
+    val label = Label.parse("//project/src/main/scala/com/example/project:project")
+    val diagnostics = extractDiagnostics(output, label)
+
+    val expected =
+      listOf(
+        publishDiagnosticsParams(
+          TextDocumentIdentifier(
+            Path("/user/workspace/server/server/src/main/kotlin/org/jetbrains/bazel/server/diagnostics/CompilerDiagnosticParser.kt"),
+          ),
+          label,
+          errorDiagnostic(
+            Position(10, 1),
+            "example error.",
+          ),
+          errorDiagnostic(
+            Position(57, 12),
+            """
+            none of the following candidates is applicable:
+            fun <T> Pair<T, T>.toList(): List<T>
+            fun <T> Triple<T, T, T>.toList(): List<T>
+            fun <T> Array<out T>.toList(): List<T>
+            fun ByteArray.toList(): List<Byte>
+            fun ShortArray.toList(): List<Short>
+            fun IntArray.toList(): List<Int>
+            fun LongArray.toList(): List<Long>
+            fun FloatArray.toList(): List<Float>
+            fun DoubleArray.toList(): List<Double>
+            fun BooleanArray.toList(): List<Boolean>
+            fun CharArray.toList(): List<Char>
+            fun <T> Enumeration<T>.toList(): List<T>
+            fun <T> Iterable<T>.toList(): List<T>
+            fun <K, V> Map<out K, V>.toList(): List<Pair<K, V>>
+            fun <T> Sequence<T>.toList(): List<T>
+            fun CharSequence.toList(): List<Char>
+                      .toList()
+                       ^^^^^^
+            """.trimIndent(),
+          ),
+        ),
+      )
+
+    diagnostics shouldContainExactlyInAnyOrder expected
+  }
+
   private fun publishDiagnosticsParams(
     textDocument: TextDocumentIdentifier,
     buildTarget: Label,

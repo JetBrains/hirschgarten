@@ -5,6 +5,7 @@ import com.intellij.openapi.util.NlsContexts
 import com.intellij.openapi.vcs.FilePath
 import com.intellij.openapi.vcs.changes.IgnoredFileDescriptor
 import com.intellij.openapi.vcs.changes.IgnoredFileProvider
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 
 /**
@@ -30,6 +31,7 @@ internal fun getProjectExcludesIgnoredFileProviderClass(): Class<IgnoredFileProv
   Class.forName("com.intellij.openapi.vcs.changes.ProjectExcludesIgnoredFileProvider") as? Class<IgnoredFileProvider>
 
 fun unregisterProjectExcludesIgnoredFileProvider() {
+  if (BazelFeatureFlags.fbsrSupportedInPlatform) return
   val clazz = getProjectExcludesIgnoredFileProviderClass()
   clazz?.also { IgnoredFileProvider.IGNORE_FILE.point.unregisterExtension(clazz) }
 }
