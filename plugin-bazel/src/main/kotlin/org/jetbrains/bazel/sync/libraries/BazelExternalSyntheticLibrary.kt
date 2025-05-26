@@ -22,10 +22,9 @@ import com.intellij.openapi.roots.SyntheticLibrary
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
-import org.jetbrains.bazel.utils.VfsUtils
+import org.jetbrains.bazel.utils.toVirtualFile
 import java.nio.file.Path
 import java.util.Objects
-import java.util.stream.Collectors.toSet
 import javax.swing.Icon
 
 /**
@@ -37,7 +36,7 @@ class BazelExternalSyntheticLibrary(private val presentableText: String, files: 
   ItemPresentation {
   private val files: Set<Path> = files.toSet()
   private val validFiles: MutableSet<VirtualFile> =
-    Sets.newConcurrentHashSet(files.mapNotNull { VfsUtils.resolveVirtualFile(it.toFile(), true) })
+    Sets.newConcurrentHashSet(files.mapNotNull { it.toVirtualFile() })
 
   override fun getPresentableText(): String = presentableText
 
@@ -60,7 +59,7 @@ class BazelExternalSyntheticLibrary(private val presentableText: String, files: 
             .map(VfsUtil::virtualToIoFile)
             .collect(toImmutableSet()),
         ).stream()
-        .map { file -> VfsUtils.resolveVirtualFile(file.toFile(), false) }
+        .map { file -> file.toVirtualFile() }
         .filter(Objects::nonNull)
         .forEach { it?.also { validFiles.add(it) } }
     }

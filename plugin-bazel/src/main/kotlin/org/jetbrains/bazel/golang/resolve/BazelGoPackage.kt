@@ -45,7 +45,7 @@ import org.jetbrains.bazel.sync.GenericBazelRules
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.sync.hasLanguage
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.utils.VfsUtils
+import org.jetbrains.bazel.utils.toVirtualFile
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
@@ -322,7 +322,7 @@ class BazelGoPackage : GoPackage {
       val psiManager = PsiManager.getInstance(project)
       files
         .mapNotNull { file ->
-          VfsUtils.resolveVirtualFile(file.toFile(), false)?.let {
+          file.toVirtualFile()?.let {
             psiManager.findFile(it) as? GoFile
           }
         }.firstOrNull { it.buildFlags != "ignore" }
@@ -338,7 +338,7 @@ class BazelGoPackage : GoPackage {
       if (oldVirtualFile.filter(VirtualFile::isValid).isPresent) {
         oldVirtualFile
       } else {
-        Optional.ofNullable(VfsUtils.resolveVirtualFile(file.toFile(), false))
+        Optional.ofNullable(file.toVirtualFile())
       }
     }
     return directories.values
@@ -355,7 +355,7 @@ class BazelGoPackage : GoPackage {
         oldGoFile
       } else {
         Optional
-          .ofNullable(VfsUtils.resolveVirtualFile(file.toFile(), false))
+          .ofNullable(file.toVirtualFile())
           .map(psiManager::findFile)
           .filter { it is GoFile }
           .map { it as GoFile }
