@@ -101,17 +101,10 @@ class ProjectViewParser(private val builder: PsiBuilder) {
     }
   }
 
-  /** Skip to the next line. If the current token is not newline, then mark an error */
+  /** Skip to the next line. Ignore tokens that are not NEWLINE. */
   fun skipToNextLine() {
-    if (matches(ProjectViewTokenType.NEWLINE)) {
-      return
-    }
-
-    val marker = builder.mark()
-
     while (!builder.eof()) {
       if (matches(ProjectViewTokenType.NEWLINE)) {
-        marker.error("Illegal identifier in the same line as section list keyword.")
         return
       }
       builder.advanceLexer()

@@ -4,24 +4,33 @@ sealed interface ProjectViewSectionParser<out SectionT : ProjectViewSection> {
   /**
    * An unparsed section is modelled as a sequence of items.
    */
-  data class Item(val value: String)
+  data class Item(val value: String) {
+    val isEmpty: Boolean = value.isEmpty()
+  }
 
   fun parse(items: Iterable<Item>): Result<SectionT> {
     val iterator = items.iterator()
 
     return if (iterator.hasNext()) {
-      parseNonEmpty(iterator.next(), iterator)
+      parseNonEmptySection(iterator.next(), iterator)
     } else {
-      Result.Failure("Empty section", Scope.Section)
+      Result.Failure.EMPTY_SECTION
     }
   }
 
-  fun parseNonEmpty(head: Item, tail: Iterator<Item>): Result<SectionT>
+  /**
+   * Parse a section which has at least one item.
+   * There are no guaranties whether the items are notEmpty.
+   */
+  fun parseNonEmptySection(head: Item, tail: Iterator<Item>): Result<SectionT>
 
   sealed interface Scalar<T> : ProjectViewSectionParser<ProjectViewSection.Scalar<T>> {
-    override fun parseNonEmpty(head: Item, tail: Iterator<Item>): Result<ProjectViewSection.Scalar<T>> =
+    override fun parseNonEmptySection(head: Item, tail: Iterator<Item>): Result<ProjectViewSection.Scalar<T>> =
       if (tail.hasNext()) {
+        // This section contains more than one item.
         Result.Failure("A scalar section should contain a single item", Scope.Section)
+      } else if (head.isEmpty) {
+        Result.Failure.EMPTY_SECTION
       } else {
         parseValue(head).fold(onSuccess = { Result.Success(it) }, onFailure = { Result.Failure(it.message ?: "", Scope.Item(0)) })
       }
@@ -61,10 +70,10 @@ sealed interface ProjectViewSectionParser<out SectionT : ProjectViewSection> {
   }
 
   sealed interface List<T> : ProjectViewSectionParser<ProjectViewSection.List<T>> {
-    override fun parseNonEmpty(head: Item, tail: Iterator<Item>): Result<ProjectViewSection.List<T>>
+    override fun parseNonEmptySection(head: Item, tail: Iterator<Item>): Result<ProjectViewSection.List<T>>
 
     data object Identifiers : List<String> {
-      override fun parseNonEmpty(head: Item, tail: Iterator<Item>): Result<ProjectViewSection.List<String>> =
+      override fun parseNonEmptySection(head: Item, tail: Iterator<Item>): Result<ProjectViewSection.List<String>> =
         Result.Success(
           ProjectViewSection.List.Identifiers(
             listOf(head.value) + tail.asSequence().map { it.value }.toList(),
@@ -73,7 +82,7 @@ sealed interface ProjectViewSectionParser<out SectionT : ProjectViewSection> {
     }
 
     data object Paths : List<String> {
-      override fun parseNonEmpty(head: Item, tail: Iterator<Item>): Result<ProjectViewSection.List<String>> =
+      override fun parseNonEmptySection(head: Item, tail: Iterator<Item>): Result<ProjectViewSection.List<String>> =
         Result.Success(
           ProjectViewSection.List.Paths(
             listOf(head.value) + tail.asSequence().map { it.value }.toList(),
@@ -85,7 +94,11 @@ sealed interface ProjectViewSectionParser<out SectionT : ProjectViewSection> {
   sealed interface Result<out T : ProjectViewSection> {
     data class Success<out T : ProjectViewSection>(val value: T) : Result<T>
 
-    data class Failure(val message: String, val scope: Scope) : Result<Nothing>
+    data class Failure(val message: String, val scope: Scope) : Result<Nothing> {
+      companion object {
+        val EMPTY_SECTION = Failure("Empty section", Scope.Section)
+      }
+    }
   }
 
   sealed interface Scope {
