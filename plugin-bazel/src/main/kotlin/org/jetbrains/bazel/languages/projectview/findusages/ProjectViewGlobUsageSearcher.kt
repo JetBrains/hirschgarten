@@ -4,6 +4,7 @@ import com.intellij.openapi.application.QueryExecutorBase
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReference
@@ -12,8 +13,9 @@ import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
 import com.intellij.util.Processor
-import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 import org.jetbrains.bazel.commons.constants.Constants.BUILD_FILE_NAMES
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
+
 
 /**
  * Searches for references to a file in globs. These aren't picked up by a standard string search,
@@ -59,6 +61,12 @@ internal class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, Re
   private fun asFileSystemItemSearch(elementToSearch: PsiElement): PsiFileSystemItem? {
     if (elementToSearch is PsiFileSystemItem) {
       return elementToSearch
+    }
+    for (provider in PsiFileProvider.EP_NAME.extensions) {
+      val file: PsiFile? = provider.asFileSearch(elementToSearch)
+      if (file != null) {
+        return file
+      }
     }
     return null
   }
