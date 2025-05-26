@@ -1,13 +1,12 @@
 package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.externalSystem.autoimport.ExternalSystemRefreshStatus
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VfsUtilCore
+import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
-import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.status.SyncStatusListener
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -31,25 +30,6 @@ class BazelFileService(private val project: Project) {
     )
   }
 
-  private fun collectBzlFiles(
-    directory: VirtualFile,
-    result: MutableList<String>,
-    projectFileIndex: ProjectFileIndex,
-  ) {
-    if (projectFileIndex.isExcluded(directory)) return
-
-    directory.children.forEach { file ->
-      when {
-        file.isDirectory -> {
-          collectBzlFiles(file, result, projectFileIndex)
-        }
-        file.name.endsWith(".bzl") -> {
-          result.add(file.path)
-        }
-      }
-    }
-  }
-
   private fun updateCache() {
     cacheInvalid = false
     canonicalRepoNameToBzlFiles.clear()
@@ -57,13 +37,14 @@ class BazelFileService(private val project: Project) {
     val projectFileIndex = ProjectFileIndex.getInstance(project)
 
     for ((canonicalName, repoPath) in project.canonicalRepoNameToPath) {
-      val virtualFile = LocalFileSystem.getInstance().findFileByNioFile(repoPath) ?: continue
-      val result = mutableListOf<String>()
-      collectBzlFiles(virtualFile, result, projectFileIndex)
-      result.forEach { file ->
-        val relativeFilePath = file.substring(virtualFile.path.length + 1)
-        canonicalRepoNameToBzlFiles[canonicalName] =
-          canonicalRepoNameToBzlFiles.getOrDefault(canonicalName, emptyList()) + relativeFilePath
+      val root = LocalFileSystem.getInstance().findFileByNioFile(repoPath) ?: continue
+      VfsUtilCore.processFilesRecursively(root) { file ->
+        if (file.isFile && !projectFileIndex.isExcluded(file) && file.name.endsWith(".bzl")) {
+          val relativeFilePath = file.path.substring(root.path.length + 1)
+          canonicalRepoNameToBzlFiles[canonicalName] =
+            canonicalRepoNameToBzlFiles.getOrDefault(canonicalName, emptyList()) + relativeFilePath
+        }
+        true
       }
     }
   }
