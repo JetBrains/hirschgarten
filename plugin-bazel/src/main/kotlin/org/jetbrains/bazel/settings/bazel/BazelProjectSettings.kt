@@ -23,6 +23,7 @@ data class BazelProjectSettings(
   val enableLocalJvmActions: Boolean = false,
   val useIntellijTestRunner: Boolean = false,
   val enableBuildWithJps: Boolean = false,
+  val enableQueryTab: Boolean = false,
 ) {
   internal fun withNewProjectViewPath(newProjectViewFilePath: Path): BazelProjectSettings = copy(projectViewPath = newProjectViewFilePath)
 
@@ -45,6 +46,7 @@ internal data class BazelProjectSettingsState(
   var enableLocalJvmActions: Boolean = false,
   var useIntellijTestRunner: Boolean = false,
   var enableBuildWithJps: Boolean = false,
+  var enableQueryTab: Boolean = false,
 ) {
   fun isEmptyState(): Boolean = this == BazelProjectSettingsState()
 }
@@ -70,6 +72,7 @@ internal class BazelProjectSettingsService :
       enableLocalJvmActions = settings.enableLocalJvmActions,
       useIntellijTestRunner = settings.useIntellijTestRunner,
       enableBuildWithJps = settings.enableBuildWithJps,
+      enableQueryTab = settings.enableQueryTab,
     )
 
   override fun loadState(settingsState: BazelProjectSettingsState) {
@@ -84,6 +87,7 @@ internal class BazelProjectSettingsService :
           enableLocalJvmActions = settingsState.enableLocalJvmActions,
           useIntellijTestRunner = settingsState.useIntellijTestRunner,
           enableBuildWithJps = settingsState.enableBuildWithJps,
+          enableQueryTab = settingsState.enableQueryTab,
         )
     }
   }
