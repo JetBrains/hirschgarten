@@ -32,7 +32,6 @@ import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
-import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import kotlin.io.path.Path
 
@@ -68,7 +67,6 @@ private val mockBuildServer =
     workspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
     workspaceLibrariesResult = WorkspaceLibrariesResult(emptyList()),
     jvmBinaryJarsResult = JvmBinaryJarsResult(emptyList()),
-    workspaceInvalidTargetsResult = WorkspaceInvalidTargetsResult(emptyList()),
     workspaceBazelRepoMappingResult = WorkspaceBazelRepoMappingResult(emptyMap(), emptyMap()),
     dependencySourcesResult = DependencySourcesResult(emptyList()),
     workspaceContextResult = mockWorkspaceContext,

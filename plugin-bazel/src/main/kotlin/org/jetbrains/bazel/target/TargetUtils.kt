@@ -264,7 +264,7 @@ val Project.targetUtils: TargetUtils
 
 @PublicApi
 fun Label.getModule(project: Project): com.intellij.openapi.module.Module? =
-  project.service<TargetUtils>().getBuildTargetForLabel(this)?.getModule(project)
+  project.targetUtils.getBuildTargetForLabel(this)?.getModule(project)
 
 @PublicApi
 fun Label.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity

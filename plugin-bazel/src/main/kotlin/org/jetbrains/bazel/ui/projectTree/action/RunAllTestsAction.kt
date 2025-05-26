@@ -52,14 +52,15 @@ internal open class RunAllTestsBaseAction(
   private fun AnActionEvent.getCurrentPath(): VirtualFile? = getData(PlatformDataKeys.VIRTUAL_FILE)
 
   private fun VirtualFile.toChildTestTargets(project: Project): List<BuildTarget> {
+    val targetUtils = project.targetUtils
     val childTargets =
       if (isDirectory) {
         val path = toNioPathOrNull() ?: return emptyList()
-        project.targetUtils
+        targetUtils
           .allBuildTargets()
           .filter { it.baseDirectory.startsWith(path) }
       } else {
-        project.targetUtils.getExecutableTargetsForFile(this).mapNotNull { project.targetUtils.getBuildTargetForLabel(it) }
+        targetUtils.getExecutableTargetsForFile(this).mapNotNull { targetUtils.getBuildTargetForLabel(it) }
       }
     return childTargets.filter {
       it.kind.ruleType == RuleType.TEST && !it.tags.contains(BuildTargetTag.MANUAL)

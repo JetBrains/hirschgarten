@@ -433,9 +433,9 @@ SDK_251_INTELLIJ_REPOSITORY_VERSION = "251.23774.435"
 
 SDK_251_INTELLIJ_REPOSITORY = "releases"  # releases or snapshots
 
-SDK_251_CLION_REPOSITORY_VERSION = "251.20015.45-EAP-SNAPSHOT"
+SDK_251_CLION_REPOSITORY_VERSION = "2025.1.1"
 
-SDK_251_CLION_REPOSITORY = "snapshots"  # releases or snapshots
+SDK_251_CLION_REPOSITORY = "releases"  # releases or snapshots
 
 IC_251_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_251_INTELLIJ_REPOSITORY, SDK_251_INTELLIJ_REPOSITORY_VERSION, SDK_251_INTELLIJ_REPOSITORY_VERSION)
 
@@ -492,7 +492,7 @@ http_archive(
     url = GO_PLUGIN_251_URL,
 )
 
-CLION_251_SHA = "1c897723c8f7b109ca2fe6adc36f4643805b20d1fd162e6d215387db9266e384"
+CLION_251_SHA = "5e441b2ddb22811f2f2d3a2db4c177398b6c70bd149c66c4f3fd1915ff8d3c71"
 
 CLION_251_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/clion/clion/%s/clion-%s.zip" % (SDK_251_CLION_REPOSITORY, SDK_251_CLION_REPOSITORY_VERSION, SDK_251_CLION_REPOSITORY_VERSION)
 

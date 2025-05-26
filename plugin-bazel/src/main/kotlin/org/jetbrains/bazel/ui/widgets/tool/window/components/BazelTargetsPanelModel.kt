@@ -19,10 +19,6 @@ class BazelTargetsPanelModel(private val project: Project) {
   var visibleTargets: List<Label> = emptyList()
     private set
 
-  // Invalid targets display logic is currently disabled
-  var invalidTargets: List<Label> = emptyList()
-    private set
-
   var matchCase: Boolean = false
     set(value) {
       field = value
@@ -92,9 +88,8 @@ class BazelTargetsPanelModel(private val project: Project) {
   val hasAnyTargets: Boolean
     get() = targets.isNotEmpty()
 
-  fun updateTargets(newTargets: Map<Label, BuildTarget>, newInvalidTargets: List<Label> = emptyList()) {
+  fun updateTargets(newTargets: Map<Label, BuildTarget>) {
     targets = newTargets.filterKeys { it.isMainWorkspace }
-    invalidTargets = newInvalidTargets.filter { it.isMainWorkspace }
 
     updateVisibleTargets()
   }

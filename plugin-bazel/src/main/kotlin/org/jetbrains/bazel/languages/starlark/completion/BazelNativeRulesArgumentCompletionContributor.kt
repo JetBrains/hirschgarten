@@ -10,6 +10,7 @@ import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.project.Project
 import com.intellij.patterns.PatternCondition
 import com.intellij.patterns.PlatformPatterns.psiComment
 import com.intellij.patterns.PlatformPatterns.psiElement
@@ -21,6 +22,7 @@ import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRuleArgument
 import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRules
+import org.jetbrains.bazel.languages.starlark.documentation.BazelNativeRuleArgumentDocumentationSymbol
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
@@ -80,7 +82,7 @@ class BazelNativeRulesArgumentCompletionContributor : CompletionContributor() {
         }
 
       filtered.forEach {
-        result.addElement(PrioritizedLookupElement.withPriority(functionLookupElement(it), parameterPriority))
+        result.addElement(PrioritizedLookupElement.withPriority(functionLookupElement(it, parameters.position.project), parameterPriority))
       }
     }
 
@@ -101,9 +103,9 @@ class BazelNativeRulesArgumentCompletionContributor : CompletionContributor() {
       }
     }
 
-    private fun functionLookupElement(arg: BazelNativeRuleArgument): LookupElement =
+    private fun functionLookupElement(arg: BazelNativeRuleArgument, project: Project): LookupElement =
       LookupElementBuilder
-        .create(arg.name)
+        .create(BazelNativeRuleArgumentDocumentationSymbol(arg, project), arg.name)
         .withIcon(PlatformIcons.PARAMETER_ICON)
         .withInsertHandler(ArgumentInsertHandler(arg.default))
   }

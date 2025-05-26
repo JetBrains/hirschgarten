@@ -47,9 +47,10 @@ object CompilerDiagnosticParser : Parser {
 
   private fun tryCollectLinesTillErrorMarker(output: Output): List<String> {
     val peeked = output.peek(limit = 30)
-    val index = peeked.indexOfFirst { IssuePositionMarker.matches(it) }
-    return if (index != -1) {
-      output.take(count = index + 1)
+    val issuePositionMarkerIndex = peeked.indexOfFirst { IssuePositionMarker.matches(it) }
+    return if (issuePositionMarkerIndex != -1) {
+      val nextDiagnosticIndex = peeked.indexOfFirst { DiagnosticHeader.matches(it) }.takeIf { it != -1 } ?: Integer.MAX_VALUE
+      output.take(count = (issuePositionMarkerIndex + 1).coerceAtMost(nextDiagnosticIndex))
     } else {
       emptyList()
     }

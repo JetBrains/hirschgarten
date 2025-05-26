@@ -46,7 +46,6 @@ class ProjectTest {
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
-          invalidTargets = emptyList(),
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(0),
           workspaceContext = createMockWorkspaceContext(),
@@ -60,7 +59,6 @@ class ProjectTest {
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
-          invalidTargets = emptyList(),
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(0),
           workspaceContext = createMockWorkspaceContext(),
@@ -85,7 +83,6 @@ class ProjectTest {
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
-          invalidTargets = emptyList(),
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(21),
           workspaceContext = createMockWorkspaceContext(),
@@ -99,7 +96,6 @@ class ProjectTest {
           modules = emptyList(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
-          invalidTargets = emptyList(),
           nonModuleTargets = emptyList(),
           bazelRelease = BazelRelease(37),
           workspaceContext = createMockWorkspaceContext(),
@@ -132,7 +128,6 @@ class ProjectTest {
               "@golibrary1//lib".toLabel() to "@golibrary1//lib".toMockGoLibrary(),
               "@golibrary2//lib".toLabel() to "@golibrary2//lib".toMockGoLibrary(),
             ),
-          invalidTargets = listOf("//invalid1".toLabel()),
           nonModuleTargets = listOf("//nonmodule1".toMockNonModuleTarget(), "//nonmodule2".toMockNonModuleTarget()),
           bazelRelease = BazelRelease(1),
           workspaceContext = createMockWorkspaceContext(targetsPattern = "//..."),
@@ -160,7 +155,6 @@ class ProjectTest {
               "@golibrary3//lib".toLabel() to "@golibrary3//lib".toMockGoLibrary(),
               "@golibrary4//lib".toLabel() to "@golibrary4//lib".toMockGoLibrary(),
             ),
-          invalidTargets = listOf("//invalid2".toLabel()),
           nonModuleTargets = listOf("//nonmodule3".toMockNonModuleTarget()),
           bazelRelease = BazelRelease(1),
           workspaceContext = createMockWorkspaceContext(targetsPattern = "//other/..."),
@@ -195,7 +189,6 @@ class ProjectTest {
               "@golibrary3//lib".toLabel() to "@golibrary3//lib".toMockGoLibrary(),
               "@golibrary4//lib".toLabel() to "@golibrary4//lib".toMockGoLibrary(),
             ),
-          invalidTargets = listOf("//invalid1".toLabel(), "//invalid2".toLabel()),
           nonModuleTargets =
             listOf(
               "//nonmodule3".toMockNonModuleTarget(),
@@ -213,7 +206,6 @@ class ProjectTest {
       newProject.modules shouldContainExactlyInAnyOrder expectedNewProject.modules
       newProject.libraries shouldBe expectedNewProject.libraries
       newProject.goLibraries shouldBe expectedNewProject.goLibraries
-      newProject.invalidTargets shouldContainExactlyInAnyOrder expectedNewProject.invalidTargets
       newProject.nonModuleTargets shouldContainExactlyInAnyOrder expectedNewProject.nonModuleTargets
       newProject.bazelRelease shouldBe expectedNewProject.bazelRelease
     }

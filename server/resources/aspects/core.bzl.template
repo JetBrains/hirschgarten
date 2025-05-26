@@ -62,6 +62,9 @@ def _bsp_target_info_aspect_impl(target, ctx):
     rule_attrs = ctx.rule.attr
     rule_kind = ctx.rule.kind
 
+    if "no-ide" in rule_attrs.tags:
+        return []
+
     direct_dep_targets = collect_targets_from_attrs(rule_attrs, COMPILE_DEPS)
     private_direct_dep_targets = collect_targets_from_attrs(rule_attrs, PRIVATE_COMPILE_DEPS)
     direct_deps = make_deps(direct_dep_targets, COMPILE)

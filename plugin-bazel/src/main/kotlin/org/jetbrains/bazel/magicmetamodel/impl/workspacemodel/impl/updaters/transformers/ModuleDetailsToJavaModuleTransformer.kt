@@ -100,7 +100,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
         associates = toAssociates(inputEntity),
         libraryDependencies = inputEntity.libraryDependencies,
         moduleDependencies = inputEntity.moduleDependencies,
-        scalacOptions = inputEntity.scalacOptions,
       )
 
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
