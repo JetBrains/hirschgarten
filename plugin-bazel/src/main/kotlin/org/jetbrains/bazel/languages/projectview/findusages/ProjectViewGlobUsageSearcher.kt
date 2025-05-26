@@ -4,7 +4,6 @@ import com.intellij.openapi.application.QueryExecutorBase
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReference
@@ -61,13 +60,7 @@ internal class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, Re
     if (elementToSearch is PsiFileSystemItem) {
       return elementToSearch
     }
-    for (provider in PsiFileProvider.EP_NAME.extensions) {
-      val file: PsiFile? = provider.asFileSearch(elementToSearch)
-      if (file != null) {
-        return file
-      }
-    }
-    return null
+    return PsiFileProvider.findFile(elementToSearch)
   }
 
   private fun findBuildFile(packageDir: VirtualFile): VirtualFile? = BUILD_FILE_NAMES.firstNotNullOfOrNull { packageDir.findChild(it) }
