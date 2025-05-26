@@ -9,11 +9,15 @@ import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.settings.bazel.setProjectViewPath
-import org.jetbrains.bazel.utils.VfsUtils
+import org.jetbrains.bazel.utils.toVirtualFile
+import java.io.IOException
 import javax.swing.Icon
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.listDirectoryEntries
 
 private val log = logger<BazelProjectOpenProcessor>()
+
+internal val BUILD_FILE_GLOB = "{${Constants.BUILD_FILE_NAMES.joinToString(",")}}"
 
 /**
  * Refrain from using [VirtualFile.getChildren] as it causes performance issues in large projects, such as [BAZEL-1717](https://youtrack.jetbrains.com/issue/BAZEL-1717)
@@ -46,7 +50,7 @@ internal class BazelProjectOpenProcessor : BaseProjectOpenProcessor() {
       originalVFile.isWorkspaceFile() -> { _ -> }
       originalVFile.isWorkspaceRoot() -> { _ -> }
       else -> {
-        val buildFile = VfsUtils.getBuildFileForPackageDirectory(originalVFile)
+        val buildFile = getBuildFileForPackageDirectory(originalVFile)
         buildFile?.let { buildFileBeforeOpenCallback(it) } ?: {}
       }
     }
@@ -94,3 +98,18 @@ private fun VirtualFile.isWorkspaceRoot(): Boolean {
 private fun VirtualFile.isWorkspaceFile() = isFile && name in Constants.WORKSPACE_FILE_NAMES
 
 private fun VirtualFile.isBuildFile() = isFile && name in Constants.BUILD_FILE_NAMES
+
+fun getBuildFileForPackageDirectory(packageDirectory: VirtualFile): VirtualFile? {
+  try {
+    if (!packageDirectory.isDirectory) return null
+    val path = packageDirectory.toNioPath()
+    return path
+      .listDirectoryEntries(
+        glob = BUILD_FILE_GLOB,
+      ).firstOrNull { it.isRegularFile() }
+      ?.toVirtualFile()
+  } catch (e: IOException) {
+    log.warn("Cannot retrieve Bazel BUILD file from directory ${packageDirectory.toNioPath()}", e)
+    return null
+  }
+}
