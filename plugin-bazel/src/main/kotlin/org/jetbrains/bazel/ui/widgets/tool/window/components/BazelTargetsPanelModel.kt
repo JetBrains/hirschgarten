@@ -4,7 +4,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.ui.widgets.tool.window.filter.TargetFilter
 import org.jetbrains.bsp.protocol.BuildTarget
 
 // It is a service, because we want to update the state from a sync hook
@@ -18,10 +17,6 @@ class BazelTargetsPanelModel(private val project: Project) {
   fun getTargetData(target: Label): BuildTarget? = targets[target]
 
   var visibleTargets: List<Label> = emptyList()
-    private set
-
-  // Invalid targets display logic is currently disabled
-  var invalidTargets: List<Label> = emptyList()
     private set
 
   var matchCase: Boolean = false
@@ -93,9 +88,8 @@ class BazelTargetsPanelModel(private val project: Project) {
   val hasAnyTargets: Boolean
     get() = targets.isNotEmpty()
 
-  fun updateTargets(newTargets: Map<Label, BuildTarget>, newInvalidTargets: List<Label> = emptyList()) {
+  fun updateTargets(newTargets: Map<Label, BuildTarget>) {
     targets = newTargets
-    invalidTargets = newInvalidTargets
 
     updateVisibleTargets()
   }

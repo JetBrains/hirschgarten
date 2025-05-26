@@ -24,5 +24,5 @@ internal class TargetDependentsGraph(targetIdToTargetInfo: Map<Label, BuildTarge
     }
   }
 
-  fun directDependentIds(targetId: Label): Set<Label> = targetIdToDirectDependentIds.getOrDefault(targetId, hashSetOf())
+  fun directDependentIds(targetId: Label): Set<Label> = targetIdToDirectDependentIds.getOrDefault(targetId, emptySet())
 }

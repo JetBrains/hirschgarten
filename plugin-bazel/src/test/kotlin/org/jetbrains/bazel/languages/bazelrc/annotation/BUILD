@@ -6,6 +6,7 @@ kt_intellij_junit4_test(
     data = [
         "//plugin-bazel/src/test/testData/bazelrc/annotation:LabelFlagsTestData.bazelrc",
         "//plugin-bazel/src/test/testData/bazelrc/annotation:OldFlagsTestData.bazelrc",
+        "//plugin-bazel/src/test/testData/bazelrc/annotation:TargetFlagsTestData.bazelrc",
     ],
     deps = [
         "//plugin-bazel",

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -57,7 +58,12 @@ internal class ModuleDetailsToJavaModuleTransformer(
     return when (dummyModulesResult) {
       is JavaModuleToDummyJavaModulesTransformerHACK.DummyModulesToAdd -> {
         val dummyModules = dummyModulesResult.dummyModules
-        val dummyModuleDependencies = dummyModules.map { IntermediateModuleDependency(it.genericModuleInfo.name) }
+        val dummyModuleDependencies =
+          if (BazelFeatureFlags.addDummyModuleDependencies) {
+            dummyModules.map { IntermediateModuleDependency(it.genericModuleInfo.name) }
+          } else {
+            emptyList()
+          }
         val javaModuleWithDummyDependencies =
           javaModule.copy(
             genericModuleInfo =
@@ -94,7 +100,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
         associates = toAssociates(inputEntity),
         libraryDependencies = inputEntity.libraryDependencies,
         moduleDependencies = inputEntity.moduleDependencies,
-        scalacOptions = inputEntity.scalacOptions,
       )
 
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)

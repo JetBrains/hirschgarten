@@ -41,7 +41,7 @@ import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.task.asyncQueryIf
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.task.queryIf
-import org.jetbrains.bazel.target.calculateFileToTarget
+import org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStructureDiff
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
@@ -55,7 +55,6 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
-import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -70,6 +69,7 @@ class CollectProjectDetailsTask(
   private val project: Project,
   private val taskId: String,
   private val diff: MutableEntityStorage,
+  private val targetUtilsDiff: TargetUtilsProjectStructureDiff,
 ) {
   private var uniqueJavaHomes: Set<Path>? = null
 
@@ -223,8 +223,6 @@ class CollectProjectDetailsTask(
             projectDetails.targetIds.associateWith { transformer.moduleDetailsForTargetId(it) }
           }
 
-        val fileToTarget: Map<Path, List<Label>> = calculateFileToTarget(targetIdToModuleDetails)
-
         val targetIdToModuleEntitiesMap =
           bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
             val syncedTargetIdToTargetInfo =
@@ -242,23 +240,17 @@ class CollectProjectDetailsTask(
                 projectDetails = projectDetails,
                 targetIdToModuleDetails = targetIdToModuleDetails,
                 targetIdToTargetInfo = targetIdToTargetInfo,
-                fileToTarget = fileToTarget,
+                // TODO: remove usage, https://youtrack.jetbrains.com/issue/BAZEL-2015
+                fileToTarget = targetUtilsDiff.fileToTarget,
                 projectBasePath = projectBasePath,
                 project = project,
                 isAndroidSupportEnabled = false,
               )
-
-            if (syncScope is FullProjectSync) {
-              project.targetUtils.saveTargets(
-                targetIdToTargetInfo,
-                targetIdToModuleEntityMap,
-                fileToTarget,
-                projectDetails.libraries,
-                libraryModules,
-              )
-            }
             targetIdToModuleEntityMap
           }
+
+        // TODO: remove this: https://youtrack.jetbrains.com/issue/BAZEL-2015/
+        targetUtilsDiff.libraryItems = projectDetails.libraries
 
         val modulesToLoad = targetIdToModuleEntitiesMap.values.flatten().distinctBy { module -> module.getModuleName() }
 
@@ -282,6 +274,7 @@ class CollectProjectDetailsTask(
               projectBasePath = projectBasePath,
               project = project,
               isAndroidSupportEnabled = false,
+              libraryModules = libraryModules,
             )
 
           workspaceModelUpdater.loadModules(modulesToLoad + libraryModules)
@@ -428,23 +421,10 @@ suspend fun calculateProjectDetailsWithCapabilities(
           server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
         }
 
-      // Same for Scala
-      val scalacOptionsResult =
-        // TODO: Son
-        if (libraries == null) {
-          asyncQueryIf(scalaTargetIds.isNotEmpty(), "buildTarget/scalacOptions") {
-            server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
-          }
-        } else {
-          null
-        }
-
       ProjectDetails(
         targetIds = bspBuildTargets.targets.map { it.id },
         targets = bspBuildTargets.targets.toSet(),
         javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
-        // TODO: Son
-        scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
         libraries = libraries.libraries,
         jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
       )

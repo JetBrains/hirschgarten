@@ -68,7 +68,6 @@ class BazelBspServer(
     val bspProjectMapper =
       BspProjectMapper(
         languagePluginsService = languagePluginsService,
-        workspaceContextProvider = workspaceContextProvider,
         bazelPathsResolver = bazelPathsResolver,
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,

@@ -40,7 +40,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targets = setOf(target),
         javacOptions = emptyList(),
         libraries = null,
-        scalacOptions = emptyList(),
       )
 
     // when
@@ -52,7 +51,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target,
         javacOptions = null,
-        scalacOptions = null,
         libraryDependencies = null,
         moduleDependencies = emptyList(),
         defaultJdkName = null,
@@ -93,7 +91,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targets = setOf(target),
         javacOptions = listOf(javacOptions),
         libraries = emptyList(),
-        scalacOptions = emptyList(),
       )
 
     // when
@@ -105,7 +102,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target,
         javacOptions = javacOptions,
-        scalacOptions = null,
         libraryDependencies = emptyList(),
         moduleDependencies = emptyList(),
         defaultJdkName = null,
@@ -201,7 +197,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targets = setOf(target2, target1, target3, target4),
         javacOptions = listOf(target3JavacOptionsItem, target1JavacOptionsItem),
         libraries = emptyList(),
-        scalacOptions = emptyList(),
       )
 
     // when
@@ -216,7 +211,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target1,
         javacOptions = target1JavacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = emptyList(),
         moduleDependencies = listOf(target2Id),
         defaultJdkName = null,
@@ -226,7 +220,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target2,
         javacOptions = null,
-        scalacOptions = null,
         libraryDependencies = emptyList(),
         moduleDependencies = emptyList(),
         defaultJdkName = null,
@@ -236,7 +229,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target3,
         javacOptions = target3JavacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = emptyList(),
         moduleDependencies = listOf(target2Id),
         defaultJdkName = null,
@@ -246,7 +238,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target4,
         javacOptions = null,
-        scalacOptions = null,
         libraryDependencies = emptyList(),
         moduleDependencies = listOf(target1Id),
         defaultJdkName = null,

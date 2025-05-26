@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.flow.open
 
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.settings.bazel.setProjectViewPath
 import org.jetbrains.bazel.sync.ProjectPreSyncHook
 import kotlin.io.path.isRegularFile
 
@@ -15,7 +16,7 @@ class RegenerateProjectViewFileContentPreSyncHook : ProjectPreSyncHook {
           overwrite = false,
           bazelPackageDir = null,
         )
-      project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectViewFilePath)
+      project.setProjectViewPath(projectViewFilePath)
     }
   }
 }

@@ -6,9 +6,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.bazel.ui.gutters.BspRunLineMarkerContributor
+import org.jetbrains.bazel.annotations.PublicApi
+import org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 
-open class BazelJavaRunLineMarkerContributor : BspRunLineMarkerContributor() {
+@PublicApi
+open class BazelJavaRunLineMarkerContributor : BazelRunLineMarkerContributor() {
   override fun isDumbAware(): Boolean = true
 
   override fun PsiElement.shouldAddMarker(): Boolean =

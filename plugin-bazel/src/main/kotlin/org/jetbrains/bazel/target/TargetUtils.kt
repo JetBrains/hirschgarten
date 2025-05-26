@@ -29,9 +29,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import java.nio.file.Path
@@ -81,8 +78,6 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
     @InternalApi get
 
-  private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
-
   fun addFileToTargetIdEntry(path: Path, targets: List<Label>) {
     fileToTarget = fileToTarget + (path to targets)
   }
@@ -100,17 +95,12 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   @InternalApi
   suspend fun saveTargets(
-    targetIdToTargetInfo: Map<Label, BuildTarget>,
-    targetIdToModuleEntity: Map<Label, List<Module>>,
+    targets: List<BuildTarget>,
     fileToTarget: Map<Path, List<Label>>,
     libraryItems: List<LibraryItem>?,
-    libraryModules: List<JavaModule>,
   ) {
-    this.labelToTargetInfo = targetIdToTargetInfo.mapKeys { it.key }
-    moduleIdToTarget =
-      targetIdToModuleEntity.entries.associate { (targetId, modules) ->
-        modules.first().getModuleName() to targetId
-      }
+    labelToTargetInfo = targets.associateBy { it.id }
+    moduleIdToTarget = labelToTargetInfo.keys.associateBy { it.formatAsModuleName(project) }
     libraryIdToTarget =
       libraryItems
         ?.associate { library ->
@@ -120,7 +110,6 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     this.fileToTarget = fileToTarget
     fileToExecutableTargets = calculateFileToExecutableTargets(libraryItems)
 
-    this.libraryModulesLookupTable = createLibraryModulesLookupTable(libraryModules)
     updateComputedFields()
   }
 
@@ -168,9 +157,6 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
         .toSet()
     }
 
-  private fun createLibraryModulesLookupTable(libraryModules: List<JavaModule>) =
-    libraryModules.map { it.genericModuleInfo.name }.toHashSet()
-
   private fun updateComputedFields() {
     allTargetsAndLibrariesLabels = (allTargets() + allLibraries()).map { it.toShortString(project) }
   }
@@ -215,12 +201,6 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   @InternalApi
   fun allBuildTargets(): List<BuildTarget> = labelToTargetInfo.values.toList()
-
-  /**
-   * [libraryModulesLookupTable] is not persisted between IDE restarts, use this method with caution.
-   */
-  @InternalApi
-  fun isLibraryModule(name: String): Boolean = name.addLibraryModulePrefix() in libraryModulesLookupTable
 
   @InternalApi
   override fun getState(): TargetUtilsState =
@@ -279,7 +259,7 @@ val Project.targetUtils: TargetUtils
 
 @PublicApi
 fun Label.getModule(project: Project): com.intellij.openapi.module.Module? =
-  project.service<TargetUtils>().getBuildTargetForLabel(this)?.getModule(project)
+  project.targetUtils.getBuildTargetForLabel(this)?.getModule(project)
 
 @PublicApi
 fun Label.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity
@@ -296,12 +276,3 @@ fun BuildTarget.getModule(project: Project): com.intellij.openapi.module.Module?
   val moduleName = this.id.formatAsModuleName(project)
   return ModuleManager.getInstance(project).findModuleByName(moduleName)
 }
-
-@InternalApi
-fun calculateFileToTarget(targetIdToModuleDetails: Map<Label, ModuleDetails>): Map<Path, List<Label>> =
-  targetIdToModuleDetails.values
-    .flatMap { it.toPairsPathToId() }
-    .groupBy { it.first }
-    .mapValues { it.value.map { pair -> pair.second } }
-
-private fun ModuleDetails.toPairsPathToId(): List<Pair<Path, Label>> = target.sources.map { it.path }.map { it to target.id }

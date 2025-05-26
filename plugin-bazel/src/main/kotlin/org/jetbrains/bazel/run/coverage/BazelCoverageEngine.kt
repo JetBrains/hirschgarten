@@ -55,8 +55,11 @@ class BazelCoverageEngine : CoverageEngine() {
     coverageByTestEnabled: Boolean,
     branchCoverage: Boolean,
     trackTestFolders: Boolean,
-    project: Project,
-  ): CoverageSuite? = BazelCoverageSuite(name, project, runner, fileProvider, timestamp)
+    project: Project?,
+  ): CoverageSuite? {
+    if (project == null) return null
+    return BazelCoverageSuite(name, project, runner, fileProvider, timestamp)
+  }
 
   @Deprecated("Deprecated in Java")
   override fun createCoverageSuite(
@@ -64,9 +67,9 @@ class BazelCoverageEngine : CoverageEngine() {
     name: String,
     coverageDataFileProvider: CoverageFileProvider,
     config: CoverageEnabledConfiguration,
-  ): CoverageSuite? = BazelCoverageSuite(name, config.configuration.project, runner, config.createFileProvider(), config.createTimestamp())
+  ): CoverageSuite = BazelCoverageSuite(name, config.configuration.project, runner, config.createFileProvider(), config.createTimestamp())
 
-  override fun createEmptyCoverageSuite(coverageRunner: CoverageRunner): CoverageSuite? = BazelCoverageSuite()
+  override fun createEmptyCoverageSuite(coverageRunner: CoverageRunner): CoverageSuite = BazelCoverageSuite()
 
   override fun getCoverageAnnotator(project: Project): CoverageAnnotator = BazelCoverageAnnotator.getInstance(project)
 
