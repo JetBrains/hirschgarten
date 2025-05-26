@@ -31,9 +31,10 @@ internal class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, Re
     val file = asFileSystemItemSearch(queryParameters.elementToSearch) ?: return
     val containingPackage = findContainingPackage(file.virtualFile) ?: return
     val buildFile = findBuildFile(containingPackage) ?: return
-    if (!inScope(queryParameters, buildFile)) {
-      return
-    }
+
+    // For some reasdon this was in old plugin, but it sometimes breaks the usage search:
+    // if (!inScope(queryParameters, buildFile)) return
+
     val relativePath = VfsUtilCore.getRelativePath(file.virtualFile, buildFile.parent) ?: return
 
     val psiManager = PsiManager.getInstance(queryParameters.project)

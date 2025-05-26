@@ -14,10 +14,9 @@ interface PsiFileProvider {
   companion object {
     private val EP_NAME = ExtensionPointName.create<PsiFileProvider>("org.jetbrains.bazel.psiFileProvider")
 
-    fun findFile(elementToSearch: PsiElement): PsiFile? {
-      return EP_NAME.computeSafeIfAny { provider ->
+    fun findFile(elementToSearch: PsiElement): PsiFile? =
+      EP_NAME.computeSafeIfAny { provider ->
         provider.asFileSearch(elementToSearch)
       }
-    }
   }
 }
