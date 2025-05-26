@@ -24,11 +24,10 @@ import org.jetbrains.bazel.ui.queryTab.BazelQueryTab
 import org.jetbrains.bazel.ui.widgets.tool.window.filter.FilterActionGroup
 import java.nio.file.Path
 import javax.swing.SwingConstants
+import javax.swing.SwingUtilities
 
 class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, true) {
   private val model = project.service<BazelTargetsPanelModel>()
-  val targetsPanel = BazelTargetsPanel(project, model)
-  val queryTab = BazelQueryTab(project)
 
   init {
     val actionManager = ActionManager.getInstance()
@@ -52,12 +51,36 @@ class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, t
       }
     toolbar = actionToolbar.component
 
-    val tabbedPane =
-      JBTabbedPane().apply {
-        addTab("Loaded Targets", targetsPanel)
-        addTab("Bazel Query", queryTab)
+    updateTabs()
+    companionCurrentInstance = this
+  }
+
+  fun updateTabs() {
+    val panel = BazelTargetsPanel(project, this.model)
+    setContent(
+      if (project.bazelProjectSettings.enableQueryTab) {
+        JBTabbedPane().apply {
+          addTab("Loaded Targets", panel)
+          addTab("Bazel Query", BazelQueryTab(project))
+        }
+      } else {
+        panel
+      },
+    )
+    panel.update()
+  }
+
+  companion object {
+    private var companionCurrentInstance: BazelToolWindowPanel? = null
+
+    fun updateCurrentPanelTabs() {
+      companionCurrentInstance?.apply {
+        SwingUtilities.invokeLater {
+          updateTabs()
+          updateUI()
+        }
       }
-    setContent(tabbedPane)
+    }
   }
 }
 
