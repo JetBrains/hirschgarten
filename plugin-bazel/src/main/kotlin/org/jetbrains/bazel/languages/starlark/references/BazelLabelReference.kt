@@ -19,9 +19,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLite
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
-import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToApparentName
-import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
-import org.jetbrains.bazel.languages.starlark.repomapping.findContainingBazelRepo
+import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 
@@ -128,42 +126,12 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
 
   private fun isLoadFilenameCompletionLocation(): Boolean = element.parent is StarlarkFilenameLoadValue
 
-  private fun filePathToLabel(relativeFilePath: String, repoName: String?): String {
-    val lastSlash = relativeFilePath.lastIndexOf('/')
-    if (lastSlash == -1) {
-      return "//:$relativeFilePath"
-    }
-
-    val beforeColon = relativeFilePath.substring(0, lastSlash)
-    val afterColon = relativeFilePath.substring(lastSlash + 1)
-
-    return if (repoName == null) {
-      "//$beforeColon:$afterColon"
-    } else {
-      "@$repoName//$beforeColon:$afterColon"
-    }
-  }
-
   private fun loadFilenameCompletion(): Array<LookupElement> {
     val repoNameToBzlFiles = element.project.getService(BazelFileService::class.java).getApparentRepoNameToFiles()
-    val myRepoPath =
-      findContainingBazelRepo(
-        element.containingFile.originalFile.virtualFile
-          .toNioPath(),
-      )
-
     val lookupElements = mutableListOf<LookupElement>()
-    for ((repoName, bzlFiles) in repoNameToBzlFiles) {
-      val repoPath = element.project.canonicalRepoNameToPath[repoName]
-      val apparentRepoName =
-        if (myRepoPath == repoPath) {
-          null
-        } else {
-          element.project.canonicalRepoNameToApparentName[repoName]
-        }
-
-      for (filePath in bzlFiles) {
-        lookupElements.add(fileLookupElement(filePathToLabel(filePath, apparentRepoName)))
+    for ((_, bzlFiles) in repoNameToBzlFiles) {
+      for (label in bzlFiles) {
+        lookupElements.add(fileLookupElement(label.toShortString(element.project)))
       }
     }
     return lookupElements.toTypedArray()
