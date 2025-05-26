@@ -1,10 +1,15 @@
 package org.jetbrains.bazel.languages.starlark.findusages
 
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiDirectory
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiReference
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.jetbrains.python.ast.findChildByClass
+import org.jetbrains.kotlin.psi.KtClass
+import org.jetbrains.kotlin.psi.psiUtil.getChildOfType
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -196,7 +201,11 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    val references = findUsagesOfElement(kotlinFile)
+    // In IntelliJ, when the kotlin file contains a proper class definition,
+    // [Right Click] -> [Find Usages] on TestClassWithDefinition.kt is called with the KtClass type (not PsiFile).
+    // This code checks if [Find Usages] works in this case as well (see KotlinPsiFileProvider extension point).
+    val kotlinClass = kotlinFile.getChildOfType<KtClass>()!!
+    val references = findUsagesOfElement(kotlinClass)
 
     assertThat(references).isNotEmpty()
     assertThat(references).anyMatch { containsGlob(it.element.containingFile) }
@@ -232,7 +241,11 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
       """.trimIndent(),
     )
 
-    val references = findUsagesOfElement(javaFile)
+    // In IntelliJ, when the java file contains a proper class definition,
+    // [Right Click] -> [Find Usages] on TestClassWithDefinition.kt is called with the PsiClass type (not PsiFile).
+    // This code checks if [Find Usages] works in this case as well (see JavaPsiFileProvider extension point).
+    val javaClass = javaFile.getChildOfType<PsiClass>()!!
+    val references = findUsagesOfElement(javaClass)
 
     assertThat(references).isNotEmpty()
     assertThat(references).anyMatch { containsGlob(it.element.containingFile) }
@@ -329,9 +342,7 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
     assertThat(javaReferences).anyMatch { containsGlob(it.element.containingFile) }
   }
 
-  private fun findUsagesOfElement(element: PsiFile): Collection<PsiReference> = ReferencesSearch.search(element).findAll()
-
-  private fun findUsagesOfElement(element: PsiDirectory): Collection<PsiReference> = ReferencesSearch.search(element).findAll()
+  private fun findUsagesOfElement(element: PsiElement): Collection<PsiReference> = ReferencesSearch.search(element).findAll()
 
   private fun containsGlob(file: PsiFile): Boolean = file.text.contains("glob(")
 
