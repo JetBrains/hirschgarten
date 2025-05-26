@@ -27,11 +27,8 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
       .getInstance(element.project)
       .resolveWithCaching(this, MyPolyVariantResolver, false, incompleteCode)
 
-  companion object {
-    private val MyPolyVariantResolver =
-      ResolveCache.PolyVariantResolver<StarlarkGlobReference> { ref, incompleteCode ->
-        ref.doResolve()
-      }
+  private object MyPolyVariantResolver : ResolveCache.PolyVariantResolver<StarlarkGlobReference> {
+    override fun resolve(ref: StarlarkGlobReference, incompleteCode: Boolean): Array<out ResolveResult?> = ref.doResolve()
   }
 
   // The actual resolution logic - this gets cached
