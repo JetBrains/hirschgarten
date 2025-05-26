@@ -16,7 +16,6 @@ import com.intellij.util.Processor
 import org.jetbrains.bazel.commons.constants.Constants.BUILD_FILE_NAMES
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGlobExpression
 
-
 /**
  * Searches for references to a file in globs. These aren't picked up by a standard string search,
  * and are only evaluated on demand, so we can't just check a reference cache.

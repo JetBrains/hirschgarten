@@ -22,15 +22,16 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
     TextRange(0, element.textLength),
   ),
   PsiPolyVariantReference {
-  override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult> {
-    return ResolveCache.getInstance(element.project)
+  override fun multiResolve(incompleteCode: Boolean): Array<out ResolveResult> =
+    ResolveCache
+      .getInstance(element.project)
       .resolveWithCaching(this, MyPolyVariantResolver, false, incompleteCode)
-  }
 
   companion object {
-    private val MyPolyVariantResolver = ResolveCache.PolyVariantResolver<StarlarkGlobReference> { ref, incompleteCode ->
-      ref.doResolve()
-    }
+    private val MyPolyVariantResolver =
+      ResolveCache.PolyVariantResolver<StarlarkGlobReference> { ref, incompleteCode ->
+        ref.doResolve()
+      }
   }
 
   // The actual resolution logic - this gets cached
@@ -67,7 +68,6 @@ class StarlarkGlobReference(element: StarlarkGlobExpression) :
 
     return results.toTypedArray()
   }
-
 
   fun resolveFile(vf: VirtualFile, project: Project): PsiFileSystemItem? {
     val manager = PsiManager.getInstance(project)

@@ -15,12 +15,15 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
   fun `should find glob reference for single kotlin file with recursive pattern`() {
     val kotlinFile = myFixture.addFileToProject("src/Test.kt", "// test file")
 
-    myFixture.addFileToProject("BUILD", """
-            kt_jvm_library(
-                name = "lib",
-                srcs = glob(["**/*.kt"])
-            )
-        """.trimIndent())
+    myFixture.addFileToProject(
+      "BUILD",
+      """
+      kt_jvm_library(
+          name = "lib",
+          srcs = glob(["**/*.kt"])
+      )
+      """.trimIndent(),
+    )
 
     val references = findUsagesOfElement(kotlinFile)
 
@@ -32,12 +35,15 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
   fun `should find glob reference for single kotlin file with specific pattern`() {
     val kotlinFile = myFixture.addFileToProject("Test.kt", "// test file")
 
-    myFixture.addFileToProject("BUILD", """
-            kt_jvm_library(
-                name = "lib", 
-                srcs = glob(["*.kt"])
-            )
-        """.trimIndent())
+    myFixture.addFileToProject(
+      "BUILD",
+      """
+      kt_jvm_library(
+          name = "lib", 
+          srcs = glob(["*.kt"])
+      )
+      """.trimIndent(),
+    )
 
     val references = findUsagesOfElement(kotlinFile)
 
@@ -49,12 +55,15 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
   fun `should find glob reference with wildcard pattern for kotlin`() {
     val kotlinFile = myFixture.addFileToProject("Test.kt", "// test file")
 
-    myFixture.addFileToProject("BUILD", """
-            kt_jvm_library(
-                name = "lib",
-                srcs = glob(["T*t.kt"])
-            )
-        """.trimIndent())
+    myFixture.addFileToProject(
+      "BUILD",
+      """
+      kt_jvm_library(
+          name = "lib",
+          srcs = glob(["T*t.kt"])
+      )
+      """.trimIndent(),
+    )
 
     val references = findUsagesOfElement(kotlinFile)
 
@@ -67,12 +76,15 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
     val testFile = myFixture.addFileToProject("Test.kt", "// test file")
     val fooFile = myFixture.addFileToProject("Foo.kt", "// foo file")
 
-    myFixture.addFileToProject("BUILD", """
-            kt_jvm_library(
-                name = "lib",
-                srcs = glob(["*.kt"])
-            )
-        """.trimIndent())
+    myFixture.addFileToProject(
+      "BUILD",
+      """
+      kt_jvm_library(
+          name = "lib",
+          srcs = glob(["*.kt"])
+      )
+      """.trimIndent(),
+    )
 
     val testReferences = findUsagesOfElement(testFile)
     val fooReferences = findUsagesOfElement(fooFile)
@@ -87,12 +99,15 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
   fun `should find kotlin files in subdirectories with recursive glob`() {
     val kotlinFile = myFixture.addFileToProject("src/main/Test.kt", "// test file")
 
-    myFixture.addFileToProject("BUILD", """
-            kt_jvm_library(
-                name = "lib",
-                srcs = glob(["**/*.kt"])
-            )
-        """.trimIndent())
+    myFixture.addFileToProject(
+      "BUILD",
+      """
+      kt_jvm_library(
+          name = "lib",
+          srcs = glob(["**/*.kt"])
+      )
+      """.trimIndent(),
+    )
 
     val references = findUsagesOfElement(kotlinFile)
 
@@ -105,15 +120,18 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
     val testFile = myFixture.addFileToProject("test/Test.kt", "// test file")
     val mainFile = myFixture.addFileToProject("Main.kt", "// main file")
 
-    myFixture.addFileToProject("BUILD", """
-            kt_jvm_library(
-                name = "lib",
-                srcs = glob(
-                    ["**/*.kt"],
-                    exclude = ["test/*.kt"]
-                )
-            )
-        """.trimIndent())
+    myFixture.addFileToProject(
+      "BUILD",
+      """
+      kt_jvm_library(
+          name = "lib",
+          srcs = glob(
+              ["**/*.kt"],
+              exclude = ["test/*.kt"]
+          )
+      )
+      """.trimIndent(),
+    )
 
     val mainReferences = findUsagesOfElement(mainFile)
     val testReferences = findUsagesOfElement(testFile)
@@ -130,17 +148,20 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
   fun `should find references from multiple globs targeting same kotlin file`() {
     val kotlinFile = myFixture.addFileToProject("Test.kt", "// test file")
 
-    myFixture.addFileToProject("BUILD", """
-            kt_jvm_library(
-                name = "lib",
-                srcs = glob(["*.kt"])
-            )
-            
-            kt_jvm_test(
-                name = "test",
-                srcs = glob(["**/*.kt"])  
-            )
-        """.trimIndent())
+    myFixture.addFileToProject(
+      "BUILD",
+      """
+      kt_jvm_library(
+          name = "lib",
+          srcs = glob(["*.kt"])
+      )
+      
+      kt_jvm_test(
+          name = "test",
+          srcs = glob(["**/*.kt"])  
+      )
+      """.trimIndent(),
+    )
 
     val references = findUsagesOfElement(kotlinFile)
 
@@ -154,19 +175,26 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
 
   @Test
   fun `should find proper kotlin class file with matching name`() {
-    val kotlinFile = myFixture.addFileToProject("TestClassWithDefinition.kt", """
+    val kotlinFile =
+      myFixture.addFileToProject(
+        "TestClassWithDefinition.kt",
+        """
         package com.example
         
         class TestClassWithDefinition {
         }
-    """.trimIndent())
+        """.trimIndent(),
+      )
 
-    myFixture.addFileToProject("BUILD", """
-            kt_jvm_library(
-                name = "services",
-                srcs = glob(["*.kt"])
-            )
-        """.trimIndent())
+    myFixture.addFileToProject(
+      "BUILD",
+      """
+      kt_jvm_library(
+          name = "services",
+          srcs = glob(["*.kt"])
+      )
+      """.trimIndent(),
+    )
 
     val references = findUsagesOfElement(kotlinFile)
 
@@ -175,25 +203,34 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
 
     // This should use extension point for proper class file handling
     val globReferences = references.filter { containsGlob(it.element.containingFile) }
-    assertTrue("Should find references through proper class file extension point",
-               globReferences.isNotEmpty())
+    assertTrue(
+      "Should find references through proper class file extension point",
+      globReferences.isNotEmpty(),
+    )
   }
 
   @Test
   fun `should find proper java class file with matching name`() {
-    val javaFile = myFixture.addFileToProject("TestClassWithDefinition.java", """
+    val javaFile =
+      myFixture.addFileToProject(
+        "TestClassWithDefinition.java",
+        """
         package com.example;
         
         public class TestClassWithDefinition {
         }
-    """.trimIndent())
+        """.trimIndent(),
+      )
 
-    myFixture.addFileToProject("BUILD", """
-            java_library(
-                name = "repositories",
-                srcs = glob(["*.java"])
-            )
-        """.trimIndent())
+    myFixture.addFileToProject(
+      "BUILD",
+      """
+      java_library(
+          name = "repositories",
+          srcs = glob(["*.java"])
+      )
+      """.trimIndent(),
+    )
 
     val references = findUsagesOfElement(javaFile)
 
@@ -202,24 +239,30 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
 
     // This should use extension point for proper class file handling
     val globReferences = references.filter { containsGlob(it.element.containingFile) }
-    assertTrue("Should find references through proper class file extension point",
-               globReferences.isNotEmpty())
+    assertTrue(
+      "Should find references through proper class file extension point",
+      globReferences.isNotEmpty(),
+    )
   }
 
   @Test
   fun `should handle directory references in globs`() {
     myFixture.addFileToProject("data/config.txt", "// config file")
-    val dataDir = myFixture.findFileInTempDir("data")?.let {
-      myFixture.psiManager.findDirectory(it)
-    }
+    val dataDir =
+      myFixture.findFileInTempDir("data")?.let {
+        myFixture.psiManager.findDirectory(it)
+      }
     checkNotNull(dataDir) { "Should find data directory" }
 
-    myFixture.addFileToProject("BUILD", """
-            filegroup(
-                name = "all_files",
-                srcs = glob(["**/*"], exclude_directories=0)
-            )
-        """.trimIndent())
+    myFixture.addFileToProject(
+      "BUILD",
+      """
+      filegroup(
+          name = "all_files",
+          srcs = glob(["**/*"], exclude_directories=0)
+      )
+      """.trimIndent(),
+    )
 
     val references = findUsagesOfElement(dataDir)
     assertThat(references).isNotEmpty()
@@ -229,12 +272,15 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
   fun `should not find references when glob pattern doesn't match kotlin files`() {
     val pythonFile = myFixture.addFileToProject("script.py", "# python file")
 
-    myFixture.addFileToProject("BUILD", """
-            kt_jvm_library(
-                name = "lib",
-                srcs = glob(["*.kt"])  # Only matches .kt files
-            )
-        """.trimIndent())
+    myFixture.addFileToProject(
+      "BUILD",
+      """
+      kt_jvm_library(
+          name = "lib",
+          srcs = glob(["*.kt"])  # Only matches .kt files
+      )
+      """.trimIndent(),
+    )
 
     val references = findUsagesOfElement(pythonFile)
     val hasGlobReference = references.any { containsGlob(it.element.containingFile) }
@@ -244,24 +290,35 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
 
   @Test
   fun `should find mixed java and kotlin files in same glob`() {
-    val kotlinFile = myFixture.addFileToProject("Service.kt", """
+    val kotlinFile =
+      myFixture.addFileToProject(
+        "Service.kt",
+        """
         class Service {
             fun process() = "processed"
         }
-    """.trimIndent())
+        """.trimIndent(),
+      )
 
-    val javaFile = myFixture.addFileToProject("Helper.java", """
+    val javaFile =
+      myFixture.addFileToProject(
+        "Helper.java",
+        """
         public class Helper {
             public static String help() { return "help"; }
         }
-    """.trimIndent())
+        """.trimIndent(),
+      )
 
-    myFixture.addFileToProject("BUILD", """
-            java_library(
-                name = "mixed",
-                srcs = glob(["*.kt", "*.java"])
-            )
-        """.trimIndent())
+    myFixture.addFileToProject(
+      "BUILD",
+      """
+      java_library(
+          name = "mixed",
+          srcs = glob(["*.kt", "*.java"])
+      )
+      """.trimIndent(),
+    )
 
     val kotlinReferences = findUsagesOfElement(kotlinFile)
     val javaReferences = findUsagesOfElement(javaFile)
@@ -272,11 +329,9 @@ class FindUsagesInGlobsTest : BasePlatformTestCase() {
     assertThat(javaReferences).anyMatch { containsGlob(it.element.containingFile) }
   }
 
-  private fun findUsagesOfElement(element: PsiFile): Collection<PsiReference> =
-    ReferencesSearch.search(element).findAll()
+  private fun findUsagesOfElement(element: PsiFile): Collection<PsiReference> = ReferencesSearch.search(element).findAll()
 
-  private fun findUsagesOfElement(element: PsiDirectory): Collection<PsiReference> =
-    ReferencesSearch.search(element).findAll()
+  private fun findUsagesOfElement(element: PsiDirectory): Collection<PsiReference> = ReferencesSearch.search(element).findAll()
 
   private fun containsGlob(file: PsiFile): Boolean = file.text.contains("glob(")
 

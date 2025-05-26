@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.kotlin.psi
 
-import org.jetbrains.bazel.languages.projectview.findusages.PsiFileProvider
-import org.jetbrains.kotlin.psi.KtClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import org.jetbrains.bazel.languages.projectview.findusages.PsiFileProvider
+import org.jetbrains.kotlin.psi.KtClass
 
 /** Replaces top-level kotlin classes with their corresponding PsiFile  */
 class KotlinPsiFileProvider : PsiFileProvider {
