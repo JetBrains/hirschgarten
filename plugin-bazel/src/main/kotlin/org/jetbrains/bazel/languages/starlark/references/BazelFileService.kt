@@ -1,23 +1,34 @@
 package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.externalSystem.autoimport.ExternalSystemRefreshStatus
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 import org.jetbrains.bazel.sync.ProjectSyncHook
+import org.jetbrains.bazel.sync.status.SyncStatusListener
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.iterator
 
 @Service(Service.Level.PROJECT)
-class BazelFileService(private val project: Project) : ProjectSyncHook {
+class BazelFileService(private val project: Project) {
   private var cacheInvalid = true
   private val canonicalRepoNameToBzlFiles = mutableMapOf<String, List<String>>()
 
-  override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
-    cacheInvalid = true
+  init {
+    project.messageBus.connect().subscribe(
+      SyncStatusListener.TOPIC,
+      object : SyncStatusListener {
+        override fun syncStarted() {}
+
+        override fun syncFinished(canceled: Boolean) {
+          cacheInvalid = true
+        }
+      },
+    )
   }
 
   private fun collectBzlFiles(
