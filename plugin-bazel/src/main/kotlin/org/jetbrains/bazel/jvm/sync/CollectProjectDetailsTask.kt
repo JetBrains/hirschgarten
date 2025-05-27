@@ -354,6 +354,7 @@ class CollectProjectDetailsTask(
 
   private fun checkSharedSources() {
     if (project.isSharedSourceSupportEnabled) return
+    if (!BazelFeatureFlags.checkSharedSources) return
     val fileToTarget = project.targetUtils.fileToTargetWithoutLowPrioritySharedSources
     for ((file, targets) in fileToTarget) {
       if (targets.size <= 1) continue
