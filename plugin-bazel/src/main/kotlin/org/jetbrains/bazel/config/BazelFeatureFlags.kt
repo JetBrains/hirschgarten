@@ -27,6 +27,8 @@ object BazelFeatureFlags {
   @VisibleForTesting
   const val FAST_BUILD_ENABLED = "bazel.enable.jvm.fastbuild"
 
+  private const val CHECK_SHARED_SOURCES = "bazel.check.shared.sources"
+
   val isPythonSupportEnabled: Boolean
     get() = isEnabled(PYTHON_SUPPORT)
 
@@ -79,6 +81,9 @@ object BazelFeatureFlags {
 
   val fastBuildEnabled: Boolean
     get() = isEnabled(FAST_BUILD_ENABLED)
+
+  val checkSharedSources: Boolean
+    get() = isEnabled(CHECK_SHARED_SOURCES)
 
   private fun isEnabled(key: String): Boolean = Registry.`is`(key) || System.getProperty(key, "false").toBoolean()
 }

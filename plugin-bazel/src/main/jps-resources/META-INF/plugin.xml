@@ -193,6 +193,9 @@
     <registryKey defaultValue="true"
                  description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
                  key="bazel.merge.source.roots"/>
+    <registryKey defaultValue="true"
+                 description="Check and warn about shared sources in the project by showing the &quot;Shared sources detected&quot; notification"
+                 key="bazel.check.shared.sources"/>
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker"/>
 
