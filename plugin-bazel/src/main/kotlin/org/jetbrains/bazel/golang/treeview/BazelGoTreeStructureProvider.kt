@@ -47,7 +47,7 @@ class BazelGoTreeStructureProvider :
   ): Collection<AbstractTreeNode<*>?> {
     val project: Project = parent.project
     if (!project.isBazelProject ||
-      !isGoBlazeExternalLibraryRoot(parent)
+      !isGoBazelExternalLibraryRoot(parent)
     ) {
       return children
     }
@@ -159,7 +159,7 @@ private fun buildChildTree(
   return parent
 }
 
-private fun isGoBlazeExternalLibraryRoot(parent: AbstractTreeNode<*>): Boolean {
+private fun isGoBazelExternalLibraryRoot(parent: AbstractTreeNode<*>): Boolean {
   if (parent.name == null) {
     return false
   }

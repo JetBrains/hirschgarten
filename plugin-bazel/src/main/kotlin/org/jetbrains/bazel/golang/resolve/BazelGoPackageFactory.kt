@@ -28,7 +28,7 @@ import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
-private const val GO_PACKAGE_FACTORY_KEY = "BazelGoPackageFactory"
+internal const val GO_PACKAGE_FACTORY_KEY = "BazelGoPackageFactory"
 
 /** Updates and exposes a map of import paths to files. */
 class BazelGoPackageFactory : GoPackageFactory {
