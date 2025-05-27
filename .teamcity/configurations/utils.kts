@@ -5,7 +5,8 @@ object DockerParams {
     -v %system.agent.persistent.cache%:/home/hirschuser/.cache
     -v %system.agent.persistent.cache%/.netrc:/home/hirschuser/.netrc""".trimIndent()
 
-  fun get(imageName: String = CommonParams.DockerE2eImage
+  fun get(
+    imageName: String = CommonParams.DockerE2eImage
   ): Map<String, String> =
     mapOf(
       "plugin.docker.imagePlatform" to "linux",
@@ -17,10 +18,13 @@ object DockerParams {
 
 object CommonParams {
   val BazelTestlogsArtifactRules: String = "+:%system.teamcity.build.checkoutDir%/testlogs/** => testlogs.zip"
-//  val BazelCiSpecificArgs: String = "--config=remotecache --config=nocacheupload --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
+
+  //  val BazelCiSpecificArgs: String = "--config=remotecache --config=nocacheupload --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
   val BazelCiSpecificArgs: String = "--test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
-//  val BazelCiBuildSpecificArgs: String = "--config=remotecache --config=bes --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
-  val BazelCiBuildSpecificArgs: String = "--test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
+
+  //  val BazelCiBuildSpecificArgs: String = "--config=remotecache --config=bes --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
+  val BazelCiBuildSpecificArgs: String =
+    "--test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
 
   val DockerE2eImage: String = "registry.jetbrains.team/p/bazel/docker/hirschgarten-e2e:latest"
   val DockerQodanaImage: String = "registry.jetbrains.team/p/bazel/docker-private/hirschgarten-qodana"
@@ -28,7 +32,7 @@ object CommonParams {
 
   val QodanaArtifactRules: String = "+:plugin-*.zip=>%system.teamcity.build.checkoutDir%/tc-artifacts"
 
-  val CrossBuildPlatforms: List<String> = listOf("243", "251")
+  val CrossBuildPlatforms: List<String> = listOf("243", "251", "252")
 
   val BazelVersion = "7.4.1"
 }

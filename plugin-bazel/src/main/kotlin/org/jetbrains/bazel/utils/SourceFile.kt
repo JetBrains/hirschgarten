@@ -32,18 +32,20 @@ interface SourceTypeIconProvider {
   companion object {
     private val EP = ExtensionPointName<SourceTypeIconProvider>("org.jetbrains.bazel.sourceTypeIconProvider")
 
-    fun getIconBySourceType(sourceType: SourceType?): Icon? {
-      return sourceType?.let { EP.extensionList.find { it.getSourceType() == sourceType }?.getIcon() }
-    }
+    fun getIconBySourceType(sourceType: SourceType?): Icon? =
+      sourceType?.let {
+        EP.extensionList.find { it.getSourceType() == sourceType }?.getIcon()
+      }
   }
 }
 
 fun VirtualFile.isSourceFile(): Boolean {
-  val isFile = try {
-    this.isFile
-  } catch (_: UnsupportedOperationException) {
-    false
-  }
+  val isFile =
+    try {
+      this.isFile
+    } catch (_: UnsupportedOperationException) {
+      false
+    }
   return isFile && SourceType.hasSourceFileExtension(nameSequence)
 }
 
