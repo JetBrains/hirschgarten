@@ -23,7 +23,7 @@ object TargetIdToModuleEntitiesMap {
     projectDetails: ProjectDetails,
     targetIdToModuleDetails: Map<Label, ModuleDetails>,
     targetIdToTargetInfo: Map<Label, BuildTarget>,
-    fileToTarget: Map<Path, List<Label>>,
+    fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
     projectBasePath: Path,
     project: Project,
     isAndroidSupportEnabled: Boolean,
@@ -31,7 +31,7 @@ object TargetIdToModuleEntitiesMap {
     val moduleDetailsToJavaModuleTransformer =
       ModuleDetailsToJavaModuleTransformer(
         targetIdToTargetInfo,
-        fileToTarget,
+        fileToTargetWithoutLowPrioritySharedSources,
         projectBasePath,
         project,
         isAndroidSupportEnabled,
