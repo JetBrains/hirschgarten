@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Debug test //commons/src/test/kotlin/org/jetbrains/bazel/label:LabelTest using Bazel" type="BazelRunConfigurationType">
+    <bsp-state handler-provider-id="JvmBspTestHandlerProvider">
+      <bsp-target>@//commons/src/test/kotlin/org/jetbrains/bazel/label:LabelTest</bsp-target>
+      <handler-state />
+    </bsp-state>
+    <method v="2" />
+  </configuration>
+</component>

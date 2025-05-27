@@ -4,8 +4,8 @@ kt_jvm_library(
     name = "commons",
     srcs = glob(
         [
-            "*.kt",
-            "*.java",
+            "**/*.kt",
+            "**/*.java",
         ],
         allow_empty = True,
     ),
