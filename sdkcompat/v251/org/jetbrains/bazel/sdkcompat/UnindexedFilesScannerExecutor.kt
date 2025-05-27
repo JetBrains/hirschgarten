@@ -7,11 +7,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
-suspend fun suspendScanningAndIndexingThenExecute(
-  activityName: String,
-  project: Project,
-  activity: suspend () -> Unit,
-) {
+suspend fun suspendScanningAndIndexingThenExecute(activityName: String, project: Project, activity: suspend () -> Unit) {
   coroutineScope {
     // Use Dispatchers.IO to wait for the blocking call
     withContext(Dispatchers.IO) {

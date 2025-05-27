@@ -50,11 +50,10 @@ abstract class BazelCommandLineStateBase(environment: ExecutionEnvironment, prot
         }
       }
 
-    handler =
-      when (runningTests) {
-        true -> BazelTestProcessHandler(project, runDeferred)
-        false -> BazelProcessHandler(project, runDeferred)
-      }
+    handler = when (runningTests) {
+      true -> BazelTestProcessHandler(project, runDeferred)
+      false -> BazelProcessHandler(project, runDeferred)
+    }
     val runListener = createAndAddTaskListener(handler)
 
     with(BazelTaskEventsService.getInstance(project)) {

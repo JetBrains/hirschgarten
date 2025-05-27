@@ -210,12 +210,11 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
               languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA, LanguageClass.KOTLIN),
             ),
           modulesDependencies = listOf(),
-          librariesDependencies =
-            if (!BazelFeatureFlags.fbsrSupportedInPlatform) {
-              javaModule.genericModuleInfo.librariesDependencies
-            } else {
-              emptyList()
-            },
+          librariesDependencies = if (!BazelFeatureFlags.fbsrSupportedInPlatform) {
+            javaModule.genericModuleInfo.librariesDependencies
+          } else {
+            emptyList()
+          },
           isDummy = true,
         ),
       baseDirContentRoot = ContentRoot(path = sourceRoot.sourcePath),
