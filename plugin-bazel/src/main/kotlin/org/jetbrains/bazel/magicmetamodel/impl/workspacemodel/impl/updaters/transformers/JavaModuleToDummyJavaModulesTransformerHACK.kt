@@ -38,7 +38,7 @@ private val RELEVANT_EXTENSIONS = listOf("java", "kt", "scala")
  */
 internal class JavaModuleToDummyJavaModulesTransformerHACK(
   private val projectBasePath: Path,
-  private val fileToTarget: Map<Path, List<Label>>,
+  private val fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
   private val project: Project,
 ) {
   sealed interface Result
@@ -151,7 +151,7 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
    * We don't really support shared sources anyway, but adding whole directories if some of the source files
    * are contained in several targets can cause red code on https://github.com/bazelbuild/bazel
    */
-  private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTarget[this]?.size ?: 0) > 1
+  private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTargetWithoutLowPrioritySharedSources[this]?.size ?: 0) > 1
 
   private fun tryMergeResources(resourceRoots: List<ResourceRoot>): List<ResourceRoot>? {
     if (resourceRoots.isEmpty()) return emptyList()

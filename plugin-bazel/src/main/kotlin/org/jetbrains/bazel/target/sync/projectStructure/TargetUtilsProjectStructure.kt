@@ -17,6 +17,7 @@ import java.nio.file.Path
 class TargetUtilsProjectStructureDiff : ProjectStructureDiff {
   var bspTargets: List<BuildTarget> = emptyList()
   var fileToTarget: Map<Path, List<Label>> = emptyMap()
+  var fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>> = emptyMap()
   var libraryItems: List<LibraryItem>? = null
 
   override suspend fun apply(
@@ -32,6 +33,7 @@ class TargetUtilsProjectStructureDiff : ProjectStructureDiff {
       project.targetUtils.saveTargets(
         targets = bspTargets,
         fileToTarget = fileToTarget,
+        fileToTargetWithoutLowPrioritySharedSources = fileToTargetWithoutLowPrioritySharedSources,
         libraryItems = libraryItems,
       )
     }

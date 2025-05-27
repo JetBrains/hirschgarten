@@ -1,8 +1,10 @@
 package org.jetbrains.bazel.config
 
 import com.intellij.openapi.application.ApplicationInfo
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 import org.jetbrains.annotations.VisibleForTesting
+import org.jetbrains.bazel.sdkcompat.isSharedSourceSupportEnabled
 import org.jetbrains.bsp.protocol.FeatureFlags
 
 object BazelFeatureFlags {
@@ -83,7 +85,7 @@ object BazelFeatureFlags {
 }
 
 object FeatureFlagsProvider {
-  fun getFeatureFlags(): FeatureFlags =
+  fun getFeatureFlags(project: Project): FeatureFlags =
     with(BazelFeatureFlags) {
       FeatureFlags(
         isPythonSupportEnabled = isPythonSupportEnabled,
@@ -92,6 +94,7 @@ object FeatureFlagsProvider {
         isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
         bazelSymlinksScanMaxDepth = symlinkScanMaxDepth,
         bazelShutDownBeforeShardBuild = shutDownBeforeShardBuild,
+        isSharedSourceSupportEnabled = project.isSharedSourceSupportEnabled,
       )
     }
 }

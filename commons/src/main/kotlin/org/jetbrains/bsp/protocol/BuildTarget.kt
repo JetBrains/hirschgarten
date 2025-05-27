@@ -13,6 +13,7 @@ data class BuildTarget(
   val baseDirectory: Path,
   val noBuild: Boolean = false, // TODO https://youtrack.jetbrains.com/issue/BAZEL-1963
   var data: BuildTargetData? = null,
+  val lowPrioritySharedSources: List<SourceItem> = emptyList(),
 )
 
 sealed interface BuildTargetData
