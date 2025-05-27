@@ -117,6 +117,8 @@
     <projectSyncHook implementation="org.jetbrains.bazel.target.sync.TargetUtilsSyncHook" id="TargetUtilsSyncHook"/>
 
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook"/>
+    <projectPostSyncHook implementation="org.jetbrains.bazel.sync.SyncCache.ClearSyncCache"/>
+
 
     <projectStructureProvider
       implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
