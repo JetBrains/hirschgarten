@@ -16,8 +16,11 @@ class PyCharmCheckImportedModules(text: String, line: Int) : PlaybackCommandCoro
     val expectedModulesNames =
       setOf(
         "python.binary",
+        "python.libs.my_lib2.my_lib2",
         "python.library",
+        "python.libs.my_lib.my_lib",
         "python.test",
+        "python.main.main",
       )
     val actualModulesNames = modules.map { it.name }.toSet()
     check(actualModulesNames == expectedModulesNames) { "Expected modules: $expectedModulesNames, actual: $actualModulesNames" }

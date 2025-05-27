@@ -5,9 +5,11 @@ import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
+import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.junit.jupiter.api.Test
 
@@ -21,7 +23,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
     get() =
       GitProjectInfo(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "fbdb88d9d08d46ae8db57e23dd4034862b4075df",
+        commitHash = "8b08ee4fffabd26ece6d338f94f22398d415ce78",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("simpleMultiLanguageTest") },
         isReusable = false,
@@ -36,6 +38,18 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
         .waitForBazelSync()
         .waitForSmartMode()
         .checkImportedModules()
+        .openFile("python/bin.py")
+        .navigateToFile(1, 2, "builtins.pyi", 1645, 5)
+        .openFile("python/main/main.py")
+        .navigateToFile(9, 5, "util.py", 3, 5)
+        .openFile("python/main/main.py")
+        .navigateToFile(7, 26, "__version__.py", 8, 1)
+        .openFile("python/main/main.py")
+        .navigateToFile(8, 26, "version.py", 5, 1)
+        .openFile("python/main/main.py")
+        .navigateToFile(8, 26, "version.py", 5, 1)
+        .openFile("python/libs/my_lib2/util.py")
+        .navigateToFile(4, 7, "util.py", 1, 5)
         .exitApp()
 
     createContext().runIDE(commands = commands, runTimeout = timeout)
