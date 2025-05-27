@@ -33,7 +33,12 @@ class BazelMoveDeclarationsToFileRefactoringListener : MoveDeclarationsToFileRef
     if (originalModule.isDummyModule()) return
 
     val modifiableModel = originalModule.rootManager.modifiableModel
-    val urlToAdd = baseDirectory.toNioPath().resolve(moveDescriptor.targetFileName).toUri().toString()
+    val urlToAdd =
+      baseDirectory
+        .toNioPath()
+        .resolve(moveDescriptor.targetFileName)
+        .toUri()
+        .toString()
     val contentEntry = modifiableModel.addContentEntry(urlToAdd)
     contentEntriesToRemove[moveDescriptor] = originalModule to contentEntry
     contentEntry.addSourceFolder(urlToAdd, false)
@@ -48,8 +53,7 @@ class BazelMoveDeclarationsToFileRefactoringListener : MoveDeclarationsToFileRef
     modifiableModel.commit()
   }
 
-  private fun Module.isDummyModule(): Boolean =
-    moduleTypeName == BAZEL_DUMMY_MODULE_TYPE
+  private fun Module.isDummyModule(): Boolean = moduleTypeName == BAZEL_DUMMY_MODULE_TYPE
 
   companion object {
     // We can't depend on other classes from sdkcompat
