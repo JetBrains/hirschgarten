@@ -241,7 +241,7 @@ class CollectProjectDetailsTask(
                 targetIdToModuleDetails = targetIdToModuleDetails,
                 targetIdToTargetInfo = targetIdToTargetInfo,
                 // TODO: remove usage, https://youtrack.jetbrains.com/issue/BAZEL-2015
-                fileToTarget = targetUtilsDiff.fileToTarget,
+                fileToTargetWithoutLowPrioritySharedSources = targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources,
                 projectBasePath = projectBasePath,
                 project = project,
                 isAndroidSupportEnabled = false,
@@ -353,7 +353,7 @@ class CollectProjectDetailsTask(
 
   private fun checkSharedSources() {
     if (project.isSharedSourceSupportEnabled) return
-    val fileToTarget = project.targetUtils.fileToTarget
+    val fileToTarget = project.targetUtils.fileToTargetWithoutLowPrioritySharedSources
     for ((file, targets) in fileToTarget) {
       if (targets.size <= 1) continue
       if (!file.isSourceFile()) continue
