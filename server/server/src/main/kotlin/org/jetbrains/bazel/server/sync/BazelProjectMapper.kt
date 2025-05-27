@@ -937,7 +937,10 @@ class BazelProjectMapper(
       (
         shouldImportTargetKind(target.kind, transitiveCompileTimeJarsTargetKinds) ||
           target.hasJvmTargetInfo() &&
-          hasKnownJvmSources(target) ||
+          (
+            target.dependenciesCount > 0 ||
+              hasKnownJvmSources(target)
+          ) ||
           featureFlags.isPythonSupportEnabled &&
           target.hasPythonTargetInfo() &&
           hasKnownPythonSources(target) ||
@@ -1073,6 +1076,9 @@ class BazelProjectMapper(
     buildSet {
       // TODO It's a hack preserved from before TargetKind refactorking, to be removed
       if (transitiveCompileTimeJarsTargetKinds.contains(target.kind)) {
+        add(LanguageClass.JAVA)
+      }
+      if (target.hasJvmTargetInfo()) {
         add(LanguageClass.JAVA)
       }
       languagesFromKinds[target.kind]?.let {
