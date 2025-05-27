@@ -6,4 +6,5 @@ object BazelPluginConstants {
   const val ID = "bazel"
   const val BAZEL_DISPLAY_NAME = "Bazel"
   val SYSTEM_ID = ProjectSystemId(ID, BAZEL_DISPLAY_NAME)
+  const val SE_LABEL_PROVIDER_ID: String = "LabelSearchEverywhereContributor"
 }
