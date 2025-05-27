@@ -12,17 +12,18 @@ import com.jetbrains.python.PyNames
 import com.jetbrains.python.psi.impl.PyImportResolver
 import com.jetbrains.python.psi.resolve.PyQualifiedNameResolveContext
 import okio.Path.Companion.toPath
-import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.flow.sync.BazelBinPathService
+import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.ResolvedLabel
+import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetTag
-import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import java.io.File
 import java.nio.file.Path
-
+import kotlin.io.path.relativeTo
 
 class BazelPyImportResolver : PyImportResolver {
   override fun resolveImportReference(
@@ -37,7 +38,6 @@ class BazelPyImportResolver : PyImportResolver {
 
     return resolveShortImport(name, context)
   }
-
 
   /**
    * Root import is an absolute import, whose qualified name aligns with the project file structure.
@@ -97,63 +97,78 @@ class BazelPyImportResolver : PyImportResolver {
     return null
   }
 
-
   private fun resolveShortImport(name: QualifiedName, context: PyQualifiedNameResolveContext): PsiElement? {
     val sourcesIndex = buildSourcesIndex(context.project)
     val resolvedName = sourcesIndex[name] ?: return null
     return resolvedName(context.psiManager)
   }
 
-
   private fun buildSourcesIndex(project: Project): Map<QualifiedName, (PsiManager) -> PsiElement?> {
-    val targets = project.targetUtils.labelToTargetInfo.filter { it.value.kind.languageClasses.contains(LanguageClass.PYTHON) }
-    val shortenedNamesResolverMap = mutableMapOf<QualifiedName, (PsiManager) -> PsiElement?>()
+    val executionRoot = BazelBinPathService.getInstance(project).bazelExecPath
+    val targets =
+      project.targetUtils.allBspInfo
+        .map { it.value }
+        .filter { it.hasPythonTargetInfo() }
 
-    targets.forEach { it ->
-      // imported paths relative to the execution roots
-      val importedPaths = assembleImportsPaths(project, it.value)
-      val importedTargets = importedPaths.map { Path.of(project.rootDir.path).resolve(it).toChildTargets(project) }.flatten()
-      val sources = importedTargets.flatMap { it.sources }.toSet()
+    val qualifiedNamesResolverMap = mutableMapOf<QualifiedName, (PsiManager) -> PsiElement?>()
+
+    targets.forEach { target ->
+      val importedPaths = assembleImportsPaths(project, target)
+      val fullQualifiedNameToAbsolutePath: Map<QualifiedName?, Path> =
+        if (target.label().isMainWorkspace) {
+          val targetsUnderImportsPaths =
+            importedPaths.map { Path.of(project.rootDir.path).resolve(it).toChildTargets(project) }.flatten()
+          targetsUnderImportsPaths.flatMap { it.sources }.toSet().associate {
+            it.path.relativeTo(Path.of(project.rootDir.path)).toQualifiedName() to it.path
+          }
+        } else {
+          target.sourcesList.associate {
+            // imports are relative to the runfiles, but for external dependencies
+            // when we resolve red line codes, we need to jump to code in execution root
+            Path.of(it.relativePath).toQualifiedName() to
+              Path
+                .of(executionRoot)
+                .resolve(it.rootExecutionPathFragment)
+                .resolve(it.relativePath)
+          }
+        }
 
       // importRoots are the roots of qualified names which will be trimmed from fully qualified names
-      val importRoots = importedPaths.map { QualifiedName.fromComponents(it.map { it2 -> it2.toString() }) }
-      for (source in sources) {
+      val importRoots = importedPaths.map { path -> QualifiedName.fromComponents(path.map { it2 -> it2.toString() }) }
+
+      for (pair in fullQualifiedNameToAbsolutePath) {
         val sourceImports =
-          assembleSourceImportsFromImportRoots(importRoots, source.path.toQualifiedName(project))
-            .filter { it2 -> it2.componentCount > 0 }
+          assembleSourceImportsFromImportRoots(importRoots, pair.key)
+            .filter { it.componentCount > 0 }
 
         sourceImports.forEach { qualifiedName ->
-          shortenedNamesResolverMap.put(
+          qualifiedNamesResolverMap.put(
             qualifiedName,
-            { psiManager -> psiManager.findFile(source.path.toVirtualFile() ?: return@put null) },
+            { psiManager -> psiManager.findFile(pair.value.toVirtualFile() ?: return@put null) },
           )
         }
       }
-
     }
-    return shortenedNamesResolverMap
+    return qualifiedNamesResolverMap
   }
 
-  //assembleSourceImportsFromImportRoots returns all possible legal shortened qualified names of a qualified name
-  private fun assembleSourceImportsFromImportRoots(
-    importRoots: List<QualifiedName>,
-    sourceImport: QualifiedName?,
-  ): List<QualifiedName> {
+  // assembleSourceImportsFromImportRoots returns all possible legal qualified names of a full qualified name
+  private fun assembleSourceImportsFromImportRoots(importRoots: List<QualifiedName>, sourceImport: QualifiedName?): List<QualifiedName> {
     if (null == sourceImport || null == sourceImport.getLastComponent()) {
       return emptyList()
     }
 
-    val addedNames = importRoots
-      .filter { it != sourceImport && sourceImport.matchesPrefix(it) }
-      .map { sourceImport.subQualifiedName(it.componentCount, sourceImport.componentCount) }
+    val addedNames =
+      importRoots
+        .filter { it != sourceImport && sourceImport.matchesPrefix(it) }
+        .map { sourceImport.subQualifiedName(it.componentCount, sourceImport.componentCount) }
     return addedNames + sourceImport
   }
 
-
   // assembleImportRoots convert "imports" attributes of a bazel python rule to actual imported paths
-  private fun assembleImportsPaths(project: Project, target: BuildTarget): List<Path> {
-    val label = target.id as? ResolvedLabel ?: return listOf()
-    val ideInfo = extractPythonBuildTarget(target) ?: return listOf()
+  private fun assembleImportsPaths(project: Project, target: BspTargetInfo.TargetInfo): List<Path> {
+    val label = target.label() as? ResolvedLabel ?: return listOf()
+    val ideInfo = target.pythonTargetInfo ?: return listOf()
     var buildParentPath = Path.of(label.packagePath.pathSegments.joinToString("/"))
 
     // In the case of an external repo the build path could be `/BUILD.bazel`
@@ -162,13 +177,10 @@ class BazelPyImportResolver : PyImportResolver {
     if (null == buildParentPath || 0 == buildParentPath.nameCount) {
       buildParentPath = Path.of(".")
     }
-    return ideInfo.imports.map {
+    return ideInfo.importsList.map {
       buildParentPath.resolve(it).normalize()
     }
-
   }
-
-
 }
 
 private fun Path.toChildTargets(project: Project): List<BuildTarget> =
@@ -176,14 +188,16 @@ private fun Path.toChildTargets(project: Project): List<BuildTarget> =
     .allBuildTargets()
     .filter { it.baseDirectory.startsWith(this) && !it.tags.contains(BuildTargetTag.MANUAL) }
 
-private fun Path.toQualifiedName(project: Project): QualifiedName? {
+private fun Path.toQualifiedName(): QualifiedName? {
   if (!toString().endsWith(".py")) {
     return null
   }
-  val relativePath = toString()
-    .let { StringUtil.trimEnd(it, File.separator + PyNames.INIT_DOT_PY) }
-    .removeSuffix(".py").toPath().relativeTo(project.rootDir.path.toPath())
-    .toString()
+  val relativePath =
+    toString()
+      .let { StringUtil.trimEnd(it, File.separator + PyNames.INIT_DOT_PY) }
+      .removeSuffix(".py")
+      .toPath()
+      .toString()
   return QualifiedName.fromComponents(StringUtil.split(relativePath, File.separator))
 }
 

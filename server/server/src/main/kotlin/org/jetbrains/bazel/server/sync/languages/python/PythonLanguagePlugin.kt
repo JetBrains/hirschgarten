@@ -40,7 +40,7 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
       PythonModule(
         calculateInterpreterPath(interpreter = pythonTargetInfo.interpreter) ?: defaultInterpreter,
         pythonTargetInfo.version.takeUnless(String::isNullOrEmpty) ?: defaultVersion,
-        pythonTargetInfo.importsList
+        pythonTargetInfo.importsList,
       )
     }
 

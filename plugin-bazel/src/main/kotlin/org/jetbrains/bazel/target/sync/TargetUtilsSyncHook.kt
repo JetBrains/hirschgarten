@@ -3,6 +3,7 @@ package org.jetbrains.bazel.target.sync
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.target.sync.projectStructure.targetUtilsDiff
+import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
 import java.nio.file.Path
 
@@ -14,6 +15,7 @@ private class TargetUtilsSyncHook : ProjectSyncHook {
     targetUtilsDiff.fileToTarget = calculateFileToTarget(bspTargets, withLowPrioritySharedSources = true)
     targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources =
       calculateFileToTarget(bspTargets, withLowPrioritySharedSources = false)
+    environment.project.targetUtils.allBspInfo = environment.buildTargets
   }
 
   private fun calculateFileToTarget(targets: List<BuildTarget>, withLowPrioritySharedSources: Boolean): Map<Path, List<Label>> {

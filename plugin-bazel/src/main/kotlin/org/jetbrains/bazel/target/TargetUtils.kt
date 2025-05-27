@@ -25,6 +25,7 @@ import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.gson.bazelGson
+import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
@@ -80,6 +81,8 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   var fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>> = hashMapOf()
     private set
+
+  var allBspInfo: Map<Label, BspTargetInfo.TargetInfo> = mapOf()
 
   fun addFileToTargetIdEntry(path: Path, targets: List<Label>) {
     fileToTarget = fileToTarget + (path to targets)
