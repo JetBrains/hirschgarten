@@ -151,88 +151,88 @@ class BazelGoPackage : GoPackage {
     return importReferences
   }
 
-  /**
-   * Resolves the import references for a given `Label`, `PsiElement`, and import path.
-   *
-   * @param label         the Bazel label associated with the import
-   * @param buildElement  the PsiElement (build file or directory) for which references are resolved
-   * @param importPath    the import path string to resolve
-   * @return an array of resolved [PsiElement]s corresponding to the components of the import path
-   */
-  @VisibleForTesting
-  fun getImportReferences(
-    label: Label,
-    buildElement: PsiElement,
-    importPath: String,
-  ): Array<PsiElement?> {
-    val pathComponents = importPath.split("/")
-    val importReferences = arrayOfNulls<PsiElement>(pathComponents.size)
+  companion object {
+    /**
+     * Resolves the import references for a given `Label`, `PsiElement`, and import path.
+     *
+     * @param label         the Bazel label associated with the import
+     * @param buildElement  the PsiElement (build file or directory) for which references are resolved
+     * @param importPath    the import path string to resolve
+     * @return an array of resolved [PsiElement]s corresponding to the components of the import path
+     */
+    @VisibleForTesting
+    fun getImportReferences(
+      label: Label,
+      buildElement: PsiElement,
+      importPath: String,
+    ): Array<PsiElement?> {
+      val pathComponents = importPath.split("/")
+      val importReferences = arrayOfNulls<PsiElement>(pathComponents.size)
 
-    if (pathComponents.isEmpty()) {
+      if (pathComponents.isEmpty()) {
+        return importReferences
+      }
+
+      // Get the last element (e.g., `bar` for the import path ending in `github.com/user/foo/bar`)
+      val lastElement = getLastElement(pathComponents.last(), label, buildElement) ?: return importReferences
+
+      importReferences[pathComponents.size - 1] = lastElement
+      var currentElement =
+        if (lastElement is PsiDirectory) {
+          lastElement.parent
+        } else {
+          lastElement.containingFile?.parent
+        }
+
+      // Iterate backwards through the path components, linking names to the proper directories or elements
+      for (i in pathComponents.size - 2 downTo 0) {
+        if (currentElement == null) break
+
+        val name = currentElement.name
+        val pathComponent = pathComponents[i]
+        if (name == pathComponent) {
+          importReferences[i] = currentElement
+          currentElement = currentElement.parent
+        } else {
+          break
+        }
+      }
+
       return importReferences
     }
 
-    // Get the last element (e.g., `bar` for the import path ending in `github.com/user/foo/bar`)
-    val lastElement = getLastElement(pathComponents.last(), label, buildElement) ?: return importReferences
-
-    importReferences[pathComponents.size - 1] = lastElement
-    var currentElement =
-      if (lastElement is PsiDirectory) {
-        lastElement.parent
-      } else {
-        lastElement.containingFile?.parent
-      }
-
-    // Iterate backwards through the path components, linking names to the proper directories or elements
-    for (i in pathComponents.size - 2 downTo 0) {
-      if (currentElement == null) break
-
-      val name = currentElement.name
-      val pathComponent = pathComponents[i]
-      if (name == pathComponent) {
-        importReferences[i] = currentElement
-        currentElement = currentElement.parent
-      } else {
-        break
-      }
-    }
-
-    return importReferences
-  }
-
-  /**
-   * Finds the last element of the import path.
-   *
-   * @param name          the name of the final component in the import path
-   * @param label         the Bazel label
-   * @param buildElement  the PsiElement representing the build file or directory
-   * @return the corresponding resolved [PsiElement], or `null` if it cannot be found
-   */
-  private fun getLastElement(
-    name: String,
-    label: Label,
-    buildElement: PsiElement,
-  ): PsiElement? {
-    return when (buildElement) {
-      is StarlarkCallExpression -> {
-        if (name == label.targetName) {
-          buildElement
-        } else {
-          buildElement.containingFile?.parent?.takeIf {
-            it.name == name
+    /**
+     * Finds the last element of the import path.
+     *
+     * @param name          the name of the final component in the import path
+     * @param label         the Bazel label
+     * @param buildElement  the PsiElement representing the build file or directory
+     * @return the corresponding resolved [PsiElement], or `null` if it cannot be found
+     */
+    private fun getLastElement(
+      name: String,
+      label: Label,
+      buildElement: PsiElement,
+    ): PsiElement? {
+      return when (buildElement) {
+        is StarlarkCallExpression -> {
+          if (name == label.targetName) {
+            buildElement
+          } else {
+            buildElement.containingFile?.parent?.takeIf {
+              it.name == name
+            }
           }
         }
+        is StarlarkFile -> {
+          if (!buildElement.isBuildFile()) return null
+          buildElement.parent?.takeIf { it.name == name }
+            ?: buildElement
+        }
+        else -> null
       }
-      is StarlarkFile -> {
-        if (!buildElement.isBuildFile()) return null
-        buildElement.parent?.takeIf { it.name == name }
-          ?: buildElement
-      }
-      else -> null
     }
-  }
 
-  companion object {
     private fun replaceProtoLibrary(project: Project, targetLabel: Label): Label {
       val targetUtils = project.targetUtils
       val target = targetUtils.getBuildTargetForLabel(targetLabel)
