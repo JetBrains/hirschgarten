@@ -4,11 +4,13 @@ object BazelSettingsPanelEventSubscriber {
   class Ticket internal constructor()
 
   enum class BazelSettingsPanelEventType {
-    RESET_TOOL_WINDOW_BUTTON_PRESSED
+    RESET_TOOL_WINDOW_BUTTON_PRESSED,
   }
 
-  private val actionsLists = Array<MutableList<Pair<Ticket, () -> Any>>>(
-    BazelSettingsPanelEventType.entries.size) { mutableListOf() }
+  private val actionsLists =
+    Array<MutableList<Pair<Ticket, () -> Any>>>(
+      BazelSettingsPanelEventType.entries.size,
+    ) { mutableListOf() }
 
   fun subscribe(eventType: BazelSettingsPanelEventType, action: () -> Any): Ticket {
     val newTicket = Ticket()
