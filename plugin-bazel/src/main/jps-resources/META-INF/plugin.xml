@@ -25,7 +25,6 @@
 
   <dependencies>
     <plugin id="com.intellij.modules.lang"/>
-    <plugin id="com.intellij.modules.platform"/>
     <module name="intellij.platform.searchEverywhere"/>
   </dependencies>
 
