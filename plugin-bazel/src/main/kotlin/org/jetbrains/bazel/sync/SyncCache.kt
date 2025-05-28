@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bazel.sync
 
-import com.google.common.annotations.VisibleForTesting
+
 import com.google.common.collect.Maps
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
