@@ -52,12 +52,14 @@ class BazelTestTaskListener(private val handler: BazelProcessHandler, private va
               .testStarted(data.displayName)
               .addNodeId(taskId)
               .addAttribute("parentNodeId", parentId)
+              .addAttribute("locationHint", data.locationHint)
               .toString()
           } else {
             ServiceMessageBuilder
               .testSuiteStarted(data.displayName)
               .addNodeId(taskId)
               .addAttribute("parentNodeId", "0")
+              .addAttribute("locationHint", data.locationHint)
               .toString()
           }
         handler.notifyTextAvailable(serviceMessage, ProcessOutputType.STDOUT)

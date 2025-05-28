@@ -192,12 +192,13 @@ private class TestResultTreeNode(
   fun isRootNode() = parent == null
 
   fun notifyClient(bspClientTestNotifier: BspClientTestNotifier) {
+    val parentSuiteNames = getAncestorSuiteNamesExcludingRoot()
     if (isRootNode()) {
       bspClientTestNotifier.beginTestTarget(Label.parse(name), taskId)
       children.forEach { it.value.notifyClient(bspClientTestNotifier) }
     } else if (isLeafNode()) {
       val fullMessage = generateMessage()
-      bspClientTestNotifier.startTest(name, taskId)
+      bspClientTestNotifier.startTest(name, taskId, parentSuiteNames)
       bspClientTestNotifier.finishTest(
         displayName = name,
         taskId = taskId,
@@ -209,7 +210,7 @@ private class TestResultTreeNode(
         data = createTestCaseData(fullMessage, time),
       )
     } else {
-      bspClientTestNotifier.startTest(name, taskId)
+      bspClientTestNotifier.startTest(name, taskId, parentSuiteNames)
       children.forEach { it.value.notifyClient(bspClientTestNotifier) }
       bspClientTestNotifier.finishTest(
         displayName = name,
@@ -222,6 +223,13 @@ private class TestResultTreeNode(
       )
     }
   }
+
+  private fun getAncestorSuiteNamesExcludingRoot(): List<String> =
+    generateSequence(parent) { it.parent }
+      .toList()
+      .dropLast(1)
+      .map { it.name }
+      .reversed()
 
   private fun generateMessage(): String = messageLines.joinLinesIgnoringLastEmpty() + "\n" + stacktrace.joinLinesIgnoringLastEmpty()
 
