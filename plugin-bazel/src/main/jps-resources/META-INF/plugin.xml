@@ -487,6 +487,7 @@
     <programRunner implementation="org.jetbrains.bazel.debug.configuration.StarlarkDebugRunner"/>
     <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
     <searchEverywhereContributor implementation="org.jetbrains.bazel.ui.widgets.LabelSearchEverywhereContributor$Factory"/>
+    <searchEverywhere.itemsProviderFactory implementation="org.jetbrains.bazel.searchEverywhere.SeLabelProviderFactory"/>
     <renamePsiElementProcessor implementation="org.jetbrains.bazel.languages.starlark.rename.StarlarkFileRenameProcessor"/>
     <lang.elementManipulator
       forClass="org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression"
