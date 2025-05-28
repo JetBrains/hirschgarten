@@ -25,6 +25,7 @@ import org.jetbrains.bazel.ui.widgets.tool.window.filter.FilterActionGroup
 import java.nio.file.Path
 import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
+import org.jetbrains.bazel.ui.settings.BazelSettingsPanelEventSubscriber
 
 class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, true) {
   private val model = project.service<BazelTargetsPanelModel>()
@@ -52,7 +53,15 @@ class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, t
     toolbar = actionToolbar.component
 
     updateTabs()
-    companionCurrentInstance = this
+
+    BazelSettingsPanelEventSubscriber.subscribe(
+      BazelSettingsPanelEventSubscriber.BazelSettingsPanelEventType.RESET_TOOL_WINDOW_BUTTON_PRESSED
+    ) {
+      SwingUtilities.invokeLater {
+        updateTabs()
+        updateUI()
+      }
+    }
   }
 
   fun updateTabs() {
@@ -68,19 +77,6 @@ class BazelToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, t
       },
     )
     panel.update()
-  }
-
-  companion object {
-    private var companionCurrentInstance: BazelToolWindowPanel? = null
-
-    fun updateCurrentPanelTabs() {
-      companionCurrentInstance?.apply {
-        SwingUtilities.invokeLater {
-          updateTabs()
-          updateUI()
-        }
-      }
-    }
   }
 }
 

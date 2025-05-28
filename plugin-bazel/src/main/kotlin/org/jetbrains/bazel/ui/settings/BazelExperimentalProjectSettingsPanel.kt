@@ -13,12 +13,10 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
-import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelToolWindowPanel
 import java.awt.FlowLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
-import javax.swing.SwingUtilities
 
 internal class BazelExperimentalProjectSettingsConfigurable(private val project: Project) : SearchableConfigurable {
   // experimental features
@@ -92,9 +90,9 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
     val resetToolPanelButton =
       JButton("Restart window panel").apply {
         addActionListener {
-          SwingUtilities.invokeLater {
-            BazelToolWindowPanel.updateCurrentPanelTabs()
-          }
+          BazelSettingsPanelEventSubscriber.runActions(
+            BazelSettingsPanelEventSubscriber.BazelSettingsPanelEventType.RESET_TOOL_WINDOW_BUTTON_PRESSED
+          )
         }
       }
     val queryTabCheckboxComponent =
