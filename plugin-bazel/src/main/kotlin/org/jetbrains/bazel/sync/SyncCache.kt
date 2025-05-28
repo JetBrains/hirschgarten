@@ -43,7 +43,7 @@ class SyncCache(private val project: Project) {
     return newValue
   }
 
-  @VisibleForTesting
+
   @Synchronized
   fun clear() {
     cache.clear()
