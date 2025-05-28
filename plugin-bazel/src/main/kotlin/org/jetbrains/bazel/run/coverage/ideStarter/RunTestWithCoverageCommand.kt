@@ -18,8 +18,9 @@ class RunTestWithCoverageCommand(text: String, line: Int) : PlaybackCommandCorou
   override suspend fun doExecute(context: PlaybackContext) {
     val project = context.project
     val virtualFile = readAction { checkNotNull(FileEditorManager.getInstance(project).selectedTextEditor?.virtualFile) }
-    val target = checkNotNull(project.targetUtils.getTargetsForFile(virtualFile).singleOrNull()) { "Expected one target for $virtualFile" }
-    val targetInfo = checkNotNull(project.targetUtils.getBuildTargetForLabel(target))
+    val targetUtils = project.targetUtils
+    val target = checkNotNull(targetUtils.getTargetsForFile(virtualFile).singleOrNull()) { "Expected one target for $virtualFile" }
+    val targetInfo = checkNotNull(targetUtils.getBuildTargetForLabel(target))
 
     RunWithCoverageAction(project, listOf(targetInfo)).doPerformAction(project)
 

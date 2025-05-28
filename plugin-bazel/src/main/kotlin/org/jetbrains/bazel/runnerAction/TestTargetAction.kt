@@ -3,7 +3,6 @@ package org.jetbrains.bazel.runnerAction
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.state.HasTestFilter
@@ -31,7 +30,6 @@ class TestTargetAction(
           } else {
             ""
           },
-          BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       } else {
         BazelPluginBundle.message(
@@ -43,7 +41,6 @@ class TestTargetAction(
           } else {
             ""
           },
-          BazelPluginConstants.BAZEL_DISPLAY_NAME,
         )
       }
     },

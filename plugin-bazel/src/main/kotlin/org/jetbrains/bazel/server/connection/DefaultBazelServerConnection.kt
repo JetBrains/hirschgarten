@@ -27,7 +27,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
         bspClient,
         workspaceRoot = workspaceRoot,
         projectViewFile = connectionResetConfig.projectViewFile,
-        featureFlags = FeatureFlagsProvider.getFeatureFlags(),
+        featureFlags = FeatureFlagsProvider.getFeatureFlags(project),
       )
     }
 
@@ -38,7 +38,7 @@ class DefaultBazelServerConnection(private val project: Project) : BazelServerCo
   private fun generateNewConnectionResetConfig(): ConnectionResetConfig =
     ConnectionResetConfig(
       projectViewFile = project.bazelProjectSettings.projectViewPath?.toAbsolutePath(),
-      featureFlags = FeatureFlagsProvider.getFeatureFlags(),
+      featureFlags = FeatureFlagsProvider.getFeatureFlags(project),
     )
 
   private fun createBspClient(): BazelClient {

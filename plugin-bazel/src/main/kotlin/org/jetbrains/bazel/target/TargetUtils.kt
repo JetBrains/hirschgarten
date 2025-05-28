@@ -78,6 +78,9 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
     @InternalApi get
 
+  var fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>> = hashMapOf()
+    private set
+
   fun addFileToTargetIdEntry(path: Path, targets: List<Label>) {
     fileToTarget = fileToTarget + (path to targets)
   }
@@ -97,6 +100,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   suspend fun saveTargets(
     targets: List<BuildTarget>,
     fileToTarget: Map<Path, List<Label>>,
+    fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
     libraryItems: List<LibraryItem>?,
   ) {
     labelToTargetInfo = targets.associateBy { it.id }
@@ -108,6 +112,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
         }.orEmpty()
 
     this.fileToTarget = fileToTarget
+    this.fileToTargetWithoutLowPrioritySharedSources = fileToTargetWithoutLowPrioritySharedSources
     fileToExecutableTargets = calculateFileToExecutableTargets(libraryItems)
 
     updateComputedFields()
@@ -259,7 +264,7 @@ val Project.targetUtils: TargetUtils
 
 @PublicApi
 fun Label.getModule(project: Project): com.intellij.openapi.module.Module? =
-  project.service<TargetUtils>().getBuildTargetForLabel(this)?.getModule(project)
+  project.targetUtils.getBuildTargetForLabel(this)?.getModule(project)
 
 @PublicApi
 fun Label.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity

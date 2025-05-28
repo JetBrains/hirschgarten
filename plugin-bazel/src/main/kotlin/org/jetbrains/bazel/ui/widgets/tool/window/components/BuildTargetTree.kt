@@ -2,6 +2,7 @@ package org.jetbrains.bazel.ui.widgets.tool.window.components
 
 import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
+import com.intellij.ui.TreeUIHelper
 import com.intellij.ui.treeStructure.Tree
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.BuildTargetClassifierExtension
 import org.jetbrains.bazel.extensionPoints.buildTargetClassifier.ListTargetClassifier
@@ -75,6 +76,16 @@ class BuildTargetTree(
     // Initial tree generation
     updateTree()
 
+    // Initialize speed search
+    TreeUIHelper.getInstance().installTreeSpeedSearch(this, {
+      val lastPathComponent = (it.lastPathComponent as? DefaultMutableTreeNode)?.userObject ?: return@installTreeSpeedSearch null
+      when (lastPathComponent) {
+        is DirectoryNodeData -> lastPathComponent.name
+        is TargetNodeData -> lastPathComponent.displayName
+        else -> null
+      }
+    }, true)
+
     loadedTargetsMouseListener.registerKeyboardShortcutForPopup()
     addMouseListener(loadedTargetsMouseListener)
   }
@@ -88,7 +99,7 @@ class BuildTargetTree(
       }
 
     // Generate the tree with the current targets
-    generateTree(model.visibleTargets, model.invalidTargets, classifier)
+    generateTree(model.visibleTargets, classifier)
 
     // Notify the tree model that the structure has changed
     (treeModel as? DefaultTreeModel)?.reload()
@@ -96,11 +107,7 @@ class BuildTargetTree(
     expandPath(TreePath(rootNode.path))
   }
 
-  private fun generateTree(
-    targets: Collection<Label>,
-    invalidTargets: List<Label>,
-    classifier: BuildTargetClassifierExtension,
-  ) {
+  private fun generateTree(targets: Collection<Label>, classifier: BuildTargetClassifierExtension) {
     generateTreeFromIdentifiers(
       targets.map {
         BuildTargetTreeIdentifier(
@@ -109,15 +116,7 @@ class BuildTargetTree(
           classifier.calculateBuildTargetPath(it),
           classifier.calculateBuildTargetName(it),
         )
-      } +
-        invalidTargets.map {
-          BuildTargetTreeIdentifier(
-            it,
-            null,
-            classifier.calculateBuildTargetPath(it),
-            classifier.calculateBuildTargetName(it),
-          )
-        },
+      },
       classifier.separator,
     )
   }

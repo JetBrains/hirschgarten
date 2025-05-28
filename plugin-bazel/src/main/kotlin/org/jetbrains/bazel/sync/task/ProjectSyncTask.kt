@@ -6,10 +6,10 @@ import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.ide.impl.isTrusted
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.UnindexedFilesScannerExecutor
 import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.ide.progress.withBackgroundProgress
@@ -20,14 +20,13 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.saveAllFiles
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.performance.bspTracer
 import org.jetbrains.bazel.projectview.parser.ProjectViewParser
+import org.jetbrains.bazel.sdkcompat.suspendScanningAndIndexingThenExecute
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
@@ -122,7 +121,7 @@ class ProjectSyncTask(private val project: Project) {
   private suspend fun preSync() {
     log.debug("Running pre sync tasks")
     saveAllFiles()
-    SyncStatusService.getInstance(project).startSync()
+    project.serviceAsync<SyncStatusService>().startSync()
   }
 
   private suspend fun doSync(syncScope: ProjectSyncScope, buildProject: Boolean) {
@@ -131,7 +130,7 @@ class ProjectSyncTask(private val project: Project) {
         "console.task.sync.activity.name",
         BazelPluginConstants.BAZEL_DISPLAY_NAME,
       )
-    withSuspendScanningAndIndexing(syncActivityName) {
+    suspendScanningAndIndexingThenExecute(syncActivityName, project) {
       withBackgroundProgress(project, "Syncing project...", true) {
         reportSequentialProgress {
           executePreSyncHooks(it)
@@ -146,18 +145,6 @@ class ProjectSyncTask(private val project: Project) {
       }
     }
   }
-
-  private suspend fun withSuspendScanningAndIndexing(activityName: String, activity: suspend () -> Unit) =
-    coroutineScope {
-      // Use Dispatchers.IO to wait for the blocking call
-      withContext(Dispatchers.IO) {
-        UnindexedFilesScannerExecutor.getInstance(project).suspendScanningAndIndexingThenRun(activityName) {
-          runBlocking(coroutineContext) {
-            activity()
-          }
-        }
-      }
-    }
 
   private suspend fun executePreSyncHooks(progressReporter: SequentialProgressReporter) {
     project.withSubtask(

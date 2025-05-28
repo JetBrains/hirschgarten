@@ -26,6 +26,8 @@ COLON=[:]
 
 COMMAND={SOFT_NL} | [^{COLON}{SQ}{DQ}{SPACE}{NL}]
 
+NEG_TARGET = -\/{1,2}({SOFT_NL}|[^{SQ}{DQ}{SPACE}{NL}])+
+
 // lexing states:
 %xstate IMPORT
 
@@ -116,6 +118,8 @@ COMMAND={SOFT_NL} | [^{COLON}{SQ}{DQ}{SPACE}{NL}]
 }
 
 <FLAGS> {
+    {NEG_TARGET}                                { return BazelrcTokenTypes.VALUE; }
+
     "-" ({SOFT_NL} | [^={SQ}{DQ}{SPACE}{NL}])+  { return BazelrcTokenTypes.FLAG; }
     "="                                         { yybegin(VALUE); return BazelrcTokenTypes.EQ; }
 
@@ -142,6 +146,8 @@ COMMAND={SOFT_NL} | [^{COLON}{SQ}{DQ}{SPACE}{NL}]
 }
 
 <FLAG_DQ> {
+    {NEG_TARGET}                                { return BazelrcTokenTypes.VALUE; }
+
     "-" ({SOFT_NL} | \\{DQ} | [^={DQ}{NL}])+    { return BazelrcTokenTypes.FLAG; }
     "="                                         { yybegin(VALUE_DQ); return BazelrcTokenTypes.EQ; }
     {DQ}                                        { yybegin(FLAGS); return BazelrcTokenTypes.DOUBLE_QUOTE; }
@@ -157,6 +163,8 @@ COMMAND={SOFT_NL} | [^{COLON}{SQ}{DQ}{SPACE}{NL}]
 }
 
 <FLAG_SQ> {
+    {NEG_TARGET}                                { return BazelrcTokenTypes.VALUE; }
+
     "-" ({SOFT_NL} | \\{SQ} | [^={SQ}{NL}])+    { return BazelrcTokenTypes.FLAG; }
     "="                                         { yybegin(VALUE_SQ); return BazelrcTokenTypes.EQ; }
     {SQ}                                        { yybegin(FLAGS); return BazelrcTokenTypes.SINGLE_QUOTE; }

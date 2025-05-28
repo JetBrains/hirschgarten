@@ -90,7 +90,7 @@
                     interface="org.jetbrains.bazel.ui.notifications.UnresolvedImportChecker"
                     dynamic="true"/>
     <extensionPoint qualifiedName="org.jetbrains.bazel.psiElementConfigurationLocator"
-                    interface="org.jetbrains.bazel.jvm.junit.PsiElementConfigurationLocator"
+                    interface="org.jetbrains.bazel.junit.PsiElementConfigurationLocator"
                     dynamic="true"/>
     <extensionPoint qualifiedName="org.jetbrains.bazel.targetKindProvider"
                     interface="org.jetbrains.bazel.sync.TargetKindProvider"
@@ -105,7 +105,6 @@
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook"/>
 
-    <projectSyncHook implementation="org.jetbrains.bazel.services.InvalidTargetsProjectSyncHook"/>
     <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
     <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
     <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"
@@ -120,8 +119,10 @@
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook"/>
 
     <projectStructureProvider
-      implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
-    <projectStructureProvider implementation="org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStructureProvider"/>
+      implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"
+      order="after TargetUtilsProjectStructureProvider"/>
+    <projectStructureProvider implementation="org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStructureProvider"
+                              id="TargetUtilsProjectStructureProvider"/>
 
     <runHandlerProvider implementation="org.jetbrains.bazel.jvm.run.JvmRunHandler$JvmRunHandlerProvider"
                         id="JvmRunHandlerProvider"/>
@@ -192,6 +193,9 @@
     <registryKey defaultValue="true"
                  description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
                  key="bazel.merge.source.roots"/>
+    <registryKey defaultValue="true"
+                 description="Check and warn about shared sources in the project by showing the &quot;Shared sources detected&quot; notification"
+                 key="bazel.check.shared.sources"/>
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker"/>
 
@@ -213,8 +217,12 @@
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"/>
     <ignoredFileProvider implementation="org.jetbrains.bazel.workspace.BazelProjectExcludesIgnoredFileProvider"/>
+    <moduleType id="BAZEL_DUMMY_MODULE_TYPE"
+                implementationClass="org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.BazelDummyModuleType"/>
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
+    <workspaceModel.fileIndexContributor
+      implementation="org.jetbrains.bazel.workspace.PackageMarkerEntityWorkspaceFileIndexContributor"/>
 
     <postStartupActivity
       implementation="org.jetbrains.bazel.startup.BazelStartupActivity"/>

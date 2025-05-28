@@ -30,7 +30,6 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
-import org.jetbrains.bsp.protocol.ScalaPlatform
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -806,10 +805,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
     val scalaBuildTarget =
       ScalaBuildTarget(
-        "org.scala-lang",
         scalaRulesVersion,
-        "2.13",
-        ScalaPlatform.JVM,
         listOf(
           Path(
             "\$BAZEL_OUTPUT_BASE_PATH/external/${scalaRulesPath}_scala_compiler$scalaRulesPathVersionSuffix/scala-compiler-$scalaRulesVersion.jar",

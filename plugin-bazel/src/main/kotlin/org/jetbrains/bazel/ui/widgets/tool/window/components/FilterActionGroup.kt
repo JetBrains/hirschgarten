@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.ui.widgets.tool.window.filter
+package org.jetbrains.bazel.ui.widgets.tool.window.components
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread

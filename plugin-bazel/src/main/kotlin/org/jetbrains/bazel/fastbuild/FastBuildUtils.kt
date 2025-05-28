@@ -25,7 +25,6 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.writeIntentReadAction
 import com.intellij.openapi.compiler.CompilerMessageCategory
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.progress.ProgressIndicator
@@ -45,7 +44,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.flow.sync.BazelBinPathService
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
-import org.jetbrains.bazel.target.TargetUtils
+import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import java.io.File
@@ -89,7 +88,7 @@ object FastBuildUtils {
 
   suspend fun fastBuildFiles(project: Project, files: List<VirtualFile>) {
     val workspaceRoot = project.rootDir.toNioPath()
-    val targetUtils = project.service<TargetUtils>()
+    val targetUtils = project.targetUtils
     val virtualFileManager = VirtualFileManager.getInstance()
     val buildInfos =
       files
