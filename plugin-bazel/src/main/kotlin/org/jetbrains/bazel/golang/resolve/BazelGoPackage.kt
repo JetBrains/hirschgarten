@@ -41,7 +41,6 @@ import org.jetbrains.bazel.label.toPath
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
-import org.jetbrains.bazel.sync.GenericBazelRules
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.sync.hasLanguage
 import org.jetbrains.bazel.target.targetUtils
@@ -85,10 +84,10 @@ class BazelGoPackage : GoPackage {
     importPath: String,
     target: BuildTarget,
   ) : this(
-    project,
-    importPath,
-    replaceProtoLibrary(project, target.id),
-    getTargetToFileMap(project)[target.id].toList(),
+    project = project,
+    importPath = importPath,
+    label = target.id,
+    files = getTargetToFileMap(project)[target.id].toList(),
   )
 
   private constructor(
@@ -231,19 +230,6 @@ class BazelGoPackage : GoPackage {
         }
         else -> null
       }
-    }
-
-    private fun replaceProtoLibrary(project: Project, targetLabel: Label): Label {
-      val targetUtils = project.targetUtils
-      val target = targetUtils.getBuildTargetForLabel(targetLabel)
-      if (target == null || target.kind != GenericBazelRules.RuleTypes.PROTO_LIBRARY.kind) {
-        return targetLabel
-      }
-      return targetUtils
-        .getDirectDependentLabels(targetLabel)
-        .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
-        .firstOrNull { it.kind == GoBazelRules.RuleTypes.GO_PROTO_LIBRARY.kind }
-        ?.id ?: targetLabel
     }
 
     fun getTargetToFileMap(project: Project): ImmutableMultimap<Label, Path> =

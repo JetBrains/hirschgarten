@@ -81,8 +81,6 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   var fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>> = hashMapOf()
     private set
 
-  private var targetDependentsGraph: TargetDependentsGraph = TargetDependentsGraph(emptyMap(), emptyList())
-
   fun addFileToTargetIdEntry(path: Path, targets: List<Label>) {
     fileToTarget = fileToTarget + (path to targets)
   }
@@ -116,14 +114,13 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
     this.fileToTarget = fileToTarget
     this.fileToTargetWithoutLowPrioritySharedSources = fileToTargetWithoutLowPrioritySharedSources
     fileToExecutableTargets = calculateFileToExecutableTargets(libraryItems)
-    targetDependentsGraph = TargetDependentsGraph(labelToTargetInfo, libraryItems)
-    fileToExecutableTargets = calculateFileToExecutableTargets()
 
     updateComputedFields()
   }
 
-  private suspend fun calculateFileToExecutableTargets(): Map<Path, List<Label>> =
+  private suspend fun calculateFileToExecutableTargets(libraryItems: List<LibraryItem>?): Map<Path, List<Label>> =
     withContext(Dispatchers.Default) {
+      val targetDependentsGraph = TargetDependentsGraph(labelToTargetInfo, libraryItems)
       val targetToTransitiveRevertedDependenciesCache = ConcurrentHashMap<Label, Set<Label>>()
       fileToTarget
         .map { (path, targets) ->
@@ -209,9 +206,6 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
   @InternalApi
   fun allBuildTargets(): List<BuildTarget> = labelToTargetInfo.values.toList()
-
-  @InternalApi
-  fun getDirectDependentLabels(label: Label) = targetDependentsGraph.directDependentIds(label)
 
   @InternalApi
   override fun getState(): TargetUtilsState =
