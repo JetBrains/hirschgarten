@@ -78,6 +78,9 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
     @InternalApi get
 
+  var fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>> = hashMapOf()
+    private set
+
   private var targetDependentsGraph: TargetDependentsGraph = TargetDependentsGraph(emptyMap(), emptyList())
 
   fun addFileToTargetIdEntry(path: Path, targets: List<Label>) {
@@ -99,6 +102,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   suspend fun saveTargets(
     targets: List<BuildTarget>,
     fileToTarget: Map<Path, List<Label>>,
+    fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
     libraryItems: List<LibraryItem>?,
   ) {
     labelToTargetInfo = targets.associateBy { it.id }
@@ -110,6 +114,8 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
         }.orEmpty()
 
     this.fileToTarget = fileToTarget
+    this.fileToTargetWithoutLowPrioritySharedSources = fileToTargetWithoutLowPrioritySharedSources
+    fileToExecutableTargets = calculateFileToExecutableTargets(libraryItems)
     targetDependentsGraph = TargetDependentsGraph(labelToTargetInfo, libraryItems)
     fileToExecutableTargets = calculateFileToExecutableTargets()
 
