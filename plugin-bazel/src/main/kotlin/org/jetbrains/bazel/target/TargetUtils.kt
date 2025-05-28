@@ -82,7 +82,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   var fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>> = hashMapOf()
     private set
 
-  var allBspInfo: Map<Label, BspTargetInfo.TargetInfo> = mapOf()
+  var allTargetInfo: Map<Label, BspTargetInfo.TargetInfo> = mapOf()
 
   fun addFileToTargetIdEntry(path: Path, targets: List<Label>) {
     fileToTarget = fileToTarget + (path to targets)

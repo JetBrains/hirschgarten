@@ -15,7 +15,7 @@ private class TargetUtilsSyncHook : ProjectSyncHook {
     targetUtilsDiff.fileToTarget = calculateFileToTarget(bspTargets, withLowPrioritySharedSources = true)
     targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources =
       calculateFileToTarget(bspTargets, withLowPrioritySharedSources = false)
-    environment.project.targetUtils.allBspInfo = environment.buildTargets
+    environment.project.targetUtils.allTargetInfo = environment.buildTargets
   }
 
   private fun calculateFileToTarget(targets: List<BuildTarget>, withLowPrioritySharedSources: Boolean): Map<Path, List<Label>> {

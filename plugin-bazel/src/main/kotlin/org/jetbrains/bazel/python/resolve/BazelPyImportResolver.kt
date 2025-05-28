@@ -11,7 +11,6 @@ import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.psi.impl.PyImportResolver
 import com.jetbrains.python.psi.resolve.PyQualifiedNameResolveContext
-import okio.Path.Companion.toPath
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.sync.BazelBinPathService
@@ -20,9 +19,9 @@ import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
-import org.jetbrains.bsp.protocol.BuildTargetTag
-import java.io.File
+import java.nio.file.FileSystems
 import java.nio.file.Path
+import kotlin.io.path.extension
 import kotlin.io.path.relativeTo
 
 class BazelPyImportResolver : PyImportResolver {
@@ -105,21 +104,22 @@ class BazelPyImportResolver : PyImportResolver {
 
   private fun buildSourcesIndex(project: Project): Map<QualifiedName, (PsiManager) -> PsiElement?> {
     val executionRoot = BazelBinPathService.getInstance(project).bazelExecPath
+    val rootDir = Path.of(project.rootDir.path)
     val targets =
-      project.targetUtils.allBspInfo
+      project.targetUtils.allTargetInfo
         .map { it.value }
         .filter { it.hasPythonTargetInfo() }
 
     val qualifiedNamesResolverMap = mutableMapOf<QualifiedName, (PsiManager) -> PsiElement?>()
 
-    targets.forEach { target ->
+    for (target in targets) {
       val importedPaths = assembleImportsPaths(project, target)
       val fullQualifiedNameToAbsolutePath: Map<QualifiedName?, Path> =
         if (target.label().isMainWorkspace) {
           val targetsUnderImportsPaths =
-            importedPaths.map { Path.of(project.rootDir.path).resolve(it).toChildTargets(project) }.flatten()
+            importedPaths.map { rootDir.resolve(it).toChildTargets(project) }.flatten()
           targetsUnderImportsPaths.flatMap { it.sources }.toSet().associate {
-            it.path.relativeTo(Path.of(project.rootDir.path)).toQualifiedName() to it.path
+            it.path.relativeTo(rootDir).toQualifiedName() to it.path
           }
         } else {
           target.sourcesList.associate {
@@ -169,12 +169,12 @@ class BazelPyImportResolver : PyImportResolver {
   private fun assembleImportsPaths(project: Project, target: BspTargetInfo.TargetInfo): List<Path> {
     val label = target.label() as? ResolvedLabel ?: return listOf()
     val ideInfo = target.pythonTargetInfo ?: return listOf()
-    var buildParentPath = Path.of(label.packagePath.pathSegments.joinToString("/"))
+    var buildParentPath = label.packagePath.toString().let { Path.of(it) }
 
     // In the case of an external repo the build path could be `/BUILD.bazel`
     // which has a basedir of `/`. In this case we translate this to `.` so
     // that it works in the sub file-system.
-    if (null == buildParentPath || 0 == buildParentPath.nameCount) {
+    if (0 == buildParentPath.nameCount) {
       buildParentPath = Path.of(".")
     }
     return ideInfo.importsList.map {
@@ -186,19 +186,18 @@ class BazelPyImportResolver : PyImportResolver {
 private fun Path.toChildTargets(project: Project): List<BuildTarget> =
   project.targetUtils
     .allBuildTargets()
-    .filter { it.baseDirectory.startsWith(this) && !it.tags.contains(BuildTargetTag.MANUAL) }
+    .filter { it.baseDirectory.startsWith(this) }
 
 private fun Path.toQualifiedName(): QualifiedName? {
-  if (!toString().endsWith(".py")) {
+  val seperator = FileSystems.getDefault().separator
+  if (extension == ".py") {
     return null
   }
   val relativePath =
     toString()
-      .let { StringUtil.trimEnd(it, File.separator + PyNames.INIT_DOT_PY) }
+      .let { StringUtil.trimEnd(it, seperator + PyNames.INIT_DOT_PY) }
       .removeSuffix(".py")
-      .toPath()
-      .toString()
-  return QualifiedName.fromComponents(StringUtil.split(relativePath, File.separator))
+  return QualifiedName.fromComponents(StringUtil.split(relativePath, seperator))
 }
 
 private fun Path.toVirtualFile(): VirtualFile? = VirtualFileManager.getInstance().findFileByNioPath(this)
