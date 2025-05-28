@@ -11,6 +11,7 @@
                 implementation="org.jetbrains.bazel.kotlin.coverage.KotlinBazelCoverageClassNodeDecoratorPsiElementClassifier"/>
         <unresolvedImportChecker implementation ="org.jetbrains.bazel.kotlin.ui.notifications.KotlinUnresolvedImportChecker"/>
         <psiElementConfigurationLocator implementation="org.jetbrains.bazel.kotlin.junit.KotlinPsiElementConfigurationLocator"/>
+        <bazelTestFinder implementation="org.jetbrains.bazel.kotlin.run.KotlinTestFinder"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -19,6 +20,7 @@
         <notificationGroup displayType="BALLOON" id="Enable K2 Compiler Mode with Bazel"/>
         <runLineMarkerContributor
                 implementationClass="org.jetbrains.bazel.kotlin.ui.gutters.BazelKotlinRunLineMarkerContributor"
+                order="first"
                 language="kotlin"/>
     </extensions>
 

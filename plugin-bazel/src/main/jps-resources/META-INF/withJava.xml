@@ -7,6 +7,7 @@
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.configuration.JavaSourceTypeIconProvider"/>
         <psiElementConfigurationLocator implementation="org.jetbrains.bazel.java.junit.JavaPsiElementConfigurationLocator"/>
         <unresolvedImportChecker implementation ="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker"/>
+        <bazelTestFinder implementation="org.jetbrains.bazel.java.run.JavaTestFinder"/>
       <bazelCoverageClassNodeDecoratorPsiElementClassifier implementation="org.jetbrains.bazel.java.coverage.JavaBazelCoverageClassNodeDecoratorPsiElementClassifier"/>
     </extensions>
 
@@ -20,6 +21,7 @@
                         overrides="true"/>
         <runLineMarkerContributor
                 implementationClass="org.jetbrains.bazel.java.ui.gutters.BazelJavaRunLineMarkerContributor"
+                order="before applicationRunLineMarkerProvider"
                 language="JAVA"/>
         <newProjectWizard.java.buildSystem implementation="org.jetbrains.bazel.java.starters.BazelJavaNewProjectWizard"/>
     </extensions>

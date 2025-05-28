@@ -158,7 +158,7 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
 
     bspClientTestNotifier.startTest(suite.name, suiteTaskId)
     suite.testcase.forEach { case ->
-      processTestCase(suiteTaskId.id, case)
+      processTestCase(suiteTaskId.id, suite.name, case)
     }
     bspClientTestNotifier.finishTest(
       suite.name,
@@ -175,7 +175,7 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
    * @param parentId String identifying the parent's TaskId. Used to indicate the proper tree structure.
    * @param testCase TestCase to be processed and sent to the client.
    */
-  private fun processTestCase(parentId: String, testCase: TestCase) {
+  private fun processTestCase(parentId: String, parentSuiteName: String, testCase: TestCase) {
     val testCaseTaskId = TaskId(UUID.randomUUID().toString(), listOf(parentId))
 
     // Extract the error summary message.
@@ -220,7 +220,12 @@ class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
         fullOutput,
         errorType,
       )
-    bspClientTestNotifier.startTest(testCase.name, testCaseTaskId)
+    bspClientTestNotifier.startTest(
+      displayName = testCase.name,
+      taskId = testCaseTaskId,
+      classname = testCaseData.className,
+      parentSuites = listOf(parentSuiteName),
+    )
     bspClientTestNotifier.finishTest(
       testCase.name,
       testCaseTaskId,
@@ -293,7 +298,7 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
     bspClientTestNotifier.startTest(suite.name, suiteTaskId)
     val fallbackMessage = suite.systemOut.takeIf { suite.testcase.size == 1 }
     suite.testcase.forEach { testCase ->
-      processIncompleteInfoCase(testCase, suiteTaskId.id, suiteStatus, fallbackMessage)
+      processIncompleteInfoCase(testCase, suiteTaskId.id, suite.name, suiteStatus, fallbackMessage)
     }
     bspClientTestNotifier.finishTest(
       suite.name,
@@ -311,6 +316,7 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
   private fun processIncompleteInfoCase(
     testCase: IncompleteTestCase,
     parentId: String,
+    parentSuiteName: String,
     testSuiteStatus: TestStatus,
     fallbackMessage: String?,
   ) {
@@ -331,7 +337,7 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
     // In the generated xml, suite name and test case name are the same, but in the Test Console test names have
     // to be unique
     val testCaseName = testCase.name.substringAfterLast('/')
-    bspClientTestNotifier.startTest(testCaseName, testCaseTaskId)
+    bspClientTestNotifier.startTest(testCaseName, testCaseTaskId, parentSuites = listOf(parentSuiteName))
     bspClientTestNotifier.finishTest(
       testCaseName,
       testCaseTaskId,

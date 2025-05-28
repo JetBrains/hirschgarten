@@ -7,6 +7,7 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.runner.SMRunnerConsolePropertiesProvider
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
+import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -14,6 +15,7 @@ import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
+import org.jetbrains.bazel.run.BazelTestFinder
 import org.jetbrains.bazel.run.RunHandlerProvider
 
 // Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BazelRunConfiguration.
@@ -142,7 +144,7 @@ class BazelRunConfiguration internal constructor(
   }
 
   override fun createTestConsoleProperties(executor: Executor): SMTRunnerConsoleProperties =
-    SMTRunnerConsoleProperties(this, "BSP", executor)
+    BazelTestConsoleProperties(this, executor)
 
   override fun getAffectedTargets(): List<Label> = targets
 
@@ -152,4 +154,12 @@ class BazelRunConfiguration internal constructor(
     private const val HANDLER_STATE_TAG = "handler-state"
     private const val HANDLER_PROVIDER_ATTR = "handler-provider-id"
   }
+
+}
+
+private class BazelTestConsoleProperties(
+  configuration: BazelRunConfiguration,
+  executor: Executor,
+) : SMTRunnerConsoleProperties(configuration, "Bazel", executor) {
+  override fun getTestLocator(): SMTestLocator = BazelTestFinder.Locator()
 }

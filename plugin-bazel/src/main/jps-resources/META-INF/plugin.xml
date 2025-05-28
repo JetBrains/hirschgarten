@@ -97,6 +97,9 @@
     <extensionPoint qualifiedName="org.jetbrains.bazel.targetKindProvider"
                     interface="org.jetbrains.bazel.sync.TargetKindProvider"
                     dynamic="true"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelTestFinder"
+                    interface="org.jetbrains.bazel.run.BazelTestFinder"
+                    dynamic="true"/>
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
