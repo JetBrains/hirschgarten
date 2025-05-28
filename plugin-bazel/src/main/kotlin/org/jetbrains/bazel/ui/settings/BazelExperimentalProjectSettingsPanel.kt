@@ -91,7 +91,7 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
       JButton("Restart window panel").apply {
         addActionListener {
           BazelSettingsPanelEventSubscriber.runActions(
-            BazelSettingsPanelEventSubscriber.BazelSettingsPanelEventType.RESET_TOOL_WINDOW_BUTTON_PRESSED
+            BazelSettingsPanelEventSubscriber.BazelSettingsPanelEventType.RESET_TOOL_WINDOW_BUTTON_PRESSED,
           )
         }
       }
