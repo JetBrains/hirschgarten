@@ -17,7 +17,7 @@
     <orderEntry type="module" module-name="intellij.bazel.protobuf" />
     <orderEntry type="library" name="protobuf4" level="project" />
     <orderEntry type="library" name="org.apache.logging.log4j" level="project" />
-    <orderEntry type="library" name="jet-sign" level="project" />
+    <orderEntry type="library" name="gson" level="project" />
     <orderEntry type="library" name="commons-cli" level="project" />
     <orderEntry type="library" name="commons-io" level="project" />
     <orderEntry type="library" name="hash4j" level="project" />
