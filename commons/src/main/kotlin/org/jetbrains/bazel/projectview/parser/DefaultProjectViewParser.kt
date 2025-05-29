@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.projectview.parser
 
-import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.parser.sections.AndroidMinSdkSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.EnableNativeAndroidRulesParser
@@ -24,6 +23,7 @@ import org.jetbrains.bazel.projectview.parser.sections.ShardingApproachParser
 import org.jetbrains.bazel.projectview.parser.sections.TargetShardSizeParser
 import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSections
 import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewSectionSplitter
+import org.slf4j.LoggerFactory
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -35,7 +35,7 @@ import kotlin.io.path.Path
  * @see ProjectViewSectionSplitter
  */
 open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : ProjectViewParser {
-  private val log = LogManager.getLogger(DefaultProjectViewParser::class.java)
+  private val log = LoggerFactory.getLogger(DefaultProjectViewParser::class.java)
 
   override fun parse(projectViewFileContent: String): ProjectView {
     log.trace("Parsing project view for the content: '{}'", projectViewFileContent.escapeNewLines())

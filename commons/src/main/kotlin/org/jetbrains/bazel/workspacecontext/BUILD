@@ -9,7 +9,6 @@ kt_jvm_library(
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/label",
         "@maven//:commons_io_commons_io",
-        "@maven//:org_apache_logging_log4j_log4j_api",
-        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_slf4j_slf4j_api",
     ],
 )

@@ -25,7 +25,6 @@ kt_jvm_library(
         "@maven//:com_fasterxml_jackson_module_jackson_module_kotlin",
         "@maven//:com_google_guava_guava",
         "@maven//:io_grpc_grpc_stub",
-        "@maven//:org_apache_logging_log4j_log4j_api",
-        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_slf4j_slf4j_api",
     ],
 )

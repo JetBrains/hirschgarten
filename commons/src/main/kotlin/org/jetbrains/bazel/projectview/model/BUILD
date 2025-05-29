@@ -9,7 +9,6 @@ kt_jvm_library(
     ],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/model/sections",
-        "@maven//:org_apache_logging_log4j_log4j_api",
-        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_slf4j_slf4j_api",
     ],
 )

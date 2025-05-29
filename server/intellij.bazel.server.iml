@@ -31,7 +31,7 @@
     <orderEntry type="library" name="opentelemetry-exporter-otlp-common" level="project" />
     <orderEntry type="library" name="opentelemetry-extension-kotlin" level="project" />
     <orderEntry type="library" name="opentelemetry-semconv" level="project" />
-    <orderEntry type="library" name="org.apache.logging.log4j" level="project" />
+    <orderEntry type="library" name="slf4j-api" level="project" />
     <orderEntry type="library" name="protobuf" level="project" />
     <orderEntry type="module" module-name="intellij.bazel.commons" />
     <orderEntry type="module" module-name="intellij.bazel.protobuf" />

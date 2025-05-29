@@ -12,7 +12,6 @@ kt_jvm_library(
         "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/model",
         "//commons/src/main/kotlin/org/jetbrains/bazel/projectview/parser/splitter",
         "//server/commons",
-        "@maven//:org_apache_logging_log4j_log4j_api",
-        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_slf4j_slf4j_api",
     ],
 )
