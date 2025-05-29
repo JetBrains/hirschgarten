@@ -40,16 +40,6 @@ data class ExecutionRootPath(val absoluteOrRelativePath: Path) {
       absoluteRoot.resolve(absoluteOrRelativePath)
     }
 
-  fun getPathRootedAt(absoluteRoot: File): Path = getPathRootedAt(absoluteRoot.toPath())
-
-  fun getFileRootedAt(absoluteRoot: File?): File =
-    if (absoluteOrRelativePath.isAbsolute) {
-      absoluteOrRelativePath.toFile()
-    } else {
-      absoluteRoot?.let { File(it, absoluteOrRelativePath.toString()) }
-        ?: absoluteOrRelativePath.toFile()
-    }
-
   companion object {
     /**
      * Returns the relative [ExecutionRootPath] if `root` is an ancestor of `path`

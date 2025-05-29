@@ -88,7 +88,7 @@ data class WorkspacePath private constructor(private val path: Path) {
     /** Validates a workspace path. Returns null on success or an error message otherwise.  */
     fun validate(relativePath: String): String? {
       if (relativePath.startsWith("/")) {
-        return "Workspace path must be relative; cannot start with '/': " + relativePath
+        return "Workspace path must be relative; cannot start with '/': $relativePath"
       }
       if (relativePath.startsWith("../")) {
         return (
@@ -97,11 +97,11 @@ data class WorkspacePath private constructor(private val path: Path) {
         )
       }
       if (relativePath.endsWith("/")) {
-        return "Workspace path may not end with '/': " + relativePath
+        return "Workspace path may not end with '/': $relativePath"
       }
 
       if (relativePath.indexOf(':') >= 0) {
-        return "Workspace path may not contain ':': " + relativePath
+        return "Workspace path may not contain ':': $relativePath"
       }
 
       return null
