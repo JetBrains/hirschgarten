@@ -47,12 +47,6 @@
   files:
     - name: $MAVEN_REPOSITORY$/io/opentelemetry/opentelemetry-exporter-otlp/1/opentelemetry-exporter-otlp-1.jar
   reason: <- intellij.bazel.server
-- name: lib/org.apache.logging.log4j.jar
-  library: org.apache.logging.log4j
-  files:
-    - name: $MAVEN_REPOSITORY$/org/apache/logging/log4j/log4j-core/2/log4j-core-2.jar
-    - name: $MAVEN_REPOSITORY$/org/apache/logging/log4j/log4j-api/2/log4j-api-2.jar
-  reason: <- intellij.bazel.commons
 - name: lib/protobuf4.jar
   library: protobuf4
   files:

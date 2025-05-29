@@ -9,8 +9,6 @@ import com.google.devtools.build.v1.PublishBuildToolEventStreamResponse
 import com.google.devtools.build.v1.PublishLifecycleEventRequest
 import com.google.protobuf.Empty
 import io.grpc.stub.StreamObserver
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
@@ -26,6 +24,8 @@ import org.jetbrains.bsp.protocol.TaskFinishParams
 import org.jetbrains.bsp.protocol.TaskId
 import org.jetbrains.bsp.protocol.TaskStartParams
 import org.jetbrains.bsp.protocol.TestStatus
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.net.URI
 import java.nio.file.FileSystemNotFoundException
@@ -293,9 +293,9 @@ class BepServer(
           val stdErrText = Files.readString(path)
           processDiagnosticText(stdErrText, label, originId)
         } catch (e: FileSystemNotFoundException) {
-          LOGGER.warn(e)
+          LOGGER.warn("Failed to process diagnostic text", e)
         } catch (e: IOException) {
-          LOGGER.warn(e)
+          LOGGER.warn("Failed to process diagnostic text", e)
         }
       }
 
@@ -359,6 +359,6 @@ class BepServer(
   val bepOutput: BepOutput = bepOutputBuilder.build()
 
   companion object {
-    private val LOGGER: Logger = LogManager.getLogger(BepServer::class.java)
+    private val LOGGER: Logger = LoggerFactory.getLogger(BepServer::class.java)
   }
 }
