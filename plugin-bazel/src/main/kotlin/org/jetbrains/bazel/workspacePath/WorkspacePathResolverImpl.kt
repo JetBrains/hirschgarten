@@ -21,20 +21,12 @@ import java.nio.file.Path
 
 /** Uses the package path locations to resolve a workspace path.  */
 data class WorkspacePathResolverImpl(private val workspaceRoot: WorkspaceRoot) : WorkspacePathResolver {
+  override fun resolveToIncludeDirectories(relativePath: WorkspacePath): List<Path> = listOf(workspaceRoot.fileForPath(relativePath))
 
-  override fun resolveToIncludeDirectories(relativePath: WorkspacePath): List<Path> {
-    return listOf(workspaceRoot.fileForPath(relativePath))
-  }
+  override fun findPackageRoot(relativePath: String): Path = workspaceRoot.directory
 
-  override fun findPackageRoot(relativePath: String): Path {
-    return workspaceRoot.directory
-  }
+  override fun getWorkspacePath(absolutePath: Path): WorkspacePath? = workspaceRoot.workspacePathForSafe(absolutePath)
 
-  override fun getWorkspacePath(absolutePath: Path): WorkspacePath? {
-    return workspaceRoot.workspacePathForSafe(absolutePath)
-  }
-
-  override fun findWorkspaceRoot(absolutePath: Path): WorkspaceRoot? {
-    return if (workspaceRoot.isInWorkspace(absolutePath)) workspaceRoot else null
-  }
+  override fun findWorkspaceRoot(absolutePath: Path): WorkspaceRoot? =
+    if (workspaceRoot.isInWorkspace(absolutePath)) workspaceRoot else null
 }

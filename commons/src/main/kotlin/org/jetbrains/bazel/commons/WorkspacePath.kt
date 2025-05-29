@@ -69,6 +69,7 @@ data class WorkspacePath private constructor(private val path: Path) {
 
   companion object {
     /** Silently returns null if this is not a valid workspace path.  */
+    @JvmStatic
     fun createIfValid(relativePath: String): WorkspacePath? = if (isValid(relativePath)) WorkspacePath(Path(relativePath)) else null
 
     private const val BAZEL_COMPONENT_SEPARATOR = '/'
@@ -83,9 +84,11 @@ data class WorkspacePath private constructor(private val path: Path) {
       return Paths.get(normalizedPath)
     }
 
+    @JvmStatic
     fun isValid(relativePath: String): Boolean = validate(relativePath) == null
 
     /** Validates a workspace path. Returns null on success or an error message otherwise.  */
+    @JvmStatic
     fun validate(relativePath: String): String? {
       if (relativePath.startsWith("/")) {
         return "Workspace path must be relative; cannot start with '/': $relativePath"

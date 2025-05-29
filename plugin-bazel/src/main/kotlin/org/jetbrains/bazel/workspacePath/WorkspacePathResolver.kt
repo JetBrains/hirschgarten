@@ -25,9 +25,7 @@ import java.nio.file.Path
  */
 interface WorkspacePathResolver {
   /** Resolves a workspace path to an absolute file.  */
-  fun resolveToFile(workspacepath: WorkspacePath): Path? {
-    return resolveToFile(workspacepath.relativePath())
-  }
+  fun resolveToFile(workspacepath: WorkspacePath): Path? = resolveToFile(workspacepath.relativePath())
 
   /** Resolves a workspace relative path to an absolute file.  */
   fun resolveToFile(workspaceRelativePath: String): Path? {

@@ -1,5 +1,5 @@
 load(":commons.bzl", "kt_test")
-load(":intellij.bzl", "JVM_FLAGS", "ADD_OPENS_FLAGS", "INTELLIJ_RUNTIME_DEPS", "INTELLIJ_DEPS")
+load(":intellij.bzl", "ADD_OPENS_FLAGS", "INTELLIJ_DEPS", "INTELLIJ_RUNTIME_DEPS", "JVM_FLAGS")
 
 JUNIT5_DEPS = [
     "@maven//:org_junit_jupiter_junit_jupiter_api",
