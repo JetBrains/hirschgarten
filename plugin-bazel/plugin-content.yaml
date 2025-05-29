@@ -32,11 +32,6 @@
   files:
     - name: $MAVEN_REPOSITORY$/com/fasterxml/jackson/dataformat/jackson-dataformat-xml/2/jackson-dataformat-xml-2.jar
   reason: <- intellij.bazel.server
-- name: lib/jet-sign.jar
-  library: jet-sign
-  files:
-    - name: $MAVEN_REPOSITORY$/com/jetbrains/jet-sign/45/jet-sign-45.jar
-  reason: <- intellij.bazel.commons
 - name: lib/kotlin-tooling-core.jar
   library: kotlin-tooling-core
   files:
