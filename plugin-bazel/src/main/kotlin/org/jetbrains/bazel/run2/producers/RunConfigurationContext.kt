@@ -99,8 +99,8 @@ interface RunConfigurationContext {
             return false
           }
           return handlerState.commandState.command == command
-              && config.targets == ImmutableList.of(target)
-              && handlerState.getTestFilterFlag() == null
+              && config.targets == listOf(target)
+              && handlerState.testFilterFlag == null
         }
       }
     }

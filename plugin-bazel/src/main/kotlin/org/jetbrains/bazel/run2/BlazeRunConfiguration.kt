@@ -30,5 +30,5 @@ interface BlazeRunConfiguration {
   val targets: List<TargetPattern>
 
   /** Keep in sync with source XML  */
-  var keepInSync: Boolean
+  var keepInSync: Boolean?
 }

@@ -47,7 +47,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.UIUtil
 import org.jdom.Element
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.info.BspTargetInfo
+import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.run2.confighandler.BlazeCommandRunConfigurationHandler
@@ -55,9 +55,12 @@ import org.jetbrains.bazel.run2.confighandler.BlazeCommandRunConfigurationHandle
 import org.jetbrains.bazel.run2.confighandler.BlazeCommandRunConfigurationRunner
 import org.jetbrains.bazel.run2.state.ConsoleOutputFileSettingsUi
 import org.jetbrains.bazel.run2.state.RunConfigurationState
+import org.jetbrains.bazel.run2.state.RunConfigurationStateEditor
 import org.jetbrains.bazel.run2.targetfinder.FuturesUtil
 import org.jetbrains.bazel.run2.targetfinder.TargetFinder
 import org.jetbrains.bazel.run2.ui.TargetExpressionListUi
+import org.jetbrains.bazel.server.label.label
+import org.jetbrains.bazel.sync.fromRuleName
 import java.awt.event.ItemListener
 import javax.swing.Box
 import javax.swing.JComponent
@@ -81,9 +84,9 @@ class BlazeCommandRunConfiguration
   /** Set up a run configuration with a not-yet-known target pattern.  */
   fun setPendingContext(pendingContext: PendingRunConfigurationContext) {
     this.pendingContext = pendingContext
-    this.targetPatterns = ImmutableList.of<String?>()
+    this.targetPatterns = ImmutableList.of<String>()
     this.targetKindString = null
-    this.contextElementString = pendingContext.getSourceElementString()
+    this.contextElementString = pendingContext.sourceElementString
     updateHandler()
     EventLoggingService.getInstance().logEvent(javaClass, "async-run-config")
   }
@@ -165,14 +168,6 @@ class BlazeCommandRunConfiguration
     }
   }
 
-  public override fun setKeepInSync(keepInSync: Boolean) {
-    this.keepInSync = keepInSync
-  }
-
-  override fun getKeepInSync(): Boolean {
-    return keepInSync
-  }
-
   override val targets: ImmutableList<TargetPattern>
     get() = parseTargets(targetPatterns)
 
@@ -183,16 +178,16 @@ class BlazeCommandRunConfiguration
      */
     get() {
       val targets: ImmutableList<TargetPattern> = targets
-      return if (targets.size == 1) targets.get(0) else null
+      return if (targets.size == 1) targets[0] else null
     }
 
   fun setTargetInfo(target: BspTargetInfo.TargetInfo) {
-    val pattern = target.label.toString().trim()
-    targetPatterns = if (pattern.isEmpty()) ImmutableList.of<String?>() else ImmutableList.of<String?>(pattern)
-    updateTargetKind(target.kindString)
+    val pattern = target.label().toString().trim()
+    targetPatterns = if (pattern.isEmpty()) emptyList() else listOf(pattern)
+    updateTargetKind(target.kind)
   }
 
-  fun setTargets(targets: ImmutableList<TargetPattern?>) {
+  fun setTargets(targets: List<TargetPattern>) {
     targetPatterns =
       targets.map(TargetPattern::toString)
     updateTargetKindAsync(null)
@@ -201,7 +196,7 @@ class BlazeCommandRunConfiguration
   /** Sets the target expression and asynchronously kicks off a target kind update.  */
   fun setTarget(target: TargetPattern?) {
     targetPatterns =
-      if (target != null) ImmutableList.of<E?>(target.toString().trim()) else ImmutableList.of<String?>()
+      if (target != null) listOf(target.toString().trim()) else emptyList()
     updateTargetKindAsync(null)
   }
 
@@ -220,9 +215,9 @@ class BlazeCommandRunConfiguration
       BlazeCommandRunConfigurationHandlerProvider.TargetState.KNOWN
 
   private fun updateHandlerIfDifferentProvider(
-    newProvider: BlazeCommandRunConfigurationHandlerProvider
+    newProvider: BlazeCommandRunConfigurationHandlerProvider?
   ) {
-    if (handlerProvider === newProvider) {
+    if (handlerProvider === newProvider || newProvider == null) {
       return
     }
     try {
@@ -245,7 +240,7 @@ class BlazeCommandRunConfiguration
      * expression, if it's currently known. Returns null if the target expression points to multiple
      * blaze targets.
      */
-    get() = TargetKind.fromRuleName(targetKindString)
+    get() = TargetKind.fromRuleName(targetKindString ?: return null)
 
   /**
    * Queries the kind of the current target pattern, possibly asynchronously, in the case where
@@ -256,20 +251,20 @@ class BlazeCommandRunConfiguration
    */
   fun updateTargetKindAsync(asyncCallback: Runnable?) {
     val targets: ImmutableList<TargetPattern> = parseTargets(targetPatterns)
-    if (targets.size != 1 || targets.get(0) !is Label) {
+    if (targets.size != 1 || targets[0] !is Label) {
       // TODO(brendandouglas): any reason to support multiple targets here?
       updateTargetKind(null)
       return
     }
-    val label: Label? = targets.get(0) as Label?
-    val future: ListenableFuture<TargetInfo?> = TargetFinder.findTargetInfoFuture(getProject(), label)
+    val label: Label = targets[0] as Label
+    val future: ListenableFuture<TargetInfo?> = TargetFinder.findTargetInfoFuture(project, label)
     if (future.isDone) {
-      updateTargetKindFromSingleTarget(FuturesUtil.getIgnoringErrors<TargetInfo?>(future))
+      updateTargetKindFromSingleTarget(FuturesUtil.getIgnoringErrors(future))
     } else {
       updateTargetKindFromSingleTarget(null)
       future.addListener(
         {
-          updateTargetKindFromSingleTarget(FuturesUtil.getIgnoringErrors<TargetInfo?>(future))
+          updateTargetKindFromSingleTarget(FuturesUtil.getIgnoringErrors(future))
           asyncCallback?.run()
         },
         MoreExecutors.directExecutor()
@@ -278,7 +273,7 @@ class BlazeCommandRunConfiguration
   }
 
   private fun updateTargetKindFromSingleTarget(target: TargetInfo?) {
-    updateTargetKind(target?.kindString)
+    updateTargetKind(target?.kind)
   }
 
   private fun updateTargetKind(kind: String?) {
@@ -368,7 +363,12 @@ class BlazeCommandRunConfiguration
         )
       }
 
-      val error: String? = TargetPattern.validate(pattern)
+      val error: String? = try {
+        TargetPattern.parse(pattern)
+        null
+      } catch (e: Exception) {
+        e.message
+      }
       if (error != null) {
         throw RuntimeConfigurationError(error)
       }
@@ -383,14 +383,14 @@ class BlazeCommandRunConfiguration
     element = getBlazeSettingsCopy(element)!!
 
     val keepInSyncString = element.getAttributeValue(KEEP_IN_SYNC_TAG)
-    keepInSync = if (keepInSyncString != null) keepInSyncString.toBoolean() else null
+    keepInSync = keepInSyncString?.toBoolean()
     contextElementString = element.getAttributeValue(CONTEXT_ELEMENT_ATTR)
 
-    val targets = ImmutableList.builder<String?>()
+    val targets = ImmutableList.builder<String>()
     val targetElements = element.getChildren(TARGET_TAG)
     for (targetElement in targetElements) {
-      if (targetElement != null && !Strings.isNullOrEmpty(targetElement.getTextTrim())) {
-        targets.add(targetElement.getTextTrim())
+      if (targetElement != null && !Strings.isNullOrEmpty(targetElement.textTrim)) {
+        targets.add(targetElement.textTrim)
         // backwards-compatibility with prior per-target kind serialization
         val kind = targetElement.getAttributeValue(KIND_ATTR)
         if (kind != null) {
@@ -494,27 +494,22 @@ class BlazeCommandRunConfiguration
   }
 
   internal class BlazeCommandRunConfigurationSettingsEditor
-    (config: BlazeCommandRunConfiguration) : SettingsEditor<BlazeCommandRunConfiguration?>() {
-    private var handlerProvider: BlazeCommandRunConfigurationHandlerProvider? = null
-    private var handler: BlazeCommandRunConfigurationHandler? = null
-    private var handlerStateEditor: RunConfigurationStateEditor? = null
-    private var handlerStateComponent: JComponent? = null
-    private var elementState: Element
+    (config: BlazeCommandRunConfiguration) : SettingsEditor<BlazeCommandRunConfiguration>() {
+    val project = config.project
+    private lateinit var handlerProvider: BlazeCommandRunConfigurationHandlerProvider
+    private lateinit var handler: BlazeCommandRunConfigurationHandler
+    private lateinit var handlerStateEditor: RunConfigurationStateEditor
+    private lateinit var handlerStateComponent: JComponent
+    private var elementState: Element = config.blazeElementState.clone()
 
     private val editorWithoutSyncCheckBox: Box
     private val editor: Box
-    private val keepInSyncCheckBox: JBCheckBox
-    private val targetExpressionLabel: JBLabel
-    private val outputFileUi: ConsoleOutputFileSettingsUi<BlazeCommandRunConfiguration?>
-    private val targetsUi: TargetExpressionListUi
+    private val keepInSyncCheckBox: JBCheckBox = JBCheckBox("Keep in sync with source XML")
+    private val targetExpressionLabel: JBLabel = JBLabel(UIUtil.ComponentStyle.LARGE)
+    private val outputFileUi: ConsoleOutputFileSettingsUi<BlazeCommandRunConfiguration> = ConsoleOutputFileSettingsUi<BlazeCommandRunConfiguration>()
+    private val targetsUi: TargetExpressionListUi = TargetExpressionListUi(project)
 
     init {
-      val project = config.getProject()
-      elementState = config.blazeElementState.clone()
-      targetsUi = TargetExpressionListUi(project)
-      targetExpressionLabel = JBLabel(UIUtil.ComponentStyle.LARGE)
-      keepInSyncCheckBox = JBCheckBox("Keep in sync with source XML")
-      outputFileUi = ConsoleOutputFileSettingsUi<BlazeCommandRunConfiguration?>()
       editorWithoutSyncCheckBox = UiUtil.createBox(targetExpressionLabel, targetsUi)
       editor =
         UiUtil.createBox(
@@ -522,7 +517,7 @@ class BlazeCommandRunConfiguration
         )
       updateEditor(config)
       updateHandlerEditor(config)
-      keepInSyncCheckBox.addItemListener(ItemListener { e: ItemEvent? -> updateEnabledStatus() })
+      keepInSyncCheckBox.addItemListener { updateEnabledStatus() }
     }
 
     private fun updateEditor(config: BlazeCommandRunConfiguration) {
@@ -544,27 +539,28 @@ class BlazeCommandRunConfiguration
     }
 
     private fun setEnabled(enabled: Boolean) {
-      if (handlerStateEditor != null) {
-        handlerStateEditor.setComponentEnabled(enabled)
-      }
+      handlerStateEditor.setComponentEnabled(enabled)
       targetsUi.setEnabled(enabled)
       outputFileUi.setComponentEnabled(enabled)
     }
 
     private fun updateHandlerEditor(config: BlazeCommandRunConfiguration) {
-      handlerProvider = config.handlerProvider
-      handler = handlerProvider.createHandler(config)
+      val currentHandlerProvider = config.handlerProvider
+      handlerProvider = currentHandlerProvider
+      val currentHandler = currentHandlerProvider.createHandler(config)
+      handler = currentHandler
       try {
-        handler.state.readExternal(config.blazeElementState)
+        currentHandler.state.readExternal(config.blazeElementState)
       } catch (e: InvalidDataException) {
         logger.error(e)
       }
-      handlerStateEditor = handler.state.getEditor(config.getProject())
+      val currentEditor = currentHandler.state.getEditor(config.project)
+      handlerStateEditor = currentEditor
 
-      if (handlerStateComponent != null) {
+      if (this::handlerStateComponent.isInitialized) {
         editorWithoutSyncCheckBox.remove(handlerStateComponent)
       }
-      handlerStateComponent = handlerStateEditor.createComponent()
+      handlerStateComponent = currentEditor.createComponent()
       editorWithoutSyncCheckBox.add(handlerStateComponent)
     }
 
@@ -578,7 +574,7 @@ class BlazeCommandRunConfiguration
       if (config.handlerProvider !== handlerProvider) {
         updateHandlerEditor(config)
       }
-      targetsUi.setTargetExpressions(config.targetPatterns)
+      targetsUi.targetExpressions = config.targetPatterns
       outputFileUi.resetEditorFrom(config)
       handlerStateEditor.resetEditorFrom(config.handler.state)
     }
@@ -591,7 +587,7 @@ class BlazeCommandRunConfiguration
       } catch (e: WriteExternalException) {
         logger.error(e)
       }
-      config.keepInSync = if (keepInSyncCheckBox.isVisible()) keepInSyncCheckBox.isSelected() else null
+      config.keepInSync = if (keepInSyncCheckBox.isVisible) keepInSyncCheckBox.isSelected else null
 
       // now set the config's state, based on the editor's (possibly out of date) handler
       config.updateHandlerIfDifferentProvider(handlerProvider)
@@ -603,15 +599,14 @@ class BlazeCommandRunConfiguration
       }
 
       // finally, update the handler
-      config.targetPatterns = targetsUi.getTargetExpressions()
-      config.updateTargetKindAsync(
-        Runnable? { ApplicationManager.getApplication().invokeLater(Runnable { this.fireEditorStateChanged() }) })
+      config.targetPatterns = targetsUi.targetExpressions
+      config.updateTargetKindAsync { ApplicationManager.getApplication().invokeLater { this.fireEditorStateChanged() } }
       updateEditor(config)
       if (config.handlerProvider !== handlerProvider) {
         updateHandlerEditor(config)
-        handlerStateEditor.resetEditorFrom(config.handler.state)
+        handlerStateEditor?.resetEditorFrom(config.handler.state)
       } else {
-        handlerStateEditor.applyEditorTo(config.handler.state)
+        handlerStateEditor?.applyEditorTo(config.handler.state)
       }
     }
   }
@@ -668,7 +663,7 @@ class BlazeCommandRunConfiguration
       return list.build()
     }
 
-    private fun parseTarget(targetPattern: String?): TargetPattern? {
+    private fun parseTarget(targetPattern: String): TargetPattern? {
       if (Strings.isNullOrEmpty(targetPattern)) {
         return null
       }
