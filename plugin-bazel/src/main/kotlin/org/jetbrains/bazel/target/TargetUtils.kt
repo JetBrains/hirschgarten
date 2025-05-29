@@ -41,7 +41,7 @@ data class TargetUtilsState(
   // The new tag is here to not break the sync with the old persisted data
   // The project that contains the old persisted data will be resynced and stored using the new tag
   // https://youtrack.jetbrains.com/issue/BAZEL-1967
-  @OptionTag(tag = "labelToTargetInfoV2")
+  @OptionTag(tag = "labelToTargetInfoV3")
   var labelToTargetInfo: Map<String, String> = emptyMap(),
   var moduleIdToTarget: Map<String, String> = emptyMap(),
   var libraryIdToTarget: Map<String, String> = emptyMap(),
