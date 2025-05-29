@@ -11,16 +11,16 @@ import org.jetbrains.bsp.protocol.BuildTarget
 class TestTargetAction(
   project: Project,
   targetInfos: List<BuildTarget>,
-  text: ((includeTargetNameInText: Boolean) -> String)? = null,
+  text: ((isRunConfigName: Boolean) -> String)? = null,
   isDebugAction: Boolean = false,
   includeTargetNameInText: Boolean = false,
   private val singleTestFilter: String? = null,
 ) : BazelRunnerAction(
     targetInfos = targetInfos,
-    text = { includeTargetNameInTextParam ->
+    text = { isRunConfigName ->
       if (text != null) {
-        text(includeTargetNameInTextParam || includeTargetNameInText)
-      } else if (isDebugAction && !includeTargetNameInTextParam && !includeTargetNameInText) {
+        text(isRunConfigName || includeTargetNameInText)
+      } else if (isDebugAction && !isRunConfigName && !includeTargetNameInText) {
         BazelPluginBundle.message(
           "target.debug.test.action.text",
             "",
@@ -28,7 +28,7 @@ class TestTargetAction(
       } else {
         BazelPluginBundle.message(
           "target.test.action.text",
-          if (includeTargetNameInTextParam ||
+          if (isRunConfigName ||
             includeTargetNameInText
           ) {
             targetInfos.joinToString(";") { it.id.toShortString(project) }
