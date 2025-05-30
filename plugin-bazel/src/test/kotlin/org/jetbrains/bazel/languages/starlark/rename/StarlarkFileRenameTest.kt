@@ -31,25 +31,25 @@ class StarlarkFileRenameTest : BasePlatformTestCase() {
 
   @Test
   fun `should update src files in BUILD`() {
-    myFixture.addFileToProject("src/java/java_1.java", "java 1 content")
-    myFixture.addFileToProject("src/java/java_2.java", "java 2 content")
-    myFixture.addFileToProject("src/kotlin/kotlin_1.kt", "kotlin 1 content")
-    myFixture.addFileToProject("src/kotlin/kotlin_2.kt", "kotlin 2 content")
+    myFixture.addFileToProject("java_1.java", "java 1 content")
+    myFixture.addFileToProject("java_2.java", "java 2 content")
+    myFixture.addFileToProject("kotlin_1.kt", "kotlin 1 content")
+    myFixture.addFileToProject("kotlin_2.kt", "kotlin 2 content")
     myFixture.addFileToProject(
-      "src/BUILD",
+      "BUILD",
       """
       load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
       kt_jvm_library(
           name = "test_package",
-          srcs = ["java/java_1.java", "java/java_2.java", "kotlin/kotlin_1.kt", "kotlin/kotlin_2.kt"],
+          srcs = ["java_1.java", "java_2.java", "kotlin_1.kt", "kotlin_2.kt"],
       )
       """.trimIndent(),
     )
 
-    doRename("src/java/java_2.java", "cpp_file.cpp")
-    doRename("src/kotlin/kotlin_1.kt", "another_kotlin.kt")
+    doRename("java_2.java", "cpp_file.cpp")
+    doRename("kotlin_1.kt", "another_kotlin.kt")
 
-    val updatedFile = myFixture.findFileInTempDir("src/BUILD")
+    val updatedFile = myFixture.findFileInTempDir("BUILD")
     val updatedText = PsiManager.getInstance(project).findFile(updatedFile!!)!!.text
     assertTrue(updatedText.contains(".bzl"))
     TestCase.assertEquals(
@@ -58,7 +58,7 @@ class StarlarkFileRenameTest : BasePlatformTestCase() {
       load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
       kt_jvm_library(
           name = "test_package",
-          srcs = ["java/java_1.java", "java/cpp_file.cpp", "kotlin/another_kotlin.kt", "kotlin/kotlin_2.kt"],
+          srcs = ["java_1.java", "cpp_file.cpp", "another_kotlin.kt", "kotlin_2.kt"],
       )
       """.trimIndent(),
     )
