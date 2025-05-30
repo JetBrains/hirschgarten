@@ -4,6 +4,7 @@ kt_intellij_junit4_test(
     name = "StarlarkFunctionFindUsagesTest",
     src = "StarlarkFunctionFindUsagesTest.kt",
     data = ["//plugin-bazel/src/test/testData/starlark/findusages"],
+    tags = ["exclusive"],
     deps = [
         "//plugin-bazel",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
