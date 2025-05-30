@@ -67,7 +67,7 @@ class LabelSearchEverywhereContributor(private val project: Project) :
         .mapNotNull { label ->
           val fullString = label.toString()
           if (!matcher.matches(fullString)) return@mapNotNull null
-        val targetElement = runReadAction { resolveTargetPattern(project, label) } ?: return@mapNotNull null
+          val targetElement = runReadAction { resolveTargetPattern(project, label) } ?: return@mapNotNull null
           val displayName = label.toShortString(project)
           FoundItemDescriptor(LabelWithPreview(displayName, targetElement), matcher.matchingDegree(fullString))
         }.toList()
