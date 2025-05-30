@@ -1,91 +1,91 @@
 package org.jetbrains.bazel.startup
 
-import com.intellij.openapi.components.service
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.UserDataHolderEx
+import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.isBazelProjectInitialized
-import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
+import org.jetbrains.bazel.config.BazelProjectProperties
 import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.PhasedSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
-import org.jetbrains.bazel.target.targetUtils
+import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
 import org.jetbrains.bazel.ui.widgets.fileTargets.updateBazelFileTargetsWidget
 import org.jetbrains.bazel.ui.widgets.tool.window.all.targets.registerBazelToolWindow
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
 import org.jetbrains.bazel.utils.RunConfigurationProducersDisabler
-import java.util.Collections
-import java.util.WeakHashMap
 
 private val log = logger<BazelStartupActivity>()
 
-// Use WeakHashMap to avoid leaking the Project instance
-private val executedForProject: MutableSet<Project> =
-  Collections.synchronizedSet(Collections.newSetFromMap(WeakHashMap()))
+private val EXECUTED_FOR_PROJECT = Key<Boolean>("bazel.startup.executed.for.project")
 
 /**
- * Runs actions after the project has started up and the index is up-to-date.
+ * Runs actions after the project has started up and the index is up to date.
  *
- * @see BazelProjectOpenProcessor for additional actions that
+ * @see org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor for additional actions that
  * may run when a project is being imported for the first time.
  */
 class BazelStartupActivity : BazelProjectActivity() {
-  override suspend fun Project.executeForBazelProject() {
-    if (startupActivityExecutedAlready()) {
-      log.info("Bazel startup activity executed already for project: $this")
+  override suspend fun executeForBazelProject(project: Project) {
+    if (startupActivityExecutedAlready(project)) {
+      log.info("Bazel startup activity executed already for project: $project")
       return
     }
-    log.info("Executing Bazel startup activity for project: $this")
-    BazelStartupActivityTracker.startConfigurationPhase(this)
-    executeOnEveryProjectStartup()
 
-    resyncProjectIfNeeded()
+    log.info("Executing Bazel startup activity for project: $project")
+    BazelStartupActivityTracker.startConfigurationPhase(project)
 
-    updateProjectProperties()
+    executeOnEveryProjectStartup(project)
 
-    BazelStartupActivityTracker.stopConfigurationPhase(this)
-  }
+    resyncProjectIfNeeded(project)
 
-  private fun Project.updateTargetToolwindow() {
-    val targets = targetUtils.allBuildTargets().associateBy { it.id }
-    service<BazelTargetsPanelModel>().updateTargets(targets)
-  }
+    project.serviceAsync<BazelProjectProperties>().isInitialized = true
 
-  /**
-   * Make sure calling [BazelOpenProjectProvider.performOpenBazelProject]
-   * won't cause [BazelStartupActivity] to execute twice.
-   */
-  private fun Project.startupActivityExecutedAlready(): Boolean = !executedForProject.add(this)
-
-  private suspend fun Project.executeOnEveryProjectStartup() {
-    log.debug("Executing Bazel startup activities for every opening")
-    registerBazelToolWindow(this)
-    updateTargetToolwindow()
-    updateBazelFileTargetsWidget()
-    RunConfigurationProducersDisabler(this)
-    BazelWorkspace.getInstance(this).initialize()
-  }
-
-  private suspend fun Project.resyncProjectIfNeeded() {
-    if (isProjectInIncompleteState()) {
-      if (BazelApplicationSettingsService.getInstance().settings.enablePhasedSync) {
-        log.info("Running Bazel phased sync task")
-        PhasedSync(this).sync()
-      } else {
-        log.info("Running Bazel sync task")
-        ProjectSyncTask(this).sync(
-          syncScope = SecondPhaseSync,
-          buildProject = BazelFeatureFlags.isBuildProjectOnSyncEnabled,
-        )
-      }
-    }
-  }
-
-  private fun Project.isProjectInIncompleteState() = targetUtils.allTargets().isEmpty() || !workspaceModelLoadedFromCache
-
-  private fun Project.updateProjectProperties() {
-    isBazelProjectInitialized = true
+    BazelStartupActivityTracker.stopConfigurationPhase(project)
   }
 }
+
+private suspend fun updateTargetToolwindow(project: Project) {
+  val targets = project.serviceAsync<TargetUtils>().allBuildTargets().associateBy { it.id }
+  project.serviceAsync<BazelTargetsPanelModel>().updateTargets(targets)
+}
+
+private suspend fun executeOnEveryProjectStartup(project: Project) {
+  log.debug("Executing Bazel startup activities for every opening")
+  registerBazelToolWindow(project)
+  updateTargetToolwindow(project)
+  project.updateBazelFileTargetsWidget()
+  RunConfigurationProducersDisabler(project)
+  project.serviceAsync<BazelWorkspace>().initialize()
+}
+
+private suspend fun resyncProjectIfNeeded(project: Project) {
+  if (isProjectInIncompleteState(project)) {
+    if (serviceAsync<BazelApplicationSettingsService>().settings.enablePhasedSync) {
+      log.info("Running Bazel phased sync task")
+      PhasedSync(project).sync()
+    } else {
+      log.info("Running Bazel sync task")
+      ProjectSyncTask(project).sync(
+        syncScope = SecondPhaseSync,
+        buildProject = BazelFeatureFlags.isBuildProjectOnSyncEnabled,
+      )
+    }
+  }
+}
+
+/**
+ * Make sure calling [org.jetbrains.bazel.flow.open.performOpenBazelProject]
+ * won't cause [BazelStartupActivity] to execute twice.
+ */
+private fun startupActivityExecutedAlready(project: Project): Boolean =
+  !(project as UserDataHolderEx).replace(EXECUTED_FOR_PROJECT, null, true)
+
+private suspend fun isProjectInIncompleteState(project: Project): Boolean =
+  project.serviceAsync<TargetUtils>().allTargets().isEmpty() ||
+    !(project.serviceAsync<WorkspaceModel>() as WorkspaceModelImpl).loadedFromCache

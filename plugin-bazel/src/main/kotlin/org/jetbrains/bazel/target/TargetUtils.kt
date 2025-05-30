@@ -41,7 +41,7 @@ data class TargetUtilsState(
   // The new tag is here to not break the sync with the old persisted data
   // The project that contains the old persisted data will be resynced and stored using the new tag
   // https://youtrack.jetbrains.com/issue/BAZEL-1967
-  @OptionTag(tag = "labelToTargetInfoV2")
+  @OptionTag(tag = "labelToTargetInfoV3")
   var labelToTargetInfo: Map<String, String> = emptyMap(),
   var moduleIdToTarget: Map<String, String> = emptyMap(),
   var libraryIdToTarget: Map<String, String> = emptyMap(),
@@ -78,6 +78,9 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
 
     @InternalApi get
 
+  var fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>> = hashMapOf()
+    private set
+
   fun addFileToTargetIdEntry(path: Path, targets: List<Label>) {
     fileToTarget = fileToTarget + (path to targets)
   }
@@ -97,6 +100,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   suspend fun saveTargets(
     targets: List<BuildTarget>,
     fileToTarget: Map<Path, List<Label>>,
+    fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
     libraryItems: List<LibraryItem>?,
   ) {
     labelToTargetInfo = targets.associateBy { it.id }
@@ -108,6 +112,7 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
         }.orEmpty()
 
     this.fileToTarget = fileToTarget
+    this.fileToTargetWithoutLowPrioritySharedSources = fileToTargetWithoutLowPrioritySharedSources
     fileToExecutableTargets = calculateFileToExecutableTargets(libraryItems)
 
     updateComputedFields()

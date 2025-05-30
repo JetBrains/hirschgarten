@@ -5,7 +5,7 @@ import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.utils.SourceTypeIconProvider
 import javax.swing.Icon
 
-class PythonSourceIconProvider : SourceTypeIconProvider {
+private class PythonSourceIconProvider : SourceTypeIconProvider {
   override fun getIcon(): Icon = PythonParserIcons.PythonFile
 
   override fun getSourceType(): SourceType = SourceType.PYTHON

@@ -10,7 +10,6 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.BazelJavaSourceRootEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
-import org.jetbrains.bazel.sdkcompat.isSharedSourceSupportEnabled
 import org.jetbrains.bazel.utils.allAncestorsSequence
 import org.jetbrains.bazel.utils.commonAncestor
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther
@@ -37,7 +36,7 @@ private val RELEVANT_EXTENSIONS = listOf("java", "kt", "scala")
  */
 internal class JavaModuleToDummyJavaModulesTransformerHACK(
   private val projectBasePath: Path,
-  private val fileToTarget: Map<Path, List<Label>>,
+  private val fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
   private val project: Project,
 ) {
   sealed interface Result
@@ -94,9 +93,7 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
     sourceRootsForParentDirsVotes: Map<JavaSourceRoot, Int>,
   ): List<JavaSourceRoot>? {
     val originalSourceRoots: Set<Path> = sourceRoots.map { it.sourcePath }.toSet()
-    if (!project.isSharedSourceSupportEnabled &&
-      originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }
-    ) {
+    if (originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }) {
       return null
     }
 
@@ -145,10 +142,11 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
   }
 
   /**
-   * We don't really support shared sources anyway, but adding whole directories if some of the source files
-   * are contained in several targets can cause red code on https://github.com/bazelbuild/bazel
+   * If after merging sources, one source root becomes a parent of another one, then
+   * IDEA will only consider the inner source root because of how the workspace model works.
+   * This can cause red code, e.g., on https://github.com/bazelbuild/bazel
    */
-  private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTarget[this]?.size ?: 0) > 1
+  private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTargetWithoutLowPrioritySharedSources[this]?.size ?: 0) > 1
 
   private fun tryMergeResources(resourceRoots: List<ResourceRoot>): List<ResourceRoot>? {
     if (resourceRoots.isEmpty()) return emptyList()

@@ -115,7 +115,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget,
         javacOptions = javacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -242,7 +241,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget,
         javacOptions = null,
-        scalacOptions = null,
         libraryDependencies = emptyList(),
         moduleDependencies =
           listOf(
@@ -377,7 +375,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget1,
         javacOptions = target1JavacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -439,7 +436,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget2,
         javacOptions = target2JavacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -641,7 +637,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget,
         javacOptions = javacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = null,
         moduleDependencies =
           listOf(
