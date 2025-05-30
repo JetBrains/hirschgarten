@@ -6,6 +6,7 @@ intellij_integration_test_suite(
     associates = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/workspacecontext/provider",
     ],
+    tags = ["exclusive"],
     test_package_root = "org.jetbrains.bazel.server.sync",
     deps = [
         "//plugin-bazel/src:test_fixtures",

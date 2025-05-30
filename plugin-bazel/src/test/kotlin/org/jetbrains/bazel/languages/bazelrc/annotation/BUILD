@@ -8,6 +8,7 @@ kt_intellij_junit4_test(
         "//plugin-bazel/src/test/testData/bazelrc/annotation:OldFlagsTestData.bazelrc",
         "//plugin-bazel/src/test/testData/bazelrc/annotation:TargetFlagsTestData.bazelrc",
     ],
+    tags = ["exclusive"],
     deps = [
         "//plugin-bazel",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/bazelrc/fixtures",
