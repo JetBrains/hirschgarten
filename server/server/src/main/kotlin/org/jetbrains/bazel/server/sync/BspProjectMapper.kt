@@ -19,7 +19,6 @@ import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bazel.server.sync.languages.java.JavaModule
 import org.jetbrains.bazel.server.sync.languages.jvm.javaModule
-import org.jetbrains.bazel.server.sync.languages.scala.ScalaModule
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
@@ -32,6 +31,7 @@ import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.DirectoryItem
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.GoLibraryItem
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
@@ -62,9 +62,20 @@ class BspProjectMapper(
   private val bazelPathsResolver: BazelPathsResolver,
   private val bazelRunner: BazelRunner,
   private val bspInfo: BspInfo,
+  private val featureFlags: FeatureFlags,
 ) {
   fun workspaceTargets(project: AspectSyncProject): WorkspaceBuildTargetsResult {
-    val buildTargets = project.modules.map { it.toBuildTarget() }
+    val highPrioritySources =
+      if (featureFlags.isSharedSourceSupportEnabled) {
+        emptySet()
+      } else {
+        project.modules
+          .filter { !it.hasLowSharedSourcesPriority() }
+          .flatMap { it.sources }
+          .map { it.path }
+          .toSet()
+      }
+    val buildTargets = project.modules.map { it.toBuildTarget(highPrioritySources) }
     val nonModuleTargets =
       project.nonModuleTargets
         .map {
@@ -155,11 +166,18 @@ class BspProjectMapper(
     return buildTarget
   }
 
-  private fun Module.toBuildTarget(): BuildTarget {
+  private fun Module.toBuildTarget(highPrioritySources: Set<Path>): BuildTarget {
     val label = label
     val dependencies =
       directDependencies
     val tags = tags.mapNotNull(BspMappings::toBspTag)
+
+    val (sources, lowPrioritySharedSources) =
+      if (hasLowSharedSourcesPriority()) {
+        sources.partition { it.path !in highPrioritySources }
+      } else {
+        sources to emptyList()
+      }
 
     val buildTarget =
       BuildTarget(
@@ -169,6 +187,7 @@ class BspProjectMapper(
         kind = inferKind(this.tags, kindString, languages),
         baseDirectory = baseDirectory,
         sources = sources,
+        lowPrioritySharedSources = lowPrioritySharedSources,
         noBuild = this.tags.contains(Tag.NO_BUILD),
         resources = resources.toList(),
       )
@@ -176,6 +195,8 @@ class BspProjectMapper(
     applyLanguageData(this, buildTarget)
     return buildTarget
   }
+
+  private fun Module.hasLowSharedSourcesPriority(): Boolean = Tag.IDE_LOW_SHARED_SOURCES_PRIORITY in tags
 
   private fun inferKind(
     tags: Set<Tag>,
