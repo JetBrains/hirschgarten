@@ -51,7 +51,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
     createContext()
       .runIdeWithDriver(commands = commands, runTimeout = timeout)
       .useDriverAndCloseIde {
-        verifyRunLineMarkerText(listOf("Run using Bazel", "Debug run using Bazel"))
+        verifyRunLineMarkerText(listOf("Run", "Debug run"))
       }
   }
 
@@ -68,7 +68,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
     createContext()
       .runIdeWithDriver(commands = commands, runTimeout = timeout)
       .useDriverAndCloseIde {
-        verifyRunLineMarkerText(listOf("Test using Bazel", "Debug test using Bazel", "Run with Coverage using Bazel"))
+        verifyRunLineMarkerText(listOf("Test", "Debug test", "Run with Coverage"))
       }
   }
 
@@ -79,6 +79,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
       val selectedGutterIcon = gutterIcons.first()
       selectedGutterIcon.click()
       val heavyWeightWindow = popup(xQuery { byClass("HeavyWeightWindow") })
+      takeScreenshot("afterClickingOnRunLineMarker")
       val texts = heavyWeightWindow.getAllTexts()
       assert(texts.size == expectedTexts.size)
       expectedTexts.forEach { expected -> assert(texts.any { actual -> actual.text.contains(expected) }) }
