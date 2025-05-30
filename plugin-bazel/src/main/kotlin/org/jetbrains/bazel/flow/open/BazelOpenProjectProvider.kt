@@ -11,10 +11,11 @@ import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.startup.BazelStartupActivity
 
-internal class BazelOpenProjectProvider : AbstractOpenProjectProvider() {
-  private val log = logger<BazelOpenProjectProvider>()
+private val log = logger<BazelOpenProjectProvider>()
 
-  override val systemId: ProjectSystemId = BazelPluginConstants.SYSTEM_ID
+internal class BazelOpenProjectProvider : AbstractOpenProjectProvider() {
+  override val systemId: ProjectSystemId
+    get() = BazelPluginConstants.SYSTEM_ID
 
   // intentionally overriding the visibility to `public` from `protected` in [AbstractOpenProjectProvider]
   @Suppress("RedundantVisibilityModifier")
@@ -27,10 +28,10 @@ internal class BazelOpenProjectProvider : AbstractOpenProjectProvider() {
   }
 }
 
-internal fun performOpenBazelProject(project: Project?, projectRootDir: VirtualFile?) {
+internal suspend fun performOpenBazelProject(project: Project?, projectRootDir: VirtualFile?) {
   if (projectRootDir != null && project != null) {
     project.initProperties(projectRootDir)
-    CounterPlatformProjectConfigurator().configureProject(project)
+    configureProjectCounterPlatform(project)
     BazelCoroutineService.getInstance(project).start {
       BazelStartupActivity().execute(project)
     }
