@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.workspace.model.test.framework
 
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.server.connection.BazelServerConnection
 import org.jetbrains.bazel.server.connection.BazelServerService
 import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
@@ -36,7 +36,7 @@ import kotlin.io.path.Path
 
 private val mockWorkspaceContext =
   WorkspaceContext(
-    targets = TargetsSpec(listOf(Label.parse("//...")), emptyList()),
+    targets = TargetsSpec(listOf(TargetPattern.parse("//...")), emptyList()),
     directories = DirectoriesSpec(listOf(Path(".")), emptyList()),
     buildFlags = BuildFlagsSpec(emptyList()),
     syncFlags = SyncFlagsSpec(emptyList()),

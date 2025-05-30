@@ -43,9 +43,9 @@ class ProjectViewExcludableListSectionGeneratorTest {
       val expectedGeneratedString =
         """
         targets:
-            @//included_target1
-            @//included_target2
-            @//included_target3
+            //included_target1
+            //included_target2
+            //included_target3
         """.trimIndent()
       generatedString shouldBe expectedGeneratedString
     }
@@ -69,8 +69,8 @@ class ProjectViewExcludableListSectionGeneratorTest {
       val expectedGeneratedString =
         """
         targets:
-            -@//excluded_target1
-            -@//excluded_target2
+            -//excluded_target1
+            -//excluded_target2
         """.trimIndent()
       generatedString shouldBe expectedGeneratedString
     }
@@ -98,11 +98,11 @@ class ProjectViewExcludableListSectionGeneratorTest {
       val expectedGeneratedString =
         """
         targets:
-            @//included_target1
-            @//included_target2
-            @//included_target3
-            -@//excluded_target1
-            -@//excluded_target2
+            //included_target1
+            //included_target2
+            //included_target3
+            -//excluded_target1
+            -//excluded_target2
         """.trimIndent()
       generatedString shouldBe expectedGeneratedString
     }

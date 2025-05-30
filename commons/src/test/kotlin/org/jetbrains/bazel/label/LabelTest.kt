@@ -35,7 +35,7 @@ class LabelTest {
   fun `should correctly parse @-less targets`() {
     val label = TargetPattern.parse("//path/to/target:targetName")
     val normalized = label.toString()
-    normalized shouldBe "@//path/to/target:targetName"
+    normalized shouldBe "//path/to/target:targetName"
     label.targetName shouldBe "targetName"
     label.packagePath.toString() shouldBe "path/to/target"
     label.isMainWorkspace shouldBe true
@@ -96,7 +96,7 @@ class LabelTest {
   fun `should correctly parse at-less targets`() {
     val label = TargetPattern.parse("//path/to/target:targetName")
     val normalized = label.toString()
-    normalized shouldBe "@//path/to/target:targetName"
+    normalized shouldBe "//path/to/target:targetName"
     label.targetName shouldBe "targetName"
     label.packagePath.toString() shouldBe "path/to/target"
     label.isMainWorkspace shouldBe true
@@ -136,13 +136,13 @@ class LabelTest {
   @Test
   fun `relative labels are resolved on a best-effort basis`() {
     val label = TargetPattern.parse(":target").assumeBazelLabel()
-    label.toString() shouldBe "@//:target"
+    label.toString() shouldBe "//:target"
     label.targetName shouldBe "target"
     label.packagePath.toString() shouldBe ""
     label.isMainWorkspace shouldBe true
 
     val label2 = TargetPattern.parse("target").assumeBazelLabel()
-    label2.toString() shouldBe "@//target:target"
+    label2.toString() shouldBe "//target"
     label2.target shouldBe SingleTarget("target")
     label2.packagePath.toString() shouldBe "target"
     label2.isMainWorkspace shouldBe true
@@ -158,16 +158,16 @@ class LabelTest {
   @Test
   fun `all targets is normalized to wildcard`() {
     val label = TargetPattern.parse("//:all-targets")
-    label.toString() shouldBe "@//:*"
+    label.toString() shouldBe "//:*"
   }
 
   @Test
   fun `package wildcards are normalized`() {
     val label = TargetPattern.parse("//...:all")
-    label.toString() shouldBe "@//...:all"
+    label.toString() shouldBe "//...:all"
 
     val label2 = TargetPattern.parse("//...")
-    label2.toString() shouldBe "@//...:all"
+    label2.toString() shouldBe "//...:all"
 
     label shouldBe label2
   }
@@ -196,7 +196,7 @@ class LabelTest {
     val label = TargetPattern.parse("@//path/to/...")
     label.packagePath shouldBe AllPackagesBeneath(listOf("path", "to"))
     label.target shouldBe AllRuleTargets
-    label.toString() shouldBe "@//path/to/...:all"
+    label.toString() shouldBe "//path/to/...:all"
   }
 
   @Test
@@ -233,7 +233,7 @@ class LabelTest {
     val base = TargetPattern.parse("@//path/to").assumeBazelLabel()
     val relative = TargetPattern.parse(":target").asRelative()
     val resolved = relative?.resolve(base)
-    resolved.toString() shouldBe "@//path/to:target"
+    resolved.toString() shouldBe "//path/to:target"
   }
 
   @Test
@@ -264,7 +264,7 @@ class LabelTest {
     label1.isRelative shouldBe true
 
     val label2 = TargetPattern.parse("//src/Hello.java")
-    label2.toString() shouldBe "@//src/Hello.java"
+    label2.toString() shouldBe "//src/Hello.java"
     label2.target shouldBe AmbiguousEmptyTarget
     label2.packagePath shouldBe Package(listOf("src", "Hello.java"))
     label2.isRelative shouldBe false

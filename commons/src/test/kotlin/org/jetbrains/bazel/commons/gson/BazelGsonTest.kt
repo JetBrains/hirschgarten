@@ -4,6 +4,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -52,6 +53,14 @@ class BazelGsonTest {
   }
 
   @ParameterizedTest
+  @MethodSource("targetPatternProvider")
+  fun `test TargetPattern serialization`(targetPattern: TargetPattern) {
+    val json = bazelGson.toJson(targetPattern)
+    val deserializedTargetPattern = bazelGson.fromJson(json, TargetPattern::class.java)
+    assertEquals(targetPattern, deserializedTargetPattern)
+  }
+
+  @ParameterizedTest
   @MethodSource("pathProvider")
   fun `test Path serialization`(path: Path) {
     val json = bazelGson.toJson(path)
@@ -65,6 +74,14 @@ class BazelGsonTest {
       Stream.of(
         Arguments.of(Label.parse("//foo:bar")),
         Arguments.of(Label.parse("@//baz")),
+      )
+
+    @JvmStatic
+    fun targetPatternProvider(): Stream<Arguments> =
+      Stream.of(
+        Arguments.of(TargetPattern.parse("//foo:bar")),
+        Arguments.of(TargetPattern.parse("//baz/...")),
+        Arguments.of(TargetPattern.parse("@//external:all")),
       )
 
     @JvmStatic

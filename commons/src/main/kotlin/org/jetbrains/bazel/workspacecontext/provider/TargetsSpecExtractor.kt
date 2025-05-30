@@ -2,7 +2,7 @@ package org.jetbrains.bazel.workspacecontext.provider
 
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractor
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractorException
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewTargetsSection
@@ -85,10 +85,10 @@ internal object TargetsSpecExtractor : ExecutionContextEntityExtractor<TargetsSp
     )
   }
 
-  private fun mapDirectoryToTarget(buildDirectoryIdentifier: Path): Label =
+  private fun mapDirectoryToTarget(buildDirectoryIdentifier: Path): TargetPattern =
     if (buildDirectoryIdentifier.pathString == ".") {
-      Label.Companion.parse("//...")
+      TargetPattern.parse("//...")
     } else {
-      Label.Companion.parse("//" + buildDirectoryIdentifier.pathString + "/...")
+      TargetPattern.parse("//" + buildDirectoryIdentifier.pathString + "/...")
     }
 }

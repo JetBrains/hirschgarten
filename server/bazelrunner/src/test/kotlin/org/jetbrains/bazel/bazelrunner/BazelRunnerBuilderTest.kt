@@ -5,7 +5,8 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
+import org.jetbrains.bazel.label.assumeBazelLabel
 import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
@@ -33,7 +34,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.readText
 
-fun String.label() = Label.parse(this)
+fun String.label() = TargetPattern.parse(this)
 
 val mockContext =
   WorkspaceContext(
@@ -164,7 +165,7 @@ class BazelRunnerBuilderTest {
   fun `run without program arguments`() {
     val command =
       bazelRunner.buildBazelCommand(mockContext) {
-        run("in1".label())
+        run("in1".label().assumeBazelLabel())
       }
 
     command.buildExecutionDescriptor().command shouldContainExactly
@@ -178,7 +179,7 @@ class BazelRunnerBuilderTest {
         "--noprogress_in_terminal_title",
         "flag1",
         "flag2",
-        "in1",
+        "//in1",
       )
   }
 
@@ -186,7 +187,7 @@ class BazelRunnerBuilderTest {
   fun `run with program arguments`() {
     val command =
       bazelRunner.buildBazelCommand(mockContext) {
-        run("in1".label()) {
+        run("in1".label().assumeBazelLabel()) {
           programArguments.addAll(listOf("hello", "world"))
         }
       }
@@ -202,7 +203,7 @@ class BazelRunnerBuilderTest {
         "--noprogress_in_terminal_title",
         "flag1",
         "flag2",
-        "in1",
+        "//in1",
         "--",
         "hello",
         "world",
@@ -213,7 +214,7 @@ class BazelRunnerBuilderTest {
   fun `run doesn't set environment using arguments`() {
     val command =
       bazelRunner.buildBazelCommand(mockContext) {
-        run("in1".label()) {
+        run("in1".label().assumeBazelLabel()) {
           environment["key"] = "value"
         }
       }
@@ -229,7 +230,7 @@ class BazelRunnerBuilderTest {
         "--noprogress_in_terminal_title",
         "flag1",
         "flag2",
-        "in1",
+        "//in1",
       )
   }
 

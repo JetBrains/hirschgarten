@@ -5,6 +5,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bazel.workspacecontext.BazelBinarySpec
@@ -248,7 +249,7 @@ class ProjectTest {
 
   private fun createMockWorkspaceContext(targetsPattern: String = "//..."): WorkspaceContext =
     WorkspaceContext(
-      targets = TargetsSpec(listOf(Label.parse(targetsPattern)), emptyList()),
+      targets = TargetsSpec(listOf(TargetPattern.parse(targetsPattern)), emptyList()),
       directories = DirectoriesSpec(listOf(Path(".")), emptyList()),
       buildFlags = BuildFlagsSpec(emptyList()),
       syncFlags = SyncFlagsSpec(emptyList()),

@@ -2,12 +2,14 @@ package org.jetbrains.bazel.commons.gson
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonObject
 import com.google.gson.TypeAdapter
 import com.google.gson.TypeAdapterFactory
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
+import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.TargetPattern
 import java.nio.file.Path
 import kotlin.jvm.internal.Reflection
@@ -17,6 +19,7 @@ val bazelGson: Gson =
   GsonBuilder()
     .registerTypeHierarchyAdapter(Path::class.java, PathSerializer)
     .registerTypeHierarchyAdapter(TargetPattern::class.java, TargetPatternSerializer)
+    .registerTypeHierarchyAdapter(Label::class.java, LabelSerializer)
     .registerTypeAdapterFactory(SealedClassTypeAdapterFactory())
     .create()
 
@@ -94,7 +97,7 @@ class SealedClassTypeAdapterFactory : TypeAdapterFactory {
 
         reader.beginObject()
         var className: String? = null
-        var jsonObject = com.google.gson.JsonObject()
+        val jsonObject = JsonObject()
 
         while (reader.hasNext()) {
           val name = reader.nextName()
@@ -140,6 +143,14 @@ object TargetPatternSerializer : TypeAdapter<TargetPattern?>() {
   override fun read(jsonReader: JsonReader): TargetPattern? = jsonReader.nextString().let { TargetPattern.parseOrNull(it) }
 
   override fun write(out: JsonWriter, value: TargetPattern?) {
+    out.value(value.toString())
+  }
+}
+
+object LabelSerializer : TypeAdapter<Label?>() {
+  override fun read(jsonReader: JsonReader): Label? = jsonReader.nextString().let { Label.parseOrNull(it) }
+
+  override fun write(out: JsonWriter, value: Label?) {
     out.value(value.toString())
   }
 }

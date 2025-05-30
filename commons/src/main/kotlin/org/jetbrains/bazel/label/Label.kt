@@ -98,7 +98,7 @@ data class Canonical(override val repoName: String) : RepoType {
  * See https://bazel.build/external/overview#apparent-repo-name
  */
 data class Apparent(override val repoName: String) : RepoType {
-  override fun toString(): String = "@$repoName"
+  override fun toString(): String = if (repoName.isEmpty()) "" else "@$repoName"
 
   companion object {
     val main = Apparent("")

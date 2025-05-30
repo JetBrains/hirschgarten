@@ -36,6 +36,6 @@ public static org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity$Bu
 public static org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity$Builder org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntity.create(java.util.List,com.intellij.platform.workspace.storage.EntitySource,kotlin.jvm.functions.Function1)
 public static void org.jetbrains.bazel.config.BazelProjectPropertiesKt.getRootDir$annotations(com.intellij.openapi.project.Project)
 public static void org.jetbrains.bazel.config.BazelProjectPropertiesKt.isBazelProject$annotations(com.intellij.openapi.project.Project)
-public static void org.jetbrains.bazel.label.Label$DefaultImpls.getPackagePath$annotations()
+public static void org.jetbrains.bazel.label.TargetPattern$DefaultImpls.getPackagePath$annotations()
 public static void org.jetbrains.bazel.target.TargetUtilsKt.getTargetUtils$annotations(com.intellij.openapi.project.Project)
 public static void org.jetbrains.bazel.workspacemodel.entities.JvmBinaryJarsEntityKt.getJvmBinaryJarsEntity$annotations(com.intellij.platform.workspace.jps.entities.ModuleEntity)

@@ -80,6 +80,7 @@ fun CanonicalLabel.toApparentLabel(project: Project): ApparentLabel? {
  * Converts this [Label]'s repository to [Canonical].
  */
 fun Label.toCanonicalLabel(project: Project): CanonicalLabel? {
+  if (this is CanonicalLabel) return this
   val canonicalRepoName = project.apparentRepoNameToCanonicalName[repo.repoName] ?: return null
   return CanonicalLabel(
     repo = Canonical(canonicalRepoName),

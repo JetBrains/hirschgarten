@@ -9,6 +9,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
@@ -50,7 +51,7 @@ import kotlin.io.path.writeText
 
 private fun createMockWorkspaceContext(allowManualTargetsSync: Boolean): WorkspaceContext =
   WorkspaceContext(
-    targets = TargetsSpec(listOf(Label.parse("//...")), emptyList()),
+    targets = TargetsSpec(listOf(TargetPattern.parse("//...")), emptyList()),
     directories = DirectoriesSpec(listOf(Path(".")), emptyList()),
     buildFlags = BuildFlagsSpec(emptyList()),
     syncFlags = SyncFlagsSpec(emptyList()),
@@ -432,8 +433,8 @@ class FirstPhaseTargetToBspMapperTest {
       // then
       result.targets.map { it.id.toString() } shouldContainExactlyInAnyOrder
         listOf(
-          "@//target1",
-          "@//manual_target",
+          "//target1",
+          "//manual_target",
         )
     }
   }

@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.projectview.generator
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
@@ -62,13 +62,13 @@ class DefaultProjectViewGeneratorTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                Label.parse("//included_target1"),
-                Label.parse("//included_target2"),
-                Label.parse("//included_target3"),
+                TargetPattern.parse("//included_target1"),
+                TargetPattern.parse("//included_target2"),
+                TargetPattern.parse("//included_target3"),
               ),
               listOf(
-                Label.parse("//excluded_target1"),
-                Label.parse("//excluded_target2"),
+                TargetPattern.parse("//excluded_target1"),
+                TargetPattern.parse("//excluded_target2"),
               ),
             ),
           bazelBinary = null,
@@ -89,11 +89,11 @@ class DefaultProjectViewGeneratorTest {
       val expectedGeneratedString =
         """
         targets:
-            @//included_target1
-            @//included_target2
-            @//included_target3
-            -@//excluded_target1
-            -@//excluded_target2
+            //included_target1
+            //included_target2
+            //included_target3
+            -//excluded_target1
+            -//excluded_target2
 
         """.trimIndent()
       generatedString shouldBe expectedGeneratedString
@@ -389,9 +389,9 @@ class DefaultProjectViewGeneratorTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                Label.parse("//included_target1"),
-                Label.parse("//included_target2"),
-                Label.parse("//included_target3"),
+                TargetPattern.parse("//included_target1"),
+                TargetPattern.parse("//included_target2"),
+                TargetPattern.parse("//included_target3"),
               ),
               emptyList(),
             ),
@@ -420,9 +420,9 @@ class DefaultProjectViewGeneratorTest {
       val expectedGeneratedString =
         """
         targets:
-            @//included_target1
-            @//included_target2
-            @//included_target3
+            //included_target1
+            //included_target2
+            //included_target3
 
         build_flags:
             --build_flag1=value1
@@ -441,13 +441,13 @@ class DefaultProjectViewGeneratorTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                Label.parse("//included_target1"),
-                Label.parse("//included_target2"),
-                Label.parse("//included_target3"),
+                TargetPattern.parse("//included_target1"),
+                TargetPattern.parse("//included_target2"),
+                TargetPattern.parse("//included_target3"),
               ),
               listOf(
-                Label.parse("//excluded_target1"),
-                Label.parse("//excluded_target2"),
+                TargetPattern.parse("//excluded_target1"),
+                TargetPattern.parse("//excluded_target2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
@@ -493,11 +493,11 @@ class DefaultProjectViewGeneratorTest {
       val expectedGeneratedString =
         """
         targets:
-            @//included_target1
-            @//included_target2
-            @//included_target3
-            -@//excluded_target1
-            -@//excluded_target2
+            //included_target1
+            //included_target2
+            //included_target3
+            -//excluded_target1
+            -//excluded_target2
 
         bazel_binary: /path/to/bazel
 
@@ -554,13 +554,13 @@ class DefaultProjectViewGeneratorTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                Label.parse("//included_target1"),
-                Label.parse("//included_target2"),
-                Label.parse("//included_target3"),
+                TargetPattern.parse("//included_target1"),
+                TargetPattern.parse("//included_target2"),
+                TargetPattern.parse("//included_target3"),
               ),
               listOf(
-                Label.parse("//excluded_target1"),
-                Label.parse("//excluded_target2"),
+                TargetPattern.parse("//excluded_target1"),
+                TargetPattern.parse("//excluded_target2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
@@ -599,11 +599,11 @@ class DefaultProjectViewGeneratorTest {
       val expectedFileContent =
         """
         targets:
-            @//included_target1
-            @//included_target2
-            @//included_target3
-            -@//excluded_target1
-            -@//excluded_target2
+            //included_target1
+            //included_target2
+            //included_target3
+            -//excluded_target1
+            -//excluded_target2
 
         bazel_binary: /path/to/bazel
 
@@ -640,13 +640,13 @@ class DefaultProjectViewGeneratorTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                Label.parse("//included_target1"),
-                Label.parse("//included_target2"),
-                Label.parse("//included_target3"),
+                TargetPattern.parse("//included_target1"),
+                TargetPattern.parse("//included_target2"),
+                TargetPattern.parse("//included_target3"),
               ),
               listOf(
-                Label.parse("//excluded_target1"),
-                Label.parse("//excluded_target2"),
+                TargetPattern.parse("//excluded_target1"),
+                TargetPattern.parse("//excluded_target2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
@@ -685,11 +685,11 @@ class DefaultProjectViewGeneratorTest {
       val expectedFileContent =
         """
         targets:
-            @//included_target1
-            @//included_target2
-            @//included_target3
-            -@//excluded_target1
-            -@//excluded_target2
+            //included_target1
+            //included_target2
+            //included_target3
+            -//excluded_target1
+            -//excluded_target2
 
         bazel_binary: /path/to/bazel
 
@@ -767,9 +767,9 @@ class DefaultProjectViewGeneratorTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                Label.parse("//included_target1"),
-                Label.parse("//included_target2"),
-                Label.parse("//included_target3"),
+                TargetPattern.parse("//included_target1"),
+                TargetPattern.parse("//included_target2"),
+                TargetPattern.parse("//included_target3"),
               ),
               emptyList(),
             ),
@@ -811,13 +811,13 @@ class DefaultProjectViewGeneratorTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                Label.parse("//included_target1"),
-                Label.parse("//included_target2"),
-                Label.parse("//included_target3"),
+                TargetPattern.parse("//included_target1"),
+                TargetPattern.parse("//included_target2"),
+                TargetPattern.parse("//included_target3"),
               ),
               listOf(
-                Label.parse("//excluded_target1"),
-                Label.parse("//excluded_target2"),
+                TargetPattern.parse("//excluded_target1"),
+                TargetPattern.parse("//excluded_target2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),

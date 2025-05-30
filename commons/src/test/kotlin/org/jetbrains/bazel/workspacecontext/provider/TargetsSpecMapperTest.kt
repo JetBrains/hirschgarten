@@ -3,7 +3,7 @@ package org.jetbrains.bazel.workspacecontext.provider
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.executioncontext.api.ExecutionContextEntityExtractorException
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDirectoriesSection
@@ -66,8 +66,8 @@ class TargetsSpecMapperTest {
                 ProjectViewTargetsSection(
                   emptyList(),
                   listOf(
-                    Label.parse("//excluded_target1"),
-                    Label.parse("//excluded_target2"),
+                    TargetPattern.parse("//excluded_target1"),
+                    TargetPattern.parse("//excluded_target2"),
                   ),
                 ),
             ).build()
@@ -91,13 +91,13 @@ class TargetsSpecMapperTest {
               targets =
                 ProjectViewTargetsSection(
                   listOf(
-                    Label.parse("//included_target1"),
-                    Label.parse("//included_target2"),
-                    Label.parse("//included_target3"),
+                    TargetPattern.parse("//included_target1"),
+                    TargetPattern.parse("//included_target2"),
+                    TargetPattern.parse("//included_target3"),
                   ),
                   listOf(
-                    Label.parse("//excluded_target1"),
-                    Label.parse("//excluded_target2"),
+                    TargetPattern.parse("//excluded_target1"),
+                    TargetPattern.parse("//excluded_target2"),
                   ),
                 ),
             ).build()
@@ -109,13 +109,13 @@ class TargetsSpecMapperTest {
         val expectedTargets =
           TargetsSpec(
             listOf(
-              Label.parse("//included_target1"),
-              Label.parse("//included_target2"),
-              Label.parse("//included_target3"),
+              TargetPattern.parse("//included_target1"),
+              TargetPattern.parse("//included_target2"),
+              TargetPattern.parse("//included_target3"),
             ),
             listOf(
-              Label.parse("//excluded_target1"),
-              Label.parse("//excluded_target2"),
+              TargetPattern.parse("//excluded_target1"),
+              TargetPattern.parse("//excluded_target2"),
             ),
           )
         targetsSpec shouldBe expectedTargets
@@ -175,8 +175,8 @@ class TargetsSpecMapperTest {
                 ProjectViewTargetsSection(
                   emptyList(),
                   listOf(
-                    Label.parse("//excluded_target1"),
-                    Label.parse("//excluded_target2"),
+                    TargetPattern.parse("//excluded_target1"),
+                    TargetPattern.parse("//excluded_target2"),
                   ),
                 ),
               deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSection(false),
@@ -201,13 +201,13 @@ class TargetsSpecMapperTest {
               targets =
                 ProjectViewTargetsSection(
                   listOf(
-                    Label.parse("//included_target1"),
-                    Label.parse("//included_target2"),
-                    Label.parse("//included_target3"),
+                    TargetPattern.parse("//included_target1"),
+                    TargetPattern.parse("//included_target2"),
+                    TargetPattern.parse("//included_target3"),
                   ),
                   listOf(
-                    Label.parse("//excluded_target1"),
-                    Label.parse("//excluded_target2"),
+                    TargetPattern.parse("//excluded_target1"),
+                    TargetPattern.parse("//excluded_target2"),
                   ),
                 ),
               deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSection(false),
@@ -220,13 +220,13 @@ class TargetsSpecMapperTest {
         val expectedTargets =
           TargetsSpec(
             listOf(
-              Label.parse("//included_target1"),
-              Label.parse("//included_target2"),
-              Label.parse("//included_target3"),
+              TargetPattern.parse("//included_target1"),
+              TargetPattern.parse("//included_target2"),
+              TargetPattern.parse("//included_target3"),
             ),
             listOf(
-              Label.parse("//excluded_target1"),
-              Label.parse("//excluded_target2"),
+              TargetPattern.parse("//excluded_target1"),
+              TargetPattern.parse("//excluded_target2"),
             ),
           )
         targetsSpec shouldBe expectedTargets
@@ -292,8 +292,8 @@ class TargetsSpecMapperTest {
                 ProjectViewTargetsSection(
                   emptyList(),
                   listOf(
-                    Label.parse("//excluded_target1"),
-                    Label.parse("//excluded_target2"),
+                    TargetPattern.parse("//excluded_target1"),
+                    TargetPattern.parse("//excluded_target2"),
                   ),
                 ),
               directories =
@@ -350,13 +350,13 @@ class TargetsSpecMapperTest {
         val expectedTargets =
           TargetsSpec(
             listOf(
-              Label.parse("//included_dir1/..."),
-              Label.parse("//included_dir2/..."),
-              Label.parse("//included_dir3/..."),
+              TargetPattern.parse("//included_dir1/..."),
+              TargetPattern.parse("//included_dir2/..."),
+              TargetPattern.parse("//included_dir3/..."),
             ),
             listOf(
-              Label.parse("//excluded_dir1/..."),
-              Label.parse("//excluded_dir2/..."),
+              TargetPattern.parse("//excluded_dir1/..."),
+              TargetPattern.parse("//excluded_dir2/..."),
             ),
           )
         targetsSpec shouldBe expectedTargets
@@ -371,13 +371,13 @@ class TargetsSpecMapperTest {
               targets =
                 ProjectViewTargetsSection(
                   listOf(
-                    Label.parse("//included_target1"),
-                    Label.parse("//included_target2"),
-                    Label.parse("//included_target3"),
+                    TargetPattern.parse("//included_target1"),
+                    TargetPattern.parse("//included_target2"),
+                    TargetPattern.parse("//included_target3"),
                   ),
                   listOf(
-                    Label.parse("//excluded_target1"),
-                    Label.parse("//excluded_target2"),
+                    TargetPattern.parse("//excluded_target1"),
+                    TargetPattern.parse("//excluded_target2"),
                   ),
                 ),
               directories =
@@ -402,18 +402,18 @@ class TargetsSpecMapperTest {
         val expectedTargets =
           TargetsSpec(
             listOf(
-              Label.parse("//included_target1"),
-              Label.parse("//included_target2"),
-              Label.parse("//included_target3"),
-              Label.parse("//included_dir1/..."),
-              Label.parse("//included_dir2/..."),
-              Label.parse("//included_dir3/..."),
+              TargetPattern.parse("//included_target1"),
+              TargetPattern.parse("//included_target2"),
+              TargetPattern.parse("//included_target3"),
+              TargetPattern.parse("//included_dir1/..."),
+              TargetPattern.parse("//included_dir2/..."),
+              TargetPattern.parse("//included_dir3/..."),
             ),
             listOf(
-              Label.parse("//excluded_target1"),
-              Label.parse("//excluded_target2"),
-              Label.parse("//excluded_dir1/..."),
-              Label.parse("//excluded_dir2/..."),
+              TargetPattern.parse("//excluded_target1"),
+              TargetPattern.parse("//excluded_target2"),
+              TargetPattern.parse("//excluded_dir1/..."),
+              TargetPattern.parse("//excluded_dir2/..."),
             ),
           )
         targetsSpec shouldBe expectedTargets
@@ -452,13 +452,13 @@ class TargetsSpecMapperTest {
         val expectedTargets =
           TargetsSpec(
             listOf(
-              Label.parse("//included_dir1/..."),
-              Label.parse("//included_dir2/..."),
-              Label.parse("//..."),
+              TargetPattern.parse("//included_dir1/..."),
+              TargetPattern.parse("//included_dir2/..."),
+              TargetPattern.parse("//..."),
             ),
             listOf(
-              Label.parse("//excluded_dir1/..."),
-              Label.parse("//excluded_dir2/..."),
+              TargetPattern.parse("//excluded_dir1/..."),
+              TargetPattern.parse("//excluded_dir2/..."),
             ),
           )
         targetsSpec shouldBe expectedTargets

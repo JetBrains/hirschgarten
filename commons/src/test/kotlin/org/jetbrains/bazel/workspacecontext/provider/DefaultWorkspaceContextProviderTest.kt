@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.workspacecontext.provider
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.junit.jupiter.api.BeforeEach
@@ -43,7 +43,7 @@ class DefaultWorkspaceContextProviderTest {
     val workspaceContext = provider.readWorkspaceContext()
 
     // then
-    workspaceContext.targets shouldBe TargetsSpec(listOf(Label.parse("//a/b/c")), emptyList())
+    workspaceContext.targets shouldBe TargetsSpec(listOf(TargetPattern.parse("//a/b/c")), emptyList())
   }
 
   @Test
