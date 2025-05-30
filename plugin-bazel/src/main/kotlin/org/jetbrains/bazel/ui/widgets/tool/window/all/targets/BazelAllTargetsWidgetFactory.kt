@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.all.targets
 
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
@@ -30,7 +31,7 @@ class BazelAllTargetsWidgetFactory :
 }
 
 suspend fun registerBazelToolWindow(project: Project) {
-  val toolWindowManager = ToolWindowManager.getInstance(project)
+  val toolWindowManager = project.serviceAsync<ToolWindowManager>()
   val currentToolWindow = toolWindowManager.getToolWindow(bazelToolWindowId)
   if (currentToolWindow == null) {
     withContext(Dispatchers.EDT) {

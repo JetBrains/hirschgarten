@@ -47,6 +47,7 @@ suspend fun startServer(
       bazelInfo,
       bspServer.workspaceContextProvider,
       bazelPathsResolver,
+      featureFlags,
     )
   val bspServerApi =
     BspServerApi(

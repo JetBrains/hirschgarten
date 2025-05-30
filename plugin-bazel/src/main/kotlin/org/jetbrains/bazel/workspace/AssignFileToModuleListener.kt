@@ -122,7 +122,11 @@ private fun getRelatedProjects(file: VirtualFile): List<Project> {
 
 private fun Project.doWeCareAboutIt(): Boolean = this.isBazelProject && this.isTrusted()
 
-private suspend fun processFileEvent(event: VFileEvent, project: Project, workspaceModel: WorkspaceModel) {
+private suspend fun processFileEvent(
+  event: VFileEvent,
+  project: Project,
+  workspaceModel: WorkspaceModel,
+) {
   val storage = workspaceModel.currentSnapshot
 
   val newFile = event.getNewFile()
