@@ -15,6 +15,7 @@ kt_junit5_test(
     name = "FirstPhaseTargetToBspMapperTest",
     size = "small",
     src = "FirstPhaseTargetToBspMapperTest.kt",
+    tags = ["exclusive"],
     deps = [
         ":mocks",
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
@@ -28,6 +29,7 @@ kt_junit5_test(
     name = "FirstPhaseTargetUtilsTest",
     size = "small",
     src = "FirstPhaseTargetUtilsTest.kt",
+    tags = ["exclusive"],
     deps = [
         ":mocks",
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
