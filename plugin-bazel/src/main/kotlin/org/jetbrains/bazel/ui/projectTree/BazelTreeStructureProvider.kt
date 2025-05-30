@@ -14,7 +14,6 @@ import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.projectView.impl.nodes.PsiFileSystemItemFilter
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.openapi.components.service
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -109,7 +108,7 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
     settings: ViewSettings,
   ): Collection<AbstractTreeNode<*>> {
     val rootDirectory =
-      project.service<PsiManager>().findDirectory(project.rootDir) ?: return children // should never happen
+      PsiManager.getInstance(project).findDirectory(project.rootDir) ?: return children // should never happen
 
     val showExcludedDirectoriesAsSeparateNode = project.treeStructureSettings?.showExcludedDirectoriesAsSeparateNode ?: true
 
