@@ -3,6 +3,7 @@ package org.jetbrains.bazel.sync.task
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
+import com.intellij.ide.SaveAndSyncHandler
 import com.intellij.ide.impl.isTrusted
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.application.EDT
@@ -144,6 +145,7 @@ class ProjectSyncTask(private val project: Project) {
         }
       }
     }
+    serviceAsync<SaveAndSyncHandler>().scheduleProjectSave(project = project)
   }
 
   private suspend fun executePreSyncHooks(progressReporter: SequentialProgressReporter) {

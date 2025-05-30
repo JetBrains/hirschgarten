@@ -62,13 +62,15 @@ class LabelSearchEverywhereContributor(private val project: Project) :
         .build()
 
     val foundItems =
-      project.targetUtils.allTargets().mapNotNull { label ->
-        val fullString = label.toString()
-        if (!matcher.matches(fullString)) return@mapNotNull null
+      project.targetUtils
+        .allTargets()
+        .mapNotNull { label ->
+          val fullString = label.toString()
+          if (!matcher.matches(fullString)) return@mapNotNull null
         val targetElement = runReadAction { resolveTargetPattern(project, label) } ?: return@mapNotNull null
-        val displayName = label.toShortString(project)
-        FoundItemDescriptor(LabelWithPreview(displayName, targetElement), matcher.matchingDegree(fullString))
-      }
+          val displayName = label.toShortString(project)
+          FoundItemDescriptor(LabelWithPreview(displayName, targetElement), matcher.matchingDegree(fullString))
+        }.toList()
 
     // Copied from AbstractGotoSEContributor
     if (ModalityState.defaultModalityState() == ModalityState.nonModal()) {
