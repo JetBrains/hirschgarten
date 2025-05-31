@@ -4,6 +4,8 @@ package org.jetbrains.bazel.workspace
 
 import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.application.readAction
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -22,6 +24,8 @@ import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.ide.progress.withBackgroundProgress
+import com.intellij.platform.util.progress.SequentialProgressReporter
+import com.intellij.platform.util.progress.reportSequentialProgress
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
@@ -49,10 +53,9 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
+import java.util.concurrent.atomic.AtomicBoolean
 
 internal class AssignFileToModuleListener : BulkFileListener {
-  private val pendingEvents = mutableMapOf<Project, MutableList<VFileEvent>>()
-
   override fun after(events: MutableList<out VFileEvent>) {
     // if the list has multiple events, it means an external operation (like Git) and resync is probably required anyway
     val event = events.singleOrNull() ?: return
@@ -69,18 +72,64 @@ internal class AssignFileToModuleListener : BulkFileListener {
   }
 
   private fun processWithDelay(project: Project, event: VFileEvent) {
-    synchronized(pendingEvents) {
-      pendingEvents.computeIfAbsent(project) { mutableListOf() }.add(event)
+    val controller = Controller.getInstance(project)
+    if (controller.isAnotherProcessingInProgress()) return
+    val eventIsFirstInQueue = controller.addEvent(event)
+
+    // only the first event in the queue should trigger the delayed processing
+    if (eventIsFirstInQueue) {
+      BazelCoroutineService.getInstance(project).start {
+        delay(PROCESSING_DELAY)
+
+        val workspaceModel = project.serviceAsync<WorkspaceModel>()
+        val controller = Controller.getInstance(project) // new service instance, since it's another thread
+        val event = Controller.getInstance(project).popAllEvents().singleOrNull()
+        if (event != null) {
+          controller.processWithLock {
+            processFileEvent(event = event, project = project, workspaceModel = workspaceModel)
+          }
+        }
+      }
+    }
+  }
+
+  @Service(Service.Level.PROJECT)
+  class Controller() {
+    // synchronised lists do not guarantee safety of operations like size checking and clearing - we need explicit synchronisation here
+    private val pendingEvents = mutableListOf<VFileEvent>()
+
+    private val processingLock = AtomicBoolean(false)
+
+    /** @return `true` if this event was the first to be added, `false` otherwise */
+    fun addEvent(event: VFileEvent): Boolean =
+      synchronized(pendingEvents) {
+        val isEmpty = pendingEvents.isEmpty()
+        pendingEvents.add(event)
+        isEmpty
+      }
+
+    fun popAllEvents(): List<VFileEvent> =
+      synchronized(pendingEvents) {
+        val events = pendingEvents.toList().also { pendingEvents.clear() }
+        pendingEvents.clear()
+        events
+      }
+
+    suspend fun processWithLock(action: suspend () -> Unit) {
+      if (processingLock.compareAndSet(false, true)) {
+        try {
+          action()
+        } finally {
+          processingLock.set(false)
+        }
+      }
     }
 
-    BazelCoroutineService.getInstance(project).start {
-      delay(PROCESSING_DELAY)
+    fun isAnotherProcessingInProgress(): Boolean = processingLock.get()
 
-      val workspaceModel = project.serviceAsync<WorkspaceModel>()
-      val event = synchronized(pendingEvents) { pendingEvents.remove(project)?.singleOrNull() }
-      if (event != null) {
-        processFileEvent(event = event, project = project, workspaceModel = workspaceModel)
-      }
+    companion object {
+      @JvmStatic
+      fun getInstance(project: Project): Controller = project.service()
     }
   }
 }
@@ -132,34 +181,48 @@ private suspend fun processFileEvent(
   val newFile = event.getNewFile()
   val oldFilePath = event.getOldFilePath()
 
-  withBackgroundProgress(project, BazelPluginBundle.message("file.change.processing.title")) {
-    oldFilePath?.let {
-      val targetUtils = project.serviceAsync<TargetUtils>()
-      processFileRemoved(
-        oldFilePath = it,
-        newFile = newFile,
-        project = project,
-        workspaceModel = workspaceModel,
-        targetUtils = targetUtils,
-        storage = storage,
-      )
+  withBackgroundProgress(project, event.getProgressMessage(newFile)) {
+    reportSequentialProgress { reporter ->
+      oldFilePath?.let {
+        val targetUtils = project.serviceAsync<TargetUtils>()
+        processFileRemoved(
+          oldFilePath = it,
+          newFile = newFile,
+          project = project,
+          workspaceModel = workspaceModel,
+          targetUtils = targetUtils,
+          storage = storage,
+        )
+      }
+      reporter.nextStep(PROGRESS_DELETE_STEP_SIZE)
+      newFile?.let {
+        processFileCreated(
+          newFile = it,
+          project = project,
+          workspaceModel = workspaceModel,
+          storage = storage,
+          reporter,
+        )
+      }
     }
-    newFile?.let {
-      processFileCreated(
-        newFile = it,
-        project = project,
-        workspaceModel = workspaceModel,
-        storage = storage,
-      )
-    }
+
+
   }
 }
+
+private fun VFileEvent.getProgressMessage(newFile: VirtualFile?): String =
+  when (this) {
+    is VFileCreateEvent -> BazelPluginBundle.message("file.change.processing.title.create", newFile?.name ?: "")
+    is VFileDeleteEvent -> BazelPluginBundle.message("file.change.processing.title.delete")
+    else -> BazelPluginBundle.message("file.change.processing.title.change", newFile?.name ?: "")
+  }
 
 private suspend fun processFileCreated(
   newFile: VirtualFile,
   project: Project,
   workspaceModel: WorkspaceModel,
   storage: ImmutableEntityStorage,
+  progressReporter: SequentialProgressReporter,
 ) {
   // ProjectFileIndex::getModulesForFile is not compatible with IJ 2024, but it's not important enough to bother with SDK-compat
   // TODO: replace once 243 is dropped
@@ -175,16 +238,20 @@ private suspend fun processFileCreated(
 
   val url = newFile.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   val path = url.toPath()
-  queryTargetsForFile(project, url)
-    ?.let { targets ->
-      val modules =
-        targets
-          .mapNotNull { it.toModuleEntity(storage, project) }
-//          .filter { !existingModules.contains(it) } // 251
-          .filter { it != existingModule } // 243
-      modules.forEach { url.addToModule(workspaceModel, it, newFile.extension) }
-      project.targetUtils.addFileToTargetIdEntry(path, targets)
-    }
+  val targets =
+    progressReporter.nextStep(
+      endFraction = PROGRESS_QUERY_STEP_SIZE,
+      text = BazelPluginBundle.message("file.change.processing.step.query"),
+    ) { queryTargetsForFile(project, url) } ?: return
+  progressReporter.nextStep(endFraction = 100, text = BazelPluginBundle.message("file.change.processing.step.commit")) {
+    val modules =
+      targets
+        .mapNotNull { it.toModuleEntity(storage, project) }
+//        .filter { !existingModules.contains(it) } // 251
+        .filter { it != existingModule } // 243
+    modules.forEach { url.addToModule(workspaceModel, it, newFile.extension) }
+    project.targetUtils.addFileToTargetIdEntry(path, targets)
+  }
 }
 
 private suspend fun processFileRemoved(
@@ -288,5 +355,8 @@ private suspend fun updateContentRoots(
   }
 }
 
-private const val PROCESSING_DELAY = 250L // no noticeable by the user, but if there are many events simultaneously, we will get them all
+private const val PROCESSING_DELAY = 250L // not noticeable by the user, but if there are many events simultaneously, we will get them all
 private val logger = Logger.getInstance(AssignFileToModuleListener::class.java)
+
+private const val PROGRESS_DELETE_STEP_SIZE = 20
+private const val PROGRESS_QUERY_STEP_SIZE = 80
