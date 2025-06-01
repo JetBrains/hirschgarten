@@ -109,7 +109,7 @@ switched_rules.use_languages(
     java = True,
 )
 
-bazel_dep(name = "rules_apple", version = "3.20.1")
+bazel_dep(name = "rules_apple", version = "3.22.0")
 
 # Needed because googleapis transitively pulls in a broken version
 single_version_override(
