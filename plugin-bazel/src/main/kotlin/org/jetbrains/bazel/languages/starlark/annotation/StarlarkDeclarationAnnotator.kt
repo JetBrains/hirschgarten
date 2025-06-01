@@ -41,6 +41,8 @@ class StarlarkDeclarationAnnotator : StarlarkAnnotator() {
     val scope =
       if (element.isTopLevelTarget() || element.isTopLevelFunction()) {
         element.useScope
+      } else if (((element as? StarlarkNamedElement)?.name ?: "").startsWith("_")) {
+        return false
       } else {
         GlobalSearchScope.fileScope(element.containingFile)
       }
