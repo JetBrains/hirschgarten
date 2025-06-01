@@ -6,7 +6,7 @@ http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_j
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-bazel_dep(name = "rules_kotlin", version = "2.1.3")
+bazel_dep(name = "rules_kotlin", version = "2.1.4")
 
 register_toolchains(
     "//:kotlin_toolchain",
