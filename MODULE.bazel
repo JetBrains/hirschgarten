@@ -178,7 +178,7 @@ use_repo(buf, "rules_buf_toolchains")
 
 bazel_dep(
     name = "rules_bazel_integration_test",
-    version = "0.32.0",
+    version = "0.32.1",
     dev_dependency = True,
 )
 
