@@ -20,9 +20,9 @@ bazel_dep(name = "rules_jvm_external", version = "6.7")
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     artifacts = [
-        "com.fasterxml.jackson.core:jackson-databind:2.18.3",
-        "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.3",
-        "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.3",
+        "com.fasterxml.jackson.core:jackson-databind:2.19.0",
+        "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.19.0",
+        "com.fasterxml.jackson.module:jackson-module-kotlin:2.19.0",
         "com.google.code.gson:gson:2.12.1",
         "com.google.guava:guava:31.0.1-jre",
         "com.jetbrains.intellij.tools:ide-metrics-collector-starter:251.23774.435",
