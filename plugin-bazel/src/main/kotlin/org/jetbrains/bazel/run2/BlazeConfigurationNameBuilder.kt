@@ -21,7 +21,6 @@ import com.intellij.openapi.util.text.StringUtil
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.TargetPattern
 import java.lang.String
-import java.util.Arrays
 import kotlin.assert
 import kotlin.text.lastIndexOf
 import kotlin.text.substring
@@ -91,9 +90,7 @@ class BlazeConfigurationNameBuilder {
      * Returns a ui-friendly label description, or the form "{package}:{target}", where 'target' is
      * `label`'s target, and the 'package' is the containing package. For example, the [ ] "//javatests/com/google/foo/bar/baz:FooTest" will return "baz:FooTest".
      */
-    fun getTextForLabel(label: Label): String {
-      return String.format("%s:%s", getImmediatePackage(label), label.targetName)
-    }
+    fun getTextForLabel(label: Label): String = String.format("%s:%s", getImmediatePackage(label), label.targetName)
 
     /**
      * Get the portion of a label between the colon and the preceding slash. Example:

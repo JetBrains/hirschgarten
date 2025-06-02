@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.run2.smrunner
 
-import com.google.common.collect.ImmutableList
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.Location
@@ -31,9 +30,6 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Getter
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.bazel.run2.BlazeCommandRunConfiguration
-import java.util.Arrays
-import java.util.Objects
-import java.util.stream.Collectors
 import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
@@ -49,7 +45,7 @@ object SmRunnerUtils {
     project: Project,
     configuration: BlazeCommandRunConfiguration,
     executor: Executor,
-    testUiSession: BlazeTestUiSession
+    testUiSession: BlazeTestUiSession,
   ): SMTRunnerConsoleView {
     val properties: SMTRunnerConsoleProperties =
       BlazeTestConsoleProperties(configuration, executor, testUiSession)
@@ -59,13 +55,12 @@ object SmRunnerUtils {
     console
       .resultsViewer
       .treeView!!
-      .getSelectionModel().selectionMode = TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION
+      .getSelectionModel()
+      .selectionMode = TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION
     return console
   }
 
-  fun createRerunFailedTestsAction(
-    result: DefaultExecutionResult
-  ): AbstractRerunFailedTestsAction? {
+  fun createRerunFailedTestsAction(result: DefaultExecutionResult): AbstractRerunFailedTestsAction? {
     val console = result.executionConsole
     if (console !is SMTRunnerConsoleView) {
       return null

@@ -27,17 +27,19 @@ import org.jetbrains.bazel.label.Label
 abstract class BlazeRunConfigurationFactory {
   /** Returns whether this factory can handle a target.  */
   abstract fun handlesTarget(
-    project: Project, blazeProjectData: BlazeProjectData, label: Label
+    project: Project,
+    blazeProjectData: BlazeProjectData,
+    label: Label,
   ): Boolean
 
   /** Returns whether this factory is compatible with the given run configuration type.  */
-  fun handlesConfiguration(configuration: RunConfiguration): Boolean {
-    return this.configurationFactory.type == configuration.getType()
-  }
+  fun handlesConfiguration(configuration: RunConfiguration): Boolean = this.configurationFactory.type == configuration.getType()
 
   /** Constructs and initializes [RunnerAndConfigurationSettings] for the given rule.  */
   fun createForTarget(
-    project: Project, runManager: RunManager, target: Label
+    project: Project,
+    runManager: RunManager,
+    target: Label,
   ): RunnerAndConfigurationSettings {
     val factory = this.configurationFactory
     val configuration = factory.createTemplateConfiguration(project, runManager)

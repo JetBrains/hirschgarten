@@ -18,19 +18,12 @@ package org.jetbrains.bazel.run2.confighandler
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.run2.BlazeCommandRunConfiguration
 
-internal class PendingTargetRunConfigurationHandlerProvider
+internal class PendingTargetRunConfigurationHandlerProvider : BlazeCommandRunConfigurationHandlerProvider {
+  override fun canHandleKind(state: BlazeCommandRunConfigurationHandlerProvider.TargetState, kind: TargetKind?): Boolean =
+    state == BlazeCommandRunConfigurationHandlerProvider.TargetState.PENDING
 
-  : BlazeCommandRunConfigurationHandlerProvider {
-  override fun canHandleKind(
-    state: BlazeCommandRunConfigurationHandlerProvider.TargetState,
-    kind: TargetKind?
-  ): Boolean {
-    return state == BlazeCommandRunConfigurationHandlerProvider.TargetState.PENDING
-  }
-
-  override fun createHandler(config: BlazeCommandRunConfiguration): BlazeCommandRunConfigurationHandler {
-    return PendingTargetRunConfigurationHandler(config)
-  }
+  override fun createHandler(config: BlazeCommandRunConfiguration): BlazeCommandRunConfigurationHandler =
+    PendingTargetRunConfigurationHandler(config)
 
   override val id: String
     get() = "PendingTargetHandler"

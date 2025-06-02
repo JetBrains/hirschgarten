@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.run2
 
-import com.google.common.base.Function
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Iterables
@@ -25,8 +24,6 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import java.io.File
-import java.util.Arrays
-import java.util.Optional
 import java.util.concurrent.Future
 import java.util.function.Predicate
 
@@ -40,17 +37,19 @@ interface SourceToTargetFinder {
    * srcs, deps or runtime_deps).
    */
   fun targetsForSourceFile(
-    project: Project, sourceFile: File, ruleType: RuleType?
-  ): Future<Collection<TargetInfo>> {
-    return targetsForSourceFiles(project, ImmutableSet.of(sourceFile), ruleType)
-  }
+    project: Project,
+    sourceFile: File,
+    ruleType: RuleType?,
+  ): Future<Collection<TargetInfo>> = targetsForSourceFiles(project, ImmutableSet.of(sourceFile), ruleType)
 
   /**
    * Finds all rules of the given type 'reachable' from the given source files (i.e. with one of the
    * sources included in srcs, deps or runtime_deps).
    */
   fun targetsForSourceFiles(
-    project: Project, sourceFiles: Set<File>, ruleType: RuleType?
+    project: Project,
+    sourceFiles: Set<File>,
+    ruleType: RuleType?,
   ): Future<Collection<TargetInfo>>
 
   companion object {
@@ -62,10 +61,10 @@ interface SourceToTargetFinder {
      * Future returns null if there was no non-empty result found.
      */
     fun findTargetInfoFuture(
-      project: Project, sourceFile: File, ruleType: RuleType?
-    ): ListenableFuture<Collection<TargetInfo>> {
-      return findTargetInfoFuture(project, ImmutableSet.of(sourceFile), ruleType)
-    }
+      project: Project,
+      sourceFile: File,
+      ruleType: RuleType?,
+    ): ListenableFuture<Collection<TargetInfo>> = findTargetInfoFuture(project, ImmutableSet.of(sourceFile), ruleType)
 
     /**
      * Iterates through the all [SourceToTargetFinder]'s, returning a [Future]
@@ -75,15 +74,18 @@ interface SourceToTargetFinder {
      * Future returns null if there was no non-empty result found.
      */
     fun findTargetInfoFuture(
-      project: Project, sourceFiles: Set<File>, ruleType: RuleType?
+      project: Project,
+      sourceFiles: Set<File>,
+      ruleType: RuleType?,
     ): ListenableFuture<Collection<TargetInfo>> {
       val futures: Iterable<Future<Collection<TargetInfo>>> =
         Iterables.transform(
-          EP_NAME.extensionList
+          EP_NAME.extensionList,
         ) { it.targetsForSourceFiles(project, sourceFiles, ruleType) }
       return FuturesUtil.getFirstFutureSatisfyingPredicate<Collection<TargetInfo?>?>(
         futures,
-        Predicate { t: Collection<TargetInfo> -> !t.isEmpty() })
+        Predicate { t: Collection<TargetInfo> -> !t.isEmpty() },
+      )
     }
 
     /**
@@ -91,7 +93,9 @@ interface SourceToTargetFinder {
      * non-empty result.
      */
     fun findTargetsForSourceFile(
-      project: Project, sourceFile: File, ruleType: RuleType?
+      project: Project,
+      sourceFile: File,
+      ruleType: RuleType?,
     ): Collection<TargetInfo> {
       val future =
         findTargetInfoFuture(project, sourceFile, ruleType)

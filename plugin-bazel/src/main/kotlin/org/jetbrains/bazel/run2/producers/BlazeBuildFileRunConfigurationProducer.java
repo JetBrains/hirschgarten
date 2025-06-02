@@ -16,17 +16,12 @@
 package org.jetbrains.bazel.run2.producers;
 
 import com.google.common.collect.ImmutableList;
-import org.jetbrains.bazel.commons.command.BlazeCommandName;
 import com.google.idea.blaze.base.dependencies.TargetInfo;
 import com.google.idea.blaze.base.lang.buildfile.psi.FuncallExpression;
 import com.google.idea.blaze.base.model.BlazeProjectData;
 import com.google.idea.blaze.base.model.primitives.Kind;
 import com.google.idea.blaze.base.model.primitives.Label;
 import com.google.idea.blaze.base.model.primitives.RuleType;
-import org.jetbrains.bazel.run2.BlazeCommandRunConfiguration;
-import org.jetbrains.bazel.run2.BlazeCommandRunConfigurationType;
-import org.jetbrains.bazel.run2.BlazeRunConfigurationFactory;
-import org.jetbrains.bazel.run2.state.BlazeCommandRunConfigurationCommonState;
 import com.google.idea.blaze.base.settings.Blaze;
 import com.google.idea.blaze.base.settings.BlazeImportSettings.ProjectType;
 import com.google.idea.blaze.base.sync.data.BlazeProjectDataManager;
@@ -38,6 +33,11 @@ import com.intellij.psi.util.PsiTreeUtil;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import org.jetbrains.bazel.commons.command.BlazeCommandName;
+import org.jetbrains.bazel.run2.BlazeCommandRunConfiguration;
+import org.jetbrains.bazel.run2.BlazeCommandRunConfigurationType;
+import org.jetbrains.bazel.run2.BlazeRunConfigurationFactory;
+import org.jetbrains.bazel.run2.state.BlazeCommandRunConfigurationCommonState;
 
 /** Creates run configurations from a BUILD file targets. */
 public class BlazeBuildFileRunConfigurationProducer
@@ -109,8 +109,8 @@ public class BlazeBuildFileRunConfigurationProducer
 
     return Objects.equals(configuration.suggestedName(), generatedConfiguration.suggestedName())
         && Objects.equals(
-      configuration.getHandler().commandName,
-      generatedConfiguration.getHandler().commandName);
+            configuration.getHandler().commandName,
+            generatedConfiguration.getHandler().commandName);
   }
 
   @Nullable
@@ -163,9 +163,7 @@ public class BlazeBuildFileRunConfigurationProducer
         config.getHandlerStateIfType(BlazeCommandRunConfigurationCommonState.class);
     if (state != null) {
       Optional<BlazeCommandName> blazeCommandName = commandForRuleType(target.ruleType());
-      blazeCommandName.ifPresent(command ->
-              state.getCommandState().setCommand(command)
-      );
+      blazeCommandName.ifPresent(command -> state.getCommandState().setCommand(command));
     }
     config.setGeneratedName();
   }

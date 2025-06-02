@@ -15,17 +15,13 @@
  */
 package org.jetbrains.bazel.run2.targetfinder
 
-import com.google.common.base.Function
-import com.google.common.collect.Iterables
 import com.google.common.util.concurrent.ListenableFuture
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
-import java.util.Arrays
 import java.util.Objects
 import java.util.concurrent.Future
-import java.util.function.Predicate
 
 /** Finds information about targets matching a given label.  */
 interface TargetFinder {
@@ -43,7 +39,7 @@ interface TargetFinder {
     fun findTargetInfoFuture(project: Project, label: Label): ListenableFuture<TargetInfo?> {
       val futures = EP_NAME.extensionList.map { it.findTarget(project, label) }
       return FuturesUtil.getFirstFutureSatisfyingPredicate(
-        futures
+        futures,
       ) { obj: TargetInfo? -> Objects.nonNull(obj) }
     }
 

@@ -20,7 +20,12 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 
 /** The result of a single blaze test action.  */
-data class BlazeTestResult(val label: Label, val targetKind: TargetKind, val testStatus: TestStatus, val outputXmlFiles: ImmutableSet<out OutputArtifact>?) {
+data class BlazeTestResult(
+  val label: Label,
+  val targetKind: TargetKind,
+  val testStatus: TestStatus,
+  val outputXmlFiles: ImmutableSet<out OutputArtifact>?,
+) {
   /** Status for a single blaze test action.  */
   enum class TestStatus {
     NO_STATUS,
@@ -37,11 +42,12 @@ data class BlazeTestResult(val label: Label, val targetKind: TargetKind, val tes
   companion object {
     /** The set of statuses for which no useful output XML is written.  */
     @JvmField
-    val NO_USEFUL_OUTPUT: ImmutableSet<TestStatus> = ImmutableSet.of(
-      TestStatus.TIMEOUT,
-      TestStatus.REMOTE_FAILURE,
-      TestStatus.FAILED_TO_BUILD,
-      TestStatus.TOOL_HALTED_BEFORE_TESTING
-    )
+    val NO_USEFUL_OUTPUT: ImmutableSet<TestStatus> =
+      ImmutableSet.of(
+        TestStatus.TIMEOUT,
+        TestStatus.REMOTE_FAILURE,
+        TestStatus.FAILED_TO_BUILD,
+        TestStatus.TOOL_HALTED_BEFORE_TESTING,
+      )
   }
 }

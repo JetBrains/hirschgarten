@@ -61,7 +61,9 @@ public abstract class RunConfigurationCompositeState implements RunConfiguration
     }
   }
 
-  /** @return A {@link RunConfigurationStateEditor} for this state. */
+  /**
+   * @return A {@link RunConfigurationStateEditor} for this state.
+   */
   @Override
   public RunConfigurationStateEditor getEditor(Project project) {
     return new RunConfigurationCompositeStateEditor(project, getStates());
@@ -94,8 +96,7 @@ public abstract class RunConfigurationCompositeState implements RunConfiguration
     @Override
     public JComponent createComponent() {
       return UiUtil.createBox(
-          editors
-              .stream()
+          editors.stream()
               .map(RunConfigurationStateEditor::createComponent)
               .collect(Collectors.toList()));
     }

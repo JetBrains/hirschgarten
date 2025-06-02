@@ -39,33 +39,21 @@ import kotlin.io.path.setLastModifiedTime
 
 /** File system operations. Mocked out in tests involving file manipulations.  */
 open class FileOperationProvider {
-  fun exists(file: Path): Boolean {
-    return file.exists()
-  }
+  fun exists(file: Path): Boolean = file.exists()
 
-  fun isDirectory(file: Path): Boolean {
-    return file.isDirectory()
-  }
+  fun isDirectory(file: Path): Boolean = file.isDirectory()
 
-  fun isFile(file: Path): Boolean {
-    return file.isRegularFile()
-  }
+  fun isFile(file: Path): Boolean = file.isRegularFile()
 
-  fun getFileModifiedTime(file: Path): FileTime {
-    return file.getLastModifiedTime()
-  }
+  fun getFileModifiedTime(file: Path): FileTime = file.getLastModifiedTime()
 
   fun setFileModifiedTime(file: Path, time: FileTime) {
     file.setLastModifiedTime(time)
   }
 
-  fun getFileSize(file: Path): Long {
-    return file.fileSize()
-  }
+  fun getFileSize(file: Path): Long = file.fileSize()
 
-  fun listFiles(file: Path): List<Path> {
-    return file.listDirectoryEntries()
-  }
+  fun listFiles(file: Path): List<Path> = file.listDirectoryEntries()
 
   @Throws(IOException::class)
   fun createSymbolicLink(link: Path, target: Path) {
@@ -73,39 +61,36 @@ open class FileOperationProvider {
   }
 
   @Throws(IOException::class)
-  fun readSymbolicLink(link: Path): Path? {
-    return Files.readSymbolicLink(link)
-  }
+  fun readSymbolicLink(link: Path): Path? = Files.readSymbolicLink(link)
 
-  fun isSymbolicLink(file: Path): Boolean {
-    return Files.isSymbolicLink(file)
-  }
+  fun isSymbolicLink(file: Path): Boolean = Files.isSymbolicLink(file)
 
   @Throws(IOException::class)
-  fun getCanonicalFile(file: Path): Path? {
-    return file.normalize()
-  }
+  fun getCanonicalFile(file: Path): Path? = file.normalize()
 
   @Throws(IOException::class)
   fun createTempFile(
-    tempDirectory: Path, prefix: String?, suffix: String?, vararg attributes: FileAttribute<*>,
-  ): Path {
-    return Files.createTempFile(tempDirectory, prefix, suffix, *attributes)
-  }
+    tempDirectory: Path,
+    prefix: String?,
+    suffix: String?,
+    vararg attributes: FileAttribute<*>,
+  ): Path = Files.createTempFile(tempDirectory, prefix, suffix, *attributes)
 
   @Throws(IOException::class)
-  fun copy(source: Path, target: Path, vararg options: CopyOption): Path {
-    return Files.copy(source, target, *options)
-  }
+  fun copy(
+    source: Path,
+    target: Path,
+    vararg options: CopyOption,
+  ): Path = Files.copy(source, target, *options)
 
-  fun mkdirs(file: Path): Path {
-    return  Files.createDirectories(file)
-  }
+  fun mkdirs(file: Path): Path = Files.createDirectories(file)
 
   /** Walk through the directory and return all meet requirement files in it.  */
   @Throws(IOException::class)
   fun listFilesRecursively(
-    dir: Path, maxDepth: Int, matcher: BiPredicate<Path, BasicFileAttributes>,
+    dir: Path,
+    maxDepth: Int,
+    matcher: BiPredicate<Path, BasicFileAttributes>,
   ): List<Path> {
     Files.find(dir, maxDepth, matcher).use { stream ->
       return stream.collect(Collectors.toList())
@@ -146,18 +131,16 @@ open class FileOperationProvider {
   // If the file is too big, this method can blow up RAM as it reads the file contents
   // entirely into memory. Only use this for small files.
   @Throws(IOException::class)
-  fun readAllLines(file: Path): List<String> {
-    return Files.readAllLines(file)
-  }
+  fun readAllLines(file: Path): List<String> = Files.readAllLines(file)
 
-  fun getTempDirectory(): Path {
-    return Paths.get(FileUtilRt.getTempDirectory());
-  }
+  fun getTempDirectory(): Path = Paths.get(FileUtilRt.getTempDirectory())
 
   companion object {
     @JvmStatic
     val instance: FileOperationProvider
-      get() = ApplicationManager.getApplication()
-        .getService(FileOperationProvider::class.java)
+      get() =
+        ApplicationManager
+          .getApplication()
+          .getService(FileOperationProvider::class.java)
   }
 }

@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.run2
 
-import com.google.common.collect.ImmutableSet
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.psi.PsiElement
@@ -37,19 +36,15 @@ interface PendingRunConfigurationContext : RunConfigurationContext {
    * A result from a [PendingRunConfigurationContext], indicating that no run configuration
    * was found for this context.
    */
-  class FailedPendingRunConfiguration(private val psi: PsiElement?, @JvmField val errorMessage: String?) :
-    RunConfigurationContext {
-    override fun getSourceElement(): PsiElement? {
-      return psi
-    }
+  class FailedPendingRunConfiguration(
+    private val psi: PsiElement?,
+    @JvmField val errorMessage: String?,
+  ) : RunConfigurationContext {
+    override fun getSourceElement(): PsiElement? = psi
 
-    override fun setupRunConfiguration(config: BlazeCommandRunConfiguration): Boolean {
-      return false
-    }
+    override fun setupRunConfiguration(config: BlazeCommandRunConfiguration): Boolean = false
 
-    override fun matchesRunConfiguration(config: BlazeCommandRunConfiguration): Boolean {
-      return false
-    }
+    override fun matchesRunConfiguration(config: BlazeCommandRunConfiguration): Boolean = false
   }
 
   fun supportedExecutors(): Set<ExecutorType>
@@ -71,5 +66,9 @@ interface PendingRunConfigurationContext : RunConfigurationContext {
    * configuration.
    */
   @Throws(ExecutionException::class)
-  fun resolve(env: ExecutionEnvironment, config: BlazeCommandRunConfiguration, rerun: Runnable?)
+  fun resolve(
+    env: ExecutionEnvironment,
+    config: BlazeCommandRunConfiguration,
+    rerun: Runnable,
+  )
 }

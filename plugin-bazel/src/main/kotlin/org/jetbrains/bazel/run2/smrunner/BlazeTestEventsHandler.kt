@@ -16,7 +16,6 @@
 package org.jetbrains.bazel.run2.smrunner
 
 import com.google.common.base.Strings
-import com.google.common.collect.ImmutableList
 import com.intellij.execution.Location
 import com.intellij.execution.testframework.actions.AbstractRerunFailedTestsAction
 import com.intellij.execution.testframework.sm.runner.SMTestLocator
@@ -28,9 +27,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.run2.targetfinder.TargetFinder
-import java.util.Arrays
 import java.util.Optional
-
 
 /** Stateless language-specific handling of SM runner test protocol  */
 interface BlazeTestEventsHandler {
@@ -50,24 +47,29 @@ interface BlazeTestEventsHandler {
   fun getTestFilter(project: Project, testLocations: List<Location<*>>): String?
 
   /** Returns `null` if this test events handler doesn't support test filtering.  */
-  fun createRerunFailedTestsAction(consoleView: ConsoleView): AbstractRerunFailedTestsAction? {
-    return BlazeRerunFailedTestsAction(this, consoleView)
-  }
+  fun createRerunFailedTestsAction(consoleView: ConsoleView): AbstractRerunFailedTestsAction? =
+    BlazeRerunFailedTestsAction(this, consoleView)
 
   /** Converts the testsuite name in the blaze test XML to a user-friendly format.  */
-  fun suiteDisplayName(label: Label, kind: TargetKind, rawName: String): String {
-    return rawName
-  }
+  fun suiteDisplayName(
+    label: Label,
+    kind: TargetKind,
+    rawName: String,
+  ): String = rawName
 
   /** Converts the testcase name in the blaze test XML to a user-friendly format.  */
-  fun testDisplayName(label: Label, kind: TargetKind, rawName: String): String {
-    return rawName
-  }
+  fun testDisplayName(
+    label: Label,
+    kind: TargetKind,
+    rawName: String,
+  ): String = rawName
 
   /** Converts the suite name to a parsable location URL.  */
-  fun suiteLocationUrl(label: Label, kind: TargetKind, name: String): String {
-    return SmRunnerUtils.GENERIC_SUITE_PROTOCOL + URLUtil.SCHEME_SEPARATOR + name
-  }
+  fun suiteLocationUrl(
+    label: Label,
+    kind: TargetKind,
+    name: String,
+  ): String = SmRunnerUtils.GENERIC_SUITE_PROTOCOL + URLUtil.SCHEME_SEPARATOR + name
 
   /** Converts the test case and suite names to a parsable location URL.  */
   fun testLocationUrl(
@@ -75,7 +77,7 @@ interface BlazeTestEventsHandler {
     kind: TargetKind,
     parentSuite: String,
     name: String,
-    className: String?
+    className: String?,
   ): String {
     val base = SmRunnerUtils.GENERIC_TEST_PROTOCOL + URLUtil.SCHEME_SEPARATOR
     if (Strings.isNullOrEmpty(className)) {
@@ -85,7 +87,11 @@ interface BlazeTestEventsHandler {
   }
 
   /** Whether to skip logging a [TestSuite].  */
-  fun ignoreSuite(label: Label, kind: TargetKind, suite: BlazeXmlSchema.TestSuite): Boolean {
+  fun ignoreSuite(
+    label: Label,
+    kind: TargetKind,
+    suite: BlazeXmlSchema.TestSuite,
+  ): Boolean {
     // by default only include innermost 'testsuite' elements
     return !suite.testSuites.isEmpty()
   }
@@ -98,9 +104,7 @@ interface BlazeTestEventsHandler {
      * Test results will still be displayed for unhandled kinds if they're included in a test_suite
      * or multi-target Blaze invocation, where we don't know up front the languages involved.
      */
-    fun targetsSupported(
-      project: Project, targets: List<TargetPattern>
-    ): Boolean {
+    fun targetsSupported(project: Project, targets: List<TargetPattern>): Boolean {
       val kind: TargetKind? = getKindForTargets(project, targets)
       return EP_NAME.extensionList.any { it.handlesKind(kind) }
     }
@@ -114,35 +118,27 @@ interface BlazeTestEventsHandler {
      * unsupported target kinds.
      */
     @JvmStatic
-    fun getHandlerForTargetKindOrFallback(kind: TargetKind): BlazeTestEventsHandler {
-      return getHandlerForTargetKind(kind) ?: (BlazeGenericTestEventsHandler())
-    }
+    fun getHandlerForTargetKindOrFallback(kind: TargetKind): BlazeTestEventsHandler =
+      getHandlerForTargetKind(kind) ?: (BlazeGenericTestEventsHandler())
 
     /**
      * Returns a [BlazeTestEventsHandler] applicable to the given target or [ ][Optional.empty] if no such handler can be found.
      */
-    fun getHandlerForTarget(
-      project: Project, target: TargetPattern
-    ): BlazeTestEventsHandler? {
+    fun getHandlerForTarget(project: Project, target: TargetPattern): BlazeTestEventsHandler? {
       return getHandlerForTargetKind(getKindForTarget(project, target) ?: return null)
     }
 
     /**
      * Returns a [BlazeTestEventsHandler] applicable to the given targets or [ ][Optional.empty] if no such handler can be found.
      */
-    fun getHandlerForTargets(
-      project: Project, targets: List<TargetPattern>
-    ): BlazeTestEventsHandler? {
-      return getHandlerForTargetKind(getKindForTargets(project, targets))
-    }
+    fun getHandlerForTargets(project: Project, targets: List<TargetPattern>): BlazeTestEventsHandler? =
+      getHandlerForTargetKind(getKindForTargets(project, targets))
 
     /**
      * Returns a [BlazeTestEventsHandler] applicable to the given target kind, or [ ][Optional.empty] if no such handler can be found.
      */
     @JvmStatic
-    fun getHandlerForTargetKind(kind: TargetKind): BlazeTestEventsHandler? {
-      return EP_NAME.extensionList.firstOrNull { it.handlesKind(kind) }
-    }
+    fun getHandlerForTargetKind(kind: TargetKind): BlazeTestEventsHandler? = EP_NAME.extensionList.firstOrNull { it.handlesKind(kind) }
 
     /** Returns the single TargetKind shared by all targets or null if they have different kinds.  */
     fun getKindForTargets(project: Project, targets: List<TargetPattern>): TargetKind? {

@@ -22,27 +22,21 @@ import org.jetbrains.bazel.run2.BlazeCommandRunConfiguration
  * Generic handler provider for [BlazeCommandRunConfiguration]s, used as a fallback in the
  * case where no other handler providers are more relevant.
  */
-class BlazeCommandGenericRunConfigurationHandlerProvider
+class BlazeCommandGenericRunConfigurationHandlerProvider : BlazeCommandRunConfigurationHandlerProvider {
+  override fun canHandleKind(state: BlazeCommandRunConfigurationHandlerProvider.TargetState, kind: TargetKind?): Boolean =
+    state != BlazeCommandRunConfigurationHandlerProvider.TargetState.PENDING
 
-  : BlazeCommandRunConfigurationHandlerProvider {
-  override fun canHandleKind(
-    state: BlazeCommandRunConfigurationHandlerProvider.TargetState,
-    kind: TargetKind?
-  ): Boolean {
-    return state != BlazeCommandRunConfigurationHandlerProvider.TargetState.PENDING
-  }
-
-  override fun createHandler(config: BlazeCommandRunConfiguration): BlazeCommandRunConfigurationHandler {
-    return BlazeCommandGenericRunConfigurationHandler(config)
-  }
+  override fun createHandler(configuration: BlazeCommandRunConfiguration): BlazeCommandRunConfigurationHandler =
+    BlazeCommandGenericRunConfigurationHandler(configuration)
 
   override val id: String
     get() = "BlazeCommandGenericRunConfigurationHandlerProvider"
 
   companion object {
     val instance: BlazeCommandGenericRunConfigurationHandlerProvider?
-      get() = BlazeCommandRunConfigurationHandlerProvider.EP_NAME.findExtension(
-        BlazeCommandGenericRunConfigurationHandlerProvider::class.java
-      )
+      get() =
+        BlazeCommandRunConfigurationHandlerProvider.EP_NAME.findExtension(
+          BlazeCommandGenericRunConfigurationHandlerProvider::class.java,
+        )
   }
 }

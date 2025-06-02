@@ -16,14 +16,7 @@
 package org.jetbrains.bazel.run2.producers;
 
 import com.google.common.collect.ImmutableList;
-import org.jetbrains.bazel.commons.command.BlazeCommandName;
 import com.google.idea.blaze.base.command.BlazeFlags;
-import com.google.idea.blaze.base.model.primitives.TargetPattern;
-import org.jetbrains.bazel.run2.BlazeCommandRunConfiguration;
-import org.jetbrains.bazel.run2.BlazeCommandRunConfigurationType;
-import org.jetbrains.bazel.run2.smrunner.BlazeTestEventsHandler;
-import org.jetbrains.bazel.run2.smrunner.SmRunnerUtils;
-import org.jetbrains.bazel.run2.state.BlazeCommandRunConfigurationCommonState;
 import com.intellij.execution.Location;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.configurations.RunConfiguration;
@@ -33,6 +26,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import org.jetbrains.bazel.commons.command.BlazeCommandName;
+import org.jetbrains.bazel.label.TargetPattern;
+import org.jetbrains.bazel.run2.BlazeCommandRunConfiguration;
+import org.jetbrains.bazel.run2.BlazeCommandRunConfigurationType;
+import org.jetbrains.bazel.run2.smrunner.BlazeTestEventsHandler;
+import org.jetbrains.bazel.run2.smrunner.SmRunnerUtils;
+import org.jetbrains.bazel.run2.state.BlazeCommandRunConfigurationCommonState;
 
 /**
  * Handles the specific case where the user creates a run configuration by selecting test suites /

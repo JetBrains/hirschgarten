@@ -17,7 +17,6 @@ package org.jetbrains.bazel.run2.exporter;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.idea.blaze.base.model.primitives.WorkspaceRoot;
-import org.jetbrains.bazel.run2.BlazeRunConfiguration;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.impl.RunManagerImpl;
@@ -33,6 +32,7 @@ import java.io.IOException;
 import javax.annotation.Nullable;
 import org.jdom.Element;
 import org.jdom.JDOMException;
+import org.jetbrains.bazel.run2.BlazeRunConfiguration;
 
 /** Utility methods for converting run configuration to/from XML. */
 public class RunConfigurationSerializer {

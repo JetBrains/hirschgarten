@@ -41,9 +41,7 @@ class BlazeCommandState : RunConfigurationState {
     }
   }
 
-  override fun getEditor(project: Project): RunConfigurationStateEditor {
-    return BlazeCommandStateEditor(project)
-  }
+  override fun getEditor(project: Project): RunConfigurationStateEditor = BlazeCommandStateEditor(project)
 
   private class BlazeCommandStateEditor(project: Project) : RunConfigurationStateEditor {
     private val commandCombo: ComboBox<*>
@@ -71,17 +69,16 @@ class BlazeCommandState : RunConfigurationState {
         state.command = (selectedCommand as BlazeCommandName)
       } else {
         state.command = (
-          if (Strings.isNullOrEmpty(selectedCommand as String?))
+          if (Strings.isNullOrEmpty(selectedCommand as String?)) {
             null
-          else
+          } else {
             BlazeCommandName.fromString(selectedCommand.toString())
+          }
         )
       }
     }
 
-    override fun createComponent(): JComponent {
-      return UiUtil.createBox(JLabel("Bazel" + " command:"), commandCombo)
-    }
+    override fun createComponent(): JComponent = UiUtil.createBox(JLabel("Bazel" + " command:"), commandCombo)
   }
 
   companion object {

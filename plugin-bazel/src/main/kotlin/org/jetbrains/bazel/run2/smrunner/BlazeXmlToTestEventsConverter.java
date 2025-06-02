@@ -25,15 +25,6 @@ import com.google.idea.blaze.base.model.BlazeProjectData;
 import com.google.idea.blaze.base.model.primitives.Kind;
 import com.google.idea.blaze.base.model.primitives.Label;
 import com.google.idea.blaze.base.prefetch.FetchExecutor;
-import org.jetbrains.bazel.run2.smrunner.BlazeXmlSchema.ErrorOrFailureOrSkipped;
-import org.jetbrains.bazel.run2.smrunner.BlazeXmlSchema.TestCase;
-import org.jetbrains.bazel.run2.smrunner.BlazeXmlSchema.TestSuite;
-import org.jetbrains.bazel.run2.smrunner.TestComparisonFailureParser.BlazeComparisonFailureData;
-import org.jetbrains.bazel.run2.targetfinder.FuturesUtil;
-import org.jetbrains.bazel.run2.testlogs.BlazeTestResult;
-import org.jetbrains.bazel.run2.testlogs.BlazeTestResult.TestStatus;
-import org.jetbrains.bazel.run2.testlogs.BlazeTestResultFinderStrategy;
-import org.jetbrains.bazel.run2.testlogs.BlazeTestResults;
 import com.google.idea.blaze.base.settings.Blaze;
 import com.google.idea.blaze.base.settings.BuildSystemName;
 import com.google.idea.blaze.base.sync.data.BlazeProjectDataManager;
@@ -61,6 +52,15 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import jetbrains.buildServer.messages.serviceMessages.TestSuiteStarted;
+import org.jetbrains.bazel.run2.smrunner.BlazeXmlSchema.ErrorOrFailureOrSkipped;
+import org.jetbrains.bazel.run2.smrunner.BlazeXmlSchema.TestCase;
+import org.jetbrains.bazel.run2.smrunner.BlazeXmlSchema.TestSuite;
+import org.jetbrains.bazel.run2.smrunner.TestComparisonFailureParser.BlazeComparisonFailureData;
+import org.jetbrains.bazel.run2.targetfinder.FuturesUtil;
+import org.jetbrains.bazel.run2.testlogs.BlazeTestResult;
+import org.jetbrains.bazel.run2.testlogs.BlazeTestResult.TestStatus;
+import org.jetbrains.bazel.run2.testlogs.BlazeTestResultFinderStrategy;
+import org.jetbrains.bazel.run2.testlogs.BlazeTestResults;
 
 /** Converts blaze test runner xml logs to smRunner events. */
 public class BlazeXmlToTestEventsConverter extends OutputToGeneralTestEventsConverter {
@@ -194,7 +194,8 @@ public class BlazeXmlToTestEventsConverter extends OutputToGeneralTestEventsConv
   private void reportTestRuntimeError(String errorName, String errorMessage) {
     GeneralTestEventsProcessor processor = getProcessor();
     processor.onTestFailure(
-        getTestFailedEvent(errorName, errorMessage, null, BlazeComparisonFailureData.NONE, 0, true));
+        getTestFailedEvent(
+            errorName, errorMessage, null, BlazeComparisonFailureData.NONE, 0, true));
   }
 
   /** Return false if there's output XML which should be parsed. */
@@ -219,9 +220,9 @@ public class BlazeXmlToTestEventsConverter extends OutputToGeneralTestEventsConv
     }
     GeneralTestEventsProcessor processor = getProcessor();
     TestSuiteStarted suiteStarted = new TestSuiteStarted(label.toString());
-    processor.onSuiteStarted(new TestSuiteStartedEvent(suiteStarted, /*locationUrl=*/ null));
+    processor.onSuiteStarted(new TestSuiteStartedEvent(suiteStarted, /* locationUrl= */ null));
     String targetName = label.targetName().toString();
-    processor.onTestStarted(new TestStartedEvent(targetName, /*locationUrl=*/ null));
+    processor.onTestStarted(new TestStartedEvent(targetName, /* locationUrl= */ null));
     processor.onTestFailure(
         getTestFailedEvent(
             targetName,
@@ -229,8 +230,9 @@ public class BlazeXmlToTestEventsConverter extends OutputToGeneralTestEventsConv
                 + " See console output for details",
             /* content= */ null,
             BlazeComparisonFailureData.NONE,
-            /* duration= */ 0, true));
-    processor.onTestFinished(new TestFinishedEvent(targetName, /*duration=*/ 0L));
+            /* duration= */ 0,
+            true));
+    processor.onTestFinished(new TestFinishedEvent(targetName, /* duration= */ 0L));
     processor.onSuiteFinished(new TestSuiteFinishedEvent(label.toString()));
   }
 
@@ -374,7 +376,8 @@ public class BlazeXmlToTestEventsConverter extends OutputToGeneralTestEventsConv
               : !test.errors.isEmpty() ? test.errors : ImmutableList.of(NO_ERROR);
       boolean isError = test.failures.isEmpty();
       for (ErrorOrFailureOrSkipped err : errors) {
-        processor.onTestFailure(getTestFailedEvent(displayName, err, parseTimeMillis(test.time), isError));
+        processor.onTestFailure(
+            getTestFailedEvent(displayName, err, parseTimeMillis(test.time), isError));
       }
     }
     processor.onTestFinished(new TestFinishedEvent(displayName, parseTimeMillis(test.time)));
@@ -397,7 +400,8 @@ public class BlazeXmlToTestEventsConverter extends OutputToGeneralTestEventsConv
     String message =
         error.message != null ? error.message : "Test failed (no error message present)";
     String content = pruneErrorMessage(error.message, BlazeXmlSchema.getErrorContent(error));
-    return getTestFailedEvent(name, message, content, parseComparisonData(error), duration, isError);
+    return getTestFailedEvent(
+        name, message, content, parseComparisonData(error), duration, isError);
   }
 
   private static TestFailedEvent getTestFailedEvent(

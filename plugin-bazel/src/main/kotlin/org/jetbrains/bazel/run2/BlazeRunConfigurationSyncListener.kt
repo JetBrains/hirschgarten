@@ -15,14 +15,12 @@
  */
 package org.jetbrains.bazel.run2
 
-import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Sets
 import com.google.idea.blaze.base.model.BlazeProjectData
 import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.BeforeRunTaskProvider
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunManagerEx
-import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.openapi.project.Project
@@ -32,8 +30,6 @@ import org.jetbrains.bazel.run2.exporter.RunConfigurationSerializer
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import java.io.File
 import java.util.function.Consumer
-import java.util.function.Supplier
-import java.util.stream.Collectors
 
 /**
  * Imports run configurations specified in the project view, and creates run configurations for
@@ -43,16 +39,16 @@ class BlazeRunConfigurationSyncListener : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
     updateExistingRunConfigurations(environment.project)
     removeInvalidRunConfigurations(environment.project)
-    //if (syncMode === SyncMode.STARTUP || syncMode === SyncMode.NO_BUILD) {
+    // if (syncMode === SyncMode.STARTUP || syncMode === SyncMode.NO_BUILD) {
     //  return
-    //}
+    // }
 
     val xmlFiles: MutableSet<File> =
       getImportedRunConfigurations(projectViewSet, blazeProjectData.getWorkspacePathResolver())
     Transactions.submitTransactionAndWait {
       // First, import from specified XML files. Then auto-generate from targets.
       xmlFiles.forEach(
-        Consumer { file: File? -> RunConfigurationSerializer.loadFromXmlIgnoreExisting(environment.project, file) }
+        Consumer { file: File? -> RunConfigurationSerializer.loadFromXmlIgnoreExisting(environment.project, file) },
       )
 
       val labelsWithConfigs: MutableSet<Label> = labelsWithConfigs(environment.project)
@@ -82,10 +78,9 @@ class BlazeRunConfigurationSyncListener : ProjectSyncHook {
       }
     }
 
-    private fun isInvalidRunConfig(config: RunConfiguration?): Boolean {
-      return config is BlazeCommandRunConfiguration
-          && config.pendingSetupFailed()
-    }
+    private fun isInvalidRunConfig(config: RunConfiguration?): Boolean =
+      config is BlazeCommandRunConfiguration &&
+        config.pendingSetupFailed()
 
     /**
      * On each sync, re-calculate target kind for all existing run configurations, in case the target
@@ -126,7 +121,7 @@ class BlazeRunConfigurationSyncListener : ProjectSyncHook {
       val provider: BeforeRunTaskProvider<*>? =
         BeforeRunTaskProvider.getProvider(
           config.project,
-          BlazeBeforeRunTaskProvider.ID
+          BlazeBeforeRunTaskProvider.ID,
         )
       if (provider == null) {
         return false
@@ -144,12 +139,10 @@ class BlazeRunConfigurationSyncListener : ProjectSyncHook {
       return true
     }
 
-    private fun getImportedRunConfigurations(
-      projectViewSet: ProjectViewSet, pathResolver: WorkspacePathResolver
-    ): Set<File> {
-      return projectViewSet.listItems(RunConfigurationsSection.KEY)
+    private fun getImportedRunConfigurations(projectViewSet: ProjectViewSet, pathResolver: WorkspacePathResolver): Set<File> =
+      projectViewSet
+        .listItems(RunConfigurationsSection.KEY)
         .map(pathResolver::resolveToFile)
-    }
 
     /** Collects a set of all the Blaze labels that have an associated run configuration.  */
     private fun labelsWithConfigs(project: Project): MutableSet<Label?> {
@@ -172,7 +165,9 @@ class BlazeRunConfigurationSyncListener : ProjectSyncHook {
      * for that target.
      */
     private fun maybeAddRunConfiguration(
-      project: Project, blazeProjectData: BlazeProjectData, label: Label
+      project: Project,
+      blazeProjectData: BlazeProjectData,
+      label: Label,
     ) {
       val runManager: RunManager = RunManager.getInstance(project)
 
@@ -180,7 +175,7 @@ class BlazeRunConfigurationSyncListener : ProjectSyncHook {
         if (configurationFactory.handlesTarget(project, blazeProjectData, label)) {
           val settings =
             configurationFactory.createForTarget(project, runManager, label)
-          runManager.addConfiguration(settings,  /* isShared= */false)
+          runManager.addConfiguration(settings, /* isShared= */false)
           if (runManager.selectedConfiguration == null) {
             runManager.selectedConfiguration = settings
           }

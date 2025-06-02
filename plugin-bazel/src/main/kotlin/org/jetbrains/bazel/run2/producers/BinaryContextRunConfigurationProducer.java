@@ -17,13 +17,6 @@ package org.jetbrains.bazel.run2.producers;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import org.jetbrains.bazel.commons.command.BlazeCommandName;
-import com.google.idea.blaze.base.model.primitives.TargetPattern;
-import org.jetbrains.bazel.run2.BlazeCommandRunConfiguration;
-import org.jetbrains.bazel.run2.BlazeCommandRunConfigurationType;
-import org.jetbrains.bazel.run2.producers.BinaryContextProvider.BinaryRunContext;
-import org.jetbrains.bazel.run2.smrunner.SmRunnerUtils;
-import org.jetbrains.bazel.run2.state.BlazeCommandRunConfigurationCommonState;
 import com.google.idea.blaze.base.sync.BlazeSyncModificationTracker;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.openapi.util.Ref;
@@ -34,6 +27,13 @@ import com.intellij.psi.util.PsiModificationTracker;
 import java.util.Arrays;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import org.jetbrains.bazel.commons.command.BlazeCommandName;
+import org.jetbrains.bazel.label.TargetPattern;
+import org.jetbrains.bazel.run2.BlazeCommandRunConfiguration;
+import org.jetbrains.bazel.run2.BlazeCommandRunConfigurationType;
+import org.jetbrains.bazel.run2.producers.BinaryContextProvider.BinaryRunContext;
+import org.jetbrains.bazel.run2.smrunner.SmRunnerUtils;
+import org.jetbrains.bazel.run2.state.BlazeCommandRunConfigurationCommonState;
 
 /** Produces run configurations via {@link BinaryContextProvider}. */
 public class BinaryContextRunConfigurationProducer

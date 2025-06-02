@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.run2.smrunner
 
-import com.google.common.collect.ImmutableList
 import com.intellij.execution.Location
 import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import com.intellij.openapi.project.Project
@@ -25,7 +24,10 @@ import com.intellij.psi.search.GlobalSearchScope
 class CompositeSMTestLocator(private val locators: List<SMTestLocator>) : SMTestLocator {
   // Super method uses raw Location. Check super method again after #api212.
   override fun getLocation(
-    protocol: String, path: String, project: Project, scope: GlobalSearchScope
+    protocol: String,
+    path: String,
+    project: Project,
+    scope: GlobalSearchScope,
   ): List<Location<*>> {
     for (locator in locators) {
       val result = locator.getLocation(protocol, path, project, scope)

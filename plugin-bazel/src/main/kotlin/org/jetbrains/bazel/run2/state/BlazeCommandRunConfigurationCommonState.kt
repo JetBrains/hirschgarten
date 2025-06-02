@@ -42,15 +42,14 @@ class BlazeCommandRunConfigurationCommonState : RunConfigurationCompositeState()
   val userEnvVarsState: EnvironmentVariablesState = EnvironmentVariablesState()
   val blazeBinaryState: BlazeBinaryState = BlazeBinaryState()
 
-  override fun initializeStates(): ImmutableList<RunConfigurationState?> {
-    return ImmutableList.of<RunConfigurationState?>(
+  override fun initializeStates(): ImmutableList<RunConfigurationState?> =
+    ImmutableList.of<RunConfigurationState?>(
       this.commandState,
       this.blazeFlagsState,
       this.exeFlagsState,
       this.userEnvVarsState,
-      this.blazeBinaryState
+      this.blazeBinaryState,
     )
-  }
 
   val testFilterFlag: String?
     /** Searches through all blaze flags for the first one beginning with '--test_filter'  */
@@ -74,7 +73,9 @@ class BlazeCommandRunConfigurationCommonState : RunConfigurationCompositeState()
      */
     get() {
       val testFilterFlag =
-        this.blazeFlagsState.getFlagsForExternalProcesses().stream()
+        this.blazeFlagsState
+          .getFlagsForExternalProcesses()
+          .stream()
           .filter { flag: String? -> flag.startsWith(BlazeFlags.TEST_FILTER) }
           .findFirst()
           .orElse(null)
@@ -87,9 +88,10 @@ class BlazeCommandRunConfigurationCommonState : RunConfigurationCompositeState()
     }
 
   val testArgs: List<String>
-    get() = this.blazeFlagsState.rawFlags
-      .filter { it.startsWith(BlazeFlags.TEST_ARG) }
-      .map { it.substring(BlazeFlags.TEST_ARG.length()) }
+    get() =
+      this.blazeFlagsState.rawFlags
+        .filter { it.startsWith(BlazeFlags.TEST_ARG) }
+        .map { it.substring(BlazeFlags.TEST_ARG.length()) }
 
   @Throws(RuntimeConfigurationException::class)
   fun validate() {
@@ -102,9 +104,7 @@ class BlazeCommandRunConfigurationCommonState : RunConfigurationCompositeState()
     }
   }
 
-  override fun getEditor(project: Project): RunConfigurationStateEditor {
-    return RunConfigurationCompositeStateEditor(project, getStates())
-  }
+  override fun getEditor(project: Project): RunConfigurationStateEditor = RunConfigurationCompositeStateEditor(project, getStates())
 
   companion object {
     private const val USER_BLAZE_FLAG_TAG = "blaze-user-flag"

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.bazel.sync
+package org.jetbrains.bazel.sync.targetKind
 
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap

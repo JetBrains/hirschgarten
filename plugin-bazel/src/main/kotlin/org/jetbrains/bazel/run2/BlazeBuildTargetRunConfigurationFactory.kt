@@ -31,9 +31,11 @@ import org.jetbrains.bazel.run2.targetfinder.TargetFinder
  * the case where no more specialized factory handles the target.
  */
 class BlazeBuildTargetRunConfigurationFactory : BlazeRunConfigurationFactory() {
-  public override fun handlesTarget(project: Project, projectData: BlazeProjectData, label: Label): Boolean {
-    return findProjectTarget(project, label) != null
-  }
+  public override fun handlesTarget(
+    project: Project,
+    projectData: BlazeProjectData,
+    label: Label,
+  ): Boolean = findProjectTarget(project, label) != null
 
   override val configurationFactory: ConfigurationFactory
     get() = BlazeCommandRunConfigurationType.getInstance().factory
@@ -46,10 +48,9 @@ class BlazeBuildTargetRunConfigurationFactory : BlazeRunConfigurationFactory() {
     }
     blazeConfig.setTargetInfo(target)
 
-
     val state: BlazeCommandRunConfigurationCommonState? =
       blazeConfig.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState>(
-        BlazeCommandRunConfigurationCommonState::class.java
+        BlazeCommandRunConfigurationCommonState::class.java,
       )
     if (state != null) {
       state.commandState.command = commandForRuleType(target.getRuleType())
@@ -69,12 +70,11 @@ class BlazeBuildTargetRunConfigurationFactory : BlazeRunConfigurationFactory() {
       return if (HANDLED_RULE_TYPES.contains(targetInfo.getRuleType())) targetInfo else null
     }
 
-    private fun commandForRuleType(ruleType: RuleType): BlazeCommandName {
-      return when (ruleType) {
+    private fun commandForRuleType(ruleType: RuleType): BlazeCommandName =
+      when (ruleType) {
         RuleType.BINARY -> BlazeCommandName.RUN
         RuleType.TEST -> BlazeCommandName.TEST
         else -> BlazeCommandName.BUILD
       }
-    }
   }
 }

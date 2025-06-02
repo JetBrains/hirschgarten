@@ -16,7 +16,11 @@
 package org.jetbrains.bazel.run2.smrunner
 
 /** Utilities for interpreting "blaze test" exit codes and associated errors.  */
-enum class BlazeTestExitStatus(@JvmField val title: String, @JvmField val message: String, val exitCode: Int) {
+enum class BlazeTestExitStatus(
+  @JvmField val title: String,
+  @JvmField val message: String,
+  val exitCode: Int,
+) {
   // Exit codes taken from
   // https://docs.bazel.build/versions/master/guide.html#what-exit-code-will-i-get
   ALL_TESTS_PASSED("All Tests Passed", "All tests passed.", 0),
@@ -25,11 +29,16 @@ enum class BlazeTestExitStatus(@JvmField val title: String, @JvmField val messag
   NO_TESTS_FOUND("No Test Found", "Build succeeded but no tests were found.", 4),
   TEST_INTERRUPTED("Test Interrupted", "Test interrupted.", 8),
   KNOWN_ERROR_TEST_PROCESS_RECEIVED_SIGQUIT(
-    "Runtime Error", "Test runtime terminated unexpectedly. Please try re-running the test", 131
+    "Runtime Error",
+    "Test runtime terminated unexpectedly. Please try re-running the test",
+    131,
   ),
   INTERNAL_BLAZE_ERROR(
-    "Unhandled Exception / Internal Bazel Error", "Internal Bazel error. No tests were run.", 37
-  );
+    "Unhandled Exception / Internal Bazel Error",
+    "Internal Bazel error. No tests were run.",
+    37,
+  ),
+  ;
 
   companion object {
     @JvmStatic

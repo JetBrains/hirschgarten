@@ -20,7 +20,6 @@ import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import java.io.IOException
 import java.io.InputStream
 import java.lang.AutoCloseable
-import java.util.Optional
 
 /** Provides [BuildEventStreamProtos.BuildEvent]  */
 interface BuildEventStreamProvider : AutoCloseable {
@@ -69,12 +68,10 @@ interface BuildEventStreamProvider : AutoCloseable {
         override val id: String? = null
 
         @Throws(BuildEventStreamException::class)
-        override fun getNext(): BuildEventStreamProtos.BuildEvent? {
-          return parseNextEventFromStream(countingStream)
-        }
+        override fun getNext(): BuildEventStreamProtos.BuildEvent? = parseNextEventFromStream(countingStream)
 
         override val bytesConsumed: Long = countingStream.count
-        }
       }
     }
   }
+}

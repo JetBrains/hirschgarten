@@ -16,15 +16,11 @@
 package org.jetbrains.bazel.run2.producers;
 
 import com.google.common.collect.ImmutableList;
-import org.jetbrains.bazel.commons.command.BlazeCommandName;
 import com.google.idea.blaze.base.dependencies.TargetInfo;
 import com.google.idea.blaze.base.lang.buildfile.psi.FuncallExpression;
 import com.google.idea.blaze.base.model.BlazeProjectData;
 import com.google.idea.blaze.base.model.primitives.Kind;
 import com.google.idea.blaze.base.model.primitives.Label;
-import org.jetbrains.bazel.run2.BlazeCommandRunConfiguration;
-import org.jetbrains.bazel.run2.BlazeCommandRunConfigurationType;
-import org.jetbrains.bazel.run2.state.BlazeCommandRunConfigurationCommonState;
 import com.google.idea.blaze.base.settings.Blaze;
 import com.google.idea.blaze.base.settings.BlazeImportSettings.ProjectType;
 import com.google.idea.blaze.base.sync.data.BlazeProjectDataManager;
@@ -35,12 +31,17 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import org.jetbrains.bazel.commons.command.BlazeCommandName;
+import org.jetbrains.bazel.run2.BlazeCommandRunConfiguration;
+import org.jetbrains.bazel.run2.BlazeCommandRunConfigurationType;
+import org.jetbrains.bazel.run2.state.BlazeCommandRunConfigurationCommonState;
 
-/** Creates run configurations from a BUILD file targets.
- *  Based on BlazeBuildFileRunConfigurationProducer.java
- * */
+/**
+ * Creates run configurations from a BUILD file targets. Based on
+ * BlazeBuildFileRunConfigurationProducer.java
+ */
 public class BlazeBuildTargetRunConfigurationProducer
-        extends BlazeRunConfigurationProducer<BlazeCommandRunConfiguration> {
+    extends BlazeRunConfigurationProducer<BlazeCommandRunConfiguration> {
 
   public BlazeBuildTargetRunConfigurationProducer() {
     super(BlazeCommandRunConfigurationType.getInstance());
@@ -48,12 +49,12 @@ public class BlazeBuildTargetRunConfigurationProducer
 
   @Override
   protected boolean doSetupConfigFromContext(
-          BlazeCommandRunConfiguration configuration,
-          ConfigurationContext context,
-          Ref<PsiElement> sourceElement) {
+      BlazeCommandRunConfiguration configuration,
+      ConfigurationContext context,
+      Ref<PsiElement> sourceElement) {
     Project project = configuration.getProject();
     BlazeProjectData blazeProjectData =
-            BlazeProjectDataManager.getInstance(project).getBlazeProjectData();
+        BlazeProjectDataManager.getInstance(project).getBlazeProjectData();
     // With query sync we don't need a sync to run a configuration
     if (blazeProjectData == null && Blaze.getProjectType(project) != ProjectType.QUERY_SYNC) {
       return false;
@@ -69,7 +70,7 @@ public class BlazeBuildTargetRunConfigurationProducer
 
   @Override
   protected boolean doIsConfigFromContext(
-          BlazeCommandRunConfiguration configuration, ConfigurationContext context) {
+      BlazeCommandRunConfiguration configuration, ConfigurationContext context) {
     BuildTarget target = getBuildTarget(context);
     if (target == null) {
       return false;
@@ -80,7 +81,7 @@ public class BlazeBuildTargetRunConfigurationProducer
   @Nullable
   private static BuildTarget getBuildTarget(ConfigurationContext context) {
     return getBuildTarget(
-            PsiTreeUtil.getNonStrictParentOfType(context.getPsiLocation(), FuncallExpression.class));
+        PsiTreeUtil.getNonStrictParentOfType(context.getPsiLocation(), FuncallExpression.class));
   }
 
   @Nullable
@@ -97,10 +98,10 @@ public class BlazeBuildTargetRunConfigurationProducer
   }
 
   private static void setupConfiguration(
-          Project ignoredProject,
-          BlazeProjectData ignoredBlazeProjectData,
-          BlazeCommandRunConfiguration configuration,
-          BuildTarget target) {
+      Project ignoredProject,
+      BlazeProjectData ignoredBlazeProjectData,
+      BlazeCommandRunConfiguration configuration,
+      BuildTarget target) {
     TargetInfo info = target.guessTargetInfo();
     if (info != null) {
       configuration.setTargetInfo(info);
@@ -108,7 +109,7 @@ public class BlazeBuildTargetRunConfigurationProducer
       configuration.setTarget(target.label());
     }
     BlazeCommandRunConfigurationCommonState state =
-            configuration.getHandlerStateIfType(BlazeCommandRunConfigurationCommonState.class);
+        configuration.getHandlerStateIfType(BlazeCommandRunConfigurationCommonState.class);
     if (state != null) {
       state.getCommandState().setCommand(BlazeCommandName.BUILD);
     }

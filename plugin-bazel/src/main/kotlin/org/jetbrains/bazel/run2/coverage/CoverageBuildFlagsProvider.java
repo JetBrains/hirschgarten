@@ -15,14 +15,14 @@
  */
 package org.jetbrains.bazel.run2.coverage;
 
-import org.jetbrains.bazel.commons.command.BlazeCommandName;
 import com.google.idea.blaze.base.command.BlazeInvocationContext;
 import com.google.idea.blaze.base.command.BlazeInvocationContext.RunConfigurationContext;
 import com.google.idea.blaze.base.command.BuildFlagsProvider;
 import com.google.idea.blaze.base.projectview.ProjectViewSet;
-import org.jetbrains.bazel.run2.ExecutorType;
 import com.intellij.openapi.project.Project;
 import java.util.List;
+import org.jetbrains.bazel.commons.command.BlazeCommandName;
+import org.jetbrains.bazel.run2.ExecutorType;
 
 class CoverageBuildFlagsProvider implements BuildFlagsProvider {
 

@@ -28,14 +28,11 @@ import org.jetbrains.bazel.run2.state.BlazeCommandRunConfigurationCommonState
  * no other handlers are more relevant.
  */
 class BlazeCommandGenericRunConfigurationHandler
-  (configuration: BlazeCommandRunConfiguration) : BlazeCommandRunConfigurationHandler {
+(configuration: BlazeCommandRunConfiguration) : BlazeCommandRunConfigurationHandler {
   override val state: BlazeCommandRunConfigurationCommonState = BlazeCommandRunConfigurationCommonState()
 
-  override fun createRunner(
-    executor: Executor, environment: ExecutionEnvironment
-  ): BlazeCommandRunConfigurationRunner {
-    return BlazeCommandGenericRunConfigurationRunner()
-  }
+  override fun createRunner(executor: Executor, environment: ExecutionEnvironment): BlazeCommandRunConfigurationRunner =
+    BlazeCommandGenericRunConfigurationRunner()
 
   @Throws(RuntimeConfigurationException::class)
   override fun checkConfiguration() {

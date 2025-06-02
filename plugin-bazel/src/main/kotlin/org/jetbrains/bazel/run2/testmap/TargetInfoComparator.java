@@ -25,7 +25,6 @@ public class TargetInfoComparator implements Comparator<TargetInfo> {
    * Sorts the {@link TargetInfo} objects such that there is a preference to those without the
    * underscore on the name and for those that do actually resolve to a {@link Kind}.
    */
-
   @Override
   public int compare(TargetInfo o1, TargetInfo o2) {
     Kind kind1 = o1.getKind();
@@ -47,5 +46,4 @@ public class TargetInfoComparator implements Comparator<TargetInfo> {
 
     return targetNameStr1.compareTo(targetNameStr2);
   }
-
 }

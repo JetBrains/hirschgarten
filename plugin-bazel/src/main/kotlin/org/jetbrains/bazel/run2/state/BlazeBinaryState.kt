@@ -21,7 +21,6 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import org.jdom.Element
 import javax.swing.JComponent
-import javax.swing.JLabel
 
 /** State for a Blaze binary to run configurations with.  */
 class BlazeBinaryState : RunConfigurationState {
@@ -40,9 +39,7 @@ class BlazeBinaryState : RunConfigurationState {
     }
   }
 
-  override fun getEditor(project: Project): RunConfigurationStateEditor {
-    return BlazeBinaryStateEditor(project)
-  }
+  override fun getEditor(project: Project): RunConfigurationStateEditor = BlazeBinaryStateEditor(project)
 
   private class BlazeBinaryStateEditor(project: Project) : RunConfigurationStateEditor {
     private val blazeBinaryField = JBTextField(1)
@@ -65,9 +62,7 @@ class BlazeBinaryState : RunConfigurationState {
       state.blazeBinary = Strings.emptyToNull(blazeBinaryField.getText())
     }
 
-    override fun createComponent(): JComponent {
-      return UiUtil.createBox(JBLabel("Bazel" + " binary:"), blazeBinaryField)
-    }
+    override fun createComponent(): JComponent = UiUtil.createBox(JBLabel("Bazel" + " binary:"), blazeBinaryField)
   }
 
   companion object {

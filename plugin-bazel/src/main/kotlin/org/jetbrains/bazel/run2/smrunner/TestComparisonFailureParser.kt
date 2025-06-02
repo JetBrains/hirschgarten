@@ -24,7 +24,10 @@ interface TestComparisonFailureParser {
   /**
    * Data class for actual/expected text.
    */
-  data class BlazeComparisonFailureData(@JvmField val actual: String?, @JvmField val expected: String?) {
+  data class BlazeComparisonFailureData(
+    @JvmField val actual: String?,
+    @JvmField val expected: String?,
+  ) {
     companion object {
       @JvmField
       val NONE: BlazeComparisonFailureData = BlazeComparisonFailureData(null, null)

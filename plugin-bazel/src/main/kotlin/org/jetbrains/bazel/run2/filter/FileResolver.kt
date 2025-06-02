@@ -31,22 +31,21 @@ interface FileResolver {
      * Iterates through all available [FileResolver]s, returning the first successful result.
      */
     @JvmStatic
-    fun resolveToVirtualFile(project: Project, fileString: String): VirtualFile? {
-      return EP_NAME.extensionList
+    fun resolveToVirtualFile(project: Project, fileString: String): VirtualFile? =
+      EP_NAME.extensionList
         .map { it.resolve(project, fileString) }
         .filterNotNull()
         .map { VirtualFileSystemProvider.instance.system.findFileByPath(it.path) }
         .filterNotNull()
         .firstOrNull()
-    }
 
     /**
      * Iterates through all available [FileResolver]s, returning the first successful result.
      */
-    fun resolveToFile(project: Project, fileString: String): File? {
-      return EP_NAME.extensionList.map { it.resolve(project, fileString) }
+    fun resolveToFile(project: Project, fileString: String): File? =
+      EP_NAME.extensionList
+        .map { it.resolve(project, fileString) }
         .firstOrNull { obj: File? -> Objects.nonNull(obj) }
-    }
 
     val EP_NAME: ExtensionPointName<FileResolver> =
       ExtensionPointName.create("com.google.idea.blaze.FileStringParser")

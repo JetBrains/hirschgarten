@@ -99,14 +99,14 @@ class BlazeWebTestLocator implements SMTestLocator {
       BlazeTestEventsHandler handler, Label label, Kind kind, List<String> components) {
     switch (components.size()) {
       case 2: // test suite
-        return handler.suiteLocationUrl(label, kind, /* name = */ components.get(1));
+        return handler.suiteLocationUrl(label, kind, /* name= */ components.get(1));
       case 4: // test case
         return handler.testLocationUrl(
             label,
             kind,
-            /* parentSuite = */ components.get(1),
-            /* name = */ components.get(2),
-            /* className = */ Strings.emptyToNull(components.get(3)));
+            /* parentSuite= */ components.get(1),
+            /* name= */ components.get(2),
+            /* className= */ Strings.emptyToNull(components.get(3)));
       default:
         return null;
     }
@@ -120,6 +120,6 @@ class BlazeWebTestLocator implements SMTestLocator {
       return ImmutableList.of();
     }
     return locator.getLocation(
-        /* protocol = */ components.get(0), /* path = */ components.get(1), project, scope);
+        /* protocol= */ components.get(0), /* path= */ components.get(1), project, scope);
   }
 }

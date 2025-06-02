@@ -31,7 +31,8 @@ import java.io.FileNotFoundException;
  */
 public final class LocalBuildEventProtocolTestFinderStrategy
     implements BlazeTestResultFinderStrategy {
-  private static final Logger LOG = Logger.getInstance(LocalBuildEventProtocolTestFinderStrategy.class);
+  private static final Logger LOG =
+      Logger.getInstance(LocalBuildEventProtocolTestFinderStrategy.class);
   private final File outputFile;
 
   public LocalBuildEventProtocolTestFinderStrategy(File outputFile) {

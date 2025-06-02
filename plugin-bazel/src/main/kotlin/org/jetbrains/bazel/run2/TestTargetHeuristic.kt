@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.run2
 
-import com.google.common.base.Function
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
@@ -29,7 +28,6 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.run2.targetfinder.FuturesUtil
 import org.jetbrains.ide.PooledThreadExecutor
 import java.io.File
-import java.util.Optional
 import java.util.stream.Collectors
 
 /** Heuristic to match test targets to source files.  */
@@ -40,7 +38,7 @@ interface TestTargetHeuristic {
     target: BspTargetInfo.TargetInfo,
     sourcePsiFile: PsiFile,
     sourceFile: File,
-    testSize: TestSize
+    testSize: TestSize,
   ): Boolean
 
   companion object {
@@ -48,9 +46,7 @@ interface TestTargetHeuristic {
      * Finds a test rule associated with a given [PsiElement]. Must be called from within a read
      * action.
      */
-    fun targetFutureForPsiElement(
-      element: PsiElement, testSize: TestSize
-    ): ListenableFuture<BspTargetInfo.TargetInfo>? {
+    fun targetFutureForPsiElement(element: PsiElement, testSize: TestSize): ListenableFuture<BspTargetInfo.TargetInfo>? {
       val psiFile = element.containingFile
       if (psiFile == null) {
         return null
@@ -67,21 +63,27 @@ interface TestTargetHeuristic {
         return null
       }
       val executor =
-        if (ApplicationManager.getApplication().isUnitTestMode)
+        if (ApplicationManager.getApplication().isUnitTestMode) {
           MoreExecutors.directExecutor()
-        else
+        } else {
           PooledThreadExecutor.INSTANCE
+        }
       return Futures.transform(
         targets,
         { list ->
-          if (list == null)
+          if (list == null) {
             null
-          else
+          } else {
             chooseTestTargetForSourceFile(
-              project, psiFile, file, list, testSize
+              project,
+              psiFile,
+              file,
+              list,
+              testSize,
             )
+          }
         },
-        executor
+        executor,
       )
     }
 
@@ -94,7 +96,7 @@ interface TestTargetHeuristic {
       sourcePsiFile: PsiFile,
       sourceFile: File,
       targets: Collection<BspTargetInfo.TargetInfo>,
-      testSize: TestSize
+      testSize: TestSize,
     ): BspTargetInfo.TargetInfo? {
       if (targets.isEmpty()) {
         return null
@@ -110,10 +112,9 @@ interface TestTargetHeuristic {
                 target,
                 sourcePsiFile,
                 sourceFile,
-                testSize
+                testSize,
               )
-            }
-            .collect(Collectors.toList())
+            }.collect(Collectors.toList())
         if (matches.size == 1) {
           return matches.get(0)
         }
@@ -124,15 +125,16 @@ interface TestTargetHeuristic {
         }
       }
       // finally order by syncTime (if available), returning the most recently synced
-      return filteredTargets.stream()
+      return filteredTargets
+        .stream()
         .max(
           Comparator.comparing(
-             { t -> t.syncTime }, Comparator.nullsFirst(
-              Comparator.naturalOrder()
-            )
-          )
-        )
-        .orElse(null)
+            { t -> t.syncTime },
+            Comparator.nullsFirst(
+              Comparator.naturalOrder(),
+            ),
+          ),
+        ).orElse(null)
     }
 
     val EP_NAME: ExtensionPointName<TestTargetHeuristic> =

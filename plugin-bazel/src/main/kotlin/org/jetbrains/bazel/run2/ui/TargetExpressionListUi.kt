@@ -16,11 +16,7 @@
 package org.jetbrains.bazel.run2.ui
 
 import com.google.common.collect.ImmutableList
-import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
-import com.intellij.ui.AnActionButton
-import com.intellij.ui.AnActionButtonRunnable
-import com.intellij.ui.EditorSettingsProvider
 import com.intellij.ui.JBColor
 import com.intellij.ui.TableUtil
 import com.intellij.ui.TextFieldWithAutoCompletion
@@ -41,7 +37,6 @@ import javax.swing.AbstractAction
 import javax.swing.AbstractCellEditor
 import javax.swing.BorderFactory
 import javax.swing.JComponent
-import javax.swing.JPanel
 import javax.swing.JTable
 import javax.swing.KeyStroke
 import javax.swing.table.TableCellEditor
@@ -60,27 +55,32 @@ class TargetExpressionListUi(private val project: Project) : JBPanel<TargetExpre
 
     setLayout(BorderLayout())
     add(
-      ToolbarDecorator.createDecorator(tableView)
+      ToolbarDecorator
+        .createDecorator(tableView)
         .setAddAction { addTarget() }
         .setRemoveAction { removeTarget() }
         .disableUpDownActions()
         .createPanel(),
-      BorderLayout.CENTER
+      BorderLayout.CENTER,
     )
   }
 
   var targetExpressions: List<String>
     /** Returns the non-empty target patterns presented in the UI component.  */
-    get() = listModel.getItems()
-      .map { it.expression.trim { it <= ' ' } }
-      .filter { !it.isEmpty() }
+    get() =
+      listModel
+        .getItems()
+        .map { it.expression.trim { it <= ' ' } }
+        .filter { !it.isEmpty() }
 
     set(targets) {
       listModel.setItems(
-        targets.stream()
+        targets
+          .stream()
           .filter { s: String? -> s != null && !s.isEmpty() }
           .map<TargetItem?> { expression: String? -> TargetItem(expression!!) }
-          .collect(Collectors.toList()))
+          .collect(Collectors.toList()),
+      )
     }
 
   override fun setEnabled(enabled: Boolean) {
@@ -96,48 +96,48 @@ class TargetExpressionListUi(private val project: Project) : JBPanel<TargetExpre
     val index = listModel.rowCount - 1
     tableView.getSelectionModel().setSelectionInterval(index, index)
     tableView.scrollRectToVisible(
-      tableView.getCellRect(index,  0,  true)
+      tableView.getCellRect(index, 0, true),
     )
-    TableUtil.editCellAt(tableView, index,  0)
+    TableUtil.editCellAt(tableView, index, 0)
   }
 
   private fun removeTarget() {
     TableUtil.removeSelectedItems(tableView)
   }
 
-  private inner class TargetColumn : ColumnInfo<TargetItem, String>( "") {
-    override fun valueOf(targetItem: TargetItem): String {
-      return targetItem.expression
-    }
+  private inner class TargetColumn : ColumnInfo<TargetItem, String>("") {
+    override fun valueOf(targetItem: TargetItem): String = targetItem.expression
 
     override fun setValue(targetItem: TargetItem, value: String) {
       targetItem.expression = value
     }
 
-    override fun getEditor(targetItem: TargetItem?): TableCellEditor {
-      return TargetListCellEditor(project)
-    }
+    override fun getEditor(targetItem: TargetItem?): TableCellEditor = TargetListCellEditor(project)
 
-    override fun isCellEditable(targetItem: TargetItem?): Boolean {
-      return true
-    }
+    override fun isCellEditable(targetItem: TargetItem?): Boolean = true
   }
 
   private class TargetItem(var expression: String)
 
-  private class TargetListCellEditor(private val project: Project?) : AbstractCellEditor(), TableCellEditor {
+  private class TargetListCellEditor(private val project: Project?) :
+    AbstractCellEditor(),
+    TableCellEditor {
     @Volatile
     private var textField: TextFieldWithAutoCompletion<String>? = null
 
     override fun getTableCellEditorComponent(
-      table: JTable, value: Any?, isSelected: Boolean, row: Int, column: Int
+      table: JTable,
+      value: Any?,
+      isSelected: Boolean,
+      row: Int,
+      column: Int,
     ): Component {
       val textField =
         TextFieldWithAutoCompletion(
           project,
-          TargetCompletionProvider(project),  /* showCompletionHint= */
-          true,  /* text= */
-          value as String
+          TargetCompletionProvider(project), // showCompletionHint=
+          true, // text=
+          value as String,
         )
       textField.addSettingsProvider { editorEx ->
         // base class ignores 'enter' keypress events, causing entire dialog to close without
@@ -151,7 +151,7 @@ class TargetExpressionListUi(private val project: Project) : JBPanel<TargetExpre
               override fun actionPerformed(e: ActionEvent?) {
                 stopCellEditing()
               }
-            }
+            },
           )
       }
       textField.setBorder(BorderFactory.createLineBorder(JBColor.BLACK))
@@ -166,14 +166,14 @@ class TargetExpressionListUi(private val project: Project) : JBPanel<TargetExpre
       return e.getClickCount() >= 2
     }
 
-    override fun getCellEditorValue(): String {
-        return textField?.getText() ?: ""
-      }
+    override fun getCellEditorValue(): String = textField?.getText() ?: ""
   }
 
-  private class TargetCompletionProvider(project: Project?) : TextFieldWithAutoCompletion.StringsCompletionProvider(
-    getTargets(project), null
-  ) {
+  private class TargetCompletionProvider(project: Project?) :
+    TextFieldWithAutoCompletion.StringsCompletionProvider(
+      getTargets(project),
+      null,
+    ) {
     companion object {
       private fun getTargets(project: Project): Collection<String> {
         val projectData: BlazeProjectData? =
@@ -185,20 +185,26 @@ class TargetExpressionListUi(private val project: Project) : JBPanel<TargetExpre
           return ImmutableList.of<String?>()
         }
         val importRoots: ImportRoots =
-          ImportRoots.builder(
-            WorkspaceRoot.fromImportSettings(importSettings), importSettings.getBuildSystem()
-          )
-            .add(projectViewSet)
+          ImportRoots
+            .builder(
+              WorkspaceRoot.fromImportSettings(importSettings),
+              importSettings.getBuildSystem(),
+            ).add(projectViewSet)
             .build()
 
         if (Blaze.getProjectType(project) === ProjectType.QUERY_SYNC) {
-          return projectData.targets().stream()
+          return projectData
+            .targets()
+            .stream()
             .filter(importRoots::importAsSource)
             .map(TargetPattern::toString)
             .collect(ImmutableList.toImmutableList<E?>())
         }
 
-        return projectData.getTargetMap().targets().stream()
+        return projectData
+          .getTargetMap()
+          .targets()
+          .stream()
           .filter(TargetIdeInfo::isPlainTarget)
           .map(TargetIdeInfo::getKey)
           .map(TargetKey::getLabel)

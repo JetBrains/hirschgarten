@@ -15,16 +15,16 @@
  */
 package org.jetbrains.bazel.run2.producers;
 
-import org.jetbrains.bazel.commons.command.BlazeCommandName;
-import com.google.idea.blaze.base.model.primitives.TargetPattern;
-import com.google.idea.blaze.base.model.primitives.WorkspacePath;
-import com.google.idea.blaze.base.model.primitives.WorkspaceRoot;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import java.io.File;
 import javax.annotation.Nullable;
+import org.jetbrains.bazel.commons.WorkspacePath;
+import org.jetbrains.bazel.commons.WorkspaceRoot;
+import org.jetbrains.bazel.commons.command.BlazeCommandName;
+import org.jetbrains.bazel.label.TargetPattern;
 
 /** Runs all tests in a selected directory recursively. */
 class AllInDirectoryRecursiveTestContextProvider implements TestContextProvider {

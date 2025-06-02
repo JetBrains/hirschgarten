@@ -35,9 +35,7 @@ interface BlazeCommandRunConfigurationHandler {
   /** @return A [BlazeCommandRunConfigurationRunner] for running the configuration.
    */
   @Throws(ExecutionException::class)
-  fun createRunner(
-    executor: Executor, environment: ExecutionEnvironment
-  ): BlazeCommandRunConfigurationRunner
+  fun createRunner(executor: Executor, environment: ExecutionEnvironment): BlazeCommandRunConfigurationRunner
 
   /**
    * Checks whether the handler settings are valid.

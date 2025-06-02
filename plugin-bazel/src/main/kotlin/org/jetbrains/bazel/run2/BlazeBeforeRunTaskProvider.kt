@@ -32,37 +32,24 @@ import javax.swing.Icon
 /**
  * Provides a before run task provider that immediately transfers control to [ ]
  */
-class BlazeBeforeRunTaskProvider
-  : BeforeRunTaskProvider<BlazeBeforeRunTaskProvider.Task>() {
-  class Task() : BeforeRunTask<Task>(ID) {
+class BlazeBeforeRunTaskProvider : BeforeRunTaskProvider<BlazeBeforeRunTaskProvider.Task>() {
+  class Task : BeforeRunTask<Task>(ID) {
     init {
       isEnabled = true
     }
   }
 
-  override fun getId(): Key<Task> {
-    return ID
-  }
+  override fun getId(): Key<Task> = ID
 
-  override fun getIcon(): Icon {
-    return BazelPluginIcons.bazel
-  }
+  override fun getIcon(): Icon = BazelPluginIcons.bazel
 
-  override fun getTaskIcon(task: Task): Icon {
-    return BazelPluginIcons.bazel
-  }
+  override fun getTaskIcon(task: Task): Icon = BazelPluginIcons.bazel
 
-  override fun getName(): String {
-    return "Bazel" + " before-run task"
-  }
+  override fun getName(): String = "Bazel" + " before-run task"
 
-  override fun getDescription(task: Task): String {
-    return "Bazel" + " before-run task"
-  }
+  override fun getDescription(task: Task): String = "Bazel" + " before-run task"
 
-  override fun isConfigurable(): Boolean {
-    return false
-  }
+  override fun isConfigurable(): Boolean = false
 
   override fun createTask(config: RunConfiguration): Task? {
     if (config is BlazeCommandRunConfiguration) {
@@ -71,9 +58,7 @@ class BlazeBeforeRunTaskProvider
     return null
   }
 
-  override fun configureTask(runConfiguration: RunConfiguration, task: Task): Boolean {
-    return false
-  }
+  override fun configureTask(runConfiguration: RunConfiguration, task: Task): Boolean = false
 
   override fun canExecuteTask(configuration: RunConfiguration, task: Task): Boolean {
     var configuration = configuration
@@ -87,7 +72,7 @@ class BlazeBeforeRunTaskProvider
     dataContext: DataContext,
     configuration: RunConfiguration,
     env: ExecutionEnvironment,
-    task: Task
+    task: Task,
   ): Boolean {
     if (!canExecuteTask(configuration, task)) {
       return false

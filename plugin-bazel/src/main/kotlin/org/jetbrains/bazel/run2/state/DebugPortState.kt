@@ -49,9 +49,7 @@ class DebugPortState(private val defaultPort: Int) : RunConfigurationState {
     }
   }
 
-  override fun getEditor(project: Project): RunConfigurationStateEditor {
-    return DebugPortState.Editor()
-  }
+  override fun getEditor(project: Project): RunConfigurationStateEditor = DebugPortState.Editor()
 
   private inner class Editor : RunConfigurationStateEditor {
     private val portField = PortField(defaultPort)
@@ -66,9 +64,7 @@ class DebugPortState(private val defaultPort: Int) : RunConfigurationState {
       state.port = portField.number
     }
 
-    override fun createComponent(): JComponent {
-      return FormBuilder.createFormBuilder().addLabeledComponent("&Port:", portField).getPanel()
-    }
+    override fun createComponent(): JComponent = FormBuilder.createFormBuilder().addLabeledComponent("&Port:", portField).getPanel()
 
     override fun setComponentEnabled(enabled: Boolean) {
       portField.setEnabled(enabled)

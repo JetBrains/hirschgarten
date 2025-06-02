@@ -23,11 +23,10 @@ import com.intellij.execution.configuration.EnvironmentVariablesData;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+import java.util.Map;
 import javax.swing.JComponent;
 import org.jdom.Element;
 import org.jetbrains.annotations.VisibleForTesting;
-
-import java.util.Map;
 
 /** State for user-defined environment variables. */
 public class EnvironmentVariablesState implements RunConfigurationState {
@@ -45,7 +44,7 @@ public class EnvironmentVariablesState implements RunConfigurationState {
 
   public ImmutableList<String> asBlazeTestEnvFlags() {
     ImmutableList.Builder<String> flags = ImmutableList.builder();
-    for (Map.Entry<String, String> env: data.getEnvs().entrySet()) {
+    for (Map.Entry<String, String> env : data.getEnvs().entrySet()) {
       flags.add(BlazeFlags.TEST_ENV, String.format("%s=%s", env.getKey(), env.getValue()));
     }
     return flags.build();

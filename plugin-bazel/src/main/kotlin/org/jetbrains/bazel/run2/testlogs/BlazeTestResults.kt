@@ -17,10 +17,11 @@ package org.jetbrains.bazel.run2.testlogs
 
 import com.google.common.collect.ImmutableMultimap
 import org.jetbrains.bazel.label.Label
-import java.util.function.Consumer
 
 /** Results from a 'blaze test' invocation.  */
-class BlazeTestResults private constructor(@JvmField val perTargetResults: ImmutableMultimap<Label?, BlazeTestResult?>?) {
+class BlazeTestResults private constructor(
+  @JvmField val perTargetResults: ImmutableMultimap<Label?, BlazeTestResult?>?,
+) {
   companion object {
     @JvmField
     val NO_RESULTS: BlazeTestResults = BlazeTestResults(ImmutableMultimap.of<Label?, BlazeTestResult?>())
@@ -30,7 +31,7 @@ class BlazeTestResults private constructor(@JvmField val perTargetResults: Immut
         return NO_RESULTS
       }
       val map = ImmutableMultimap.builder<Label, BlazeTestResult>()
-      results.forEach { result-> map.put(result.label, result) }
+      results.forEach { result -> map.put(result.label, result) }
       return BlazeTestResults(map.build())
     }
   }

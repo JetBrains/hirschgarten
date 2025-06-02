@@ -22,8 +22,6 @@ import com.google.idea.blaze.base.model.primitives.WorkspaceRoot;
 import com.google.idea.blaze.base.projectview.ProjectViewManager;
 import com.google.idea.blaze.base.projectview.ProjectViewSet;
 import com.google.idea.blaze.base.projectview.ProjectViewSet.ProjectViewFile;
-import org.jetbrains.bazel.run2.BlazeRunConfiguration;
-import com.google.idea.blaze.base.settings.Blaze;
 import com.intellij.execution.RunManager;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.icons.AllIcons;
@@ -69,6 +67,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.jetbrains.bazel.run2.BlazeRunConfiguration;
 
 /** UI for exporting run configurations. */
 public class ExportRunConfigurationDialog extends DialogWrapper {
@@ -91,9 +90,7 @@ public class ExportRunConfigurationDialog extends DialogWrapper {
     super(project, true);
     configurations =
         ImmutableList.copyOf(
-            RunManager.getInstance(project)
-                .getAllConfigurationsList()
-                .stream()
+            RunManager.getInstance(project).getAllConfigurationsList().stream()
                 .sorted(COMPARATOR)
                 .collect(Collectors.toList()));
     tableModel = new ExportRunConfigurationTableModel(configurations);

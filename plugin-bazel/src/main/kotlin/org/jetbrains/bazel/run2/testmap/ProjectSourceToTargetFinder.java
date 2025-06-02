@@ -28,7 +28,6 @@ import com.google.idea.blaze.base.model.BlazeProjectData;
 import com.google.idea.blaze.base.model.primitives.Kind;
 import com.google.idea.blaze.base.model.primitives.RuleType;
 import com.google.idea.blaze.base.qsync.QuerySyncProjectData;
-import org.jetbrains.bazel.run2.SourceToTargetFinder;
 import com.google.idea.blaze.base.settings.Blaze;
 import com.google.idea.blaze.base.settings.BlazeImportSettings.ProjectType;
 import com.google.idea.blaze.base.sync.SyncCache;
@@ -41,6 +40,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
+import org.jetbrains.bazel.run2.SourceToTargetFinder;
 
 /**
  * Used to locate tests from source files for things like right-clicks.
@@ -85,7 +85,7 @@ public class ProjectSourceToTargetFinder implements SourceToTargetFinder {
     if (targetMap == null) {
       return Futures.immediateFuture(ImmutableList.of());
     }
-      ImmutableSortedSet<TargetInfo> targets =
+    ImmutableSortedSet<TargetInfo> targets =
         targetMap.targetsForSourceFiles(sourceFiles).stream()
             .map(TargetIdeInfo::toTargetInfo)
             .filter(target -> ruleType.isEmpty() || target.getRuleType().equals(ruleType.get()))

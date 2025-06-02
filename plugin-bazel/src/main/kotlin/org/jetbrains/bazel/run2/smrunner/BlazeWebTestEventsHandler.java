@@ -21,7 +21,6 @@ import com.google.idea.blaze.base.model.primitives.Kind;
 import com.google.idea.blaze.base.model.primitives.Label;
 import com.google.idea.blaze.base.model.primitives.LanguageClass;
 import com.google.idea.blaze.base.model.primitives.RuleType;
-import org.jetbrains.bazel.run2.smrunner.BlazeXmlSchema.TestSuite;
 import com.intellij.execution.Location;
 import com.intellij.execution.testframework.sm.runner.SMTestLocator;
 import com.intellij.openapi.project.Project;
@@ -32,6 +31,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import org.jetbrains.bazel.run2.smrunner.BlazeXmlSchema.TestSuite;
 
 /**
  * Encodes everything directly into the URL, will be decoded and re-encoded for the appropriate

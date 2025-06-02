@@ -32,9 +32,7 @@ class BlazeCommandName private constructor(name: String) {
     this.name = name
   }
 
-  override fun toString(): String {
-    return name
-  }
+  override fun toString(): String = name
 
   override fun equals(o: Any?): Boolean {
     if (o !is BlazeCommandName) {
@@ -44,9 +42,7 @@ class BlazeCommandName private constructor(name: String) {
     return name == that.name
   }
 
-  override fun hashCode(): Int {
-    return name.hashCode()
-  }
+  override fun hashCode(): Int = name.hashCode()
 
   companion object {
     private val _knownCommands: MutableMap<String, BlazeCommandName> =
@@ -62,16 +58,12 @@ class BlazeCommandName private constructor(name: String) {
     val COVERAGE: BlazeCommandName = fromString("coverage")
     val MOD: BlazeCommandName = fromString("mod")
 
-    fun fromString(name: String): BlazeCommandName {
-      return _knownCommands.putIfAbsent(name, BlazeCommandName(name))!!
-    }
+    fun fromString(name: String): BlazeCommandName = _knownCommands.putIfAbsent(name, BlazeCommandName(name))!!
 
     /**
      * @return An unmodifiable view of the Blaze commands we know about (including those that the user
      * has specified, in addition to those we have hard-coded).
      */
-    fun knownCommands(): Collection<BlazeCommandName> {
-      return ImmutableList.copyOf(_knownCommands.values)
-    }
+    fun knownCommands(): Collection<BlazeCommandName> = ImmutableList.copyOf(_knownCommands.values)
   }
 }

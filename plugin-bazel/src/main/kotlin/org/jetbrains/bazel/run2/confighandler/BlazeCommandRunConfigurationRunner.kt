@@ -66,10 +66,11 @@ interface BlazeCommandRunConfigurationRunner {
       if (runProfile is WrappingRunConfiguration<*>) {
         runProfile = (runProfile as WrappingRunConfiguration<*>).getPeer()
       }
-      return if (runProfile is BlazeCommandRunConfiguration)
+      return if (runProfile is BlazeCommandRunConfiguration) {
         runProfile as BlazeCommandRunConfiguration
-      else
+      } else {
         null
+      }
     }
 
     fun getBlazeCommand(environment: ExecutionEnvironment): BlazeCommandName? {

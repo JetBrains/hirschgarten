@@ -26,7 +26,7 @@ interface BlazeCommandRunConfigurationHandlerProvider {
   /** The target state of a blaze run configuration.  */
   enum class TargetState {
     KNOWN,
-    PENDING
+    PENDING,
   }
 
   /** Whether this extension is applicable to the kind.  */
@@ -46,16 +46,14 @@ interface BlazeCommandRunConfigurationHandlerProvider {
      * Find a BlazeCommandRunConfigurationHandlerProvider applicable to the given kind. If no provider
      * is more relevant, [BlazeCommandGenericRunConfigurationHandlerProvider] is returned.
      */
-    fun findHandlerProvider(
-      state: TargetState, kind: TargetKind?
-    ): BlazeCommandRunConfigurationHandlerProvider {
+    fun findHandlerProvider(state: TargetState, kind: TargetKind?): BlazeCommandRunConfigurationHandlerProvider {
       for (handlerProvider in EP_NAME.extensions) {
         if (handlerProvider.canHandleKind(state, kind)) {
           return handlerProvider
         }
       }
       throw RuntimeException(
-        "No BlazeCommandRunConfigurationHandlerProvider found for Kind $kind"
+        "No BlazeCommandRunConfigurationHandlerProvider found for Kind $kind",
       )
     }
 
@@ -72,7 +70,7 @@ interface BlazeCommandRunConfigurationHandlerProvider {
     @JvmField
     val EP_NAME: ExtensionPointName<BlazeCommandRunConfigurationHandlerProvider> =
       ExtensionPointName.create(
-        "com.google.idea.blaze.BlazeCommandRunConfigurationHandlerProvider"
+        "com.google.idea.blaze.BlazeCommandRunConfigurationHandlerProvider",
       )
   }
 }

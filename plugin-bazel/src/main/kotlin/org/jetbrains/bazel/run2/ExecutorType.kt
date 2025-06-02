@@ -28,7 +28,8 @@ enum class ExecutorType {
   FAST_BUILD_DEBUG,
   COVERAGE,
   DEBUG_STARLARK,
-  UNKNOWN;
+  UNKNOWN,
+  ;
 
   val isDebugType: Boolean
     get() = this == DEBUG || this == FAST_BUILD_DEBUG
@@ -38,9 +39,7 @@ enum class ExecutorType {
 
   companion object {
     @JvmStatic
-    fun fromExecutor(executor: Executor): ExecutorType {
-      return fromExecutorId(executor.id)
-    }
+    fun fromExecutor(executor: Executor): ExecutorType = fromExecutorId(executor.id)
 
     @JvmStatic
     fun fromExecutorId(executorId: String): ExecutorType {
@@ -78,12 +77,13 @@ enum class ExecutorType {
       ImmutableSet.of<ExecutorType?>(RUN, COVERAGE)
 
     /** Executor types supported for targets supporting fast run/debug.  */
-    val FAST_DEBUG_SUPPORTED_TYPES: ImmutableSet<ExecutorType?> = ImmutableSet.of<ExecutorType?>(
-      RUN,
-      FAST_BUILD_RUN,
-      DEBUG,
-      FAST_BUILD_DEBUG,
-      COVERAGE
-    )
+    val FAST_DEBUG_SUPPORTED_TYPES: ImmutableSet<ExecutorType?> =
+      ImmutableSet.of<ExecutorType?>(
+        RUN,
+        FAST_BUILD_RUN,
+        DEBUG,
+        FAST_BUILD_DEBUG,
+        COVERAGE,
+      )
   }
 }

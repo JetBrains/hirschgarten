@@ -15,11 +15,9 @@
  */
 package org.jetbrains.bazel.run2.producers
 
-import com.google.common.collect.ImmutableList
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.util.ThrowableComputable
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNamedElement
@@ -28,8 +26,6 @@ import org.jetbrains.bazel.commons.command.BlazeCommandName
 import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.run2.BlazeCommandRunConfiguration
 import org.jetbrains.bazel.run2.state.BlazeCommandRunConfigurationCommonState
-import java.util.Optional
-import java.util.function.Function
 
 /** A context used to configure a blaze run configuration, possibly asynchronously.  */
 interface RunConfigurationContext {
@@ -71,7 +67,9 @@ interface RunConfigurationContext {
   companion object {
     @JvmStatic
     fun fromKnownTarget(
-      target: TargetPattern, command: BlazeCommandName?, sourceElement: PsiElement
+      target: TargetPattern,
+      command: BlazeCommandName?,
+      sourceElement: PsiElement,
     ): RunConfigurationContext {
       return object : RunConfigurationContext {
         override val sourceElement: PsiElement = sourceElement
@@ -80,7 +78,7 @@ interface RunConfigurationContext {
           config.setTarget(target)
           val handlerState =
             config.getHandlerStateIfType(
-              BlazeCommandRunConfigurationCommonState::class.java
+              BlazeCommandRunConfigurationCommonState::class.java,
             )
           if (handlerState == null) {
             return false
@@ -93,14 +91,14 @@ interface RunConfigurationContext {
         override fun matchesRunConfiguration(config: BlazeCommandRunConfiguration): Boolean {
           val handlerState =
             config.getHandlerStateIfType(
-              BlazeCommandRunConfigurationCommonState::class.java
+              BlazeCommandRunConfigurationCommonState::class.java,
             )
           if (handlerState == null) {
             return false
           }
-          return handlerState.commandState.command == command
-              && config.targets == listOf(target)
-              && handlerState.testFilterFlag == null
+          return handlerState.commandState.command == command &&
+            config.targets == listOf(target) &&
+            handlerState.testFilterFlag == null
         }
       }
     }

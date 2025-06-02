@@ -42,7 +42,5 @@ class BlazeGenericTestEventsHandler : BlazeTestEventsHandler {
     return null
   }
 
-  override fun createRerunFailedTestsAction(consoleView: ConsoleView?): AbstractRerunFailedTestsAction? {
-    return null
-  }
+  override fun createRerunFailedTestsAction(consoleView: ConsoleView?): AbstractRerunFailedTestsAction? = null
 }

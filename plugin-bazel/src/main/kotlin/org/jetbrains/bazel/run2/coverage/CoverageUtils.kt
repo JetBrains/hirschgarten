@@ -28,14 +28,11 @@ import java.io.File
 
 /** Helper methods for coverage integration.  */
 object CoverageUtils {
-  fun coverageEnabled(env: ExecutionEnvironment): Boolean {
-    return coverageEnabled(env.executor.id, env.runProfile)
-  }
+  fun coverageEnabled(env: ExecutionEnvironment): Boolean = coverageEnabled(env.executor.id, env.runProfile)
 
-  fun coverageEnabled(executorId: String, profile: RunProfile?): Boolean {
-    return ExecutorType.fromExecutorId(executorId) == ExecutorType.COVERAGE
-        && isApplicableTo(profile)
-  }
+  fun coverageEnabled(executorId: String, profile: RunProfile?): Boolean =
+    ExecutorType.fromExecutorId(executorId) == ExecutorType.COVERAGE &&
+      isApplicableTo(profile)
 
   fun isApplicableTo(runProfile: RunProfile?): Boolean {
     val config: BlazeCommandRunConfiguration? = toBlazeConfig(runProfile)
@@ -51,9 +48,7 @@ object CoverageUtils {
     return BlazeCommandName.TEST == command || BlazeCommandName.COVERAGE == command
   }
 
-  private fun toBlazeConfig(profile: RunProfile): BlazeCommandRunConfiguration? {
-    return BlazeCommandRunConfigurationRunner.getBlazeConfig(profile)
-  }
+  private fun toBlazeConfig(profile: RunProfile): BlazeCommandRunConfiguration? = BlazeCommandRunConfigurationRunner.getBlazeConfig(profile)
 
   val blazeFlags: ImmutableList<String?> = ImmutableList.of<String?>("--combined_report=lcov")
 

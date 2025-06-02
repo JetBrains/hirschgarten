@@ -24,7 +24,9 @@ interface VirtualFileSystemProvider {
 
   companion object {
     val instance: VirtualFileSystemProvider
-      get() = ApplicationManager.getApplication()
-        .getService(VirtualFileSystemProvider::class.java)
+      get() =
+        ApplicationManager
+          .getApplication()
+          .getService(VirtualFileSystemProvider::class.java)
   }
 }

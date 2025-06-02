@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.run2.smrunner
 
-import com.google.common.collect.ImmutableList
 import com.intellij.execution.Executor
 import com.intellij.execution.testframework.TestConsoleProperties
 import com.intellij.execution.testframework.actions.AbstractRerunFailedTestsAction
@@ -25,33 +24,31 @@ import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.execution.testframework.sm.runner.SMTestLocator
 import com.intellij.execution.ui.ConsoleView
 import org.jetbrains.bazel.run2.BlazeCommandRunConfiguration
-import java.util.Arrays
-import java.util.Objects
-import java.util.stream.Collectors
 
 /** Integrates blaze test results with the SM-runner test UI.  */
 class BlazeTestConsoleProperties(
   private val runConfiguration: BlazeCommandRunConfiguration,
   executor: Executor,
-  private val testUiSession: BlazeTestUiSession
-) : SMTRunnerConsoleProperties(runConfiguration, SmRunnerUtils.BLAZE_FRAMEWORK, executor), SMCustomMessagesParsing {
-  override fun createTestEventsConverter(
-    framework: String, consoleProperties: TestConsoleProperties
-  ): OutputToGeneralTestEventsConverter {
-    return BlazeXmlToTestEventsConverter(
-      framework, consoleProperties, testUiSession.getTestResultFinderStrategy()
+  private val testUiSession: BlazeTestUiSession,
+) : SMTRunnerConsoleProperties(runConfiguration, SmRunnerUtils.BLAZE_FRAMEWORK, executor),
+  SMCustomMessagesParsing {
+  override fun createTestEventsConverter(framework: String, consoleProperties: TestConsoleProperties): OutputToGeneralTestEventsConverter =
+    BlazeXmlToTestEventsConverter(
+      framework,
+      consoleProperties,
+      testUiSession.getTestResultFinderStrategy(),
     )
-  }
 
-  override fun getTestLocator(): SMTestLocator? {
-    return CompositeSMTestLocator(
+  override fun getTestLocator(): SMTestLocator? =
+    CompositeSMTestLocator(
       BlazeTestEventsHandler.EP_NAME.extensionList
-          .mapNotNull(BlazeTestEventsHandler::testLocator))
-  }
+        .mapNotNull(BlazeTestEventsHandler::testLocator),
+    )
 
-  override fun createRerunFailedTestsAction(consoleView: ConsoleView): AbstractRerunFailedTestsAction? {
-    return BlazeTestEventsHandler.getHandlerForTargets(
-        runConfiguration.project, runConfiguration.targets
+  override fun createRerunFailedTestsAction(consoleView: ConsoleView): AbstractRerunFailedTestsAction? =
+    BlazeTestEventsHandler
+      .getHandlerForTargets(
+        runConfiguration.project,
+        runConfiguration.targets,
       )?.createRerunFailedTestsAction(consoleView)
-  }
 }

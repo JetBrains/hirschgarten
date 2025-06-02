@@ -22,32 +22,27 @@ import com.intellij.execution.Location
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.AbstractTestProxy
-import com.intellij.openapi.module.Module
-import com.intellij.execution.testframework.TestFrameworkRunningModel
 import com.intellij.execution.testframework.actions.AbstractRerunFailedTestsAction
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComponentContainer
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.bazel.commons.command.BlazeCommandName
 import org.jetbrains.bazel.run2.BlazeCommandRunConfiguration
 import org.jetbrains.bazel.run2.state.BlazeCommandRunConfigurationCommonState
-import java.util.Objects
-import java.util.stream.Collectors
 import kotlin.collections.ArrayList
 import kotlin.collections.MutableList
 import kotlin.collections.filter
 import kotlin.collections.indices
-import kotlin.collections.map
 import kotlin.sequences.filter
 import kotlin.text.equals
 import kotlin.text.filter
-import kotlin.text.map
 import kotlin.text.startsWith
 
 /** Re-run failed tests.  */
 class BlazeRerunFailedTestsAction internal constructor(
   private val eventsHandler: BlazeTestEventsHandler,
-  componentContainer: ComponentContainer
+  componentContainer: ComponentContainer,
 ) : AbstractRerunFailedTestsAction(componentContainer) {
   override fun getRunProfile(environment: ExecutionEnvironment): AbstractRerunFailedTestsAction.MyRunProfile? {
     val model = getModel() ?: return null
@@ -58,24 +53,24 @@ class BlazeRerunFailedTestsAction internal constructor(
 
   internal inner class BlazeRerunTestRunProfile(private val configuration: BlazeCommandRunConfiguration) :
     AbstractRerunFailedTestsAction.MyRunProfile(configuration) {
-
     val modules: Array<Module> = Module.EMPTY_ARRAY
 
     @Throws(ExecutionException::class)
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? {
       val handlerState: BlazeCommandRunConfigurationCommonState? =
         configuration.getHandlerStateIfType<BlazeCommandRunConfigurationCommonState>(
-          BlazeCommandRunConfigurationCommonState::class.java
+          BlazeCommandRunConfigurationCommonState::class.java,
         )
-      if (handlerState == null
-        || BlazeCommandName.TEST != handlerState.commandState.command
+      if (handlerState == null ||
+        BlazeCommandName.TEST != handlerState.commandState.command
       ) {
         return null
       }
       val project = getProject()
       val locations =
         getFailedTests(project)
-          .filter { it.isLeaf }.mapNotNull { toLocation(project, it) }
+          .filter { it.isLeaf }
+          .mapNotNull { toLocation(project, it) }
       val testFilter = eventsHandler.getTestFilter(getProject(), locations) ?: return null
       val blazeFlags =
         setTestFilter(handlerState.blazeFlagsState.rawFlags, testFilter)
@@ -83,9 +78,8 @@ class BlazeRerunFailedTestsAction internal constructor(
       return configuration.getState(executor, environment)
     }
 
-    private fun toLocation(project: Project, test: AbstractTestProxy): Location<*>? {
-      return test.getLocation(project, GlobalSearchScope.allScope(project))
-    }
+    private fun toLocation(project: Project, test: AbstractTestProxy): Location<*>? =
+      test.getLocation(project, GlobalSearchScope.allScope(project))
 
     /** Replaces existing test_filter flag, or appends if none exists.  */
     private fun setTestFilter(flags: List<String>, testFilter: String): List<String> {

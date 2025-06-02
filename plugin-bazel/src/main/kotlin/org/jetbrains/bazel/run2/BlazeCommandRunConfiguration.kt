@@ -21,7 +21,6 @@ import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Iterables
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import org.jetbrains.bazel.commons.command.BlazeCommandName
 import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
@@ -47,6 +46,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.UIUtil
 import org.jdom.Element
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.commons.command.BlazeCommandName
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.TargetPattern
@@ -61,16 +61,19 @@ import org.jetbrains.bazel.run2.targetfinder.TargetFinder
 import org.jetbrains.bazel.run2.ui.TargetExpressionListUi
 import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.sync.fromRuleName
-import java.awt.event.ItemListener
 import javax.swing.Box
 import javax.swing.JComponent
 import kotlin.concurrent.Volatile
 
 /** A run configuration which executes Blaze commands.  */
-class BlazeCommandRunConfiguration
-  (project: Project, factory: ConfigurationFactory, name: String?) :
-  LocatableConfigurationBase<LocatableRunConfigurationOptions>(project, factory, name), BlazeRunConfiguration,
-  ModuleRunProfile, RunConfigurationWithSuppressedDefaultDebugAction {
+class BlazeCommandRunConfiguration(
+  project: Project,
+  factory: ConfigurationFactory,
+  name: String?,
+) : LocatableConfigurationBase<LocatableRunConfigurationOptions>(project, factory, name),
+  BlazeRunConfiguration,
+  ModuleRunProfile,
+  RunConfigurationWithSuppressedDefaultDebugAction {
   /** The blaze-specific parts of the last serialized state of the configuration.  */
   private var blazeElementState = Element(BLAZE_SETTINGS_TAG)
 
@@ -112,9 +115,7 @@ class BlazeCommandRunConfiguration
     return false
   }
 
-  fun getPendingContext(): PendingRunConfigurationContext? {
-    return pendingContext
-  }
+  fun getPendingContext(): PendingRunConfigurationContext? = pendingContext
 
   @Volatile
   private var targetPatterns: List<String> = listOf()
@@ -139,7 +140,7 @@ class BlazeCommandRunConfiguration
     handlerProvider =
       BlazeCommandRunConfigurationHandlerProvider.findHandlerProvider(
         BlazeCommandRunConfigurationHandlerProvider.TargetState.KNOWN,
-        null
+        null,
       )
     handler = handlerProvider.createHandler(this)
     try {
@@ -151,9 +152,7 @@ class BlazeCommandRunConfiguration
 
   /** @return The configuration's [BlazeCommandRunConfigurationHandler].
    */
-  fun getHandler(): BlazeCommandRunConfigurationHandler {
-    return handler
-  }
+  fun getHandler(): BlazeCommandRunConfigurationHandler = handler
 
   /**
    * Gets the configuration's handler's [RunConfigurationState] if it is an instance of the
@@ -203,20 +202,21 @@ class BlazeCommandRunConfiguration
   private fun updateHandler() {
     val handlerProvider: BlazeCommandRunConfigurationHandlerProvider =
       BlazeCommandRunConfigurationHandlerProvider.findHandlerProvider(
-        this.targetState, this.targetKind
+        this.targetState,
+        this.targetKind,
       )
     updateHandlerIfDifferentProvider(handlerProvider)
   }
 
   private val targetState: BlazeCommandRunConfigurationHandlerProvider.TargetState
-    get() = if (targetPatterns.isEmpty() && pendingContext != null)
-      BlazeCommandRunConfigurationHandlerProvider.TargetState.PENDING
-    else
-      BlazeCommandRunConfigurationHandlerProvider.TargetState.KNOWN
+    get() =
+      if (targetPatterns.isEmpty() && pendingContext != null) {
+        BlazeCommandRunConfigurationHandlerProvider.TargetState.PENDING
+      } else {
+        BlazeCommandRunConfigurationHandlerProvider.TargetState.KNOWN
+      }
 
-  private fun updateHandlerIfDifferentProvider(
-    newProvider: BlazeCommandRunConfigurationHandlerProvider?
-  ) {
+  private fun updateHandlerIfDifferentProvider(newProvider: BlazeCommandRunConfigurationHandlerProvider?) {
     if (handlerProvider === newProvider || newProvider == null) {
       return
     }
@@ -267,7 +267,7 @@ class BlazeCommandRunConfiguration
           updateTargetKindFromSingleTarget(FuturesUtil.getIgnoringErrors(future))
           asyncCallback?.run()
         },
-        MoreExecutors.directExecutor()
+        MoreExecutors.directExecutor(),
       )
     }
   }
@@ -316,20 +316,23 @@ class BlazeCommandRunConfiguration
       // With query sync we don't need a sync to run a configuration
       if (Blaze.getProjectType(getProject()) !== ProjectType.QUERY_SYNC) {
         throw RuntimeConfigurationError(
-          "Configuration cannot be run until project has been synced."
+          "Configuration cannot be run until project has been synced.",
         )
       }
     }
     val hasBlazeBeforeRunTask =
-      RunManagerEx.getInstanceEx(project).getBeforeRunTasks(this).stream()
+      RunManagerEx
+        .getInstanceEx(project)
+        .getBeforeRunTasks(this)
+        .stream()
         .anyMatch { task: BeforeRunTask<*>? -> task!!.getProviderId() == BlazeBeforeRunTaskProvider.ID && task.isEnabled() }
     if (!hasBlazeBeforeRunTask) {
       throw RuntimeConfigurationError(
         java.lang.String.format(
-          "Invalid run configuration: the %s before run task is missing. Please re-run sync "
-              + "to add it back",
-          "Bazel"
-        )
+          "Invalid run configuration: the %s before run task is missing. Please re-run sync " +
+            "to add it back",
+          "Bazel",
+        ),
       )
     }
     handler.checkConfiguration()
@@ -342,8 +345,9 @@ class BlazeCommandRunConfiguration
       if (handler.commandName !== BlazeCommandName.INFO) {
         throw RuntimeConfigurationError(
           java.lang.String.format(
-            "You must specify a %s target expression.", "Bazel"
-          )
+            "You must specify a %s target expression.",
+            "Bazel",
+          ),
         )
       }
     }
@@ -352,23 +356,25 @@ class BlazeCommandRunConfiguration
         if (Strings.isNullOrEmpty(pattern)) {
           throw RuntimeConfigurationError(
             java.lang.String.format(
-              "You must specify a %s target expression.", "Bazel"
-            )
+              "You must specify a %s target expression.",
+              "Bazel",
+            ),
           )
         }
       }
       if (!pattern.startsWith("//") && !pattern.startsWith("@")) {
         throw RuntimeConfigurationError(
-          "You must specify the full target expression, starting with // or @"
+          "You must specify the full target expression, starting with // or @",
         )
       }
 
-      val error: String? = try {
-        TargetPattern.parse(pattern)
-        null
-      } catch (e: Exception) {
-        e.message
-      }
+      val error: String? =
+        try {
+          TargetPattern.parse(pattern)
+          null
+        } catch (e: Exception) {
+          e.message
+        }
       if (error != null) {
         throw RuntimeConfigurationError(error)
       }
@@ -474,27 +480,23 @@ class BlazeCommandRunConfiguration
     if (runner != null) {
       environment.putCopyableUserData<BlazeCommandRunConfigurationRunner?>(
         BlazeCommandRunConfigurationRunner.RUNNER_KEY,
-        runner
+        runner,
       )
       return runner.getRunProfileState(executor, environment)
     }
     return null
   }
 
-  override fun suggestedName(): String? {
-    return handler.suggestedName(this)
-  }
+  override fun suggestedName(): String? = handler.suggestedName(this)
 
-  override fun getConfigurationEditor(): SettingsEditor<out BlazeCommandRunConfiguration?> {
-    return BlazeCommandRunConfigurationSettingsEditor(this)
-  }
+  override fun getConfigurationEditor(): SettingsEditor<out BlazeCommandRunConfiguration?> =
+    BlazeCommandRunConfigurationSettingsEditor(this)
 
-  override fun getModules(): Array<Module?> {
-    return arrayOfNulls<Module>(0)
-  }
+  override fun getModules(): Array<Module?> = arrayOfNulls<Module>(0)
 
   internal class BlazeCommandRunConfigurationSettingsEditor
-    (config: BlazeCommandRunConfiguration) : SettingsEditor<BlazeCommandRunConfiguration>() {
+  (config: BlazeCommandRunConfiguration) :
+    SettingsEditor<BlazeCommandRunConfiguration>() {
     val project = config.project
     private lateinit var handlerProvider: BlazeCommandRunConfigurationHandlerProvider
     private lateinit var handler: BlazeCommandRunConfigurationHandler
@@ -506,14 +508,17 @@ class BlazeCommandRunConfiguration
     private val editor: Box
     private val keepInSyncCheckBox: JBCheckBox = JBCheckBox("Keep in sync with source XML")
     private val targetExpressionLabel: JBLabel = JBLabel(UIUtil.ComponentStyle.LARGE)
-    private val outputFileUi: ConsoleOutputFileSettingsUi<BlazeCommandRunConfiguration> = ConsoleOutputFileSettingsUi<BlazeCommandRunConfiguration>()
+    private val outputFileUi: ConsoleOutputFileSettingsUi<BlazeCommandRunConfiguration> =
+      ConsoleOutputFileSettingsUi<BlazeCommandRunConfiguration>()
     private val targetsUi: TargetExpressionListUi = TargetExpressionListUi(project)
 
     init {
       editorWithoutSyncCheckBox = UiUtil.createBox(targetExpressionLabel, targetsUi)
       editor =
         UiUtil.createBox(
-          editorWithoutSyncCheckBox, outputFileUi.getComponent(), keepInSyncCheckBox
+          editorWithoutSyncCheckBox,
+          outputFileUi.getComponent(),
+          keepInSyncCheckBox,
         )
       updateEditor(config)
       updateHandlerEditor(config)
@@ -524,8 +529,9 @@ class BlazeCommandRunConfiguration
       targetExpressionLabel.setText(
         String.format(
           "Target expression (%s handled by %s):",
-          config.targetKindName, config.handler.handlerName
-        )
+          config.targetKindName,
+          config.handler.handlerName,
+        ),
       )
       keepInSyncCheckBox.isVisible = config.keepInSync != null
       if (config.keepInSync != null) {
@@ -564,9 +570,7 @@ class BlazeCommandRunConfiguration
       editorWithoutSyncCheckBox.add(handlerStateComponent)
     }
 
-    override fun createEditor(): JComponent {
-      return editor
-    }
+    override fun createEditor(): JComponent = editor
 
     override fun resetEditorFrom(config: BlazeCommandRunConfiguration) {
       elementState = config.blazeElementState.clone()
@@ -622,21 +626,22 @@ class BlazeCommandRunConfiguration
      * This is here for backwards compatibility deserializing older-style run configurations
      * without the top-level BLAZE_SETTINGS_TAG element.
      */
-    private val COMMON_SETTINGS: ImmutableSet<String?> = ImmutableSet.of<String?>(
-      "name",
-      "nameIsGenerated",
-      "default",
-      "temporary",
-      "method",
-      "type",
-      "factoryName",
-      "selected",
-      "option",
-      "folderName",
-      "editBeforeRun",
-      "activateToolWindowBeforeRun",
-      "tempConfiguration"
-    )
+    private val COMMON_SETTINGS: ImmutableSet<String?> =
+      ImmutableSet.of<String?>(
+        "name",
+        "nameIsGenerated",
+        "default",
+        "temporary",
+        "method",
+        "type",
+        "factoryName",
+        "selected",
+        "option",
+        "folderName",
+        "editBeforeRun",
+        "activateToolWindowBeforeRun",
+        "tempConfiguration",
+      )
 
     /**
      * All blaze-specific settings are serialized under this tag, to distinguish them from common
