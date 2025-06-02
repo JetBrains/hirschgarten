@@ -7,9 +7,8 @@
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.configuration.JavaSourceTypeIconProvider"/>
         <psiElementConfigurationLocator implementation="org.jetbrains.bazel.java.junit.JavaPsiElementConfigurationLocator"/>
 
-      <unresolvedImportChecker implementation ="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker"/>
       <bazelExperimentalSettingsProvider implementation="org.jetbrains.bazel.ui.settings.BazelJVMExperimentalSettingsProvider"/>
-        <unresolvedImportChecker implementation ="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker"/>
+      <unresolvedImportChecker implementation ="org.jetbrains.bazel.java.ui.notifications.JavaUnresolvedImportChecker"/>
       <bazelCoverageClassNodeDecoratorPsiElementClassifier implementation="org.jetbrains.bazel.java.coverage.JavaBazelCoverageClassNodeDecoratorPsiElementClassifier"/>
     </extensions>
 

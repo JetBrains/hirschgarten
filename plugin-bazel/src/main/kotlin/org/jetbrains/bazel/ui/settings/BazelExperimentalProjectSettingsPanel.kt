@@ -46,13 +46,6 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
   companion object {
     const val ID = "bazel.experimental.project.settings"
     const val DISPLAY_NAME_KEY = "project.settings.experimental.settings"
-
-    fun keys() =
-      listOf(
-        "project.settings.plugin.enable.local.jvm.actions.checkbox.text",
-        "project.settings.plugin.hotswap.enabled.checkbox.text",
-        "project.settings.plugin.use.intellij.test.runner.checkbox.text",
-      )
   }
 }
 
