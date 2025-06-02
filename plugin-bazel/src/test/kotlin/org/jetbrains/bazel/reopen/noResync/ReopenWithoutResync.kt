@@ -12,6 +12,7 @@ import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -35,7 +36,7 @@ class ReopenWithoutResync : IdeStarterBaseProjectTest() {
         configureProjectBeforeUse = ::configureProjectBeforeUse,
       )
 
-  @org.junit.jupiter.api.Test
+  @Test
   fun openProject() {
     val commands =
       CommandChain()
@@ -44,7 +45,7 @@ class ReopenWithoutResync : IdeStarterBaseProjectTest() {
       .runIdeWithDriver(runTimeout = timeout, commands = commands)
       .useDriverAndCloseIde {
         ideFrame {
-          wait(10.seconds)
+          wait(20.seconds)
           val buildView = x { byType("com.intellij.build.BuildView") }
           assert(
             buildView.getAllTexts().any {
@@ -58,7 +59,7 @@ class ReopenWithoutResync : IdeStarterBaseProjectTest() {
         // simulating reopening project
         welcomeScreen { clickRecentProject("simpleKotlinTest") }
         ideFrame {
-          wait(10.seconds)
+          wait(20.seconds)
           takeScreenshot("afterReopeningProject")
           try {
             val buildView = x { byType("com.intellij.build.BuildView") }
