@@ -18,7 +18,7 @@ import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
 import org.jetbrains.bazel.ui.widgets.fileTargets.updateBazelFileTargetsWidget
 import org.jetbrains.bazel.ui.widgets.tool.window.all.targets.registerBazelToolWindow
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
-import org.jetbrains.bazel.utils.RunConfigurationProducersDisabler
+import org.jetbrains.bazel.utils.configureRunConfigurationIgnoreProducers
 
 private val log = logger<BazelStartupActivity>()
 
@@ -59,8 +59,8 @@ private suspend fun executeOnEveryProjectStartup(project: Project) {
   log.debug("Executing Bazel startup activities for every opening")
   registerBazelToolWindow(project)
   updateTargetToolwindow(project)
-  project.updateBazelFileTargetsWidget()
-  RunConfigurationProducersDisabler(project)
+  updateBazelFileTargetsWidget(project)
+  configureRunConfigurationIgnoreProducers(project)
   project.serviceAsync<BazelWorkspace>().initialize()
 }
 
