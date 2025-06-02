@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.sync
 
-
 import com.google.common.collect.Maps
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
@@ -42,7 +41,6 @@ class SyncCache(private val project: Project) {
     cache.put(key, newValue)
     return newValue
   }
-
 
   @Synchronized
   fun clear() {
