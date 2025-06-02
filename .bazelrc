@@ -2,7 +2,7 @@ try-import %workspace%/.engflow.bazelrc
 try-import %workspace%/.cache.bazelrc
 try-import %workspace%/.user.bazelrc
 
-build --define=ij_product=intellij-2025.2
+build --define=ij_product=intellij-2025.1
 build --java_language_version=17 --java_runtime_version=17
 build --tool_java_language_version=17 --tool_java_runtime_version=17
 

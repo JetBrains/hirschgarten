@@ -92,6 +92,7 @@ def extract_python_info(target, ctx, **kwargs):
     python_target_info = create_struct(
         interpreter = final_interpreter,
         version = getattr(provider, "python_version", None),
+        imports = getattr(ctx.rule.attr, "imports", []),
     )
 
     return dict(python_target_info = python_target_info), None

@@ -26,7 +26,13 @@ public data class KotlinBuildTarget(
   var jvmBuildTarget: JvmBuildTarget? = null,
 ) : BuildTargetData
 
-data class PythonBuildTarget(val version: String?, val interpreter: Path?) : BuildTargetData
+data class PythonBuildTarget(
+  val version: String?,
+  val interpreter: Path?,
+  // imports is the attribute in bazel python rules
+  // which specify a list of runfiles relative paths which will be included in PYTHONPATH
+  val imports: List<String>,
+) : BuildTargetData
 
 data class ScalaBuildTarget(
   val scalaVersion: String,
