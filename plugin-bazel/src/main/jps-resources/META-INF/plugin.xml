@@ -107,8 +107,7 @@
   <extensions defaultExtensionNs="org.jetbrains.bazel">
     <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook"/>
 
-    <!-- Must be last because of DirectoriesSyncHook#removeExcludedVcsMappings -->
-    <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
+    <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" id="DirectoriesSyncHook"/>
     <projectSyncHook implementation="org.jetbrains.bazel.languages.starlark.repomapping.BazelRepoMappingSyncHook"
                      id="BazelRepoMappingSyncHook"/>
     <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
@@ -119,6 +118,7 @@
     <projectSyncHook implementation="org.jetbrains.bazel.target.sync.TargetUtilsSyncHook" id="TargetUtilsSyncHook"/>
 
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook"/>
+    <projectPostSyncHook implementation="org.jetbrains.bazel.flow.sync.RemoveExcludedVcsMappingsSyncHook"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.sync.SyncCache$ClearSyncCache"/>
 
 
@@ -226,7 +226,7 @@
     <workspaceModel.fileIndexContributor
       implementation="org.jetbrains.bazel.workspace.CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor"/>
     <workspaceModel.fileIndexContributor
-      implementation="org.jetbrains.bazel.workspace.PackageMarkerEntityWorkspaceFileIndexContributor"/>
+      implementation="org.jetbrains.bazel.workspace.packageMarker.PackageMarkerEntityWorkspaceFileIndexContributor"/>
 
     <postStartupActivity
       implementation="org.jetbrains.bazel.startup.BazelStartupActivity"/>
@@ -551,6 +551,8 @@
 
   <applicationListeners>
     <listener class="org.jetbrains.bazel.workspace.AssignFileToModuleListener"
+              topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+    <listener class="org.jetbrains.bazel.workspace.packageMarker.PackageMarkerEntityListener"
               topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
   </applicationListeners>
 </idea-plugin>
