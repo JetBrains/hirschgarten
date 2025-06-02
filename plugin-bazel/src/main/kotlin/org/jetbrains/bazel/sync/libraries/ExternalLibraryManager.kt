@@ -48,11 +48,9 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
           if (duringSync || libraries.isEmpty()) return
           val deletedFiles =
             events
-              .stream()
-              .filter { it is VFileDeleteEvent }
+              .asSequence()
+              .filterIsInstance<VFileDeleteEvent>()
               .map { it.file }
-              .toList()
-              .filterNotNull()
               .toSet()
           if (deletedFiles.isNotEmpty()) {
             libraries.values.forEach { it.removeInvalidFiles(deletedFiles) }
@@ -81,6 +79,7 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
     )
   }
 
+  @Synchronized
   fun getLibrary(providerClass: Class<out BazelExternalLibraryProvider>): BazelExternalSyntheticLibrary? =
     if (duringSync) null else libraries[providerClass]
 

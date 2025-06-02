@@ -15,16 +15,13 @@
  */
 package org.jetbrains.bazel.sync.libraries
 
-import com.google.common.collect.ImmutableSet.toImmutableSet
-import com.google.common.collect.Sets
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.roots.SyntheticLibrary
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.utils.toVirtualFile
 import java.nio.file.Path
-import java.util.Objects
+import java.util.concurrent.ConcurrentHashMap
 import javax.swing.Icon
 
 /**
@@ -34,34 +31,16 @@ import javax.swing.Icon
 class BazelExternalSyntheticLibrary(private val presentableText: String, files: List<Path>) :
   SyntheticLibrary(),
   ItemPresentation {
-  private val files: Set<Path> = files.toSet()
   private val validFiles: MutableSet<VirtualFile> =
-    Sets.newConcurrentHashSet(files.mapNotNull { it.toVirtualFile() })
+    ConcurrentHashMap.newKeySet<VirtualFile>().apply { addAll(files.mapNotNull { it.toVirtualFile() }) }
 
   override fun getPresentableText(): String = presentableText
 
   fun removeInvalidFiles(deletedFiles: Set<VirtualFile>) {
-    if (deletedFiles.stream().anyMatch(VirtualFile::isDirectory)) {
+    if (deletedFiles.any { it.isDirectory }) {
       validFiles.removeIf { f -> !f.isValid }
     } else {
       validFiles.removeAll(deletedFiles)
-    }
-  }
-
-  private fun restoreMissingFiles() {
-    if (validFiles.size < files.size) {
-      Sets
-        .difference(
-          files,
-          validFiles
-            .stream()
-            .filter(VirtualFile::isValid)
-            .map(VfsUtil::virtualToIoFile)
-            .collect(toImmutableSet()),
-        ).stream()
-        .map { file -> file.toVirtualFile() }
-        .filter(Objects::nonNull)
-        .forEach { it?.also { validFiles.add(it) } }
     }
   }
 
