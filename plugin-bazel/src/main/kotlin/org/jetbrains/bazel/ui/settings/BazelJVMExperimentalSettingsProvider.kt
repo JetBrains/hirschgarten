@@ -13,6 +13,13 @@ import javax.swing.JComponent
 
 class BazelJVMExperimentalSettingsProvider : BazelSettingsProvider {
   override fun createConfigurable(project: Project): UnnamedConfigurable = BazelJVMExperimentalConfigurable(project)
+
+  override fun searchIndexKeys() =
+    listOf(
+      "project.settings.plugin.enable.local.jvm.actions.checkbox.text",
+      "project.settings.plugin.hotswap.enabled.checkbox.text",
+      "project.settings.plugin.use.intellij.test.runner.checkbox.text",
+    )
 }
 
 class BazelJVMExperimentalConfigurable(private val project: Project) : UnnamedConfigurable {

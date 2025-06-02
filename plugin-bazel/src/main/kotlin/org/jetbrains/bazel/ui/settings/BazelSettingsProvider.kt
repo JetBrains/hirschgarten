@@ -6,10 +6,14 @@ import com.intellij.openapi.project.Project
 
 interface BazelSettingsProvider {
   fun createConfigurable(project: Project): UnnamedConfigurable
+
+  fun searchIndexKeys(): List<String>
 }
 
 object BazelExperimentalSettingsProvider {
   val ep = ExtensionPointName.create<BazelSettingsProvider>("org.jetbrains.bazel.bazelExperimentalSettingsProvider")
+
+  fun searchIndexKeys(): List<String> = ep.extensionList.flatMap { it.searchIndexKeys() }
 }
 
 object BazelGeneralSettingsProvider {
