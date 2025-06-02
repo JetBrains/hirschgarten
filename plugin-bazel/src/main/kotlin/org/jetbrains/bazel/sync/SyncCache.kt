@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.sync
 
-import com.google.common.collect.Maps
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 
@@ -27,7 +26,7 @@ class SyncCache(private val project: Project) {
     fun compute(project: Project): T & Any
   }
 
-  private var cache: MutableMap<Any, Any> = Maps.newHashMap()
+  private var cache: MutableMap<Any, Any> = HashMap()
 
   /** Computes a value derived from the sync project data and caches it until the next sync.  */
   @Suppress("UNCHECKED_CAST")
@@ -43,7 +42,7 @@ class SyncCache(private val project: Project) {
   fun clear() {
     // assign a new map instead of clearing.
     // this should be faster than clearing the map.
-    cache = Maps.newHashMap()
+    cache = HashMap()
   }
 
   internal class ClearSyncCache : ProjectPostSyncHook {
