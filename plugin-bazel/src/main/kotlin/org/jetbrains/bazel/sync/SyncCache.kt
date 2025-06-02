@@ -33,12 +33,9 @@ class SyncCache(private val project: Project) {
   @Suppress("UNCHECKED_CAST")
   @Synchronized
   fun <T> get(key: Any, computable: SyncCacheComputable<T>): T? {
-    val value = cache[key]
-    if (value != null) {
-      return value as T?
-    }
+    cache[key]?.also { return it as T? }
     val newValue = computable.compute(project)
-    cache.put(key, newValue)
+    cache[key] = newValue
     return newValue
   }
 
