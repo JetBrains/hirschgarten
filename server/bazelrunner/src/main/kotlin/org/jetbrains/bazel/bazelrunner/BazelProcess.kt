@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.bazelrunner
 
-import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.bazelrunner.outputs.AsyncOutputProcessor
 import org.jetbrains.bazel.bazelrunner.outputs.OutputProcessor
 import org.jetbrains.bazel.bazelrunner.outputs.SyncOutputProcessor
@@ -8,6 +7,7 @@ import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.Format
 import org.jetbrains.bazel.commons.Stopwatch
 import org.jetbrains.bazel.logger.BspClientLogger
+import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
 
@@ -49,6 +49,6 @@ class BazelProcess internal constructor(
   }
 
   companion object {
-    private val LOGGER = LogManager.getLogger(BazelProcess::class.java)
+    private val LOGGER = LoggerFactory.getLogger(BazelProcess::class.java)
   }
 }

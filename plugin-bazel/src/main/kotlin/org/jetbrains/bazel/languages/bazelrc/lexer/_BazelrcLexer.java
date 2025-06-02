@@ -8,7 +8,7 @@ import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes;
 
-@SuppressWarnings("UnnecessaryUnicodeEscape")
+@SuppressWarnings("ALL")
 
 class _BazelrcLexer implements FlexLexer {
 

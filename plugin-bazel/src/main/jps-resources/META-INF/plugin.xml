@@ -23,8 +23,10 @@
   ]]>
   </description>
 
-  <depends>com.intellij.modules.lang</depends>
-  <depends>com.intellij.modules.platform</depends>
+  <dependencies>
+    <plugin id="com.intellij.modules.lang"/>
+    <module name="intellij.platform.searchEverywhere"/>
+  </dependencies>
 
   <depends optional="true" config-file="withCodeWithMe.xml">com.jetbrains.codeWithMe</depends>
   <depends optional="true" config-file="withCoverage.xml">com.intellij.modules.coverage</depends>
@@ -121,8 +123,10 @@
 
 
     <projectStructureProvider
-      implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
-    <projectStructureProvider implementation="org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStructureProvider"/>
+      implementation="org.jetbrains.bazel.sync.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"
+      order="after TargetUtilsProjectStructureProvider"/>
+    <projectStructureProvider implementation="org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStructureProvider"
+                              id="TargetUtilsProjectStructureProvider"/>
 
     <runHandlerProvider implementation="org.jetbrains.bazel.jvm.run.JvmRunHandler$JvmRunHandlerProvider"
                         id="JvmRunHandlerProvider"/>
@@ -193,6 +197,9 @@
     <registryKey defaultValue="true"
                  description="Add the whole directory to IntelliJ project model instead of individual files when it's possible"
                  key="bazel.merge.source.roots"/>
+    <registryKey defaultValue="true"
+                 description="Check and warn about shared sources in the project by showing the &quot;Shared sources detected&quot; notification"
+                 key="bazel.check.shared.sources"/>
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker"/>
 
@@ -479,6 +486,11 @@
       provider="org.jetbrains.bazel.ui.settings.BazelApplicationSettingsConfigurableProvider"
     />
 
+    <obsoleteStorage file="$WORKSPACE_FILE$" isProjectLevel="true">
+      <components>
+        <component>TargetUtils</component>
+      </components>
+    </obsoleteStorage>
     <projectViewNodeDecorator
       implementation="org.jetbrains.bazel.settings.ProjectViewFileNodeDecorator"/>
     <referencesSearch
@@ -489,6 +501,7 @@
     <programRunner implementation="org.jetbrains.bazel.debug.configuration.StarlarkDebugRunner"/>
     <search.optionContributor implementation="org.jetbrains.bazel.ui.settings.BazelSearchOptionsContributor"/>
     <searchEverywhereContributor implementation="org.jetbrains.bazel.ui.widgets.LabelSearchEverywhereContributor$Factory"/>
+    <searchEverywhere.itemsProviderFactory implementation="org.jetbrains.bazel.searchEverywhere.SeLabelProviderFactory"/>
   </extensions>
 
   <actions>

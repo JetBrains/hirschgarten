@@ -36,7 +36,7 @@ private val RELEVANT_EXTENSIONS = listOf("java", "kt", "scala")
  */
 internal class JavaModuleToDummyJavaModulesTransformerHACK(
   private val projectBasePath: Path,
-  private val fileToTarget: Map<Path, List<Label>>,
+  private val fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
   private val project: Project,
 ) {
   sealed interface Result
@@ -146,7 +146,7 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
    * IDEA will only consider the inner source root because of how the workspace model works.
    * This can cause red code, e.g., on https://github.com/bazelbuild/bazel
    */
-  private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTarget[this]?.size ?: 0) > 1
+  private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTargetWithoutLowPrioritySharedSources[this]?.size ?: 0) > 1
 
   private fun tryMergeResources(resourceRoots: List<ResourceRoot>): List<ResourceRoot>? {
     if (resourceRoots.isEmpty()) return emptyList()

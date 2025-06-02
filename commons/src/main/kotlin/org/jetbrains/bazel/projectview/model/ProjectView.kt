@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.projectview.model
 
-import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.projectview.model.sections.AndroidMinSdkSection
 import org.jetbrains.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
@@ -24,6 +23,7 @@ import org.jetbrains.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.jetbrains.bazel.projectview.model.sections.ShardSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ShardingApproachSection
 import org.jetbrains.bazel.projectview.model.sections.TargetShardSizeSection
+import org.slf4j.LoggerFactory
 
 /**
  * Representation of the project view file.
@@ -421,6 +421,6 @@ data class ProjectView(
   }
 
   companion object {
-    private val log = LogManager.getLogger(ProjectView::class.java)
+    private val log = LoggerFactory.getLogger(ProjectView::class.java)
   }
 }

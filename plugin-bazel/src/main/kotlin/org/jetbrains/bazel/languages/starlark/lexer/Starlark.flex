@@ -5,6 +5,7 @@ import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes;
 
+@SuppressWarnings("ALL")
 %%
 
 %class _StarlarkLexer

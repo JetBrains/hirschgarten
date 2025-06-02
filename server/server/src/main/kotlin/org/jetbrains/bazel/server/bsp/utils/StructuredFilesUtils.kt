@@ -2,7 +2,7 @@ package org.jetbrains.bazel.server.bsp.utils
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
-import org.apache.logging.log4j.Logger
+import org.slf4j.Logger
 import org.w3c.dom.Document
 import org.xml.sax.InputSource
 import java.io.StringReader

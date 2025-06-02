@@ -1,148 +1,188 @@
+@file:Suppress("ReplacePutWithAssignment", "ReplaceGetOrSet")
+
 package org.jetbrains.bazel.target
 
-import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.configurationStore.SettingsSavingComponent
+import com.intellij.openapi.application.ApplicationInfo
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.State
-import com.intellij.openapi.components.Storage
-import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.io.toNioPathOrNull
+import com.intellij.openapi.project.getProjectDataPath
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.toNioPathOrNull
+import com.intellij.platform.util.coroutines.forEachConcurrent
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
-import com.intellij.util.xmlb.annotations.OptionTag
+import com.intellij.util.awaitCancellationAndInvoke
+import com.intellij.util.concurrency.SynchronizedClearableLazy
 import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModuleEntity
 import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.channels.ProducerScope
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
-import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.experimental.ExperimentalTypeInference
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 private const val MAX_EXECUTABLE_TARGET_IDS = 10
 
-@InternalApi
-data class TargetUtilsState(
-  // The new tag is here to not break the sync with the old persisted data
-  // The project that contains the old persisted data will be resynced and stored using the new tag
-  // https://youtrack.jetbrains.com/issue/BAZEL-1967
-  @OptionTag(tag = "labelToTargetInfoV2")
-  var labelToTargetInfo: Map<String, String> = emptyMap(),
-  var moduleIdToTarget: Map<String, String> = emptyMap(),
-  var libraryIdToTarget: Map<String, String> = emptyMap(),
-  var fileToTarget: Map<String, List<String>> = emptyMap(),
-  var fileToExecutableTargets: Map<String, List<String>> = emptyMap(),
-)
+private fun nowAsDuration() = System.currentTimeMillis().toDuration(DurationUnit.MILLISECONDS)
+
+private fun getStorageFilename(): String {
+  // version for 243 cannot use `Hashing.xxh3_128()`
+  // (not available in 243 and we don't want to bundle `hash4j` as a part of Bazel plugin - JIT, increased build script complexity)
+  return "bazel-targets-v${if (ApplicationInfo.getInstance().build.baselineVersion <= 243) "v0.5" else "1"}.db"
+}
 
 @PublicApi
 @Service(Service.Level.PROJECT)
-@State(
-  name = "TargetUtils",
-  storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
-)
-class TargetUtils(private val project: Project) : PersistentStateComponent<TargetUtilsState> {
-  /**
-   * All labels in [TargetUtils] are canonical.
-   * When querying [labelToTargetInfo] (e.g., via [getBuildTargetForLabel]) the label must be first canonicalized via [toCanonicalLabel].
-   */
+class TargetUtils(private val project: Project, private val coroutineScope: CoroutineScope) : SettingsSavingComponent {
+  private val db = openStore(storeFile = project.getProjectDataPath(getStorageFilename()), filePathSuffix = project.basePath!! + "/")
+
+  // we save only once every 5 minutes, and not earlier than 5 minutes after IDEA startup
+  private var lastSaved = nowAsDuration()
+
+  private val allTargetsAndLibrariesLabelsCache =
+    SynchronizedClearableLazy {
+      db.getAllTargetsAndLibrariesLabelsCache(project)
+    }
+
   @InternalApi
-  var labelToTargetInfo: Map<Label, BuildTarget> = emptyMap()
-    private set
-  private var moduleIdToTarget: Map<String, Label> = emptyMap()
+  val allTargetsAndLibrariesLabels: List<String>
+    get() = allTargetsAndLibrariesLabelsCache.value
 
-  private var libraryIdToTarget: Map<String, Label> = emptyMap()
-
-  var fileToTarget: Map<Path, List<Label>> = hashMapOf()
+  // todo: remove (used only during sync)
+  var fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>> = emptyMap()
     private set
 
-  private var fileToExecutableTargets: Map<Path, List<Label>> = hashMapOf()
-
-  // Everything below this comment is not persisted!
-  var allTargetsAndLibrariesLabels: List<String> = emptyList()
-    private set
-
-    @InternalApi get
-
-  fun addFileToTargetIdEntry(path: Path, targets: List<Label>) {
-    fileToTarget = fileToTarget + (path to targets)
+  init {
+    // cannot use opt-in (no such opt-in in 243)
+    @Suppress("OPT_IN_USAGE")
+    coroutineScope.awaitCancellationAndInvoke(Dispatchers.IO) {
+      db.close()
+    }
   }
 
-  fun removeFileToTargetIdEntry(path: Path) {
-    fileToTarget = fileToTarget - path
+  override suspend fun save() {
+    val exitInProgress = ApplicationManager.getApplication().isExitInProgress
+    if (!exitInProgress && (nowAsDuration() - lastSaved) < 5.minutes) {
+      return
+    }
+
+    withContext(Dispatchers.IO) {
+      db.save()
+      lastSaved = nowAsDuration()
+    }
+  }
+
+  fun addFileToTargetIdEntry(file: Path, targets: List<Label>) {
+    db.addFileToTarget(file, targets)
+  }
+
+  fun removeFileToTargetIdEntry(file: Path) {
+    db.removeFileToTarget(file)
   }
 
   @InternalApi
   @TestOnly
   fun setTargets(labelToTargetInfo: Map<Label, BuildTarget>) {
-    this.labelToTargetInfo = labelToTargetInfo
+    db.setTargets(labelToTargetInfo)
     updateComputedFields()
   }
+
+  // todo expensive operation
+  fun computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo: Map<Label, BuildTarget>): Map<Label, BuildTarget> =
+    db.computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo)
+
+  @InternalApi
+  fun getSharedFiles(): Map<Path, List<Label>> = fileToTargetWithoutLowPrioritySharedSources
 
   @InternalApi
   suspend fun saveTargets(
     targets: List<BuildTarget>,
     fileToTarget: Map<Path, List<Label>>,
+    fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
     libraryItems: List<LibraryItem>?,
   ) {
-    labelToTargetInfo = targets.associateBy { it.id }
-    moduleIdToTarget = labelToTargetInfo.keys.associateBy { it.formatAsModuleName(project) }
-    libraryIdToTarget =
-      libraryItems
-        ?.associate { library ->
-          library.id.formatAsModuleName(project) to library.id
-        }.orEmpty()
+    this.fileToTargetWithoutLowPrioritySharedSources = fileToTargetWithoutLowPrioritySharedSources
 
-    this.fileToTarget = fileToTarget
-    fileToExecutableTargets = calculateFileToExecutableTargets(libraryItems)
+    val labelToTargetInfo = targets.associateByTo(HashMap(targets.size)) { it.id }
+    db.reset(
+      fileToTarget = fileToTarget,
+      fileToExecutableTargets =
+        calculateFileToExecutableTargets(
+          libraryItems = libraryItems,
+          fileToTarget = fileToTarget,
+          targets = targets,
+          labelToTargetInfo = labelToTargetInfo,
+        ),
+      libraryItems = libraryItems,
+      targets = targets,
+      project = project,
+    )
 
+    // Explicitly schedule a save since auto-commit is disabled — new data will otherwise remain in memory beyond the configured cache size.
+    // This also ensures faster persistence of imported data.
+    coroutineScope.launch(Dispatchers.IO + NonCancellable) {
+      db.save()
+      lastSaved = nowAsDuration()
+    }
     updateComputedFields()
   }
 
-  private suspend fun calculateFileToExecutableTargets(libraryItems: List<LibraryItem>?): Map<Path, List<Label>> =
+  private suspend fun calculateFileToExecutableTargets(
+    libraryItems: List<LibraryItem>?,
+    fileToTarget: Map<Path, List<Label>>,
+    targets: List<BuildTarget>,
+    labelToTargetInfo: Map<Label, BuildTarget>,
+  ): Map<Path, List<Label>> =
     withContext(Dispatchers.Default) {
-      val targetDependentsGraph = TargetDependentsGraph(labelToTargetInfo, libraryItems)
+      val targetDependentsGraph = TargetDependentsGraph(targets, libraryItems)
       val targetToTransitiveRevertedDependenciesCache = ConcurrentHashMap<Label, Set<Label>>()
-      fileToTarget
-        .map { (path, targets) ->
-          async {
-            val dependents =
-              targets
-                .flatMap { label ->
-                  calculateTransitivelyExecutableTargets(
-                    targetToTransitiveRevertedDependenciesCache,
-                    targetDependentsGraph,
-                    label,
-                  )
-                }.distinct()
-            path to dependents
-          }
-        }.awaitAll()
-        .filter { it.second.isNotEmpty() } // Avoid excessive memory consumption
-        .toMap()
+      transformConcurrent(fileToTarget.entries) { (path, targets) ->
+        val dependents =
+          targets
+            .flatMap { label ->
+              calculateTransitivelyExecutableTargets(
+                resultCache = targetToTransitiveRevertedDependenciesCache,
+                targetDependentsGraph = targetDependentsGraph,
+                labelToTargetInfo = labelToTargetInfo,
+                target = label,
+              )
+            }.distinct()
+
+        if (dependents.isEmpty()) {
+          null
+        } else {
+          path to dependents
+        }
+      }
     }
 
   private fun calculateTransitivelyExecutableTargets(
     resultCache: ConcurrentHashMap<Label, Set<Label>>,
     targetDependentsGraph: TargetDependentsGraph,
     target: Label,
+    labelToTargetInfo: Map<Label, BuildTarget>,
   ): Set<Label> =
     resultCache.getOrPut(target) {
-      val targetInfo = labelToTargetInfo[target]
+      val targetInfo = labelToTargetInfo.get(target)
       if (targetInfo?.kind?.isExecutable == true) {
         return@getOrPut setOf(target)
       }
@@ -151,24 +191,23 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
       return@getOrPut directDependentIds
         .asSequence()
         .flatMap { dependency ->
-          calculateTransitivelyExecutableTargets(resultCache, targetDependentsGraph, dependency)
+          calculateTransitivelyExecutableTargets(resultCache, targetDependentsGraph, dependency, labelToTargetInfo)
         }.distinct()
         .take(MAX_EXECUTABLE_TARGET_IDS)
-        .toSet()
+        .toHashSet()
     }
 
   private fun updateComputedFields() {
-    allTargetsAndLibrariesLabels = (allTargets() + allLibraries()).map { it.toShortString(project) }
+    allTargetsAndLibrariesLabelsCache.drop()
   }
 
   @PublicApi
-  fun allTargets(): List<Label> = labelToTargetInfo.keys.toList()
+  fun allTargets(): Sequence<Label> = db.getAllTargets()
+
+  fun getTotalTargetCount(): Int = db.getTotalTargetCount()
 
   @PublicApi
-  fun allLibraries(): List<Label> = libraryIdToTarget.values.toList()
-
-  @PublicApi
-  fun getTargetsForPath(path: Path): List<Label> = fileToTarget[path] ?: emptyList()
+  fun getTargetsForPath(path: Path): List<Label> = db.getTargetsForPath(path) ?: emptyList()
 
   @PublicApi
   fun getTargetsForFile(file: VirtualFile): List<Label> = file.toNioPathOrNull()?.let { getTargetsForPath(it) } ?: emptyList()
@@ -176,9 +215,10 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   @InternalApi
   fun getExecutableTargetsForFile(file: VirtualFile): List<Label> {
     val executableDirectTargets =
-      getTargetsForFile(file).filter { label -> labelToTargetInfo[label]?.kind?.isExecutable == true }
+      getTargetsForFile(file)
+        .filter { label -> db.getBuildTargetForLabel(label, project)?.kind?.isExecutable == true }
     if (executableDirectTargets.isEmpty()) {
-      return fileToExecutableTargets.getOrDefault(file.toNioPathOrNull(), emptySet()).toList()
+      return file.toNioPathOrNull()?.let { db.getExecutableTargetsForPath(it) } ?: emptyList()
     }
     return executableDirectTargets
   }
@@ -187,67 +227,30 @@ class TargetUtils(private val project: Project) : PersistentStateComponent<Targe
   fun isLibrary(target: Label): Boolean = getBuildTargetForLabel(target)?.kind?.ruleType == RuleType.LIBRARY
 
   @PublicApi
-  fun getTargetForModuleId(moduleId: String): Label? = moduleIdToTarget[moduleId]
+  fun getTargetForModuleId(moduleId: String): Label? = db.getTargetForModuleId(moduleId)
 
   @PublicApi
-  fun getTargetForLibraryId(libraryId: String): Label? = libraryIdToTarget[libraryId]
+  fun getTargetForLibraryId(libraryId: String): Label? = db.getTargetForLibraryId(libraryId)
 
+  /**
+   * All labels in a label-to-target map are canonical.
+   * The label must be first canonicalized via toCanonicalLabel.
+   */
   @InternalApi
-  fun getBuildTargetForLabel(label: Label): BuildTarget? = label.toCanonicalLabel(project)?.let { labelToTargetInfo[it] }
+  fun getBuildTargetForLabel(label: Label): BuildTarget? = db.getBuildTargetForLabel(label, project)
 
   @InternalApi
   fun getBuildTargetForModule(module: com.intellij.openapi.module.Module): BuildTarget? =
     getTargetForModuleId(module.name)?.let { getBuildTargetForLabel(it) }
 
   @InternalApi
-  fun allBuildTargets(): List<BuildTarget> = labelToTargetInfo.values.toList()
+  fun allBuildTargets(): Sequence<BuildTarget> = db.getAllBuildTargets()
 
+  // todo: avoid such methods as we load all targets into memory
   @InternalApi
-  override fun getState(): TargetUtilsState =
-    TargetUtilsState(
-      labelToTargetInfo =
-        labelToTargetInfo
-          .mapKeys {
-            it.key.toString()
-          }.mapValues {
-            // don't store dependencies, sources, resources as they are saved in the workspace model already
-            bazelGson.toJson(it.value.copy(dependencies = emptyList(), sources = emptyList(), resources = emptyList()))
-          },
-      moduleIdToTarget = moduleIdToTarget.mapValues { it.value.toString() },
-      libraryIdToTarget = libraryIdToTarget.mapValues { it.value.toString() },
-      fileToTarget = fileToTarget.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.toString() } },
-      fileToExecutableTargets = fileToExecutableTargets.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.toString() } },
-    )
+  fun allBuildTargetAsLabelToTargetMap(): Map<Label, BuildTarget> = db.allBuildTargetAsLabelToTargetMap()
 
-  @InternalApi
-  override fun loadState(state: TargetUtilsState) {
-    try {
-      labelToTargetInfo =
-        state.labelToTargetInfo
-          .mapKeys { Label.parse(it.key) }
-          .mapValues { bazelGson.fromJson(it.value, BuildTarget::class.java) }
-      moduleIdToTarget = state.moduleIdToTarget.mapValues { Label.parse(it.value) }
-      libraryIdToTarget = state.libraryIdToTarget.mapValues { Label.parse(it.value) }
-      fileToTarget =
-        state.fileToTarget.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
-      fileToExecutableTargets =
-        state.fileToExecutableTargets.mapKeys { o -> o.key.toNioPathOrNull()!! }.mapValues { o -> o.value.map { Label.parse(it) } }
-      updateComputedFields()
-    } catch (e: Exception) {
-      log.warn(e)
-      labelToTargetInfo = emptyMap()
-      moduleIdToTarget = emptyMap()
-      libraryIdToTarget = emptyMap()
-      fileToTarget = emptyMap()
-      fileToExecutableTargets = emptyMap()
-      allTargetsAndLibrariesLabels = emptyList()
-      updateComputedFields()
-    }
-  }
-
-  companion object {
-    val log = logger<TargetUtils>()
-  }
+  fun getTotalFileCount(): Int = db.getTotalFileCount()
 }
 
 @InternalApi
@@ -275,4 +278,26 @@ val com.intellij.openapi.module.Module.moduleEntity: ModuleEntity?
 fun BuildTarget.getModule(project: Project): com.intellij.openapi.module.Module? {
   val moduleName = this.id.formatAsModuleName(project)
   return ModuleManager.getInstance(project).findModuleByName(moduleName)
+}
+
+@OptIn(ExperimentalTypeInference::class)
+private suspend fun <T : Any, K : Any, V : Any, R : Pair<K, V>> transformConcurrent(
+  collection: Collection<T>,
+  @BuilderInference action: suspend ProducerScope<R>.(T) -> R?,
+): Map<K, V> {
+  val flow =
+    channelFlow {
+      collection.forEachConcurrent {
+        val result = action(it)
+        if (result != null) {
+          channel.send(result)
+        }
+      }
+    }
+
+  val map = HashMap<K, V>()
+  flow.collect { value ->
+    map.put(value.first, value.second)
+  }
+  return map
 }
