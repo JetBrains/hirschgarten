@@ -27,7 +27,7 @@ class SyncCache(private val project: Project) {
     fun compute(project: Project): T & Any
   }
 
-  private val cache: MutableMap<Any, Any> = Maps.newHashMap()
+  private var cache: MutableMap<Any, Any> = Maps.newHashMap()
 
   /** Computes a value derived from the sync project data and caches it until the next sync.  */
   @Suppress("UNCHECKED_CAST")
@@ -44,7 +44,9 @@ class SyncCache(private val project: Project) {
 
   @Synchronized
   fun clear() {
-    cache.clear()
+    // assign a new map instead of clearing.
+    // this should be faster than clearing the map.
+    cache = Maps.newHashMap()
   }
 
   internal class ClearSyncCache : ProjectPostSyncHook {
