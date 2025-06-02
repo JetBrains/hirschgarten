@@ -4,6 +4,7 @@ kt_intellij_junit4_test(
     name = "BazelBuildTargetConsoleFilterTest",
     src = "BazelBuildTargetConsoleFilterTest.kt",
     associates = ["//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/repomapping"],
+    tags = ["exclusive"],
     deps = [
         "//plugin-bazel",
         "//plugin-bazel/src:test_fixtures",

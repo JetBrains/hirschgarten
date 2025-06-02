@@ -169,6 +169,7 @@ intellij_integration_test_suite(
         "test/kotlin/org/jetbrains/**/*.kt",
     ]),
     associates = [":plugin-bazel-lib"],
+    tags = ["exclusive"],
     test_package_root = "org.jetbrains",
     runtime_deps = [
         ":plugin-bazel-lib",

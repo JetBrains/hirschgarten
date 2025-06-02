@@ -31,6 +31,6 @@ kt_jvm_library(
     visibility = ["//server:__subpackages__"],
     deps = [
         "@maven//:com_google_code_gson_gson",
-        "@maven//:org_apache_logging_log4j_log4j_api",
+        "@maven//:org_slf4j_slf4j_api",
     ],
 )
