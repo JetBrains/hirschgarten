@@ -48,6 +48,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
       PythonBuildTarget(
         version = "PY3",
         interpreter = interpreterPath,
+        listOf(),
       )
 
     val exampleExampleBuildTarget =

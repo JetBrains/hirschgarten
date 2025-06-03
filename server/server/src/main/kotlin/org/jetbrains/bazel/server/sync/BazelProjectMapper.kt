@@ -928,21 +928,23 @@ class BazelProjectMapper(
     transitiveCompileTimeJarsTargetKinds: Set<String>,
     featureFlags: FeatureFlags,
   ): Boolean =
-    isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
-      (
-        shouldImportTargetKind(target.kind, transitiveCompileTimeJarsTargetKinds) ||
-          target.hasJvmTargetInfo() &&
-          (
-            target.dependenciesCount > 0 ||
-              hasKnownJvmSources(target)
-          ) ||
-          featureFlags.isPythonSupportEnabled &&
-          target.hasPythonTargetInfo() &&
-          hasKnownPythonSources(target) ||
-          featureFlags.isGoSupportEnabled &&
-          target.hasGoTargetInfo() &&
-          hasKnownGoSources(target)
-      )
+    (
+      isTargetTreatedAsInternal(target.label().assumeResolved(), repoMapping) &&
+        (
+          shouldImportTargetKind(target.kind, transitiveCompileTimeJarsTargetKinds) ||
+            target.hasJvmTargetInfo() &&
+            (
+              target.dependenciesCount > 0 ||
+                hasKnownJvmSources(target)
+            ) ||
+            featureFlags.isGoSupportEnabled &&
+            target.hasGoTargetInfo() &&
+            hasKnownGoSources(target)
+        )
+    ) ||
+      featureFlags.isPythonSupportEnabled &&
+      target.hasPythonTargetInfo() &&
+      hasKnownPythonSources(target)
 
   private fun shouldImportTargetKind(kind: String, transitiveCompileTimeJarsTargetKinds: Set<String>): Boolean =
     kind in workspaceTargetKinds || kind in transitiveCompileTimeJarsTargetKinds
