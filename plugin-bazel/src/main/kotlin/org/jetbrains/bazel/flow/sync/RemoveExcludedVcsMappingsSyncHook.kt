@@ -27,10 +27,15 @@ class RemoveExcludedVcsMappingsSyncHook : ProjectPostSyncHook {
     if (mapping.isDefaultMapping) return false
     val file = LocalFileSystem.getInstance().findFileByPath(mapping.directory) ?: return false
     // If the project root is a child of the VCS root, then keep it
+    // E.g., if you import ultimate/plugin/bazel, but the VCS root is ultimate, then all is good
     if (VfsUtilCore.isAncestor(file, project.rootDir, false)) return false
     // Otherwise, if the VCS root is somewhere else (not inside our project directory), then remove it.
     // Usually it is something like /private/var/tmp/_bazel_...
+    // Note that isExcluded would return false in that case, because such directories are neither excluded nor included.
     if (!VfsUtilCore.isAncestor(project.rootDir, file, false)) return true
+    // If say we have another git repository inside the project directory,
+    // then we only keep it if it's not excluded.
+    // So, hirschgarten/bazel-hirschgarten is a VCS root inside the project, but we remove it because it's excluded.
     val projectFileIndex = ProjectFileIndex.getInstance(project)
     return readAction { projectFileIndex.isExcluded(file) }
   }
