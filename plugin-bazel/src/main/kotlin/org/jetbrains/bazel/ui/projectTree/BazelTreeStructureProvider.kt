@@ -27,6 +27,7 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
+import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
@@ -99,6 +100,7 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
 
           override fun isUseFileNestingRules(): Boolean = settings.isUseFileNestingRules
         }
+
       else -> settings
     }
 
@@ -117,7 +119,10 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
         PsiFileSystemItemFilter { item ->
           item !is PsiDirectory ||
             item.virtualFile in project.directoriesContainingIncludedDirectories ||
-            !ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile)
+            (
+              !ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile) &&
+                WorkspaceFileIndex.getInstance(project).isIndexable(item.virtualFile)
+            )
         }
       } else {
         null
@@ -130,11 +135,15 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
       if (showExcludedDirectoriesAsSeparateNode) {
         ExcludedDirectoriesNode(project, rootDirectory, settings) { item ->
           if (item is PsiDirectory) {
-            ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile)
+            ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile) ||
+              !WorkspaceFileIndex.getInstance(project).isIndexable(item.virtualFile)
           } else {
             val parentDir = item.virtualFile.parent
             parentDir !in project.directoriesContainingIncludedDirectories &&
-              ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile)
+              (
+                ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile) ||
+                  !WorkspaceFileIndex.getInstance(project).isIndexable(item.virtualFile)
+              )
           }
         }
       } else {
