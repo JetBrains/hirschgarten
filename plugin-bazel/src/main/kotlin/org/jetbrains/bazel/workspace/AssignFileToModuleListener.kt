@@ -37,6 +37,8 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.workspaceModel.ide.legacyBridge.impl.java.JAVA_SOURCE_ROOT_ENTITY_TYPE_ID
 import com.intellij.workspaceModel.ide.toPath
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
@@ -53,7 +55,6 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
-import java.util.concurrent.atomic.AtomicBoolean
 
 internal class AssignFileToModuleListener : BulkFileListener {
   override fun after(events: MutableList<out VFileEvent>) {
@@ -82,7 +83,6 @@ internal class AssignFileToModuleListener : BulkFileListener {
         delay(PROCESSING_DELAY)
 
         val workspaceModel = project.serviceAsync<WorkspaceModel>()
-        val controller = Controller.getInstance(project) // new service instance, since it's another thread
         val event = Controller.getInstance(project).popAllEvents().singleOrNull()
         if (event != null) {
           controller.processWithLock {
@@ -94,11 +94,10 @@ internal class AssignFileToModuleListener : BulkFileListener {
   }
 
   @Service(Service.Level.PROJECT)
-  class Controller() {
+  private class Controller() {
     // synchronised lists do not guarantee safety of operations like size checking and clearing - we need explicit synchronisation here
     private val pendingEvents = mutableListOf<VFileEvent>()
-
-    private val processingLock = AtomicBoolean(false)
+    private val processingLock = Mutex()
 
     /** @return `true` if this event was the first to be added, `false` otherwise */
     fun addEvent(event: VFileEvent): Boolean =
@@ -116,16 +115,16 @@ internal class AssignFileToModuleListener : BulkFileListener {
       }
 
     suspend fun processWithLock(action: suspend () -> Unit) {
-      if (processingLock.compareAndSet(false, true)) {
-        try {
+      try {
+        processingLock.withLock(this) {
           action()
-        } finally {
-          processingLock.set(false)
         }
+      } catch (_: IllegalStateException) {
+        // ignore
       }
     }
 
-    fun isAnotherProcessingInProgress(): Boolean = processingLock.get()
+    fun isAnotherProcessingInProgress(): Boolean = processingLock.isLocked
 
     companion object {
       @JvmStatic
