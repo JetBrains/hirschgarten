@@ -28,6 +28,11 @@ internal class JavaModuleWithSourcesUpdater(
   private val isAndroidSupportEnabled: Boolean,
   private val libraryModules: List<JavaModule> = emptyList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
+  val packageMarkerEntityUpdater =
+    PackageMarkerEntityUpdater(
+      workspaceModelEntityUpdaterConfig,
+    )
+
   override suspend fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater =
       ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd), libraryModules)
@@ -41,10 +46,6 @@ internal class JavaModuleWithSourcesUpdater(
     )
 
     if (entityToAdd.genericModuleInfo.isDummy && BazelFeatureFlags.fbsrSupportedInPlatform) {
-      val packageMarkerEntityUpdater =
-        PackageMarkerEntityUpdater(
-          workspaceModelEntityUpdaterConfig,
-        )
       packageMarkerEntityUpdater.addEntities(entityToAdd.sourceRoots, moduleEntity)
     } else {
       val javaSourceEntityUpdater =

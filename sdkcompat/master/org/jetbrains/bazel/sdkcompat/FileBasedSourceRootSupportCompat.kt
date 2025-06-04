@@ -1,3 +1,3 @@
 package org.jetbrains.bazel.sdkcompat
 
-val fbsrSupportedInPlatform = false
+val fbsrSupportedInPlatform = true

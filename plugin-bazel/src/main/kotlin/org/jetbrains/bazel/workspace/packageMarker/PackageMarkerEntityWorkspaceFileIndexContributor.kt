@@ -1,6 +1,6 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
-package org.jetbrains.bazel.workspace
+package org.jetbrains.bazel.workspace.packageMarker
 
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
@@ -10,10 +10,9 @@ import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileKind
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
 import com.intellij.workspaceModel.core.fileIndex.impl.ModuleSourceRootData
 import com.intellij.workspaceModel.ide.legacyBridge.findModule
-import org.jetbrains.bazel.sdkcompat.registerFileSetByConditionCompat
 import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
 
-class PackageMarkerEntityWorkspaceFileIndexContributor : WorkspaceFileIndexContributor<PackageMarkerEntity> {
+private class PackageMarkerEntityWorkspaceFileIndexContributor : WorkspaceFileIndexContributor<PackageMarkerEntity> {
   override val entityClass: Class<PackageMarkerEntity> = PackageMarkerEntity::class.java
 
   override fun registerFileSets(
@@ -22,8 +21,8 @@ class PackageMarkerEntityWorkspaceFileIndexContributor : WorkspaceFileIndexContr
     storage: EntityStorage,
   ) {
     val module = entity.module.findModule(storage) ?: return
-    registrar.registerFileSetByConditionCompat(
-      root = entity.root,
+    registrar.registerNonRecursiveFileSet(
+      file = entity.root,
       kind = WorkspaceFileKind.CONTENT,
       entity = entity,
       customData =
@@ -34,9 +33,6 @@ class PackageMarkerEntityWorkspaceFileIndexContributor : WorkspaceFileIndexContr
           entity.packagePrefix,
           false,
         ),
-      condition = { virtualFile ->
-        virtualFile.isDirectory
-      },
     )
   }
 }

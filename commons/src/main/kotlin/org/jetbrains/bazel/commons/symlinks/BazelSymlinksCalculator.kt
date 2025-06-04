@@ -25,15 +25,14 @@ object BazelSymlinksCalculator {
 
     val visitor =
       object : SimpleFileVisitor<Path>() {
-        override fun visitFile(file: Path, attrs: BasicFileAttributes?): FileVisitResult {
+        override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+          if (!attrs.isSymbolicLink) return FileVisitResult.CONTINUE
           if (bazelSymlinkEndings.none { file.name.endsWith(it) }) return FileVisitResult.CONTINUE
-          val resolved = file.toRealPath()
-          if (resolved == file) return FileVisitResult.CONTINUE
           // See https://bazel.build/remote/output-directories
           // This string used to be "execroot/_main", but for projects without Bzlmod the relevant path is actually "execroot/<my-project>"
-          if (!resolved.invariantSeparatorsPathString.contains("/execroot/")) return FileVisitResult.SKIP_SUBTREE
+          if (!file.toRealPath().invariantSeparatorsPathString.contains("/execroot/")) return FileVisitResult.CONTINUE
           symlinksToExclude.add(file)
-          return FileVisitResult.SKIP_SUBTREE
+          return FileVisitResult.CONTINUE
         }
       }
 
