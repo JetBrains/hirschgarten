@@ -114,8 +114,6 @@
     <projectSyncHook implementation="org.jetbrains.bazel.run.import.ImportRunConfigurationsSyncHook"/>
     <projectSyncHook implementation="org.jetbrains.bazel.fastbuild.ToolchainInfoSyncHook"/>
     <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.PathSyncHook"/>
-    <projectSyncHook implementation="org.jetbrains.bazel.ui.widgets.tool.window.components.BazelToolwindowSyncHook"
-                     order="after BazelRepoMappingSyncHook"/>
     <projectSyncHook implementation="org.jetbrains.bazel.target.sync.TargetUtilsSyncHook" id="TargetUtilsSyncHook"/>
 
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook"/>
@@ -267,6 +265,9 @@
     <toolWindowAllowlist id="Bazel"/>
     <toolWindowExtractor
       implementation="org.jetbrains.bazel.ui.widgets.tool.window.all.targets.BazelToolWindowViewModelExtractor"/>
+
+    <toolWindow id="Bazel" anchor="right" icon="org.jetbrains.bazel.assets.BazelPluginIcons.bazelToolWindow" canCloseContents="false"
+                factoryClass="org.jetbrains.bazel.ui.widgets.tool.window.all.targets.BazelAllTargetsWidgetFactory"/>
 
     <consoleFilterProvider
       implementation="org.jetbrains.bazel.ui.console.filter.AbsoluteAndRelativePathsConsoleFilterProvider"/>
