@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.psi.KtClassLikeDeclaration
 class KotlinPsiFileProvider : PsiFileProvider {
   override fun asFileSearch(elementToSearch: PsiElement): PsiFile? {
     var elementToSearch = elementToSearch
-    if (elementToSearch is KtClassLikeDeclaration) { // sprawdzic na interfejsie TODO
+    if (elementToSearch is KtClassLikeDeclaration) {
       elementToSearch = elementToSearch.parent
     }
     return elementToSearch as? PsiFile

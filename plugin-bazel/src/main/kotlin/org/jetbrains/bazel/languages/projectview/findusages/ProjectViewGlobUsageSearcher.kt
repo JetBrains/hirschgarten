@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.projectview.findusages
 
 import com.intellij.openapi.application.QueryExecutorBase
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
@@ -42,8 +43,11 @@ internal class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, Re
     val globs: Collection<StarlarkGlobExpression> =
       PsiTreeUtil.findChildrenOfType(buildFilePsi, StarlarkGlobExpression::class.java)
     for (glob in globs) {
+      ProgressManager.checkCanceled()
       if (glob.matches(relativePath, file.isDirectory)) {
-        consumer.process(globReference(glob, file))
+        if (consumer.process(globReference(glob, file))) {
+          break // platform requires processQuery to stop when a consumer.process returns false
+        }
       }
     }
   }
