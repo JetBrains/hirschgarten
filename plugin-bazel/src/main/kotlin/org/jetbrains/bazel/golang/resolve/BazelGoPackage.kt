@@ -235,7 +235,7 @@ class BazelGoPackage : GoPackage {
     fun getTargetToFileMap(project: Project): ImmutableMultimap<Label, Path> =
       SyncCache
         .getInstance(project)
-        .getOrCompute(GO_TARGET_TO_FILE_MAP_KEY) { getUncachedTargetToFileMap(project) } as ImmutableMultimap<Label, Path>
+        .get(GO_TARGET_TO_FILE_MAP_KEY) { getUncachedTargetToFileMap(project) } ?: ImmutableMultimap.of()
 
     fun getUncachedTargetToFileMap(project: Project): ImmutableMultimap<Label, Path> {
       val libraryToTestMap = buildLibraryToTestMap(project)

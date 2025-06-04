@@ -75,7 +75,7 @@ class BazelGoTreeStructureProviderTest : MockProjectBaseTest() {
     val fileNode2 = createPsiFileNode(file2)
     fileToImportPathMap[Path(file2.path)] = "root2"
 
-    SyncCache.getInstance(project).getOrCompute(GO_PACKAGE_FACTORY_KEY) { return@getOrCompute fileToImportPathMap }
+    SyncCache.getInstance(project).get(GO_PACKAGE_FACTORY_KEY) { fileToImportPathMap }
 
     // WHEN
     val actualChildren =
@@ -113,8 +113,7 @@ class BazelGoTreeStructureProviderTest : MockProjectBaseTest() {
   private fun createRootNode(nodeName: String): SyntheticLibraryElementNode {
     val parentLibrary =
       BazelExternalSyntheticLibrary(
-        // presentableText=
-        nodeName, // files=
+        nodeName,
         ImmutableList.of(),
       )
 

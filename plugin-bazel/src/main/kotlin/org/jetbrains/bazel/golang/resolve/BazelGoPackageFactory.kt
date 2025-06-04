@@ -50,7 +50,7 @@ class BazelGoPackageFactory : GoPackageFactory {
     fun getFileToImportPathMap(project: Project): ConcurrentMap<Path, String> =
       SyncCache
         .getInstance(project)
-        .getOrCompute(GO_PACKAGE_FACTORY_KEY) { buildFileToImportPathMap(project) } as ConcurrentMap<Path, String>
+        .get(GO_PACKAGE_FACTORY_KEY) { buildFileToImportPathMap(project) } ?: ConcurrentHashMap()
 
     private fun buildFileToImportPathMap(project: Project): ConcurrentMap<Path, String> {
       val targetUtils = project.targetUtils
