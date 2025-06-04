@@ -10,6 +10,7 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.platform.util.coroutines.flow.throttle
+import com.intellij.ui.components.JBLoadingPanel
 import com.intellij.ui.content.ContentFactory
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +31,7 @@ import org.jetbrains.bazel.target.TargetUtils
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanel
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
 import org.jetbrains.bazel.ui.widgets.tool.window.components.configureBazelToolWindowToolBar
+import java.awt.BorderLayout
 
 private class BazelAllTargetsWidgetFactory :
   ToolWindowFactory,
@@ -43,11 +45,9 @@ private class BazelAllTargetsWidgetFactory :
   override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
     contentRequested.release()
 
-    val windowPanel = SimpleToolWindowPanel(true, true)
-    // Don’t bother with "Nothing to show" (default platform behavior).
-    // Also, don’t show the "Loading" text — if needed, we should add a proper loading overlay to the panel.
-    windowPanel.emptyText.text = ""
-    toolWindow.contentManager.addContent(ContentFactory.getInstance().createContent(windowPanel, "", false))
+    val panel = JBLoadingPanel(BorderLayout(), toolWindow.disposable)
+    panel.startLoading()
+    toolWindow.contentManager.addContent(ContentFactory.getInstance().createContent(panel, "", false))
   }
 
   override suspend fun manage(toolWindow: ToolWindow, toolWindowManager: ToolWindowManager) {
@@ -70,10 +70,16 @@ private class BazelAllTargetsWidgetFactory :
       val actionManager = serviceAsync<ActionManager>()
       val targetPanel =
         async(Dispatchers.EDT) {
-          val windowPanel = toolWindow.contentManager.getContent(0)!!.component as SimpleToolWindowPanel
+          val windowPanel = SimpleToolWindowPanel(true, true)
           configureBazelToolWindowToolBar(model, actionManager, windowPanel)
           val panel = BazelTargetsPanel(project, model)
           windowPanel.setContent(panel)
+
+          val content = toolWindow.contentManager.getContent(0)!!
+          val loadingPanel = content.component as JBLoadingPanel
+          loadingPanel.stopLoading()
+          content.component = windowPanel
+
           panel
         }
 
