@@ -95,7 +95,7 @@ internal class AssignFileToModuleListener : BulkFileListener {
   }
 
   @Service(Service.Level.PROJECT)
-  private class Controller() {
+  private class Controller {
     // synchronised lists do not guarantee safety of operations like size checking and clearing - we need explicit synchronisation here
     private val pendingEvents = mutableListOf<VFileEvent>()
     private val processingLock = Mutex()
@@ -343,7 +343,7 @@ private fun VirtualFileUrl.addToModule(
 }
 
 private fun VirtualFileUrl.removeFromModule(entityStorageDiff: MutableEntityStorage, module: ModuleEntity) {
-  entityStorageDiff.modifyModuleEntity(module) { contentRoots = contentRoots.filter { it.url != this@removeFromModule} }
+  entityStorageDiff.modifyModuleEntity(module) { contentRoots = contentRoots.filter { it.url != this@removeFromModule } }
 }
 
 private const val PROCESSING_DELAY = 250L // not noticeable by the user, but if there are many events simultaneously, we will get them all
