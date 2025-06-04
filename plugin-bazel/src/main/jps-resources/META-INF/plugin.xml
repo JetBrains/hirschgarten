@@ -198,6 +198,9 @@
     <registryKey defaultValue="true"
                  description="Check and warn about shared sources in the project by showing the &quot;Shared sources detected&quot; notification"
                  key="bazel.check.shared.sources"/>
+    <registryKey defaultValue="false"
+                 description="Whether the Bazel plugin should import automatically even if .idea or another project model (e.g., Gradle) exists already"
+                 key="bazel.project.auto.open.if.present"/>
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker"/>
 
@@ -273,6 +276,8 @@
       implementation="org.jetbrains.bazel.flow.open.BazelProjectOpenProcessor"/>
     <postStartupActivity
       implementation="org.jetbrains.bazel.flow.open.OpenBrokenBazelProjectStartupActivity"/>
+    <postStartupActivity
+      implementation="org.jetbrains.bazel.flow.open.OpenBazelProjectReplacingOtherProjectModels"/>
     <notificationGroup displayType="BALLOON" id="Bazel slow plugins warning"/>
 
     <externalSystemUnlinkedProjectAware
