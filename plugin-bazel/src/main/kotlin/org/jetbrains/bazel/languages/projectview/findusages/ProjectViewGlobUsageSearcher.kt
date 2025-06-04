@@ -45,7 +45,7 @@ internal class ProjectViewGlobUsageSearcher : QueryExecutorBase<PsiReference, Re
     for (glob in globs) {
       ProgressManager.checkCanceled()
       if (glob.matches(relativePath, file.isDirectory)) {
-        if (consumer.process(globReference(glob, file))) {
+        if (!consumer.process(globReference(glob, file))) {
           break // platform requires processQuery to stop when a consumer.process returns false
         }
       }
