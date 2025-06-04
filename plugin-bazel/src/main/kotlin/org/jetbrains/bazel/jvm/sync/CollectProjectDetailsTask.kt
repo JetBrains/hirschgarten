@@ -353,6 +353,7 @@ class CollectProjectDetailsTask(
 
   private fun checkSharedSources() {
     if (project.isSharedSourceSupportEnabled) return
+    if (!BazelFeatureFlags.checkSharedSources) return
     for ((file, labels) in project.targetUtils.getSharedFiles()) {
       if (labels.size <= 1) {
         continue
