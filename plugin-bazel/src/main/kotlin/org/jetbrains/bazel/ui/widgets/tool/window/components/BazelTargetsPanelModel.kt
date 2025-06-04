@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.ui.widgets.tool.window.components
 
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
-import org.jetbrains.bazel.ui.widgets.tool.window.filter.TargetFilter
 import org.jetbrains.bsp.protocol.BuildTarget
 
 // It is a service, because we want to update the state from a sync hook
@@ -18,10 +18,6 @@ class BazelTargetsPanelModel(private val project: Project) {
   fun getTargetData(target: Label): BuildTarget? = targets[target]
 
   var visibleTargets: List<Label> = emptyList()
-    private set
-
-  // Invalid targets display logic is currently disabled
-  var invalidTargets: List<Label> = emptyList()
     private set
 
   var matchCase: Boolean = false
@@ -44,26 +40,30 @@ class BazelTargetsPanelModel(private val project: Project) {
       )
 
     // First, apply the filter
-    val filteredTargets = targets.filter { targetFilter.predicate(it.value) }
+    val filteredTargets = if (targetFilter == TargetFilter.OFF) targets else targets.filter { targetFilter.predicate(it.value) }
 
     // Then, apply the search query
     val searchResults =
-      if (!searchQuery.isEmpty()) {
+      if (searchQuery.isEmpty()) {
+        searchRegex = null
+        filteredTargets
+      } else {
         val regex = searchQuery.toRegex(options)
         searchRegex = regex
         filteredTargets
           .filterKeys { target ->
             regex.containsMatchIn(target.toString()) || regex.containsMatchIn(target.toShortString(project))
           }
-      } else {
-        searchRegex = null
-        filteredTargets
       }
 
     // Finally, sort the results
     visibleTargets = searchResults.keys.sortedBy { it.toShortString(project) }
 
-    targetsPanel?.update()
+    targetsPanel?.let {
+      runInEdt {
+        it.update()
+      }
+    }
   }
 
   var searchRegex: Regex? = null
@@ -72,7 +72,7 @@ class BazelTargetsPanelModel(private val project: Project) {
   val isSearchActive: Boolean
     get() = searchQuery.isNotEmpty()
 
-  var targetFilter = TargetFilter.OFF
+  internal var targetFilter = TargetFilter.OFF
     set(value) {
       field = value
       updateVisibleTargets()
@@ -87,15 +87,18 @@ class BazelTargetsPanelModel(private val project: Project) {
   var displayAsTree: Boolean = true
     set(value) {
       field = value
-      targetsPanel?.update()
+      targetsPanel?.let {
+        runInEdt {
+          it.update()
+        }
+      }
     }
 
   val hasAnyTargets: Boolean
     get() = targets.isNotEmpty()
 
-  fun updateTargets(newTargets: Map<Label, BuildTarget>, newInvalidTargets: List<Label> = emptyList()) {
+  fun updateTargets(newTargets: Map<Label, BuildTarget>) {
     targets = newTargets
-    invalidTargets = newInvalidTargets
 
     updateVisibleTargets()
   }

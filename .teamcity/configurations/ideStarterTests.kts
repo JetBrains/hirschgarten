@@ -159,6 +159,22 @@ sealed class PyCharmPluginTest(
   targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/compatibility:PyCharmTest"
 )
 
+sealed class FastBuildTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Fast build test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/fastbuild"
+)
+
+sealed class ProjectViewOpenTest(
+  vcsRoot: GitVcsRoot,
+) : IdeStarterTests(
+  name = "Project view open test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/settings:project_view_open_test"
+)
+
 object HotswapTestGitHub : HotswapTest(
   vcsRoot = BaseConfiguration.GitHubVcs
 )
@@ -260,5 +276,21 @@ object PyCharmTestGitHub : PyCharmPluginTest(
 )
 
 object PyCharmTestSpace : PyCharmPluginTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object FastBuildTestGitHub : FastBuildTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object FastBuildTestSpace : FastBuildTest(
+  vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object ProjectViewOpenTestGitHub : ProjectViewOpenTest(
+  vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object ProjectViewOpenTestSpace : ProjectViewOpenTest(
   vcsRoot = BaseConfiguration.SpaceVcs
 )

@@ -33,18 +33,15 @@ import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.RunParams
 import org.jetbrains.bsp.protocol.RunResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
-import org.jetbrains.bsp.protocol.ScalacOptionsParams
-import org.jetbrains.bsp.protocol.ScalacOptionsResult
 import org.jetbrains.bsp.protocol.TestParams
 import org.jetbrains.bsp.protocol.TestResult
-import org.jetbrains.bsp.protocol.WorkspaceBazelBinPathResult
+import org.jetbrains.bsp.protocol.WorkspaceBazelPathsResult
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
-import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceNameResult
 
@@ -83,9 +80,6 @@ class BspServerApi(
 
   override suspend fun buildTargetMobileInstall(params: MobileInstallParams): MobileInstallResult = executeService.mobileInstall(params)
 
-  override suspend fun buildTargetScalacOptions(params: ScalacOptionsParams): ScalacOptionsResult =
-    projectSyncService.buildTargetScalacOptions(params)
-
   override suspend fun buildTargetJavacOptions(params: JavacOptionsParams): JavacOptionsResult =
     projectSyncService.buildTargetJavacOptions(params)
 
@@ -103,13 +97,11 @@ class BspServerApi(
 
   override suspend fun workspaceGoLibraries(): WorkspaceGoLibrariesResult = projectSyncService.workspaceBuildGoLibraries()
 
-  override suspend fun workspaceInvalidTargets(): WorkspaceInvalidTargetsResult = projectSyncService.workspaceInvalidTargets()
-
   override suspend fun workspaceDirectories(): WorkspaceDirectoriesResult = projectSyncService.workspaceDirectories()
 
   override suspend fun workspaceBazelRepoMapping(): WorkspaceBazelRepoMappingResult = projectSyncService.workspaceBazelRepoMapping()
 
-  override suspend fun workspaceBazelBinPath(): WorkspaceBazelBinPathResult = projectSyncService.workspaceBazelBinPath()
+  override suspend fun workspaceBazelPaths(): WorkspaceBazelPathsResult = projectSyncService.workspaceBazelPaths()
 
   override suspend fun workspaceName(): WorkspaceNameResult = projectSyncService.workspaceName()
 
@@ -120,4 +112,6 @@ class BspServerApi(
     projectSyncService.resolveRemoteToLocal(params)
 
   override suspend fun workspaceContext(): WorkspaceContext = projectSyncService.workspaceContext()
+
+  override suspend fun jvmToolchainInfo() = projectSyncService.buildJvmToolchainInfo()
 }

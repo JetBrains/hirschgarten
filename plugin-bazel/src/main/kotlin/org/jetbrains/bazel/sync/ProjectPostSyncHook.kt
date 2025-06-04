@@ -4,6 +4,7 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import org.jetbrains.bazel.annotations.PublicApi
+import org.jetbrains.bazel.ui.console.withSubtask
 
 /**
  * Represents a post-sync hook which will be executed after each sync (if `isEnabled` returns true).
@@ -44,3 +45,6 @@ interface ProjectPostSyncHook {
 val Project.projectPostSyncHooks: List<ProjectPostSyncHook>
   get() =
     ProjectPostSyncHook.ep.extensionList.filter { it.isEnabled(this) }
+
+suspend fun <T> ProjectPostSyncHook.ProjectPostSyncHookEnvironment.withSubtask(text: String, block: suspend (subtaskId: String) -> T) =
+  project.withSubtask(progressReporter, taskId, text, block)

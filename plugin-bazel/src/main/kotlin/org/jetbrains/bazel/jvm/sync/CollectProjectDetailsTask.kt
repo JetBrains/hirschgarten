@@ -12,6 +12,7 @@ import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.util.PathUtilRt
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -41,12 +42,12 @@ import org.jetbrains.bazel.sync.scope.ProjectSyncScope
 import org.jetbrains.bazel.sync.task.asyncQueryIf
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.task.queryIf
-import org.jetbrains.bazel.target.calculateFileToTarget
+import org.jetbrains.bazel.target.sync.projectStructure.TargetUtilsProjectStructureDiff
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
-import org.jetbrains.bazel.utils.isSourceFile
+import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bazel.workspacemodel.entities.includesJava
@@ -55,7 +56,6 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
-import org.jetbrains.bsp.protocol.ScalacOptionsParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -70,6 +70,7 @@ class CollectProjectDetailsTask(
   private val project: Project,
   private val taskId: String,
   private val diff: MutableEntityStorage,
+  private val targetUtilsDiff: TargetUtilsProjectStructureDiff,
 ) {
   private var uniqueJavaHomes: Set<Path>? = null
 
@@ -223,8 +224,6 @@ class CollectProjectDetailsTask(
             projectDetails.targetIds.associateWith { transformer.moduleDetailsForTargetId(it) }
           }
 
-        val fileToTarget: Map<Path, List<Label>> = calculateFileToTarget(targetIdToModuleDetails)
-
         val targetIdToModuleEntitiesMap =
           bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
             val syncedTargetIdToTargetInfo =
@@ -234,31 +233,24 @@ class CollectProjectDetailsTask(
               if (syncScope is FullProjectSync) {
                 syncedTargetIdToTargetInfo
               } else {
-                project.targetUtils.labelToTargetInfo.mapKeys { it.key } +
-                  syncedTargetIdToTargetInfo
+                project.targetUtils.computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo)
               }
             val targetIdToModuleEntityMap =
               TargetIdToModuleEntitiesMap(
                 projectDetails = projectDetails,
                 targetIdToModuleDetails = targetIdToModuleDetails,
                 targetIdToTargetInfo = targetIdToTargetInfo,
-                fileToTarget = fileToTarget,
+                // TODO: remove usage, https://youtrack.jetbrains.com/issue/BAZEL-2015
+                fileToTargetWithoutLowPrioritySharedSources = targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources,
                 projectBasePath = projectBasePath,
                 project = project,
                 isAndroidSupportEnabled = false,
               )
-
-            if (syncScope is FullProjectSync) {
-              project.targetUtils.saveTargets(
-                targetIdToTargetInfo,
-                targetIdToModuleEntityMap,
-                fileToTarget,
-                projectDetails.libraries,
-                libraryModules,
-              )
-            }
             targetIdToModuleEntityMap
           }
+
+        // TODO: remove this: https://youtrack.jetbrains.com/issue/BAZEL-2015/
+        targetUtilsDiff.libraryItems = projectDetails.libraries
 
         val modulesToLoad = targetIdToModuleEntitiesMap.values.flatten().distinctBy { module -> module.getModuleName() }
 
@@ -282,6 +274,7 @@ class CollectProjectDetailsTask(
               projectBasePath = projectBasePath,
               project = project,
               isAndroidSupportEnabled = false,
+              libraryModules = libraryModules,
             )
 
           workspaceModelUpdater.loadModules(modulesToLoad + libraryModules)
@@ -360,12 +353,20 @@ class CollectProjectDetailsTask(
 
   private fun checkSharedSources() {
     if (project.isSharedSourceSupportEnabled) return
-    val fileToTarget = project.targetUtils.fileToTarget
-    for ((file, targets) in fileToTarget) {
-      if (targets.size <= 1) continue
-      if (!file.isSourceFile()) continue
-      if (IGNORED_NAMES_FOR_OVERLAPPING_SOURCES.any { file.endsWith(it) }) continue
-      warnOverlappingSources(targets[0], targets[1], file)
+    if (!BazelFeatureFlags.checkSharedSources) return
+    for ((file, labels) in project.targetUtils.getSharedFiles()) {
+      if (labels.size <= 1) {
+        continue
+      }
+
+      val fileName = PathUtilRt.getFileName(file.toString())
+      if (!SourceType.hasSourceFileExtension(fileName)) {
+        continue
+      }
+      if (IGNORED_NAMES_FOR_OVERLAPPING_SOURCES.any { fileName.endsWith(it) }) {
+        continue
+      }
+      warnOverlappingSources(firstTarget = labels[0], secondTarget = labels[1], fileName = fileName)
       break
     }
   }
@@ -373,7 +374,7 @@ class CollectProjectDetailsTask(
   private fun warnOverlappingSources(
     firstTarget: Label,
     secondTarget: Label,
-    source: Path,
+    fileName: String,
   ) {
     BazelBalloonNotifier.warn(
       BazelPluginBundle.message("widget.collect.targets.overlapping.sources.title"),
@@ -381,13 +382,13 @@ class CollectProjectDetailsTask(
         "widget.collect.targets.overlapping.sources.message",
         firstTarget.toString(),
         secondTarget.toString(),
-        source.fileName,
+        fileName,
       ),
     )
   }
 
   private companion object {
-    private val IGNORED_NAMES_FOR_OVERLAPPING_SOURCES = listOf("empty.kt")
+    private val IGNORED_NAMES_FOR_OVERLAPPING_SOURCES = arrayOf("empty.kt")
   }
 }
 
@@ -428,23 +429,10 @@ suspend fun calculateProjectDetailsWithCapabilities(
           server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
         }
 
-      // Same for Scala
-      val scalacOptionsResult =
-        // TODO: Son
-        if (libraries == null) {
-          asyncQueryIf(scalaTargetIds.isNotEmpty(), "buildTarget/scalacOptions") {
-            server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
-          }
-        } else {
-          null
-        }
-
       ProjectDetails(
         targetIds = bspBuildTargets.targets.map { it.id },
         targets = bspBuildTargets.targets.toSet(),
         javacOptions = javacOptionsResult.await()?.items ?: emptyList(),
-        // TODO: Son
-        scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
         libraries = libraries.libraries,
         jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
       )

@@ -25,7 +25,6 @@ kt_jvm_library(
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/diagnostics",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/firstPhase",
-        "@maven//:org_apache_logging_log4j_log4j_api",
-        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_slf4j_slf4j_api",
     ],
 )

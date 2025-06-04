@@ -18,6 +18,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.projectAware.BazelProjectModuleBuildTasksTracker
+import org.jetbrains.bazel.run.config.HotswappableRunConfiguration
 import org.jetbrains.bazel.server.tasks.runBuildTargetTask
 import org.jetbrains.bazel.target.getModule
 import org.jetbrains.bazel.ui.console.ConsoleService
@@ -137,4 +138,8 @@ abstract class LocalJvmRunnerAction(
 
 private const val RETRIEVE_JVM_ENVIRONMENT_ID = "bsp-retrieve-jvm-environment"
 
-class BspJvmApplicationConfiguration(name: String, project: Project) : ApplicationConfiguration(name, project)
+class BspJvmApplicationConfiguration(name: String, project: Project) :
+  ApplicationConfiguration(name, project),
+  HotswappableRunConfiguration {
+  override fun getAffectedTargets(): List<Label> = getUserData(LocalJvmRunnerAction.targetsToPreBuild)?.take(1) ?: listOf()
+}

@@ -9,9 +9,6 @@
     <file name="plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/notifications/BazelBspAttachSourcerProvider.kt">
         <error line="1" column="1" source="standard:filename" />
     </file>
-    <file name="protocol/src/main/kotlin/org/jetbrains/bsp/protocol/WorkspaceInvalidTargets.kt">
-        <error line="1" column="1" source="standard:filename" />
-    </file>
     <file name="sdkcompat/v243/Dummy.kt">
         <error line="1" column="1" source="standard:no-empty-file" />
     </file>
@@ -23,6 +20,12 @@
     </file>
     <file name="sdkcompat/v251/org/jetbrains/bazel/sdkcompat/Dummy.kt">
         <error line="1" column="1" source="standard:no-empty-file" />
+    </file>
+    <file name="sdkcompat/v252/Dummy.kt">
+      <error line="1" column="1" source="standard:no-empty-file" />
+    </file>
+    <file name="sdkcompat/v252/org/jetbrains/bazel/sdkcompat/Dummy.kt">
+      <error line="1" column="1" source="standard:no-empty-file" />
     </file>
     <file name="server/example/kotlincplugin/User.kt">
         <error line="3" column="1" source="standard:no-wildcard-imports" />

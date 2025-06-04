@@ -3,11 +3,13 @@ package org.jetbrains.bazel.workspacemodel.entities.impl
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
+import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
+import com.intellij.platform.workspace.storage.annotations.Child
 import com.intellij.platform.workspace.storage.impl.EntityLink
 import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
@@ -32,7 +34,7 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
 
   private companion object {
     internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(ModuleEntity::class.java, AndroidAddendumEntity::class.java,
-      ConnectionId.ConnectionType.ONE_TO_ONE, false)
+                                                                          ConnectionId.ConnectionType.ONE_TO_ONE, false)
 
     private val connections = listOf<ConnectionId>(
       MODULE_CONNECTION_ID,
@@ -309,7 +311,7 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
         return if (_diff != null) {
           @OptIn(EntityStorageInstrumentationApi::class)
           ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(MODULE_CONNECTION_ID, this) as? ModuleEntity.Builder)
-            ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
+          ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
         }
         else {
           this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder
@@ -379,8 +381,7 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
   }
 
   override fun getMetadata(): EntityMetadata {
-    return MetadataStorageImpl.getMetadataByTypeFqn(
-      "org.jetbrains.bazel.workspacemodel.entities.AndroidAddendumEntity") as EntityMetadata
+    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.bazel.workspacemodel.entities.AndroidAddendumEntity") as EntityMetadata
   }
 
   override fun clone(): AndroidAddendumEntityData {
@@ -397,7 +398,7 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
 
   override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
     return AndroidAddendumEntity(androidSdkName, androidTargetType, manifestOverrides, resourceDirectories, assetsDirectories,
-      entitySource) {
+                                 entitySource) {
       this.manifest = this@AndroidAddendumEntityData.manifest
       this.resourceJavaPackage = this@AndroidAddendumEntityData.resourceJavaPackage
       this.apk = this@AndroidAddendumEntityData.apk

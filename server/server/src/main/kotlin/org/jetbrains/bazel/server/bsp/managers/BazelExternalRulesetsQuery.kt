@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import com.google.gson.JsonObject
-import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.gson.bazelGson
@@ -12,6 +11,7 @@ import org.jetbrains.bazel.server.bsp.utils.toJson
 import org.jetbrains.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
 import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.slf4j.LoggerFactory
 import org.w3c.dom.Document
 import org.w3c.dom.NodeList
 import javax.xml.xpath.XPathConstants
@@ -105,7 +105,7 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
   }
 
   companion object {
-    private val log = LogManager.getLogger(BazelExternalRulesetsQueryImpl::class.java)
+    private val log = LoggerFactory.getLogger(BazelExternalRulesetsQueryImpl::class.java)
   }
 }
 
@@ -155,7 +155,7 @@ class BazelBzlModExternalRulesetsQueryImpl(
   }
 
   companion object {
-    private val log = LogManager.getLogger(BazelBzlModExternalRulesetsQueryImpl::class.java)
+    private val log = LoggerFactory.getLogger(BazelBzlModExternalRulesetsQueryImpl::class.java)
   }
 }
 

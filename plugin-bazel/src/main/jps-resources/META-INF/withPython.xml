@@ -1,6 +1,9 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij">
-        <programRunner implementation="org.jetbrains.bazel.python.PythonBspDebugRunner"/>
+        <programRunner implementation="org.jetbrains.bazel.python.run.PythonBspDebugRunner"/>
+      <runLineMarkerContributor
+        implementationClass="org.jetbrains.bazel.python.gutter.BazelPyRunLineMarkerContributor"
+        language="Python"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.bazel">
@@ -9,7 +12,13 @@
         <sourceTypeIconProvider
                 implementation="org.jetbrains.bazel.python.sync.PythonSourceIconProvider"/>
 
-        <runHandlerProvider implementation="org.jetbrains.bazel.python.PythonBazelRunHandler$Provider"
+        <runHandlerProvider implementation="org.jetbrains.bazel.python.run.PythonBazelRunHandler$Provider"
                             id="PythonBazelRunHandlerProvider"/>
+        <runHandlerProvider implementation="org.jetbrains.bazel.python.run.PythonBazelTestHandler$Provider"
+                            id="PythonBazelTestHandlerProvider"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="Pythonid">
+        <importResolver implementation="org.jetbrains.bazel.python.resolve.BazelPyImportResolver"/>
     </extensions>
 </idea-plugin>

@@ -1,7 +1,8 @@
 <idea-plugin>
     <extensions defaultExtensionNs="org.jetbrains.bazel">
         <!-- Dependency: JvmSyncHook -> TargetUtils#updateComputedFields -> toShortString -> BazelRepoMappingService -->
-        <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook" order="after BazelRepoMappingSyncHook"/>
+      <projectSyncHook implementation="org.jetbrains.bazel.jvm.sync.JvmSyncHook"
+                       order="after BazelRepoMappingSyncHook, after TargetUtilsSyncHook, after DirectoriesSyncHook"/>
 
         <sourceTypeIconProvider implementation="org.jetbrains.bazel.java.configuration.JavaSourceTypeIconProvider"/>
         <psiElementConfigurationLocator implementation="org.jetbrains.bazel.java.junit.JavaPsiElementConfigurationLocator"/>

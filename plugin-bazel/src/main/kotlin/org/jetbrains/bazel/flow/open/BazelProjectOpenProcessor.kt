@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.flow.open
 
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -8,8 +7,9 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.settings.bazel.setProjectViewPath
 import java.io.IOException
 import java.nio.file.Path
 import javax.swing.Icon
@@ -35,7 +35,7 @@ internal class BazelProjectOpenProcessor : BaseProjectOpenProcessor() {
   override val name: String = BazelPluginConstants.BAZEL_DISPLAY_NAME + " (EAP)"
 
   override val isStrongProjectInfoHolder: Boolean
-    get() = ApplicationManager.getApplication().isHeadlessEnvironment
+    get() = BazelFeatureFlags.autoOpenProjectIfPresent
 
   /**
    * The project is only eligible to be opened with Bazel Plugin if workspace files can be reached from the given vFile
@@ -83,14 +83,12 @@ internal class BazelProjectOpenProcessor : BaseProjectOpenProcessor() {
           overwrite = true,
           bazelPackageDir = bazelPackageDir.toNioPath(),
         )
-      project.bazelProjectSettings =
-        project.bazelProjectSettings.withNewProjectViewPath(outputProjectViewFilePath.toAbsolutePath())
+      project.setProjectViewPath(outputProjectViewFilePath.toAbsolutePath())
     }
 
   private fun projectViewFileBeforeOpenCallback(originalVFile: VirtualFile): (Project) -> Unit =
     { project ->
-      project.bazelProjectSettings =
-        project.bazelProjectSettings.withNewProjectViewPath(originalVFile.toNioPath().toAbsolutePath())
+      project.setProjectViewPath(originalVFile.toNioPath().toAbsolutePath())
     }
 }
 

@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.codeInsight.lookup.LookupElementBuilder
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VfsUtilCore
@@ -18,6 +16,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLitera
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
+import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
@@ -68,7 +67,11 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     val lookupElements =
       allFiles
         .map {
-          fileLookupElement(VfsUtilCore.getRelativePath(it, currentDirectory)!!)
+          getCompletionLookupElemenent(
+            VfsUtilCore
+              .getRelativePath(it, currentDirectory)!!,
+            PlatformIcons.FILE_ICON,
+          )
         }.toTypedArray()
     return lookupElements
   }
@@ -91,12 +94,6 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     }
   }
 
-  private fun fileLookupElement(name: String): LookupElement =
-    LookupElementBuilder
-      .create("\"" + name + "\"")
-      .withIcon(PlatformIcons.FILE_ICON)
-      .withPresentableText(name)
-
   private fun VirtualFile.isBazelFile(): Boolean = BUILD_FILE_NAMES.any { name == it }
 
   private fun isTargetCompletionLocation(): Boolean { // TODO: Correct target completion location validation.
@@ -106,18 +103,11 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
 
   private fun targetCompletion(): Array<LookupElement> {
     val project = element.project
-    val targetUtils = project.targetUtils
-    return targetUtils
+    return project.targetUtils
       .allTargetsAndLibrariesLabels
-      .map { targetLookupElement(it) }
+      .map { getCompletionLookupElemenent(it, PlatformIcons.PACKAGE_ICON) }
       .toTypedArray()
   }
-
-  private fun targetLookupElement(name: String): LookupElement =
-    LookupElementBuilder
-      .create("\"" + name + "\"")
-      .withIcon(PlatformIcons.PACKAGE_ICON)
-      .withPresentableText(name)
 
   private fun isInNameArgument(): Boolean {
     val parent = element.parent ?: return false
@@ -131,13 +121,16 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     val lookupElements = mutableListOf<LookupElement>()
     for ((_, bzlFiles) in repoNameToBzlFiles) {
       for (label in bzlFiles) {
-        lookupElements.add(fileLookupElement(label.toShortString(element.project)))
+        lookupElements.add(
+          getCompletionLookupElemenent(
+        label.toShortString(element.project),
+         PlatformIcons.FILE_ICON)
+        )
       }
     }
     return lookupElements.toTypedArray()
   }
 
   companion object {
-    private val LOG = logger<BazelLabelReference>()
   }
 }

@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.languages.starlark.psi.expressions
 
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
+import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiReference
@@ -14,6 +17,28 @@ import org.jetbrains.bazel.languages.starlark.references.StarlarkClassnameRefere
 import org.jetbrains.bazel.languages.starlark.references.StarlarkLoadReference
 import org.jetbrains.bazel.languages.starlark.references.StarlarkVisibilityReference
 import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
+import javax.swing.Icon
+
+fun getCompletionLookupElemenent(
+  name: String,
+  icon: Icon,
+  priority: Double = 0.0,
+): LookupElement =
+  PrioritizedLookupElement.withPriority(
+    LookupElementBuilder
+      .create("\"" + name + "\"")
+      .withIcon(icon)
+      .withPresentableText(name)
+      .withInsertHandler { context, _ ->
+        // This prevents inserting a duplicate quote at the end.
+        val document = context.document
+        val offset = context.tailOffset
+        if (offset < document.textLength && document.charsSequence[offset] == '"') {
+          document.deleteString(offset, offset + 1)
+        }
+      },
+    priority,
+  )
 
 class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitStringLiteralExpression(this)

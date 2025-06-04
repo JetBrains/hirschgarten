@@ -37,7 +37,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BazelHotSwapBundle
-import org.jetbrains.bazel.runnerAction.BspJvmApplicationConfiguration
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -192,12 +191,10 @@ object BazelHotSwapManager {
     }
     val env = (process.session as? XDebugSessionImpl)?.executionEnvironment ?: return null
     if (!HotSwapUtils.canHotSwap(env, project)) return null
-    val runProfile = env.runProfile as? BspJvmApplicationConfiguration ?: return null
-    // build manifest if not exists
+
     return HotSwappableDebugSession(
       session,
       env,
-      runProfile,
     )
   }
 
@@ -221,9 +218,5 @@ object BazelHotSwapManager {
     }
   }
 
-  data class HotSwappableDebugSession(
-    val session: DebuggerSession,
-    val env: ExecutionEnvironment,
-    val runConfig: BspJvmApplicationConfiguration,
-  )
+  data class HotSwappableDebugSession(val session: DebuggerSession, val env: ExecutionEnvironment)
 }

@@ -40,7 +40,7 @@ interface JvmBinaryJarsEntity : WorkspaceEntity {
       return builder
     }
   }
-//endregion
+  //endregion
 }
 
 //region generated code

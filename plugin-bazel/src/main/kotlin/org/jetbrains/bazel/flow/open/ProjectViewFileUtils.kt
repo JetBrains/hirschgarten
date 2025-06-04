@@ -30,7 +30,7 @@ private val INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE =
   """
   # This project view file may be overwritten by the Bazel plugin.
   # To use it as default, place it in the Bazel module or workspace root directory.
-  # For more options, see https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md
+  # For more options, see https://github.com/JetBrains/hirschgarten/blob/main/commons/src/main/kotlin/org/jetbrains/bazel/projectview/README.md
   
   derive_targets_from_directories: true
   directories: %s

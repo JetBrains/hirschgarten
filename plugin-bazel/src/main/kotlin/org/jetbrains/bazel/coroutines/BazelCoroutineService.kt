@@ -13,11 +13,11 @@ import org.jetbrains.bazel.annotations.InternalApi
 
 @Service(Service.Level.PROJECT)
 @InternalApi
-class BazelCoroutineService(private val cs: CoroutineScope) {
-  fun start(callable: suspend () -> Unit): Job = cs.launch { callable() }
+class BazelCoroutineService(private val coroutineScope: CoroutineScope) {
+  fun start(block: suspend CoroutineScope.() -> Unit): Job = coroutineScope.launch(block = block)
 
   fun <T> startAsync(lazy: Boolean = false, callable: suspend () -> T): Deferred<T> =
-    cs.async(start = if (lazy) CoroutineStart.LAZY else CoroutineStart.DEFAULT) { callable() }
+    coroutineScope.async(start = if (lazy) CoroutineStart.LAZY else CoroutineStart.DEFAULT) { callable() }
 
   companion object {
     @JvmStatic

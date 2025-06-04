@@ -9,6 +9,7 @@ intellij_integration_test_suite(
         ":public-api-methods.txt",
         "//plugin-bazel",
     ],
+    tags = ["exclusive"],
     test_package_root = "org.jetbrains",
     runtime_deps = [
         "//plugin-bazel",
