@@ -33,6 +33,7 @@ import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.ImmutableEntityStorage
+import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.workspaceModel.ide.legacyBridge.impl.java.JAVA_SOURCE_ROOT_ENTITY_TYPE_ID
 import com.intellij.workspaceModel.ide.toPath
@@ -175,7 +176,7 @@ private suspend fun processFileEvent(
   project: Project,
   workspaceModel: WorkspaceModel,
 ) {
-  val storage = workspaceModel.currentSnapshot
+  val entityStorageDiff = MutableEntityStorage.from(workspaceModel.currentSnapshot)
 
   val newFile = event.getNewFile()
   val oldFilePath = event.getOldFilePath()
@@ -190,7 +191,7 @@ private suspend fun processFileEvent(
           project = project,
           workspaceModel = workspaceModel,
           targetUtils = targetUtils,
-          storage = storage,
+          entityStorageDiff = entityStorageDiff,
         )
       }
       reporter.nextStep(PROGRESS_DELETE_STEP_SIZE)
@@ -199,13 +200,17 @@ private suspend fun processFileEvent(
           newFile = it,
           project = project,
           workspaceModel = workspaceModel,
-          storage = storage,
-          reporter,
+          entityStorageDiff = entityStorageDiff,
+          progressReporter = reporter,
         )
       }
+
+      reporter.nextStep(endFraction = 100, text = BazelPluginBundle.message("file.change.processing.step.commit")) {
+        workspaceModel.update("File changes processing (Bazel)") {
+          it.applyChangesFrom(entityStorageDiff)
+        }
+      }
     }
-
-
   }
 }
 
@@ -220,7 +225,7 @@ private suspend fun processFileCreated(
   newFile: VirtualFile,
   project: Project,
   workspaceModel: WorkspaceModel,
-  storage: ImmutableEntityStorage,
+  entityStorageDiff: MutableEntityStorage,
   progressReporter: SequentialProgressReporter,
 ) {
   // ProjectFileIndex::getModulesForFile is not compatible with IJ 2024, but it's not important enough to bother with SDK-compat
@@ -242,24 +247,23 @@ private suspend fun processFileCreated(
       endFraction = PROGRESS_QUERY_STEP_SIZE,
       text = BazelPluginBundle.message("file.change.processing.step.query"),
     ) { queryTargetsForFile(project, url) } ?: return
-  progressReporter.nextStep(endFraction = 100, text = BazelPluginBundle.message("file.change.processing.step.commit")) {
-    val modules =
-      targets
-        .mapNotNull { it.toModuleEntity(storage, project) }
+
+  val modules =
+    targets
+      .mapNotNull { it.toModuleEntity(workspaceModel.currentSnapshot, project) }
 //        .filter { !existingModules.contains(it) } // 251
-        .filter { it != existingModule } // 243
-    modules.forEach { url.addToModule(workspaceModel, it, newFile.extension) }
-    project.targetUtils.addFileToTargetIdEntry(path, targets)
-  }
+      .filter { it != existingModule } // 243
+  modules.forEach { url.addToModule(entityStorageDiff, it, newFile.extension) }
+  project.targetUtils.addFileToTargetIdEntry(path, targets)
 }
 
-private suspend fun processFileRemoved(
+private fun processFileRemoved(
   oldFilePath: String,
   newFile: VirtualFile?,
   project: Project,
   workspaceModel: WorkspaceModel,
   targetUtils: TargetUtils,
-  storage: ImmutableEntityStorage,
+  entityStorageDiff: MutableEntityStorage,
 ) {
   val oldUrl = workspaceModel.getVirtualFileUrlManager().fromPath(oldFilePath)
   val oldUri = oldFilePath.toNioPathOrNull()!!
@@ -267,10 +271,10 @@ private suspend fun processFileRemoved(
   val modules =
     targetUtils
       .getTargetsForPath(oldUri)
-      .mapNotNull { it.toModuleEntity(storage, project) }
+      .mapNotNull { it.toModuleEntity(workspaceModel.currentSnapshot, project) }
   modules.forEach {
-    oldUrl.removeFromModule(workspaceModel, it)
-    newUrl?.removeFromModule(workspaceModel, it) // IntelliJ might have already changed the content root's path to the new one
+    oldUrl.removeFromModule(entityStorageDiff, it)
+    newUrl?.removeFromModule(entityStorageDiff, it) // IntelliJ might have already changed the content root's path to the new one
   }
   targetUtils.removeFileToTargetIdEntry(oldUri)
 }
@@ -300,8 +304,8 @@ private fun Label.toModuleEntity(storage: ImmutableEntityStorage, project: Proje
   return storage.resolve(moduleId)
 }
 
-private suspend fun VirtualFileUrl.addToModule(
-  workspaceModel: WorkspaceModel,
+private fun VirtualFileUrl.addToModule(
+  entityStorageDiff: MutableEntityStorage,
   module: ModuleEntity,
   extension: String?,
 ) {
@@ -335,23 +339,11 @@ private suspend fun VirtualFileUrl.addToModule(
       sourceRoots += listOf(sourceRoot)
     }
 
-  updateContentRoots(workspaceModel, module) { it + contentRootEntity }
+  entityStorageDiff.modifyModuleEntity(module) { contentRoots += contentRootEntity }
 }
 
-private suspend fun VirtualFileUrl.removeFromModule(workspaceModel: WorkspaceModel, module: ModuleEntity) {
-  updateContentRoots(workspaceModel, module) { it.filter { contentRoot -> contentRoot.url != this } }
-}
-
-private suspend fun updateContentRoots(
-  workspaceModel: WorkspaceModel,
-  module: ModuleEntity,
-  updater: (List<ContentRootEntity.Builder>) -> List<ContentRootEntity.Builder>,
-) {
-  workspaceModel.update("File changes processing") {
-    it.modifyModuleEntity(module) {
-      contentRoots = updater(contentRoots)
-    }
-  }
+private fun VirtualFileUrl.removeFromModule(entityStorageDiff: MutableEntityStorage, module: ModuleEntity) {
+  entityStorageDiff.modifyModuleEntity(module) { contentRoots = contentRoots.filter { it.url != this@removeFromModule} }
 }
 
 private const val PROCESSING_DELAY = 250L // not noticeable by the user, but if there are many events simultaneously, we will get them all
