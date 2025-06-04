@@ -42,11 +42,14 @@ internal suspend fun configureProjectCounterPlatform(project: Project) {
 }
 
 private suspend fun removeFakeModulesAndLibraries(project: Project) {
-  if (!project.serviceAsync<BazelProjectProperties>().isBazelProject ||
-    !RegistryManager.getInstanceAsync().`is`("ide.create.fake.module.on.project.import")
-  ) {
-    return
-  }
+  if (!project.serviceAsync<BazelProjectProperties>().isBazelProject) return
+  val createFakeModuleOnProjectImport =
+    try {
+      RegistryManager.getInstanceAsync().`is`("ide.create.fake.module.on.project.import")
+    } catch (_: Throwable) {
+      true
+    }
+  if (!createFakeModuleOnProjectImport) return
 
   val workspaceModel = project.serviceAsync<WorkspaceModel>()
   writeAction {
