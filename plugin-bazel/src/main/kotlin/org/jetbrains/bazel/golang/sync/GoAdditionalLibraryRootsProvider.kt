@@ -17,6 +17,7 @@ package org.jetbrains.bazel.golang.sync
 
 import com.google.common.collect.ImmutableList.toImmutableList
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.golang.resolve.BazelGoPackage
@@ -31,6 +32,7 @@ class GoAdditionalLibraryRootsProvider : BazelExternalLibraryProvider() {
   override val libraryName: String = GO_EXTERNAL_LIBRARY_ROOT_NAME
 
   override fun getLibraryFiles(project: Project): List<Path> {
+    if (!BazelFeatureFlags.isGoSupportEnabled) return emptyList()
     if (!project.isBazelProject) return emptyList()
     val workspacePath = project.rootDir.toNioPath()
     val isExternal = Predicate<Path> { !it.startsWith(workspacePath) }

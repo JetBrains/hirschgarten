@@ -12,6 +12,7 @@ import com.intellij.openapi.roots.SyntheticLibrary.ExcludeFileCondition
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.containers.ContainerUtil
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import java.util.function.BooleanSupplier
 import javax.swing.Icon
@@ -23,7 +24,7 @@ import javax.swing.Icon
  */
 class BazelGoSdkLibraryRootProvider : AdditionalLibraryRootsProvider() {
   override fun getAdditionalProjectLibraries(project: Project): Collection<SyntheticLibrary> {
-    if (!project.isBazelProject) return emptySet()
+    if (!project.isBazelProject || !BazelFeatureFlags.isGoSupportEnabled) return emptySet()
     val sdk = GoSdkService.getInstance(project).getSdk(null)
     if (sdk.isValid) {
       return setOf(GoSdkLibrary(sdk))

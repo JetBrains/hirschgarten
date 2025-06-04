@@ -7,6 +7,7 @@ import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.project.Project
 import com.intellij.platform.util.progress.SequentialProgressReporter
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.sync.ProjectPostSyncHook
 import org.jetbrains.bazel.target.targetUtils
@@ -17,6 +18,8 @@ import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 private const val DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH = "DO_NOT_SHOW_NOTIFICATION_ABOUT_EMPTY_GOPATH"
 
 class GoSdkSyncHook : ProjectPostSyncHook {
+  override fun isEnabled(project: Project): Boolean = BazelFeatureFlags.isGoSupportEnabled
+
   override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
     val project = environment.project
     calculateAndAddGoSdk(environment.progressReporter, project, environment.taskId)

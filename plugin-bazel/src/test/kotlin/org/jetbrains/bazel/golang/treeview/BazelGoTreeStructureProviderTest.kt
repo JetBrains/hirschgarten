@@ -47,7 +47,7 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.annotation.Nullable
 import kotlin.io.path.Path
 
-/** Unit tests for {@link BlazeGoTreeStructureProvider} */
+/** Unit tests for [BazelGoTreeStructureProvider] */
 class BazelGoTreeStructureProviderTest : MockProjectBaseTest() {
   private lateinit var fileToImportPathMap: ConcurrentHashMap<Path, String>
   private lateinit var rootNode: SyntheticLibraryElementNode

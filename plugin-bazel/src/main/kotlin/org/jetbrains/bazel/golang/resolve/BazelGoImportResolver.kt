@@ -32,6 +32,7 @@ import com.intellij.psi.ResolveState
 import com.intellij.psi.impl.SyntheticFileSystemItem
 import com.intellij.psi.search.PsiElementProcessor
 import com.intellij.util.ThreeState
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
@@ -52,6 +53,7 @@ class BazelGoImportResolver : GoImportResolver {
     module: Module?,
     resolveState: ResolveState?,
   ): Collection<GoPackage>? {
+    if (!project.isBazelProject || !BazelFeatureFlags.isGoSupportEnabled) return null
     val goPackage = doResolve(importPath, project)
     return if (goPackage != null) ImmutableList.of(goPackage) else null
   }

@@ -10,11 +10,12 @@ import com.intellij.vfs.AsyncVfsEventsPostProcessor
 import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.sync.status.SyncStatusListener
+import java.util.concurrent.atomic.AtomicBoolean
 
 @Service(Service.Level.PROJECT)
 class ExternalLibraryManager(private val project: Project, private val cs: CoroutineScope) {
-  @Volatile
-  private var duringSync: Boolean = false
+  private val duringSync: AtomicBoolean = AtomicBoolean(false)
+  private val underLibraryUpdate: AtomicBoolean = AtomicBoolean(false)
 
   @Volatile
   private var libraries: Map<Class<out BazelExternalLibraryProvider>, BazelExternalSyntheticLibrary> = mapOf()
@@ -45,7 +46,7 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
     val listener =
       object : AsyncVfsEventsListener {
         override suspend fun filesChanged(events: List<VFileEvent>) {
-          if (duringSync || libraries.isEmpty()) return
+          if (duringSync.get() || libraries.isEmpty()) return
           val deletedFiles =
             events
               .asSequence()
@@ -63,17 +64,24 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
       SyncStatusListener.TOPIC,
       object : SyncStatusListener {
         override fun syncStarted() {
-          duringSync = true
+          duringSync.set(true)
+          underLibraryUpdate.set(false)
         }
 
         override fun targetUtilAvailable() {
-          initializeVariables()
-          duringSync = false
+          handleLibraryUpdate()
+        }
+
+        private fun handleLibraryUpdate() {
+          if (duringSync.get() && underLibraryUpdate.compareAndSet(false, true)) {
+            initializeVariables()
+            duringSync.set(false)
+            underLibraryUpdate.set(false)
+          }
         }
 
         override fun syncFinished(canceled: Boolean) {
-          initializeVariables()
-          duringSync = false
+          handleLibraryUpdate()
         }
       },
     )
@@ -81,7 +89,7 @@ class ExternalLibraryManager(private val project: Project, private val cs: Corou
 
   @Synchronized
   fun getLibrary(providerClass: Class<out BazelExternalLibraryProvider>): BazelExternalSyntheticLibrary? =
-    if (duringSync) null else libraries[providerClass]
+    if (duringSync.get()) null else libraries[providerClass]
 
   companion object {
     @JvmStatic

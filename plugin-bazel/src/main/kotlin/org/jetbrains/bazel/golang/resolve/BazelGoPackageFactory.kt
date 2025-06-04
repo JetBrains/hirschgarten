@@ -20,6 +20,7 @@ import com.goide.psi.GoFile
 import com.goide.psi.impl.GoPackage
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDirectory
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.target.targetUtils
@@ -33,6 +34,7 @@ internal const val GO_PACKAGE_FACTORY_KEY = "BazelGoPackageFactory"
 /** Updates and exposes a map of import paths to files. */
 class BazelGoPackageFactory : GoPackageFactory {
   override fun createPackage(goFile: GoFile): GoPackage? {
+    if (!BazelFeatureFlags.isGoSupportEnabled) return null
     val project = goFile.project
     if (!project.isBazelProject) return null
     val virtualFile = goFile.virtualFile ?: return null
