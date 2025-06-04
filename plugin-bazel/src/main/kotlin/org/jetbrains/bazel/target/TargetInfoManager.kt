@@ -105,13 +105,15 @@ internal class TargetInfoManager(
       }
     }
 
-  fun allBuildTargetAsLabelToTargetMap(): Map<Label, BuildTarget> {
-    val result = HashMap<Label, BuildTarget>(labelToTargetInfo.size)
+  fun allBuildTargetAsLabelToTargetMap(predicate: (BuildTarget) -> Boolean): List<Label> {
+    val result = ArrayList<Label>(labelToTargetInfo.size)
     val cursor = labelToTargetInfo.cursor(null)
     while (cursor.hasNext()) {
       cursor.next()
       val target = cursor.value
-      result.put(target.id, target)
+      if (predicate(target)) {
+        result.add(target.id)
+      }
     }
     return result
   }
