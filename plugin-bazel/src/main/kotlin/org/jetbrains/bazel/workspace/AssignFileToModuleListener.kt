@@ -120,7 +120,7 @@ internal class AssignFileToModuleListener : BulkFileListener {
           action()
         }
       } catch (_: IllegalStateException) {
-        // ignore
+        // it means that Mutex::withLock was called with Mutex already locked - in that case, we just want not to start the processing
       }
     }
 
