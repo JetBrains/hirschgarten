@@ -134,7 +134,9 @@ private fun Path.toQualifiedName(): QualifiedName? {
     toString()
       .let { StringUtil.trimEnd(it, separator + PyNames.INIT_DOT_PY) }
       .removeSuffix(".py")
-  return QualifiedName.fromComponents(StringUtil.split(relativePath, separator))
+  return QualifiedName.fromComponents(
+    relativePath.split(separator).flatMap { it.split(".") }.filter { it.isNotEmpty() },
+  )
 }
 
 private fun Path.toVirtualFile(): VirtualFile? = VirtualFileManager.getInstance().findFileByNioPath(this)
