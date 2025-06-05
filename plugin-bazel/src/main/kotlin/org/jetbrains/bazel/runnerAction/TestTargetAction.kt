@@ -23,7 +23,7 @@ class TestTargetAction(
       } else if (isDebugAction && !isRunConfigName && !includeTargetNameInText) {
         BazelPluginBundle.message(
           "target.debug.test.action.text",
-            "",
+          "",
         )
       } else {
         BazelPluginBundle.message(
