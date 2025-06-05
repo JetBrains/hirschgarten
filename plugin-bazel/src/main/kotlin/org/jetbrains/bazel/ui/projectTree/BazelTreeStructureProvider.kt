@@ -31,6 +31,7 @@ import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.sdkcompat.isIndexableCompat
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 
 internal class BazelTreeStructureProvider : TreeStructureProvider {
@@ -121,7 +122,7 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
             item.virtualFile in project.directoriesContainingIncludedDirectories ||
             (
               !ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile) &&
-                WorkspaceFileIndex.getInstance(project).isIndexable(item.virtualFile)
+                WorkspaceFileIndex.getInstance(project).isIndexableCompat(item.virtualFile)
             )
         }
       } else {
@@ -136,13 +137,13 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
         ExcludedDirectoriesNode(project, rootDirectory, settings) { item ->
           if (item is PsiDirectory) {
             ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile) ||
-              !WorkspaceFileIndex.getInstance(project).isIndexable(item.virtualFile)
+              !WorkspaceFileIndex.getInstance(project).isIndexableCompat(item.virtualFile)
           } else {
             val parentDir = item.virtualFile.parent
             parentDir !in project.directoriesContainingIncludedDirectories &&
               (
                 ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile) ||
-                  !WorkspaceFileIndex.getInstance(project).isIndexable(item.virtualFile)
+                  !WorkspaceFileIndex.getInstance(project).isIndexableCompat(item.virtualFile)
               )
           }
         }
