@@ -111,6 +111,13 @@ class BazelPyImportResolver : PyImportResolver {
         .filter {
           it.kind.languageClasses.contains(LanguageClass.PYTHON)
         }
+    val allPYSourcesInMainWorkspace =
+      targets
+        .flatMap {
+          it.sources
+        }.toSet()
+        .filter { it.path.extension == "py" && it.path.startsWith(rootDir) }
+        .map { it.path.relativeTo(rootDir) }
 
     val qualifiedNamesResolverMap = mutableMapOf<QualifiedName, (PsiManager) -> PsiElement?>()
 
@@ -119,10 +126,13 @@ class BazelPyImportResolver : PyImportResolver {
 
       val fullQualifiedNameToAbsolutePath: Map<QualifiedName?, Path> =
         if (target.id.isMainWorkspace) {
-          val targetsUnderImportsPaths = importsPaths.map { rootDir.resolve(it).toChildTargets(project) }.flatten()
-          targetsUnderImportsPaths.flatMap { it.sources }.toSet().associate {
-            it.path.relativeTo(rootDir).toQualifiedName() to it.path
-          }
+          importsPaths
+            .flatMap { importsPath ->
+              allPYSourcesInMainWorkspace.filter { it.startsWith(importsPath) }
+            }.toSet()
+            .associate {
+              it.toQualifiedName() to rootDir.resolve(it)
+            }
         } else {
           target.sources.associate { sourceItem ->
             val executionRootRelativePath =

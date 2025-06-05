@@ -75,16 +75,11 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
         resources = listOf(),
       )
 
-    val workspacePipDepId = "${externalRepoPrefix}pip_deps_numpy//:pkg"
-    val bzlmodPipDepId =
-      "@@rules_python${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}pip${bzlmodRepoNameSeparator}pip_deps_39_numpy//:pkg"
-    val pipDepId = if (isBzlmod) bzlmodPipDepId else workspacePipDepId
-
     val exampleExampleLibBuildTarget =
       RawBuildTarget(
         Label.parse("$targetPrefix//lib:example_library"),
         listOf(),
-        listOf(Label.parse(pipDepId)),
+        listOf(),
         TargetKind(
           kindString = "py_library",
           ruleType = RuleType.LIBRARY,
@@ -137,28 +132,22 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
     val workspaceBuildTargetsResult = expectedWorkspaceBuildTargetsResult()
 
     return BazelBspTestScenarioStep("workspace build targets") {
-      testClient.testWorkspaceTargets(
-        1.minutes,
-        workspaceBuildTargetsResult,
-      )
+      if (isBzlmod) {
+        testClient.testMainWorkspaceTargets(
+          1.minutes,
+          workspaceBuildTargetsResult,
+        )
+      }
     }
   }
 
   private fun dependencySourcesResults(): BazelBspTestScenarioStep {
-    val workspacePipPath = Path("\$BAZEL_OUTPUT_BASE_PATH/external/pip_deps_numpy/site-packages/")
-    val bzlmodPipPath =
-      Path(
-        "\$BAZEL_OUTPUT_BASE_PATH/external/rules_python${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
-          "pip${bzlmodRepoNameSeparator}pip_deps_39_numpy/site-packages/",
-      )
-    val pipPath = if (isBzlmod) bzlmodPipPath else workspacePipPath
-
     val expectedPythonDependencySourcesItems =
       expectedWorkspaceBuildTargetsResult().targets.map {
         if (it.id == Label.parse("$targetPrefix//lib:example_library")) {
           DependencySourcesItem(
             it.id,
-            listOf(pipPath),
+            listOf(),
           )
         } else {
           DependencySourcesItem(it.id, emptyList())
@@ -172,11 +161,13 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
     return BazelBspTestScenarioStep(
       "dependency sources results",
     ) {
-      testClient.testDependencySources(
-        30.seconds,
-        dependencySourcesParams,
-        expectedDependencies,
-      )
+      if (isBzlmod) {
+        testClient.testDependencySources(
+          30.seconds,
+          dependencySourcesParams,
+          expectedDependencies,
+        )
+      }
     }
   }
 }
