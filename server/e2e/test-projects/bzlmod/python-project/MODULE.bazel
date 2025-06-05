@@ -9,10 +9,3 @@ python.toolchain(
 )
 use_repo(python, "python_3_9", "python_versions", "pythons_hub")
 
-pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
-pip.parse(
-    hub_name = "pip",
-    python_version = "3.9",
-    requirements_lock = "//lib:requirements.txt",
-)
-use_repo(pip, "pip_deps")

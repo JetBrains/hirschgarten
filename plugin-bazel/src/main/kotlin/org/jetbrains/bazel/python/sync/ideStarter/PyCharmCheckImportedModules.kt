@@ -23,7 +23,11 @@ class PyCharmCheckImportedModules(text: String, line: Int) : PlaybackCommandCoro
         "python.main.main",
       )
     val actualModulesNames = modules.map { it.name }.toSet()
-    check(expectedModulesNames.all { actualModulesNames.contains(it) }) { "Expected modules: $expectedModulesNames, actual: $actualModulesNames" }
+    check(
+      expectedModulesNames.all {
+        actualModulesNames.contains(it)
+      },
+    ) { "Expected modules: $expectedModulesNames, actual: $actualModulesNames" }
   }
 
   companion object {
