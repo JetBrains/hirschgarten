@@ -14,8 +14,7 @@ kt_jvm_library(
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/install/src/main/kotlin/org/jetbrains/bazel/install",
-        "@maven//:org_apache_logging_log4j_log4j_api",
-        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_slf4j_slf4j_api",
         "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_test",
     ],
 )

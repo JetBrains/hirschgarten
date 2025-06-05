@@ -2,7 +2,10 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 kt_jvm_library(
     name = "workspace",
-    srcs = glob(["*.kt"]),
+    srcs = glob([
+        "*.kt",
+        "packageMarker/*.kt",
+    ]),
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",

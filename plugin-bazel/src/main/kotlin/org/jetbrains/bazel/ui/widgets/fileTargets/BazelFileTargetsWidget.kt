@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.service
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.ListPopup
@@ -134,9 +134,9 @@ class BazelFileTargetsWidgetFactory : StatusBarWidgetFactory {
   override fun isEnabledByDefault(): Boolean = true
 }
 
-fun Project.updateBazelFileTargetsWidget() {
+suspend fun updateBazelFileTargetsWidget(project: Project) {
   if (!ApplicationManager.getApplication().isHeadlessEnvironment) {
-    val statusBarWidgetsManager = service<StatusBarWidgetsManager>()
+    val statusBarWidgetsManager = project.serviceAsync<StatusBarWidgetsManager>()
     statusBarWidgetsManager.updateWidget(BazelFileTargetsWidgetFactory::class.java)
   }
 }

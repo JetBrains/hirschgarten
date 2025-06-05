@@ -108,6 +108,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/performanceImpl",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/projectAware",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/debug",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/gutter",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/resolve",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/run",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/python/sync",
@@ -167,6 +168,7 @@ intellij_integration_test_suite(
         "test/kotlin/org/jetbrains/**/*.kt",
     ]),
     associates = [":plugin-bazel-lib"],
+    tags = ["exclusive"],
     test_package_root = "org.jetbrains",
     runtime_deps = [
         ":plugin-bazel-lib",

@@ -1,12 +1,12 @@
 package org.jetbrains.bazel.bazelrunner
 
 import com.intellij.openapi.util.SystemInfo
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -182,7 +182,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
 
     companion object {
-      val log: Logger = LogManager.getLogger(BazelCommand::class.java)
+      val log: Logger = LoggerFactory.getLogger(BazelCommand::class.java)
     }
   }
 

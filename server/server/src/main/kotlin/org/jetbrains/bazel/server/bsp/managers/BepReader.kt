@@ -4,10 +4,10 @@ import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
 import org.jetbrains.bazel.server.bep.BepServer
 import org.jetbrains.bazel.server.bsp.utils.DelimitedMessageReader
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Files
 import java.util.concurrent.CompletableFuture
@@ -22,7 +22,7 @@ class BepReader(private val bepServer: BepServer) {
   val serverPid = CompletableFuture<Long>()
 
   private val bazelBuildFinished: AtomicBoolean = AtomicBoolean(false)
-  private val logger: Logger = LogManager.getLogger(BepReader::class.java)
+  private val logger: Logger = LoggerFactory.getLogger(BepReader::class.java)
 
   private fun File.setFilePermissions() {
     setReadable(true, true)

@@ -18,7 +18,7 @@ import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
 import org.jetbrains.bazel.ui.widgets.fileTargets.updateBazelFileTargetsWidget
 import org.jetbrains.bazel.ui.widgets.tool.window.all.targets.registerBazelToolWindow
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
-import org.jetbrains.bazel.utils.RunConfigurationProducersDisabler
+import org.jetbrains.bazel.utils.configureRunConfigurationIgnoreProducers
 
 private val log = logger<BazelStartupActivity>()
 
@@ -51,7 +51,7 @@ class BazelStartupActivity : BazelProjectActivity() {
 }
 
 private suspend fun updateTargetToolwindow(project: Project) {
-  val targets = project.serviceAsync<TargetUtils>().allBuildTargets().associateBy { it.id }
+  val targets = project.serviceAsync<TargetUtils>().allBuildTargetAsLabelToTargetMap()
   project.serviceAsync<BazelTargetsPanelModel>().updateTargets(targets)
 }
 
@@ -59,8 +59,8 @@ private suspend fun executeOnEveryProjectStartup(project: Project) {
   log.debug("Executing Bazel startup activities for every opening")
   registerBazelToolWindow(project)
   updateTargetToolwindow(project)
-  project.updateBazelFileTargetsWidget()
-  RunConfigurationProducersDisabler(project)
+  updateBazelFileTargetsWidget(project)
+  configureRunConfigurationIgnoreProducers(project)
   project.serviceAsync<BazelWorkspace>().initialize()
 }
 
@@ -87,5 +87,5 @@ private fun startupActivityExecutedAlready(project: Project): Boolean =
   !(project as UserDataHolderEx).replace(EXECUTED_FOR_PROJECT, null, true)
 
 private suspend fun isProjectInIncompleteState(project: Project): Boolean =
-  project.serviceAsync<TargetUtils>().allTargets().isEmpty() ||
+  project.serviceAsync<TargetUtils>().getTotalTargetCount() == 0 ||
     !(project.serviceAsync<WorkspaceModel>() as WorkspaceModelImpl).loadedFromCache

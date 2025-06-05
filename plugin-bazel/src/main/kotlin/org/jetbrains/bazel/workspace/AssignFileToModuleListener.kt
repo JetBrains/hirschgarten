@@ -2,7 +2,6 @@
 
 package org.jetbrains.bazel.workspace
 
-import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.Logger
@@ -110,17 +109,15 @@ private fun VFileEvent.getOldFilePath(): String? =
     else -> null
   }
 
-private fun getRelatedProjects(file: VirtualFile): List<Project> {
+fun getRelatedProjects(file: VirtualFile): List<Project> {
   val projectManager = ProjectManager.getInstance()
   val projectLocator = ProjectLocator.getInstance()
   return if (file.isValid) {
-    projectLocator.getProjectsForFile(file).filterNotNull().filter { it.doWeCareAboutIt() }
+    projectLocator.getProjectsForFile(file).filterNotNull().filter { it.isBazelProject }
   } else {
-    projectManager.openProjects.filter { it.doWeCareAboutIt() } // the project locator would return an empty list
+    projectManager.openProjects.filter { it.isBazelProject } // the project locator would return an empty list
   }
 }
-
-private fun Project.doWeCareAboutIt(): Boolean = this.isBazelProject && this.isTrusted()
 
 private suspend fun processFileEvent(
   event: VFileEvent,

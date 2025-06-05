@@ -104,6 +104,9 @@
     <orderEntry type="module" module-name="intellij.platform.coverage" />
     <orderEntry type="module" module-name="intellij.platform.coverage.agent" />
     <orderEntry type="module" module-name="intellij.junit" />
+    <orderEntry type="module" module-name="intellij.platform.util.coroutines" />
+    <orderEntry type="library" name="mvstore" level="project" />
+    <orderEntry type="library" name="hash4j" level="project" />
     <orderEntry type="module" module-name="kotlin.project-wizard.idea" />
     <orderEntry type="module" module-name="intellij.platform.util.text.matching" />
     <orderEntry type="module" module-name="intellij.java.debugger.impl.shared" />
