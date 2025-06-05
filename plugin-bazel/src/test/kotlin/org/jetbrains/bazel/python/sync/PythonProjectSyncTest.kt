@@ -33,7 +33,7 @@ import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactly
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
@@ -213,9 +213,9 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     info: GeneratedTargetInfo,
     sources: List<SourceItem>,
     resources: List<Path>,
-  ): BuildTarget {
+  ): RawBuildTarget {
     val target =
-      BuildTarget(
+      RawBuildTarget(
         info.targetId,
         listOf(info.type),
         info.dependencies,
@@ -263,7 +263,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
     )
   }
 
-  private fun generateExpectedSourceRootEntities(target: BuildTarget, parentModuleEntity: ModuleEntity): List<ExpectedSourceRootEntity> =
+  private fun generateExpectedSourceRootEntities(target: RawBuildTarget, parentModuleEntity: ModuleEntity): List<ExpectedSourceRootEntity> =
     target.sources.map {
       val url = it.path.toVirtualFileUrl(virtualFileUrlManager)
       val sourceRootEntity = SourceRootEntity(url, SourceRootTypeId("python-source"), parentModuleEntity.entitySource)

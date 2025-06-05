@@ -8,7 +8,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -24,7 +24,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
   @Test
   fun `should return no sources roots for no sources items`() {
     // given
-    val emptySources = listOf<BuildTarget>()
+    val emptySources = listOf<RawBuildTarget>()
 
     // when
     val javaSources = sourcesItemToJavaSourceRootTransformer.transform(emptySources)
@@ -45,7 +45,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       )
 
     val buildTargetAndSourceItem =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("target"),
         listOf(),
         emptyList(),
@@ -86,7 +86,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       )
 
     val buildTargetAndSourceItem =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("target"),
         listOf(),
         emptyList(),
@@ -135,7 +135,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       )
 
     val buildTargetAndSourceItem =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("target"),
         listOf(),
         emptyList(),
@@ -191,7 +191,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       )
 
     val buildTargetAndSourceItem1 =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("target"),
         listOf(),
         emptyList(),
@@ -205,7 +205,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
         baseDirectory = Path("base/dir"),
       )
     val buildTargetAndSourceItem2 =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("target"),
         listOf(),
         emptyList(),
@@ -262,7 +262,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       )
 
     val buildTargetAndSourceItem1 =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("target"),
         listOf(),
         emptyList(),
@@ -277,7 +277,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
       )
 
     val buildTargetAndSourceItem2 =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("target"),
         listOf(),
         emptyList(),

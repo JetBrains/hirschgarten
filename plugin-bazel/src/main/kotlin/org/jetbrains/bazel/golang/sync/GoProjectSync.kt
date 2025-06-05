@@ -41,6 +41,7 @@ import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
 import org.jetbrains.bazel.workspacemodel.entities.includesGo
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
@@ -94,11 +95,11 @@ class GoProjectSync : ProjectSyncHook {
     }
   }
 
-  private fun WorkspaceBuildTargetsResult.calculateGoTargets(): List<BuildTarget> = targets.filter { it.kind.includesGo() }
+  private fun WorkspaceBuildTargetsResult.calculateGoTargets(): List<RawBuildTarget> = targets.filter { it.kind.includesGo() }
 
   private fun addModuleEntityFromTarget(
     builder: MutableEntityStorage,
-    target: BuildTarget,
+    target: RawBuildTarget,
     moduleName: String,
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
@@ -127,7 +128,7 @@ class GoProjectSync : ProjectSyncHook {
   }
 
   private fun getSourceContentRootEntities(
-    target: BuildTarget,
+    target: RawBuildTarget,
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
@@ -153,7 +154,7 @@ class GoProjectSync : ProjectSyncHook {
     if (buildTarget.kind.ruleType == RuleType.TEST) GO_TEST_SOURCE_ROOT_TYPE else GO_SOURCE_ROOT_TYPE
 
   private fun getResourceContentRootEntities(
-    target: BuildTarget,
+    target: RawBuildTarget,
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
@@ -183,7 +184,7 @@ class GoProjectSync : ProjectSyncHook {
 
   private suspend fun prepareVgoModule(
     environment: ProjectSyncHook.ProjectSyncHookEnvironment,
-    inputEntity: BuildTarget,
+    inputEntity: RawBuildTarget,
     moduleId: ModuleId,
     virtualFileUrlManager: VirtualFileUrlManager,
     idToGoTargetMap: Map<Label, BuildTarget>,

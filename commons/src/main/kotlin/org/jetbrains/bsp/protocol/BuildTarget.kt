@@ -3,18 +3,36 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
-data class BuildTarget(
-  val id: Label,
-  val tags: List<String>,
+interface BuildTarget {
+  val id: Label
+  val kind: TargetKind
+  val baseDirectory: Path
+  val data: BuildTargetData?
+  val tags: List<String>
+  val noBuild: Boolean
+}
+
+data class RawBuildTarget(
+  override val id: Label,
+  override val tags: List<String>,
   val dependencies: List<Label>,
-  val kind: TargetKind,
+  override val kind: TargetKind,
   val sources: List<SourceItem>,
   val resources: List<Path>,
-  val baseDirectory: Path,
-  val noBuild: Boolean = false, // TODO https://youtrack.jetbrains.com/issue/BAZEL-1963
-  var data: BuildTargetData? = null,
+  override val baseDirectory: Path,
+  override val noBuild: Boolean = false, // TODO https://youtrack.jetbrains.com/issue/BAZEL-1963
+  override var data: BuildTargetData? = null,
   val lowPrioritySharedSources: List<SourceItem> = emptyList(),
-)
+) : BuildTarget
+
+data class PartialBuildTarget(
+  override val id: Label,
+  override val tags: List<String>,
+  override val kind: TargetKind,
+  override val baseDirectory: Path,
+  override val data: BuildTargetData? = null,
+  override val noBuild: Boolean = false,
+) : BuildTarget
 
 sealed interface BuildTargetData
 

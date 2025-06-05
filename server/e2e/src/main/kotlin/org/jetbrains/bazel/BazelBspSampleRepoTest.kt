@@ -11,7 +11,6 @@ import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.DependencySourcesItem
@@ -29,6 +28,7 @@ import org.jetbrains.bsp.protocol.JvmRunEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmRunEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
@@ -760,7 +760,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
 
     val javaTargetsJavaBinary =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//java_targets:java_binary"),
         listOf(),
         emptyList(),
@@ -782,7 +782,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         resources = emptyList(),
       )
     val javaTargetsJavaBinaryWithFlag =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//java_targets:java_binary_with_flag"),
         listOf(),
         emptyList(),
@@ -821,7 +821,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
 
     val scalaTargetsScalaBinary =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//scala_targets:scala_binary"),
         listOf(),
         listOf(
@@ -847,7 +847,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         resources = emptyList(),
       )
     val javaTargetsSubpackageSubpackage =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//java_targets/subpackage:java_library"),
         listOf(),
         emptyList(),
@@ -869,7 +869,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         resources = emptyList(),
       )
     val javaTargetsJavaLibrary =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//java_targets:java_library"),
         listOf(),
         listOf(),
@@ -891,7 +891,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         resources = emptyList(),
       )
     val targetWithoutJvmFlagsBinary =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//target_without_jvm_flags:binary"),
         listOf(),
         listOf(
@@ -917,7 +917,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         resources = emptyList(),
       )
     val targetWithoutMainClassLibrary =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//target_without_main_class:library"),
         listOf(),
         listOf(
@@ -943,7 +943,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         resources = emptyList(),
       )
     val targetWithoutArgsBinary =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//target_without_args:binary"),
         listOf(),
         listOf(
@@ -974,7 +974,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         "maven${bzlmodRepoNameSeparator}maven//:com_google_guava_guava"
     val guavaDep = if (isBzlmod) guavaDepBazel7 else guavaDepBazel5And6
     val targetWithDependencyJavaBinary =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//target_with_dependency:java_binary"),
         listOf(),
         listOf(
@@ -999,7 +999,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         resources = emptyList(),
       )
     val scalaTargetsScalaTest =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//scala_targets:scala_test"),
         listOf(),
         listOf(
@@ -1039,7 +1039,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         resources = emptyList(),
       )
     val targetWithResourcesJavaBinary =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//target_with_resources:java_binary"),
         listOf(),
         emptyList(),
@@ -1065,7 +1065,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           ),
       )
     val javaTargetsJavaLibraryExported =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//java_targets:java_library_exported"),
         listOf(),
         listOf(
@@ -1084,7 +1084,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         resources = emptyList(),
       )
     val environmentVariablesJavaLibrary =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//environment_variables:java_binary"),
         listOf(),
         emptyList(),
@@ -1106,7 +1106,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         resources = emptyList(),
       )
     val environmentVariablesJavaTest =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//environment_variables:java_test"),
         listOf(),
         emptyList(),
@@ -1128,7 +1128,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         resources = emptyList(),
       )
     val targetWithJavacExportsJavaLibrary =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//target_with_javac_exports:java_library"),
         listOf(),
         emptyList(),
@@ -1152,7 +1152,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
 
     val nonModuleTargets =
       listOf(
-        BuildTarget(
+        RawBuildTarget(
           Label.parse("@//genrule:foo"),
           listOf(),
           emptyList(),
@@ -1166,7 +1166,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           sources = emptyList(),
           resources = emptyList(),
         ),
-        BuildTarget(
+        RawBuildTarget(
           Label.parse("@//target_without_java_info:filegroup"),
           listOf(),
           emptyList(),
@@ -1180,7 +1180,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           sources = emptyList(),
           resources = emptyList(),
         ),
-        BuildTarget(
+        RawBuildTarget(
           Label.parse("@//target_without_java_info:genrule"),
           listOf(),
           emptyList(),

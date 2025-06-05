@@ -6,13 +6,13 @@ import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
 class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
   LanguagePlugin<KotlinModule>() {
-  override fun applyModuleData(moduleData: KotlinModule, buildTarget: BuildTarget) {
+  override fun applyModuleData(moduleData: KotlinModule, buildTarget: RawBuildTarget) {
     val kotlinBuildTarget = toKotlinBuildTarget(moduleData)
     buildTarget.data = kotlinBuildTarget
   }

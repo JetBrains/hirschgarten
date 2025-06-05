@@ -7,9 +7,9 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
 import org.jetbrains.bsp.protocol.AndroidTargetType
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
 
@@ -80,7 +80,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
       )
 
     val appBuildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("@@//src/main:app"),
         listOf(),
         listOf(
@@ -103,7 +103,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
       )
 
     val libBuildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("@@//src/main/java/com/example/myapplication:lib"),
         listOf(),
         listOf(
@@ -127,7 +127,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
       )
 
     val libTestBuildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("@@//src/test/java/com/example/myapplication:lib_test"),
         listOf(),
         listOf(

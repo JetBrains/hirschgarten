@@ -32,6 +32,7 @@ import org.jetbrains.bazel.sdkcompat.createHashStream128
 import org.jetbrains.bazel.sdkcompat.hashBytesTo128Bits
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.PartialBuildTarget
 import java.nio.ByteBuffer
 import java.nio.file.Path
 import kotlin.io.path.invariantSeparatorsPathString
@@ -54,7 +55,7 @@ internal class TargetInfoManager(
   private val libraryIdToTarget: MVMap<HashValue128, Label> = openIdToLabelMap(store, "libraryIdToTarget", logSupplier)
   private val moduleIdToTarget: MVMap<HashValue128, ResolvedLabel> = openIdToResolvedLabelMap(store, "moduleIdToTarget", logSupplier)
 
-  private val labelToTargetInfo: MVMap<HashValue128, BuildTarget> = createIdToBuildTargetMap(store, logSupplier)
+  private val labelToTargetInfo: MVMap<HashValue128, PartialBuildTarget> = createIdToBuildTargetMap(store, logSupplier)
 
   fun save() {
     if (store.hasUnsavedChanges()) {
@@ -161,7 +162,17 @@ internal class TargetInfoManager(
     val hashStream = createHashStream128()
     for ((label, info) in labelToTargetInfo) {
       // must be canonical label
-      this.labelToTargetInfo.put(computeLabelHash(label as ResolvedLabel, hashStream), info)
+      this.labelToTargetInfo.put(
+        computeLabelHash(label as ResolvedLabel, hashStream),
+        PartialBuildTarget(
+          id = info.id,
+          tags = info.tags,
+          kind = info.kind,
+          baseDirectory = info.baseDirectory,
+          data = info.data,
+          noBuild = info.noBuild,
+        ),
+      )
     }
   }
 
@@ -197,7 +208,17 @@ internal class TargetInfoManager(
     for (target in targets) {
       // must be canonical label
       val label = target.id as ResolvedLabel
-      this.labelToTargetInfo.put(computeLabelHash(label, hashStream), target)
+      this.labelToTargetInfo.put(
+        computeLabelHash(label, hashStream),
+        PartialBuildTarget(
+          id = target.id,
+          tags = target.tags,
+          kind = target.kind,
+          baseDirectory = target.baseDirectory,
+          data = target.data,
+          noBuild = target.noBuild,
+        ),
+      )
 
       moduleIdToTarget.put(stringToHashId(label.formatAsModuleName(project)), label)
     }
@@ -210,27 +231,25 @@ internal class TargetInfoManager(
   }
 }
 
-private fun createIdToBuildTargetMap(store: MVStore, logSupplier: () -> Logger): MVMap<HashValue128, BuildTarget> {
-  val mapBuilder = MVMap.Builder<HashValue128, BuildTarget>()
+private fun createIdToBuildTargetMap(store: MVStore, logSupplier: () -> Logger): MVMap<HashValue128, PartialBuildTarget> {
+  val mapBuilder = MVMap.Builder<HashValue128, PartialBuildTarget>()
   mapBuilder.setKeyType(HashValue128KeyDataType)
   val buildTargetInfoValueType =
-    createAnyValueDataType<BuildTarget>(
+    createAnyValueDataType<PartialBuildTarget>(
       writer = { buffer, item ->
         // don't store dependencies, sources, resources as they are saved in the workspace model already
         val data =
           bazelGson
-            .toJson(item.copy(dependencies = emptyList(), sources = emptyList(), resources = emptyList()))
+            .toJson(item)
             .encodeToByteArray()
         buffer.putVarInt(data.size)
         buffer.put(data)
       },
       reader = { buffer ->
-        bazelGson.fromJson(buffer.readString(), BuildTarget::class.java)
+        bazelGson.fromJson(buffer.readString(), PartialBuildTarget::class.java)
       },
     )
-  mapBuilder.setValueType(
-    buildTargetInfoValueType,
-  )
+  mapBuilder.setValueType(buildTargetInfoValueType)
   return openOrResetMap(store = store, name = "labelToTargetInfo", mapBuilder = mapBuilder, logSupplier = logSupplier)
 }
 

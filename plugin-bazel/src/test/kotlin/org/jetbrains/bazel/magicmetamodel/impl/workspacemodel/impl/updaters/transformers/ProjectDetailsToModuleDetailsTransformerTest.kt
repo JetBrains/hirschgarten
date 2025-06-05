@@ -7,7 +7,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
@@ -21,7 +21,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     // given
     val targetId = Label.parse("target")
     val target =
-      BuildTarget(
+      RawBuildTarget(
         targetId,
         emptyList(),
         emptyList(),
@@ -65,7 +65,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     // given
     val targetId = Label.parse("target")
     val target =
-      BuildTarget(
+      RawBuildTarget(
         targetId,
         emptyList(),
         emptyList(),
@@ -117,7 +117,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val target1Id = Label.parse("target1")
     val target2Id = Label.parse("target2")
     val target1 =
-      BuildTarget(
+      RawBuildTarget(
         target1Id,
         emptyList(),
         listOf(target2Id),
@@ -137,7 +137,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       )
 
     val target2 =
-      BuildTarget(
+      RawBuildTarget(
         target2Id,
         emptyList(),
         emptyList(),
@@ -155,7 +155,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       )
     val target3Id = Label.parse("target3")
     val target3 =
-      BuildTarget(
+      RawBuildTarget(
         target3Id,
         emptyList(),
         listOf(target2Id),
@@ -176,7 +176,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
 
     val target4Id = Label.parse("target4")
     val target4 =
-      BuildTarget(
+      RawBuildTarget(
         target4Id,
         emptyList(),
         listOf(target1Id),

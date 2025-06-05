@@ -6,7 +6,7 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -55,7 +55,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val srcJavaLibTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//src:java-lib"),
         tags = listOf(),
         dependencies = emptyList(),
@@ -71,7 +71,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
       )
 
     val srcJavaBinaryTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//src:java-binary"),
         tags = listOf(),
         dependencies = listOf(Label.parse("//src:java-lib")),
@@ -87,7 +87,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
       )
 
     val srcKotlinLibTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//src:kt-lib"),
         tags = listOf(),
         dependencies = emptyList(),
@@ -103,7 +103,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
       )
 
     val srcKotlinBinaryTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//src:kt-binary"),
         tags = listOf(),
         dependencies = listOf(Label.parse("//src:kt-lib")),

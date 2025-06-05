@@ -8,7 +8,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
@@ -23,7 +23,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   @Test
   fun `should return no resources roots for no resources items`() {
     // given
-    val emptyResources = listOf<BuildTarget>()
+    val emptyResources = listOf<RawBuildTarget>()
 
     // when
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(emptyResources)
@@ -39,7 +39,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     resourceFilePath.toFile().deleteOnExit()
 
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//target"),
         emptyList(),
         listOf(),
@@ -73,7 +73,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     resourceFilePath.toFile().deleteOnExit()
 
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//target"),
         listOf(),
         listOf(),
@@ -107,7 +107,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     resourceDirPath.toFile().deleteOnExit()
 
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//target"),
         emptyList(),
         listOf(),
@@ -146,7 +146,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     resourceFilePath3.toFile().deleteOnExit()
 
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//target"),
         emptyList(),
         listOf(),
@@ -197,7 +197,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     resourceDirPath.toFile().deleteOnExit()
 
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//target"),
         emptyList(),
         listOf(),
@@ -243,7 +243,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     resourceDirPath3.toFile().deleteOnExit()
 
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//target"),
         emptyList(),
         listOf(),
@@ -299,7 +299,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     resourceDirPath3.toFile().deleteOnExit()
 
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//target"),
         emptyList(),
         listOf(),
