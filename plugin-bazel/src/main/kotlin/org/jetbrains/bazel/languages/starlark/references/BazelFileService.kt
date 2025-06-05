@@ -3,9 +3,9 @@ package org.jetbrains.bazel.languages.starlark.references
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
@@ -69,7 +69,7 @@ class BazelFileService(private val project: Project) {
     val projectFileIndex = ProjectFileIndex.getInstance(project)
 
     for ((canonicalName, repoPath) in project.canonicalRepoNameToPath) {
-      val root = LocalFileSystem.getInstance().findFileByNioFile(repoPath) ?: continue
+      val root = VirtualFileManager.getInstance().findFileByNioPath(repoPath) ?: continue
       val visitor = FileVisitor(canonicalName, repoPath, projectFileIndex, canonicalRepoNameToBzlFiles)
       VfsUtilCore.processFilesRecursively(root, visitor::visitFile)
     }

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.repomapping
 
+import ai.grazie.annotation.TestOnly
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -14,6 +15,12 @@ import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.withSubtask
 import java.nio.file.Path
 import kotlin.io.path.Path
+
+@TestOnly
+fun Project.injectCanonicalRepoNameToPath(canonicalRepoNameToPath: Map<String, Path>) {
+  val service = BazelRepoMappingService.getInstance(this)
+  service.canonicalRepoNameToPath = canonicalRepoNameToPath
+}
 
 val Project.apparentRepoNameToCanonicalName: Map<String, String>
   get() =
