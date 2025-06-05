@@ -34,8 +34,15 @@ data class PartialBuildTarget(
   override val noBuild: Boolean = false,
 ) : BuildTarget
 
+// adding or removing new BuildTargetData should not cause cache invalidation, but still we don't want to write FQN per each target
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+// id should in 1-255 range
+annotation class ClassDiscriminator(val id: Short)
+
 sealed interface BuildTargetData
 
+@ClassDiscriminator(1)
 public data class KotlinBuildTarget(
   val languageVersion: String,
   val apiVersion: String,
@@ -44,8 +51,10 @@ public data class KotlinBuildTarget(
   var jvmBuildTarget: JvmBuildTarget? = null,
 ) : BuildTargetData
 
+@ClassDiscriminator(2)
 data class PythonBuildTarget(val version: String?, val interpreter: Path?) : BuildTargetData
 
+@ClassDiscriminator(3)
 data class ScalaBuildTarget(
   val scalaVersion: String,
   val jars: List<Path>,
@@ -53,14 +62,21 @@ data class ScalaBuildTarget(
 ) : BuildTargetData
 
 // TODO: change to interface
-data class JvmBuildTarget(val javaHome: Path, val javaVersion: String) : BuildTargetData
+@ClassDiscriminator(4)
+data class JvmBuildTarget(
+  // not used if part of PartialBuildTarget
+  @Transient @JvmField val javaHome: Path? = null,
+  val javaVersion: String,
+) : BuildTargetData
 
+@ClassDiscriminator(5)
 data class GoBuildTarget(
-  val sdkHomePath: Path?,
+  @Transient @JvmField val sdkHomePath: Path? = null,
   val importPath: String,
   val generatedLibraries: List<Path>,
 ) : BuildTargetData
 
+@ClassDiscriminator(6)
 data class CppBuildTarget(
   val version: String? = null,
   val compiler: String? = null,
@@ -74,6 +90,7 @@ public enum class AndroidTargetType(public val value: Int) {
   TEST(3),
 }
 
+@ClassDiscriminator(7)
 public data class AndroidBuildTarget(
   val androidJar: Path,
   val androidTargetType: AndroidTargetType,

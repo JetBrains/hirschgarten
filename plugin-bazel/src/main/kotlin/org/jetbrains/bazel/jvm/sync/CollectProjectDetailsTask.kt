@@ -168,7 +168,7 @@ class CollectProjectDetailsTask(
   private fun calculateAllUniqueJavaHomes(projectDetails: ProjectDetails): Set<Path> =
     projectDetails.targets
       .mapNotNull(::extractJvmBuildTarget)
-      .map { it.javaHome }
+      .map { requireNotNull(it.javaHome) { "javaHome is null but expected not to be null for $it" } }
       .toSet()
 
   private suspend fun calculateAllScalaSdkInfosSubtask(projectDetails: ProjectDetails) =
