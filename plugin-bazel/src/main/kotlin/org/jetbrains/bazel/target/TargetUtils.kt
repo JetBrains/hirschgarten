@@ -47,8 +47,9 @@ private fun nowAsDuration() = System.currentTimeMillis().toDuration(DurationUnit
 
 private fun getStorageFilename(): String {
   // version for 243 cannot use `Hashing.xxh3_128()`
-  // (not available in 243 and we don't want to bundle `hash4j` as a part of Bazel plugin - JIT, increased build script complexity)
-  return "bazel-targets-v${if (ApplicationInfo.getInstance().build.baselineVersion <= 243) "v0.5" else "1"}.db"
+  // (not available in 243, and we don't want to bundle `hash4j` as a part of Bazel plugin - JIT, increased build script complexity)
+  val suffix = if (ApplicationInfo.getInstance().build.baselineVersion <= 243) "-243" else ""
+  return "bazel-targets-v2$suffix.db"
 }
 
 @PublicApi
