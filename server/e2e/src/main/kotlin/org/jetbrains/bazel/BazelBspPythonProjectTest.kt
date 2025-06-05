@@ -7,11 +7,11 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
@@ -51,7 +51,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
       )
 
     val exampleExampleBuildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//example:example"),
         listOf(),
         listOf(
@@ -80,7 +80,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
     val pipDepId = if (isBzlmod) bzlmodPipDepId else workspacePipDepId
 
     val exampleExampleLibBuildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//lib:example_library"),
         listOf(),
         listOf(Label.parse(pipDepId)),
@@ -102,7 +102,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
       )
 
     val exampleExampleTestBuildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//test:test"),
         listOf(),
         listOf(),

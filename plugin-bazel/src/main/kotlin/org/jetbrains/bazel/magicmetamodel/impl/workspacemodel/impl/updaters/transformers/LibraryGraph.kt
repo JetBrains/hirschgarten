@@ -15,8 +15,8 @@ import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Library
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 
 data class LibraryGraphDependencies(val libraryDependencies: Set<Label>, val moduleDependencies: Set<Label>)
 
@@ -24,7 +24,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
   private val graph = libraries.associate { it.id to it.dependencies }
 
   fun calculateAllDependencies(
-    target: BuildTarget,
+    target: RawBuildTarget,
     includesTransitive: Boolean = !BazelFeatureFlags.isWrapLibrariesInsideModulesEnabled,
   ): LibraryGraphDependencies =
     if (includesTransitive) {
@@ -33,7 +33,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
       calculateDirectDependencies(target)
     }
 
-  private fun calculateAllTransitiveDependencies(target: BuildTarget): LibraryGraphDependencies {
+  private fun calculateAllTransitiveDependencies(target: RawBuildTarget): LibraryGraphDependencies {
     val toVisit = target.dependencies.toMutableSet()
     val visited = mutableSetOf<Label>(target.id)
 
@@ -61,7 +61,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
     )
   }
 
-  private fun calculateDirectDependencies(target: BuildTarget): LibraryGraphDependencies {
+  private fun calculateDirectDependencies(target: RawBuildTarget): LibraryGraphDependencies {
     val (libraryDependencies, moduleDependencies) =
       target.dependencies.partition { it.isCurrentNodeLibrary() }
     return LibraryGraphDependencies(

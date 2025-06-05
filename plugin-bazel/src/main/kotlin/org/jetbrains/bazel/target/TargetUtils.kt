@@ -33,6 +33,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.experimental.ExperimentalTypeInference
@@ -115,7 +116,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   @InternalApi
   suspend fun saveTargets(
-    targets: List<BuildTarget>,
+    targets: List<RawBuildTarget>,
     fileToTarget: Map<Path, List<Label>>,
     fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
     libraryItems: List<LibraryItem>?,
@@ -149,7 +150,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   private suspend fun calculateFileToExecutableTargets(
     libraryItems: List<LibraryItem>?,
     fileToTarget: Map<Path, List<Label>>,
-    targets: List<BuildTarget>,
+    targets: List<RawBuildTarget>,
     labelToTargetInfo: Map<Label, BuildTarget>,
   ): Map<Path, List<Label>> =
     withContext(Dispatchers.Default) {

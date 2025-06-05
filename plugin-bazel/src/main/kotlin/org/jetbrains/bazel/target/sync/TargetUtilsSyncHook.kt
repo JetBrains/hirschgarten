@@ -4,6 +4,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.target.sync.projectStructure.targetUtilsDiff
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
 private class TargetUtilsSyncHook : ProjectSyncHook {
@@ -19,6 +20,7 @@ private class TargetUtilsSyncHook : ProjectSyncHook {
   private fun calculateFileToTarget(targets: List<BuildTarget>, withLowPrioritySharedSources: Boolean): Map<Path, List<Label>> {
     val resultMap = HashMap<Path, MutableList<Label>>()
     for (target in targets) {
+      target as RawBuildTarget
       val sources =
         if (withLowPrioritySharedSources) {
           target.sources + target.lowPrioritySharedSources

@@ -9,7 +9,7 @@ import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import java.nio.file.Path
 
@@ -53,7 +53,7 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
   override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     javaLanguagePlugin.dependencySources(targetInfo, dependencyGraph)
 
-  override fun applyModuleData(moduleData: ScalaModule, buildTarget: BuildTarget) {
+  override fun applyModuleData(moduleData: ScalaModule, buildTarget: RawBuildTarget) {
     val scalaBuildTarget =
       with(moduleData.sdk) {
         ScalaBuildTarget(
