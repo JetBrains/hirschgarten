@@ -4,6 +4,7 @@ import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileKind
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
+import org.jetbrains.bazel.sdkcompat.registerOtherRootsCompat
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 
 class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexContributor<BazelProjectDirectoriesEntity> {
@@ -16,7 +17,7 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexC
   ) {
     registrar.registerIncludedDirectories(entity)
     registrar.registerExcludedDirectories(entity)
-    registrar.registerRoot(entity)
+    registrar.registerOtherRootsCompat(entity.projectRoot, entity.includedRoots, entity)
   }
 
   private fun WorkspaceFileSetRegistrar.registerIncludedDirectories(entity: BazelProjectDirectoriesEntity) =
@@ -36,13 +37,4 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexC
         entity = entity,
       )
     }
-
-  private fun WorkspaceFileSetRegistrar.registerRoot(entity: BazelProjectDirectoriesEntity) {
-    registerFileSet(
-      root = entity.projectRoot,
-      kind = WorkspaceFileKind.CONTENT_NON_INDEXABLE,
-      entity = entity,
-      customData = null,
-    )
-  }
 }
