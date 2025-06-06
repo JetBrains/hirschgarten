@@ -32,6 +32,9 @@ data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: Ba
   }
 }
 
+/**
+ * @param rulesetName apparent ruleset name
+ */
 data class RulesetLanguage(val rulesetName: String?, val language: Language)
 
 class BazelBspAspectsManager(
