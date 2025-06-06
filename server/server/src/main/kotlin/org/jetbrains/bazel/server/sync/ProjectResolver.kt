@@ -286,8 +286,11 @@ class ProjectResolver(
     }
 
   private fun getLanguageSpecificOutputGroups(featureFlags: FeatureFlags): List<String> =
-    if (featureFlags.isGoSupportEnabled) listOf(GO_SOURCE_OUTPUT_GROUP)
-    else emptyList()
+    if (featureFlags.isGoSupportEnabled) {
+      listOf(GO_SOURCE_OUTPUT_GROUP)
+    } else {
+      emptyList()
+    }
 
   private suspend fun runBazelShutDown(workspaceContext: WorkspaceContext) {
     bazelRunner.run {
