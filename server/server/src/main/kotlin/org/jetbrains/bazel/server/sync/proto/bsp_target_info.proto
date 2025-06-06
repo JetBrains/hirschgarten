@@ -98,6 +98,8 @@ message PythonTargetInfo {
   FileLocation interpreter = 1;
   string version = 2;
   repeated string imports = 3;
+  bool is_code_generator = 4;
+  repeated FileLocation generated_sources = 5;
 }
 
 message AndroidTargetInfo {

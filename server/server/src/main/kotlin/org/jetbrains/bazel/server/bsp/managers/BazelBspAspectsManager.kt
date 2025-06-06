@@ -119,6 +119,7 @@ class BazelBspAspectsManager(
     val javaEnabled = Language.Java in activeLanguages
     val pythonEnabled = Language.Python in activeLanguages
     val bazel8OrAbove = bazelRelease.major >= 8
+    // val pythonCodeGeneratorRuleNames=workspaceContext.
     Language.entries.filter { it.isTemplate }.forEach {
       val ruleLanguage = languageRuleMap[it]
 
@@ -139,6 +140,7 @@ class BazelBspAspectsManager(
           "usesRulesJvm" to ("rules_jvm" in externalRulesetNames).toString(),
           "bazel8OrAbove" to bazel8OrAbove.toString(),
           "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl]?.toString()?.let { "\"" + it + "\"" } },
+          "codeGeneratorRules" to workspaceContext.pythonCodeGeneratorRuleNames.values.toStarlarkString(),
         )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
     }
