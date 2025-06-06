@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.python.sync
 
 import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
@@ -66,7 +67,7 @@ class PythonProjectSync : ProjectSyncHook {
       // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1960
       val bspBuildTargets = environment.server.workspaceBuildTargets()
       val pythonTargets = bspBuildTargets.calculatePythonTargets()
-      val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
+      val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
       val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
       val sourceDependencies = calculateDependenciesSources(pythonTargets.map { it.id }, environment)

@@ -3,6 +3,7 @@ package org.jetbrains.bazel.jvm.sync
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
 import com.intellij.openapi.project.Project
@@ -264,7 +265,7 @@ class CollectProjectDetailsTask(
           }
 
         bspTracer.spanBuilder("load.modules.ms").use {
-          val workspaceModel = WorkspaceModel.getInstance(project)
+          val workspaceModel = project.serviceAsync<WorkspaceModel>()
           val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
 
           val workspaceModelUpdater =
@@ -458,15 +459,21 @@ private suspend fun queryWorkspaceBuildTargets(
   taskId: String,
 ): WorkspaceBuildTargetsResult =
   coroutineScope {
-    if (syncScope is PartialProjectSync) {
-      query("workspace/buildTargetsPartial") {
-        server.workspaceBuildTargetsPartial(WorkspaceBuildTargetsPartialParams(syncScope.targetsToSync))
+    when (syncScope) {
+      is PartialProjectSync -> {
+        query("workspace/buildTargetsPartial") {
+          server.workspaceBuildTargetsPartial(WorkspaceBuildTargetsPartialParams(syncScope.targetsToSync))
+        }
       }
-    } else if (syncScope is FirstPhaseSync) {
-      query("workspace/buildTargetsFirstPhase") {
-        server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams(taskId))
+
+      is FirstPhaseSync -> {
+        query("workspace/buildTargetsFirstPhase") {
+          server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams(taskId))
+        }
       }
-    } else {
-      query("workspace/buildTargets") { server.workspaceBuildTargets() }
+
+      else -> {
+        query("workspace/buildTargets") { server.workspaceBuildTargets() }
+      }
     }
   }

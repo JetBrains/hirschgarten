@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.flow.sync
 
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
@@ -16,7 +17,7 @@ import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import java.nio.file.Path
 
-class DirectoriesSyncHook : ProjectSyncHook {
+private class DirectoriesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     environment.withSubtask("Collect project directories") {
       val directories = query("workspace/directories") { environment.server.workspaceDirectories() }
@@ -28,12 +29,12 @@ class DirectoriesSyncHook : ProjectSyncHook {
     }
   }
 
-  private fun createEntity(
+  private suspend fun createEntity(
     project: Project,
     directories: WorkspaceDirectoriesResult,
     additionalExcludes: List<Path>,
   ): BazelProjectDirectoriesEntity.Builder {
-    val virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
+    val virtualFileUrlManager = project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
     val includedRoots = directories.includedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) }
     val excludedRoots =

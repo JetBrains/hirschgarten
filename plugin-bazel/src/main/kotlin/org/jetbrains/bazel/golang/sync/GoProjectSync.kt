@@ -7,6 +7,7 @@ import com.goide.vgo.project.workspaceModel.VgoWorkspaceModelUpdater
 import com.goide.vgo.project.workspaceModel.entities.VgoDependencyEntity
 import com.goide.vgo.project.workspaceModel.entities.VgoStandaloneModuleEntity
 import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
@@ -62,7 +63,7 @@ class GoProjectSync : ProjectSyncHook {
       val bspBuildTargets = environment.server.workspaceBuildTargets()
       val goTargets = bspBuildTargets.calculateGoTargets()
       val idToGoTargetMap = goTargets.associateBy({ it.id }, { it })
-      val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
+      val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
       val moduleEntities =
         goTargets.map {

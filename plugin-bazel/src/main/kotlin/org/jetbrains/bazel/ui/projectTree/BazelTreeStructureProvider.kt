@@ -34,7 +34,7 @@ import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sdkcompat.isIndexableCompat
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 
-internal class BazelTreeStructureProvider : TreeStructureProvider {
+private class BazelTreeStructureProvider : TreeStructureProvider {
   // We want to get rid of all the module (group) nodes from the project view tree;
   // in rare cases with complicated project (modules) structure IJ
   // doesn't know how to render the project tree,
@@ -119,7 +119,7 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
       if (showExcludedDirectoriesAsSeparateNode) {
         PsiFileSystemItemFilter { item ->
           item !is PsiDirectory ||
-            item.virtualFile in project.directoriesContainingIncludedDirectories ||
+            item.virtualFile in getDirectoriesContainingIncludedDirectories(project) ||
             (
               !ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile) &&
                 WorkspaceFileIndex.getInstance(project).isIndexableCompat(item.virtualFile)
@@ -140,7 +140,7 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
               !WorkspaceFileIndex.getInstance(project).isIndexableCompat(item.virtualFile)
           } else {
             val parentDir = item.virtualFile.parent
-            parentDir !in project.directoriesContainingIncludedDirectories &&
+            parentDir !in getDirectoriesContainingIncludedDirectories(project) &&
               (
                 ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile) ||
                   !WorkspaceFileIndex.getInstance(project).isIndexableCompat(item.virtualFile)
@@ -159,13 +159,8 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
       .filterNot { it is ProjectViewModuleGroupNode }
       .filterNot { it is ProjectViewModuleNode }
 
-  private val Project.directoriesContainingIncludedDirectories: Set<VirtualFile>
-    get() =
-      (
-        WorkspaceModel.getInstance(
-          this,
-        ) as WorkspaceModelInternal
-      ).entityStorage.cachedValue(directoriesContainingIncludedDirectoriesValue)
+  private fun getDirectoriesContainingIncludedDirectories(project: Project): Set<VirtualFile> =
+    (WorkspaceModel.getInstance(project) as WorkspaceModelInternal).entityStorage.cachedValue(directoriesContainingIncludedDirectoriesValue)
 
   private val directoriesContainingIncludedDirectoriesValue =
     CachedValue { storage ->
