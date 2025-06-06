@@ -110,7 +110,7 @@ internal class AssignFileToModuleListener : BulkFileListener {
 
     fun popAllEvents(): List<VFileEvent> =
       synchronized(pendingEvents) {
-        val events = pendingEvents.toList().also { pendingEvents.clear() }
+        val events = pendingEvents.toList()
         pendingEvents.clear()
         events
       }
