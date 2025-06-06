@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.bzlmod
 
+import com.intellij.util.containers.BidirectionalMap
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.ModuleOutputParser
 import org.jetbrains.bazel.bazelrunner.ModuleResolver
@@ -22,7 +23,7 @@ sealed interface RepoMapping
 
 data class BzlmodRepoMapping(
   val canonicalRepoNameToLocalPath: Map<String, Path>,
-  val apparentRepoNameToCanonicalName: Map<String, String>,
+  val apparentRepoNameToCanonicalName: BidirectionalMap<String, String>,
   val canonicalRepoNameToPath: Map<String, Path>,
 ) : RepoMapping
 
@@ -112,9 +113,13 @@ suspend fun calculateRepoMapping(
     moduleCanonicalNameToPath[canonicalName] = repoPath
   }
 
+  val apparentRepoNameToCanonicalName =
+    BidirectionalMap<String, String>()
+      .apply { putAll(moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName) }
+
   return BzlmodRepoMapping(
     moduleCanonicalNameToLocalPath,
-    moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName,
+    apparentRepoNameToCanonicalName,
     moduleCanonicalNameToPath,
   )
 }
