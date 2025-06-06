@@ -16058,6 +16058,36 @@ public final class BspTargetInfo {
      */
     com.google.protobuf.ByteString
         getImportsBytes(int index);
+
+    /**
+     * <code>bool is_code_generator = 4;</code>
+     * @return The isCodeGenerator.
+     */
+    boolean getIsCodeGenerator();
+
+    /**
+     * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+     */
+    java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> 
+        getGeneratedSourcesList();
+    /**
+     * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+     */
+    org.jetbrains.bazel.info.BspTargetInfo.FileLocation getGeneratedSources(int index);
+    /**
+     * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+     */
+    int getGeneratedSourcesCount();
+    /**
+     * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+     */
+    java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+        getGeneratedSourcesOrBuilderList();
+    /**
+     * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+     */
+    org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code bazelbsp.PythonTargetInfo}
@@ -16084,6 +16114,7 @@ public final class BspTargetInfo {
       version_ = "";
       imports_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
+      generatedSources_ = java.util.Collections.emptyList();
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
@@ -16202,6 +16233,58 @@ public final class BspTargetInfo {
       return imports_.getByteString(index);
     }
 
+    public static final int IS_CODE_GENERATOR_FIELD_NUMBER = 4;
+    private boolean isCodeGenerator_ = false;
+    /**
+     * <code>bool is_code_generator = 4;</code>
+     * @return The isCodeGenerator.
+     */
+    @java.lang.Override
+    public boolean getIsCodeGenerator() {
+      return isCodeGenerator_;
+    }
+
+    public static final int GENERATED_SOURCES_FIELD_NUMBER = 5;
+    @SuppressWarnings("serial")
+    private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> generatedSources_;
+    /**
+     * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+     */
+    @java.lang.Override
+    public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getGeneratedSourcesList() {
+      return generatedSources_;
+    }
+    /**
+     * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+     */
+    @java.lang.Override
+    public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+        getGeneratedSourcesOrBuilderList() {
+      return generatedSources_;
+    }
+    /**
+     * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+     */
+    @java.lang.Override
+    public int getGeneratedSourcesCount() {
+      return generatedSources_.size();
+    }
+    /**
+     * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+     */
+    @java.lang.Override
+    public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getGeneratedSources(int index) {
+      return generatedSources_.get(index);
+    }
+    /**
+     * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+     */
+    @java.lang.Override
+    public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
+        int index) {
+      return generatedSources_.get(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -16224,6 +16307,12 @@ public final class BspTargetInfo {
       }
       for (int i = 0; i < imports_.size(); i++) {
         com.google.protobuf.GeneratedMessage.writeString(output, 3, imports_.getRaw(i));
+      }
+      if (isCodeGenerator_ != false) {
+        output.writeBool(4, isCodeGenerator_);
+      }
+      for (int i = 0; i < generatedSources_.size(); i++) {
+        output.writeMessage(5, generatedSources_.get(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -16249,6 +16338,14 @@ public final class BspTargetInfo {
         size += dataSize;
         size += 1 * getImportsList().size();
       }
+      if (isCodeGenerator_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(4, isCodeGenerator_);
+      }
+      for (int i = 0; i < generatedSources_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(5, generatedSources_.get(i));
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -16273,6 +16370,10 @@ public final class BspTargetInfo {
           .equals(other.getVersion())) return false;
       if (!getImportsList()
           .equals(other.getImportsList())) return false;
+      if (getIsCodeGenerator()
+          != other.getIsCodeGenerator()) return false;
+      if (!getGeneratedSourcesList()
+          .equals(other.getGeneratedSourcesList())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -16293,6 +16394,13 @@ public final class BspTargetInfo {
       if (getImportsCount() > 0) {
         hash = (37 * hash) + IMPORTS_FIELD_NUMBER;
         hash = (53 * hash) + getImportsList().hashCode();
+      }
+      hash = (37 * hash) + IS_CODE_GENERATOR_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getIsCodeGenerator());
+      if (getGeneratedSourcesCount() > 0) {
+        hash = (37 * hash) + GENERATED_SOURCES_FIELD_NUMBER;
+        hash = (53 * hash) + getGeneratedSourcesList().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -16425,6 +16533,7 @@ public final class BspTargetInfo {
         if (com.google.protobuf.GeneratedMessage
                 .alwaysUseFieldBuilders) {
           getInterpreterFieldBuilder();
+          getGeneratedSourcesFieldBuilder();
         }
       }
       @java.lang.Override
@@ -16439,6 +16548,14 @@ public final class BspTargetInfo {
         version_ = "";
         imports_ =
             com.google.protobuf.LazyStringArrayList.emptyList();
+        isCodeGenerator_ = false;
+        if (generatedSourcesBuilder_ == null) {
+          generatedSources_ = java.util.Collections.emptyList();
+        } else {
+          generatedSources_ = null;
+          generatedSourcesBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -16465,9 +16582,22 @@ public final class BspTargetInfo {
       @java.lang.Override
       public org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo buildPartial() {
         org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo result = new org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo(this);
+        buildPartialRepeatedFields(result);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
+      }
+
+      private void buildPartialRepeatedFields(org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo result) {
+        if (generatedSourcesBuilder_ == null) {
+          if (((bitField0_ & 0x00000010) != 0)) {
+            generatedSources_ = java.util.Collections.unmodifiableList(generatedSources_);
+            bitField0_ = (bitField0_ & ~0x00000010);
+          }
+          result.generatedSources_ = generatedSources_;
+        } else {
+          result.generatedSources_ = generatedSourcesBuilder_.build();
+        }
       }
 
       private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.PythonTargetInfo result) {
@@ -16485,6 +16615,9 @@ public final class BspTargetInfo {
         if (((from_bitField0_ & 0x00000004) != 0)) {
           imports_.makeImmutable();
           result.imports_ = imports_;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.isCodeGenerator_ = isCodeGenerator_;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -16518,6 +16651,35 @@ public final class BspTargetInfo {
             imports_.addAll(other.imports_);
           }
           onChanged();
+        }
+        if (other.getIsCodeGenerator() != false) {
+          setIsCodeGenerator(other.getIsCodeGenerator());
+        }
+        if (generatedSourcesBuilder_ == null) {
+          if (!other.generatedSources_.isEmpty()) {
+            if (generatedSources_.isEmpty()) {
+              generatedSources_ = other.generatedSources_;
+              bitField0_ = (bitField0_ & ~0x00000010);
+            } else {
+              ensureGeneratedSourcesIsMutable();
+              generatedSources_.addAll(other.generatedSources_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.generatedSources_.isEmpty()) {
+            if (generatedSourcesBuilder_.isEmpty()) {
+              generatedSourcesBuilder_.dispose();
+              generatedSourcesBuilder_ = null;
+              generatedSources_ = other.generatedSources_;
+              bitField0_ = (bitField0_ & ~0x00000010);
+              generatedSourcesBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getGeneratedSourcesFieldBuilder() : null;
+            } else {
+              generatedSourcesBuilder_.addAllMessages(other.generatedSources_);
+            }
+          }
         }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
@@ -16563,6 +16725,24 @@ public final class BspTargetInfo {
                 imports_.add(s);
                 break;
               } // case 26
+              case 32: {
+                isCodeGenerator_ = input.readBool();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 32
+              case 42: {
+                org.jetbrains.bazel.info.BspTargetInfo.FileLocation m =
+                    input.readMessage(
+                        org.jetbrains.bazel.info.BspTargetInfo.FileLocation.parser(),
+                        extensionRegistry);
+                if (generatedSourcesBuilder_ == null) {
+                  ensureGeneratedSourcesIsMutable();
+                  generatedSources_.add(m);
+                } else {
+                  generatedSourcesBuilder_.addMessage(m);
+                }
+                break;
+              } // case 42
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -16882,6 +17062,278 @@ public final class BspTargetInfo {
         bitField0_ |= 0x00000004;
         onChanged();
         return this;
+      }
+
+      private boolean isCodeGenerator_ ;
+      /**
+       * <code>bool is_code_generator = 4;</code>
+       * @return The isCodeGenerator.
+       */
+      @java.lang.Override
+      public boolean getIsCodeGenerator() {
+        return isCodeGenerator_;
+      }
+      /**
+       * <code>bool is_code_generator = 4;</code>
+       * @param value The isCodeGenerator to set.
+       * @return This builder for chaining.
+       */
+      public Builder setIsCodeGenerator(boolean value) {
+
+        isCodeGenerator_ = value;
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bool is_code_generator = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearIsCodeGenerator() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        isCodeGenerator_ = false;
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> generatedSources_ =
+        java.util.Collections.emptyList();
+      private void ensureGeneratedSourcesIsMutable() {
+        if (!((bitField0_ & 0x00000010) != 0)) {
+          generatedSources_ = new java.util.ArrayList<org.jetbrains.bazel.info.BspTargetInfo.FileLocation>(generatedSources_);
+          bitField0_ |= 0x00000010;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> generatedSourcesBuilder_;
+
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation> getGeneratedSourcesList() {
+        if (generatedSourcesBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(generatedSources_);
+        } else {
+          return generatedSourcesBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public int getGeneratedSourcesCount() {
+        if (generatedSourcesBuilder_ == null) {
+          return generatedSources_.size();
+        } else {
+          return generatedSourcesBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation getGeneratedSources(int index) {
+        if (generatedSourcesBuilder_ == null) {
+          return generatedSources_.get(index);
+        } else {
+          return generatedSourcesBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public Builder setGeneratedSources(
+          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+        if (generatedSourcesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureGeneratedSourcesIsMutable();
+          generatedSources_.set(index, value);
+          onChanged();
+        } else {
+          generatedSourcesBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public Builder setGeneratedSources(
+          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+        if (generatedSourcesBuilder_ == null) {
+          ensureGeneratedSourcesIsMutable();
+          generatedSources_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          generatedSourcesBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public Builder addGeneratedSources(org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+        if (generatedSourcesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureGeneratedSourcesIsMutable();
+          generatedSources_.add(value);
+          onChanged();
+        } else {
+          generatedSourcesBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public Builder addGeneratedSources(
+          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation value) {
+        if (generatedSourcesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureGeneratedSourcesIsMutable();
+          generatedSources_.add(index, value);
+          onChanged();
+        } else {
+          generatedSourcesBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public Builder addGeneratedSources(
+          org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+        if (generatedSourcesBuilder_ == null) {
+          ensureGeneratedSourcesIsMutable();
+          generatedSources_.add(builderForValue.build());
+          onChanged();
+        } else {
+          generatedSourcesBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public Builder addGeneratedSources(
+          int index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder builderForValue) {
+        if (generatedSourcesBuilder_ == null) {
+          ensureGeneratedSourcesIsMutable();
+          generatedSources_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          generatedSourcesBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public Builder addAllGeneratedSources(
+          java.lang.Iterable<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocation> values) {
+        if (generatedSourcesBuilder_ == null) {
+          ensureGeneratedSourcesIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, generatedSources_);
+          onChanged();
+        } else {
+          generatedSourcesBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public Builder clearGeneratedSources() {
+        if (generatedSourcesBuilder_ == null) {
+          generatedSources_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000010);
+          onChanged();
+        } else {
+          generatedSourcesBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public Builder removeGeneratedSources(int index) {
+        if (generatedSourcesBuilder_ == null) {
+          ensureGeneratedSourcesIsMutable();
+          generatedSources_.remove(index);
+          onChanged();
+        } else {
+          generatedSourcesBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder getGeneratedSourcesBuilder(
+          int index) {
+        return getGeneratedSourcesFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedSourcesOrBuilder(
+          int index) {
+        if (generatedSourcesBuilder_ == null) {
+          return generatedSources_.get(index);  } else {
+          return generatedSourcesBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public java.util.List<? extends org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+           getGeneratedSourcesOrBuilderList() {
+        if (generatedSourcesBuilder_ != null) {
+          return generatedSourcesBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(generatedSources_);
+        }
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addGeneratedSourcesBuilder() {
+        return getGeneratedSourcesFieldBuilder().addBuilder(
+            org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder addGeneratedSourcesBuilder(
+          int index) {
+        return getGeneratedSourcesFieldBuilder().addBuilder(
+            index, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .bazelbsp.FileLocation generated_sources = 5;</code>
+       */
+      public java.util.List<org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder> 
+           getGeneratedSourcesBuilderList() {
+        return getGeneratedSourcesFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder> 
+          getGeneratedSourcesFieldBuilder() {
+        if (generatedSourcesBuilder_ == null) {
+          generatedSourcesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.jetbrains.bazel.info.BspTargetInfo.FileLocation, org.jetbrains.bazel.info.BspTargetInfo.FileLocation.Builder, org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder>(
+                  generatedSources_,
+                  ((bitField0_ & 0x00000010) != 0),
+                  getParentForChildren(),
+                  isClean());
+          generatedSources_ = null;
+        }
+        return generatedSourcesBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:bazelbsp.PythonTargetInfo)
@@ -27447,57 +27899,59 @@ java.lang.String defaultValue) {
       "ion\030\310\001 \001(\t\022\023\n\nassociates\030\254\002 \003(\t\022\025\n\014kotli" +
       "nc_opts\030\220\003 \003(\t\022(\n\007stdlibs\030\364\003 \003(\0132\026.bazel" +
       "bsp.FileLocation\022:\n\024kotlinc_plugin_infos" +
-      "\030\330\004 \003(\0132\033.bazelbsp.KotlincPluginInfo\"a\n\020" +
-      "PythonTargetInfo\022+\n\013interpreter\030\001 \001(\0132\026." +
-      "bazelbsp.FileLocation\022\017\n\007version\030\002 \001(\t\022\017" +
-      "\n\007imports\030\003 \003(\t\"\214\004\n\021AndroidTargetInfo\022+\n" +
-      "\013android_jar\030d \001(\0132\026.bazelbsp.FileLocati" +
-      "on\022)\n\010manifest\030\310\001 \001(\0132\026.bazelbsp.FileLoc" +
-      "ation\022O\n\022manifest_overrides\030\372\001 \003(\01322.baz" +
-      "elbsp.AndroidTargetInfo.ManifestOverride" +
-      "sEntry\0225\n\024resource_directories\030\254\002 \003(\0132\026." +
-      "bazelbsp.FileLocation\022\036\n\025resource_java_p" +
-      "ackage\030\220\003 \001(\t\0223\n\022assets_directories\030\302\003 \003" +
-      "(\0132\026.bazelbsp.FileLocation\0220\n\017aidl_binar" +
-      "y_jar\030\364\003 \001(\0132\026.bazelbsp.FileLocation\0220\n\017" +
-      "aidl_source_jar\030\330\004 \001(\0132\026.bazelbsp.FileLo" +
-      "cation\022$\n\003apk\030\274\005 \001(\0132\026.bazelbsp.FileLoca" +
-      "tion\0328\n\026ManifestOverridesEntry\022\013\n\003key\030\001 " +
-      "\001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\230\001\n\024AndroidAarImp" +
-      "ortInfo\022(\n\010manifest\030\001 \001(\0132\026.bazelbsp.Fil" +
-      "eLocation\022/\n\017resource_folder\030\002 \001(\0132\026.baz" +
-      "elbsp.FileLocation\022%\n\005r_txt\030\003 \001(\0132\026.baze" +
-      "lbsp.FileLocation\"\271\001\n\014GoTargetInfo\022\022\n\nim" +
-      "portpath\030\001 \001(\t\022-\n\rsdk_home_path\030\002 \001(\0132\026." +
-      "bazelbsp.FileLocation\0221\n\021generated_sourc" +
-      "es\030\003 \003(\0132\026.bazelbsp.FileLocation\0223\n\023gene" +
-      "rated_libraries\030\004 \003(\0132\026.bazelbsp.FileLoc" +
-      "ation\"\344\007\n\nTargetInfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind" +
-      "\030\024 \001(\t\022\014\n\004tags\030\036 \003(\t\022*\n\014dependencies\030( \003" +
-      "(\0132\024.bazelbsp.Dependency\022\'\n\007sources\0302 \003(" +
-      "\0132\026.bazelbsp.FileLocation\0221\n\021generated_s" +
-      "ources\0303 \003(\0132\026.bazelbsp.FileLocation\022)\n\t" +
-      "resources\030< \003(\0132\026.bazelbsp.FileLocation\022" +
-      "*\n\003env\030F \003(\0132\035.bazelbsp.TargetInfo.EnvEn" +
-      "try\022\023\n\013env_inherit\030P \003(\t\022\022\n\nexecutable\030Z" +
-      " \001(\010\022\026\n\016workspace_name\030d \001(\t\0221\n\017jvm_targ" +
-      "et_info\030\350\007 \001(\0132\027.bazelbsp.JvmTargetInfo\022" +
-      "9\n\023java_toolchain_info\030\320\017 \001(\0132\033.bazelbsp" +
-      ".JavaToolchainInfo\0225\n\021java_runtime_info\030" +
-      "\270\027 \001(\0132\031.bazelbsp.JavaRuntimeInfo\0225\n\021sca" +
-      "la_target_info\030\240\037 \001(\0132\031.bazelbsp.ScalaTa" +
-      "rgetInfo\0221\n\017cpp_target_info\030\360. \001(\0132\027.baz" +
-      "elbsp.CppTargetInfo\0227\n\022kotlin_target_inf" +
-      "o\030\3306 \001(\0132\032.bazelbsp.KotlinTargetInfo\0227\n\022" +
-      "python_target_info\030\300> \001(\0132\032.bazelbsp.Pyt" +
-      "honTargetInfo\0229\n\023android_target_info\030\220N " +
-      "\001(\0132\033.bazelbsp.AndroidTargetInfo\022@\n\027andr" +
-      "oid_aar_import_info\030\370U \001(\0132\036.bazelbsp.An" +
-      "droidAarImportInfo\022/\n\016go_target_info\030\340] " +
-      "\001(\0132\026.bazelbsp.GoTargetInfo\0223\n\020c_toolcha" +
-      "in_info\030\310e \001(\0132\030.bazelbsp.CToolchainInfo" +
-      "\032*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t" +
-      ":\0028\001B\032\n\030org.jetbrains.bazel.infob\006proto3"
+      "\030\330\004 \003(\0132\033.bazelbsp.KotlincPluginInfo\"\257\001\n" +
+      "\020PythonTargetInfo\022+\n\013interpreter\030\001 \001(\0132\026" +
+      ".bazelbsp.FileLocation\022\017\n\007version\030\002 \001(\t\022" +
+      "\017\n\007imports\030\003 \003(\t\022\031\n\021is_code_generator\030\004 " +
+      "\001(\010\0221\n\021generated_sources\030\005 \003(\0132\026.bazelbs" +
+      "p.FileLocation\"\214\004\n\021AndroidTargetInfo\022+\n\013" +
+      "android_jar\030d \001(\0132\026.bazelbsp.FileLocatio" +
+      "n\022)\n\010manifest\030\310\001 \001(\0132\026.bazelbsp.FileLoca" +
+      "tion\022O\n\022manifest_overrides\030\372\001 \003(\01322.baze" +
+      "lbsp.AndroidTargetInfo.ManifestOverrides" +
+      "Entry\0225\n\024resource_directories\030\254\002 \003(\0132\026.b" +
+      "azelbsp.FileLocation\022\036\n\025resource_java_pa" +
+      "ckage\030\220\003 \001(\t\0223\n\022assets_directories\030\302\003 \003(" +
+      "\0132\026.bazelbsp.FileLocation\0220\n\017aidl_binary" +
+      "_jar\030\364\003 \001(\0132\026.bazelbsp.FileLocation\0220\n\017a" +
+      "idl_source_jar\030\330\004 \001(\0132\026.bazelbsp.FileLoc" +
+      "ation\022$\n\003apk\030\274\005 \001(\0132\026.bazelbsp.FileLocat" +
+      "ion\0328\n\026ManifestOverridesEntry\022\013\n\003key\030\001 \001" +
+      "(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\230\001\n\024AndroidAarImpo" +
+      "rtInfo\022(\n\010manifest\030\001 \001(\0132\026.bazelbsp.File" +
+      "Location\022/\n\017resource_folder\030\002 \001(\0132\026.baze" +
+      "lbsp.FileLocation\022%\n\005r_txt\030\003 \001(\0132\026.bazel" +
+      "bsp.FileLocation\"\271\001\n\014GoTargetInfo\022\022\n\nimp" +
+      "ortpath\030\001 \001(\t\022-\n\rsdk_home_path\030\002 \001(\0132\026.b" +
+      "azelbsp.FileLocation\0221\n\021generated_source" +
+      "s\030\003 \003(\0132\026.bazelbsp.FileLocation\0223\n\023gener" +
+      "ated_libraries\030\004 \003(\0132\026.bazelbsp.FileLoca" +
+      "tion\"\344\007\n\nTargetInfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030" +
+      "\024 \001(\t\022\014\n\004tags\030\036 \003(\t\022*\n\014dependencies\030( \003(" +
+      "\0132\024.bazelbsp.Dependency\022\'\n\007sources\0302 \003(\013" +
+      "2\026.bazelbsp.FileLocation\0221\n\021generated_so" +
+      "urces\0303 \003(\0132\026.bazelbsp.FileLocation\022)\n\tr" +
+      "esources\030< \003(\0132\026.bazelbsp.FileLocation\022*" +
+      "\n\003env\030F \003(\0132\035.bazelbsp.TargetInfo.EnvEnt" +
+      "ry\022\023\n\013env_inherit\030P \003(\t\022\022\n\nexecutable\030Z " +
+      "\001(\010\022\026\n\016workspace_name\030d \001(\t\0221\n\017jvm_targe" +
+      "t_info\030\350\007 \001(\0132\027.bazelbsp.JvmTargetInfo\0229" +
+      "\n\023java_toolchain_info\030\320\017 \001(\0132\033.bazelbsp." +
+      "JavaToolchainInfo\0225\n\021java_runtime_info\030\270" +
+      "\027 \001(\0132\031.bazelbsp.JavaRuntimeInfo\0225\n\021scal" +
+      "a_target_info\030\240\037 \001(\0132\031.bazelbsp.ScalaTar" +
+      "getInfo\0221\n\017cpp_target_info\030\360. \001(\0132\027.baze" +
+      "lbsp.CppTargetInfo\0227\n\022kotlin_target_info" +
+      "\030\3306 \001(\0132\032.bazelbsp.KotlinTargetInfo\0227\n\022p" +
+      "ython_target_info\030\300> \001(\0132\032.bazelbsp.Pyth" +
+      "onTargetInfo\0229\n\023android_target_info\030\220N \001" +
+      "(\0132\033.bazelbsp.AndroidTargetInfo\022@\n\027andro" +
+      "id_aar_import_info\030\370U \001(\0132\036.bazelbsp.And" +
+      "roidAarImportInfo\022/\n\016go_target_info\030\340] \001" +
+      "(\0132\026.bazelbsp.GoTargetInfo\0223\n\020c_toolchai" +
+      "n_info\030\310e \001(\0132\030.bazelbsp.CToolchainInfo\032" +
+      "*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:" +
+      "\0028\001B\032\n\030org.jetbrains.bazel.infob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -27580,7 +28034,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_PythonTargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_bazelbsp_PythonTargetInfo_descriptor,
-        new java.lang.String[] { "Interpreter", "Version", "Imports", });
+        new java.lang.String[] { "Interpreter", "Version", "Imports", "IsCodeGenerator", "GeneratedSources", });
     internal_static_bazelbsp_AndroidTargetInfo_descriptor =
       getDescriptor().getMessageTypes().get(13);
     internal_static_bazelbsp_AndroidTargetInfo_fieldAccessorTable = new

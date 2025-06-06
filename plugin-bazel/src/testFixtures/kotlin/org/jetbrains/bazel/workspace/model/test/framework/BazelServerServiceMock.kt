@@ -17,6 +17,7 @@ import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
 import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
 import org.jetbrains.bazel.workspacecontext.NoPruneTransitiveCompileTimeJarsPatternsSpec
 import org.jetbrains.bazel.workspacecontext.PrioritizeLibrariesOverModulesTargetKindsSpec
+import org.jetbrains.bazel.workspacecontext.PythonCodeGeneratorRuleNamesSpec
 import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
 import org.jetbrains.bazel.workspacecontext.ShardingApproachSpec
 import org.jetbrains.bazel.workspacecontext.SyncFlagsSpec
@@ -56,6 +57,7 @@ private val mockWorkspaceContext =
     targetShardSize = TargetShardSizeSpec(1000),
     shardingApproachSpec = ShardingApproachSpec(null),
     importRunConfigurations = ImportRunConfigurationsSpec(emptyList()),
+    pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpec(emptyList()),
   )
 
 private val mockBuildServer =

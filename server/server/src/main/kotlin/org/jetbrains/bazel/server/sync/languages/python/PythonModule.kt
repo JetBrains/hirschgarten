@@ -7,4 +7,6 @@ data class PythonModule(
   val interpreter: Path?,
   val version: String?,
   val imports: List<String>,
+  val isCodeGenerator: Boolean,
+  val generatedSources: List<Path>,
 ) : LanguageData

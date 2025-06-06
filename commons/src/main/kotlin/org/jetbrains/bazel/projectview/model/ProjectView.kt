@@ -20,6 +20,7 @@ import org.jetbrains.bazel.projectview.model.sections.ProjectViewListSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewSingletonSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewTargetsSection
+import org.jetbrains.bazel.projectview.model.sections.PythonCodeGeneratorRuleNamesSection
 import org.jetbrains.bazel.projectview.model.sections.ShardSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ShardingApproachSection
 import org.jetbrains.bazel.projectview.model.sections.TargetShardSizeSection
@@ -71,6 +72,7 @@ data class ProjectView(
   val shardingApproach: ShardingApproachSection? = null,
   /** See https://ij.bazel.build/docs/project-views.html#import_run_configurations */
   val importRunConfigurations: ImportRunConfigurationsSection? = null,
+  val pythonCodeGeneratorRuleNamesSection: PythonCodeGeneratorRuleNamesSection? = null,
 ) {
   data class Builder(
     private val imports: List<ProjectView> = emptyList(),
@@ -94,6 +96,7 @@ data class ProjectView(
     private val targetShardSize: TargetShardSizeSection? = null,
     private val shardingApproach: ShardingApproachSection? = null,
     private val importRunConfigurations: ImportRunConfigurationsSection? = null,
+    private val pythonCodeGeneratorRuleNamesSection: PythonCodeGeneratorRuleNamesSection? = null,
   ) {
     fun build(): ProjectView {
       log.debug("Building project view for: {}", this)
@@ -122,6 +125,7 @@ data class ProjectView(
       val targetShardSizeSection = combineTargetShardSizeSection(importedProjectViews)
       val shardingApproachSection = combineShardingApproachSection(importedProjectViews)
       val importRunConfigurationsSection = combineImportRunConfigurationsSection(importedProjectViews)
+      val pythonCodeGeneratorRuleNamesSection = combinePythonCodeGeneratorRuleNamesSection(importedProjectViews)
 
       log.debug(
         "Building project view with combined" +
@@ -146,7 +150,8 @@ data class ProjectView(
           " targetShardSize: {}," +
           " shardingApproach: {}," +
           " importRunConfigurationsSection: {}," +
-          "", // preserve Git blame
+          " pythonCodeGeneratorRuleNamesSection: {}",
+        "", // preserve Git blame
         targets,
         bazelBinary,
         buildFlags,
@@ -167,6 +172,7 @@ data class ProjectView(
         targetShardSizeSection,
         shardingApproachSection,
         importRunConfigurationsSection,
+        pythonCodeGeneratorRuleNamesSection,
       )
       return ProjectView(
         targets,
@@ -189,6 +195,7 @@ data class ProjectView(
         targetShardSizeSection,
         shardingApproachSection,
         importRunConfigurationsSection,
+        pythonCodeGeneratorRuleNamesSection,
       )
     }
 
@@ -278,6 +285,17 @@ data class ProjectView(
           ImportRunConfigurationsSection::values,
         )
       return createInstanceOfListSectionOrNull(importRunConfigurations, ::ImportRunConfigurationsSection)
+    }
+
+    private fun combinePythonCodeGeneratorRuleNamesSection(importedProjectViews: List<ProjectView>): PythonCodeGeneratorRuleNamesSection? {
+      val importRunConfigurations =
+        combineListValuesWithImported(
+          importedProjectViews,
+          pythonCodeGeneratorRuleNamesSection,
+          ProjectView::pythonCodeGeneratorRuleNamesSection,
+          PythonCodeGeneratorRuleNamesSection::values,
+        )
+      return createInstanceOfListSectionOrNull(importRunConfigurations, ::PythonCodeGeneratorRuleNamesSection)
     }
 
     private fun combineTargetsSection(importedProjectViews: List<ProjectView>): ProjectViewTargetsSection? {

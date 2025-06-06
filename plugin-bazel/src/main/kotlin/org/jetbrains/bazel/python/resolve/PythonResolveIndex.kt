@@ -25,6 +25,7 @@ class PythonResolveIndex : SyncCacheComputable<Map<QualifiedName, (PsiManager) -
   override fun compute(project: Project): Map<QualifiedName, (PsiManager) -> PsiElement?> {
     val executionRoot = BazelBinPathService.getInstance(project).bazelExecPath?.let { Path.of(it) } ?: return emptyMap()
     val rootDir = Path.of(project.rootDir.path)
+    val bazelBin = BazelBinPathService.getInstance(project).bazelBinPath?.let { Path.of(it) } ?: return emptyMap()
     val targets =
       project.targetUtils
         .allBuildTargets()
@@ -43,16 +44,21 @@ class PythonResolveIndex : SyncCacheComputable<Map<QualifiedName, (PsiManager) -
 
     for (target in targets) {
       val importsPaths = assembleImportsPaths(target)
-
+      val pythonTargetInfo = extractPythonBuildTarget(target) ?: continue
       val fullQualifiedNameToAbsolutePath: Map<QualifiedName?, Path> =
-        if (target.id.isMainWorkspace) {
+        if (pythonTargetInfo.isCodeGenerator) {
+          pythonTargetInfo.generatedSources
+            .associate { path ->
+              path.relativeTo(bazelBin).toQualifiedName() to path
+            }.filter { it.key != null }
+        } else if (target.id.isMainWorkspace) {
           importsPaths
             .flatMap { importsPath ->
               allPYSourcesInMainWorkspace.filter { it.startsWith(importsPath) }
             }.toSet()
             .associate {
               it.toQualifiedName() to rootDir.resolve(it)
-            }
+            }.filter { it.key != null }
         } else {
           target.sources.associate { sourceItem ->
             val executionRootRelativePath =
@@ -67,7 +73,6 @@ class PythonResolveIndex : SyncCacheComputable<Map<QualifiedName, (PsiManager) -
                     // if this is a file under external/, then we trim the "external/{repo_name}" part
                     Path.of(it.subpath(2, it.nameCount).toString())
                   } else {
-                    // todo: if this is a generated python file #BAZEL-1758
                     it
                   }
                 }
