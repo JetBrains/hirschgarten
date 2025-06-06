@@ -5,11 +5,10 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 
 abstract class StarlarkCompExpression(node: ASTNode) : StarlarkBaseElement(node) {
   fun getCompVariables(): List<StarlarkTargetExpression> =
-    getCompVariable()?.let(::listOf) ?: getCompTuple()?.getTargetExpressions() ?: emptyList()
+    getCompVariableTuples().flatMap { it.getTargetExpressions() } +
+      findChildrenByClass(StarlarkTargetExpression::class.java).toList()
 
-  private fun getCompVariable(): StarlarkTargetExpression? = findChildByClass(StarlarkTargetExpression::class.java)
-
-  private fun getCompTuple(): StarlarkTupleExpression? =
-    findChildByClass(StarlarkTupleExpression::class.java)
-      ?: findChildByClass(StarlarkParenthesizedExpression::class.java)?.getTuple()
+  private fun getCompVariableTuples() =
+    findChildrenByClass(StarlarkParenthesizedExpression::class.java).mapNotNull { it.getTuple() } +
+      findChildrenByClass(StarlarkTupleExpression::class.java).toList()
 }
