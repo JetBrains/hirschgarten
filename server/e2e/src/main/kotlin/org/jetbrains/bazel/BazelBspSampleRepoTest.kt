@@ -818,6 +818,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           ),
         ),
         jvmBuildTarget = jvmBuildTarget,
+        scalacOptions = listOf(),
       )
 
     val scalaTargetsScalaBinary =
@@ -835,7 +836,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA),
         ),
         baseDirectory = Path("\$WORKSPACE/scala_targets/"),
-        data = scalaBuildTarget,
+        data = scalaBuildTarget.copy(scalacOptions = listOf("-target:jvm-1.8")),
         sources =
           listOf(
             SourceItem(
