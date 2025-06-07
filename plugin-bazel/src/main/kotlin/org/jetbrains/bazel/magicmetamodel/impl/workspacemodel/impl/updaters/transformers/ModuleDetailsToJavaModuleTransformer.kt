@@ -136,6 +136,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
     val version = scalaBuildTarget?.scalaVersion?.scalaVersionToScalaSdkName() ?: return null
     return ScalaAddendum(
       scalaSdkName = version,
+      scalacOptions = scalaBuildTarget.scalacOptions,
     )
   }
 

@@ -63,8 +63,6 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
       resolveProject(),
       compareWorkspaceTargetsResults(),
       compileWithWarnings(),
-      // TODO: son
-//      scalaOptionsResults(),
     )
 
   private fun resolveProject(): BazelBspTestScenarioStep =
@@ -88,6 +86,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
           Path("\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_reflect/scala-reflect-2.12.14.jar"),
         ),
         jvmBuildTarget = jvmBuildTarget,
+        scalacOptions = listOf("-target:jvm-1.8"),
       )
 
     val target =
