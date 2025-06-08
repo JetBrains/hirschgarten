@@ -7,7 +7,7 @@ import com.intellij.terminal.completion.spec.ShellCommandSpec
 import com.intellij.terminal.completion.spec.ShellCompletionSuggestion
 import com.intellij.terminal.completion.spec.ShellRuntimeContext
 import org.jetbrains.bazel.assets.BazelPluginIcons
-import org.jetbrains.bazel.config.BazelFeatureFlags.isQueryTerminalCompletionEnabled
+import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.bazelquery.completion.TargetCompletionsGenerator
 import org.jetbrains.bazel.languages.bazelquery.documentation.BazelQueryFunctionDocumentationTarget
 import org.jetbrains.bazel.languages.bazelquery.functions.BazelQueryFunction
@@ -31,9 +31,8 @@ import java.nio.file.Path
 @Suppress("UnstableApiUsage")
 internal fun bazelQueryCommandSpec(): ShellCommandSpec =
   ShellCommandSpec("bazel") {
-    if (isQueryTerminalCompletionEnabled) {
-      subcommands { context: ShellRuntimeContext ->
-
+    subcommands { context: ShellRuntimeContext ->
+      if (context.project.isBazelProject) {
         subcommand("query") {
           parserOptions = ShellCommandParserOptions.create(optionArgSeparators = listOf("=", " "))
           description("Executes a dependency graph query.")
