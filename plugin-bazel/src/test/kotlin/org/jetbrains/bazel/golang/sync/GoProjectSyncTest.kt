@@ -23,8 +23,8 @@ import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
@@ -190,8 +190,8 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     return GoTestSet(buildTargets, expectedVgoStandaloneEntities, expectedVgoDependencyEntities)
   }
 
-  private fun generateTarget(info: GeneratedTargetInfo): BuildTarget =
-    BuildTarget(
+  private fun generateTarget(info: GeneratedTargetInfo): RawBuildTarget =
+    RawBuildTarget(
       info.targetId,
       listOf(info.type),
       info.dependencies,

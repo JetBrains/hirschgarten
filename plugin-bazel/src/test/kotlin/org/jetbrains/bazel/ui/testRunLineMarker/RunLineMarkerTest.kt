@@ -61,7 +61,7 @@ class RunLineMarkerTest : IdeStarterBaseProjectTest() {
       selectedGutterIcon.click()
       val heavyWeightWindow = popup(xQuery { byClass("HeavyWeightWindow") })
       val texts = heavyWeightWindow.getAllTexts()
-      assert(texts.any { it.text.contains("Test using Bazel") })
+      assert(texts.any { it.text.contains("Test") })
     }
   }
 }

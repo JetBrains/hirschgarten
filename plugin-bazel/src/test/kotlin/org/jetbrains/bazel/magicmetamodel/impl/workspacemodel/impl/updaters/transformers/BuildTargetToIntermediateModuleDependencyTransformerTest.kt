@@ -8,7 +8,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
@@ -18,7 +18,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
   @Test
   fun `should return no module dependencies for no dependencies`() {
     // given
-    val emptyBuildTargets = listOf<BuildTarget>()
+    val emptyBuildTargets = listOf<RawBuildTarget>()
     val allTargets = setOf<Label>()
 
     // when
@@ -34,7 +34,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
   fun `should return no module dependencies for no all targets`() {
     // given
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//target1"),
         emptyList(),
         listOf(
@@ -66,7 +66,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
   fun `should return single module dependency for target with one dependency`() {
     // given
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//target1"),
         emptyList(),
         listOf(
@@ -108,7 +108,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
   fun `should return multiple modules dependencies for target with multiple dependencies`() {
     // given
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//target1"),
         emptyList(),
         listOf(
@@ -165,7 +165,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
   fun `should return multiple modules dependencies for multiple targets`() {
     // given
     val buildTarget1 =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//target1"),
         emptyList(),
         listOf(
@@ -184,7 +184,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest : WorkspaceModelB
         baseDirectory = Path("base/dir"),
       )
     val buildTarget2 =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("//target1"),
         emptyList(),
         listOf(

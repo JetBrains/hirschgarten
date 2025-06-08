@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.server.bzlmod
 
+import com.intellij.util.containers.BidirectionalMap
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.label.Label
 import org.junit.jupiter.api.Test
@@ -11,7 +12,7 @@ class RepoMappingTest {
     val repoMapping =
       BzlmodRepoMapping(
         mapOf("rules_blah" to Path("rules_blah")),
-        mapOf("rules_blah" to "rules_blah~"),
+        BidirectionalMap<String, String>().apply { put("rules_blah", "rules_blah~") },
         mapOf("rules_blah~" to Path("bazel_cache/external/rules_blah~")),
       )
     val label = Label.parse("@rules_blah//path/to/target:targetName")
@@ -24,7 +25,7 @@ class RepoMappingTest {
     val repoMapping =
       BzlmodRepoMapping(
         mapOf("rules_blah" to Path("rules_blah")),
-        mapOf("rules_blah" to "rules_blah~"),
+        BidirectionalMap<String, String>().apply { put("rules_blah", "rules_blah~") },
         mapOf("rules_blah~" to Path("bazel_cache/external/rules_blah~")),
       )
     val label = Label.parse("@@rules_blah~//path/to/target:targetName")

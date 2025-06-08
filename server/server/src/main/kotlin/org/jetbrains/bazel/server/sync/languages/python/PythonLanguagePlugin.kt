@@ -8,8 +8,8 @@ import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
 class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<PythonModule>() {
@@ -48,7 +48,7 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
       ?.takeUnless { it.relativePath.isNullOrEmpty() }
       ?.let { bazelPathsResolver.resolve(it) }
 
-  override fun applyModuleData(moduleData: PythonModule, buildTarget: BuildTarget) {
+  override fun applyModuleData(moduleData: PythonModule, buildTarget: RawBuildTarget) {
     val interpreter = moduleData.interpreter
     buildTarget.data =
       PythonBuildTarget(

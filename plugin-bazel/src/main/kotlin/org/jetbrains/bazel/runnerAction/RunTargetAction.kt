@@ -2,7 +2,6 @@ package org.jetbrains.bazel.runnerAction
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bsp.protocol.BuildTarget
 
@@ -13,19 +12,19 @@ class RunTargetAction(
   includeTargetNameInText: Boolean = false,
 ) : BazelRunnerAction(
     targetInfos = listOf(targetInfo),
-    text = { includeTargetNameInTextParam ->
-      if (isDebugAction) {
-        BazelPluginBundle.message(
-          "target.debug.run.action.text",
-          if (includeTargetNameInTextParam || includeTargetNameInText) targetInfo.id.toShortString(project) else "",
-          BazelPluginConstants.BAZEL_DISPLAY_NAME,
-        )
+    text = { isRunConfigName ->
+      if (isDebugAction && !isRunConfigName && !includeTargetNameInText) {
+        BazelPluginBundle
+          .message(
+            "target.debug.run.action.text",
+            "",
+          ).trim()
       } else {
-        BazelPluginBundle.message(
-          "target.run.action.text",
-          if (includeTargetNameInTextParam || includeTargetNameInText) targetInfo.id.toShortString(project) else "",
-          BazelPluginConstants.BAZEL_DISPLAY_NAME,
-        )
+        BazelPluginBundle
+          .message(
+            "target.run.action.text",
+            if (isRunConfigName || includeTargetNameInText) targetInfo.id.toShortString(project) else "",
+          ).trim()
       }
     },
     isDebugAction = isDebugAction,

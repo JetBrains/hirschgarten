@@ -2,7 +2,6 @@ package org.jetbrains.bazel.server.bsp.managers
 
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.aspect
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.buildManualTests
-import org.jetbrains.bazel.bazelrunner.params.BazelFlag.buildTagFilters
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.color
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.keepGoing
@@ -33,6 +32,9 @@ data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: Ba
   }
 }
 
+/**
+ * @param rulesetName apparent ruleset name
+ */
 data class RulesetLanguage(val rulesetName: String?, val language: Language)
 
 class BazelBspAspectsManager(
@@ -204,7 +206,6 @@ class BazelBspAspectsManager(
         keepGoing(),
         color(true),
         curses(false),
-        buildTagFilters(listOf("-no-ide")),
       )
     val allowManualTargetsSyncFlags = if (workspaceContext.allowManualTargetsSync.value) listOf(buildManualTests()) else emptyList()
     val syncFlags = workspaceContext.syncFlags.values

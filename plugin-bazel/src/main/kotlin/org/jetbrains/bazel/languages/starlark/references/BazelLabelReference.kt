@@ -64,8 +64,11 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     val lookupElements =
       allFiles
         .map {
-          getCompletionLookupElemenent(VfsUtilCore
-                                         .getRelativePath(it, currentDirectory)!!, PlatformIcons.FILE_ICON)
+          getCompletionLookupElemenent(
+            VfsUtilCore
+              .getRelativePath(it, currentDirectory)!!,
+            PlatformIcons.FILE_ICON,
+          )
         }.toTypedArray()
     return lookupElements
   }
@@ -97,8 +100,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
 
   private fun targetCompletion(): Array<LookupElement> {
     val project = element.project
-    val targetUtils = project.targetUtils
-    return targetUtils
+    return project.targetUtils
       .allTargetsAndLibrariesLabels
       .map { getCompletionLookupElemenent(it, PlatformIcons.PACKAGE_ICON) }
       .toTypedArray()

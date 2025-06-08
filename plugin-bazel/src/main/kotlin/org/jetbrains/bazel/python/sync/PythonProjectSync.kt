@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.python.sync
 
 import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
@@ -50,6 +51,7 @@ import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.PythonBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 
@@ -66,7 +68,7 @@ class PythonProjectSync : ProjectSyncHook {
       // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1960
       val bspBuildTargets = environment.server.workspaceBuildTargets()
       val pythonTargets = bspBuildTargets.calculatePythonTargets()
-      val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
+      val virtualFileUrlManager = environment.project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
       val sdks = calculateAndAddSdksWithProgress(pythonTargets, environment)
       val sourceDependencies = calculateDependenciesSources(pythonTargets.map { it.id }, environment)
@@ -81,7 +83,7 @@ class PythonProjectSync : ProjectSyncHook {
 
         addModuleEntityFromTarget(
           builder = environment.diff.workspaceModelDiff.mutableEntityStorage,
-          target = it,
+          target = it as RawBuildTarget,
           moduleName = moduleName,
           entitySource = moduleSourceEntity,
           virtualFileUrlManager = virtualFileUrlManager,
@@ -198,7 +200,7 @@ class PythonProjectSync : ProjectSyncHook {
 
   private fun addModuleEntityFromTarget(
     builder: MutableEntityStorage,
-    target: BuildTarget,
+    target: RawBuildTarget,
     moduleName: String,
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
@@ -245,14 +247,14 @@ class PythonProjectSync : ProjectSyncHook {
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> {
-    val sourceContentRootEntities = getSourceContentRootEntities(target, entitySource, virtualFileUrlManager)
+    val sourceContentRootEntities = getSourceContentRootEntities(target as RawBuildTarget, entitySource, virtualFileUrlManager)
     val resourceContentRootEntities = getResourceContentRootEntities(target, entitySource, virtualFileUrlManager)
 
     return sourceContentRootEntities + resourceContentRootEntities
   }
 
   private fun getSourceContentRootEntities(
-    target: BuildTarget,
+    target: RawBuildTarget,
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
@@ -275,7 +277,7 @@ class PythonProjectSync : ProjectSyncHook {
     }
 
   private fun getResourceContentRootEntities(
-    target: BuildTarget,
+    target: RawBuildTarget,
     entitySource: BazelModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =

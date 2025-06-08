@@ -18,11 +18,8 @@ class ScalaSdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
       return null
     }
     val version = maybeVersions.distinct().maxOf { it }
-    val binaryVersion = toBinaryVersion(version)
     return ScalaSdk(
-      "org.scala-lang",
       version,
-      binaryVersion,
       compilerJars.map(bazelPathsResolver::resolve),
     )
   }
@@ -32,13 +29,6 @@ class ScalaSdkResolver(private val bazelPathsResolver: BazelPathsResolver) {
     val matcher = VERSION_PATTERN.matcher(name)
     return if (matcher.matches()) matcher.group(1) else null
   }
-
-  private fun toBinaryVersion(version: String): String =
-    version
-      .split("\\.".toRegex())
-      .toTypedArray()
-      .take(2)
-      .joinToString(".")
 
   companion object {
     private val VERSION_PATTERN =

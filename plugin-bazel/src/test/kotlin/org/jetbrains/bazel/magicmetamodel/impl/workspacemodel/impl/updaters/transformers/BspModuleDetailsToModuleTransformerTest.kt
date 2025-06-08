@@ -15,8 +15,8 @@ import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
@@ -48,7 +48,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
     val targetId = Label.parse(targetName)
 
     val target =
-      BuildTarget(
+      RawBuildTarget(
         targetId,
         emptyList(),
         listOf(
@@ -83,7 +83,6 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
             Label.parse("@//target3"),
           ),
         libraryDependencies = null,
-        scalacOptions = null,
       )
 
     val targetsMap = listOf("@//target1", "@//target2", "@//target3").toDefaultTargetsMap()
@@ -129,7 +128,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
     val targetName = "@//target1"
     val targetId = Label.parse(targetName)
     val target =
-      BuildTarget(
+      RawBuildTarget(
         targetId,
         emptyList(),
         listOf(
@@ -165,7 +164,6 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
           listOf(
             Label.parse("@maven//:test"),
           ),
-        scalacOptions = null,
       )
 
     val targetsMap = listOf("@//target1", "@//target2", "@//target3", "@//target4", "@//target5").toDefaultTargetsMap()
@@ -224,7 +222,7 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
     val target1Id = Label.parse(target1Name)
 
     val target1 =
-      BuildTarget(
+      RawBuildTarget(
         target1Id,
         emptyList(),
         listOf(
@@ -259,14 +257,13 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
             Label.parse("//target3"),
           ),
         libraryDependencies = null,
-        scalacOptions = null,
       )
 
     val target2Name = "@//target2"
     val target2Id = Label.parse(target2Name)
 
     val target2 =
-      BuildTarget(
+      RawBuildTarget(
         target2Id,
         emptyList(),
         listOf(
@@ -298,7 +295,6 @@ class BspModuleDetailsToModuleTransformerTest : WorkspaceModelBaseTest() {
             Label.parse("//target3"),
           ),
         libraryDependencies = null,
-        scalacOptions = null,
       )
 
     val targetsMap = listOf("@//target1", "@//target2", "@//target3").toDefaultTargetsMap()

@@ -14,7 +14,6 @@ import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.projectView.impl.nodes.PsiFileSystemItemFilter
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.openapi.components.service
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -28,12 +27,14 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
+import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndex
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
+import org.jetbrains.bazel.sdkcompat.isIndexableCompat
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 
-internal class BazelTreeStructureProvider : TreeStructureProvider {
+private class BazelTreeStructureProvider : TreeStructureProvider {
   // We want to get rid of all the module (group) nodes from the project view tree;
   // in rare cases with complicated project (modules) structure IJ
   // doesn't know how to render the project tree,
@@ -100,6 +101,7 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
 
           override fun isUseFileNestingRules(): Boolean = settings.isUseFileNestingRules
         }
+
       else -> settings
     }
 
@@ -109,7 +111,7 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
     settings: ViewSettings,
   ): Collection<AbstractTreeNode<*>> {
     val rootDirectory =
-      project.service<PsiManager>().findDirectory(project.rootDir) ?: return children // should never happen
+      PsiManager.getInstance(project).findDirectory(project.rootDir) ?: return children // should never happen
 
     val showExcludedDirectoriesAsSeparateNode = project.treeStructureSettings?.showExcludedDirectoriesAsSeparateNode ?: true
 
@@ -117,8 +119,11 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
       if (showExcludedDirectoriesAsSeparateNode) {
         PsiFileSystemItemFilter { item ->
           item !is PsiDirectory ||
-            item.virtualFile in project.directoriesContainingIncludedDirectories ||
-            !ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile)
+            item.virtualFile in getDirectoriesContainingIncludedDirectories(project) ||
+            (
+              !ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile) &&
+                WorkspaceFileIndex.getInstance(project).isIndexableCompat(item.virtualFile)
+            )
         }
       } else {
         null
@@ -131,11 +136,15 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
       if (showExcludedDirectoriesAsSeparateNode) {
         ExcludedDirectoriesNode(project, rootDirectory, settings) { item ->
           if (item is PsiDirectory) {
-            ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile)
+            ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile) ||
+              !WorkspaceFileIndex.getInstance(project).isIndexableCompat(item.virtualFile)
           } else {
             val parentDir = item.virtualFile.parent
-            parentDir !in project.directoriesContainingIncludedDirectories &&
-              ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile)
+            parentDir !in getDirectoriesContainingIncludedDirectories(project) &&
+              (
+                ProjectFileIndex.getInstance(item.project).isExcluded(item.virtualFile) ||
+                  !WorkspaceFileIndex.getInstance(project).isIndexableCompat(item.virtualFile)
+              )
           }
         }
       } else {
@@ -150,13 +159,8 @@ internal class BazelTreeStructureProvider : TreeStructureProvider {
       .filterNot { it is ProjectViewModuleGroupNode }
       .filterNot { it is ProjectViewModuleNode }
 
-  private val Project.directoriesContainingIncludedDirectories: Set<VirtualFile>
-    get() =
-      (
-        WorkspaceModel.getInstance(
-          this,
-        ) as WorkspaceModelInternal
-      ).entityStorage.cachedValue(directoriesContainingIncludedDirectoriesValue)
+  private fun getDirectoriesContainingIncludedDirectories(project: Project): Set<VirtualFile> =
+    (WorkspaceModel.getInstance(project) as WorkspaceModelInternal).entityStorage.cachedValue(directoriesContainingIncludedDirectoriesValue)
 
   private val directoriesContainingIncludedDirectoriesValue =
     CachedValue { storage ->

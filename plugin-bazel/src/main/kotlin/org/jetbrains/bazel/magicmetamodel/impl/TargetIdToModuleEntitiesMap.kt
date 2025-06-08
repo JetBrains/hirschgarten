@@ -15,6 +15,7 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tran
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bazel.workspacemodel.entities.isJvmOrAndroidTarget
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.PartialBuildTarget
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -23,7 +24,7 @@ object TargetIdToModuleEntitiesMap {
     projectDetails: ProjectDetails,
     targetIdToModuleDetails: Map<Label, ModuleDetails>,
     targetIdToTargetInfo: Map<Label, BuildTarget>,
-    fileToTarget: Map<Path, List<Label>>,
+    fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
     projectBasePath: Path,
     project: Project,
     isAndroidSupportEnabled: Boolean,
@@ -31,7 +32,7 @@ object TargetIdToModuleEntitiesMap {
     val moduleDetailsToJavaModuleTransformer =
       ModuleDetailsToJavaModuleTransformer(
         targetIdToTargetInfo,
-        fileToTarget,
+        fileToTargetWithoutLowPrioritySharedSources,
         projectBasePath,
         project,
         isAndroidSupportEnabled,
@@ -63,18 +64,15 @@ fun Collection<String>.toDefaultTargetsMap(): Map<Label, BuildTarget> =
   associateBy(
     keySelector = { Label.parse(it) },
     valueTransform = {
-      BuildTarget(
+      PartialBuildTarget(
         id = Label.parse(it),
         tags = listOf(),
-        dependencies = listOf(),
         kind =
           TargetKind(
             kindString = "java_library",
             ruleType = RuleType.LIBRARY,
             languageClasses = emptySet(),
           ),
-        sources = listOf(),
-        resources = listOf(),
         baseDirectory = Path("base/dir"),
       )
     },

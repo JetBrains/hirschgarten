@@ -5,7 +5,7 @@ import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenTypes;
 
-@SuppressWarnings("UnnecessaryUnicodeEscape")
+@SuppressWarnings("ALL")
 %%
 %class _BazelQueryLexer
 %implements FlexLexer

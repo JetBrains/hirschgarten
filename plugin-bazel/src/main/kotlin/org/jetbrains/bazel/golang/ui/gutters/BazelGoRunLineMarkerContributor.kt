@@ -8,9 +8,9 @@ import com.goide.psi.GoFile
 import com.goide.psi.GoFunctionDeclaration
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
-import org.jetbrains.bazel.ui.gutters.BspRunLineMarkerContributor
+import org.jetbrains.bazel.ui.gutters.BazelRunLineMarkerContributor
 
-class BazelGoRunLineMarkerContributor : BspRunLineMarkerContributor() {
+class BazelGoRunLineMarkerContributor : BazelRunLineMarkerContributor() {
   override fun PsiElement.shouldAddMarker(): Boolean =
     this.elementType == GoTypes.IDENTIFIER &&
       this.parent is GoFunctionDeclaration &&

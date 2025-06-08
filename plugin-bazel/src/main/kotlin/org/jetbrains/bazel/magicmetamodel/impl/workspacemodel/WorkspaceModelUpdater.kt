@@ -4,15 +4,13 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
 import org.jetbrains.bazel.workspacemodel.entities.Library
 import org.jetbrains.bazel.workspacemodel.entities.Module
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
-import org.jetbrains.bsp.protocol.ScalacOptionsItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 
 data class ModuleDetails(
-  val target: BuildTarget,
+  val target: RawBuildTarget,
   val javacOptions: JavacOptionsItem?,
-  val scalacOptions: ScalacOptionsItem?,
   val libraryDependencies: List<Label>?,
   val moduleDependencies: List<Label>,
   val defaultJdkName: String?,

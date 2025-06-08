@@ -1,6 +1,9 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij">
         <programRunner implementation="org.jetbrains.bazel.python.run.PythonBspDebugRunner"/>
+      <runLineMarkerContributor
+        implementationClass="org.jetbrains.bazel.python.gutter.BazelPyRunLineMarkerContributor"
+        language="Python"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.bazel">

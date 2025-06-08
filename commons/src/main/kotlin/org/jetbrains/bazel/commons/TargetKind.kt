@@ -34,5 +34,6 @@ data class TargetKind(
   // Used in extension functions
   companion object
 
-  val isExecutable: Boolean = ruleType == RuleType.BINARY || ruleType == RuleType.TEST
+  val isExecutable: Boolean
+    get() = ruleType == RuleType.BINARY || ruleType == RuleType.TEST
 }

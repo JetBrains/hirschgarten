@@ -214,10 +214,6 @@ class BazelProjectMapper(
           .associateBy { it.label } +
           createGoLibraries(targetsAsLibraries, repoMapping)
       }
-    val invalidTargets =
-      measure("Save invalid target labels") {
-        removeDotBazelBspTarget(rootTargets) - targetsToImport.map { it.label() }.toSet()
-      }
 
     val nonModuleTargetIds =
       (removeDotBazelBspTarget(targets.keys) - mergedModulesFromBazel.map { it.label }.toSet() - librariesToImport.keys).toSet()
@@ -239,7 +235,6 @@ class BazelProjectMapper(
       modules = mergedModulesFromBazel.toList(),
       libraries = librariesToImport,
       goLibraries = goLibrariesToImport,
-      invalidTargets = invalidTargets,
       nonModuleTargets = nonModuleTargets,
       repoMapping = repoMapping,
       hasError = hasError,
@@ -937,7 +932,10 @@ class BazelProjectMapper(
       (
         shouldImportTargetKind(target.kind, transitiveCompileTimeJarsTargetKinds) ||
           target.hasJvmTargetInfo() &&
-          hasKnownJvmSources(target) ||
+          (
+            target.dependenciesCount > 0 ||
+              hasKnownJvmSources(target)
+          ) ||
           featureFlags.isPythonSupportEnabled &&
           target.hasPythonTargetInfo() &&
           hasKnownPythonSources(target) ||
@@ -1073,6 +1071,9 @@ class BazelProjectMapper(
     buildSet {
       // TODO It's a hack preserved from before TargetKind refactorking, to be removed
       if (transitiveCompileTimeJarsTargetKinds.contains(target.kind)) {
+        add(LanguageClass.JAVA)
+      }
+      if (target.hasJvmTargetInfo()) {
         add(LanguageClass.JAVA)
       }
       languagesFromKinds[target.kind]?.let {

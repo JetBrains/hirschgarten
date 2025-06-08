@@ -24,6 +24,9 @@ java_library(
             "@toml_json_2025_1//jar",
             "@toml_grazie_2025_1//jar",
         ],
+        "intellij-2025.2": [
+            "@toml_plugin_2025_2//:toml",
+        ],
         "default": [],
     }),
 )

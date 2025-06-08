@@ -8,14 +8,14 @@ import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 import java.nio.file.Paths
 
 class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, private val logger: BspClientLogger? = null) :
   LanguagePlugin<GoModule>() {
-  override fun applyModuleData(moduleData: GoModule, buildTarget: BuildTarget) {
+  override fun applyModuleData(moduleData: GoModule, buildTarget: RawBuildTarget) {
     val goBuildTarget =
       with(moduleData) {
         GoBuildTarget(

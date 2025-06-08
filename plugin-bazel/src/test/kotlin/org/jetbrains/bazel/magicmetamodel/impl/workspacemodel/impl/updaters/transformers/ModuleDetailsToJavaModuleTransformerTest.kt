@@ -22,11 +22,11 @@ import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.junit.jupiter.api.DisplayName
@@ -71,7 +71,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val buildTargetId = Label.parse("module1")
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         buildTargetId,
         listOf(),
         listOf(
@@ -115,7 +115,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget,
         javacOptions = javacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -217,7 +216,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val buildTargetId = Label.parse("module1")
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         buildTargetId,
         listOf(),
         listOf(
@@ -242,7 +241,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget,
         javacOptions = null,
-        scalacOptions = null,
         libraryDependencies = emptyList(),
         moduleDependencies =
           listOf(
@@ -333,7 +331,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val buildTargetId1 = Label.parse("module1")
     val buildTarget1 =
-      BuildTarget(
+      RawBuildTarget(
         buildTargetId1,
         listOf(),
         listOf(
@@ -377,7 +375,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget1,
         javacOptions = target1JavacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -402,7 +399,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val buildTargetId2 = Label.parse("module2")
     val buildTarget2 =
-      BuildTarget(
+      RawBuildTarget(
         buildTargetId2,
         listOf(),
         listOf(
@@ -439,7 +436,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget2,
         javacOptions = target2JavacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -600,7 +596,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val buildTargetId = Label.parse("module1")
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         buildTargetId,
         listOf(),
         listOf(
@@ -641,7 +637,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget,
         javacOptions = javacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -787,9 +782,9 @@ class ExtractJvmBuildTargetTest {
     extractedJvmBuildTarget shouldBe null
   }
 
-  private fun buildDummyTarget(data: BuildTargetData? = null): BuildTarget {
+  private fun buildDummyTarget(data: BuildTargetData? = null): RawBuildTarget {
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("target"),
         listOf("tag1", "tag2"),
         listOf(Label.parse("dep1"), Label.parse("dep2")),
