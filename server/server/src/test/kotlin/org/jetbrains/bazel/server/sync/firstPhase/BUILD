@@ -1,7 +1,7 @@
 load("@//rules/testing:junit5.bzl", "kt_junit5_test")
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("//rules/kotlin:macros.bzl", "kt_library")
 
-kt_jvm_library(
+kt_library(
     name = "mocks",
     testonly = True,
     srcs = ["TargetMocks.kt"],
