@@ -306,7 +306,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
       }
 
       directoryField.text = "//$relativePath"
-      BazelWorkingDirectoryManager.setWorkingDirectory(chosenDir.path)
+      BazelWorkingDirectoryManager.getInstance(project).setWorkingDirectory(chosenDir.path)
       queryEvaluator.setEvaluationDirectory(chosenDir)
     }
   }
