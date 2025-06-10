@@ -15,8 +15,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
-import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.expressions.getCompletionLookupElemenent
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkFilenameLoadValue
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.target.targetUtils
@@ -123,8 +123,9 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
       for (label in bzlFiles) {
         lookupElements.add(
           getCompletionLookupElemenent(
-        label.toShortString(element.project),
-         PlatformIcons.FILE_ICON)
+            label.toShortString(element.project),
+            PlatformIcons.FILE_ICON,
+          ),
         )
       }
     }

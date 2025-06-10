@@ -23,7 +23,7 @@ import kotlin.io.path.relativeToOrNull
 @Service(Service.Level.PROJECT)
 class BazelFileService(private val project: Project) {
   private var cacheInvalid = true
-  private val canonicalRepoNameToBzlFiles = mutableMapOf<String, List<Label>>()
+  private val canonicalRepoNameToBzlFiles = mutableMapOf<String, List<ResolvedLabel>>()
 
   init {
     project.messageBus.connect().subscribe(
@@ -38,12 +38,11 @@ class BazelFileService(private val project: Project) {
     )
   }
 
-
   private inner class FileVisitor(
     private val canonicalName: String,
     private val repoPath: Path,
     private val projectFileIndex: ProjectFileIndex,
-    private val map: MutableMap<String, List<Label>>
+    private val map: MutableMap<String, List<ResolvedLabel>>,
   ) {
     fun visitFile(file: VirtualFile): Boolean {
       if (file.isFile && !projectFileIndex.isExcluded(file) && file.name.endsWith(".bzl")) {
@@ -51,12 +50,13 @@ class BazelFileService(private val project: Project) {
         val targetBaseDirectory = file.parent ?: return true
         val relativeTargetBaseDirectory = targetBaseDirectory.toNioPath().relativeToOrNull(repoPath) ?: return true
 
-        val label = ResolvedLabel(
-          repo = Canonical.createCanonicalOrMain(canonicalName),
-          packagePath = Package(relativeTargetBaseDirectory.toString().split("/")),
-          target = SingleTarget(targetName),
-        )
-        map[canonicalName] = map.getOrDefault(canonicalName, emptyList<Label>()) + label
+        val label =
+          ResolvedLabel(
+            repo = Canonical.createCanonicalOrMain(canonicalName),
+            packagePath = Package(relativeTargetBaseDirectory.toString().split("/")),
+            target = SingleTarget(targetName),
+          )
+        map[canonicalName] = map.getOrDefault(canonicalName, emptyList()) + label
       }
       return true
     }

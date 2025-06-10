@@ -7,15 +7,17 @@ import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.ModuleFixture
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.languages.starlark.repomapping.injectCanonicalRepoNameToApparentName
 import org.jetbrains.bazel.languages.starlark.repomapping.injectCanonicalRepoNameToPath
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
+@OptIn(TestOnly::class)
 @RunWith(JUnit4::class)
 class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<ModuleFixture>>() {
-
-  @OptIn(TestOnly::class)
   @Test
   fun `should complete basic filePath`() {
     myFixture.project.isBazelProject = true
@@ -33,5 +35,36 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     lookups shouldContainExactlyInAnyOrder listOf("\"//:defs_one.bzl\"", "\"//defs_dir:defs_two.bzl\"")
+  }
+
+  @get:Rule
+  val tempFolder = TemporaryFolder()
+
+  @Test
+  fun `should complete external filePath`() {
+    myFixture.project.isBazelProject = true
+
+    val rulesDir = tempFolder.newFolder("rules_kotlin")
+    tempFolder.newFile("rules_kotlin/MODULE.bazel")
+    tempFolder.newFile("rules_kotlin/BUILD.bazel")
+    tempFolder.newFolder("rules_kotlin/nested_rules")
+    tempFolder.newFile("rules_kotlin/kt_jvm_library.bzl")
+    tempFolder.newFile("rules_kotlin/nested_rules/kt_jvm_binary.bzl")
+
+    val newRepoNameToPathMap = mapOf("rules_kotlin" to rulesDir.path.toNioPathOrNull()!!)
+    val newCanonicalRepoNameToApparentName = mapOf("rules_kotlin" to "rules_kotlin")
+    myFixture.project.injectCanonicalRepoNameToPath(newRepoNameToPathMap)
+    myFixture.project.injectCanonicalRepoNameToApparentName(newCanonicalRepoNameToApparentName)
+
+    myFixture.configureByText("BUILD.bazel", """load("//:<caret>)""")
+    myFixture.type("kt")
+
+    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+
+    lookups shouldContainExactlyInAnyOrder
+      listOf(
+        "\"@rules_kotlin//:kt_jvm_library.bzl\"",
+        "\"@rules_kotlin//nested_rules:kt_jvm_binary.bzl\"",
+      )
   }
 }

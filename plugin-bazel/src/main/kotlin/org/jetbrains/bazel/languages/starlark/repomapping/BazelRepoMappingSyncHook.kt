@@ -22,6 +22,12 @@ fun Project.injectCanonicalRepoNameToPath(canonicalRepoNameToPath: Map<String, P
   service.canonicalRepoNameToPath = canonicalRepoNameToPath
 }
 
+@TestOnly
+fun Project.injectCanonicalRepoNameToApparentName(canonicalRepoNameToApparentName: Map<String, String>) {
+  val service = BazelRepoMappingService.getInstance(this)
+  service.canonicalRepoNameToApparentName = canonicalRepoNameToApparentName
+}
+
 val Project.apparentRepoNameToCanonicalName: Map<String, String>
   get() =
     BazelRepoMappingService.getInstance(this).apparentRepoNameToCanonicalName.takeIf { it.isNotEmpty() }
