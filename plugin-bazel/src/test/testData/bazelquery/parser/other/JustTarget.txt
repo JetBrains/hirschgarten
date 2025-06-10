@@ -1,0 +1,3 @@
+FILE
+  BazelQueryWord(WORD)
+    PsiElement(BazelQuery:UNQUOTED_WORD)('//path/to:target')

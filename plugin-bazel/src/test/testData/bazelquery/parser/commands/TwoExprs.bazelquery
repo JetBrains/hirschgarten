@@ -1,0 +1,1 @@
+allpaths(somepath(//path/to:target1, //path/to:target2), //path/to:target3)
