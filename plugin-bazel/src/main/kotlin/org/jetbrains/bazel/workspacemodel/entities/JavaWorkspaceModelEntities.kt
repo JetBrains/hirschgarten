@@ -35,7 +35,11 @@ data class KotlinAddendum(
   val kotlincOptions: List<String>,
 )
 
-data class ScalaAddendum(val scalaSdkName: String, val scalacOptions: List<String>)
+data class ScalaAddendum(
+  val scalaVersion: String,
+  val scalacOptions: List<String>,
+  val sdkJars: List<Path>,
+) : WorkspaceModelEntity()
 
 data class JavaAddendum(val languageVersion: String, val javacOptions: List<String>)
 

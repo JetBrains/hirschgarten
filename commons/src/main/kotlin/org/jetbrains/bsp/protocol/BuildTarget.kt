@@ -57,7 +57,7 @@ data class PythonBuildTarget(val version: String?, val interpreter: Path?) : Bui
 @ClassDiscriminator(3)
 data class ScalaBuildTarget(
   val scalaVersion: String,
-  val jars: List<Path>,
+  val sdkJars: List<Path>,
   val jvmBuildTarget: JvmBuildTarget? = null,
   val scalacOptions: List<String>,
 ) : BuildTargetData
