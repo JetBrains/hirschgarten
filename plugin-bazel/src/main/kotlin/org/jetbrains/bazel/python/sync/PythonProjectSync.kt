@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.python.sync
 
 import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
@@ -37,6 +38,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
+import org.jetbrains.bazel.python.resolve.PythonResolveIndexService
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDiff
@@ -92,6 +94,7 @@ class PythonProjectSync : ProjectSyncHook {
           sourceDependencyLibrary = sourceDependencyLibrary,
         )
       }
+      environment.project.service<PythonResolveIndexService>().updatePythonResolveIndex(bspBuildTargets.targets)
     }
   }
 

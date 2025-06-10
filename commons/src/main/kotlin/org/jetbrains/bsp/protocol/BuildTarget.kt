@@ -60,7 +60,6 @@ data class PythonBuildTarget(
   val imports: List<String>,
 ) : BuildTargetData
 
-
 @ClassDiscriminator(3)
 data class ScalaBuildTarget(
   val scalaVersion: String,

@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.python.resolve
 
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -12,22 +13,29 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.sync.BazelBinPathService
 import org.jetbrains.bazel.label.ResolvedLabel
-import org.jetbrains.bazel.sync.SyncCache.SyncCacheComputable
-import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import kotlin.io.path.extension
 import kotlin.io.path.relativeTo
 
-class PythonResolveIndex : SyncCacheComputable<Map<QualifiedName, (PsiManager) -> PsiElement?>> {
-  override fun compute(project: Project): Map<QualifiedName, (PsiManager) -> PsiElement?> {
+@Service(Service.Level.PROJECT)
+class PythonResolveIndexService(private val project: Project) {
+  // Todo: this index should be persisted after python generated source files are supported
+  var resolveIndex: Map<QualifiedName, (PsiManager) -> PsiElement?> = emptyMap()
+    private set
+
+  fun updatePythonResolveIndex(rawTargets: List<RawBuildTarget>) {
+    resolveIndex = buildIndex(rawTargets)
+  }
+
+  private fun buildIndex(rawTargets: List<RawBuildTarget>): Map<QualifiedName, (PsiManager) -> PsiElement?> {
     val executionRoot = BazelBinPathService.getInstance(project).bazelExecPath?.let { Path.of(it) } ?: return emptyMap()
     val rootDir = Path.of(project.rootDir.path)
     val targets =
-      project.targetUtils
-        .allBuildTargets()
+      rawTargets
         .filter {
           it.kind.languageClasses.contains(LanguageClass.PYTHON)
         }
