@@ -58,7 +58,7 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
       with(moduleData.sdk) {
         ScalaBuildTarget(
           scalaVersion = version,
-          jars = compilerJars.toList(),
+          sdkJars = compilerJars.toList(),
           jvmBuildTarget = moduleData.javaModule?.let(javaLanguagePlugin::toJvmBuildTarget),
           scalacOptions = moduleData.scalacOpts,
         )
