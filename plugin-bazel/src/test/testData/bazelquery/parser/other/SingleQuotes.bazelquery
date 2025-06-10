@@ -1,0 +1,1 @@
+somepath('//path/to:target1', 'path/to:target2') except deps('//path/to:target3')
