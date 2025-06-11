@@ -38,6 +38,7 @@
   <depends optional="true" config-file="withJunit.xml">JUnit</depends>
   <depends optional="true" config-file="withKotlin.xml">org.jetbrains.kotlin</depends>
   <depends optional="true" config-file="withPython.xml">com.intellij.modules.python</depends>
+  <depends optional="true" config-file="withTerminal.xml">org.jetbrains.plugins.terminal</depends>
 
   <extensionPoints>
     <extensionPoint qualifiedName="org.jetbrains.bazel.sourceTypeIconProvider"
@@ -203,6 +204,12 @@
     <registryKey defaultValue="false"
                  description="Whether the Bazel plugin should import automatically even if .idea or another project model (e.g., Gradle) exists already"
                  key="bazel.project.auto.open.if.present"/>
+
+    <!--Restart required here to clear cache-->
+    <registryKey defaultValue="false"
+                 description="Bazel Query autocompletion in new 2024 terminal"
+                 key="bazel.query.terminal.completion"
+                 restartRequired="true"/>
 
     <activityTracker implementation="org.jetbrains.bazel.startup.BazelStartupActivityTracker"/>
 
