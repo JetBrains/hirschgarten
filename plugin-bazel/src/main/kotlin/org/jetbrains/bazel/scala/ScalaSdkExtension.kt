@@ -5,7 +5,8 @@ import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsPr
 import org.jetbrains.bazel.annotations.PublicApi
 
 /**
- * this API will be sunset for the `ScalaAddendumEntity` later, once Scala plugin is compatible with WSM
+ * this API will be sunset for the [org.jetbrains.bazel.workspacemodel.entities.ScalaAddendumEntity] later,
+ * once Scala plugin is compatible with WSM
  */
 @PublicApi
 interface ScalaSdkExtension {
