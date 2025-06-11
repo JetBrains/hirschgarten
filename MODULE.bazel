@@ -38,6 +38,7 @@ maven.install(
         "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.3",
         "com.google.code.gson:gson:2.12.1",
         "com.google.guava:guava:31.0.1-jre",
+        "org.mockito:mockito-core:5.8.0",
         "com.jetbrains.intellij.tools:ide-metrics-collector-starter:252.19874.12-EAP-SNAPSHOT",
         "com.jetbrains.intellij.tools:ide-metrics-collector:252.19874.12-EAP-SNAPSHOT",
         "com.jetbrains.intellij.tools:ide-starter-driver:252.19874.12-EAP-SNAPSHOT",
@@ -600,6 +601,34 @@ http_jar(
     url = TOML_GRAZIE_251_URL,
 )
 
+_TERMINAL_BUILD_FILE = """
+java_import(
+   name = "terminal",
+   jars = glob(["terminal/lib/*.jar"]),
+   visibility = ["//visibility:public"],
+)
+"""
+
+_TERMINAL_251_VERSION = "251.25410.123"
+
+_TERMINAL_243_VERSION = "243.23654.19"
+
+TERMINAL_PLUGIN_251_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.terminal/%s/org.jetbrains.plugins.terminal-%s.zip" % (_TERMINAL_251_VERSION, _TERMINAL_251_VERSION)
+
+TERMINAL_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.terminal/%s/org.jetbrains.plugins.terminal-%s.zip" % (_TERMINAL_243_VERSION, _TERMINAL_243_VERSION)
+
+http_archive(
+    name = "terminal_2025_1",
+    build_file_content = _TERMINAL_BUILD_FILE,
+    url = TERMINAL_PLUGIN_251_URL,
+)
+
+http_archive(
+    name = "terminal_2024_3",
+    build_file_content = _TERMINAL_BUILD_FILE,
+    url = TERMINAL_PLUGIN_243_URL,
+)
+
 # SDK 252
 
 SDK_252_PLUGIN_REPOSITORY_VERSION = "252.19874.12"
@@ -748,4 +777,18 @@ http_archive(
     build_file_content = _TOML_BUILD_FILE,
     sha256 = TOML_PLUGIN_252_SHA,
     url = TOML_PLUGIN_252_URL,
+)
+
+TERMINAL_PLUGIN_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal/%s/terminal-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
+
+http_jar(
+    name = "terminal_2025_2",
+    url = TERMINAL_PLUGIN_252_URL,
+)
+
+TERMINAL_COMPLETION_PLUGIN_252_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/terminal/terminal-completion/%s/terminal-completion-%s.jar" % (SDK_252_INTELLIJ_REPOSITORY, SDK_252_INTELLIJ_REPOSITORY_VERSION, SDK_252_INTELLIJ_REPOSITORY_VERSION)
+
+http_jar(
+    name = "terminal_completion_2025_2",
+    url = TERMINAL_COMPLETION_PLUGIN_252_URL,
 )

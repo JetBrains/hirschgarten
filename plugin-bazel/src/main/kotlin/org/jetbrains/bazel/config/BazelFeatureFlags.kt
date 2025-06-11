@@ -11,6 +11,7 @@ object BazelFeatureFlags {
   private const val PYTHON_SUPPORT = "bsp.python.support"
   private const val ANDROID_SUPPORT = "bsp.android.support"
   private const val GO_SUPPORT = "bsp.go.support"
+  private const val QUERY_TERMINAL_COMPLETION = "bazel.query.terminal.completion"
 
   @VisibleForTesting
   const val BUILD_PROJECT_ON_SYNC = "bsp.build.project.on.sync"
@@ -89,6 +90,9 @@ object BazelFeatureFlags {
 
   val autoOpenProjectIfPresent: Boolean
     get() = isEnabled(AUTO_OPEN_PROJECT_IF_PRESENT) || ApplicationManager.getApplication().isHeadlessEnvironment
+
+  val isQueryTerminalCompletionEnabled: Boolean
+    get() = isEnabled(QUERY_TERMINAL_COMPLETION)
 
   val isBazelQueryTabEnabled: Boolean
     get() = isEnabled(ENABLE_BAZEL_QUERY_TAB)

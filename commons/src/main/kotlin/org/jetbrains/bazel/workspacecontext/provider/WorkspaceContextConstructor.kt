@@ -47,6 +47,7 @@ class WorkspaceContextConstructor(
       targetShardSize = TargetShardSizeSpecExtractor.fromProjectView(projectView),
       shardingApproachSpec = ShardingApproachSpecExtractor.fromProjectView(projectView),
       importRunConfigurations = ImportRunConfigurationsSpecExtractor.fromProjectView(projectView),
+      gazelleTarget = GazelleTargetSpecExtractor.fromProjectView(projectView),
     )
   }
 }

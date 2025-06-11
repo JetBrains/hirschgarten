@@ -10,7 +10,6 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import kotlinx.html.emptyMap
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -29,6 +28,7 @@ import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -63,6 +63,7 @@ private data class GeneratedTargetInfo(
   val importPath: String,
 )
 
+@Disabled("deprecating for new Go sync")
 class GoProjectSyncTest : MockProjectBaseTest() {
   lateinit var hook: ProjectSyncHook
 
@@ -206,6 +207,8 @@ class GoProjectSyncTest : MockProjectBaseTest() {
           sdkHomePath = Path("/go_sdk/"),
           importPath = info.importPath,
           generatedLibraries = emptyList(),
+          generatedSources = emptyList(),
+          libraryLabels = emptyList(),
         ),
       sources = listOf(SourceItem(Path("/root/${info.importPath}"), false)),
       resources = info.resourcesItems,

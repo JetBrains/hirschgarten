@@ -15,6 +15,7 @@ import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bazel.workspacecontext.EnableNativeAndroidRules
 import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bazel.workspacecontext.ExperimentalAddTransitiveCompileTimeJars
+import org.jetbrains.bazel.workspacecontext.GazelleTargetSpec
 import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
 import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
@@ -57,6 +58,7 @@ val mockContext =
     targetShardSize = TargetShardSizeSpec(1000),
     shardingApproachSpec = ShardingApproachSpec(null),
     importRunConfigurations = ImportRunConfigurationsSpec(emptyList()),
+    gazelleTarget = GazelleTargetSpec(null),
   )
 
 val mockBazelInfo =

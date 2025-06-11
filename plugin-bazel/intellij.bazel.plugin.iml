@@ -24,6 +24,7 @@
     <orderEntry type="library" name="kotlinx-datetime-jvm" level="project" />
     <orderEntry type="library" name="opentelemetry" level="project" />
     <orderEntry type="library" name="protobuf4" level="project" />
+    <orderEntry type="library" name="StreamEx" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="studio-platform" level="project" />
     <orderEntry type="library" name="swingx" level="project" />
     <orderEntry type="module" module-name="intellij.android.common" />
@@ -115,5 +116,7 @@
     <orderEntry type="module" module-name="intellij.platform.projectModel.impl" />
     <orderEntry type="module" module-name="intellij.platform.searchEverywhere" />
     <orderEntry type="module" module-name="intellij.platform.ide.rpc" />
+    <orderEntry type="module" module-name="intellij.terminal" />
+    <orderEntry type="module" module-name="intellij.terminal.completion" />
   </component>
 </module>

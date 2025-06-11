@@ -7,6 +7,7 @@ import org.jetbrains.bazel.projectview.parser.sections.ExperimentalAddTransitive
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalPrioritizeLibrariesOverModulesTargetKindsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSectionParser
+import org.jetbrains.bazel.projectview.parser.sections.GazelleTargetParser
 import org.jetbrains.bazel.projectview.parser.sections.ImportRunConfigurationsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewAllowManualTargetsSyncSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewBazelBinarySectionParser
@@ -65,10 +66,11 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         targetShardSize = TargetShardSizeParser.parse(rawSections),
         shardingApproach = ShardingApproachParser.parse(rawSections),
         importRunConfigurations = ImportRunConfigurationsSectionParser.parse(rawSections),
+        gazelleTarget = GazelleTargetParser.parse(rawSections),
       ).build()
   }
 
-  fun String.escapeNewLines(): String = this.replace("\n", "\\n")
+  private fun String.escapeNewLines(): String = this.replace("\n", "\\n")
 
   private fun findImportedProjectViews(rawSections: ProjectViewRawSections): List<ProjectView> =
     rawSections
