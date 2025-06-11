@@ -23,6 +23,7 @@ intellij_integration_test_suite(
         "//rules_intellij/third_party/code_with_me:code_with_me_for_tests",
         "//rules_intellij/third_party/go:go_for_tests",
         "//rules_intellij/third_party/python:python_for_tests",
+        "//rules_intellij/third_party/terminal:terminal_for_tests",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
         "@maven//:io_kotest_kotest_assertions_shared_jvm",

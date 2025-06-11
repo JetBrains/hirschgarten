@@ -9,8 +9,8 @@ import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
@@ -69,7 +69,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       )
 
     val manualTargetJavaLibrary =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//manual_target:java_library"),
         tags = listOf("manual"),
         dependencies = emptyList(),
@@ -93,7 +93,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       )
 
     val manualTargetJavaBinary =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//manual_target:java_binary"),
         tags = listOf("manual"),
         dependencies = emptyList(),
@@ -117,7 +117,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       )
 
     val manualTargetJavaTest =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//manual_target:java_test"),
         tags = listOf("manual"),
         dependencies = emptyList(),

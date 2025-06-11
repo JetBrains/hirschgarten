@@ -1,8 +1,8 @@
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_python//python:defs.bzl", "py_binary")
+load("//rules/kotlin:macros.bzl", "kt_library")
 load(":integration_test.bzl", "synthetic_bazel_project")
 
-kt_jvm_library(
+kt_library(
     name = "intellij-bsp",
     neverlink = True,
     exports = [

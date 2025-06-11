@@ -1,11 +1,10 @@
 package org.jetbrains.bazel.workspace
 
-import com.intellij.openapi.vfs.VfsUtilCore
-import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileKind
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
+import org.jetbrains.bazel.sdkcompat.registerOtherRootsCompat
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
 
 class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexContributor<BazelProjectDirectoriesEntity> {
@@ -18,7 +17,7 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexC
   ) {
     registrar.registerIncludedDirectories(entity)
     registrar.registerExcludedDirectories(entity)
-    registrar.registerAllOtherDirectoriesAsExcluded(entity)
+    registrar.registerOtherRootsCompat(entity.projectRoot, entity.includedRoots, entity)
   }
 
   private fun WorkspaceFileSetRegistrar.registerIncludedDirectories(entity: BazelProjectDirectoriesEntity) =
@@ -38,13 +37,4 @@ class BazelProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexC
         entity = entity,
       )
     }
-
-  private fun WorkspaceFileSetRegistrar.registerAllOtherDirectoriesAsExcluded(entity: BazelProjectDirectoriesEntity) {
-    val includedRoots = entity.includedRoots.mapNotNull { it.virtualFile }.toSet()
-    registerExclusionCondition(
-      root = entity.projectRoot,
-      condition = { !VfsUtilCore.isUnderFiles(it, includedRoots) },
-      entity = entity,
-    )
-  }
 }

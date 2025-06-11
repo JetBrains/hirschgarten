@@ -6,7 +6,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -101,7 +101,7 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
   private fun createModuleWithRoots(sourceRoots: List<JavaSourceRoot>, resourceRoots: List<Path> = emptyList()): ModuleDetails =
     ModuleDetails(
       target =
-        BuildTarget(
+        RawBuildTarget(
           Label.parse("target"),
           listOf(),
           emptyList(),

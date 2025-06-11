@@ -133,9 +133,11 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   private fun toScalaAddendum(inputEntity: ModuleDetails): ScalaAddendum? {
     val scalaBuildTarget = extractScalaBuildTarget(inputEntity.target)
-    val version = scalaBuildTarget?.scalaVersion?.scalaVersionToScalaSdkName() ?: return null
+    val version = scalaBuildTarget?.scalaVersion ?: return null
     return ScalaAddendum(
-      scalaSdkName = version,
+      scalaVersion = version,
+      scalacOptions = scalaBuildTarget.scalacOptions,
+      sdkJars = scalaBuildTarget.sdkJars,
     )
   }
 

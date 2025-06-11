@@ -10,7 +10,7 @@ import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinModule
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
 import org.jetbrains.bsp.protocol.AndroidTargetType
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
 class AndroidLanguagePlugin(
@@ -24,7 +24,7 @@ class AndroidLanguagePlugin(
     androidMinSdkOverride = workspaceContext.androidMinSdkSpec.value
   }
 
-  override fun applyModuleData(moduleData: AndroidModule, buildTarget: BuildTarget) {
+  override fun applyModuleData(moduleData: AndroidModule, buildTarget: RawBuildTarget) {
     val androidBuildTarget =
       with(moduleData) {
         AndroidBuildTarget(

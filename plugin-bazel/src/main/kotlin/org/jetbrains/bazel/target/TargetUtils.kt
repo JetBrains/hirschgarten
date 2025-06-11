@@ -33,6 +33,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.experimental.ExperimentalTypeInference
@@ -46,8 +47,9 @@ private fun nowAsDuration() = System.currentTimeMillis().toDuration(DurationUnit
 
 private fun getStorageFilename(): String {
   // version for 243 cannot use `Hashing.xxh3_128()`
-  // (not available in 243 and we don't want to bundle `hash4j` as a part of Bazel plugin - JIT, increased build script complexity)
-  return "bazel-targets-v${if (ApplicationInfo.getInstance().build.baselineVersion <= 243) "v0.5" else "1"}.db"
+  // (not available in 243, and we don't want to bundle `hash4j` as a part of Bazel plugin - JIT, increased build script complexity)
+  val suffix = if (ApplicationInfo.getInstance().build.baselineVersion <= 243) "-243" else ""
+  return "bazel-targets-v2$suffix.db"
 }
 
 @PublicApi
@@ -115,7 +117,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   @InternalApi
   suspend fun saveTargets(
-    targets: List<BuildTarget>,
+    targets: List<RawBuildTarget>,
     fileToTarget: Map<Path, List<Label>>,
     fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
     libraryItems: List<LibraryItem>?,
@@ -149,7 +151,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   private suspend fun calculateFileToExecutableTargets(
     libraryItems: List<LibraryItem>?,
     fileToTarget: Map<Path, List<Label>>,
-    targets: List<BuildTarget>,
+    targets: List<RawBuildTarget>,
     labelToTargetInfo: Map<Label, BuildTarget>,
   ): Map<Path, List<Label>> =
     withContext(Dispatchers.Default) {

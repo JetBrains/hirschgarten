@@ -77,7 +77,7 @@ private class MockProgressEventListener : BuildProgressListener {
           eventToSanitize.parentId,
           eventToSanitize.message,
           eventToSanitize.kind,
-          eventToSanitize.filePosition.file.absolutePath,
+          eventToSanitize.filePosition.file!!.absolutePath,
           eventToSanitize.filePosition.startLine,
           eventToSanitize.filePosition.startColumn,
         )

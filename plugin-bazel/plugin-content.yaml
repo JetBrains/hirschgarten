@@ -3,6 +3,7 @@
     - name: intellij.bazel.plugin
     - name: intellij.bazel.commons
     - name: intellij.bazel.sdkcompat
+    - name: intellij.bazel.sdkcompat.k2
     - name: intellij.bazel.protobuf
     - name: intellij.bazel.server
 - name: lib/grpc-core.jar

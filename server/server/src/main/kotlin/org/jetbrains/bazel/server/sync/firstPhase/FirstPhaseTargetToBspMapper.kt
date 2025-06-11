@@ -10,8 +10,8 @@ import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetTag
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import java.nio.file.Path
@@ -36,9 +36,9 @@ class FirstPhaseTargetToBspMapper(private val bazelPathsResolver: BazelPathsReso
     return WorkspaceBuildTargetsResult(targets)
   }
 
-  private fun Target.toBspBuildTarget(project: FirstPhaseProject): BuildTarget {
+  private fun Target.toBspBuildTarget(project: FirstPhaseProject): RawBuildTarget {
     val label = Label.parse(name).assumeResolved()
-    return BuildTarget(
+    return RawBuildTarget(
       id = label,
       tags = inferTags(),
       dependencies = interestingDeps.map { Label.parse(it) },
