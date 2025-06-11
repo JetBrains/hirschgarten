@@ -38,6 +38,7 @@ maven.install(
         "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.3",
         "com.google.code.gson:gson:2.12.1",
         "com.google.guava:guava:31.0.1-jre",
+        "org.mockito:mockito-core:5.8.0",
         "com.jetbrains.intellij.tools:ide-metrics-collector-starter:252.19874.12-EAP-SNAPSHOT",
         "com.jetbrains.intellij.tools:ide-metrics-collector:252.19874.12-EAP-SNAPSHOT",
         "com.jetbrains.intellij.tools:ide-starter-driver:252.19874.12-EAP-SNAPSHOT",
