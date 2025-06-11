@@ -114,5 +114,7 @@
     <orderEntry type="module" module-name="intellij.platform.projectModel.impl" />
     <orderEntry type="module" module-name="intellij.platform.searchEverywhere" />
     <orderEntry type="module" module-name="intellij.platform.ide.rpc" />
+    <orderEntry type="module" module-name="intellij.terminal" />
+    <orderEntry type="module" module-name="intellij.terminal.completion" />
   </component>
 </module>
