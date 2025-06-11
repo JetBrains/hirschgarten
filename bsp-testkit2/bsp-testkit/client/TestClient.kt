@@ -90,6 +90,21 @@ class TestClient(
     }
   }
 
+  fun testMainWorkspaceTargets(timeout: Duration, expectedResult: WorkspaceBuildTargetsResult) {
+    test(timeout) { session ->
+      val result = session.server.workspaceBuildTargets()
+      val filteredResult =
+        WorkspaceBuildTargetsResult(
+          hasError = result.hasError,
+          targets =
+            result.targets.filter {
+              it.id.isMainWorkspace
+            },
+        )
+      assertJsonEquals(expectedResult, result)
+    }
+  }
+
   fun testWorkspaceName(timeout: Duration, expectedResult: WorkspaceNameResult) {
     test(timeout) { session ->
       val result = session.server.workspaceName()
