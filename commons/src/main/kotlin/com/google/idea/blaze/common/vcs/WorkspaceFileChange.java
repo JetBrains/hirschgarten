@@ -17,14 +17,10 @@ package com.google.idea.blaze.common.vcs;
 
 import java.nio.file.Path;
 
-/**
- * Represents an edit to a file in the user's workspace.
- */
+/** Represents an edit to a file in the user's workspace. */
 public record WorkspaceFileChange(Operation operation, Path workspaceRelativePath) {
 
-  /**
-   * Type of change that affected the file.
-   */
+  /** Type of change that affected the file. */
   public enum Operation {
     DELETE,
     ADD,
@@ -61,5 +57,4 @@ public record WorkspaceFileChange(Operation operation, Path workspaceRelativePat
     }
     return operation == that.operation && workspaceRelativePath.equals(that.workspaceRelativePath);
   }
-
 }

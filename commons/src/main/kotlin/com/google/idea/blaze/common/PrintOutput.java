@@ -19,14 +19,10 @@ import com.google.errorprone.annotations.FormatMethod;
 import com.google.errorprone.annotations.FormatString;
 import javax.annotation.Nonnull;
 
-/**
- * Output that can be printed to a log.
- */
+/** Output that can be printed to a log. */
 public record PrintOutput(@Nonnull String text, @Nonnull OutputType outputType) implements Output {
 
-  /**
-   * The output type
-   */
+  /** The output type */
   public enum OutputType {
     NORMAL,
     LOGGED,

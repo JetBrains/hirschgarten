@@ -25,20 +25,22 @@ import java.util.Optional;
 /**
  * State of the projects VCS at a point in time.
  *
- * @param workspaceId           A unique ID for the workspace that this state derives from.
- *
- *                              <p>This is treated as an opaque string for equality testing only.
- * @param upstreamRevision      Upstream/base revision or CL number. This usually represents the last checked-in change that
- *                              the users workspace contains.
- *
- *                              <p>This is treated as an opaque string for equality testing only.
- * @param workingSet            The set of files in the workspace that differ compared to {@link #upstreamRevision()}.
- * @param workspaceSnapshotPath The readonly workspace snapshot path that this state derives from. If set, this can be used to
- *                              ensure atomic operations on the workspace by ensuring that a set of sequential operations are
- *                              all using the exact same revision of the workspace.
+ * @param workspaceId A unique ID for the workspace that this state derives from.
+ *     <p>This is treated as an opaque string for equality testing only.
+ * @param upstreamRevision Upstream/base revision or CL number. This usually represents the last
+ *     checked-in change that the users workspace contains.
+ *     <p>This is treated as an opaque string for equality testing only.
+ * @param workingSet The set of files in the workspace that differ compared to {@link
+ *     #upstreamRevision()}.
+ * @param workspaceSnapshotPath The readonly workspace snapshot path that this state derives from.
+ *     If set, this can be used to ensure atomic operations on the workspace by ensuring that a set
+ *     of sequential operations are all using the exact same revision of the workspace.
  */
-public record VcsState(String workspaceId, String upstreamRevision, ImmutableSet<WorkspaceFileChange> workingSet,
-                       Optional<Path> workspaceSnapshotPath) {
+public record VcsState(
+    String workspaceId,
+    String upstreamRevision,
+    ImmutableSet<WorkspaceFileChange> workingSet,
+    Optional<Path> workspaceSnapshotPath) {
 
   @Override
   public String toString() {
@@ -54,9 +56,9 @@ public record VcsState(String workspaceId, String upstreamRevision, ImmutableSet
       return false;
     }
     return workspaceId.equals(that.workspaceId)
-      && upstreamRevision.equals(that.upstreamRevision)
-      && workingSet.equals(that.workingSet)
-      && workspaceSnapshotPath.equals(that.workspaceSnapshotPath);
+        && upstreamRevision.equals(that.upstreamRevision)
+        && workingSet.equals(that.workingSet)
+        && workspaceSnapshotPath.equals(that.workspaceSnapshotPath);
   }
 
   /**
@@ -64,8 +66,8 @@ public record VcsState(String workspaceId, String upstreamRevision, ImmutableSet
    */
   public ImmutableSet<Path> modifiedFiles() {
     return workingSet.stream()
-      .filter(c -> c.operation() != Operation.DELETE)
-      .map(WorkspaceFileChange::workspaceRelativePath)
-      .collect(toImmutableSet());
+        .filter(c -> c.operation() != Operation.DELETE)
+        .map(WorkspaceFileChange::workspaceRelativePath)
+        .collect(toImmutableSet());
   }
 }
