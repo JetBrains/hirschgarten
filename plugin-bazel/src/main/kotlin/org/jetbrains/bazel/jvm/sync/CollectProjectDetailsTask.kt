@@ -195,7 +195,7 @@ class CollectProjectDetailsTask(
         ScalaSdk(
           name = scalaBuildTarget.scalaVersion.scalaVersionToScalaSdkName(),
           scalaVersion = scalaBuildTarget.scalaVersion,
-          sdkJars = scalaBuildTarget.jars.map { path -> path.toUri() },
+          sdkJars = scalaBuildTarget.sdkJars.map { path -> path.toUri() },
         )
       }
 

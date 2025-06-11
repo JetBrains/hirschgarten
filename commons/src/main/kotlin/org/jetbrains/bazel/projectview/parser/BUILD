@@ -1,6 +1,6 @@
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("//rules/kotlin:macros.bzl", "kt_library")
 
-kt_jvm_library(
+kt_library(
     name = "parser",
     srcs = glob(["*.kt"]),
     resources = ["//server/log4j_config"],

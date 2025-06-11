@@ -15,6 +15,8 @@ import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.android.sdk.AndroidSdkType
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
+import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.includesAndroid
@@ -44,6 +46,11 @@ internal class JavaModuleWithSourcesUpdater(
       entityToAdd = entityToAdd,
       moduleEntity = moduleEntity,
     )
+
+    entityToAdd.scalaAddendum?.let {
+      val scalaAddendumEntityUpdater = ScalaAddendumEntityUpdater(workspaceModelEntityUpdaterConfig)
+      scalaAddendumEntityUpdater.addEntity(it, moduleEntity)
+    }
 
     if (entityToAdd.genericModuleInfo.isDummy && BazelFeatureFlags.fbsrSupportedInPlatform) {
       packageMarkerEntityUpdater.addEntities(entityToAdd.sourceRoots, moduleEntity)
@@ -103,9 +110,12 @@ internal class JavaModuleWithSourcesUpdater(
     entityToAdd.jvmJdkName?.also {
       returnDependencies.add(SdkDependency(SdkId(it, "JavaSDK")))
     }
-    entityToAdd.scalaAddendum?.also { addendum ->
-      returnDependencies.add(toLibraryDependency(IntermediateLibraryDependency(addendum.scalaSdkName, true)))
+    if (scalaSdkExtensionExists()) {
+      entityToAdd.scalaAddendum?.also { addendum ->
+        returnDependencies.add(toLibraryDependency(IntermediateLibraryDependency(addendum.scalaVersion.scalaVersionToScalaSdkName(), true)))
+      }
     }
+
     return returnDependencies
   }
 
