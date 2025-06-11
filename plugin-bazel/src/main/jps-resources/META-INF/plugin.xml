@@ -222,7 +222,8 @@
 
     <!-- Ported from OG -->
     <projectService serviceInterface="com.google.idea.blaze.common.artifact.ArtifactFetcher"/>
-    <projectService serviceInterface="com.google.idea.blaze.common.artifact.BuildArtifactCache.CleanRequest"/>
+    <projectService serviceInterface="com.google.idea.blaze.common.artifact.BuildArtifactCache"
+                    serviceImplementation="com.google.idea.blaze.common.artifact.BuildArtifactCacheDirectory"/>
 
     <commandLineInspectionProjectConfigurator
       implementation="org.jetbrains.bazel.startup.BazelCommandLineInspectionConfigurator"/>
