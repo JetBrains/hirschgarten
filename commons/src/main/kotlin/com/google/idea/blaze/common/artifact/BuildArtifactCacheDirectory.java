@@ -495,6 +495,7 @@ public class BuildArtifactCacheDirectory implements BuildArtifactCache {
     }
   }
 
+  @Override
   public void purge() throws BuildException {
     // Ensure that no artifacts are added or read from the cache while we're cleaning:
     long stamp = lock.tryWriteLock();
@@ -512,6 +513,7 @@ public class BuildArtifactCacheDirectory implements BuildArtifactCache {
     }
   }
 
+  @Override
   public ImmutableMap<String, ByteSource> getBugreportFiles() {
     StringBuilder contents = new StringBuilder();
     try {

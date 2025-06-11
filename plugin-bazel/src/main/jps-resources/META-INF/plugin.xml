@@ -208,6 +208,10 @@
                    serviceImplementation="org.jetbrains.bazel.services.BazelModuleFileIndex"
                    overrides="true"/>
 
+    <!-- Ported from OG -->
+    <projectService serviceInterface="com.google.idea.blaze.common.artifact.ArtifactFetcher"/>
+    <projectService serviceInterface="com.google.idea.blaze.common.artifact.BuildArtifactCache.CleanRequest"/>
+
     <commandLineInspectionProjectConfigurator
       implementation="org.jetbrains.bazel.startup.BazelCommandLineInspectionConfigurator"/>
     <configurationType implementation="org.jetbrains.bazel.run.config.BazelRunConfigurationType"/>

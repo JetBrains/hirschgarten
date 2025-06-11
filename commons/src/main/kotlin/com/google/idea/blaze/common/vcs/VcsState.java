@@ -20,47 +20,25 @@ import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.idea.blaze.common.vcs.WorkspaceFileChange.Operation;
 import java.nio.file.Path;
-import java.util.Objects;
 import java.util.Optional;
 
-/** State of the projects VCS at a point in time. */
-public class VcsState {
-
-  /**
-   * A unique ID for the workspace that this state derives from.
-   *
-   * <p>This is treated as an opaque string for equality testing only.
-   */
-  public final String workspaceId;
-
-  /**
-   * Upstream/base revision or CL number. This usually represents the last checked-in change that
-   * the users workspace contains.
-   *
-   * <p>This is treated as an opaque string for equality testing only.
-   */
-  public final String upstreamRevision;
-
-  /** The set of files in the workspace that differ compared to {@link #upstreamRevision}. */
-  public final ImmutableSet<WorkspaceFileChange> workingSet;
-
-  /**
-   * The readonly workspace snapshot path that this state derives from. If set, this can be used to
-   * ensure atomic operations on the workspace by ensuring that a set of sequential operations are
-   * all using the exact same revision of the workspace.
-   */
-  public final Optional<Path> workspaceSnapshotPath;
-
-  public VcsState(
-      String workspaceId,
-      String upstreamRevision,
-      ImmutableSet<WorkspaceFileChange> workingSet,
-      Optional<Path> workspaceSnapshotPath) {
-    this.workspaceId = workspaceId;
-    this.upstreamRevision = upstreamRevision;
-    this.workingSet = workingSet;
-    this.workspaceSnapshotPath = workspaceSnapshotPath;
-  }
+/**
+ * State of the projects VCS at a point in time.
+ *
+ * @param workspaceId           A unique ID for the workspace that this state derives from.
+ *
+ *                              <p>This is treated as an opaque string for equality testing only.
+ * @param upstreamRevision      Upstream/base revision or CL number. This usually represents the last checked-in change that
+ *                              the users workspace contains.
+ *
+ *                              <p>This is treated as an opaque string for equality testing only.
+ * @param workingSet            The set of files in the workspace that differ compared to {@link #upstreamRevision()}.
+ * @param workspaceSnapshotPath The readonly workspace snapshot path that this state derives from. If set, this can be used to
+ *                              ensure atomic operations on the workspace by ensuring that a set of sequential operations are
+ *                              all using the exact same revision of the workspace.
+ */
+public record VcsState(String workspaceId, String upstreamRevision, ImmutableSet<WorkspaceFileChange> workingSet,
+                       Optional<Path> workspaceSnapshotPath) {
 
   @Override
   public String toString() {
@@ -72,19 +50,13 @@ public class VcsState {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof VcsState)) {
+    if (!(o instanceof VcsState that)) {
       return false;
     }
-    VcsState that = (VcsState) o;
     return workspaceId.equals(that.workspaceId)
-        && upstreamRevision.equals(that.upstreamRevision)
-        && workingSet.equals(that.workingSet)
-        && workspaceSnapshotPath.equals(that.workspaceSnapshotPath);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(workspaceId, upstreamRevision, workingSet, workspaceSnapshotPath);
+      && upstreamRevision.equals(that.upstreamRevision)
+      && workingSet.equals(that.workingSet)
+      && workspaceSnapshotPath.equals(that.workspaceSnapshotPath);
   }
 
   /**
@@ -92,8 +64,8 @@ public class VcsState {
    */
   public ImmutableSet<Path> modifiedFiles() {
     return workingSet.stream()
-        .filter(c -> c.operation != Operation.DELETE)
-        .map(c -> c.workspaceRelativePath)
-        .collect(toImmutableSet());
+      .filter(c -> c.operation() != Operation.DELETE)
+      .map(WorkspaceFileChange::workspaceRelativePath)
+      .collect(toImmutableSet());
   }
 }

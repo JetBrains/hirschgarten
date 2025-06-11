@@ -19,14 +19,14 @@ import com.google.errorprone.annotations.FormatMethod;
 import com.google.errorprone.annotations.FormatString;
 import javax.annotation.Nonnull;
 
-/** Output that can be printed to a log. */
-public class PrintOutput implements Output {
+/**
+ * Output that can be printed to a log.
+ */
+public record PrintOutput(@Nonnull String text, @Nonnull OutputType outputType) implements Output {
 
-  @Nonnull private final String text;
-
-  @Nonnull private final OutputType outputType;
-
-  /** The output type */
+  /**
+   * The output type
+   */
   public enum OutputType {
     NORMAL,
     LOGGED,
@@ -34,28 +34,13 @@ public class PrintOutput implements Output {
     PROCESS
   }
 
-  public PrintOutput(@Nonnull String text, @Nonnull OutputType outputType) {
-    this.text = text;
-    this.outputType = outputType;
-  }
-
   public PrintOutput(@Nonnull String text) {
     this(text, OutputType.NORMAL);
   }
 
-  @Nonnull
-  public String getText() {
-    return text;
-  }
-
   @Override
   public String toString() {
-    return getText();
-  }
-
-  @Nonnull
-  public OutputType getOutputType() {
-    return outputType;
+    return text();
   }
 
   public static PrintOutput output(String text) {

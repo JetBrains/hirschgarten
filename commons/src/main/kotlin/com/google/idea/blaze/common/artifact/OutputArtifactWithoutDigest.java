@@ -26,7 +26,6 @@ public interface OutputArtifactWithoutDigest extends BlazeArtifact, OutputArtifa
         ? getArtifactPath().getName(1).toString()
         : "";
   }
-  ;
 
   /**
    * Returns the {@link ArtifactState} for this output, used for serialization/diffing purposes. Can

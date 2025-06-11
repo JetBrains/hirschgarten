@@ -16,24 +16,19 @@
 package com.google.idea.blaze.common.vcs;
 
 import java.nio.file.Path;
-import java.util.Objects;
 
-/** Represents an edit to a file in the user's workspace. */
-public final class WorkspaceFileChange {
+/**
+ * Represents an edit to a file in the user's workspace.
+ */
+public record WorkspaceFileChange(Operation operation, Path workspaceRelativePath) {
 
-  /** Type of change that affected the file. */
+  /**
+   * Type of change that affected the file.
+   */
   public enum Operation {
     DELETE,
     ADD,
     MODIFY,
-  }
-
-  public final Operation operation;
-  public final Path workspaceRelativePath;
-
-  public WorkspaceFileChange(Operation operation, Path workspaceRelativePath) {
-    this.operation = operation;
-    this.workspaceRelativePath = workspaceRelativePath;
   }
 
   /**
@@ -44,16 +39,11 @@ public final class WorkspaceFileChange {
    * reverted, i.e. are no longer in the working set.
    */
   public WorkspaceFileChange invert() {
-    switch (operation) {
-      case DELETE:
-        return new WorkspaceFileChange(Operation.ADD, workspaceRelativePath);
-      case ADD:
-        return new WorkspaceFileChange(Operation.DELETE, workspaceRelativePath);
-      case MODIFY:
-        return this;
-    }
-    throw new IllegalStateException(
-        "Invalid operation " + operation + " for " + workspaceRelativePath);
+    return switch (operation) {
+      case DELETE -> new WorkspaceFileChange(Operation.ADD, workspaceRelativePath);
+      case ADD -> new WorkspaceFileChange(Operation.DELETE, workspaceRelativePath);
+      case MODIFY -> this;
+    };
   }
 
   @Override
@@ -66,15 +56,10 @@ public final class WorkspaceFileChange {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof WorkspaceFileChange)) {
+    if (!(o instanceof WorkspaceFileChange that)) {
       return false;
     }
-    WorkspaceFileChange that = (WorkspaceFileChange) o;
     return operation == that.operation && workspaceRelativePath.equals(that.workspaceRelativePath);
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(operation, workspaceRelativePath);
-  }
 }
