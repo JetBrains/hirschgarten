@@ -22,6 +22,7 @@ import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
 import org.jetbrains.bazel.workspacecontext.IndexAllFilesInDirectoriesSpec
 import org.jetbrains.bazel.workspacecontext.NoPruneTransitiveCompileTimeJarsPatternsSpec
 import org.jetbrains.bazel.workspacecontext.PrioritizeLibrariesOverModulesTargetKindsSpec
+import org.jetbrains.bazel.workspacecontext.PythonCodeGeneratorRuleNamesSpec
 import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
 import org.jetbrains.bazel.workspacecontext.ShardingApproachSpec
 import org.jetbrains.bazel.workspacecontext.SyncFlagsSpec
@@ -61,6 +62,7 @@ val mockContext =
     importRunConfigurations = ImportRunConfigurationsSpec(emptyList()),
     gazelleTarget = GazelleTargetSpec(null),
     indexAllFilesInDirectories = IndexAllFilesInDirectoriesSpec(false),
+    pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpec(emptyList()),
   )
 
 val mockBazelInfo =

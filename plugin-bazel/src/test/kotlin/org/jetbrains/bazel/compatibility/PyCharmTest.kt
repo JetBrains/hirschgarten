@@ -32,7 +32,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
     get() =
       GitProjectInfo(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "8b08ee4fffabd26ece6d338f94f22398d415ce78",
+        commitHash = "73ad49439188c91342d46f63a32230e5b535dc03",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("simpleMultiLanguageTest") },
         isReusable = false,
@@ -82,17 +82,26 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
         .waitForSmartMode()
         .checkImportedModules()
         .openFile("python/bin.py")
+        // click on `print("bin!")`
         .navigateToFile(1, 2, "builtins.pyi", 1645, 5)
         .openFile("python/main/main.py")
-        .navigateToFile(9, 5, "util.py", 3, 5)
+        // click on `bbb()`
+        .navigateToFile(11, 5, "util.py", 3, 5)
         .openFile("python/main/main.py")
-        .navigateToFile(7, 26, "__version__.py", 8, 1)
+        // click on `print(requests.__version__)`
+        .navigateToFile(9, 26, "__version__.py", 8, 1)
         .openFile("python/main/main.py")
-        .navigateToFile(8, 26, "version.py", 5, 1)
-        .openFile("python/main/main.py")
-        .navigateToFile(8, 26, "version.py", 5, 1)
+        // click on `print(np.version.version)`
+        .navigateToFile(10, 26, "version.py", 5, 1)
         .openFile("python/libs/my_lib2/util.py")
+        // click on `aaa()`
         .navigateToFile(4, 7, "util.py", 1, 5)
+        .openFile("python/main/main.py")
+        // click on `from urban.cities import print_cities`
+        .navigateToFile(6, 34, "cities.py", 4, 5)
+        .openFile("python/main/main.py")
+        // click on `from artificial.plastics import print_plastics`
+        .navigateToFile(7, 37, "plastics.py", 4, 5)
         .exitApp()
 
     createContext().runIDE(commands = commands, runTimeout = timeout)
