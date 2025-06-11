@@ -97,6 +97,7 @@ message KotlinTargetInfo {
 message PythonTargetInfo {
   FileLocation interpreter = 1;
   string version = 2;
+  repeated string imports = 3;
 }
 
 message AndroidTargetInfo {

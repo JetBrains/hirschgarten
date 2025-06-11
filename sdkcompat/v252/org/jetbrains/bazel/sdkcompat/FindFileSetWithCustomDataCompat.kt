@@ -18,6 +18,7 @@ fun <D : WorkspaceFileSetData> WorkspaceFileIndex.findFileSetWithCustomDataCompa
     file,
     honorExclusion,
     includeContentSets,
+    includeContentNonIndexableSets = true,
     includeExternalSets,
     includeExternalSourceSets,
     includeCustomKindSets,

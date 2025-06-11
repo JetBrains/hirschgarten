@@ -9,9 +9,9 @@ import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.GoLibraryItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
@@ -66,7 +66,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       )
     }
 
-  private fun exampleBuildTarget(): BuildTarget =
+  private fun exampleBuildTarget(): RawBuildTarget =
     createGoBuildTarget(
       targetDirectory = "example",
       targetName = "hello",
@@ -92,7 +92,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
         ),
     )
 
-  private fun libBuildTarget(): BuildTarget =
+  private fun libBuildTarget(): RawBuildTarget =
     createGoBuildTarget(
       targetDirectory = "lib",
       targetName = "go_default_library",
@@ -113,7 +113,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
         ),
     )
 
-  private fun libTestBuildTarget(): BuildTarget =
+  private fun libTestBuildTarget(): RawBuildTarget =
     createGoBuildTarget(
       targetDirectory = "lib",
       targetName = "go_default_test",
@@ -143,7 +143,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     sdkHomePath: Path = defaultSdkHomePath,
     dependencies: List<Label> = listOf(),
     sources: List<SourceItem> = emptyList(),
-  ): BuildTarget {
+  ): RawBuildTarget {
     val goBuildTarget =
       GoBuildTarget(
         sdkHomePath = sdkHomePath,
@@ -154,7 +154,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       )
 
     val buildTargetData =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//$targetDirectory:$targetName"),
         tags = tags,
         dependencies = dependencies,

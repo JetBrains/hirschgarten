@@ -55,6 +55,11 @@ class ProjectResolver(
         )
       val featureFlags = workspaceContextProvider.currentFeatureFlags()
 
+      val repoMapping =
+        measured("Calculating external repository mapping") {
+          calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
+        }
+
       val bazelExternalRulesetsQuery =
         BazelExternalRulesetsQueryImpl(
           bazelRunner,
@@ -62,6 +67,7 @@ class ProjectResolver(
           bazelInfo.isWorkspaceEnabled,
           bspClientLogger,
           workspaceContext,
+          repoMapping,
         )
 
       val externalRulesetNames =
@@ -85,11 +91,6 @@ class ProjectResolver(
         measured(
           "Mapping languages to toolchains",
         ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it, workspaceContext, featureFlags) } }
-
-      val repoMapping =
-        measured("Calculating external repository mapping") {
-          calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
-        }
 
       measured("Realizing language aspect files from templates") {
         bazelBspAspectsManager.generateAspectsFromTemplates(

@@ -7,15 +7,15 @@ import org.jetbrains.bazel.server.label.label
 import org.jetbrains.bazel.server.model.Module
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.CppBuildTarget
 import org.jetbrains.bsp.protocol.CppOptionsItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
 class CppLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<CppModule>() {
   override fun resolveModule(targetInfo: TargetInfo): CppModule? = null
 
-  override fun applyModuleData(moduleData: CppModule, buildTarget: BuildTarget) {
+  override fun applyModuleData(moduleData: CppModule, buildTarget: RawBuildTarget) {
     // TODO https://youtrack.jetbrains.com/issue/BAZEL-612
     val cppBuildTarget =
       CppBuildTarget(

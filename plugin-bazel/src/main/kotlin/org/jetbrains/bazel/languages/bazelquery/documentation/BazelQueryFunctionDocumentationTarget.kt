@@ -29,18 +29,7 @@ class BazelQueryFunctionDocumentationTarget(symbol: BazelQueryFunctionSymbol, va
 
   override fun computeDocumentation(): DocumentationResult? =
     DocumentationResult.asyncDocumentation {
-      val markdownText =
-        """
-          |${function.description}
-          |
-          |**Arguments:**
-          |${function.argumentsMarkdown()}
-          |
-          |**Example Usage:**
-          ```
-            ${if (function is BazelQueryFunction.SimpleFunction) function.exampleUsage else "N/A"}
-          ```
-        """.trimMargin()
+      val markdownText = functionToDocumentationMarkdownText(function)
 
       val body =
         raw(
@@ -55,8 +44,26 @@ class BazelQueryFunctionDocumentationTarget(symbol: BazelQueryFunctionSymbol, va
       DocumentationResult.documentation(fragment.wrapWith(html()).toString())
     }
 
-  private fun BazelQueryFunction.argumentsMarkdown(): String =
-    arguments.joinToString(separator = "\n") { arg ->
-      "- `${arg.name}` (${arg.type}${if (arg.optional) ", optional" else ""}): ${arg.description}"
+  companion object {
+    fun functionToDocumentationMarkdownText(function: BazelQueryFunction): String {
+      val markdownText =
+        """
+          |${function.description}
+          |
+          |**Arguments:**
+          |${function.argumentsMarkdown()}
+          |
+          |**Example Usage:**
+          ```
+            ${if (function is BazelQueryFunction.SimpleFunction) function.exampleUsage else "N/A"}
+          ```
+        """.trimMargin()
+      return markdownText
     }
+
+    private fun BazelQueryFunction.argumentsMarkdown(): String =
+      arguments.joinToString(separator = "\n") { arg ->
+        "- `${arg.name}` (${arg.type}${if (arg.optional) ", optional" else ""}): ${arg.description}"
+      }
+  }
 }

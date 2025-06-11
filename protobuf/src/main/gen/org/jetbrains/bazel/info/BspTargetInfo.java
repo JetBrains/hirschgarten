@@ -16033,6 +16033,31 @@ public final class BspTargetInfo {
      */
     com.google.protobuf.ByteString
         getVersionBytes();
+
+    /**
+     * <code>repeated string imports = 3;</code>
+     * @return A list containing the imports.
+     */
+    java.util.List<java.lang.String>
+        getImportsList();
+    /**
+     * <code>repeated string imports = 3;</code>
+     * @return The count of imports.
+     */
+    int getImportsCount();
+    /**
+     * <code>repeated string imports = 3;</code>
+     * @param index The index of the element to return.
+     * @return The imports at the given index.
+     */
+    java.lang.String getImports(int index);
+    /**
+     * <code>repeated string imports = 3;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the imports at the given index.
+     */
+    com.google.protobuf.ByteString
+        getImportsBytes(int index);
   }
   /**
    * Protobuf type {@code bazelbsp.PythonTargetInfo}
@@ -16057,6 +16082,8 @@ public final class BspTargetInfo {
     }
     private PythonTargetInfo() {
       version_ = "";
+      imports_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
@@ -16138,6 +16165,43 @@ public final class BspTargetInfo {
       }
     }
 
+    public static final int IMPORTS_FIELD_NUMBER = 3;
+    @SuppressWarnings("serial")
+    private com.google.protobuf.LazyStringArrayList imports_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+    /**
+     * <code>repeated string imports = 3;</code>
+     * @return A list containing the imports.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getImportsList() {
+      return imports_;
+    }
+    /**
+     * <code>repeated string imports = 3;</code>
+     * @return The count of imports.
+     */
+    public int getImportsCount() {
+      return imports_.size();
+    }
+    /**
+     * <code>repeated string imports = 3;</code>
+     * @param index The index of the element to return.
+     * @return The imports at the given index.
+     */
+    public java.lang.String getImports(int index) {
+      return imports_.get(index);
+    }
+    /**
+     * <code>repeated string imports = 3;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the imports at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getImportsBytes(int index) {
+      return imports_.getByteString(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -16158,6 +16222,9 @@ public final class BspTargetInfo {
       if (!com.google.protobuf.GeneratedMessage.isStringEmpty(version_)) {
         com.google.protobuf.GeneratedMessage.writeString(output, 2, version_);
       }
+      for (int i = 0; i < imports_.size(); i++) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 3, imports_.getRaw(i));
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -16173,6 +16240,14 @@ public final class BspTargetInfo {
       }
       if (!com.google.protobuf.GeneratedMessage.isStringEmpty(version_)) {
         size += com.google.protobuf.GeneratedMessage.computeStringSize(2, version_);
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < imports_.size(); i++) {
+          dataSize += computeStringSizeNoTag(imports_.getRaw(i));
+        }
+        size += dataSize;
+        size += 1 * getImportsList().size();
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -16196,6 +16271,8 @@ public final class BspTargetInfo {
       }
       if (!getVersion()
           .equals(other.getVersion())) return false;
+      if (!getImportsList()
+          .equals(other.getImportsList())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -16213,6 +16290,10 @@ public final class BspTargetInfo {
       }
       hash = (37 * hash) + VERSION_FIELD_NUMBER;
       hash = (53 * hash) + getVersion().hashCode();
+      if (getImportsCount() > 0) {
+        hash = (37 * hash) + IMPORTS_FIELD_NUMBER;
+        hash = (53 * hash) + getImportsList().hashCode();
+      }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -16356,6 +16437,8 @@ public final class BspTargetInfo {
           interpreterBuilder_ = null;
         }
         version_ = "";
+        imports_ =
+            com.google.protobuf.LazyStringArrayList.emptyList();
         return this;
       }
 
@@ -16399,6 +16482,10 @@ public final class BspTargetInfo {
         if (((from_bitField0_ & 0x00000002) != 0)) {
           result.version_ = version_;
         }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          imports_.makeImmutable();
+          result.imports_ = imports_;
+        }
         result.bitField0_ |= to_bitField0_;
       }
 
@@ -16420,6 +16507,16 @@ public final class BspTargetInfo {
         if (!other.getVersion().isEmpty()) {
           version_ = other.version_;
           bitField0_ |= 0x00000002;
+          onChanged();
+        }
+        if (!other.imports_.isEmpty()) {
+          if (imports_.isEmpty()) {
+            imports_ = other.imports_;
+            bitField0_ |= 0x00000004;
+          } else {
+            ensureImportsIsMutable();
+            imports_.addAll(other.imports_);
+          }
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -16460,6 +16557,12 @@ public final class BspTargetInfo {
                 bitField0_ |= 0x00000002;
                 break;
               } // case 18
+              case 26: {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureImportsIsMutable();
+                imports_.add(s);
+                break;
+              } // case 26
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -16666,6 +16769,117 @@ public final class BspTargetInfo {
         checkByteStringIsUtf8(value);
         version_ = value;
         bitField0_ |= 0x00000002;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.LazyStringArrayList imports_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+      private void ensureImportsIsMutable() {
+        if (!imports_.isModifiable()) {
+          imports_ = new com.google.protobuf.LazyStringArrayList(imports_);
+        }
+        bitField0_ |= 0x00000004;
+      }
+      /**
+       * <code>repeated string imports = 3;</code>
+       * @return A list containing the imports.
+       */
+      public com.google.protobuf.ProtocolStringList
+          getImportsList() {
+        imports_.makeImmutable();
+        return imports_;
+      }
+      /**
+       * <code>repeated string imports = 3;</code>
+       * @return The count of imports.
+       */
+      public int getImportsCount() {
+        return imports_.size();
+      }
+      /**
+       * <code>repeated string imports = 3;</code>
+       * @param index The index of the element to return.
+       * @return The imports at the given index.
+       */
+      public java.lang.String getImports(int index) {
+        return imports_.get(index);
+      }
+      /**
+       * <code>repeated string imports = 3;</code>
+       * @param index The index of the value to return.
+       * @return The bytes of the imports at the given index.
+       */
+      public com.google.protobuf.ByteString
+          getImportsBytes(int index) {
+        return imports_.getByteString(index);
+      }
+      /**
+       * <code>repeated string imports = 3;</code>
+       * @param index The index to set the value at.
+       * @param value The imports to set.
+       * @return This builder for chaining.
+       */
+      public Builder setImports(
+          int index, java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        ensureImportsIsMutable();
+        imports_.set(index, value);
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string imports = 3;</code>
+       * @param value The imports to add.
+       * @return This builder for chaining.
+       */
+      public Builder addImports(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        ensureImportsIsMutable();
+        imports_.add(value);
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string imports = 3;</code>
+       * @param values The imports to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllImports(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureImportsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, imports_);
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string imports = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearImports() {
+        imports_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000004);;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string imports = 3;</code>
+       * @param value The bytes of the imports to add.
+       * @return This builder for chaining.
+       */
+      public Builder addImportsBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        ensureImportsIsMutable();
+        imports_.add(value);
+        bitField0_ |= 0x00000004;
         onChanged();
         return this;
       }
@@ -27447,58 +27661,58 @@ java.lang.String defaultValue) {
       "ion\030\310\001 \001(\t\022\023\n\nassociates\030\254\002 \003(\t\022\025\n\014kotli" +
       "nc_opts\030\220\003 \003(\t\022(\n\007stdlibs\030\364\003 \003(\0132\026.bazel" +
       "bsp.FileLocation\022:\n\024kotlinc_plugin_infos" +
-      "\030\330\004 \003(\0132\033.bazelbsp.KotlincPluginInfo\"P\n\020" +
+      "\030\330\004 \003(\0132\033.bazelbsp.KotlincPluginInfo\"a\n\020" +
       "PythonTargetInfo\022+\n\013interpreter\030\001 \001(\0132\026." +
-      "bazelbsp.FileLocation\022\017\n\007version\030\002 \001(\t\"\214" +
-      "\004\n\021AndroidTargetInfo\022+\n\013android_jar\030d \001(" +
-      "\0132\026.bazelbsp.FileLocation\022)\n\010manifest\030\310\001" +
-      " \001(\0132\026.bazelbsp.FileLocation\022O\n\022manifest" +
-      "_overrides\030\372\001 \003(\01322.bazelbsp.AndroidTarg" +
-      "etInfo.ManifestOverridesEntry\0225\n\024resourc" +
-      "e_directories\030\254\002 \003(\0132\026.bazelbsp.FileLoca" +
-      "tion\022\036\n\025resource_java_package\030\220\003 \001(\t\0223\n\022" +
-      "assets_directories\030\302\003 \003(\0132\026.bazelbsp.Fil" +
-      "eLocation\0220\n\017aidl_binary_jar\030\364\003 \001(\0132\026.ba" +
-      "zelbsp.FileLocation\0220\n\017aidl_source_jar\030\330" +
-      "\004 \001(\0132\026.bazelbsp.FileLocation\022$\n\003apk\030\274\005 " +
-      "\001(\0132\026.bazelbsp.FileLocation\0328\n\026ManifestO" +
-      "verridesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(" +
-      "\t:\0028\001\"\230\001\n\024AndroidAarImportInfo\022(\n\010manife" +
-      "st\030\001 \001(\0132\026.bazelbsp.FileLocation\022/\n\017reso" +
-      "urce_folder\030\002 \001(\0132\026.bazelbsp.FileLocatio" +
-      "n\022%\n\005r_txt\030\003 \001(\0132\026.bazelbsp.FileLocation" +
-      "\"\322\001\n\014GoTargetInfo\022\023\n\013import_path\030\001 \001(\t\022-" +
-      "\n\rsdk_home_path\030\002 \001(\0132\026.bazelbsp.FileLoc" +
-      "ation\0221\n\021generated_sources\030\003 \003(\0132\026.bazel" +
-      "bsp.FileLocation\0223\n\023generated_libraries\030" +
-      "\004 \003(\0132\026.bazelbsp.FileLocation\022\026\n\016library" +
-      "_labels\030\005 \003(\t\"\344\007\n\nTargetInfo\022\n\n\002id\030\n \001(\t" +
-      "\022\014\n\004kind\030\024 \001(\t\022\014\n\004tags\030\036 \003(\t\022*\n\014dependen" +
-      "cies\030( \003(\0132\024.bazelbsp.Dependency\022\'\n\007sour" +
-      "ces\0302 \003(\0132\026.bazelbsp.FileLocation\0221\n\021gen" +
-      "erated_sources\0303 \003(\0132\026.bazelbsp.FileLoca" +
-      "tion\022)\n\tresources\030< \003(\0132\026.bazelbsp.FileL" +
-      "ocation\022*\n\003env\030F \003(\0132\035.bazelbsp.TargetIn" +
-      "fo.EnvEntry\022\023\n\013env_inherit\030P \003(\t\022\022\n\nexec" +
-      "utable\030Z \001(\010\022\026\n\016workspace_name\030d \001(\t\0221\n\017" +
-      "jvm_target_info\030\350\007 \001(\0132\027.bazelbsp.JvmTar" +
-      "getInfo\0229\n\023java_toolchain_info\030\320\017 \001(\0132\033." +
-      "bazelbsp.JavaToolchainInfo\0225\n\021java_runti" +
-      "me_info\030\270\027 \001(\0132\031.bazelbsp.JavaRuntimeInf" +
-      "o\0225\n\021scala_target_info\030\240\037 \001(\0132\031.bazelbsp" +
-      ".ScalaTargetInfo\0221\n\017cpp_target_info\030\360. \001" +
-      "(\0132\027.bazelbsp.CppTargetInfo\0227\n\022kotlin_ta" +
-      "rget_info\030\3306 \001(\0132\032.bazelbsp.KotlinTarget" +
-      "Info\0227\n\022python_target_info\030\300> \001(\0132\032.baze" +
-      "lbsp.PythonTargetInfo\0229\n\023android_target_" +
-      "info\030\220N \001(\0132\033.bazelbsp.AndroidTargetInfo" +
-      "\022@\n\027android_aar_import_info\030\370U \001(\0132\036.baz" +
-      "elbsp.AndroidAarImportInfo\022/\n\016go_target_" +
-      "info\030\340] \001(\0132\026.bazelbsp.GoTargetInfo\0223\n\020c" +
-      "_toolchain_info\030\310e \001(\0132\030.bazelbsp.CToolc" +
-      "hainInfo\032*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005val" +
-      "ue\030\002 \001(\t:\0028\001B\032\n\030org.jetbrains.bazel.info" +
-      "b\006proto3"
+      "bazelbsp.FileLocation\022\017\n\007version\030\002 \001(\t\022\017" +
+      "\n\007imports\030\003 \003(\t\"\214\004\n\021AndroidTargetInfo\022+\n" +
+      "\013android_jar\030d \001(\0132\026.bazelbsp.FileLocati" +
+      "on\022)\n\010manifest\030\310\001 \001(\0132\026.bazelbsp.FileLoc" +
+      "ation\022O\n\022manifest_overrides\030\372\001 \003(\01322.baz" +
+      "elbsp.AndroidTargetInfo.ManifestOverride" +
+      "sEntry\0225\n\024resource_directories\030\254\002 \003(\0132\026." +
+      "bazelbsp.FileLocation\022\036\n\025resource_java_p" +
+      "ackage\030\220\003 \001(\t\0223\n\022assets_directories\030\302\003 \003" +
+      "(\0132\026.bazelbsp.FileLocation\0220\n\017aidl_binar" +
+      "y_jar\030\364\003 \001(\0132\026.bazelbsp.FileLocation\0220\n\017" +
+      "aidl_source_jar\030\330\004 \001(\0132\026.bazelbsp.FileLo" +
+      "cation\022$\n\003apk\030\274\005 \001(\0132\026.bazelbsp.FileLoca" +
+      "tion\0328\n\026ManifestOverridesEntry\022\013\n\003key\030\001 " +
+      "\001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"\230\001\n\024AndroidAarImp" +
+      "ortInfo\022(\n\010manifest\030\001 \001(\0132\026.bazelbsp.Fil" +
+      "eLocation\022/\n\017resource_folder\030\002 \001(\0132\026.baz" +
+      "elbsp.FileLocation\022%\n\005r_txt\030\003 \001(\0132\026.baze" +
+      "lbsp.FileLocation\"\322\001\n\014GoTargetInfo\022\023\n\013im" +
+      "port_path\030\001 \001(\t\022-\n\rsdk_home_path\030\002 \001(\0132\026" +
+      ".bazelbsp.FileLocation\0221\n\021generated_sour" +
+      "ces\030\003 \003(\0132\026.bazelbsp.FileLocation\0223\n\023gen" +
+      "erated_libraries\030\004 \003(\0132\026.bazelbsp.FileLo" +
+      "cation\022\026\n\016library_labels\030\005 \003(\t\"\344\007\n\nTarge" +
+      "tInfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030\024 \001(\t\022\014\n\004tags\030" +
+      "\036 \003(\t\022*\n\014dependencies\030( \003(\0132\024.bazelbsp.D" +
+      "ependency\022\'\n\007sources\0302 \003(\0132\026.bazelbsp.Fi" +
+      "leLocation\0221\n\021generated_sources\0303 \003(\0132\026." +
+      "bazelbsp.FileLocation\022)\n\tresources\030< \003(\013" +
+      "2\026.bazelbsp.FileLocation\022*\n\003env\030F \003(\0132\035." +
+      "bazelbsp.TargetInfo.EnvEntry\022\023\n\013env_inhe" +
+      "rit\030P \003(\t\022\022\n\nexecutable\030Z \001(\010\022\026\n\016workspa" +
+      "ce_name\030d \001(\t\0221\n\017jvm_target_info\030\350\007 \001(\0132" +
+      "\027.bazelbsp.JvmTargetInfo\0229\n\023java_toolcha" +
+      "in_info\030\320\017 \001(\0132\033.bazelbsp.JavaToolchainI" +
+      "nfo\0225\n\021java_runtime_info\030\270\027 \001(\0132\031.bazelb" +
+      "sp.JavaRuntimeInfo\0225\n\021scala_target_info\030" +
+      "\240\037 \001(\0132\031.bazelbsp.ScalaTargetInfo\0221\n\017cpp" +
+      "_target_info\030\360. \001(\0132\027.bazelbsp.CppTarget" +
+      "Info\0227\n\022kotlin_target_info\030\3306 \001(\0132\032.baze" +
+      "lbsp.KotlinTargetInfo\0227\n\022python_target_i" +
+      "nfo\030\300> \001(\0132\032.bazelbsp.PythonTargetInfo\0229" +
+      "\n\023android_target_info\030\220N \001(\0132\033.bazelbsp." +
+      "AndroidTargetInfo\022@\n\027android_aar_import_" +
+      "info\030\370U \001(\0132\036.bazelbsp.AndroidAarImportI" +
+      "nfo\022/\n\016go_target_info\030\340] \001(\0132\026.bazelbsp." +
+      "GoTargetInfo\0223\n\020c_toolchain_info\030\310e \001(\0132" +
+      "\030.bazelbsp.CToolchainInfo\032*\n\010EnvEntry\022\013\n" +
+      "\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\032\n\030org.jet" +
+      "brains.bazel.infob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -27581,7 +27795,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_PythonTargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_bazelbsp_PythonTargetInfo_descriptor,
-        new java.lang.String[] { "Interpreter", "Version", });
+        new java.lang.String[] { "Interpreter", "Version", "Imports", });
     internal_static_bazelbsp_AndroidTargetInfo_descriptor =
       getDescriptor().getMessageTypes().get(13);
     internal_static_bazelbsp_AndroidTargetInfo_fieldAccessorTable = new

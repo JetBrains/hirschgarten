@@ -12,7 +12,7 @@ import javax.swing.Icon
 
 abstract class BazelRunnerAction(
   targetInfos: List<BuildTarget>,
-  private val text: (includeTargetNameInText: Boolean) -> String,
+  private val text: (isRunConfigName: Boolean) -> String,
   icon: Icon? = null,
   isDebugAction: Boolean = false,
   isCoverageAction: Boolean = false,

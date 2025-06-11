@@ -12,7 +12,6 @@ import org.h2.mvstore.DataUtils.readVarInt
 import org.h2.mvstore.MVMap
 import org.h2.mvstore.MVStore
 import org.h2.mvstore.WriteBuffer
-import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.AllPackagesBeneath
 import org.jetbrains.bazel.label.AllRuleTargets
 import org.jetbrains.bazel.label.AllRuleTargetsAndFiles
@@ -32,6 +31,7 @@ import org.jetbrains.bazel.sdkcompat.createHashStream128
 import org.jetbrains.bazel.sdkcompat.hashBytesTo128Bits
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.PartialBuildTarget
 import java.nio.ByteBuffer
 import java.nio.file.Path
 import kotlin.io.path.invariantSeparatorsPathString
@@ -54,7 +54,13 @@ internal class TargetInfoManager(
   private val libraryIdToTarget: MVMap<HashValue128, Label> = openIdToLabelMap(store, "libraryIdToTarget", logSupplier)
   private val moduleIdToTarget: MVMap<HashValue128, ResolvedLabel> = openIdToResolvedLabelMap(store, "moduleIdToTarget", logSupplier)
 
-  private val labelToTargetInfo: MVMap<HashValue128, BuildTarget> = createIdToBuildTargetMap(store, logSupplier)
+  private val labelToTargetInfo: MVMap<HashValue128, PartialBuildTarget> =
+    openOrResetMap(
+      store = store,
+      name = "labelToTargetInfo",
+      mapBuilder = createIdToBuildMapType(filePathSuffix, Path.of(filePathSuffix.trimEnd('/'))),
+      logSupplier = logSupplier,
+    )
 
   fun save() {
     if (store.hasUnsavedChanges()) {
@@ -161,7 +167,17 @@ internal class TargetInfoManager(
     val hashStream = createHashStream128()
     for ((label, info) in labelToTargetInfo) {
       // must be canonical label
-      this.labelToTargetInfo.put(computeLabelHash(label as ResolvedLabel, hashStream), info)
+      this.labelToTargetInfo.put(
+        computeLabelHash(label as ResolvedLabel, hashStream),
+        PartialBuildTarget(
+          id = info.id,
+          tags = info.tags,
+          kind = info.kind,
+          baseDirectory = info.baseDirectory,
+          data = info.data,
+          noBuild = info.noBuild,
+        ),
+      )
     }
   }
 
@@ -197,7 +213,17 @@ internal class TargetInfoManager(
     for (target in targets) {
       // must be canonical label
       val label = target.id as ResolvedLabel
-      this.labelToTargetInfo.put(computeLabelHash(label, hashStream), target)
+      this.labelToTargetInfo.put(
+        computeLabelHash(label, hashStream),
+        PartialBuildTarget(
+          id = target.id,
+          tags = target.tags,
+          kind = target.kind,
+          baseDirectory = target.baseDirectory,
+          data = target.data,
+          noBuild = target.noBuild,
+        ),
+      )
 
       moduleIdToTarget.put(stringToHashId(label.formatAsModuleName(project)), label)
     }
@@ -208,30 +234,6 @@ internal class TargetInfoManager(
   fun close() {
     store.close(300)
   }
-}
-
-private fun createIdToBuildTargetMap(store: MVStore, logSupplier: () -> Logger): MVMap<HashValue128, BuildTarget> {
-  val mapBuilder = MVMap.Builder<HashValue128, BuildTarget>()
-  mapBuilder.setKeyType(HashValue128KeyDataType)
-  val buildTargetInfoValueType =
-    createAnyValueDataType<BuildTarget>(
-      writer = { buffer, item ->
-        // don't store dependencies, sources, resources as they are saved in the workspace model already
-        val data =
-          bazelGson
-            .toJson(item.copy(dependencies = emptyList(), sources = emptyList(), resources = emptyList()))
-            .encodeToByteArray()
-        buffer.putVarInt(data.size)
-        buffer.put(data)
-      },
-      reader = { buffer ->
-        bazelGson.fromJson(buffer.readString(), BuildTarget::class.java)
-      },
-    )
-  mapBuilder.setValueType(
-    buildTargetInfoValueType,
-  )
-  return openOrResetMap(store = store, name = "labelToTargetInfo", mapBuilder = mapBuilder, logSupplier = logSupplier)
 }
 
 private fun writeLabel(item: Label, buffer: WriteBuffer) {
@@ -267,90 +269,8 @@ private fun openIdToResolvedLabelMap(
 ): MVMap<HashValue128, ResolvedLabel> {
   val mapBuilder = MVMap.Builder<HashValue128, ResolvedLabel>()
   mapBuilder.setKeyType(HashValue128KeyDataType)
-  mapBuilder.setValueType(
-    createAnyValueDataType<ResolvedLabel>(
-      writer = { buffer, label ->
-        val repo = label.repo
-        when (repo) {
-          Main -> buffer.put(0)
-          is Canonical -> {
-            buffer.put(1)
-            buffer.writeString(repo.repoName)
-          }
-
-          is Apparent -> {
-            buffer.put(2)
-            buffer.writeString(repo.repoName)
-          }
-        }
-
-        val packagePath = label.packagePath
-        when (packagePath) {
-          is AllPackagesBeneath -> buffer.put(0)
-          is Package -> buffer.put(1)
-        }
-        buffer.putVarInt(packagePath.pathSegments.size)
-        for (value in packagePath.pathSegments) {
-          buffer.writeString(value)
-        }
-
-        val target = label.target
-        when (target) {
-          AmbiguousEmptyTarget -> buffer.put(0)
-          AllRuleTargets -> buffer.put(1)
-          AllRuleTargetsAndFiles -> buffer.put(2)
-          is SingleTarget -> {
-            buffer.put(3)
-            buffer.writeString(target.targetName)
-          }
-        }
-      },
-      reader = { buffer ->
-        val repoType = buffer.get()
-        val repo =
-          when (repoType.toInt()) {
-            0 -> Main
-            1 -> Canonical.createCanonicalOrMain(buffer.readString())
-            2 -> Apparent(buffer.readString())
-            else -> throw IllegalStateException("Unexpected repo type $repoType")
-          }
-
-        val packageType = buffer.get()
-        val packagePath =
-          when (packageType.toInt()) {
-            0 -> AllPackagesBeneath(Array(readVarInt(buffer)) { buffer.readString() }.asList())
-            1 -> Package(Array(readVarInt(buffer)) { buffer.readString() }.asList())
-            else -> throw IllegalStateException("Unexpected package type $packageType")
-          }
-
-        val targetType = buffer.get()
-        val target =
-          when (targetType.toInt()) {
-            0 -> AmbiguousEmptyTarget
-            1 -> AllRuleTargets
-            2 -> AllRuleTargetsAndFiles
-            3 -> SingleTarget(buffer.readString())
-            else -> throw IllegalStateException("Unexpected target type $targetType")
-          }
-
-        ResolvedLabel(repo = repo, packagePath = packagePath, target = target)
-      },
-    ),
-  )
+  mapBuilder.setValueType(createAnyValueDataType<ResolvedLabel>(writer = ::writeResolvedLabel, reader = ::readResolvedLabel))
   return openOrResetMap(store = store, name = name, mapBuilder = mapBuilder, logSupplier = logSupplier)
-}
-
-private fun ByteBuffer.readString(): String {
-  val size = readVarInt(this)
-  val bytes = ByteArray(size)
-  get(bytes)
-  return String(bytes)
-}
-
-private fun WriteBuffer.writeString(value: String) {
-  val valueBytes = value.encodeToByteArray()
-  putVarInt(valueBytes.size)
-  put(valueBytes)
 }
 
 private fun openIdToLabelListMap(
@@ -386,8 +306,7 @@ private fun computeLabelHash(label: ResolvedLabel, hash: HashAdapter): HashValue
 }
 
 private fun hashLabelRepo(label: ResolvedLabel, hash: HashAdapter) {
-  val repo = label.repo
-  when (repo) {
+  when (val repo = label.repo) {
     Main -> hash.putByte(0)
     is Canonical -> {
       hash.putByte(1)
@@ -414,8 +333,7 @@ private fun hashLabelPackage(label: ResolvedLabel, hash: HashAdapter) {
 }
 
 private fun hashLabelTarget(label: ResolvedLabel, hash: HashAdapter) {
-  val target = label.target
-  when (target) {
+  when (val target = label.target) {
     AmbiguousEmptyTarget -> hash.putByte(0)
     AllRuleTargets -> hash.putByte(1)
     AllRuleTargetsAndFiles -> hash.putByte(2)

@@ -23,7 +23,6 @@ import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.CppOptionsItem
 import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
@@ -49,6 +48,7 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -151,10 +151,10 @@ class BspProjectMapper(
       uri = this.toUri().toString(),
     )
 
-  private fun NonModuleTarget.toBuildTarget(): BuildTarget {
+  private fun NonModuleTarget.toBuildTarget(): RawBuildTarget {
     val tags = tags.mapNotNull(BspMappings::toBspTag)
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         id = label,
         tags = tags,
         kind = inferKind(this.tags, kindString, emptySet()),
@@ -166,7 +166,7 @@ class BspProjectMapper(
     return buildTarget
   }
 
-  private fun Module.toBuildTarget(highPrioritySources: Set<Path>): BuildTarget {
+  private fun Module.toBuildTarget(highPrioritySources: Set<Path>): RawBuildTarget {
     val label = label
     val dependencies =
       directDependencies
@@ -180,7 +180,7 @@ class BspProjectMapper(
       }
 
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         id = label,
         tags = tags,
         dependencies = dependencies,
@@ -217,7 +217,7 @@ class BspProjectMapper(
     )
   }
 
-  private fun applyLanguageData(module: Module, buildTarget: BuildTarget) {
+  private fun applyLanguageData(module: Module, buildTarget: RawBuildTarget) {
     val plugin = languagePluginsService.getPlugin(module.languages)
     module.languageData?.let { plugin.setModuleData(it, buildTarget) }
   }
