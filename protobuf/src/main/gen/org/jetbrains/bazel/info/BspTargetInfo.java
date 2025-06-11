@@ -20495,16 +20495,16 @@ java.lang.String defaultValue) {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string importpath = 1;</code>
-     * @return The importpath.
+     * <code>string import_path = 1;</code>
+     * @return The importPath.
      */
-    java.lang.String getImportpath();
+    java.lang.String getImportPath();
     /**
-     * <code>string importpath = 1;</code>
-     * @return The bytes for importpath.
+     * <code>string import_path = 1;</code>
+     * @return The bytes for importPath.
      */
     com.google.protobuf.ByteString
-        getImportpathBytes();
+        getImportPathBytes();
 
     /**
      * <code>.bazelbsp.FileLocation sdk_home_path = 2;</code>
@@ -20568,6 +20568,31 @@ java.lang.String defaultValue) {
      */
     org.jetbrains.bazel.info.BspTargetInfo.FileLocationOrBuilder getGeneratedLibrariesOrBuilder(
         int index);
+
+    /**
+     * <code>repeated string library_labels = 5;</code>
+     * @return A list containing the libraryLabels.
+     */
+    java.util.List<java.lang.String>
+        getLibraryLabelsList();
+    /**
+     * <code>repeated string library_labels = 5;</code>
+     * @return The count of libraryLabels.
+     */
+    int getLibraryLabelsCount();
+    /**
+     * <code>repeated string library_labels = 5;</code>
+     * @param index The index of the element to return.
+     * @return The libraryLabels at the given index.
+     */
+    java.lang.String getLibraryLabels(int index);
+    /**
+     * <code>repeated string library_labels = 5;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the libraryLabels at the given index.
+     */
+    com.google.protobuf.ByteString
+        getLibraryLabelsBytes(int index);
   }
   /**
    * Protobuf type {@code bazelbsp.GoTargetInfo}
@@ -20591,9 +20616,11 @@ java.lang.String defaultValue) {
       super(builder);
     }
     private GoTargetInfo() {
-      importpath_ = "";
+      importPath_ = "";
       generatedSources_ = java.util.Collections.emptyList();
       generatedLibraries_ = java.util.Collections.emptyList();
+      libraryLabels_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
@@ -20610,39 +20637,39 @@ java.lang.String defaultValue) {
     }
 
     private int bitField0_;
-    public static final int IMPORTPATH_FIELD_NUMBER = 1;
+    public static final int IMPORT_PATH_FIELD_NUMBER = 1;
     @SuppressWarnings("serial")
-    private volatile java.lang.Object importpath_ = "";
+    private volatile java.lang.Object importPath_ = "";
     /**
-     * <code>string importpath = 1;</code>
-     * @return The importpath.
+     * <code>string import_path = 1;</code>
+     * @return The importPath.
      */
     @java.lang.Override
-    public java.lang.String getImportpath() {
-      java.lang.Object ref = importpath_;
+    public java.lang.String getImportPath() {
+      java.lang.Object ref = importPath_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        importpath_ = s;
+        importPath_ = s;
         return s;
       }
     }
     /**
-     * <code>string importpath = 1;</code>
-     * @return The bytes for importpath.
+     * <code>string import_path = 1;</code>
+     * @return The bytes for importPath.
      */
     @java.lang.Override
     public com.google.protobuf.ByteString
-        getImportpathBytes() {
-      java.lang.Object ref = importpath_;
+        getImportPathBytes() {
+      java.lang.Object ref = importPath_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        importpath_ = b;
+        importPath_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -20757,6 +20784,43 @@ java.lang.String defaultValue) {
       return generatedLibraries_.get(index);
     }
 
+    public static final int LIBRARY_LABELS_FIELD_NUMBER = 5;
+    @SuppressWarnings("serial")
+    private com.google.protobuf.LazyStringArrayList libraryLabels_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+    /**
+     * <code>repeated string library_labels = 5;</code>
+     * @return A list containing the libraryLabels.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getLibraryLabelsList() {
+      return libraryLabels_;
+    }
+    /**
+     * <code>repeated string library_labels = 5;</code>
+     * @return The count of libraryLabels.
+     */
+    public int getLibraryLabelsCount() {
+      return libraryLabels_.size();
+    }
+    /**
+     * <code>repeated string library_labels = 5;</code>
+     * @param index The index of the element to return.
+     * @return The libraryLabels at the given index.
+     */
+    public java.lang.String getLibraryLabels(int index) {
+      return libraryLabels_.get(index);
+    }
+    /**
+     * <code>repeated string library_labels = 5;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the libraryLabels at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getLibraryLabelsBytes(int index) {
+      return libraryLabels_.getByteString(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -20771,8 +20835,8 @@ java.lang.String defaultValue) {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(importpath_)) {
-        com.google.protobuf.GeneratedMessage.writeString(output, 1, importpath_);
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(importPath_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 1, importPath_);
       }
       if (((bitField0_ & 0x00000001) != 0)) {
         output.writeMessage(2, getSdkHomePath());
@@ -20783,6 +20847,9 @@ java.lang.String defaultValue) {
       for (int i = 0; i < generatedLibraries_.size(); i++) {
         output.writeMessage(4, generatedLibraries_.get(i));
       }
+      for (int i = 0; i < libraryLabels_.size(); i++) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 5, libraryLabels_.getRaw(i));
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -20792,8 +20859,8 @@ java.lang.String defaultValue) {
       if (size != -1) return size;
 
       size = 0;
-      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(importpath_)) {
-        size += com.google.protobuf.GeneratedMessage.computeStringSize(1, importpath_);
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(importPath_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(1, importPath_);
       }
       if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
@@ -20806,6 +20873,14 @@ java.lang.String defaultValue) {
       for (int i = 0; i < generatedLibraries_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, generatedLibraries_.get(i));
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < libraryLabels_.size(); i++) {
+          dataSize += computeStringSizeNoTag(libraryLabels_.getRaw(i));
+        }
+        size += dataSize;
+        size += 1 * getLibraryLabelsList().size();
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -20822,8 +20897,8 @@ java.lang.String defaultValue) {
       }
       org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo other = (org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo) obj;
 
-      if (!getImportpath()
-          .equals(other.getImportpath())) return false;
+      if (!getImportPath()
+          .equals(other.getImportPath())) return false;
       if (hasSdkHomePath() != other.hasSdkHomePath()) return false;
       if (hasSdkHomePath()) {
         if (!getSdkHomePath()
@@ -20833,6 +20908,8 @@ java.lang.String defaultValue) {
           .equals(other.getGeneratedSourcesList())) return false;
       if (!getGeneratedLibrariesList()
           .equals(other.getGeneratedLibrariesList())) return false;
+      if (!getLibraryLabelsList()
+          .equals(other.getLibraryLabelsList())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -20844,8 +20921,8 @@ java.lang.String defaultValue) {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + IMPORTPATH_FIELD_NUMBER;
-      hash = (53 * hash) + getImportpath().hashCode();
+      hash = (37 * hash) + IMPORT_PATH_FIELD_NUMBER;
+      hash = (53 * hash) + getImportPath().hashCode();
       if (hasSdkHomePath()) {
         hash = (37 * hash) + SDK_HOME_PATH_FIELD_NUMBER;
         hash = (53 * hash) + getSdkHomePath().hashCode();
@@ -20857,6 +20934,10 @@ java.lang.String defaultValue) {
       if (getGeneratedLibrariesCount() > 0) {
         hash = (37 * hash) + GENERATED_LIBRARIES_FIELD_NUMBER;
         hash = (53 * hash) + getGeneratedLibrariesList().hashCode();
+      }
+      if (getLibraryLabelsCount() > 0) {
+        hash = (37 * hash) + LIBRARY_LABELS_FIELD_NUMBER;
+        hash = (53 * hash) + getLibraryLabelsList().hashCode();
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -20997,7 +21078,7 @@ java.lang.String defaultValue) {
       public Builder clear() {
         super.clear();
         bitField0_ = 0;
-        importpath_ = "";
+        importPath_ = "";
         sdkHomePath_ = null;
         if (sdkHomePathBuilder_ != null) {
           sdkHomePathBuilder_.dispose();
@@ -21017,6 +21098,8 @@ java.lang.String defaultValue) {
           generatedLibrariesBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000008);
+        libraryLabels_ =
+            com.google.protobuf.LazyStringArrayList.emptyList();
         return this;
       }
 
@@ -21073,7 +21156,7 @@ java.lang.String defaultValue) {
       private void buildPartial0(org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.importpath_ = importpath_;
+          result.importPath_ = importPath_;
         }
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000002) != 0)) {
@@ -21081,6 +21164,10 @@ java.lang.String defaultValue) {
               ? sdkHomePath_
               : sdkHomePathBuilder_.build();
           to_bitField0_ |= 0x00000001;
+        }
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          libraryLabels_.makeImmutable();
+          result.libraryLabels_ = libraryLabels_;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -21097,8 +21184,8 @@ java.lang.String defaultValue) {
 
       public Builder mergeFrom(org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo other) {
         if (other == org.jetbrains.bazel.info.BspTargetInfo.GoTargetInfo.getDefaultInstance()) return this;
-        if (!other.getImportpath().isEmpty()) {
-          importpath_ = other.importpath_;
+        if (!other.getImportPath().isEmpty()) {
+          importPath_ = other.importPath_;
           bitField0_ |= 0x00000001;
           onChanged();
         }
@@ -21157,6 +21244,16 @@ java.lang.String defaultValue) {
             }
           }
         }
+        if (!other.libraryLabels_.isEmpty()) {
+          if (libraryLabels_.isEmpty()) {
+            libraryLabels_ = other.libraryLabels_;
+            bitField0_ |= 0x00000010;
+          } else {
+            ensureLibraryLabelsIsMutable();
+            libraryLabels_.addAll(other.libraryLabels_);
+          }
+          onChanged();
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
@@ -21184,7 +21281,7 @@ java.lang.String defaultValue) {
                 done = true;
                 break;
               case 10: {
-                importpath_ = input.readStringRequireUtf8();
+                importPath_ = input.readStringRequireUtf8();
                 bitField0_ |= 0x00000001;
                 break;
               } // case 10
@@ -21221,6 +21318,12 @@ java.lang.String defaultValue) {
                 }
                 break;
               } // case 34
+              case 42: {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureLibraryLabelsIsMutable();
+                libraryLabels_.add(s);
+                break;
+              } // case 42
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -21238,73 +21341,73 @@ java.lang.String defaultValue) {
       }
       private int bitField0_;
 
-      private java.lang.Object importpath_ = "";
+      private java.lang.Object importPath_ = "";
       /**
-       * <code>string importpath = 1;</code>
-       * @return The importpath.
+       * <code>string import_path = 1;</code>
+       * @return The importPath.
        */
-      public java.lang.String getImportpath() {
-        java.lang.Object ref = importpath_;
+      public java.lang.String getImportPath() {
+        java.lang.Object ref = importPath_;
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
-          importpath_ = s;
+          importPath_ = s;
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>string importpath = 1;</code>
-       * @return The bytes for importpath.
+       * <code>string import_path = 1;</code>
+       * @return The bytes for importPath.
        */
       public com.google.protobuf.ByteString
-          getImportpathBytes() {
-        java.lang.Object ref = importpath_;
+          getImportPathBytes() {
+        java.lang.Object ref = importPath_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          importpath_ = b;
+          importPath_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>string importpath = 1;</code>
-       * @param value The importpath to set.
+       * <code>string import_path = 1;</code>
+       * @param value The importPath to set.
        * @return This builder for chaining.
        */
-      public Builder setImportpath(
+      public Builder setImportPath(
           java.lang.String value) {
         if (value == null) { throw new NullPointerException(); }
-        importpath_ = value;
+        importPath_ = value;
         bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
       /**
-       * <code>string importpath = 1;</code>
+       * <code>string import_path = 1;</code>
        * @return This builder for chaining.
        */
-      public Builder clearImportpath() {
-        importpath_ = getDefaultInstance().getImportpath();
+      public Builder clearImportPath() {
+        importPath_ = getDefaultInstance().getImportPath();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
       /**
-       * <code>string importpath = 1;</code>
-       * @param value The bytes for importpath to set.
+       * <code>string import_path = 1;</code>
+       * @param value The bytes for importPath to set.
        * @return This builder for chaining.
        */
-      public Builder setImportpathBytes(
+      public Builder setImportPathBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) { throw new NullPointerException(); }
         checkByteStringIsUtf8(value);
-        importpath_ = value;
+        importPath_ = value;
         bitField0_ |= 0x00000001;
         onChanged();
         return this;
@@ -21909,6 +22012,117 @@ java.lang.String defaultValue) {
           generatedLibraries_ = null;
         }
         return generatedLibrariesBuilder_;
+      }
+
+      private com.google.protobuf.LazyStringArrayList libraryLabels_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+      private void ensureLibraryLabelsIsMutable() {
+        if (!libraryLabels_.isModifiable()) {
+          libraryLabels_ = new com.google.protobuf.LazyStringArrayList(libraryLabels_);
+        }
+        bitField0_ |= 0x00000010;
+      }
+      /**
+       * <code>repeated string library_labels = 5;</code>
+       * @return A list containing the libraryLabels.
+       */
+      public com.google.protobuf.ProtocolStringList
+          getLibraryLabelsList() {
+        libraryLabels_.makeImmutable();
+        return libraryLabels_;
+      }
+      /**
+       * <code>repeated string library_labels = 5;</code>
+       * @return The count of libraryLabels.
+       */
+      public int getLibraryLabelsCount() {
+        return libraryLabels_.size();
+      }
+      /**
+       * <code>repeated string library_labels = 5;</code>
+       * @param index The index of the element to return.
+       * @return The libraryLabels at the given index.
+       */
+      public java.lang.String getLibraryLabels(int index) {
+        return libraryLabels_.get(index);
+      }
+      /**
+       * <code>repeated string library_labels = 5;</code>
+       * @param index The index of the value to return.
+       * @return The bytes of the libraryLabels at the given index.
+       */
+      public com.google.protobuf.ByteString
+          getLibraryLabelsBytes(int index) {
+        return libraryLabels_.getByteString(index);
+      }
+      /**
+       * <code>repeated string library_labels = 5;</code>
+       * @param index The index to set the value at.
+       * @param value The libraryLabels to set.
+       * @return This builder for chaining.
+       */
+      public Builder setLibraryLabels(
+          int index, java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        ensureLibraryLabelsIsMutable();
+        libraryLabels_.set(index, value);
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string library_labels = 5;</code>
+       * @param value The libraryLabels to add.
+       * @return This builder for chaining.
+       */
+      public Builder addLibraryLabels(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        ensureLibraryLabelsIsMutable();
+        libraryLabels_.add(value);
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string library_labels = 5;</code>
+       * @param values The libraryLabels to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllLibraryLabels(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureLibraryLabelsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, libraryLabels_);
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string library_labels = 5;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearLibraryLabels() {
+        libraryLabels_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000010);;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string library_labels = 5;</code>
+       * @param value The bytes of the libraryLabels to add.
+       * @return This builder for chaining.
+       */
+      public Builder addLibraryLabelsBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        ensureLibraryLabelsIsMutable();
+        libraryLabels_.add(value);
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:bazelbsp.GoTargetInfo)
@@ -27467,37 +27681,38 @@ java.lang.String defaultValue) {
       "ortInfo\022(\n\010manifest\030\001 \001(\0132\026.bazelbsp.Fil" +
       "eLocation\022/\n\017resource_folder\030\002 \001(\0132\026.baz" +
       "elbsp.FileLocation\022%\n\005r_txt\030\003 \001(\0132\026.baze" +
-      "lbsp.FileLocation\"\271\001\n\014GoTargetInfo\022\022\n\nim" +
-      "portpath\030\001 \001(\t\022-\n\rsdk_home_path\030\002 \001(\0132\026." +
-      "bazelbsp.FileLocation\0221\n\021generated_sourc" +
-      "es\030\003 \003(\0132\026.bazelbsp.FileLocation\0223\n\023gene" +
-      "rated_libraries\030\004 \003(\0132\026.bazelbsp.FileLoc" +
-      "ation\"\344\007\n\nTargetInfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind" +
-      "\030\024 \001(\t\022\014\n\004tags\030\036 \003(\t\022*\n\014dependencies\030( \003" +
-      "(\0132\024.bazelbsp.Dependency\022\'\n\007sources\0302 \003(" +
-      "\0132\026.bazelbsp.FileLocation\0221\n\021generated_s" +
-      "ources\0303 \003(\0132\026.bazelbsp.FileLocation\022)\n\t" +
-      "resources\030< \003(\0132\026.bazelbsp.FileLocation\022" +
-      "*\n\003env\030F \003(\0132\035.bazelbsp.TargetInfo.EnvEn" +
-      "try\022\023\n\013env_inherit\030P \003(\t\022\022\n\nexecutable\030Z" +
-      " \001(\010\022\026\n\016workspace_name\030d \001(\t\0221\n\017jvm_targ" +
-      "et_info\030\350\007 \001(\0132\027.bazelbsp.JvmTargetInfo\022" +
-      "9\n\023java_toolchain_info\030\320\017 \001(\0132\033.bazelbsp" +
-      ".JavaToolchainInfo\0225\n\021java_runtime_info\030" +
-      "\270\027 \001(\0132\031.bazelbsp.JavaRuntimeInfo\0225\n\021sca" +
-      "la_target_info\030\240\037 \001(\0132\031.bazelbsp.ScalaTa" +
-      "rgetInfo\0221\n\017cpp_target_info\030\360. \001(\0132\027.baz" +
-      "elbsp.CppTargetInfo\0227\n\022kotlin_target_inf" +
-      "o\030\3306 \001(\0132\032.bazelbsp.KotlinTargetInfo\0227\n\022" +
-      "python_target_info\030\300> \001(\0132\032.bazelbsp.Pyt" +
-      "honTargetInfo\0229\n\023android_target_info\030\220N " +
-      "\001(\0132\033.bazelbsp.AndroidTargetInfo\022@\n\027andr" +
-      "oid_aar_import_info\030\370U \001(\0132\036.bazelbsp.An" +
-      "droidAarImportInfo\022/\n\016go_target_info\030\340] " +
-      "\001(\0132\026.bazelbsp.GoTargetInfo\0223\n\020c_toolcha" +
-      "in_info\030\310e \001(\0132\030.bazelbsp.CToolchainInfo" +
-      "\032*\n\010EnvEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t" +
-      ":\0028\001B\032\n\030org.jetbrains.bazel.infob\006proto3"
+      "lbsp.FileLocation\"\322\001\n\014GoTargetInfo\022\023\n\013im" +
+      "port_path\030\001 \001(\t\022-\n\rsdk_home_path\030\002 \001(\0132\026" +
+      ".bazelbsp.FileLocation\0221\n\021generated_sour" +
+      "ces\030\003 \003(\0132\026.bazelbsp.FileLocation\0223\n\023gen" +
+      "erated_libraries\030\004 \003(\0132\026.bazelbsp.FileLo" +
+      "cation\022\026\n\016library_labels\030\005 \003(\t\"\344\007\n\nTarge" +
+      "tInfo\022\n\n\002id\030\n \001(\t\022\014\n\004kind\030\024 \001(\t\022\014\n\004tags\030" +
+      "\036 \003(\t\022*\n\014dependencies\030( \003(\0132\024.bazelbsp.D" +
+      "ependency\022\'\n\007sources\0302 \003(\0132\026.bazelbsp.Fi" +
+      "leLocation\0221\n\021generated_sources\0303 \003(\0132\026." +
+      "bazelbsp.FileLocation\022)\n\tresources\030< \003(\013" +
+      "2\026.bazelbsp.FileLocation\022*\n\003env\030F \003(\0132\035." +
+      "bazelbsp.TargetInfo.EnvEntry\022\023\n\013env_inhe" +
+      "rit\030P \003(\t\022\022\n\nexecutable\030Z \001(\010\022\026\n\016workspa" +
+      "ce_name\030d \001(\t\0221\n\017jvm_target_info\030\350\007 \001(\0132" +
+      "\027.bazelbsp.JvmTargetInfo\0229\n\023java_toolcha" +
+      "in_info\030\320\017 \001(\0132\033.bazelbsp.JavaToolchainI" +
+      "nfo\0225\n\021java_runtime_info\030\270\027 \001(\0132\031.bazelb" +
+      "sp.JavaRuntimeInfo\0225\n\021scala_target_info\030" +
+      "\240\037 \001(\0132\031.bazelbsp.ScalaTargetInfo\0221\n\017cpp" +
+      "_target_info\030\360. \001(\0132\027.bazelbsp.CppTarget" +
+      "Info\0227\n\022kotlin_target_info\030\3306 \001(\0132\032.baze" +
+      "lbsp.KotlinTargetInfo\0227\n\022python_target_i" +
+      "nfo\030\300> \001(\0132\032.bazelbsp.PythonTargetInfo\0229" +
+      "\n\023android_target_info\030\220N \001(\0132\033.bazelbsp." +
+      "AndroidTargetInfo\022@\n\027android_aar_import_" +
+      "info\030\370U \001(\0132\036.bazelbsp.AndroidAarImportI" +
+      "nfo\022/\n\016go_target_info\030\340] \001(\0132\026.bazelbsp." +
+      "GoTargetInfo\0223\n\020c_toolchain_info\030\310e \001(\0132" +
+      "\030.bazelbsp.CToolchainInfo\032*\n\010EnvEntry\022\013\n" +
+      "\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\032\n\030org.jet" +
+      "brains.bazel.infob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -27604,7 +27819,7 @@ java.lang.String defaultValue) {
     internal_static_bazelbsp_GoTargetInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_bazelbsp_GoTargetInfo_descriptor,
-        new java.lang.String[] { "Importpath", "SdkHomePath", "GeneratedSources", "GeneratedLibraries", });
+        new java.lang.String[] { "ImportPath", "SdkHomePath", "GeneratedSources", "GeneratedLibraries", "LibraryLabels", });
     internal_static_bazelbsp_TargetInfo_descriptor =
       getDescriptor().getMessageTypes().get(16);
     internal_static_bazelbsp_TargetInfo_fieldAccessorTable = new

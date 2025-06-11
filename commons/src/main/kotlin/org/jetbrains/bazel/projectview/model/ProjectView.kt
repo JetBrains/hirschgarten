@@ -6,6 +6,7 @@ import org.jetbrains.bazel.projectview.model.sections.ExperimentalAddTransitiveC
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalPrioritizeLibrariesOverModulesTargetKindsSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSection
+import org.jetbrains.bazel.projectview.model.sections.GazelleTargetSection
 import org.jetbrains.bazel.projectview.model.sections.ImportRunConfigurationsSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
@@ -71,6 +72,8 @@ data class ProjectView(
   val shardingApproach: ShardingApproachSection? = null,
   /** See https://ij.bazel.build/docs/project-views.html#import_run_configurations */
   val importRunConfigurations: ImportRunConfigurationsSection? = null,
+  /** gazelle target */
+  val gazelleTarget: GazelleTargetSection? = null,
 ) {
   data class Builder(
     private val imports: List<ProjectView> = emptyList(),
@@ -94,6 +97,7 @@ data class ProjectView(
     private val targetShardSize: TargetShardSizeSection? = null,
     private val shardingApproach: ShardingApproachSection? = null,
     private val importRunConfigurations: ImportRunConfigurationsSection? = null,
+    private val gazelleTarget: GazelleTargetSection? = null,
   ) {
     fun build(): ProjectView {
       log.debug("Building project view for: {}", this)
@@ -122,6 +126,7 @@ data class ProjectView(
       val targetShardSizeSection = combineTargetShardSizeSection(importedProjectViews)
       val shardingApproachSection = combineShardingApproachSection(importedProjectViews)
       val importRunConfigurationsSection = combineImportRunConfigurationsSection(importedProjectViews)
+      val gazelleTarget = combineGazelleTargetSection(importedProjectViews)
 
       log.debug(
         "Building project view with combined" +
@@ -146,6 +151,7 @@ data class ProjectView(
           " targetShardSize: {}," +
           " shardingApproach: {}," +
           " importRunConfigurationsSection: {}," +
+          " gazelleTarget: {}," +
           "", // preserve Git blame
         targets,
         bazelBinary,
@@ -167,6 +173,7 @@ data class ProjectView(
         targetShardSizeSection,
         shardingApproachSection,
         importRunConfigurationsSection,
+        gazelleTarget,
       )
       return ProjectView(
         targets,
@@ -189,6 +196,7 @@ data class ProjectView(
         targetShardSizeSection,
         shardingApproachSection,
         importRunConfigurationsSection,
+        gazelleTarget,
       )
     }
 
@@ -261,6 +269,12 @@ data class ProjectView(
       targetShardSize ?: getLastImportedSingletonValue(
         importedProjectViews,
         ProjectView::targetShardSize,
+      )
+
+    private fun combineGazelleTargetSection(importedProjectViews: List<ProjectView>): GazelleTargetSection? =
+      gazelleTarget ?: getLastImportedSingletonValue(
+        importedProjectViews,
+        ProjectView::gazelleTarget,
       )
 
     private fun combineShardingApproachSection(importedProjectViews: List<ProjectView>): ShardingApproachSection? =
