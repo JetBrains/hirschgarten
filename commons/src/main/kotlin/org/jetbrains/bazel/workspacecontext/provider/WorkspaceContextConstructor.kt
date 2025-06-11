@@ -48,6 +48,7 @@ class WorkspaceContextConstructor(
       shardingApproachSpec = ShardingApproachSpecExtractor.fromProjectView(projectView),
       importRunConfigurations = ImportRunConfigurationsSpecExtractor.fromProjectView(projectView),
       gazelleTarget = GazelleTargetSpecExtractor.fromProjectView(projectView),
+      pythonCodeGeneratorRuleNames = PythonCodeGeneratorRuleNamesSpecExtractor.fromProjectView(projectView),
     )
   }
 }

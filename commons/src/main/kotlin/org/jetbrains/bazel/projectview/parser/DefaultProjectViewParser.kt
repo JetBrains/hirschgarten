@@ -19,6 +19,7 @@ import org.jetbrains.bazel.projectview.parser.sections.ProjectViewIdeJavaHomeOve
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewImportDepthSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewSyncFlagsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewTargetsSectionParser
+import org.jetbrains.bazel.projectview.parser.sections.PythonCodeGeneratorRuleNamesSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ShardSyncParser
 import org.jetbrains.bazel.projectview.parser.sections.ShardingApproachParser
 import org.jetbrains.bazel.projectview.parser.sections.TargetShardSizeParser
@@ -67,6 +68,7 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         shardingApproach = ShardingApproachParser.parse(rawSections),
         importRunConfigurations = ImportRunConfigurationsSectionParser.parse(rawSections),
         gazelleTarget = GazelleTargetParser.parse(rawSections),
+        pythonCodeGeneratorRuleNamesSection = PythonCodeGeneratorRuleNamesSectionParser.parse(rawSections),
       ).build()
   }
 

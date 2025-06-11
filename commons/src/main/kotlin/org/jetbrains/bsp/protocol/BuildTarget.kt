@@ -58,6 +58,8 @@ data class PythonBuildTarget(
   // imports is the attribute in bazel python rules
   // which specify a list of runfiles relative paths which will be included in PYTHONPATH
   val imports: List<String>,
+  val isCodeGenerator: Boolean,
+  val generatedSources: List<Path>,
 ) : BuildTargetData
 
 @ClassDiscriminator(3)

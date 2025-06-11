@@ -48,3 +48,9 @@ data class ImportRunConfigurationsSection(override val values: List<String>) : P
     const val SECTION_NAME = "import_run_configurations"
   }
 }
+
+data class PythonCodeGeneratorRuleNamesSection(override val values: List<String>) : ProjectViewListSection<String>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "python_code_generator_rule_names"
+  }
+}
