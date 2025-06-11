@@ -29,6 +29,7 @@ object BazelFeatureFlags {
   const val FAST_BUILD_ENABLED = "bazel.enable.jvm.fastbuild"
   private const val CHECK_SHARED_SOURCES = "bazel.check.shared.sources"
   private const val AUTO_OPEN_PROJECT_IF_PRESENT = "bazel.project.auto.open.if.present"
+  private const val ENABLE_BAZEL_QUERY_TAB = "bazel.query.tab.enabled"
 
   val isPythonSupportEnabled: Boolean
     get() = isEnabled(PYTHON_SUPPORT)
@@ -89,6 +90,9 @@ object BazelFeatureFlags {
   val autoOpenProjectIfPresent: Boolean
     get() = isEnabled(AUTO_OPEN_PROJECT_IF_PRESENT) || ApplicationManager.getApplication().isHeadlessEnvironment
 
+  val isBazelQueryTabEnabled: Boolean
+    get() = isEnabled(ENABLE_BAZEL_QUERY_TAB)
+
   private fun isEnabled(key: String): Boolean = Registry.`is`(key) || System.getProperty(key, "false").toBoolean()
 }
 
@@ -103,6 +107,7 @@ object FeatureFlagsProvider {
         bazelSymlinksScanMaxDepth = symlinkScanMaxDepth,
         bazelShutDownBeforeShardBuild = shutDownBeforeShardBuild,
         isSharedSourceSupportEnabled = project.isSharedSourceSupportEnabled,
+        isBazelQueryTabEnabled = isBazelQueryTabEnabled,
       )
     }
 }

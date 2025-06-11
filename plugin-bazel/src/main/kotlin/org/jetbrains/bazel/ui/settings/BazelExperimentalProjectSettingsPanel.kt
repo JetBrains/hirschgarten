@@ -13,10 +13,7 @@ import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
-import java.awt.FlowLayout
-import javax.swing.JButton
 import javax.swing.JComponent
-import javax.swing.JPanel
 
 internal class BazelExperimentalProjectSettingsConfigurable(private val project: Project) : SearchableConfigurable {
   // experimental features
@@ -24,7 +21,6 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
   private val hotswapEnabledCheckBox: JBCheckBox
   private val useIntellijTestRunnerCheckBox: JBCheckBox
   private val enableBuildWithJpsCheckBox: JBCheckBox
-  private val enableQueryTabCheckbox: JBCheckBox
 
   private var currentProjectSettings = project.bazelProjectSettings
 
@@ -36,7 +32,6 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
     hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
 
     enableBuildWithJpsCheckBox = initEnableBuildWithJpsCheckBox()
-    enableQueryTabCheckbox = initEnableQueryTabCheckBox()
   }
 
   private fun initEnableLocalJvmActionsCheckBox(): JBCheckBox =
@@ -78,31 +73,8 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
       }
     }
 
-  private fun initEnableQueryTabCheckBox(): JBCheckBox =
-    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.enable.query.tab.checkbox.text")).apply {
-      isSelected = currentProjectSettings.enableQueryTab
-      addItemListener {
-        currentProjectSettings = currentProjectSettings.copy(enableQueryTab = isSelected)
-      }
-    }
-
-  override fun createComponent(): JComponent {
-    val resetToolPanelButton =
-      JButton("Restart window panel").apply {
-        addActionListener {
-          BazelSettingsPanelEventSubscriber.runActions(
-            BazelSettingsPanelEventSubscriber.BazelSettingsPanelEventType.RESET_TOOL_WINDOW_BUTTON_PRESSED,
-          )
-        }
-      }
-    val queryTabCheckboxComponent =
-      JPanel().apply {
-        layout = FlowLayout()
-        add(enableQueryTabCheckbox)
-        add(resetToolPanelButton)
-      }
-
-    return panel {
+  override fun createComponent(): JComponent =
+    panel {
       row { cell(enableBuildWithJpsCheckBox).align(Align.FILL) }
       group(BazelPluginBundle.message("project.settings.local.runner.settings")) {
         row { cell(enableLocalJvmActionsCheckBox).align(Align.FILL) }
@@ -115,12 +87,7 @@ internal class BazelExperimentalProjectSettingsConfigurable(private val project:
           contextHelp(BazelPluginBundle.message("project.settings.plugin.use.intellij.test.runner.help.text"))
         }
       }
-      row {
-        cell(queryTabCheckboxComponent).align(Align.FILL)
-        contextHelp(BazelPluginBundle.message("project.settings.plugin.enable.query.tab.help.text"))
-      }
     }
-  }
 
   override fun isModified(): Boolean = currentProjectSettings != project.bazelProjectSettings
 
