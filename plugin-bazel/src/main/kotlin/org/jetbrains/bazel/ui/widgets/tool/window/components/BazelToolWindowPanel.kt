@@ -22,7 +22,6 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.ui.queryTab.BazelQueryTab
 import org.jetbrains.bazel.ui.settings.BazelSettingsPanelEventSubscriber
-import org.jetbrains.bazel.ui.widgets.tool.window.filter.FilterActionGroup
 import java.nio.file.Path
 import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
