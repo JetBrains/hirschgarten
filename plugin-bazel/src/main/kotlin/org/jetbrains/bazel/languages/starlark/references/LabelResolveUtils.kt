@@ -21,7 +21,7 @@ import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
 
 /**
  * @param containingFile the file that should be used as context for resolving, e.g., relative labels
- * @param acceptOnlyFileTarget `true` if [Label.target] always refers to a file on disk (e.g., in `load` statements).
+ * @param acceptOnlyFileTarget `true` if [TargetPattern.target] always refers to a file on disk (e.g., in `load` statements).
  * @see ExternalRepoResolveTest
  */
 @RequiresReadLock

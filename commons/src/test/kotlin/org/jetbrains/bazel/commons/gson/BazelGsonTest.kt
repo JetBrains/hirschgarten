@@ -5,7 +5,6 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.TargetPattern
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.Assertions.assertEquals

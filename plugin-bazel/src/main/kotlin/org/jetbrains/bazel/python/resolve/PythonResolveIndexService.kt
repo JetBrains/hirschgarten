@@ -12,7 +12,6 @@ import com.jetbrains.python.PyNames
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.sync.BazelBinPathService
-import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
@@ -118,7 +117,7 @@ class PythonResolveIndexService(private val project: Project) {
 
   // assembleImportRoots convert "imports" attributes of a bazel python rule to actual imported paths
   private fun assembleImportsPaths(target: BuildTarget): List<Path> {
-    val label = target.id as? ResolvedLabel ?: return listOf()
+    val label = target.id
     val ideInfo = extractPythonBuildTarget(target) ?: return listOf()
     var buildParentPath = label.packagePath.toString().let { Path.of(it) }
 

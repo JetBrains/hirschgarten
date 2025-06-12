@@ -11,18 +11,10 @@ import com.intellij.util.io.mvstore.openOrResetMap
 import org.h2.mvstore.DataUtils.readVarInt
 import org.h2.mvstore.MVMap
 import org.h2.mvstore.MVStore
-import org.h2.mvstore.WriteBuffer
-import org.jetbrains.bazel.label.AllPackagesBeneath
-import org.jetbrains.bazel.label.AllRuleTargets
-import org.jetbrains.bazel.label.AllRuleTargetsAndFiles
-import org.jetbrains.bazel.label.AmbiguousEmptyTarget
 import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Canonical
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.Main
-import org.jetbrains.bazel.label.Package
-import org.jetbrains.bazel.label.ResolvedLabel
-import org.jetbrains.bazel.label.SingleTarget
 import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
@@ -32,7 +24,6 @@ import org.jetbrains.bazel.sdkcompat.hashBytesTo128Bits
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.PartialBuildTarget
-import java.nio.ByteBuffer
 import java.nio.file.Path
 import kotlin.io.path.invariantSeparatorsPathString
 
@@ -52,7 +43,7 @@ internal class TargetInfoManager(
   private val fileToTarget: MVMap<HashValue128, List<Label>> = openIdToLabelListMap("fileToTarget", store, logSupplier)
 
   private val libraryIdToTarget: MVMap<HashValue128, Label> = openIdToLabelMap(store, "libraryIdToTarget", logSupplier)
-  private val moduleIdToTarget: MVMap<HashValue128, ResolvedLabel> = openIdToResolvedLabelMap(store, "moduleIdToTarget", logSupplier)
+  private val moduleIdToTarget: MVMap<HashValue128, Label> = openIdToResolvedLabelMap(store, "moduleIdToTarget", logSupplier)
 
   private val labelToTargetInfo: MVMap<HashValue128, PartialBuildTarget> =
     openOrResetMap(
@@ -168,7 +159,7 @@ internal class TargetInfoManager(
     for ((label, info) in labelToTargetInfo) {
       // must be canonical label
       this.labelToTargetInfo.put(
-        computeLabelHash(label as ResolvedLabel, hashStream),
+        computeLabelHash(label, hashStream),
         PartialBuildTarget(
           id = info.id,
           tags = info.tags,
@@ -212,7 +203,7 @@ internal class TargetInfoManager(
     val hashStream = createHashStream128()
     for (target in targets) {
       // must be canonical label
-      val label = target.id as ResolvedLabel
+      val label = target.id as CanonicalLabel
       this.labelToTargetInfo.put(
         computeLabelHash(label, hashStream),
         PartialBuildTarget(
@@ -236,12 +227,6 @@ internal class TargetInfoManager(
   }
 }
 
-private fun writeLabel(item: Label, buffer: WriteBuffer) {
-  buffer.writeString(item.toString())
-}
-
-private fun readLabel(buffer: ByteBuffer): Label = Label.parse(buffer.readString())
-
 private fun openIdToLabelMap(
   store: MVStore,
   @Suppress("SameParameterValue") name: String,
@@ -252,7 +237,7 @@ private fun openIdToLabelMap(
   mapBuilder.setValueType(
     createAnyValueDataType(
       writer = { buffer, item ->
-        writeLabel(item, buffer)
+        writeLabel(buffer, item)
       },
       reader = {
         readLabel(it)
@@ -266,10 +251,10 @@ private fun openIdToResolvedLabelMap(
   store: MVStore,
   @Suppress("SameParameterValue") name: String,
   logSupplier: () -> Logger,
-): MVMap<HashValue128, ResolvedLabel> {
-  val mapBuilder = MVMap.Builder<HashValue128, ResolvedLabel>()
+): MVMap<HashValue128, Label> {
+  val mapBuilder = MVMap.Builder<HashValue128, Label>()
   mapBuilder.setKeyType(HashValue128KeyDataType)
-  mapBuilder.setValueType(createAnyValueDataType<ResolvedLabel>(writer = ::writeResolvedLabel, reader = ::readResolvedLabel))
+  mapBuilder.setValueType(createAnyValueDataType<Label>(writer = ::writeLabel, reader = ::readLabel))
   return openOrResetMap(store = store, name = name, mapBuilder = mapBuilder, logSupplier = logSupplier)
 }
 
@@ -285,7 +270,7 @@ private fun openIdToLabelListMap(
       writer = { buffer, list ->
         buffer.putVarInt(list.size)
         for (label in list) {
-          writeLabel(label, buffer)
+          writeLabel(buffer, label)
         }
       },
       reader = { buffer ->
@@ -298,16 +283,15 @@ private fun openIdToLabelListMap(
 
 private fun stringToHashId(s: String): HashValue128 = hashBytesTo128Bits(s.encodeToByteArray())
 
-private fun computeLabelHash(label: ResolvedLabel, hash: HashAdapter): HashValue128 {
+private fun computeLabelHash(label: Label, hash: HashAdapter): HashValue128 {
   hashLabelRepo(label, hash)
   hashLabelPackage(label, hash)
   hashLabelTarget(label, hash)
   return hash.getAndReset()
 }
 
-private fun hashLabelRepo(label: ResolvedLabel, hash: HashAdapter) {
+private fun hashLabelRepo(label: Label, hash: HashAdapter) {
   when (val repo = label.repo) {
-    Main -> hash.putByte(0)
     is Canonical -> {
       hash.putByte(1)
       hash.putByteArray(repo.repoName.toByteArray())
@@ -320,26 +304,14 @@ private fun hashLabelRepo(label: ResolvedLabel, hash: HashAdapter) {
   }
 }
 
-private fun hashLabelPackage(label: ResolvedLabel, hash: HashAdapter) {
+private fun hashLabelPackage(label: Label, hash: HashAdapter) {
   val packagePath = label.packagePath
-  when (packagePath) {
-    is AllPackagesBeneath -> hash.putByte(0)
-    is Package -> hash.putByte(1)
-  }
   for (string in packagePath.pathSegments) {
     hash.putByteArray(string.toByteArray())
   }
   hash.putInt(packagePath.pathSegments.size)
 }
 
-private fun hashLabelTarget(label: ResolvedLabel, hash: HashAdapter) {
-  when (val target = label.target) {
-    AmbiguousEmptyTarget -> hash.putByte(0)
-    AllRuleTargets -> hash.putByte(1)
-    AllRuleTargetsAndFiles -> hash.putByte(2)
-    is SingleTarget -> {
-      hash.putByte(3)
-      hash.putByteArray(target.targetName.toByteArray())
-    }
-  }
+private fun hashLabelTarget(label: Label, hash: HashAdapter) {
+  hash.putByteArray(label.targetName.toByteArray())
 }

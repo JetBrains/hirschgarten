@@ -40,7 +40,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.toPath
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
-import org.jetbrains.bazel.languages.starlark.references.resolveLabel
+import org.jetbrains.bazel.languages.starlark.references.resolveTargetPattern
 import org.jetbrains.bazel.sync.SyncCache
 import org.jetbrains.bazel.sync.hasLanguage
 import org.jetbrains.bazel.target.targetUtils
@@ -384,7 +384,7 @@ class BazelGoPackage : GoPackage {
    */
   override fun getNavigableElement(): PsiElement? {
     navigableElement?.takeIf { it.isValid }?.let { return it }
-    resolveLabel(project, label, null)?.also { navigableElement = it }
+    resolveTargetPattern(project, label, null)?.also { navigableElement = it }
     return navigableElement
   }
 
