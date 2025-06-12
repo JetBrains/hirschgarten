@@ -12,7 +12,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -29,7 +29,7 @@ class StarlarkVisibilityCompletionTest : BasePlatformTestCase() {
   private fun setTargets(targets: List<String>) {
     project.targetUtils.setTargets(
       targets.map { Label.parse(it) }.associateWith {
-        BuildTarget(
+        RawBuildTarget(
           id = it,
           tags = emptyList(),
           dependencies = emptyList(),

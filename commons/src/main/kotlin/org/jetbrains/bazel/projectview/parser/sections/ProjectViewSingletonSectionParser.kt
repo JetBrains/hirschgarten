@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.projectview.parser.sections
 
-import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.projectview.model.sections.AndroidMinSdkSection
 import org.jetbrains.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
+import org.jetbrains.bazel.projectview.model.sections.GazelleTargetSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
@@ -14,6 +14,7 @@ import org.jetbrains.bazel.projectview.model.sections.ShardSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ShardingApproachSection
 import org.jetbrains.bazel.projectview.model.sections.TargetShardSizeSection
 import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSections
+import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -46,7 +47,7 @@ abstract class ProjectViewSingletonSectionParser<V, T : ProjectViewSingletonSect
   protected abstract fun createInstance(value: V): T
 
   companion object {
-    private val log = LogManager.getLogger(ProjectViewSingletonSectionParser::class.java)
+    private val log = LoggerFactory.getLogger(ProjectViewSingletonSectionParser::class.java)
   }
 }
 
@@ -140,4 +141,12 @@ object ShardingApproachParser : ProjectViewSingletonSectionParser<String, Shardi
   override fun mapRawValue(rawValue: String): String = rawValue
 
   override fun createInstance(value: String): ShardingApproachSection = ShardingApproachSection(value)
+}
+
+object GazelleTargetParser : ProjectViewSingletonSectionParser<String, GazelleTargetSection>(
+  GazelleTargetSection.SECTION_NAME,
+) {
+  override fun mapRawValue(rawValue: String): String = rawValue
+
+  override fun createInstance(value: String): GazelleTargetSection = GazelleTargetSection(value)
 }

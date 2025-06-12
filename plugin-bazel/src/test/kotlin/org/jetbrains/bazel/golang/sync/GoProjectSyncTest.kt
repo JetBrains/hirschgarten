@@ -10,7 +10,6 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import kotlinx.html.emptyMap
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
@@ -23,12 +22,13 @@ import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
 import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.GoBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -63,6 +63,7 @@ private data class GeneratedTargetInfo(
   val importPath: String,
 )
 
+@Disabled("deprecating for new Go sync")
 class GoProjectSyncTest : MockProjectBaseTest() {
   lateinit var hook: ProjectSyncHook
 
@@ -190,8 +191,8 @@ class GoProjectSyncTest : MockProjectBaseTest() {
     return GoTestSet(buildTargets, expectedVgoStandaloneEntities, expectedVgoDependencyEntities)
   }
 
-  private fun generateTarget(info: GeneratedTargetInfo): BuildTarget =
-    BuildTarget(
+  private fun generateTarget(info: GeneratedTargetInfo): RawBuildTarget =
+    RawBuildTarget(
       info.targetId,
       listOf(info.type),
       info.dependencies,
@@ -206,6 +207,8 @@ class GoProjectSyncTest : MockProjectBaseTest() {
           sdkHomePath = Path("/go_sdk/"),
           importPath = info.importPath,
           generatedLibraries = emptyList(),
+          generatedSources = emptyList(),
+          libraryLabels = emptyList(),
         ),
       sources = listOf(SourceItem(Path("/root/${info.importPath}"), false)),
       resources = info.resourcesItems,

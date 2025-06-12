@@ -262,8 +262,9 @@ object FastBuildUtils {
       params.writer().use { os ->
         var line = ips.readLine()
         val sourceFile = inputFile.relativeTo(workspaceRoot)
+
+        fun OutputStreamWriter.writeLn(line: String) = write("$line\n")
         while (line != null) {
-          fun OutputStreamWriter.writeLn(line: String) = write("$line\n")
           when (line) {
             "--output" -> {
               os.writeLn(line)
@@ -313,18 +314,11 @@ object FastBuildUtils {
               continue
             }
 
-            "--direct_dependencies" -> {
-              os.writeLn(line)
+            "--strict_java_deps" -> {
               line = ips.readLine()
               while (line?.startsWith("--") == false) {
-                os.write("$line\n")
                 line = ips.readLine()
               }
-              // Add the modules jar to the dependencies
-              if (targetJar.notExists()) {
-                logger.error("Bazel module jar not found: $targetJar")
-              }
-              os.writeLn(targetJar.pathString)
               continue
             }
 
@@ -334,6 +328,13 @@ object FastBuildUtils {
           }
           line = ips.readLine()
         }
+
+        os.writeLn("--classpath")
+        // Add the modules jar to the dependencies
+        if (targetJar.notExists()) {
+          logger.error("Bazel module jar not found: $targetJar")
+        }
+        os.writeLn(targetJar.pathString)
       }
     }
     return params

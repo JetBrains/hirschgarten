@@ -52,6 +52,7 @@ PKGS = [
     "java.desktop/javax.swing",
     "java.desktop/javax.swing.plaf.basic",
     "java.desktop/javax.swing.text.html",
+    "java.desktop/javax.swing.text.html.parser",
     "java.desktop/sun.awt.datatransfer",
     "java.desktop/sun.awt.image",
     "java.desktop/sun.awt",

@@ -2,7 +2,10 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 kt_jvm_library(
     name = "workspace",
-    srcs = glob(["*.kt"]),
+    srcs = glob([
+        "*.kt",
+        "packageMarker/*.kt",
+    ]),
     visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
@@ -15,5 +18,6 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
+        "//sdkcompat",
     ],
 )

@@ -4,7 +4,7 @@ import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.model.LanguageData
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
 abstract class LanguagePlugin<T : LanguageData> {
@@ -21,7 +21,7 @@ abstract class LanguagePlugin<T : LanguageData> {
   open fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<Path> = emptySet()
 
   @Suppress("UNCHECKED_CAST")
-  fun setModuleData(moduleData: LanguageData, buildTarget: BuildTarget) = applyModuleData(moduleData as T, buildTarget)
+  fun setModuleData(moduleData: LanguageData, buildTarget: RawBuildTarget) = applyModuleData(moduleData as T, buildTarget)
 
-  protected abstract fun applyModuleData(moduleData: T, buildTarget: BuildTarget)
+  protected abstract fun applyModuleData(moduleData: T, buildTarget: RawBuildTarget)
 }

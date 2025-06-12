@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import com.google.gson.JsonObject
-import org.apache.logging.log4j.LogManager
+import com.intellij.util.containers.BidirectionalMap
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.gson.bazelGson
@@ -9,15 +9,21 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bsp.utils.readXML
 import org.jetbrains.bazel.server.bsp.utils.toJson
+import org.jetbrains.bazel.server.bzlmod.BzlmodRepoMapping
+import org.jetbrains.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
 import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.slf4j.LoggerFactory
 import org.w3c.dom.Document
 import org.w3c.dom.NodeList
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
 interface BazelExternalRulesetsQuery {
+  /**
+   * the list of returned ruleset names should be in the apparent form as they will be used in aspect files
+   */
   suspend fun fetchExternalRulesetNames(): List<String>
 }
 
@@ -36,12 +42,19 @@ class BazelExternalRulesetsQueryImpl(
   private val isWorkspaceEnabled: Boolean,
   private val bspClientLogger: BspClientLogger,
   private val workspaceContext: WorkspaceContext,
+  private val repoMapping: RepoMapping,
 ) : BazelExternalRulesetsQuery {
   override suspend fun fetchExternalRulesetNames(): List<String> =
     when {
       workspaceContext.enabledRules.isNotEmpty() -> BazelEnabledRulesetsQueryImpl(workspaceContext.enabledRules).fetchExternalRulesetNames()
       else ->
-        BazelBzlModExternalRulesetsQueryImpl(bazelRunner, isBzlModEnabled, bspClientLogger, workspaceContext).fetchExternalRulesetNames() +
+        BazelBzlModExternalRulesetsQueryImpl(
+          bazelRunner,
+          isBzlModEnabled,
+          bspClientLogger,
+          workspaceContext,
+          repoMapping,
+        ).fetchExternalRulesetNames() +
           BazelWorkspaceExternalRulesetsQueryImpl(
             bazelRunner,
             isWorkspaceEnabled,
@@ -105,7 +118,7 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
   }
 
   companion object {
-    private val log = LogManager.getLogger(BazelExternalRulesetsQueryImpl::class.java)
+    private val log = LoggerFactory.getLogger(BazelExternalRulesetsQueryImpl::class.java)
   }
 }
 
@@ -114,6 +127,7 @@ class BazelBzlModExternalRulesetsQueryImpl(
   private val isBzlModEnabled: Boolean,
   private val bspClientLogger: BspClientLogger,
   private val workspaceContext: WorkspaceContext,
+  private val repoMapping: RepoMapping,
 ) : BazelExternalRulesetsQuery {
   private val gson = bazelGson
 
@@ -123,6 +137,7 @@ class BazelBzlModExternalRulesetsQueryImpl(
       bazelRunner.buildBazelCommand(workspaceContext) {
         graph { options.add("--output=json") }
       }
+    val apparelRepoNameToCanonicalName = (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: BidirectionalMap()
     val bzlmodGraphJson =
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
@@ -147,7 +162,11 @@ class BazelBzlModExternalRulesetsQueryImpl(
           .values
           .flatten()
 
-      return directDeps + indirectDeps
+      fun toApparentName(canonicalRepoName: String) = apparelRepoNameToCanonicalName.getKeysByValue(canonicalRepoName)?.firstOrNull()
+      // this is important as bzlmod graph outputs canonical names, without the "+" or "~" to the end.
+      // i.e., @@rules_scala+ will be represented as rules_scala
+      // [BAZEL-2109](https://youtrack.jetbrains.com/issue/BAZEL-2109)
+      return (directDeps + indirectDeps).map { toApparentName("$it~") ?: toApparentName("$it+") ?: it }.distinct()
     } catch (e: Throwable) {
       log.warn("The returned bzlmod json is not parsable:\n$bzlmodGraphJson", e)
       emptyList()
@@ -155,7 +174,7 @@ class BazelBzlModExternalRulesetsQueryImpl(
   }
 
   companion object {
-    private val log = LogManager.getLogger(BazelBzlModExternalRulesetsQueryImpl::class.java)
+    private val log = LoggerFactory.getLogger(BazelBzlModExternalRulesetsQueryImpl::class.java)
   }
 }
 

@@ -18,6 +18,7 @@ val bazelGson: Gson =
     .registerTypeHierarchyAdapter(Path::class.java, PathSerializer)
     .registerTypeHierarchyAdapter(Label::class.java, LabelSerializer)
     .registerTypeAdapterFactory(SealedClassTypeAdapterFactory())
+    .disableHtmlEscaping()
     .create()
 
 class SealedClassTypeAdapterFactory : TypeAdapterFactory {
@@ -94,7 +95,7 @@ class SealedClassTypeAdapterFactory : TypeAdapterFactory {
 
         reader.beginObject()
         var className: String? = null
-        var jsonObject = com.google.gson.JsonObject()
+        val jsonObject = com.google.gson.JsonObject()
 
         while (reader.hasNext()) {
           val name = reader.nextName()

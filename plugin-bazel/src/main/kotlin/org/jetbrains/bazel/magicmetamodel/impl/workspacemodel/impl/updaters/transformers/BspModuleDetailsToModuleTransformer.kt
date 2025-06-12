@@ -9,6 +9,7 @@ import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 
 internal data class BspModuleDetails(
   val target: BuildTarget,
@@ -45,8 +46,8 @@ internal class BuildTargetToModuleDependencyTransformer(
   private val allTargetsIds: Set<Label>,
   private val targetsMap: Map<Label, BuildTarget>,
   private val project: Project,
-) : WorkspaceModelEntityPartitionTransformer<BuildTarget, IntermediateModuleDependency> {
-  override fun transform(inputEntity: BuildTarget): List<IntermediateModuleDependency> =
+) : WorkspaceModelEntityPartitionTransformer<RawBuildTarget, IntermediateModuleDependency> {
+  override fun transform(inputEntity: RawBuildTarget): List<IntermediateModuleDependency> =
     inputEntity
       .dependencies
       .filter { allTargetsIds.contains(it) }

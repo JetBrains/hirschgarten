@@ -3,6 +3,7 @@ package org.jetbrains.bazel.jvm.sync
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
 import com.intellij.openapi.project.Project
@@ -12,6 +13,7 @@ import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.util.PathUtilRt
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -46,7 +48,7 @@ import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
-import org.jetbrains.bazel.utils.isSourceFile
+import org.jetbrains.bazel.utils.SourceType
 import org.jetbrains.bazel.workspacemodel.entities.JavaModule
 import org.jetbrains.bazel.workspacemodel.entities.Module
 import org.jetbrains.bazel.workspacemodel.entities.includesJava
@@ -166,7 +168,7 @@ class CollectProjectDetailsTask(
   private fun calculateAllUniqueJavaHomes(projectDetails: ProjectDetails): Set<Path> =
     projectDetails.targets
       .mapNotNull(::extractJvmBuildTarget)
-      .map { it.javaHome }
+      .map { requireNotNull(it.javaHome) { "javaHome is null but expected not to be null for $it" } }
       .toSet()
 
   private suspend fun calculateAllScalaSdkInfosSubtask(projectDetails: ProjectDetails) =
@@ -193,7 +195,7 @@ class CollectProjectDetailsTask(
         ScalaSdk(
           name = scalaBuildTarget.scalaVersion.scalaVersionToScalaSdkName(),
           scalaVersion = scalaBuildTarget.scalaVersion,
-          sdkJars = scalaBuildTarget.jars.map { path -> path.toUri() },
+          sdkJars = scalaBuildTarget.sdkJars.map { path -> path.toUri() },
         )
       }
 
@@ -232,8 +234,7 @@ class CollectProjectDetailsTask(
               if (syncScope is FullProjectSync) {
                 syncedTargetIdToTargetInfo
               } else {
-                project.targetUtils.labelToTargetInfo.mapKeys { it.key } +
-                  syncedTargetIdToTargetInfo
+                project.targetUtils.computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo)
               }
             val targetIdToModuleEntityMap =
               TargetIdToModuleEntitiesMap(
@@ -264,7 +265,7 @@ class CollectProjectDetailsTask(
           }
 
         bspTracer.spanBuilder("load.modules.ms").use {
-          val workspaceModel = WorkspaceModel.getInstance(project)
+          val workspaceModel = project.serviceAsync<WorkspaceModel>()
           val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
 
           val workspaceModelUpdater =
@@ -354,12 +355,19 @@ class CollectProjectDetailsTask(
   private fun checkSharedSources() {
     if (project.isSharedSourceSupportEnabled) return
     if (!BazelFeatureFlags.checkSharedSources) return
-    val fileToTarget = project.targetUtils.fileToTargetWithoutLowPrioritySharedSources
-    for ((file, targets) in fileToTarget) {
-      if (targets.size <= 1) continue
-      if (!file.isSourceFile()) continue
-      if (IGNORED_NAMES_FOR_OVERLAPPING_SOURCES.any { file.endsWith(it) }) continue
-      warnOverlappingSources(targets[0], targets[1], file)
+    for ((file, labels) in project.targetUtils.getSharedFiles()) {
+      if (labels.size <= 1) {
+        continue
+      }
+
+      val fileName = PathUtilRt.getFileName(file.toString())
+      if (!SourceType.hasSourceFileExtension(fileName)) {
+        continue
+      }
+      if (IGNORED_NAMES_FOR_OVERLAPPING_SOURCES.any { fileName.endsWith(it) }) {
+        continue
+      }
+      warnOverlappingSources(firstTarget = labels[0], secondTarget = labels[1], fileName = fileName)
       break
     }
   }
@@ -367,7 +375,7 @@ class CollectProjectDetailsTask(
   private fun warnOverlappingSources(
     firstTarget: Label,
     secondTarget: Label,
-    source: Path,
+    fileName: String,
   ) {
     BazelBalloonNotifier.warn(
       BazelPluginBundle.message("widget.collect.targets.overlapping.sources.title"),
@@ -375,13 +383,13 @@ class CollectProjectDetailsTask(
         "widget.collect.targets.overlapping.sources.message",
         firstTarget.toString(),
         secondTarget.toString(),
-        source.fileName,
+        fileName,
       ),
     )
   }
 
   private companion object {
-    private val IGNORED_NAMES_FOR_OVERLAPPING_SOURCES = listOf("empty.kt")
+    private val IGNORED_NAMES_FOR_OVERLAPPING_SOURCES = arrayOf("empty.kt")
   }
 }
 
@@ -451,15 +459,21 @@ private suspend fun queryWorkspaceBuildTargets(
   taskId: String,
 ): WorkspaceBuildTargetsResult =
   coroutineScope {
-    if (syncScope is PartialProjectSync) {
-      query("workspace/buildTargetsPartial") {
-        server.workspaceBuildTargetsPartial(WorkspaceBuildTargetsPartialParams(syncScope.targetsToSync))
+    when (syncScope) {
+      is PartialProjectSync -> {
+        query("workspace/buildTargetsPartial") {
+          server.workspaceBuildTargetsPartial(WorkspaceBuildTargetsPartialParams(syncScope.targetsToSync))
+        }
       }
-    } else if (syncScope is FirstPhaseSync) {
-      query("workspace/buildTargetsFirstPhase") {
-        server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams(taskId))
+
+      is FirstPhaseSync -> {
+        query("workspace/buildTargetsFirstPhase") {
+          server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams(taskId))
+        }
       }
-    } else {
-      query("workspace/buildTargets") { server.workspaceBuildTargets() }
+
+      else -> {
+        query("workspace/buildTargets") { server.workspaceBuildTargets() }
+      }
     }
   }

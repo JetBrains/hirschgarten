@@ -1,25 +1,28 @@
 package org.jetbrains.bazel.target
 
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 
-internal class TargetDependentsGraph(targetIdToTargetInfo: Map<Label, BuildTarget>, libraryItems: List<LibraryItem>?) {
+internal class TargetDependentsGraph(targets: List<RawBuildTarget>, libraryItems: List<LibraryItem>?) {
   private val targetIdToDirectDependentIds = hashMapOf<Label, MutableSet<Label>>()
 
   init {
-    targetIdToTargetInfo.entries.forEach { (targetId, targetInfo) ->
+    for (targetInfo in targets) {
       val dependencies = targetInfo.dependencies
-      dependencies.forEach { dependency ->
-        val dependentIds = targetIdToDirectDependentIds.getOrPut(dependency) { hashSetOf() }
-        dependentIds.add(targetId)
+      for (dependency in dependencies) {
+        targetIdToDirectDependentIds
+          .computeIfAbsent(dependency) { hashSetOf<Label>() }
+          .add(targetInfo.id)
       }
     }
-    libraryItems?.forEach { libraryItem ->
-      val dependencies = libraryItem.dependencies
-      dependencies.forEach { dependency ->
-        val dependentIds = targetIdToDirectDependentIds.getOrPut(dependency) { hashSetOf() }
-        dependentIds.add(libraryItem.id)
+    if (!libraryItems.isNullOrEmpty()) {
+      for (libraryItem in libraryItems) {
+        val dependencies = libraryItem.dependencies
+        for (dependency in dependencies) {
+          val dependentIds = targetIdToDirectDependentIds.computeIfAbsent(dependency) { hashSetOf() }
+          dependentIds.add(libraryItem.id)
+        }
       }
     }
   }

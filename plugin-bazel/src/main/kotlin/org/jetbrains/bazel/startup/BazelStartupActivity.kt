@@ -6,9 +6,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolderEx
 import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.util.PlatformUtils
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelProjectProperties
+import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
 import org.jetbrains.bazel.projectAware.BazelWorkspace
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.PhasedSync
@@ -18,7 +20,7 @@ import org.jetbrains.bazel.ui.settings.BazelApplicationSettingsService
 import org.jetbrains.bazel.ui.widgets.fileTargets.updateBazelFileTargetsWidget
 import org.jetbrains.bazel.ui.widgets.tool.window.all.targets.registerBazelToolWindow
 import org.jetbrains.bazel.ui.widgets.tool.window.components.BazelTargetsPanelModel
-import org.jetbrains.bazel.utils.RunConfigurationProducersDisabler
+import org.jetbrains.bazel.utils.configureRunConfigurationIgnoreProducers
 
 private val log = logger<BazelStartupActivity>()
 
@@ -51,7 +53,7 @@ class BazelStartupActivity : BazelProjectActivity() {
 }
 
 private suspend fun updateTargetToolwindow(project: Project) {
-  val targets = project.serviceAsync<TargetUtils>().allBuildTargets().associateBy { it.id }
+  val targets = project.serviceAsync<TargetUtils>().allBuildTargetAsLabelToTargetMap()
   project.serviceAsync<BazelTargetsPanelModel>().updateTargets(targets)
 }
 
@@ -59,8 +61,8 @@ private suspend fun executeOnEveryProjectStartup(project: Project) {
   log.debug("Executing Bazel startup activities for every opening")
   registerBazelToolWindow(project)
   updateTargetToolwindow(project)
-  project.updateBazelFileTargetsWidget()
-  RunConfigurationProducersDisabler(project)
+  updateBazelFileTargetsWidget(project)
+  configureRunConfigurationIgnoreProducers(project)
   project.serviceAsync<BazelWorkspace>().initialize()
 }
 
@@ -86,6 +88,11 @@ private suspend fun resyncProjectIfNeeded(project: Project) {
 private fun startupActivityExecutedAlready(project: Project): Boolean =
   !(project as UserDataHolderEx).replace(EXECUTED_FOR_PROJECT, null, true)
 
+/**
+ * [workspaceModelLoadedFromCache] is always false with GoLand
+ * TODO: BAZEL-2038
+ */
 private suspend fun isProjectInIncompleteState(project: Project): Boolean =
-  project.serviceAsync<TargetUtils>().allTargets().isEmpty() ||
+  project.serviceAsync<TargetUtils>().getTotalTargetCount() == 0 ||
+    !PlatformUtils.isGoIde() &&
     !(project.serviceAsync<WorkspaceModel>() as WorkspaceModelImpl).loadedFromCache
