@@ -148,7 +148,7 @@ class BazelProjectMapper(
       }
     val librariesFromDepsAndTargets =
       measure("Libraries from targets and deps") {
-        createLibraries(targetsAsLibraries) +
+        createLibraries(targetsAsLibraries, repoMapping) +
           librariesFromDeps.values
             .flatten()
             .distinct()
@@ -256,7 +256,7 @@ class BazelProjectMapper(
     targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true)?.let { library ->
+        createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true, isInternalTarget = true)?.let { library ->
           target.label() to listOf(library)
         }
       }.toMap()
@@ -643,12 +643,17 @@ class BazelProjectMapper(
         )
       }
 
-  private suspend fun createLibraries(targets: Map<Label, TargetInfo>): Map<Label, Library> =
+  private suspend fun createLibraries(targets: Map<Label, TargetInfo>, repoMapping: RepoMapping): Map<Label, Library> =
     withContext(Dispatchers.Default) {
       targets
         .map { (targetId, targetInfo) ->
           async {
-            createLibrary(targetId, targetInfo)?.let { library ->
+            createLibrary(
+              label = targetId,
+              targetInfo = targetInfo,
+              onlyOutputJars = false,
+              isInternalTarget = isTargetTreatedAsInternal(targetId.assumeResolved(), repoMapping),
+            )?.let { library ->
               targetId to library
             }
           }
@@ -660,7 +665,8 @@ class BazelProjectMapper(
   private fun createLibrary(
     label: Label,
     targetInfo: TargetInfo,
-    onlyOutputJars: Boolean = false,
+    onlyOutputJars: Boolean,
+    isInternalTarget: Boolean,
   ): Library? {
     val outputs = getTargetOutputJarPaths(targetInfo) + getAndroidAarPaths(targetInfo) + getIntellijPluginJars(targetInfo)
     val sources = getSourceJarPaths(targetInfo)
@@ -692,6 +698,7 @@ class BazelProjectMapper(
       dependencies = targetInfo.dependenciesList.map { Label.parse(it.id) },
       interfaceJars = interfaceJars,
       mavenCoordinates = mavenCoordinates,
+      isFromInternalTarget = isInternalTarget,
     )
   }
 

@@ -8,6 +8,18 @@ import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
 import org.jetbrains.bazel.workspacemodel.entities.LibraryCompiledSourceCodeInsideJarExcludeEntity
 
+/**
+ * Don't index irrelevant files inside jars that are built from internal targets.
+ * We care about generated classes (and respective generated sources), but not about generated resources.
+ */
+private val ALLOWED_FILE_EXTENSIONS_IN_LIBRARIES_FROM_INTERNAL_TARGETS =
+  listOf(
+    "class",
+    "java",
+    "kt",
+    "scala",
+  )
+
 class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
   WorkspaceFileIndexContributor<LibraryCompiledSourceCodeInsideJarExcludeEntity> {
   override val entityClass: Class<LibraryCompiledSourceCodeInsideJarExcludeEntity>
@@ -22,13 +34,20 @@ class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
     val compiledSourceCodeInsideJarExcludeEntity = storage.resolve(entity.compiledSourceCodeInsideJarExcludeId) ?: return
 
     val relativePathsToExclude: Set<String> = compiledSourceCodeInsideJarExcludeEntity.relativePathsInsideJarToExclude
+    val librariesFromInternalTargetsUrls: Set<String> = compiledSourceCodeInsideJarExcludeEntity.librariesFromInternalTargetsUrls
 
     library.roots.map { libraryRoot ->
       val contentRootUrl = libraryRoot.url
       registrar.registerExclusionCondition(
         root = contentRootUrl,
-        condition = {
-          it.getRelativePathInsideJar() in relativePathsToExclude
+        condition = { virtualFile ->
+          if (virtualFile.isDirectory) return@registerExclusionCondition false
+          val rootFile = VfsUtilCore.getRootFile(virtualFile)
+          if (virtualFile.getRelativePathInsideJar(rootFile) in relativePathsToExclude) return@registerExclusionCondition true
+          if (rootFile.url in librariesFromInternalTargetsUrls) {
+            return@registerExclusionCondition virtualFile.extension !in ALLOWED_FILE_EXTENSIONS_IN_LIBRARIES_FROM_INTERNAL_TARGETS
+          }
+          false
         },
         entity = entity,
       )
@@ -37,9 +56,9 @@ class CompiledSourceCodeInsideJarExcludeWorkspaceFileIndexContributor :
 }
 
 /**
- * Copied from `ArchiveFileSystem#getRelativePath` which is not `public` for some reason
+ * Based on `ArchiveFileSystem#getRelativePath`
  */
-private fun VirtualFile.getRelativePathInsideJar(): String {
-  val relativePath: String = this.path.substring(VfsUtilCore.getRootFile(this).path.length)
+private fun VirtualFile.getRelativePathInsideJar(rootFile: VirtualFile): String {
+  val relativePath: String = this.path.substring(rootFile.path.length)
   return StringUtil.trimLeading(relativePath, '/')
 }

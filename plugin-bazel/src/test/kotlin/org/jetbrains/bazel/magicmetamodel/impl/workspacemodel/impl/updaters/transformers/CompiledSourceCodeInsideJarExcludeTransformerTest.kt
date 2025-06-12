@@ -6,6 +6,7 @@ import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
@@ -13,8 +14,8 @@ import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-@DisplayName("ModulesToCompiledSourceCodeInsideJarExcludeTransformer.transform(modules) tests")
-class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
+@DisplayName("CompiledSourceCodeInsideJarExcludeTransformer.transform tests")
+class CompiledSourceCodeInsideJarExcludeTransformerTest {
   @Test
   fun `should add correct excludes for java files`() {
     // given
@@ -40,7 +41,7 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
     val module = createModuleWithRoots(sourceRoots)
 
     // when
-    val entity = ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(listOf(module))
+    val entity = CompiledSourceCodeInsideJarExcludeTransformer().transform(listOf(module), emptyList())
 
     // then
     entity.relativePathsInsideJarToExclude shouldBe
@@ -79,7 +80,7 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
     val module = createModuleWithRoots(sourceRoots)
 
     // when
-    val entity = ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(listOf(module))
+    val entity = CompiledSourceCodeInsideJarExcludeTransformer().transform(listOf(module), emptyList())
 
     // then
     entity.relativePathsInsideJarToExclude shouldBe
@@ -93,6 +94,43 @@ class ModulesToCompiledSourceCodeInsideJarExcludeTransformerTest {
         "com/example/weird_casing.kt",
         "com/example/weird_casing.class",
         "com/example/Weird_casingKt.class",
+      )
+  }
+
+  @Test
+  fun `should add correct excludes for libraries from internal target`() {
+    // given
+    val libraryFromInternalTarget =
+      LibraryItem(
+        id = Label.synthetic("1"),
+        dependencies = emptyList(),
+        ijars = listOf(Path("/path/to/ijar.jar")),
+        jars = listOf(Path("/path/to/jar.jar")),
+        sourceJars = listOf(Path("/path/to/sourceJar.jar")),
+        mavenCoordinates = null,
+        isFromInternalTarget = true,
+      )
+
+    val usualLibrary =
+      LibraryItem(
+        id = Label.synthetic("1"),
+        dependencies = emptyList(),
+        ijars = listOf(Path("/path/to/another/ijar.jar")),
+        jars = listOf(Path("/path/to/another/jar.jar")),
+        sourceJars = listOf(Path("/path/to/another/sourceJar.jar")),
+        mavenCoordinates = null,
+        isFromInternalTarget = false,
+      )
+
+    // when
+    val entity = CompiledSourceCodeInsideJarExcludeTransformer().transform(emptyList(), listOf(libraryFromInternalTarget, usualLibrary))
+
+    // then
+    entity.librariesFromInternalTargetsUrls shouldBe
+      setOf(
+        "jar:///path/to/ijar.jar!/",
+        "jar:///path/to/jar.jar!/",
+        "jar:///path/to/sourceJar.jar!/",
       )
   }
 

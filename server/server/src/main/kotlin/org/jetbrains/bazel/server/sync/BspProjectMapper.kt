@@ -94,6 +94,7 @@ class BspProjectMapper(
           jars = it.outputs.toList(),
           sourceJars = it.sources.toList(),
           mavenCoordinates = it.mavenCoordinates,
+          isFromInternalTarget = it.isFromInternalTarget,
         )
       }
     return WorkspaceLibrariesResult(libraries)

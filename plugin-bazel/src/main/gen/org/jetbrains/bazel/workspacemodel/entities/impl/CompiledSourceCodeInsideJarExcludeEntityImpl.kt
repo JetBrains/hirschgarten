@@ -3,7 +3,6 @@ package org.jetbrains.bazel.workspacemodel.entities.impl
 import com.intellij.platform.workspace.jps.entities.LibraryId
 import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
-import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
@@ -44,6 +43,12 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
     get() {
       readField("relativePathsInsideJarToExclude")
       return dataSource.relativePathsInsideJarToExclude
+    }
+
+  override val librariesFromInternalTargetsUrls: Set<String>
+    get() {
+      readField("librariesFromInternalTargetsUrls")
+      return dataSource.librariesFromInternalTargetsUrls
     }
 
   override val excludeId: CompiledSourceCodeInsideJarExcludeId
@@ -98,6 +103,9 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
       if (!getEntityData().isRelativePathsInsideJarToExcludeInitialized()) {
         error("Field CompiledSourceCodeInsideJarExcludeEntity#relativePathsInsideJarToExclude should be initialized")
       }
+      if (!getEntityData().isLibrariesFromInternalTargetsUrlsInitialized()) {
+        error("Field CompiledSourceCodeInsideJarExcludeEntity#librariesFromInternalTargetsUrls should be initialized")
+      }
       if (!getEntityData().isExcludeIdInitialized()) {
         error("Field CompiledSourceCodeInsideJarExcludeEntity#excludeId should be initialized")
       }
@@ -112,6 +120,10 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
       if (collection_relativePathsInsideJarToExclude is MutableWorkspaceSet<*>) {
         collection_relativePathsInsideJarToExclude.cleanModificationUpdateAction()
       }
+      val collection_librariesFromInternalTargetsUrls = getEntityData().librariesFromInternalTargetsUrls
+      if (collection_librariesFromInternalTargetsUrls is MutableWorkspaceSet<*>) {
+        collection_librariesFromInternalTargetsUrls.cleanModificationUpdateAction()
+      }
     }
 
     // Relabeling code, move information from dataSource to this builder
@@ -119,6 +131,7 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
       dataSource as CompiledSourceCodeInsideJarExcludeEntity
       if (this.entitySource != dataSource.entitySource) this.entitySource = dataSource.entitySource
       if (this.relativePathsInsideJarToExclude != dataSource.relativePathsInsideJarToExclude) this.relativePathsInsideJarToExclude = dataSource.relativePathsInsideJarToExclude.toMutableSet()
+      if (this.librariesFromInternalTargetsUrls != dataSource.librariesFromInternalTargetsUrls) this.librariesFromInternalTargetsUrls = dataSource.librariesFromInternalTargetsUrls.toMutableSet()
       if (this.excludeId != dataSource.excludeId) this.excludeId = dataSource.excludeId
       updateChildToParentReferences(parents)
     }
@@ -155,6 +168,28 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
         relativePathsInsideJarToExcludeUpdater.invoke(value)
       }
 
+    private val librariesFromInternalTargetsUrlsUpdater: (value: Set<String>) -> Unit = { value ->
+
+      changedProperty.add("librariesFromInternalTargetsUrls")
+    }
+    override var librariesFromInternalTargetsUrls: MutableSet<String>
+      get() {
+        val collection_librariesFromInternalTargetsUrls = getEntityData().librariesFromInternalTargetsUrls
+        if (collection_librariesFromInternalTargetsUrls !is MutableWorkspaceSet) return collection_librariesFromInternalTargetsUrls
+        if (diff == null || modifiable.get()) {
+          collection_librariesFromInternalTargetsUrls.setModificationUpdateAction(librariesFromInternalTargetsUrlsUpdater)
+        }
+        else {
+          collection_librariesFromInternalTargetsUrls.cleanModificationUpdateAction()
+        }
+        return collection_librariesFromInternalTargetsUrls
+      }
+      set(value) {
+        checkModificationAllowed()
+        getEntityData(true).librariesFromInternalTargetsUrls = value
+        librariesFromInternalTargetsUrlsUpdater.invoke(value)
+      }
+
     override var excludeId: CompiledSourceCodeInsideJarExcludeId
       get() = getEntityData().excludeId
       set(value) {
@@ -171,14 +206,18 @@ internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSour
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityData<CompiledSourceCodeInsideJarExcludeEntity>(), SoftLinkable {
   lateinit var relativePathsInsideJarToExclude: MutableSet<String>
+  lateinit var librariesFromInternalTargetsUrls: MutableSet<String>
   lateinit var excludeId: CompiledSourceCodeInsideJarExcludeId
 
   internal fun isRelativePathsInsideJarToExcludeInitialized(): Boolean = ::relativePathsInsideJarToExclude.isInitialized
+  internal fun isLibrariesFromInternalTargetsUrlsInitialized(): Boolean = ::librariesFromInternalTargetsUrls.isInitialized
   internal fun isExcludeIdInitialized(): Boolean = ::excludeId.isInitialized
 
   override fun getLinks(): Set<SymbolicEntityId<*>> {
     val result = HashSet<SymbolicEntityId<*>>()
     for (item in relativePathsInsideJarToExclude) {
+    }
+    for (item in librariesFromInternalTargetsUrls) {
     }
     result.add(excludeId)
     return result
@@ -187,6 +226,8 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
   override fun index(index: WorkspaceMutableIndex<SymbolicEntityId<*>>) {
     for (item in relativePathsInsideJarToExclude) {
     }
+    for (item in librariesFromInternalTargetsUrls) {
+    }
     index.index(this, excludeId)
   }
 
@@ -194,6 +235,8 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
     // TODO verify logic
     val mutablePreviousSet = HashSet(prev)
     for (item in relativePathsInsideJarToExclude) {
+    }
+    for (item in librariesFromInternalTargetsUrls) {
     }
     val removedItem_excludeId = mutablePreviousSet.remove(excludeId)
     if (!removedItem_excludeId) {
@@ -246,6 +289,7 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
     val clonedEntity = super.clone()
     clonedEntity as CompiledSourceCodeInsideJarExcludeEntityData
     clonedEntity.relativePathsInsideJarToExclude = clonedEntity.relativePathsInsideJarToExclude.toMutableWorkspaceSet()
+    clonedEntity.librariesFromInternalTargetsUrls = clonedEntity.librariesFromInternalTargetsUrls.toMutableWorkspaceSet()
     return clonedEntity
   }
 
@@ -254,7 +298,8 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
-    return CompiledSourceCodeInsideJarExcludeEntity(relativePathsInsideJarToExclude, excludeId, entitySource) {
+    return CompiledSourceCodeInsideJarExcludeEntity(relativePathsInsideJarToExclude, librariesFromInternalTargetsUrls, excludeId,
+                                                    entitySource) {
     }
   }
 
@@ -271,6 +316,7 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
 
     if (this.entitySource != other.entitySource) return false
     if (this.relativePathsInsideJarToExclude != other.relativePathsInsideJarToExclude) return false
+    if (this.librariesFromInternalTargetsUrls != other.librariesFromInternalTargetsUrls) return false
     if (this.excludeId != other.excludeId) return false
     return true
   }
@@ -282,6 +328,7 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
     other as CompiledSourceCodeInsideJarExcludeEntityData
 
     if (this.relativePathsInsideJarToExclude != other.relativePathsInsideJarToExclude) return false
+    if (this.librariesFromInternalTargetsUrls != other.librariesFromInternalTargetsUrls) return false
     if (this.excludeId != other.excludeId) return false
     return true
   }
@@ -289,6 +336,7 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
   override fun hashCode(): Int {
     var result = entitySource.hashCode()
     result = 31 * result + relativePathsInsideJarToExclude.hashCode()
+    result = 31 * result + librariesFromInternalTargetsUrls.hashCode()
     result = 31 * result + excludeId.hashCode()
     return result
   }
@@ -296,6 +344,7 @@ internal class CompiledSourceCodeInsideJarExcludeEntityData : WorkspaceEntityDat
   override fun hashCodeIgnoringEntitySource(): Int {
     var result = javaClass.hashCode()
     result = 31 * result + relativePathsInsideJarToExclude.hashCode()
+    result = 31 * result + librariesFromInternalTargetsUrls.hashCode()
     result = 31 * result + excludeId.hashCode()
     return result
   }
