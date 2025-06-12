@@ -81,18 +81,18 @@ open class Analyze(
               fi
             """.trimIndent()
           }
-        } else {
-          script {
-            name = "enable remcache $platform"
-            id = "enable_remcache_$platform"
-            scriptContent = """
-              #!/bin/bash
-              set -euxo
-
-              sed -i 's/:remotecache//g' ".cache.bazelrc"
-              sed -i 's/:nocacheupload//g' ".cache.bazelrc"
-            """.trimIndent()
-          }
+        //} else {
+        //  script {
+        //    name = "enable remcache $platform"
+        //    id = "enable_remcache_$platform"
+        //    scriptContent = """
+        //      #!/bin/bash
+        //      set -euxo
+        //
+        //      sed -i 's/:remotecache//g' ".ci.bazelrc"
+        //      sed -i 's/:nocacheupload//g' ".ci.bazelrc"
+        //    """.trimIndent()
+        //  }
         }
         qodana {
             name = "run qodana"
