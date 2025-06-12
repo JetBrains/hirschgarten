@@ -412,6 +412,20 @@ class StarlarkScopeTest : BasePlatformTestCase() {
     )
   }
 
+  @Test
+  fun `dict comprehension with multiple fors`() {
+    verifyTargetOfReferenceAtCaret(
+      """
+      {
+          <caret>k: v
+          for x in [1]
+          if x > 0
+          for <target>k, v in [(1, 2), (3, 4)]
+      }
+      """.trimIndent(),
+    )
+  }
+
   private fun verifyTargetOfReferenceAtCaret(text: String) {
     // given
     val expectedLine = text.lineSequence().indexOfFirst { it.contains("<target>") }.takeIf { it != -1 }
