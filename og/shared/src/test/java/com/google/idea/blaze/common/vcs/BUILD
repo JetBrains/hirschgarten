@@ -16,7 +16,7 @@ java_test(
     size = "small",
     srcs = ["VcsStateTest.java"],
     deps = [
-        "//commons/src/main/kotlin/com/google/idea/blaze/common/vcs",
+        "//og/shared/src/main/java/com/google/idea/blaze/common/vcs",
         "//third_party/java/junit",
         "//third_party/java/truth",
         "@com_google_guava_guava//jar",

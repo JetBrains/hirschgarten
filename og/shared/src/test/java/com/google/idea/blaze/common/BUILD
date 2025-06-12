@@ -5,7 +5,7 @@ java_test(
     size = "small",
     srcs = ["LabelTest.java"],
     deps = [
-        "//commons/src/main/kotlin/com/google/idea/blaze/common",
+        "//og/shared/src/main/java/com/google/idea/blaze/common",
         "//third_party/java/junit",
         "//third_party/java/truth",
     ],
@@ -19,7 +19,7 @@ java_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//commons/src/main/kotlin/com/google/idea/blaze/common",
+        "//og/shared/src/main/java/com/google/idea/blaze/common",
         "//third_party/java/flogger",
     ],
 )
@@ -29,8 +29,8 @@ java_test(
     size = "small",
     srcs = ["TargetTreeTest.java"],
     deps = [
-        "//commons/src/main/kotlin/com/google/idea/blaze/common",
-        "//commons/src/main/kotlin/com/google/idea/blaze/exception",
+        "//og/shared/src/main/java/com/google/idea/blaze/common",
+        "//og/shared/src/main/java/com/google/idea/blaze/exception",
         "//third_party/java/junit",
         "//third_party/java/truth",
         "@maven//:com_google_guava_guava",
@@ -42,8 +42,8 @@ java_test(
     size = "small",
     srcs = ["AtomicFileWriterTest.java"],
     deps = [
-        "//commons/src/main/kotlin/com/google/idea/blaze/common",
-        "//commons/src/main/kotlin/com/google/idea/blaze/exception",
+        "//og/shared/src/main/java/com/google/idea/blaze/common",
+        "//og/shared/src/main/java/com/google/idea/blaze/exception",
         "//third_party/java/junit",
         "//third_party/java/truth",
         "@maven//:com_google_guava_guava",

@@ -1,7 +1,7 @@
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 kt_jvm_library(
-    name = "artifact",
+    name = "proto",
     srcs = glob(
         [
             "*.java",
@@ -13,11 +13,8 @@ kt_jvm_library(
         "//visibility:public",
     ],
     deps = [
-        "//commons/src/main/kotlin/com/google/idea/blaze/common",
-        "//commons/src/main/kotlin/com/google/idea/blaze/exception",
-        "//rules_intellij/intellij_platform_sdk:plugin_api",
+        "//og/shared/src/main/java/com/google/idea/blaze/common",
         "@com_google_guava_guava//jar",
-        "@error_prone_annotations//jar",
-        "@jsr305_annotations//jar",
+        "@protobuf//:protobuf_java",
     ],
 )
