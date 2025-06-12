@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
-import ai.grazie.annotation.TestOnly
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.testFramework.builders.ModuleFixtureBuilder
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
@@ -15,7 +14,6 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-@OptIn(TestOnly::class)
 @RunWith(JUnit4::class)
 class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixtureBuilder<ModuleFixture>>() {
   @Test
