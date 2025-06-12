@@ -73,3 +73,12 @@ data class ShardingApproachSection(override val value: String) : ProjectViewSing
     const val SECTION_NAME = "shard_approach"
   }
 }
+
+/**
+ * This is used similarly to the OG [flag](https://ij.bazel.build/docs/project-views.html#gazelle_target)
+ */
+data class GazelleTargetSection(override val value: String) : ProjectViewSingletonSection<String>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "gazelle_target"
+  }
+}
