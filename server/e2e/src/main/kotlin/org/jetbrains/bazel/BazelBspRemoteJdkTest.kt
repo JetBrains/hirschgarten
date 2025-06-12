@@ -6,8 +6,8 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import kotlin.io.path.Path
@@ -48,7 +48,7 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
       )
 
     val exampleExampleBuildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//example:example"),
         listOf(),
         emptyList(),

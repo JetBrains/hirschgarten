@@ -12,18 +12,18 @@ class RunTargetAction(
   includeTargetNameInText: Boolean = false,
 ) : BazelRunnerAction(
     targetInfos = listOf(targetInfo),
-    text = { includeTargetNameInTextParam ->
-      if (isDebugAction) {
+    text = { isRunConfigName ->
+      if (isDebugAction && !isRunConfigName && !includeTargetNameInText) {
         BazelPluginBundle
           .message(
             "target.debug.run.action.text",
-            if (includeTargetNameInTextParam || includeTargetNameInText) targetInfo.id.toShortString(project) else "",
+            "",
           ).trim()
       } else {
         BazelPluginBundle
           .message(
             "target.run.action.text",
-            if (includeTargetNameInTextParam || includeTargetNameInText) targetInfo.id.toShortString(project) else "",
+            if (isRunConfigName || includeTargetNameInText) targetInfo.id.toShortString(project) else "",
           ).trim()
       }
     },

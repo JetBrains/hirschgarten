@@ -1,6 +1,6 @@
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("//rules/kotlin:macros.bzl", "kt_library")
 
-kt_jvm_library(
+kt_library(
     name = "utils",
     srcs = [
         "DelimitedMessageReader.kt",
@@ -16,7 +16,7 @@ kt_jvm_library(
     ],
 )
 
-kt_jvm_library(
+kt_library(
     name = "fileutils",
     srcs = ["FileUtils.kt"],
     visibility = [
@@ -25,12 +25,12 @@ kt_jvm_library(
     ],
 )
 
-kt_jvm_library(
+kt_library(
     name = "structured_files_utils",
     srcs = ["StructuredFilesUtils.kt"],
     visibility = ["//server:__subpackages__"],
     deps = [
         "@maven//:com_google_code_gson_gson",
-        "@maven//:org_apache_logging_log4j_log4j_api",
+        "@maven//:org_slf4j_slf4j_api",
     ],
 )

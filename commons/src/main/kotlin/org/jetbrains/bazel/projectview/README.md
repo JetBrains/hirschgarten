@@ -305,3 +305,10 @@ allow_manual_targets_sync: true
 ##### default:
 
 allow_manual_targets_sync: false
+
+#### gazelle_target
+
+_IntelliJ and GoLand only_
+
+Points to the gazelle target to be used by the plugin during a sync. The plugin will run this target on the contents of directories at the beginning of the sync operation.
+

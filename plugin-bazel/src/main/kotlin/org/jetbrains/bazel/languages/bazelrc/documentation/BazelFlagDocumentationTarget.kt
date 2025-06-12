@@ -32,27 +32,7 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
   override fun computeDocumentation(): DocumentationResult? =
     symbolPtr.dereference().run {
       DocumentationResult.asyncDocumentation {
-        val markdownText =
-          """
-          |
-          |${flag.type()}
-          |
-          |${flag.default()}
-          |
-          |${flag.oldName()}
-          |
-          |${flag.allowMultiple()}
-          |
-          |${flag.help()}
-          |
-          |${flag.expandsTo()}
-          |
-          |${flag.effects()}
-          |
-          |${flag.metadataTags()}
-          |
-          |${flag.commands()}
-          """.trimMargin()
+        val markdownText = flagToDocumentationMarkdownText(flag)
 
         val body = raw(DocMarkdownToHtmlConverter.convert(project, markdownText))
         val fragment =
@@ -149,5 +129,30 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
         .takeUnless { it.isEmpty() }
         ?.let { commands -> commands.joinToString(", ") { it.lowercase() } }
         ?.let { """**Commands**: `$it`""" } ?: ""
+
+    fun flagToDocumentationMarkdownText(flag: Flag): String {
+      val markdownText =
+        """
+          |
+          |${flag.type()}
+          |
+          |${flag.default()}
+          |
+          |${flag.oldName()}
+          |
+          |${flag.allowMultiple()}
+          |
+          |${flag.help()}
+          |
+          |${flag.expandsTo()}
+          |
+          |${flag.effects()}
+          |
+          |${flag.metadataTags()}
+          |
+          |${flag.commands()}
+        """.trimMargin()
+      return markdownText
+    }
   }
 }

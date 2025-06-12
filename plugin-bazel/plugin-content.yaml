@@ -3,6 +3,7 @@
     - name: intellij.bazel.plugin
     - name: intellij.bazel.commons
     - name: intellij.bazel.sdkcompat
+    - name: intellij.bazel.sdkcompat.k2
     - name: intellij.bazel.protobuf
     - name: intellij.bazel.server
 - name: lib/grpc-core.jar
@@ -32,11 +33,6 @@
   files:
     - name: $MAVEN_REPOSITORY$/com/fasterxml/jackson/dataformat/jackson-dataformat-xml/2/jackson-dataformat-xml-2.jar
   reason: <- intellij.bazel.server
-- name: lib/jet-sign.jar
-  library: jet-sign
-  files:
-    - name: $MAVEN_REPOSITORY$/com/jetbrains/jet-sign/45/jet-sign-45.jar
-  reason: <- intellij.bazel.commons
 - name: lib/kotlin-tooling-core.jar
   library: kotlin-tooling-core
   files:
@@ -52,12 +48,6 @@
   files:
     - name: $MAVEN_REPOSITORY$/io/opentelemetry/opentelemetry-exporter-otlp/1/opentelemetry-exporter-otlp-1.jar
   reason: <- intellij.bazel.server
-- name: lib/org.apache.logging.log4j.jar
-  library: org.apache.logging.log4j
-  files:
-    - name: $MAVEN_REPOSITORY$/org/apache/logging/log4j/log4j-core/2/log4j-core-2.jar
-    - name: $MAVEN_REPOSITORY$/org/apache/logging/log4j/log4j-api/2/log4j-api-2.jar
-  reason: <- intellij.bazel.commons
 - name: lib/protobuf4.jar
   library: protobuf4
   files:

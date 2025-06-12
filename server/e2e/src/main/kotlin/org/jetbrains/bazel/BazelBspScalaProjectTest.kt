@@ -11,7 +11,6 @@ import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
 import org.jetbrains.bsp.protocol.Diagnostic
@@ -20,6 +19,7 @@ import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.Position
 import org.jetbrains.bsp.protocol.PublishDiagnosticsParams
 import org.jetbrains.bsp.protocol.Range
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.TextDocumentIdentifier
@@ -63,8 +63,6 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
       resolveProject(),
       compareWorkspaceTargetsResults(),
       compileWithWarnings(),
-      // TODO: son
-//      scalaOptionsResults(),
     )
 
   private fun resolveProject(): BazelBspTestScenarioStep =
@@ -88,10 +86,11 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
           Path("\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_reflect/scala-reflect-2.12.14.jar"),
         ),
         jvmBuildTarget = jvmBuildTarget,
+        scalacOptions = listOf("-target:jvm-1.8"),
       )
 
     val target =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//scala_targets:library"),
         listOf(),
         listOf(

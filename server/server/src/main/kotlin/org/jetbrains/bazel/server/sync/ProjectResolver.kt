@@ -55,6 +55,11 @@ class ProjectResolver(
         )
       val featureFlags = workspaceContextProvider.currentFeatureFlags()
 
+      val repoMapping =
+        measured("Calculating external repository mapping") {
+          calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
+        }
+
       val bazelExternalRulesetsQuery =
         BazelExternalRulesetsQueryImpl(
           bazelRunner,
@@ -62,6 +67,7 @@ class ProjectResolver(
           bazelInfo.isWorkspaceEnabled,
           bspClientLogger,
           workspaceContext,
+          repoMapping,
         )
 
       val externalRulesetNames =
@@ -86,11 +92,6 @@ class ProjectResolver(
           "Mapping languages to toolchains",
         ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it, workspaceContext, featureFlags) } }
 
-      val repoMapping =
-        measured("Calculating external repository mapping") {
-          calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
-        }
-
       measured("Realizing language aspect files from templates") {
         bazelBspAspectsManager.generateAspectsFromTemplates(
           ruleLanguages,
@@ -105,6 +106,12 @@ class ProjectResolver(
 
       measured("Generating language extensions file") {
         bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, toolchains)
+      }
+
+      measured("Run Gazelle target") {
+        workspaceContext.gazelleTarget.value?.also { gazelleTarget ->
+          runGazelleTarget(workspaceContext, gazelleTarget)
+        }
       }
 
       val targetsToSync =
@@ -176,6 +183,8 @@ class ProjectResolver(
   ): BazelBspAspectsManagerResult =
     coroutineScope {
       val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, SYNC_ARTIFACT_OUTPUT_GROUP)
+      val languageSpecificOutputGroups = getLanguageSpecificOutputGroups(featureFlags)
+      outputGroups.addAll(languageSpecificOutputGroups)
       if (build) {
         outputGroups.add(BUILD_ARTIFACT_OUTPUT_GROUP)
       }
@@ -277,11 +286,29 @@ class ProjectResolver(
       return@coroutineScope res
     }
 
+  private fun getLanguageSpecificOutputGroups(featureFlags: FeatureFlags): List<String> =
+    if (featureFlags.isGoSupportEnabled) {
+      listOf(GO_SOURCE_OUTPUT_GROUP)
+    } else {
+      emptyList()
+    }
+
   private suspend fun runBazelShutDown(workspaceContext: WorkspaceContext) {
     bazelRunner.run {
       val command =
         buildBazelCommand(workspaceContext) {
           shutDown()
+        }
+      runBazelCommand(command, serverPidFuture = null)
+        .waitAndGetResult()
+    }
+  }
+
+  private suspend fun runGazelleTarget(workspaceContext: WorkspaceContext, gazelleTarget: Label) {
+    bazelRunner.run {
+      val command =
+        buildBazelCommand(workspaceContext) {
+          run(gazelleTarget)
         }
       runBazelCommand(command, serverPidFuture = null)
         .waitAndGetResult()
@@ -302,5 +329,8 @@ class ProjectResolver(
 
     // this output group is for artifacts which are only needed during build
     private const val BUILD_ARTIFACT_OUTPUT_GROUP = "bsp-build-artifact"
+
+    // language-specific output groups
+    private const val GO_SOURCE_OUTPUT_GROUP = "bazel-sources-go"
   }
 }

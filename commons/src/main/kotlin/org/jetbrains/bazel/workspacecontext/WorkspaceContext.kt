@@ -81,6 +81,7 @@ data class WorkspaceContext(
   val targetShardSize: TargetShardSizeSpec,
   val shardingApproachSpec: ShardingApproachSpec,
   val importRunConfigurations: ImportRunConfigurationsSpec,
+  val gazelleTarget: GazelleTargetSpec,
 ) : ExecutionContext()
 
 /**

@@ -8,7 +8,11 @@ class BazelToolwindowSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
     environment.withSubtask("Update Targets Panel") {
       val bspBuildTargets = environment.server.workspaceBuildTargets()
-      environment.project.service<BazelTargetsPanelModel>().updateTargets(bspBuildTargets.targets.associateBy { it.id })
+      environment.project.service<BazelTargetsPanelModel>().updateTargets(
+        bspBuildTargets.targets
+          .filter { it.id.isMainWorkspace }
+          .associateBy { it.id },
+      )
     }
   }
 }

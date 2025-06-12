@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.server.bep
 
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
 import org.jetbrains.bazel.commons.Format
 import org.jetbrains.bazel.logger.BspClientLogger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.time.Duration
 
 class BepLogger(private val bspClientLogger: BspClientLogger) {
@@ -35,7 +35,7 @@ class BepLogger(private val bspClientLogger: BspClientLogger) {
 
   companion object {
     private val LOGGER: Logger =
-      LogManager.getLogger(
+      LoggerFactory.getLogger(
         BspClientLogger::class.java,
       )
 

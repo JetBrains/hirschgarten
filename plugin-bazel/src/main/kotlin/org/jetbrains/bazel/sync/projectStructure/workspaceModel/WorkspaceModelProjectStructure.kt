@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.sync.projectStructure.workspaceModel
 
 import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.impl.WorkspaceModelInternal
@@ -46,7 +47,7 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
       message = BazelPluginBundle.message("console.task.model.apply.changes"),
     ) { subtaskId ->
       bspTracer.spanBuilder("apply.changes.on.workspace.model.ms").useWithScope {
-        val workspaceModel = WorkspaceModel.getInstance(project) as WorkspaceModelInternal
+        val workspaceModel = project.serviceAsync<WorkspaceModel>() as WorkspaceModelInternal
         repeat(MAX_REPLACE_WSM_ATTEMPTS) { attemptIdx ->
           val snapshot = workspaceModel.getBuilderSnapshot()
           bspTracer.spanBuilder("replacebysource.in.apply.on.workspace.model.ms").use {

@@ -8,7 +8,7 @@ import com.intellij.driver.sdk.openFile
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.toggleLineBreakpoint
-import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitVisible
+import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.codeEditor
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
@@ -74,7 +74,7 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
           waitFor(
             timeout = 3.minutes,
             getter = {},
-            checker = { resumeProgram.isVisible() && resumeProgram.isEnabled() },
+            checker = { resumeProgram.present() && resumeProgram.isEnabled() },
           )
         }
 
@@ -95,7 +95,7 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
 
         step("Agree to the 'Reload Changed Classes' dialog") {
           val reloadButton = ui.x { byAccessibleName("Reload") }
-          reloadButton.waitVisible(timeout = 30.seconds)
+          reloadButton.waitFound(timeout = 30.seconds)
           reloadButton.click()
           Thread.sleep(5000)
         }

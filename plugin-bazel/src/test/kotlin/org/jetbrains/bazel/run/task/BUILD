@@ -6,6 +6,7 @@ intellij_integration_test_suite(
         "*.kt",
     ]),
     associates = ["//plugin-bazel/src:plugin-bazel-lib"],
+    tags = ["exclusive"],
     test_package_root = "org.jetbrains",
     runtime_deps = [
         "//plugin-bazel",

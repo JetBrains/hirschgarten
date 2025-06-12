@@ -21,6 +21,7 @@ val bazelGson: Gson =
     .registerTypeHierarchyAdapter(TargetPattern::class.java, TargetPatternSerializer)
     .registerTypeHierarchyAdapter(Label::class.java, LabelSerializer)
     .registerTypeAdapterFactory(SealedClassTypeAdapterFactory())
+    .disableHtmlEscaping()
     .create()
 
 class SealedClassTypeAdapterFactory : TypeAdapterFactory {

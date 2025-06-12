@@ -22,6 +22,7 @@ import org.jetbrains.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bazel.workspacecontext.EnableNativeAndroidRules
 import org.jetbrains.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bazel.workspacecontext.ExperimentalAddTransitiveCompileTimeJars
+import org.jetbrains.bazel.workspacecontext.GazelleTargetSpec
 import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
 import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
@@ -34,7 +35,7 @@ import org.jetbrains.bazel.workspacecontext.TargetShardSizeSpec
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.TransitiveCompileTimeJarsTargetKindsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.junit.jupiter.api.BeforeEach
@@ -71,6 +72,7 @@ private fun createMockWorkspaceContext(allowManualTargetsSync: Boolean): Workspa
     targetShardSize = TargetShardSizeSpec(1000),
     shardingApproachSpec = ShardingApproachSpec(null),
     importRunConfigurations = ImportRunConfigurationsSpec(emptyList()),
+    gazelleTarget = GazelleTargetSpec(null),
   )
 
 private fun createMockProject(lightweightModules: List<Build.Target>, allowManualTargetsSync: Boolean): FirstPhaseProject =
@@ -235,7 +237,7 @@ class FirstPhaseTargetToBspMapperTest {
       result.targets shouldContainExactlyInAnyOrder
         listOf(
           // target1: unchanged
-          BuildTarget(
+          RawBuildTarget(
             id = Label.parse("//target1"),
             tags = listOf(),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
@@ -258,7 +260,7 @@ class FirstPhaseTargetToBspMapperTest {
             baseDirectory = workspaceRoot.resolve(Path("target1")),
           ),
           // target2: now merges its declared language with those inferred from its .kt sources
-          BuildTarget(
+          RawBuildTarget(
             id = Label.parse("//target2"),
             tags = listOf(),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
@@ -277,7 +279,7 @@ class FirstPhaseTargetToBspMapperTest {
             baseDirectory = workspaceRoot.resolve(Path("target2")),
           ),
           // target3
-          BuildTarget(
+          RawBuildTarget(
             id = Label.parse("//target3"),
             tags = listOf(),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
@@ -296,7 +298,7 @@ class FirstPhaseTargetToBspMapperTest {
             baseDirectory = workspaceRoot.resolve(Path("target3")),
           ),
           // target4
-          BuildTarget(
+          RawBuildTarget(
             id = Label.parse("//target4"),
             tags = listOf(),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
@@ -311,7 +313,7 @@ class FirstPhaseTargetToBspMapperTest {
             baseDirectory = workspaceRoot.resolve(Path("target4")),
           ),
           // target5
-          BuildTarget(
+          RawBuildTarget(
             id = Label.parse("//target5"),
             tags = listOf(),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
@@ -326,7 +328,7 @@ class FirstPhaseTargetToBspMapperTest {
             baseDirectory = workspaceRoot.resolve(Path("target5")),
           ),
           // target6
-          BuildTarget(
+          RawBuildTarget(
             id = Label.parse("//target6"),
             tags = listOf(),
             dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
@@ -341,7 +343,7 @@ class FirstPhaseTargetToBspMapperTest {
             baseDirectory = workspaceRoot.resolve(Path("target6")),
           ),
           // target7: now with its created source files
-          BuildTarget(
+          RawBuildTarget(
             id = Label.parse("//target7"),
             tags = listOf(),
             dependencies = emptyList(),
@@ -360,7 +362,7 @@ class FirstPhaseTargetToBspMapperTest {
             baseDirectory = workspaceRoot.resolve(Path("target7")),
           ),
           // target8: merging its own source and the sources from filegroupSources dependency
-          BuildTarget(
+          RawBuildTarget(
             id = Label.parse("//target8"),
             tags = listOf(),
             dependencies = emptyList(),
@@ -387,7 +389,7 @@ class FirstPhaseTargetToBspMapperTest {
               ),
             baseDirectory = workspaceRoot.resolve(Path("target8")),
           ),
-          BuildTarget(
+          RawBuildTarget(
             id = Label.parse("//filegroupSources"),
             tags = listOf(),
             dependencies = emptyList(),
