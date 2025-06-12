@@ -1,4 +1,4 @@
-load("@${rulesetName}//go:def.bzl", "GoArchive", "GoInfo", "GoSource", "go_context")
+load("@${rulesetName}//go:def.bzl", "go_context")
 load("//aspects:utils/utils.bzl", "collect_targets_from_attrs", "create_struct", "file_location", "update_sync_output_groups")
 
 def extract_go_info(target, ctx, output_groups, **kwargs):
