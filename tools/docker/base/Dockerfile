@@ -92,7 +92,7 @@ RUN curl -sSL \
 # ensure fixuid always runs even if entrypoint is /bin/sh
 RUN REAL_SH=$(readlink -f /bin/sh) && \
     mv /bin/sh /bin/sh.real && \
-    printf '#!/bin/sh\nexec /usr/local/bin/fixuid -q -- %s "$@"\n' "$REAL_SH" > /bin/sh && \
+    printf '#!%s\nexec /usr/local/bin/fixuid -q -- %s "$@"\n' "$REAL_SH" "$REAL_SH" > /bin/sh && \
     chmod 755 /bin/sh
 
 # 3. Default identity & run command
