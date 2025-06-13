@@ -12,8 +12,8 @@ JUNIT5_DEPS = [
 def kt_junit5_test(deps = [], runtime_deps = [], jvm_flags = [], **kwargs):
     kt_test(
         main_class = "org.junit.platform.console.ConsoleLauncher",
-        deps = JUNIT5_DEPS + INTELLIJ_DEPS + deps,
-        jvm_flags = JVM_FLAGS + ADD_OPENS_FLAGS + jvm_flags,
-        runtime_deps = INTELLIJ_RUNTIME_DEPS + runtime_deps,
+        deps = deps + JUNIT5_DEPS + INTELLIJ_DEPS,
+        jvm_flags = jvm_flags + JVM_FLAGS + ADD_OPENS_FLAGS,
+        runtime_deps = runtime_deps + INTELLIJ_RUNTIME_DEPS,
         **kwargs
     )
