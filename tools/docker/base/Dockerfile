@@ -58,6 +58,10 @@ RUN curl -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/release
     && chmod +x /usr/local/bin/bazel \
     && bazel version
 
+# Install Coursier
+RUN curl -fL "https://github.com/coursier/coursier/releases/download/v2.1.10/cs-x86_64-pc-linux.gz" | gzip -d > "/usr/local/bin/cs" \
+    && chmod +x /usr/local/bin/cs
+
 # Upgrade pip to latest version
 RUN python3 -m pip install --no-cache-dir --upgrade pip
 
