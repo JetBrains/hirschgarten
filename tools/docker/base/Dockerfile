@@ -87,7 +87,7 @@ RUN curl -sSL \
         | tar -xz -C /usr/local/bin && \
     chown root:root /usr/local/bin/fixuid && chmod 4755 /usr/local/bin/fixuid && \
     mkdir -p /etc/fixuid && \
-    printf 'user: %s\ngroup: %s\npaths:\n  - /home/%s/.cache\n' \
+    printf 'user: %s\ngroup: %s\npaths:\n  - /home/%s\n' \
            "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" \
            > /etc/fixuid/config.yml
 
