@@ -943,12 +943,12 @@ class BazelProjectMapper(
             (
               target.dependenciesCount > 0 ||
                 hasKnownJvmSources(target)
-            ) ||
-            featureFlags.isGoSupportEnabled &&
-            target.hasGoTargetInfo() &&
-            hasKnownGoSources(target)
+            )
         )
     ) ||
+      featureFlags.isGoSupportEnabled &&
+      target.hasGoTargetInfo() &&
+      hasKnownGoSources(target) ||
       featureFlags.isPythonSupportEnabled &&
       target.hasPythonTargetInfo() &&
       hasKnownPythonSources(target)

@@ -23,7 +23,7 @@ import org.jetbrains.bazel.label.Main
 import org.jetbrains.bazel.label.Package
 import org.jetbrains.bazel.label.ResolvedLabel
 import org.jetbrains.bazel.label.SingleTarget
-import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
+import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabelOrThis
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sdkcompat.HashAdapter
@@ -142,7 +142,7 @@ internal class TargetInfoManager(
   fun getTotalTargetCount() = labelToTargetInfo.size
 
   fun getBuildTargetForLabel(label: Label, project: Project): BuildTarget? =
-    label.toCanonicalLabel(project)?.let {
+    label.toCanonicalLabelOrThis(project)?.let {
       labelToTargetInfo.get(computeLabelHash(it, createHashStream128()))
     }
 
