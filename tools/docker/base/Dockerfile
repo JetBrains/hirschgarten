@@ -3,12 +3,14 @@
 
 FROM ubuntu:22.04
 
+# ───────────────────────────── system-wide defaults ────────────────────────────
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Set display variable for X11
 ENV DISPLAY=:0
 
+# ───────────────────────────── dependency stack ────────────────────────────────
 # Update and install dependencies
 RUN apt-get update --quiet --quiet --yes && \
     apt-get install --quiet --quiet --fix-broken --yes \
@@ -58,10 +60,6 @@ RUN curl -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/release
     && chmod +x /usr/local/bin/bazel \
     && bazel version
 
-# Install Coursier
-RUN curl -fL "https://github.com/coursier/coursier/releases/download/v2.1.10/cs-x86_64-pc-linux.gz" | gzip -d > "/usr/local/bin/cs" \
-    && chmod +x /usr/local/bin/cs
-
 # Upgrade pip to latest version
 RUN python3 -m pip install --no-cache-dir --upgrade pip
 
@@ -72,3 +70,27 @@ RUN python3 -m pip install --no-cache-dir \
     mypy \
     pylint \
     poetry
+
+# ─────────────────────────────── fixuid block ─────────────────────────────────
+ARG FIXUID_VERSION=0.6.0
+ARG CANONICAL_USER=hirschuser
+ARG CANONICAL_UID=1000
+ARG CANONICAL_GID=${CANONICAL_UID}
+
+# 1. Canonical user / group
+RUN groupadd -g ${CANONICAL_GID} ${CANONICAL_USER} && \
+    useradd  -u ${CANONICAL_UID} -g ${CANONICAL_USER} -m -s /bin/bash ${CANONICAL_USER}
+
+# 2. Fixuid binary + config
+RUN curl -sSL \
+        "https://github.com/boxboat/fixuid/releases/download/v${FIXUID_VERSION}/fixuid-${FIXUID_VERSION}-linux-amd64.tar.gz" \
+        | tar -xz -C /usr/local/bin && \
+    chown root:root /usr/local/bin/fixuid && chmod 4755 /usr/local/bin/fixuid && \
+    mkdir -p /etc/fixuid && \
+    printf 'user: %s\ngroup: %s\n' ${CANONICAL_USER} ${CANONICAL_USER} > /etc/fixuid/config.yml
+
+# 3. Default identity & entrypoint
+USER ${CANONICAL_USER}:${CANONICAL_USER}
+# remap UID/GID, then exec CMD
+ENTRYPOINT ["fixuid"]
+CMD ["bash"]
