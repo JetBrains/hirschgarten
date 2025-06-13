@@ -2,7 +2,7 @@
 # https://jetbrains.team/p/bazel/packages/container/docker/hirschgarten-e2e
 # Build locally:  tools/docker/build-and-push.sh e2e
 
-FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest
+FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:fixuid
 
 # Extra test-time dependencies
 USER root
