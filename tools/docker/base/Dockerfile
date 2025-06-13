@@ -89,8 +89,11 @@ RUN curl -sSL \
     mkdir -p /etc/fixuid && \
     printf 'user: %s\ngroup: %s\n' ${CANONICAL_USER} ${CANONICAL_USER} > /etc/fixuid/config.yml
 
-# 3. Default identity & entrypoint
+# ensure fixuid always runs even if entrypoint is /bin/sh
+RUN REAL_SH=$(readlink -f /bin/sh) && \
+    mv /bin/sh /bin/sh.real && \
+    printf '#!/bin/sh\nexec /usr/local/bin/fixuid -q -- %s "$@"\n' "$REAL_SH" > /bin/sh && \
+    chmod 755 /bin/sh
+
+# 3. Default identity & run command
 USER ${CANONICAL_USER}:${CANONICAL_USER}
-# remap UID/GID, then exec CMD
-ENTRYPOINT ["fixuid"]
-CMD ["bash"]
