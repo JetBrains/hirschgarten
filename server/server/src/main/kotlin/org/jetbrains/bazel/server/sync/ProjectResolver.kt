@@ -183,8 +183,6 @@ class ProjectResolver(
   ): BazelBspAspectsManagerResult =
     coroutineScope {
       val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, SYNC_ARTIFACT_OUTPUT_GROUP)
-      val languageSpecificOutputGroups = getLanguageSpecificOutputGroups(featureFlags)
-      outputGroups.addAll(languageSpecificOutputGroups)
       if (build) {
         outputGroups.add(BUILD_ARTIFACT_OUTPUT_GROUP)
       }
@@ -286,13 +284,6 @@ class ProjectResolver(
       return@coroutineScope res
     }
 
-  private fun getLanguageSpecificOutputGroups(featureFlags: FeatureFlags): List<String> =
-    if (featureFlags.isGoSupportEnabled) {
-      listOf(GO_SOURCE_OUTPUT_GROUP)
-    } else {
-      emptyList()
-    }
-
   private suspend fun runBazelShutDown(workspaceContext: WorkspaceContext) {
     bazelRunner.run {
       val command =
@@ -329,8 +320,5 @@ class ProjectResolver(
 
     // this output group is for artifacts which are only needed during build
     private const val BUILD_ARTIFACT_OUTPUT_GROUP = "bsp-build-artifact"
-
-    // language-specific output groups
-    private const val GO_SOURCE_OUTPUT_GROUP = "bazel-sources-go"
   }
 }
