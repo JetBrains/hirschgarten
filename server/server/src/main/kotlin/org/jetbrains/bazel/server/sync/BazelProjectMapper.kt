@@ -86,26 +86,25 @@ class BazelProjectMapper(
         DependencyGraph(rootTargets, targets)
       }
     val transitiveCompileTimeJarsTargetKinds = workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toSet()
-    val targetsToImport =
+    val (targetsToImport, targetsAsLibraries) =
       measure("Select targets") {
-        selectTargetsToImport(
-          workspaceContext,
-          rootTargets,
-          dependencyGraph,
-          repoMapping,
-          transitiveCompileTimeJarsTargetKinds,
-          featureFlags,
-        )
+        val targetsAtDepth =
+          dependencyGraph
+            .allTargetsAtDepth(
+              workspaceContext.importDepth.value,
+              rootTargets,
+            )
+        val (targetsToImport, nonWorkspaceTargets) =
+          targetsAtDepth.targets.partition {
+            isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
+          }
+        val libraries = (nonWorkspaceTargets + targetsAtDepth.directDependencies).associateBy { it.label() }
+        val usedLibraries = dependencyGraph.filterUsedLibraries(libraries, targetsToImport.asSequence())
+        targetsToImport.asSequence() to usedLibraries
       }
     val interfacesAndBinariesFromTargetsToImport =
       measure("Collect interfaces and classes from targets to import") {
         collectInterfacesAndClasses(targetsToImport)
-      }
-    val targetsAsLibraries =
-      measure("Targets as libraries") {
-        val libraries = targets - targetsToImport.map { it.label() }.toSet()
-        val usedLibraries = dependencyGraph.filterUsedLibraries(libraries, targetsToImport)
-        usedLibraries
       }
     val outputJarsLibraries =
       measure("Create output jars libraries") {
@@ -878,21 +877,6 @@ class BazelProjectMapper(
 
   private fun getGoRootPath(targetInfo: TargetInfo, repoMapping: RepoMapping): Path =
     bazelPathsResolver.toDirectoryPath(targetInfo.label().assumeResolved(), repoMapping)
-
-  private fun selectTargetsToImport(
-    workspaceContext: WorkspaceContext,
-    rootTargets: Set<Label>,
-    graph: DependencyGraph,
-    repoMapping: RepoMapping,
-    transitiveCompileTimeJarsTargetKinds: Set<String>,
-    featureFlags: FeatureFlags,
-  ): Sequence<TargetInfo> =
-    graph
-      .allTargetsAtDepth(
-        workspaceContext.importDepth.value,
-        rootTargets,
-      ).filter { isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags) }
-      .asSequence()
 
   private fun collectInterfacesAndClasses(targets: Sequence<TargetInfo>) =
     targets
