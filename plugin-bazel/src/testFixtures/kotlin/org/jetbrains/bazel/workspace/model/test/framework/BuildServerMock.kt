@@ -43,7 +43,7 @@ import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceNameResult
 
-class BuildServerMock(
+open class BuildServerMock(
   private val bazelProject: BazelProject? = null,
   private val workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null,
   private val inverseSourcesResult: InverseSourcesResult? = null,
