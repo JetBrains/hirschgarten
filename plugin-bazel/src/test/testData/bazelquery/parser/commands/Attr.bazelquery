@@ -1,0 +1,1 @@
+attr(//path/to:target1, "[\[ ]value[,\]]", deps(//path/to:target2))
