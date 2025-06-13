@@ -81,6 +81,8 @@ fun Label.toCanonicalLabel(project: Project): ResolvedLabel? {
   return this.copy(repo = repo, target = target)
 }
 
+fun Label.toCanonicalLabelOrThis(project: Project): ResolvedLabel? = toCanonicalLabel(project) ?: this as? ResolvedLabel
+
 fun Label.singleTarget(): SingleTarget? {
   val oldTarget = target
   return when (oldTarget) {
