@@ -86,7 +86,7 @@ RUN curl -sSL \
         "https://github.com/boxboat/fixuid/releases/download/v${FIXUID_VERSION}/fixuid-${FIXUID_VERSION}-linux-amd64.tar.gz" \
         | tar -xz -C /usr/local/bin && \
     chown root:root /usr/local/bin/fixuid && chmod 4755 /usr/local/bin/fixuid && \
-    mkdir -p /etc/fixuid && \
+    mkdir -p /etc/fixuid
 
 RUN mkdir -p /home/${CANONICAL_USER}/bazel_plugin_cache && \
     printf 'user: %s\ngroup: %s\npaths:\n  - /home/%s\n  - /home/%s/bazel_plugin_cache\n' \
