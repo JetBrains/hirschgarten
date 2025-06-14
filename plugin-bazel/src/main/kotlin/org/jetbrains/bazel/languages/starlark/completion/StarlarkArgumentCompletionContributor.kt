@@ -13,14 +13,12 @@ import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
-import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionParameter
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkNamedLookupElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
-import org.jetbrains.jewel.ui.component.PlatformIcon
 import org.jetbrains.kotlin.idea.gradleTooling.get
 
 class StarlarkArgumentCompletionContributor : CompletionContributor() {
@@ -34,13 +32,14 @@ class StarlarkArgumentCompletionContributor : CompletionContributor() {
 }
 
 private object StarlarkArgumentCompletionProvider : CompletionProvider<CompletionParameters>() {
-  private fun fileTypeToGlobalFunctions(file: StarlarkFile): Map<String, BazelGlobalFunction> = when (file.getBazelFileType()) {
-    BazelFileType.EXTENSION -> BazelGlobalFunctions.EXTENSION_FUNCTIONS
-    BazelFileType.BUILD -> BazelGlobalFunctions.BUILD_FUNCTIONS
-    BazelFileType.MODULE -> BazelGlobalFunctions.MODULE_FUNCTIONS
-    BazelFileType.WORKSPACE -> BazelGlobalFunctions.WORKSPACE_FUNCTIONS
-    else -> BazelGlobalFunctions.STARLARK_FUNCTIONS
-  }
+  private fun fileTypeToGlobalFunctions(file: StarlarkFile): Map<String, BazelGlobalFunction> =
+    when (file.getBazelFileType()) {
+      BazelFileType.EXTENSION -> BazelGlobalFunctions.EXTENSION_FUNCTIONS
+      BazelFileType.BUILD -> BazelGlobalFunctions.BUILD_FUNCTIONS
+      BazelFileType.MODULE -> BazelGlobalFunctions.MODULE_FUNCTIONS
+      BazelFileType.WORKSPACE -> BazelGlobalFunctions.WORKSPACE_FUNCTIONS
+      else -> BazelGlobalFunctions.STARLARK_FUNCTIONS
+    }
 
   override fun addCompletions(
     parameters: CompletionParameters,
@@ -55,12 +54,14 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
     if (functionName != null) {
       val function = functions[functionName]
       if (function != null) {
-        return function.params.forEach { result.addElement(
-          LookupElementBuilder.create(it.name).withIcon(PlatformIcons.PARAMETER_ICON)
-        ) }
+        return function.params.forEach {
+          result.addElement(
+            LookupElementBuilder.create(it.name).withIcon(PlatformIcons.PARAMETER_ICON),
+          )
+        }
       }
     }
-    
+
     val argument = PsiTreeUtil.getParentOfType(parameters.position, StarlarkArgumentExpression::class.java) ?: return
     argument.reference.variants
       .filterIsInstance<StarlarkNamedLookupElement>()
