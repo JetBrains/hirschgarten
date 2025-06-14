@@ -1,27 +1,24 @@
+# syntax=docker/dockerfile:1
 # https://jetbrains.team/p/bazel/packages/container/docker/hirschgarten-e2e
 # to build and push this image locally run `build-and-push.sh e2e` from `tools/docker` folder
 
 FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest
 
+# Extra test-time dependencies
 USER root
-RUN apt-get update && apt-get install -y maven
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends maven && \
+    rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user with UID/GID 1001
-# 1001 used because it's default user UID/GID on TC agents, and it'll allow to work around permissions for files passed to/from container
-RUN groupadd -g 1001 hirschuser && useradd -u 1001 -g hirschuser -m -s /bin/bash hirschuser
-
-# Set up work directory and change ownership
+# Workspace setup (dirs will be re-owned by fixuid on container start)
 WORKDIR /home/hirschuser/workspace
-RUN chown -R hirschuser:hirschuser /home/hirschuser
+RUN mkdir -p /home/hirschuser && chown -R hirschuser:hirschuser /home/hirschuser
 
-# Switch to the non-root user
+# Switch back to canonical user
 USER hirschuser
 
-# Clone hirschgarten repository
-RUN git clone --depth 1 https://github.com/JetBrains/hirschgarten.git /home/hirschuser/hirschgarten
-
-# Generate synthetic 10 benchmark project
-RUN cd /home/hirschuser/hirschgarten \
-    && bazel run //server/bspcli:generator -- /home/hirschuser/project_10 10 --targetssize 1 \
-    && cd /home/hirschuser \
-    && rm -rf /home/hirschuser/hirschgarten
+# Clone repo and generate synthetic benchmark
+RUN git clone --depth 1 https://github.com/JetBrains/hirschgarten.git /home/hirschuser/hirschgarten && \
+    cd /home/hirschuser/hirschgarten && \
+    bazel run //server/bspcli:generator -- /home/hirschuser/project_10 10 --targetssize 1 && \
+    cd /home/hirschuser && rm -rf /home/hirschuser/hirschgarten

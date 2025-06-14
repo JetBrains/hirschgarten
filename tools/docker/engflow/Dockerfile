@@ -2,6 +2,8 @@
 # to build and push this image locally run `build-and-push.sh engflow` from `tools/docker` folder
 FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest
 
+USER root
+
 # Create the EngFlow user and group
 RUN groupadd --gid 114 engflow && \
     useradd --home-dir /home/engflow --create-home --uid 108 --gid 114 engflow

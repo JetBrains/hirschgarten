@@ -3,12 +3,14 @@
 
 FROM ubuntu:22.04
 
+# ───────────────────────────── system-wide defaults ────────────────────────────
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Set display variable for X11
 ENV DISPLAY=:0
 
+# ───────────────────────────── dependency stack ────────────────────────────────
 # Update and install dependencies
 RUN apt-get update --quiet --quiet --yes && \
     apt-get install --quiet --quiet --fix-broken --yes \
@@ -58,10 +60,6 @@ RUN curl -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/release
     && chmod +x /usr/local/bin/bazel \
     && bazel version
 
-# Install Coursier
-RUN curl -fL "https://github.com/coursier/coursier/releases/download/v2.1.10/cs-x86_64-pc-linux.gz" | gzip -d > "/usr/local/bin/cs" \
-    && chmod +x /usr/local/bin/cs
-
 # Upgrade pip to latest version
 RUN python3 -m pip install --no-cache-dir --upgrade pip
 
@@ -72,3 +70,34 @@ RUN python3 -m pip install --no-cache-dir \
     mypy \
     pylint \
     poetry
+
+# ─────────────────────────────── fixuid block ─────────────────────────────────
+ARG FIXUID_VERSION=0.6.0
+ARG CANONICAL_USER=hirschuser
+ARG CANONICAL_UID=1000
+ARG CANONICAL_GID=${CANONICAL_UID}
+
+# 1. Canonical user / group
+RUN groupadd -g ${CANONICAL_GID} ${CANONICAL_USER} && \
+    useradd  -u ${CANONICAL_UID} -g ${CANONICAL_USER} -m -s /bin/bash ${CANONICAL_USER}
+
+# 2. Fixuid binary + config
+RUN curl -sSL \
+        "https://github.com/boxboat/fixuid/releases/download/v${FIXUID_VERSION}/fixuid-${FIXUID_VERSION}-linux-amd64.tar.gz" \
+        | tar -xz -C /usr/local/bin && \
+    chown root:root /usr/local/bin/fixuid && chmod 4755 /usr/local/bin/fixuid && \
+    mkdir -p /etc/fixuid
+
+RUN mkdir -p /home/${CANONICAL_USER}/bazel_plugin_cache && \
+    printf 'user: %s\ngroup: %s\npaths:\n  - /home/%s\n  - /home/%s/bazel_plugin_cache\n' \
+           "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" \
+           > /etc/fixuid/config.yml
+
+# ensure fixuid always runs even if entrypoint is /bin/sh
+RUN REAL_SH=$(readlink -f /bin/sh) && \
+    mv /bin/sh /bin/sh.real && \
+    printf '#!%s\nexec /usr/local/bin/fixuid -q -- %s "$@"\n' "$REAL_SH" "$REAL_SH" > /bin/sh && \
+    chmod 755 /bin/sh
+
+# 3. Default identity & run command
+USER ${CANONICAL_USER}:${CANONICAL_USER}
