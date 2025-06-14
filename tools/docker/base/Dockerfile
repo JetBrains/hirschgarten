@@ -10,6 +10,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Set display variable for X11
 ENV DISPLAY=:0
 
+# refresh keyring
+RUN apt-get -o Acquire::AllowInsecureRepositories=true update -qq \
+ && apt-get install -y --allow-unauthenticated --no-install-recommends \
+        ca-certificates gnupg ubuntu-keyring \
+ && rm -rf /var/lib/apt/lists/*
+
 # ───────────────────────────── dependency stack ────────────────────────────────
 # Update and install dependencies
 RUN apt-get update --quiet --quiet --yes && \
