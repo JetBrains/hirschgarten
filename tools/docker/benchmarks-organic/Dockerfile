@@ -3,13 +3,10 @@
 
 FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest
 
-# Create a non-root user with UID/GID 1001
-# 1001 used because it's default user UID/GID on TC agents, and it'll allow to work around permissions for files passed to/from container
-RUN groupadd -g 1001 hirschuser && useradd -u 1001 -g hirschuser -m -s /bin/bash hirschuser
-
+USER root
 # Set up work directory and change ownership
 WORKDIR /home/hirschuser/workspace
-RUN chown -R hirschuser:hirschuser /home/hirschuser
+RUN mkdir -p /home/hirschuser && chown -R hirschuser:hirschuser /home/hirschuser
 
 # Switch to the non-root user
 USER hirschuser
