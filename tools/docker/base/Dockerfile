@@ -49,7 +49,6 @@ RUN apt-get update --quiet --quiet --yes && \
     protobuf-compiler \
     jq \
     wget \
-    && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
 # Rebuild fontconfig
