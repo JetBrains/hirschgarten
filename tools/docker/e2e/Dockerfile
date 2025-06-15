@@ -1,6 +1,5 @@
-# syntax=docker/dockerfile:1
 # https://jetbrains.team/p/bazel/packages/container/docker/hirschgarten-e2e
-# Build locally:  tools/docker/build-and-push.sh e2e
+# to build and push this image locally run `build-and-push.sh e2e` from `tools/docker` folder
 
 FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest
 
