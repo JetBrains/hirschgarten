@@ -11,7 +11,6 @@ RUN apt-get update -qq && \
 
 # Switch back to canonical user
 RUN chown -R hirschuser:hirschuser /home/hirschuser
-USER hirschuser
 
 # Clone repo and generate synthetic benchmark
 RUN git clone --depth 1 https://github.com/JetBrains/hirschgarten.git /home/hirschuser/hirschgarten && \
