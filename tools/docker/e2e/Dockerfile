@@ -4,19 +4,6 @@
 
 FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest
 
-# Extra test-time dependencies
-USER root
-RUN apt-get update --allow-unauthenticated -qq && \
-    apt-get install --allow-unauthenticated -y --no-install-recommends maven && \
-    rm -rf /var/lib/apt/lists/*
-
-# Workspace setup (dirs will be re-owned by fixuid on container start)
-WORKDIR /home/hirschuser/workspace
-RUN mkdir -p /home/hirschuser && chown -R hirschuser:hirschuser /home/hirschuser
-
-# Switch back to canonical user
-USER hirschuser
-
 # Clone repo and generate synthetic benchmark
 RUN git clone --depth 1 https://github.com/JetBrains/hirschgarten.git /home/hirschuser/hirschgarten && \
     cd /home/hirschuser/hirschgarten && \

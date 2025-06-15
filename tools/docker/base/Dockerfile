@@ -19,7 +19,7 @@ RUN apt-get -o Acquire::AllowInsecureRepositories=true update -qq \
 # ───────────────────────────── dependency stack ────────────────────────────────
 # Update and install dependencies
 RUN apt-get update --quiet --quiet --yes && \
-    apt-get install --quiet --quiet --fix-broken --yes \
+    apt-get install --quiet --quiet --fix-broken --no-install-recommends --yes \
     curl \
     git \
     xvfb \
@@ -43,6 +43,7 @@ RUN apt-get update --quiet --quiet --yes && \
     libxtst6 \
     libxi6 \
     libxrandr2 \
+    maven \
     zip \
     fontconfig \
     libfontconfig1 \
@@ -108,4 +109,7 @@ RUN REAL_SH=$(readlink -f /bin/sh) && \
     chmod 755 /bin/sh
 
 # 3. Default identity & run command
+WORKDIR /home/${CANONICAL_USER}/workspace
+RUN mkdir -p /home/${CANONICAL_USER} && chown -R ${CANONICAL_USER}:${CANONICAL_USER} /home/${CANONICAL_USER}
+
 USER ${CANONICAL_USER}:${CANONICAL_USER}

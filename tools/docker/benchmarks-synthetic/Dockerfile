@@ -3,14 +3,6 @@
 
 FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest
 
-USER root
-# Set up work directory and change ownership
-WORKDIR /home/hirschuser/workspace
-RUN mkdir -p /home/hirschuser && chown -R hirschuser:hirschuser /home/hirschuser
-
-# Switch to the non-root user
-USER hirschuser
-
 # Clone hirschgarten repository
 RUN git clone --depth 1 https://github.com/JetBrains/hirschgarten.git /home/hirschuser/hirschgarten
 
