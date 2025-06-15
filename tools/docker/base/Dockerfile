@@ -91,11 +91,11 @@ RUN mkdir -p /etc/fixuid /home/${CANONICAL_USER}/bazel_plugin_cache && \
            > /etc/fixuid/config.yml
 
 # remove dash’s divert, create our own wrapper
-RUN dpkg-divert --rename --remove /bin/sh || true && \
-    REAL_SH=$(readlink -f /bin/sh) && \
-    dpkg-divert --add --rename --divert /bin/sh.real /bin/sh && \
-    printf '#!%s\nexec /usr/local/bin/fixuid -q -- %s "$@"\n' "$REAL_SH" "$REAL_SH" > /bin/sh && \
-    chmod 755 /bin/sh
+RUN REAL_SH=$(readlink -f /bin/sh) && \
+    printf '#!%s\nexec /usr/local/bin/fixuid -q -- %s "$@"\n' \
+           "$REAL_SH" "$REAL_SH" > /usr/local/bin/fixuid-sh && \
+    chmod 755 /usr/local/bin/fixuid-sh && \
+    update-alternatives --install /bin/sh sh /usr/local/bin/fixuid-sh 10000
 
 # 5. default identity
 USER ${CANONICAL_USER}:${CANONICAL_USER}
