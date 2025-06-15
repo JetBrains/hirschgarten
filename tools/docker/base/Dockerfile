@@ -68,34 +68,3 @@ RUN python3 -m pip install --no-cache-dir \
     mypy \
     pylint \
     poetry
-
-# ─────────────────────────────── fixuid block ────────────────────────────────
-ARG FIXUID_VERSION=0.6.0
-ARG CANONICAL_USER=hirschuser
-ARG CANONICAL_UID=1000
-ARG CANONICAL_GID=${CANONICAL_UID}
-
-# 1. Canonical user / group
-RUN groupadd -g ${CANONICAL_GID} ${CANONICAL_USER} && \
-    useradd  -u ${CANONICAL_UID} -g ${CANONICAL_USER} -m -s /bin/bash ${CANONICAL_USER}
-
-# 2. install fixuid
-RUN curl -fsSL "https://github.com/boxboat/fixuid/releases/download/v${FIXUID_VERSION}/fixuid-${FIXUID_VERSION}-linux-amd64.tar.gz" \
-        | tar -xz -C /usr/local/bin && \
-    chown root:root /usr/local/bin/fixuid && chmod 4755 /usr/local/bin/fixuid
-
-# 3. write config
-RUN mkdir -p /etc/fixuid /home/${CANONICAL_USER}/bazel_plugin_cache && \
-    printf 'user: %s\ngroup: %s\npaths:\n  - /home/%s\n  - /home/%s/bazel_plugin_cache\n' \
-           "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" \
-           > /etc/fixuid/config.yml
-
-# remove dash’s divert, create our own wrapper
-RUN REAL_SH=$(readlink -f /bin/sh) && \
-    printf '#!%s\nexec /usr/local/bin/fixuid -q -- %s "$@"\n' \
-           "$REAL_SH" "$REAL_SH" > /usr/local/bin/fixuid-sh && \
-    chmod 755 /usr/local/bin/fixuid-sh && \
-    update-alternatives --install /bin/sh sh /usr/local/bin/fixuid-sh 10000
-
-# 5. default identity
-USER ${CANONICAL_USER}:${CANONICAL_USER}
