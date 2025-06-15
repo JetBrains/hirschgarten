@@ -48,8 +48,7 @@ RUN apt-get update --quiet --quiet --yes && \
     openjdk-17-jdk-headless \
     protobuf-compiler \
     jq \
-    wget \
-    && apt-get clean
+    wget
 
 # Rebuild fontconfig
 RUN fc-cache -f -v
