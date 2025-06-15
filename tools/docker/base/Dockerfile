@@ -87,6 +87,8 @@ ARG CANONICAL_GID=${CANONICAL_UID}
 RUN groupadd -g ${CANONICAL_GID} ${CANONICAL_USER} && \
     useradd  -u ${CANONICAL_UID} -g ${CANONICAL_USER} -m -s /bin/bash ${CANONICAL_USER}
 
+ENV HOME=/home/${CANONICAL_USER}
+
 # 2. Fixuid binary + config
 RUN curl -sSL \
         "https://github.com/boxboat/fixuid/releases/download/v${FIXUID_VERSION}/fixuid-${FIXUID_VERSION}-linux-amd64.tar.gz" \
@@ -95,7 +97,7 @@ RUN curl -sSL \
     mkdir -p /etc/fixuid
 
 RUN mkdir -p /home/${CANONICAL_USER}/bazel_plugin_cache && \
-    printf 'user: %s\ngroup: %s\npaths:\n  - /home/%s\n  - /home/%s/bazel_plugin_cache\n' \
+    printf 'user: %s\ngroup: %s\npaths:\n  - /home/%s\n  - /home/%s/bazel_plugin_cache\n  - /home/%s/bazel_plugin_cache\n' \
            "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" \
            > /etc/fixuid/config.yml
 

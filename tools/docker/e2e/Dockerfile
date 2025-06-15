@@ -6,8 +6,8 @@ FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest
 
 # Extra test-time dependencies
 USER root
-RUN apt-get update -qq && \
-    apt-get install -y --no-install-recommends maven && \
+RUN apt-get update --allow-unauthenticated -qq && \
+    apt-get install --allow-unauthenticated -y --no-install-recommends maven && \
     rm -rf /var/lib/apt/lists/*
 
 # Workspace setup (dirs will be re-owned by fixuid on container start)
