@@ -10,6 +10,7 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists/*
 
 # Switch back to canonical user
+RUN chown -R hirschuser:hirschuser /home/hirschuser
 USER hirschuser
 
 # Clone repo and generate synthetic benchmark
