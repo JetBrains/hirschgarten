@@ -3,8 +3,6 @@
 
 FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest
 
-USER root
-
 # Install additional dependencies
 RUN apt-get update --quiet --quiet --yes && \
     apt-get install --quiet --quiet --fix-broken --yes \
