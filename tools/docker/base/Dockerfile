@@ -1,7 +1,7 @@
 # https://jetbrains.team/p/bazel/packages/container/docker/hirschgarten-base
 # to build and push this image locally run `build-and-push.sh base` from `tools/docker` folder
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 # ───────────────────────────── system-wide defaults ────────────────────────────
 # Avoid prompts from apt
