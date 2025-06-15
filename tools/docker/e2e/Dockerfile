@@ -5,9 +5,10 @@ FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest
 
 # Extra test-time dependencies
 USER root
-RUN apt-get update -qq && \
-    apt-get install -y --no-install-recommends maven && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update -qq \
+ && apt-get install -y --no-install-recommends maven \
+ && rm -rf /var/lib/apt/lists/* \
+ && update-alternatives --set sh /usr/local/bin/fixuid-sh
 
 # Switch back to canonical user
 RUN mkdir -p /home/hirschuser && chown -R hirschuser:hirschuser /home/hirschuser
