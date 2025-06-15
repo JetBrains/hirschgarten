@@ -98,8 +98,8 @@ RUN curl -sSL \
     mkdir -p /etc/fixuid
 
 RUN mkdir -p /home/${CANONICAL_USER}/bazel_plugin_cache && \
-    printf 'user: %s\ngroup: %s\npaths:\n  - /home/%s\n  - /home/%s/bazel_plugin_cache\n  - /home/%s/bazel_plugin_cache\n' \
-           "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" \
+    printf 'user: %s\ngroup: %s\npaths:\n  - /home/%s\n  - /home/%s/bazel_plugin_cache\n  - /home/%s/.cache\n' \
+           "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" \
            > /etc/fixuid/config.yml
 
 # ensure fixuid always runs even if entrypoint is /bin/sh
