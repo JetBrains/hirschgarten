@@ -10,11 +10,7 @@ RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends maven && \
     rm -rf /var/lib/apt/lists/*
 
-# Workspace setup (dirs will be re-owned by fixuid on container start)
-WORKDIR /home/hirschuser/workspace
-RUN mkdir -p /home/hirschuser && chown -R hirschuser:hirschuser /home/hirschuser
-
-# Switch back to canonical user; ENTRYPOINT ["fixuid"] inherited
+# Switch back to canonical user
 USER hirschuser
 
 # Clone repo and generate synthetic benchmark
