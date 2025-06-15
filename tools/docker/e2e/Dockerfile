@@ -44,5 +44,7 @@ RUN git clone --depth 1 https://github.com/JetBrains/hirschgarten.git /home/hirs
     bazel run //server/bspcli:generator -- /home/hirschuser/project_10 10 --targetssize 1 && \
     cd /home/hirschuser && rm -rf /home/hirschuser/hirschgarten
 
-# 3. Default identity & run command
+USER root
+RUN chmod 4755 /usr/local/bin/fixuid && chown root:root /usr/local/bin/fixuid
 USER ${CANONICAL_USER}:${CANONICAL_USER}
+
