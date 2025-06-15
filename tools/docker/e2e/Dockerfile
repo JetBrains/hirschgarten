@@ -37,3 +37,12 @@ RUN REAL_SH=$(readlink -f /bin/sh) && \
 
 # 3. Default identity & run command
 USER ${CANONICAL_USER}:${CANONICAL_USER}
+
+# Clone repo and generate synthetic benchmark
+RUN git clone --depth 1 https://github.com/JetBrains/hirschgarten.git /home/hirschuser/hirschgarten && \
+    cd /home/hirschuser/hirschgarten && \
+    bazel run //server/bspcli:generator -- /home/hirschuser/project_10 10 --targetssize 1 && \
+    cd /home/hirschuser && rm -rf /home/hirschuser/hirschgarten
+
+# 3. Default identity & run command
+USER ${CANONICAL_USER}:${CANONICAL_USER}
