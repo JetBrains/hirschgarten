@@ -13,7 +13,7 @@ ENV DISPLAY=:0
 # ───────────────────────────── dependency stack ────────────────────────────────
 # Update and install dependencies
 RUN apt-get update --quiet --quiet --yes && \
-    apt-get install --quiet --quiet --fix-broken --no-install-recommends --yes \
+    apt-get install --quiet --quiet --fix-broken --yes \
     curl \
     git \
     xvfb \
@@ -37,7 +37,6 @@ RUN apt-get update --quiet --quiet --yes && \
     libxtst6 \
     libxi6 \
     libxrandr2 \
-    maven \
     zip \
     fontconfig \
     libfontconfig1 \
@@ -82,8 +81,6 @@ ARG CANONICAL_GID=${CANONICAL_UID}
 RUN groupadd -g ${CANONICAL_GID} ${CANONICAL_USER} && \
     useradd  -u ${CANONICAL_UID} -g ${CANONICAL_USER} -m -s /bin/bash ${CANONICAL_USER}
 
-ENV HOME=/home/${CANONICAL_USER}
-
 # 2. Fixuid binary + config
 RUN curl -sSL \
         "https://github.com/boxboat/fixuid/releases/download/v${FIXUID_VERSION}/fixuid-${FIXUID_VERSION}-linux-amd64.tar.gz" \
@@ -92,8 +89,8 @@ RUN curl -sSL \
     mkdir -p /etc/fixuid
 
 RUN mkdir -p /home/${CANONICAL_USER}/bazel_plugin_cache && \
-    printf 'user: %s\ngroup: %s\npaths:\n  - /home/%s\n  - /home/%s/bazel_plugin_cache\n  - /home/%s/.cache\n' \
-           "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" \
+    printf 'user: %s\ngroup: %s\npaths:\n  - /home/%s\n  - /home/%s/bazel_plugin_cache\n' \
+           "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" "${CANONICAL_USER}" \
            > /etc/fixuid/config.yml
 
 # ensure fixuid always runs even if entrypoint is /bin/sh
@@ -103,7 +100,4 @@ RUN REAL_SH=$(readlink -f /bin/sh) && \
     chmod 755 /bin/sh
 
 # 3. Default identity & run command
-WORKDIR /home/${CANONICAL_USER}/workspace
-RUN mkdir -p /home/${CANONICAL_USER} && chown -R ${CANONICAL_USER}:${CANONICAL_USER} /home/${CANONICAL_USER}
-
 USER ${CANONICAL_USER}:${CANONICAL_USER}
