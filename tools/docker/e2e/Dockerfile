@@ -8,7 +8,6 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists/*
 
 # ─────────────────────────────── fixuid block ─────────────────────────────────
-ARG FIXUID_VERSION=0.6.0
 ARG CANONICAL_USER=hirschuser
 ARG CANONICAL_UID=1000
 ARG CANONICAL_GID=${CANONICAL_UID}
@@ -16,6 +15,19 @@ ARG CANONICAL_GID=${CANONICAL_UID}
 # 1. Canonical user / group
 RUN groupadd -g ${CANONICAL_GID} ${CANONICAL_USER} && \
     useradd  -u ${CANONICAL_UID} -g ${CANONICAL_USER} -m -s /bin/bash ${CANONICAL_USER}
+
+USER ${CANONICAL_USER}
+WORKDIR /home/${CANONICAL_USER}
+
+# Clone repo and generate synthetic benchmark
+RUN git clone --depth 1 https://github.com/JetBrains/hirschgarten.git /home/hirschuser/hirschgarten && \
+    cd /home/hirschuser/hirschgarten && \
+    bazel run //server/bspcli:generator -- /home/hirschuser/project_10 10 --targetssize 1 && \
+    cd /home/hirschuser && rm -rf /home/hirschuser/hirschgarten
+
+USER root
+
+ARG FIXUID_VERSION=0.6.0
 
 # 2. Fixuid binary + config
 RUN curl -sSL \
@@ -37,14 +49,3 @@ RUN REAL_SH=$(readlink -f /bin/sh) && \
 
 # 3. Default identity & run command
 USER ${CANONICAL_USER}:${CANONICAL_USER}
-
-# Clone repo and generate synthetic benchmark
-RUN git clone --depth 1 https://github.com/JetBrains/hirschgarten.git /home/hirschuser/hirschgarten && \
-    cd /home/hirschuser/hirschgarten && \
-    bazel run //server/bspcli:generator -- /home/hirschuser/project_10 10 --targetssize 1 && \
-    cd /home/hirschuser && rm -rf /home/hirschuser/hirschgarten
-
-USER root
-RUN chmod 4755 /usr/local/bin/fixuid && chown root:root /usr/local/bin/fixuid
-USER ${CANONICAL_USER}:${CANONICAL_USER}
-
