@@ -5,6 +5,9 @@ import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
+import com.intellij.codeInsight.completion.InsertHandler
+import com.intellij.codeInsight.completion.InsertionContext
+import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.util.PsiTreeUtil
@@ -13,13 +16,13 @@ import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionParameter
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
 import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkNamedLookupElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
-import org.jetbrains.kotlin.idea.gradleTooling.get
 
 class StarlarkArgumentCompletionContributor : CompletionContributor() {
   init {
@@ -55,9 +58,7 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
       val function = functions[functionName]
       if (function != null) {
         return function.params.forEach {
-          result.addElement(
-            LookupElementBuilder.create(it.name).withIcon(PlatformIcons.PARAMETER_ICON),
-          )
+          result.addElement(argumentLookupElement(it))
         }
       }
     }
@@ -67,4 +68,26 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
       .filterIsInstance<StarlarkNamedLookupElement>()
       .forEach { result.addElement(it) }
   }
+
+  private class ArgumentInsertHandler<T : LookupElement>(val default: String) : InsertHandler<T> {
+    override fun handleInsert(context: InsertionContext, item: T) {
+      val editor = context.editor
+      val document = editor.document
+      document.insertString(context.tailOffset, " = $default,")
+      if (default == "\'\'" || default == "\"\"") {
+        editor.caretModel.moveToOffset(context.tailOffset - 2)
+      } else {
+        val selectionStart = context.tailOffset - default.length - 1
+        val selectionEnd = selectionStart + default.length
+        editor.selectionModel.setSelection(selectionStart, selectionEnd)
+        editor.caretModel.moveToOffset(selectionEnd)
+      }
+    }
+  }
+
+  private fun argumentLookupElement(arg: BazelGlobalFunctionParameter): LookupElement =
+    LookupElementBuilder
+      .create(arg.name)
+      .withIcon(PlatformIcons.PARAMETER_ICON)
+      .withInsertHandler(ArgumentInsertHandler(arg.default))
 }
