@@ -12,8 +12,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
-import org.jetbrains.bazel.workspacemodel.entities.Module
-import org.jetbrains.bazel.workspacemodel.entities.isJvmOrAndroidTarget
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.isJvmOrAndroidTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.PartialBuildTarget
 import java.nio.file.Path

@@ -17,11 +17,11 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
-import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.includesAndroid
-import org.jetbrains.bazel.workspacemodel.entities.includesJava
-import org.jetbrains.bazel.workspacemodel.entities.includesKotlin
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateLibraryDependency
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesAndroid
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesJava
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesKotlin
 import java.nio.file.Path
 
 internal class JavaModuleWithSourcesUpdater(

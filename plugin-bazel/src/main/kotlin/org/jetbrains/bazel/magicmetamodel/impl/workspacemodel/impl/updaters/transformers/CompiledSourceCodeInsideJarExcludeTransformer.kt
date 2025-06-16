@@ -2,7 +2,7 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import com.intellij.openapi.vfs.JarFileSystem
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
 import org.jetbrains.bsp.protocol.LibraryItem
 import java.util.Locale
 import kotlin.io.path.invariantSeparatorsPathString
