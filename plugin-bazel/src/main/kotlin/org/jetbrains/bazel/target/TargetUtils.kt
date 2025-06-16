@@ -74,10 +74,6 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   val allTargetsAndLibrariesLabels: List<String>
     get() = allTargetsAndLibrariesLabelsCache.value
 
-  // todo: remove (used only during sync)
-  var fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>> = emptyMap()
-    private set
-
   private val mutableTargetListUpdated = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_LATEST)
   val targetListUpdated: SharedFlow<Unit> = mutableTargetListUpdated.asSharedFlow()
 
@@ -121,17 +117,11 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     db.computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo)
 
   @InternalApi
-  fun getSharedFiles(): Map<Path, List<Label>> = fileToTargetWithoutLowPrioritySharedSources
-
-  @InternalApi
   suspend fun saveTargets(
     targets: List<RawBuildTarget>,
     fileToTarget: Map<Path, List<Label>>,
-    fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
     libraryItems: List<LibraryItem>?,
   ) {
-    this.fileToTargetWithoutLowPrioritySharedSources = fileToTargetWithoutLowPrioritySharedSources
-
     val labelToTargetInfo = targets.associateByTo(HashMap(targets.size)) { it.id }
     db.reset(
       fileToTarget = fileToTarget,
