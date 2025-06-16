@@ -21,17 +21,15 @@ import javax.swing.tree.TreeNode
 import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
-class BuildTargetTree(
+internal class BuildTargetTree(
   private val project: Project,
-  private val model: BazelTargetsPanelModel,
   private val rootNode: DefaultMutableTreeNode = DefaultMutableTreeNode(DirectoryNodeData("[root]", emptyList())),
 ) : Tree(rootNode) {
   private val loadedTargetsMouseListener: LoadedTargetsMouseListener =
     object : LoadedTargetsMouseListener(project) {
       override fun getSelectedComponentName(): String {
         val selected = lastSelectedPathComponent as? DefaultMutableTreeNode
-        val userObject = selected?.userObject
-        return when (userObject) {
+        return when (val userObject = selected?.userObject) {
           is TargetNodeData -> userObject.displayName
           is DirectoryNodeData -> userObject.name
           else -> ""
@@ -73,9 +71,6 @@ class BuildTargetTree(
     cellRenderer = TargetTreeCellRenderer { it }
     isRootVisible = false
 
-    // Initial tree generation
-    updateTree()
-
     // Initialize speed search
     TreeUIHelper.getInstance().installTreeSpeedSearch(this, {
       val lastPathComponent = (it.lastPathComponent as? DefaultMutableTreeNode)?.userObject ?: return@installTreeSpeedSearch null
@@ -86,20 +81,24 @@ class BuildTargetTree(
       }
     }, true)
 
-    loadedTargetsMouseListener.registerKeyboardShortcutForPopup()
+    registerKeyboardShortcutForPopup(loadedTargetsMouseListener)
     addMouseListener(loadedTargetsMouseListener)
   }
 
-  fun updateTree() {
+  fun updateTree(
+    visibleTargets: Collection<Label>,
+    displayAsTree: Boolean,
+    labelToInfo: (Label) -> BuildTarget?,
+  ) {
     val classifier =
-      if (model.displayAsTree) {
+      if (displayAsTree) {
         TreeTargetClassifier(project)
       } else {
         ListTargetClassifier(project)
       }
 
     // Generate the tree with the current targets
-    generateTree(model.visibleTargets, classifier)
+    generateTree(visibleTargets, labelToInfo, classifier)
 
     // Notify the tree model that the structure has changed
     (treeModel as? DefaultTreeModel)?.reload()
@@ -107,14 +106,18 @@ class BuildTargetTree(
     expandPath(TreePath(rootNode.path))
   }
 
-  private fun generateTree(targets: Collection<Label>, classifier: BuildTargetClassifierExtension) {
+  private fun generateTree(
+    targets: Collection<Label>,
+    labelToInfo: (Label) -> BuildTarget?,
+    classifier: BuildTargetClassifierExtension,
+  ) {
     generateTreeFromIdentifiers(
       targets.map {
         BuildTargetTreeIdentifier(
-          it,
-          model.getTargetData(it),
-          classifier.calculateBuildTargetPath(it),
-          classifier.calculateBuildTargetName(it),
+          id = it,
+          target = labelToInfo(it),
+          path = classifier.calculateBuildTargetPath(it),
+          displayName = classifier.calculateBuildTargetName(it),
         )
       },
       classifier.separator,
@@ -217,7 +220,7 @@ class BuildTargetTree(
 
   override fun isEmpty(): Boolean = rootNode.isLeaf
 
-  private fun PopupHandler.registerKeyboardShortcutForPopup() {
+  private fun registerKeyboardShortcutForPopup(popupHandler: PopupHandler) {
     val popupAction =
       SimpleAction {
         val selectionPath = selectionPath ?: return@SimpleAction
@@ -225,35 +228,38 @@ class BuildTargetTree(
         if (directoryIsSelected) {
           // Normally, this is a built-in feature of a Tree.
           //   However, it stops working out-of-the-box since its keyboard shortcut has been overridden.
-          selectionPath.toggleExpansion()
+          toggleExpansion(selectionPath)
         } else {
           val selectedPoint = selectionPath.let { getPathBounds(it)?.location } ?: return@SimpleAction
-          this.invokePopup(this@BuildTargetTree, selectedPoint.x, selectedPoint.y)
+          popupHandler.invokePopup(this, selectedPoint.x, selectedPoint.y)
         }
       }
     popupAction.registerCustomShortcutSet(BspShortcuts.openTargetContextMenu, this@BuildTargetTree)
   }
 
-  private fun TreePath.toggleExpansion() {
-    if (isCollapsed(this)) {
-      expandPath(this)
+  private fun toggleExpansion(path: TreePath) {
+    if (isCollapsed(path)) {
+      expandPath(path)
     } else {
-      collapsePath(this)
+      collapsePath(path)
     }
   }
 }
 
-data class DirectoryNodeData(val name: String, val targets: List<BuildTargetTreeIdentifier>)
+data class DirectoryNodeData(
+  @JvmField val name: String,
+  @JvmField val targets: List<BuildTargetTreeIdentifier>,
+)
 
 data class TargetNodeData(
-  val target: BuildTarget?,
-  val displayName: String,
-  val isValid: Boolean,
+  @JvmField val target: BuildTarget?,
+  @JvmField val displayName: String,
+  @JvmField val isValid: Boolean,
 )
 
 data class BuildTargetTreeIdentifier(
-  val id: Label,
-  val target: BuildTarget?,
-  val path: List<String>,
-  val displayName: String,
+  @JvmField val id: Label,
+  @JvmField val target: BuildTarget?,
+  @JvmField val path: List<String>,
+  @JvmField val displayName: String,
 )

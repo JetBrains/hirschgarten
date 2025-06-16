@@ -1,5 +1,5 @@
 load("@rules_kotlin//kotlin:core.bzl", "kt_compiler_plugin")
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("//rules/kotlin:macros.bzl", "kt_library")
 
 kt_compiler_plugin(
     name = "open_for_testing_plugin",
@@ -14,12 +14,12 @@ kt_compiler_plugin(
     ],
 )
 
-kt_jvm_library(
+kt_library(
     name = "open_for_testing",
     srcs = ["OpenForTesting.kt"],
 )
 
-kt_jvm_library(
+kt_library(
     name = "user",
     srcs = ["User.kt"],
     plugins = [
@@ -30,7 +30,7 @@ kt_jvm_library(
     ],
 )
 
-kt_jvm_library(
+kt_library(
     name = "user_is_open_test",
     srcs = ["UserIsOpenTest.kt"],
     deps = [

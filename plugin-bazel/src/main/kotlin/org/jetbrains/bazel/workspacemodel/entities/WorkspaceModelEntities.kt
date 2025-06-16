@@ -66,4 +66,7 @@ interface Module {
   fun getModuleName(): String
 }
 
-data class CompiledSourceCodeInsideJarExclude(val relativePathsInsideJarToExclude: Set<String>) : WorkspaceModelEntity()
+data class CompiledSourceCodeInsideJarExclude(
+  val relativePathsInsideJarToExclude: Set<String>,
+  val librariesFromInternalTargetsUrls: Set<String>,
+) : WorkspaceModelEntity()

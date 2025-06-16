@@ -3,6 +3,7 @@ package org.jetbrains.bazel.jvm.sync
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
 import com.intellij.openapi.project.Project
@@ -24,8 +25,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.CompiledSourceCodeInsideJarExcludeTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModulesToCompiledSourceCodeInsideJarExcludeTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
@@ -167,7 +168,7 @@ class CollectProjectDetailsTask(
   private fun calculateAllUniqueJavaHomes(projectDetails: ProjectDetails): Set<Path> =
     projectDetails.targets
       .mapNotNull(::extractJvmBuildTarget)
-      .map { it.javaHome }
+      .map { requireNotNull(it.javaHome) { "javaHome is null but expected not to be null for $it" } }
       .toSet()
 
   private suspend fun calculateAllScalaSdkInfosSubtask(projectDetails: ProjectDetails) =
@@ -194,7 +195,7 @@ class CollectProjectDetailsTask(
         ScalaSdk(
           name = scalaBuildTarget.scalaVersion.scalaVersionToScalaSdkName(),
           scalaVersion = scalaBuildTarget.scalaVersion,
-          sdkJars = scalaBuildTarget.jars.map { path -> path.toUri() },
+          sdkJars = scalaBuildTarget.sdkJars.map { path -> path.toUri() },
         )
       }
 
@@ -257,14 +258,17 @@ class CollectProjectDetailsTask(
         val compiledSourceCodeInsideJarToExclude =
           bspTracer.spanBuilder("calculate.non.generated.class.files.to.exclude").use {
             if (BazelFeatureFlags.excludeCompiledSourceCodeInsideJars) {
-              ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(targetIdToModuleDetails.values)
+              CompiledSourceCodeInsideJarExcludeTransformer().transform(
+                targetIdToModuleDetails.values,
+                projectDetails.libraries.orEmpty(),
+              )
             } else {
               null
             }
           }
 
         bspTracer.spanBuilder("load.modules.ms").use {
-          val workspaceModel = WorkspaceModel.getInstance(project)
+          val workspaceModel = project.serviceAsync<WorkspaceModel>()
           val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
 
           val workspaceModelUpdater =
@@ -298,7 +302,7 @@ class CollectProjectDetailsTask(
         }.toMap()
   }
 
-  suspend fun postprocessingSubtask() {
+  suspend fun postprocessingSubtask(targetUtilsDiff: TargetUtilsProjectStructureDiff) {
     // This order is strict as now SDKs also use the workspace model,
     // updating jdks before applying the project model will render the action to fail.
     // This will be handled properly after this ticket:
@@ -309,7 +313,7 @@ class CollectProjectDetailsTask(
     addBspFetchedScalaSdks()
 
     VirtualFileManager.getInstance().asyncRefresh()
-    checkSharedSources()
+    checkSharedSources(targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources)
   }
 
   private suspend fun addBspFetchedJdks() =
@@ -351,10 +355,10 @@ class CollectProjectDetailsTask(
       javacOptions.ADDITIONAL_OPTIONS_OVERRIDE = this.javacOptions
     }
 
-  private fun checkSharedSources() {
+  private fun checkSharedSources(fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>) {
     if (project.isSharedSourceSupportEnabled) return
     if (!BazelFeatureFlags.checkSharedSources) return
-    for ((file, labels) in project.targetUtils.getSharedFiles()) {
+    for ((file, labels) in fileToTargetWithoutLowPrioritySharedSources) {
       if (labels.size <= 1) {
         continue
       }
@@ -458,15 +462,21 @@ private suspend fun queryWorkspaceBuildTargets(
   taskId: String,
 ): WorkspaceBuildTargetsResult =
   coroutineScope {
-    if (syncScope is PartialProjectSync) {
-      query("workspace/buildTargetsPartial") {
-        server.workspaceBuildTargetsPartial(WorkspaceBuildTargetsPartialParams(syncScope.targetsToSync))
+    when (syncScope) {
+      is PartialProjectSync -> {
+        query("workspace/buildTargetsPartial") {
+          server.workspaceBuildTargetsPartial(WorkspaceBuildTargetsPartialParams(syncScope.targetsToSync))
+        }
       }
-    } else if (syncScope is FirstPhaseSync) {
-      query("workspace/buildTargetsFirstPhase") {
-        server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams(taskId))
+
+      is FirstPhaseSync -> {
+        query("workspace/buildTargetsFirstPhase") {
+          server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams(taskId))
+        }
       }
-    } else {
-      query("workspace/buildTargets") { server.workspaceBuildTargets() }
+
+      else -> {
+        query("workspace/buildTargets") { server.workspaceBuildTargets() }
+      }
     }
   }

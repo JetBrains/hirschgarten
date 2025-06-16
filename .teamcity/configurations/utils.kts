@@ -1,9 +1,10 @@
 package configurations
 
 object DockerParams {
-  val volumes = """
-    -v %system.agent.persistent.cache%:/home/hirschuser/.cache
-    -v %system.agent.persistent.cache%/.netrc:/home/hirschuser/.netrc""".trimIndent()
+  private val DOCKER_RUN_PARAMS: String = listOf(
+    "-v %system.agent.persistent.cache%:/home/hirschuser/.cache",
+    "-u %env.CONTAINER_UID%:%env.CONTAINER_GID%",
+  ).joinToString("\n")
 
   fun get(
     imageName: String = CommonParams.DockerE2eImage
@@ -12,7 +13,7 @@ object DockerParams {
       "plugin.docker.imagePlatform" to "linux",
       "plugin.docker.pull.enabled" to "true",
       "plugin.docker.imageId" to imageName,
-      "plugin.docker.run.parameters" to volumes,
+      "plugin.docker.run.parameters" to DOCKER_RUN_PARAMS,
     )
 }
 

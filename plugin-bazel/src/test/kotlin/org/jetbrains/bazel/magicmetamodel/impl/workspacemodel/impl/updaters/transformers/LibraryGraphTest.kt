@@ -4,8 +4,8 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -405,8 +405,8 @@ class LibraryGraphTest {
   }
 }
 
-private fun mockTarget(id: String, dependencies: List<String>): BuildTarget =
-  BuildTarget(
+private fun mockTarget(id: String, dependencies: List<String>): RawBuildTarget =
+  RawBuildTarget(
     Label.parse(id),
     emptyList(),
     dependencies.map { Label.parse(it) },
@@ -428,4 +428,5 @@ private fun mockLibraryItem(id: String, dependencies: List<String>): LibraryItem
     jars = emptyList(),
     sourceJars = emptyList(),
     mavenCoordinates = null,
+    isFromInternalTarget = false,
   )

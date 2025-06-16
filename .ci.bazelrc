@@ -1,0 +1,15 @@
+common:ci --remote_cache=https://packages.jetbrains.team/files/p/ij/intellij-bazel-cache
+common:ci --remote_download_outputs=minimal
+
+common:ci --remote_timeout=60s
+common:ci --remote_retries=3
+common:ci --remote_retry_max_delay=10s
+common:ci --remote_max_connections=64
+common:ci --grpc_keepalive_time=30s
+
+common:ci --incompatible_strict_action_env=true
+common:ci --remote_cache_compression=true
+common:ci --remote_upload_local_results=true
+
+# this is to prevent failures of BES initiated by teamcity Bazel runner
+common:ci --bes_upload_mode=nowait_for_upload_complete

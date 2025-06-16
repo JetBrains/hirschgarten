@@ -11,18 +11,18 @@ import org.jetbrains.bsp.protocol.BuildTarget
 class RunWithCoverageAction(
   project: Project,
   targetInfos: List<BuildTarget>,
-  text: ((includeTargetNameInText: Boolean) -> String)? = null,
+  text: ((isRunConfigName: Boolean) -> String)? = null,
   includeTargetNameInText: Boolean = false,
   private val singleTestFilter: String? = null,
 ) : BazelRunnerAction(
     targetInfos = targetInfos,
-    text = { includeTargetNameInTextParam ->
+    text = { isRunConfigName ->
       if (text != null) {
-        text(includeTargetNameInTextParam || includeTargetNameInText)
+        text(isRunConfigName || includeTargetNameInText)
       } else {
         BazelPluginBundle.message(
           "target.run.with.coverage.action.text",
-          if (includeTargetNameInTextParam ||
+          if (isRunConfigName ||
             includeTargetNameInText
           ) {
             targetInfos.joinToString(";") { it.id.toShortString(project) }

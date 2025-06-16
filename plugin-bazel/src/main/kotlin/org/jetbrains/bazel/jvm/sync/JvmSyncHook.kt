@@ -8,13 +8,14 @@ import org.jetbrains.bazel.target.sync.projectStructure.targetUtilsDiff
 
 class JvmSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
+    val targetUtilsDiff = environment.diff.targetUtilsDiff
     environment.withSubtask("Process JVM targets") {
       val task =
         CollectProjectDetailsTask(
           environment.project,
           it,
           environment.diff.workspaceModelDiff.mutableEntityStorage,
-          environment.diff.targetUtilsDiff,
+          targetUtilsDiff,
         )
       task.execute(
         project = environment.project,
@@ -22,7 +23,7 @@ class JvmSyncHook : ProjectSyncHook {
         progressReporter = environment.progressReporter,
         syncScope = environment.syncScope,
       )
-      environment.diff.workspaceModelDiff.addPostApplyAction { task.postprocessingSubtask() }
+      environment.diff.workspaceModelDiff.addPostApplyAction { task.postprocessingSubtask(targetUtilsDiff) }
     }
   }
 }

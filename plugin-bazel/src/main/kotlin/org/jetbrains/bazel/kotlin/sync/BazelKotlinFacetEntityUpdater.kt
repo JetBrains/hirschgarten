@@ -54,8 +54,8 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
     parentModuleEntity: ModuleEntity,
     kotlincOpts: List<String>?,
   ) = KotlinSettingsEntity(
-    name = KotlinFacetType.NAME,
     moduleId = parentModuleEntity.symbolicId,
+    name = KotlinFacetType.NAME,
     sourceRoots = emptyList(),
     configFileItems = emptyList(),
     useProjectSettings = false,
@@ -68,10 +68,10 @@ class BazelKotlinFacetEntityUpdater : KotlinFacetEntityUpdater {
     isHmppEnabled = false,
     pureKotlinSourceFolders = emptyList(),
     kind = KotlinModuleKind.DEFAULT,
-    entitySource = parentModuleEntity.entitySource,
     externalSystemRunTasks = emptyList(),
     version = KotlinFacetSettings.CURRENT_VERSION,
     flushNeeded = true,
+    entitySource = parentModuleEntity.entitySource,
   ) {
     this.productionOutputPath = ""
     this.testOutputPath = ""

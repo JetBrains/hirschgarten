@@ -1,0 +1,1 @@
+//path/to:target1 + //path/to:target2 intersect //path/to:target3 - //path/to:target4 ^ //path/to:target5 union //path/to:target6 except //path/to:target7

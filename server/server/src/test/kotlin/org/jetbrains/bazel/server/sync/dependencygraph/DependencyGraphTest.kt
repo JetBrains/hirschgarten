@@ -365,7 +365,11 @@ class DependencyGraphTest {
       val dependencies = dependencyGraph.allTargetsAtDepth(0, setOf(Label.parse("//A"), Label.parse("//D")))
 
       // then
-      val expectedDependencies = setOf(a, d)
+      val expectedDependencies =
+        DependencyGraph.TargetsAtDepth(
+          targets = setOf(a, d),
+          directDependencies = setOf(b, c, f, g),
+        )
       dependencies shouldBe expectedDependencies
     }
 
@@ -409,7 +413,11 @@ class DependencyGraphTest {
       val dependencies = dependencyGraph.allTargetsAtDepth(1, setOf(Label.parse("//A"), Label.parse("//D")))
 
       // then
-      val expectedDependencies = setOf(a, b, c, d, f, g)
+      val expectedDependencies =
+        DependencyGraph.TargetsAtDepth(
+          targets = setOf(a, b, c, d, f, g),
+          directDependencies = setOf(e),
+        )
       dependencies shouldBe expectedDependencies
     }
 
@@ -453,7 +461,11 @@ class DependencyGraphTest {
       val dependencies = dependencyGraph.allTargetsAtDepth(2, setOf(Label.parse("//A")))
 
       // then
-      val expectedDependencies = setOf(a, b, c, d, e)
+      val expectedDependencies =
+        DependencyGraph.TargetsAtDepth(
+          targets = setOf(a, b, c, d, e),
+          directDependencies = setOf(f, g),
+        )
       dependencies shouldBe expectedDependencies
     }
 
@@ -535,7 +547,11 @@ class DependencyGraphTest {
       val dependencies = dependencyGraph.allTargetsAtDepth(10, setOf(Label.parse("//A00")))
 
       // then
-      val expectedDependencies = setOf(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
+      val expectedDependencies =
+        DependencyGraph.TargetsAtDepth(
+          targets = setOf(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10),
+          directDependencies = setOf(a11),
+        )
       dependencies shouldBe expectedDependencies
     }
 
@@ -579,7 +595,11 @@ class DependencyGraphTest {
       val dependencies = dependencyGraph.allTargetsAtDepth(-1, setOf(Label.parse("//A")))
 
       // then
-      val expectedDependencies = setOf(a, b, c, d, e, f, g)
+      val expectedDependencies =
+        DependencyGraph.TargetsAtDepth(
+          targets = setOf(a, b, c, d, e, f, g),
+          directDependencies = emptySet(),
+        )
       dependencies shouldBe expectedDependencies
     }
   }

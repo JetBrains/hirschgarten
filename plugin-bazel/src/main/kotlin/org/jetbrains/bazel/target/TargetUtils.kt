@@ -7,6 +7,7 @@ import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.getProjectDataPath
@@ -21,7 +22,11 @@ import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.ProducerScope
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,6 +38,7 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.experimental.ExperimentalTypeInference
@@ -46,8 +52,9 @@ private fun nowAsDuration() = System.currentTimeMillis().toDuration(DurationUnit
 
 private fun getStorageFilename(): String {
   // version for 243 cannot use `Hashing.xxh3_128()`
-  // (not available in 243 and we don't want to bundle `hash4j` as a part of Bazel plugin - JIT, increased build script complexity)
-  return "bazel-targets-v${if (ApplicationInfo.getInstance().build.baselineVersion <= 243) "v0.5" else "1"}.db"
+  // (not available in 243, and we don't want to bundle `hash4j` as a part of Bazel plugin - JIT, increased build script complexity)
+  val suffix = if (ApplicationInfo.getInstance().build.baselineVersion <= 243) "-243" else ""
+  return "bazel-targets-v2$suffix.db"
 }
 
 @PublicApi
@@ -67,9 +74,8 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   val allTargetsAndLibrariesLabels: List<String>
     get() = allTargetsAndLibrariesLabelsCache.value
 
-  // todo: remove (used only during sync)
-  var fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>> = emptyMap()
-    private set
+  private val mutableTargetListUpdated = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_LATEST)
+  val targetListUpdated: SharedFlow<Unit> = mutableTargetListUpdated.asSharedFlow()
 
   init {
     // cannot use opt-in (no such opt-in in 243)
@@ -103,7 +109,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   @TestOnly
   fun setTargets(labelToTargetInfo: Map<Label, BuildTarget>) {
     db.setTargets(labelToTargetInfo)
-    updateComputedFields()
+    notifyTargetListUpdated()
   }
 
   // todo expensive operation
@@ -111,17 +117,11 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     db.computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo)
 
   @InternalApi
-  fun getSharedFiles(): Map<Path, List<Label>> = fileToTargetWithoutLowPrioritySharedSources
-
-  @InternalApi
   suspend fun saveTargets(
-    targets: List<BuildTarget>,
+    targets: List<RawBuildTarget>,
     fileToTarget: Map<Path, List<Label>>,
-    fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
     libraryItems: List<LibraryItem>?,
   ) {
-    this.fileToTargetWithoutLowPrioritySharedSources = fileToTargetWithoutLowPrioritySharedSources
-
     val labelToTargetInfo = targets.associateByTo(HashMap(targets.size)) { it.id }
     db.reset(
       fileToTarget = fileToTarget,
@@ -137,19 +137,20 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
       project = project,
     )
 
+    notifyTargetListUpdated()
+
     // Explicitly schedule a save since auto-commit is disabled — new data will otherwise remain in memory beyond the configured cache size.
     // This also ensures faster persistence of imported data.
     coroutineScope.launch(Dispatchers.IO + NonCancellable) {
       db.save()
       lastSaved = nowAsDuration()
     }
-    updateComputedFields()
   }
 
   private suspend fun calculateFileToExecutableTargets(
     libraryItems: List<LibraryItem>?,
     fileToTarget: Map<Path, List<Label>>,
-    targets: List<BuildTarget>,
+    targets: List<RawBuildTarget>,
     labelToTargetInfo: Map<Label, BuildTarget>,
   ): Map<Path, List<Label>> =
     withContext(Dispatchers.Default) {
@@ -197,7 +198,8 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
         .toHashSet()
     }
 
-  private fun updateComputedFields() {
+  private fun notifyTargetListUpdated() {
+    check(mutableTargetListUpdated.tryEmit(Unit))
     allTargetsAndLibrariesLabelsCache.drop()
   }
 
@@ -240,15 +242,14 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   fun getBuildTargetForLabel(label: Label): BuildTarget? = db.getBuildTargetForLabel(label, project)
 
   @InternalApi
-  fun getBuildTargetForModule(module: com.intellij.openapi.module.Module): BuildTarget? =
-    getTargetForModuleId(module.name)?.let { getBuildTargetForLabel(it) }
+  fun getBuildTargetForModule(module: Module): BuildTarget? = getTargetForModuleId(module.name)?.let { getBuildTargetForLabel(it) }
 
   @InternalApi
   fun allBuildTargets(): Sequence<BuildTarget> = db.getAllBuildTargets()
 
   // todo: avoid such methods as we load all targets into memory
   @InternalApi
-  fun allBuildTargetAsLabelToTargetMap(): Map<Label, BuildTarget> = db.allBuildTargetAsLabelToTargetMap()
+  fun allBuildTargetAsLabelToTargetMap(predicate: (BuildTarget) -> Boolean): List<Label> = db.allBuildTargetAsLabelToTargetMap(predicate)
 
   fun getTotalFileCount(): Int = db.getTotalFileCount()
 }
@@ -261,13 +262,12 @@ val Project.targetUtils: TargetUtils
   get() = service<TargetUtils>()
 
 @PublicApi
-fun Label.getModule(project: Project): com.intellij.openapi.module.Module? =
-  project.targetUtils.getBuildTargetForLabel(this)?.getModule(project)
+fun Label.getModule(project: Project): Module? = project.targetUtils.getBuildTargetForLabel(this)?.getModule(project)
 
 @PublicApi
 fun Label.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity
 
-val com.intellij.openapi.module.Module.moduleEntity: ModuleEntity?
+val Module.moduleEntity: ModuleEntity?
   @InternalApi
   get() {
     val bridge = this as? ModuleBridge ?: return null
@@ -275,7 +275,7 @@ val com.intellij.openapi.module.Module.moduleEntity: ModuleEntity?
   }
 
 @InternalApi
-fun BuildTarget.getModule(project: Project): com.intellij.openapi.module.Module? {
+fun BuildTarget.getModule(project: Project): Module? {
   val moduleName = this.id.formatAsModuleName(project)
   return ModuleManager.getInstance(project).findModuleByName(moduleName)
 }

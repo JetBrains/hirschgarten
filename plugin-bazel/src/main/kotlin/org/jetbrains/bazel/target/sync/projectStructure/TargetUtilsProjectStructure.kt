@@ -7,15 +7,16 @@ import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.projectStructure.ProjectStructureDiff
 import org.jetbrains.bazel.sync.projectStructure.ProjectStructureProvider
 import org.jetbrains.bazel.sync.scope.ProjectSyncScope
+import org.jetbrains.bazel.sync.status.SyncStatusListener
 import org.jetbrains.bazel.target.targetUtils
 import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
 class TargetUtilsProjectStructureDiff : ProjectStructureDiff {
-  var bspTargets: List<BuildTarget> = emptyList()
+  var bspTargets: List<RawBuildTarget> = emptyList()
   var fileToTarget: Map<Path, List<Label>> = emptyMap()
   var fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>> = emptyMap()
   var libraryItems: List<LibraryItem>? = null
@@ -33,9 +34,9 @@ class TargetUtilsProjectStructureDiff : ProjectStructureDiff {
       project.targetUtils.saveTargets(
         targets = bspTargets,
         fileToTarget = fileToTarget,
-        fileToTargetWithoutLowPrioritySharedSources = fileToTargetWithoutLowPrioritySharedSources,
         libraryItems = libraryItems,
       )
+      project.messageBus.syncPublisher(SyncStatusListener.TOPIC).targetUtilAvailable()
     }
   }
 }

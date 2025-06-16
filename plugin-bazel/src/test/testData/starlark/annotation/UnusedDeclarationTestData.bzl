@@ -39,3 +39,7 @@ def new_scope():
         x + y
 
 new_scope()
+
+def <weak_warning descr="Function \"_my_func_impl\" is never used">_my_func_impl</weak_warning>(_target, ctx, _):
+    _foo, some_val = some(ctx)
+    return some_val
