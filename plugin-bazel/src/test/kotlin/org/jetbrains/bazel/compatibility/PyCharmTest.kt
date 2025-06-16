@@ -81,12 +81,9 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
         .waitForBazelSync()
         .waitForSmartMode()
         .checkImportedModules()
-        .openFile("python/bin.py")
-        // click on `print("bin!")`
-        .navigateToFile(1, 2, "builtins.pyi", 1645, 5)
         .openFile("python/main/main.py")
-        // click on `bbb()`
-        .navigateToFile(11, 5, "util.py", 3, 5)
+        // click on `bbb`
+        .navigateToFile(2, 28, "util.py", 3, 5)
         .openFile("python/main/main.py")
         // click on `print(requests.__version__)`
         .navigateToFile(9, 26, "__version__.py", 8, 1)
@@ -94,8 +91,8 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
         // click on `print(np.version.version)`
         .navigateToFile(10, 26, "version.py", 5, 1)
         .openFile("python/libs/my_lib2/util.py")
-        // click on `aaa()`
-        .navigateToFile(4, 7, "util.py", 1, 5)
+        // click on `aaa`
+        .navigateToFile(1, 27, "util.py", 1, 5)
         .openFile("python/main/main.py")
         // click on `from urban.cities import print_cities`
         .navigateToFile(6, 34, "cities.py", 4, 5)

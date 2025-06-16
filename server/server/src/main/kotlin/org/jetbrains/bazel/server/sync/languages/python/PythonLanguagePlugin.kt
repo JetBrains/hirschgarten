@@ -10,10 +10,7 @@ import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.PythonBuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
-import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.isDirectory
-import kotlin.io.path.isRegularFile
 
 class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<PythonModule>() {
   private var defaultInterpreter: Path? = null
@@ -47,19 +44,7 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
         pythonTargetInfo.isCodeGenerator,
         generatedSources =
           pythonTargetInfo.generatedSourcesList
-            .mapNotNull { bazelPathsResolver.resolve(it) }
-            .flatMap { file ->
-              // some code gen rules return directories. we need to figure out what files are there
-              if (file.isDirectory()) {
-                Files
-                  .walk(file)
-                  .filter { it.isRegularFile() }
-                  .map { it.toAbsolutePath() }
-                  .toList()
-              } else {
-                listOf(file)
-              }
-            },
+            .mapNotNull { bazelPathsResolver.resolve(it) },
       )
     }
 

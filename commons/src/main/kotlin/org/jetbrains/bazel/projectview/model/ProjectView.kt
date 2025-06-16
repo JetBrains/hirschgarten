@@ -136,56 +136,6 @@ data class ProjectView(
       val gazelleTarget = combineGazelleTargetSection(importedProjectViews)
       val indexAllFilesInDirectories = combineIndexAllFilesInDirectoriesSection(importedProjectViews)
       val pythonCodeGeneratorRuleNamesSection = combinePythonCodeGeneratorRuleNamesSection(importedProjectViews)
-
-      log.debug(
-        "Building project view with combined" +
-          " targets: {}," +
-          " bazel binary: {}," +
-          " build flags: {}" +
-          " sync flags: {}" +
-          " build manual targets {}," +
-          " directories: {}," +
-          " deriveTargetsFlag: {}." +
-          " import depth: {}," +
-          " enabled rules: {}," +
-          " ideJavaHomeOverride: {}," +
-          " useLibOverModSection: {}," +
-          " addTransitiveCompileTimeJars: {}," +
-          " transitiveCompileTimeJarsTargetKinds: {}," +
-          " noPruneTransitiveCompileTimeJarsPatterns: {}," +
-          " prioritizeLibrariesOverModulesTargetKinds: {}," +
-          " enableNativeAndroidRules: {}," +
-          " androidMinSdkSection: {}," +
-          " shardSync: {}," +
-          " targetShardSize: {}," +
-          " shardingApproach: {}," +
-          " importRunConfigurationsSection: {}," +
-          " gazelleTarget: {}," +
-          " pythonCodeGeneratorRuleNamesSection: {}",
-        "", // preserve Git blame
-        targets,
-        bazelBinary,
-        buildFlags,
-        syncFlags,
-        allowManualTargetsSync,
-        directories,
-        deriveTargetsFromDirectories,
-        importDepth,
-        enabledRules,
-        ideJavaHomeOverride,
-        addTransitiveCompileTimeJars,
-        transitiveCompileTimeJarsTargetKinds,
-        noPruneTransitiveCompileTimeJarsPatterns,
-        prioritizeLibrariesOverModulesTargetKinds,
-        enableNativeAndroidRules,
-        androidMinSdkSection,
-        shardSyncSection,
-        targetShardSizeSection,
-        shardingApproachSection,
-        importRunConfigurationsSection,
-        gazelleTarget,
-        pythonCodeGeneratorRuleNamesSection,
-      )
       return ProjectView(
         targets,
         bazelBinary,

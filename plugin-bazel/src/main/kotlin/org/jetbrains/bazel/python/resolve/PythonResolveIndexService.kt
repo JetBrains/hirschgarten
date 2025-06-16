@@ -17,8 +17,11 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import java.nio.file.FileSystems
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.extension
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
 import kotlin.io.path.relativeTo
 
 @Service(Service.Level.PROJECT)
@@ -56,7 +59,18 @@ class PythonResolveIndexService(private val project: Project) {
       val fullQualifiedNameToAbsolutePath: Map<QualifiedName?, Path> =
         if (pythonTargetInfo.isCodeGenerator) {
           pythonTargetInfo.generatedSources
-            .associateBy { path -> path.relativeTo(bazelBin).toQualifiedName() }
+            .flatMap { file ->
+              // some code gen rules return directories. we need to figure out what files are there
+              if (file.isDirectory()) {
+                Files
+                  .walk(file)
+                  .filter { it.isRegularFile() }
+                  .map { it.toAbsolutePath() }
+                  .toList()
+              } else {
+                listOf(file)
+              }
+            }.associateBy { path -> path.relativeTo(bazelBin).toQualifiedName() }
             .filter { it.key != null }
         } else if (target.id.isMainWorkspace) {
           importsPaths

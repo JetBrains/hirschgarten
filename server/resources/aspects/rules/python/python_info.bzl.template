@@ -121,8 +121,8 @@ def extract_python_info(target, ctx, output_groups, **kwargs):
 
             # Other code in this file appears to assume *NIX path component separators?
 
-            provider_import_parts = [p for p in provider_import.split("/")]
-            package_parts = [p for p in ctx.label.package.split("/")]
+            provider_import_parts = provider_import.split("/")
+            package_parts = ctx.label.package.split("/")
 
             if 0 == len(provider_import_parts):
                 return None
@@ -130,7 +130,7 @@ def extract_python_info(target, ctx, output_groups, **kwargs):
             scratch_parts = provider_import_parts[1:]  # remove the workspace name or _main
 
             for p in package_parts:
-                if 0 != len(provider_import_parts) and scratch_parts[0] == p:
+                if scratch_parts[0] == p:
                     scratch_parts = scratch_parts[1:]
                 else:
                     return None
