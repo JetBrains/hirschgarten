@@ -18,6 +18,8 @@ object BazelExperimentalSettingsProvider {
 
 object BazelGeneralSettingsProvider {
   val ep = ExtensionPointName.create<BazelSettingsProvider>("org.jetbrains.bazel.bazelGeneralSettingsProvider")
+
+  fun searchIndexKeys(): List<String> = ep.extensionList.flatMap { it.searchIndexKeys() }
 }
 
 val Project.bazelExperimentalSettingsProviders: List<BazelSettingsProvider>
