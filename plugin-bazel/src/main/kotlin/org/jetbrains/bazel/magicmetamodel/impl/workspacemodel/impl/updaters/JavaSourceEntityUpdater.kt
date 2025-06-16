@@ -6,8 +6,8 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.modifySourceRootEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
-import org.jetbrains.bazel.workspacemodel.entities.GenericSourceRoot
-import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericSourceRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
 
 internal class JavaSourceEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,

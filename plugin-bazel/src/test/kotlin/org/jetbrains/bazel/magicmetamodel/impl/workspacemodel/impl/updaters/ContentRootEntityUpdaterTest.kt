@@ -4,10 +4,10 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedContentRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelWithParentJavaModuleBaseTest
-import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test

@@ -16,8 +16,8 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/targetKind",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/taskEvents",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//rules_intellij/third_party/go",
+        "//sdkcompat",
     ],
 )

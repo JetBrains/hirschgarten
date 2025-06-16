@@ -10,7 +10,7 @@ import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileKind
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
 import com.intellij.workspaceModel.core.fileIndex.impl.ModuleSourceRootData
 import com.intellij.workspaceModel.ide.legacyBridge.findModule
-import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageMarkerEntity
 
 private class PackageMarkerEntityWorkspaceFileIndexContributor : WorkspaceFileIndexContributor<PackageMarkerEntity> {
   override val entityClass: Class<PackageMarkerEntity> = PackageMarkerEntity::class.java

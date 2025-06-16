@@ -32,7 +32,7 @@ import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sdkcompat.isIndexableCompat
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
 
 private class BazelTreeStructureProvider : TreeStructureProvider {
   // We want to get rid of all the module (group) nodes from the project view tree;

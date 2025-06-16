@@ -4,12 +4,12 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.entities
 import com.intellij.workspaceModel.ide.toPath
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageMarkerEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.packageMarkerEntities
 import org.jetbrains.bazel.workspace.packageMarker.concatenatePackages
-import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
-import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.workspacemodel.entities.PackageMarkerEntity
-import org.jetbrains.bazel.workspacemodel.entities.packageMarkerEntities
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.Path
