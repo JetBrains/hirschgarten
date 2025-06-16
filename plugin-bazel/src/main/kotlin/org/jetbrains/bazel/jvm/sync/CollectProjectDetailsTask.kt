@@ -302,7 +302,7 @@ class CollectProjectDetailsTask(
         }.toMap()
   }
 
-  suspend fun postprocessingSubtask() {
+  suspend fun postprocessingSubtask(targetUtilsDiff: TargetUtilsProjectStructureDiff) {
     // This order is strict as now SDKs also use the workspace model,
     // updating jdks before applying the project model will render the action to fail.
     // This will be handled properly after this ticket:
@@ -313,7 +313,7 @@ class CollectProjectDetailsTask(
     addBspFetchedScalaSdks()
 
     VirtualFileManager.getInstance().asyncRefresh()
-    checkSharedSources()
+    checkSharedSources(targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources)
   }
 
   private suspend fun addBspFetchedJdks() =
@@ -355,10 +355,10 @@ class CollectProjectDetailsTask(
       javacOptions.ADDITIONAL_OPTIONS_OVERRIDE = this.javacOptions
     }
 
-  private fun checkSharedSources() {
+  private fun checkSharedSources(fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>) {
     if (project.isSharedSourceSupportEnabled) return
     if (!BazelFeatureFlags.checkSharedSources) return
-    for ((file, labels) in project.targetUtils.getSharedFiles()) {
+    for ((file, labels) in fileToTargetWithoutLowPrioritySharedSources) {
       if (labels.size <= 1) {
         continue
       }
