@@ -29,7 +29,7 @@ WORKDIR /home/${CANONICAL_USER}
 RUN git clone --depth 1 https://github.com/JetBrains/hirschgarten.git /home/${CANONICAL_USER}/hirschgarten && \
     cd /home/${CANONICAL_USER}/hirschgarten && \
     bazel run //server/bspcli:generator -- /home/${CANONICAL_USER}/project_10 10 --targetssize 1 && \
-    cd /home/${CANONICAL_USER} && rm -rf /home/${CANONICAL_USER}/hirschgarten
+    cd /home/${CANONICAL_USER} && rm -rf /home/${CANONICAL_USER}/hirschgarten && rm -rf /home/${CANONICAL_USER}/.cache
 
 # ─────────────────────────────── Fixuid Setup ─────────────────────────────────
 USER root
