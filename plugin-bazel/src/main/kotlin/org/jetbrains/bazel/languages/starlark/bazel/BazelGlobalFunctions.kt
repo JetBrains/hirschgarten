@@ -426,12 +426,14 @@ object BazelGlobalFunctions {
                 name = "dev_dependency",
                 default = "False",
                 positional = false,
+                required = false,
                 """If true, this usage of the module extension will be ignored if the current module is not the root module or `--ignore_dev_dependency` is enabled.""",
               ),
               BazelGlobalFunctionParameter(
                 name = "isolate",
                 default = "False",
                 positional = false,
+                required = false,
                 docString =
                   """
                   Experimental. If true, this usage of the module extension will be isolated from all other usages, 
