@@ -24,7 +24,7 @@ import org.jetbrains.bazel.runnerAction.RunWithCoverageAction
 import org.jetbrains.bazel.runnerAction.RunWithLocalJvmRunnerAction
 import org.jetbrains.bazel.runnerAction.TestTargetAction
 import org.jetbrains.bazel.runnerAction.TestWithLocalJvmRunnerAction
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.sync.action.ResyncTargetAction
 import org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction
 import org.jetbrains.bazel.ui.widgets.tool.window.actions.CopyTargetIdAction
@@ -173,7 +173,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
     )
   }
 
-  if (project.bazelProjectSettings.enableLocalJvmActions && target.kind.isJvmTarget()) {
+  if (project.bazelJVMProjectSettings.enableLocalJvmActions && target.kind.isJvmTarget()) {
     if (target.kind.ruleType == RuleType.BINARY) {
       addAction(RunWithLocalJvmRunnerAction(project, target, includeTargetNameInText = includeTargetNameInText))
       addAction(RunWithLocalJvmRunnerAction(project, target, isDebugMode = true, includeTargetNameInText = includeTargetNameInText))
@@ -181,7 +181,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
     if (target.kind.ruleType == RuleType.TEST) {
       if (callerPsiElement != null) { // called from gutter
         addLocalJvmTestActions(project, target, includeTargetNameInText, callerPsiElement)
-      } else if (!project.bazelProjectSettings.useIntellijTestRunner) { // called from target tree widget
+      } else if (!project.bazelJVMProjectSettings.useIntellijTestRunner) { // called from target tree widget
         addLocalJvmTestActions(project, target, includeTargetNameInText, null)
       }
     }
