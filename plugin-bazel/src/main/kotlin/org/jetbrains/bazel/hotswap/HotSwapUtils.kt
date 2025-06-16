@@ -21,7 +21,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.run.config.HotswappableRunConfiguration
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 
 /** Helper methods for HotSwapping  */
 object HotSwapUtils {
@@ -29,7 +29,7 @@ object HotSwapUtils {
 
   fun isHotSwapEligible(project: Project): Boolean =
     project.isBazelProject &&
-      project.bazelProjectSettings.hotSwapEnabled &&
+      project.bazelJVMProjectSettings.hotSwapEnabled &&
       !BazelFeatureFlags.fastBuildEnabled
 
   private fun isDebugging(environment: ExecutionEnvironment): Boolean =
