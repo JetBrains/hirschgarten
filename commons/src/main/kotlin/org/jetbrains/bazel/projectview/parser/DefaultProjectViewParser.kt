@@ -9,6 +9,7 @@ import org.jetbrains.bazel.projectview.parser.sections.ExperimentalPrioritizeLib
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.GazelleTargetParser
 import org.jetbrains.bazel.projectview.parser.sections.ImportRunConfigurationsSectionParser
+import org.jetbrains.bazel.projectview.parser.sections.IndexAllFilesInDirectoriesSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewAllowManualTargetsSyncSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewBazelBinarySectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewBuildFlagsSectionParser
@@ -67,6 +68,7 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         shardingApproach = ShardingApproachParser.parse(rawSections),
         importRunConfigurations = ImportRunConfigurationsSectionParser.parse(rawSections),
         gazelleTarget = GazelleTargetParser.parse(rawSections),
+        indexAllFilesInDirectories = IndexAllFilesInDirectoriesSectionParser.parse(rawSections),
       ).build()
   }
 

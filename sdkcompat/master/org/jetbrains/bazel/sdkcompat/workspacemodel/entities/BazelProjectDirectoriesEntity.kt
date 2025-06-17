@@ -12,6 +12,7 @@ public interface BazelProjectDirectoriesEntity : WorkspaceEntity {
   public val projectRoot: VirtualFileUrl
   public val includedRoots: List<VirtualFileUrl>
   public val excludedRoots: List<VirtualFileUrl>
+  public val indexAllFilesInIncludedRoots: Boolean
 
   //region generated code
   @GeneratedCodeApiVersion(3)
@@ -20,6 +21,7 @@ public interface BazelProjectDirectoriesEntity : WorkspaceEntity {
     var projectRoot: VirtualFileUrl
     var includedRoots: MutableList<VirtualFileUrl>
     var excludedRoots: MutableList<VirtualFileUrl>
+    var indexAllFilesInIncludedRoots: Boolean
   }
 
   companion object : EntityType<BazelProjectDirectoriesEntity, Builder>() {
@@ -30,6 +32,7 @@ public interface BazelProjectDirectoriesEntity : WorkspaceEntity {
       projectRoot: VirtualFileUrl,
       includedRoots: List<VirtualFileUrl>,
       excludedRoots: List<VirtualFileUrl>,
+      indexAllFilesInIncludedRoots: Boolean,
       entitySource: EntitySource,
       init: (Builder.() -> Unit)? = null,
     ): Builder {
@@ -37,6 +40,7 @@ public interface BazelProjectDirectoriesEntity : WorkspaceEntity {
       builder.projectRoot = projectRoot
       builder.includedRoots = includedRoots.toMutableWorkspaceList()
       builder.excludedRoots = excludedRoots.toMutableWorkspaceList()
+      builder.indexAllFilesInIncludedRoots = indexAllFilesInIncludedRoots
       builder.entitySource = entitySource
       init?.invoke(builder)
       return builder
