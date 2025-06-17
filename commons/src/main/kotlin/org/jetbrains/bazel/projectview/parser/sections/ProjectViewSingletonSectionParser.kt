@@ -4,6 +4,7 @@ import org.jetbrains.bazel.projectview.model.sections.AndroidMinSdkSection
 import org.jetbrains.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
 import org.jetbrains.bazel.projectview.model.sections.GazelleTargetSection
+import org.jetbrains.bazel.projectview.model.sections.IndexAllFilesInDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
@@ -149,4 +150,12 @@ object GazelleTargetParser : ProjectViewSingletonSectionParser<String, GazelleTa
   override fun mapRawValue(rawValue: String): String = rawValue
 
   override fun createInstance(value: String): GazelleTargetSection = GazelleTargetSection(value)
+}
+
+object IndexAllFilesInDirectoriesSectionParser : ProjectViewSingletonSectionParser<Boolean, IndexAllFilesInDirectoriesSection>(
+  IndexAllFilesInDirectoriesSection.SECTION_NAME,
+) {
+  override fun mapRawValue(rawValue: String): Boolean = rawValue.toBoolean()
+
+  override fun createInstance(value: Boolean): IndexAllFilesInDirectoriesSection = IndexAllFilesInDirectoriesSection(value)
 }

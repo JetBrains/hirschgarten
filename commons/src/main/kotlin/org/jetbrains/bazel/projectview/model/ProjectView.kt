@@ -8,6 +8,7 @@ import org.jetbrains.bazel.projectview.model.sections.ExperimentalPrioritizeLibr
 import org.jetbrains.bazel.projectview.model.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSection
 import org.jetbrains.bazel.projectview.model.sections.GazelleTargetSection
 import org.jetbrains.bazel.projectview.model.sections.ImportRunConfigurationsSection
+import org.jetbrains.bazel.projectview.model.sections.IndexAllFilesInDirectoriesSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
@@ -74,6 +75,8 @@ data class ProjectView(
   val importRunConfigurations: ImportRunConfigurationsSection? = null,
   /** gazelle target */
   val gazelleTarget: GazelleTargetSection? = null,
+  /** Whether to all index files inside [ProjectViewDirectoriesSection] or just sources of targets */
+  val indexAllFilesInDirectories: IndexAllFilesInDirectoriesSection? = null,
 ) {
   data class Builder(
     private val imports: List<ProjectView> = emptyList(),
@@ -98,6 +101,7 @@ data class ProjectView(
     private val shardingApproach: ShardingApproachSection? = null,
     private val importRunConfigurations: ImportRunConfigurationsSection? = null,
     private val gazelleTarget: GazelleTargetSection? = null,
+    private val indexAllFilesInDirectories: IndexAllFilesInDirectoriesSection? = null,
   ) {
     fun build(): ProjectView {
       log.debug("Building project view for: {}", this)
@@ -127,54 +131,8 @@ data class ProjectView(
       val shardingApproachSection = combineShardingApproachSection(importedProjectViews)
       val importRunConfigurationsSection = combineImportRunConfigurationsSection(importedProjectViews)
       val gazelleTarget = combineGazelleTargetSection(importedProjectViews)
+      val indexAllFilesInDirectories = combineIndexAllFilesInDirectoriesSection(importedProjectViews)
 
-      log.debug(
-        "Building project view with combined" +
-          " targets: {}," +
-          " bazel binary: {}," +
-          " build flags: {}" +
-          " sync flags: {}" +
-          " build manual targets {}," +
-          " directories: {}," +
-          " deriveTargetsFlag: {}." +
-          " import depth: {}," +
-          " enabled rules: {}," +
-          " ideJavaHomeOverride: {}," +
-          " useLibOverModSection: {}," +
-          " addTransitiveCompileTimeJars: {}," +
-          " transitiveCompileTimeJarsTargetKinds: {}," +
-          " noPruneTransitiveCompileTimeJarsPatterns: {}," +
-          " prioritizeLibrariesOverModulesTargetKinds: {}," +
-          " enableNativeAndroidRules: {}," +
-          " androidMinSdkSection: {}," +
-          " shardSync: {}," +
-          " targetShardSize: {}," +
-          " shardingApproach: {}," +
-          " importRunConfigurationsSection: {}," +
-          " gazelleTarget: {}," +
-          "", // preserve Git blame
-        targets,
-        bazelBinary,
-        buildFlags,
-        syncFlags,
-        allowManualTargetsSync,
-        directories,
-        deriveTargetsFromDirectories,
-        importDepth,
-        enabledRules,
-        ideJavaHomeOverride,
-        addTransitiveCompileTimeJars,
-        transitiveCompileTimeJarsTargetKinds,
-        noPruneTransitiveCompileTimeJarsPatterns,
-        prioritizeLibrariesOverModulesTargetKinds,
-        enableNativeAndroidRules,
-        androidMinSdkSection,
-        shardSyncSection,
-        targetShardSizeSection,
-        shardingApproachSection,
-        importRunConfigurationsSection,
-        gazelleTarget,
-      )
       return ProjectView(
         targets,
         bazelBinary,
@@ -197,6 +155,7 @@ data class ProjectView(
         shardingApproachSection,
         importRunConfigurationsSection,
         gazelleTarget,
+        indexAllFilesInDirectories,
       )
     }
 
@@ -293,6 +252,12 @@ data class ProjectView(
         )
       return createInstanceOfListSectionOrNull(importRunConfigurations, ::ImportRunConfigurationsSection)
     }
+
+    private fun combineIndexAllFilesInDirectoriesSection(importedProjectViews: List<ProjectView>): IndexAllFilesInDirectoriesSection? =
+      indexAllFilesInDirectories ?: getLastImportedSingletonValue(
+        importedProjectViews,
+        ProjectView::indexAllFilesInDirectories,
+      )
 
     private fun combineTargetsSection(importedProjectViews: List<ProjectView>): ProjectViewTargetsSection? {
       val includedTargets =
