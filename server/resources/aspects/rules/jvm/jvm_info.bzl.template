@@ -184,6 +184,7 @@ def extract_jvm_info(target, ctx, output_groups, **kwargs):
         resolve_files += resolve_files_generated_jars
         resolve_files += jdeps
         update_sync_output_groups(output_groups, "bsp-build-artifact", depset(resolve_files))
+        update_sync_output_groups(output_groups, "bsp-shallow-import-artifact", depset(jdeps))
 
     info = create_struct(
         jars = jars,

@@ -1,5 +1,4 @@
-try-import %workspace%/.engflow.bazelrc
-try-import %workspace%/.cache.bazelrc
+try-import %workspace%/.ci.bazelrc
 try-import %workspace%/.user.bazelrc
 
 build --define=ij_product=intellij-2025.2

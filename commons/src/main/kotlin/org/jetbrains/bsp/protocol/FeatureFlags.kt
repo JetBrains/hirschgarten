@@ -10,4 +10,5 @@ data class FeatureFlags(
   /** Bazel specific */
   val bazelSymlinksScanMaxDepth: Int = 2,
   val bazelShutDownBeforeShardBuild: Boolean = false,
+  val isBazelQueryTabEnabled: Boolean = false,
 )

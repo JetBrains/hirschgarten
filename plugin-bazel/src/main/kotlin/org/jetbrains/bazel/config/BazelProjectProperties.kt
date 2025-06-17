@@ -14,7 +14,7 @@ import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.bazel.annotations.PublicApi
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectDirectoriesEntity
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
 
 data class BazelProjectPropertiesState(
   var isBazelProject: Boolean = false,

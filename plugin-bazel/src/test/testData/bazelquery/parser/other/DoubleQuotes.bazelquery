@@ -1,0 +1,1 @@
+rdeps("//path/to:target1", "//path/to:target2", 3) union rbuildfiles(//path/to:target3, "//path/to:target4")

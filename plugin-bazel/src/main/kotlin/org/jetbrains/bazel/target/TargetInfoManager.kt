@@ -15,7 +15,7 @@ import org.jetbrains.bazel.label.Apparent
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabel
+import org.jetbrains.bazel.languages.starlark.repomapping.toCanonicalLabelOrThis
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sdkcompat.HashAdapter
@@ -96,13 +96,15 @@ internal class TargetInfoManager(
       }
     }
 
-  fun allBuildTargetAsLabelToTargetMap(): Map<Label, BuildTarget> {
-    val result = HashMap<Label, BuildTarget>(labelToTargetInfo.size)
+  fun allBuildTargetAsLabelToTargetMap(predicate: (BuildTarget) -> Boolean): List<Label> {
+    val result = ArrayList<Label>(labelToTargetInfo.size)
     val cursor = labelToTargetInfo.cursor(null)
     while (cursor.hasNext()) {
       cursor.next()
       val target = cursor.value
-      result.put(target.id, target)
+      if (predicate(target)) {
+        result.add(target.id)
+      }
     }
     return result
   }
@@ -133,7 +135,7 @@ internal class TargetInfoManager(
   fun getTotalTargetCount() = labelToTargetInfo.size
 
   fun getBuildTargetForLabel(label: Label, project: Project): BuildTarget? =
-    label.toCanonicalLabel(project)?.let {
+    label.toCanonicalLabelOrThis(project)?.let {
       labelToTargetInfo.get(computeLabelHash(it, createHashStream128()))
     }
 

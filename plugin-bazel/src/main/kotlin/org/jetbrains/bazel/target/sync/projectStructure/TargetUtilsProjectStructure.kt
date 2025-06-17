@@ -34,7 +34,6 @@ class TargetUtilsProjectStructureDiff : ProjectStructureDiff {
       project.targetUtils.saveTargets(
         targets = bspTargets,
         fileToTarget = fileToTarget,
-        fileToTargetWithoutLowPrioritySharedSources = fileToTargetWithoutLowPrioritySharedSources,
         libraryItems = libraryItems,
       )
       project.messageBus.syncPublisher(SyncStatusListener.TOPIC).targetUtilAvailable()

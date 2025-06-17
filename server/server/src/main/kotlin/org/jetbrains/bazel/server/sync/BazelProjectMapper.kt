@@ -86,26 +86,25 @@ class BazelProjectMapper(
         DependencyGraph(rootTargets, targets)
       }
     val transitiveCompileTimeJarsTargetKinds = workspaceContext.experimentalTransitiveCompileTimeJarsTargetKinds.values.toSet()
-    val targetsToImport =
+    val (targetsToImport, targetsAsLibraries) =
       measure("Select targets") {
-        selectTargetsToImport(
-          workspaceContext,
-          rootTargets,
-          dependencyGraph,
-          repoMapping,
-          transitiveCompileTimeJarsTargetKinds,
-          featureFlags,
-        )
+        val targetsAtDepth =
+          dependencyGraph
+            .allTargetsAtDepth(
+              workspaceContext.importDepth.value,
+              rootTargets,
+            )
+        val (targetsToImport, nonWorkspaceTargets) =
+          targetsAtDepth.targets.partition {
+            isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
+          }
+        val libraries = (nonWorkspaceTargets + targetsAtDepth.directDependencies).associateBy { it.label() }
+        val usedLibraries = dependencyGraph.filterUsedLibraries(libraries, targetsToImport.asSequence())
+        targetsToImport.asSequence() to usedLibraries
       }
     val interfacesAndBinariesFromTargetsToImport =
       measure("Collect interfaces and classes from targets to import") {
         collectInterfacesAndClasses(targetsToImport)
-      }
-    val targetsAsLibraries =
-      measure("Targets as libraries") {
-        val libraries = targets - targetsToImport.map { it.label() }.toSet()
-        val usedLibraries = dependencyGraph.filterUsedLibraries(libraries, targetsToImport)
-        usedLibraries
       }
     val outputJarsLibraries =
       measure("Create output jars libraries") {
@@ -148,7 +147,7 @@ class BazelProjectMapper(
       }
     val librariesFromDepsAndTargets =
       measure("Libraries from targets and deps") {
-        createLibraries(targetsAsLibraries) +
+        createLibraries(targetsAsLibraries, repoMapping) +
           librariesFromDeps.values
             .flatten()
             .distinct()
@@ -256,7 +255,7 @@ class BazelProjectMapper(
     targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true)?.let { library ->
+        createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true, isInternalTarget = true)?.let { library ->
           target.label() to listOf(library)
         }
       }.toMap()
@@ -643,12 +642,17 @@ class BazelProjectMapper(
         )
       }
 
-  private suspend fun createLibraries(targets: Map<Label, TargetInfo>): Map<Label, Library> =
+  private suspend fun createLibraries(targets: Map<Label, TargetInfo>, repoMapping: RepoMapping): Map<Label, Library> =
     withContext(Dispatchers.Default) {
       targets
         .map { (targetId, targetInfo) ->
           async {
-            createLibrary(targetId, targetInfo)?.let { library ->
+            createLibrary(
+              label = targetId,
+              targetInfo = targetInfo,
+              onlyOutputJars = false,
+              isInternalTarget = isTargetTreatedAsInternal(targetId.assumeResolved(), repoMapping),
+            )?.let { library ->
               targetId to library
             }
           }
@@ -660,7 +664,8 @@ class BazelProjectMapper(
   private fun createLibrary(
     label: Label,
     targetInfo: TargetInfo,
-    onlyOutputJars: Boolean = false,
+    onlyOutputJars: Boolean,
+    isInternalTarget: Boolean,
   ): Library? {
     val outputs = getTargetOutputJarPaths(targetInfo) + getAndroidAarPaths(targetInfo) + getIntellijPluginJars(targetInfo)
     val sources = getSourceJarPaths(targetInfo)
@@ -692,6 +697,7 @@ class BazelProjectMapper(
       dependencies = targetInfo.dependenciesList.map { Label.parse(it.id) },
       interfaceJars = interfaceJars,
       mavenCoordinates = mavenCoordinates,
+      isFromInternalTarget = isInternalTarget,
     )
   }
 
@@ -872,21 +878,6 @@ class BazelProjectMapper(
   private fun getGoRootPath(targetInfo: TargetInfo, repoMapping: RepoMapping): Path =
     bazelPathsResolver.toDirectoryPath(targetInfo.label().assumeBazelLabel(), repoMapping)
 
-  private fun selectTargetsToImport(
-    workspaceContext: WorkspaceContext,
-    rootTargets: Set<Label>,
-    graph: DependencyGraph,
-    repoMapping: RepoMapping,
-    transitiveCompileTimeJarsTargetKinds: Set<String>,
-    featureFlags: FeatureFlags,
-  ): Sequence<TargetInfo> =
-    graph
-      .allTargetsAtDepth(
-        workspaceContext.importDepth.value,
-        rootTargets,
-      ).filter { isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags) }
-      .asSequence()
-
   private fun collectInterfacesAndClasses(targets: Sequence<TargetInfo>) =
     targets
       .associate { target ->
@@ -943,12 +934,12 @@ class BazelProjectMapper(
             (
               target.dependenciesCount > 0 ||
                 hasKnownJvmSources(target)
-            ) ||
-            featureFlags.isGoSupportEnabled &&
-            target.hasGoTargetInfo() &&
-            hasKnownGoSources(target)
+            )
         )
     ) ||
+      featureFlags.isGoSupportEnabled &&
+      target.hasGoTargetInfo() &&
+      hasKnownGoSources(target) ||
       featureFlags.isPythonSupportEnabled &&
       target.hasPythonTargetInfo() &&
       hasKnownPythonSources(target)

@@ -11,6 +11,9 @@ kt_jvm_library(
         ]),
     }),
     visibility = ["//sdkcompat:__pkg__"],
+    exports = [
+        "//sdkcompat/v252/org/jetbrains/bazel/sdkcompat/workspacemodel/entities",
+    ],
     deps = [
         "//rules_intellij/intellij_platform_sdk:java",
         "//rules_intellij/intellij_platform_sdk:kotlin",

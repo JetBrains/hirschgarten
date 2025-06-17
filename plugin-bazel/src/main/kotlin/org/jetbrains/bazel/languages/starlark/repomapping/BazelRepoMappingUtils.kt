@@ -89,6 +89,8 @@ fun Label.toCanonicalLabel(project: Project): CanonicalLabel? {
   )
 }
 
+fun Label.toCanonicalLabelOrThis(project: Project): ResolvedLabel? = toCanonicalLabel(project) ?: this as? ResolvedLabel
+
 fun Label.toShortString(project: Project): String {
   val label = this.toApparentLabelOrThis(project)
 

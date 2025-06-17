@@ -1,0 +1,9 @@
+FILE
+  PsiElement(BazelQuery:SET)('set')
+  PsiElement(BazelQuery:()('(')
+  PsiElement(BazelQuery:UNQUOTED_WORD)('//path/to:target1')
+  PsiWhiteSpace(' ')
+  PsiElement(BazelQuery:UNQUOTED_WORD)('//path/to:target2')
+  PsiWhiteSpace(' ')
+  PsiElement(BazelQuery:UNQUOTED_WORD)('//path/to:target3')
+  PsiElement(BazelQuery:))(')')

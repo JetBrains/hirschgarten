@@ -25,8 +25,8 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.TargetIdToModuleEntitiesMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
+import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.CompiledSourceCodeInsideJarExcludeTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
-import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModulesToCompiledSourceCodeInsideJarExcludeTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
@@ -35,6 +35,10 @@ import org.jetbrains.bazel.scala.sdk.ScalaSdk
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtension
 import org.jetbrains.bazel.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.bazel.sdkcompat.isSharedSourceSupportEnabled
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesJava
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesScala
 import org.jetbrains.bazel.server.client.IMPORT_SUBTASK_ID
 import org.jetbrains.bazel.sync.scope.FirstPhaseSync
 import org.jetbrains.bazel.sync.scope.FullProjectSync
@@ -49,10 +53,6 @@ import org.jetbrains.bazel.ui.console.syncConsole
 import org.jetbrains.bazel.ui.console.withSubtask
 import org.jetbrains.bazel.ui.notifications.BazelBalloonNotifier
 import org.jetbrains.bazel.utils.SourceType
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.Module
-import org.jetbrains.bazel.workspacemodel.entities.includesJava
-import org.jetbrains.bazel.workspacemodel.entities.includesScala
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsParams
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -258,7 +258,10 @@ class CollectProjectDetailsTask(
         val compiledSourceCodeInsideJarToExclude =
           bspTracer.spanBuilder("calculate.non.generated.class.files.to.exclude").use {
             if (BazelFeatureFlags.excludeCompiledSourceCodeInsideJars) {
-              ModulesToCompiledSourceCodeInsideJarExcludeTransformer().transform(targetIdToModuleDetails.values)
+              CompiledSourceCodeInsideJarExcludeTransformer().transform(
+                targetIdToModuleDetails.values,
+                projectDetails.libraries.orEmpty(),
+              )
             } else {
               null
             }
@@ -299,7 +302,7 @@ class CollectProjectDetailsTask(
         }.toMap()
   }
 
-  suspend fun postprocessingSubtask() {
+  suspend fun postprocessingSubtask(targetUtilsDiff: TargetUtilsProjectStructureDiff) {
     // This order is strict as now SDKs also use the workspace model,
     // updating jdks before applying the project model will render the action to fail.
     // This will be handled properly after this ticket:
@@ -310,7 +313,7 @@ class CollectProjectDetailsTask(
     addBspFetchedScalaSdks()
 
     VirtualFileManager.getInstance().asyncRefresh()
-    checkSharedSources()
+    checkSharedSources(targetUtilsDiff.fileToTargetWithoutLowPrioritySharedSources)
   }
 
   private suspend fun addBspFetchedJdks() =
@@ -352,10 +355,10 @@ class CollectProjectDetailsTask(
       javacOptions.ADDITIONAL_OPTIONS_OVERRIDE = this.javacOptions
     }
 
-  private fun checkSharedSources() {
+  private fun checkSharedSources(fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>) {
     if (project.isSharedSourceSupportEnabled) return
     if (!BazelFeatureFlags.checkSharedSources) return
-    for ((file, labels) in project.targetUtils.getSharedFiles()) {
+    for ((file, labels) in fileToTargetWithoutLowPrioritySharedSources) {
       if (labels.size <= 1) {
         continue
       }

@@ -9,7 +9,7 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.ParameterDisplay
 import jetbrains.buildServer.configs.kotlin.v2019_2.ParametrizedWithType
 import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.*
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.ant
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 
@@ -31,6 +31,8 @@ open class BaseBuildType(
     this.params {
       params()
       password("remote.cache.netrc", "credentialsJSON:8f47c6e1-d7b2-4d3a-9b5a-12c8f3d45e92", label = "dotnetrc", description = "nenrc credentials for remote cache", display = ParameterDisplay.HIDDEN)
+      param("env.CONTAINER_UID", "")
+      param("env.CONTAINER_GID", "")
     }
 
     this.dependencies(dependencies)
@@ -104,11 +106,25 @@ open class BaseBuildType(
       }
     }
     this.steps {
-      script {
-        this.name = "adding netrc"
-        scriptContent = """
-            echo "%remote.cache.netrc%" > %system.agent.persistent.cache%/.netrc
-        """.trimIndent()
+      ant {
+        this.name = "Get UID and GID"
+        mode = antScript { // language=Ant
+          content = """
+                    <project>
+                      <exec executable="id" outputproperty="uid.output">
+                        <arg value="-u"/>
+                      </exec>
+                      <exec executable="id" outputproperty="gid.output">
+                        <arg value="-g"/>
+                      </exec>
+                      <echo message="Current UID: ${'$'}{uid.output}"/>
+                      <echo message="Current GID: ${'$'}{gid.output}"/>
+                      <property name="teamcity.buildConfName" value="dummy"/>
+                      <echo message="##teamcity[setParameter name='env.CONTAINER_UID' value='${'$'}{uid.output}']"/>
+                      <echo message="##teamcity[setParameter name='env.CONTAINER_GID' value='${'$'}{gid.output}']"/>
+                    </project>
+                """.trimIndent()
+        }
       }
       steps()
     }

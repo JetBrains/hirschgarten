@@ -1,0 +1,1 @@
+deps(some(//path/to:target2), 2)

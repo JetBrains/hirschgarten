@@ -188,6 +188,10 @@ class ProjectResolver(
       if (build) {
         outputGroups.add(BUILD_ARTIFACT_OUTPUT_GROUP)
       }
+      if (workspaceContext.importDepth.value >= 0) {
+        // import_depth: -1 means full transitive import, otherwise it's shallow import
+        outputGroups.add(SHALLOW_IMPORT_OUTPUT_GROUP)
+      }
       val nonShardBuild =
         suspend {
           bazelBspAspectsManager
@@ -329,6 +333,8 @@ class ProjectResolver(
 
     // this output group is for artifacts which are only needed during build
     private const val BUILD_ARTIFACT_OUTPUT_GROUP = "bsp-build-artifact"
+
+    private const val SHALLOW_IMPORT_OUTPUT_GROUP = "bsp-shallow-import-artifact"
 
     // language-specific output groups
     private const val GO_SOURCE_OUTPUT_GROUP = "bazel-sources-go"
