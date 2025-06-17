@@ -93,7 +93,7 @@ class BazelProjectMapper(
             .allTargetsAtDepth(
               workspaceContext.importDepth.value,
               rootTargets,
-            )
+            ) { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) }
         val (targetsToImport, nonWorkspaceTargets) =
           targetsAtDepth.targets.partition {
             isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
