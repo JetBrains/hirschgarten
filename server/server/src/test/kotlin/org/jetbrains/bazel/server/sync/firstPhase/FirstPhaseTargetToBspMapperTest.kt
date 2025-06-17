@@ -25,6 +25,7 @@ import org.jetbrains.bazel.workspacecontext.GazelleTargetSpec
 import org.jetbrains.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bazel.workspacecontext.ImportDepthSpec
 import org.jetbrains.bazel.workspacecontext.ImportRunConfigurationsSpec
+import org.jetbrains.bazel.workspacecontext.IndexAllFilesInDirectoriesSpec
 import org.jetbrains.bazel.workspacecontext.NoPruneTransitiveCompileTimeJarsPatternsSpec
 import org.jetbrains.bazel.workspacecontext.PrioritizeLibrariesOverModulesTargetKindsSpec
 import org.jetbrains.bazel.workspacecontext.ShardSyncSpec
@@ -72,6 +73,7 @@ private fun createMockWorkspaceContext(allowManualTargetsSync: Boolean): Workspa
     shardingApproachSpec = ShardingApproachSpec(null),
     importRunConfigurations = ImportRunConfigurationsSpec(emptyList()),
     gazelleTarget = GazelleTargetSpec(null),
+    indexAllFilesInDirectories = IndexAllFilesInDirectoriesSpec(false),
   )
 
 private fun createMockProject(lightweightModules: List<Build.Target>, allowManualTargetsSync: Boolean): FirstPhaseProject =

@@ -17,3 +17,5 @@ fun WorkspaceFileSetRegistrar.registerOtherRootsCompat(
     customData = null,
   )
 }
+
+const val CONTENT_NON_INDEXABLE_SUPPORTED = true
