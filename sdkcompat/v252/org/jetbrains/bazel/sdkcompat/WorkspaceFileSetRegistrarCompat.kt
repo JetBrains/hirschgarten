@@ -1,9 +1,8 @@
 package org.jetbrains.bazel.sdkcompat
 
-import com.intellij.openapi.vfs.VfsUtilCore
-import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileKind
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
 
 fun WorkspaceFileSetRegistrar.registerOtherRootsCompat(
@@ -11,12 +10,12 @@ fun WorkspaceFileSetRegistrar.registerOtherRootsCompat(
   includedRoots: List<VirtualFileUrl>,
   entity: WorkspaceEntity,
 ) {
-  val includedRoots = includedRoots.mapNotNull { it.virtualFile }.toSet()
-  registerExclusionCondition(
+  registerFileSet(
     root = projectRoot,
-    condition = { !VfsUtilCore.isUnderFiles(it, includedRoots) },
+    kind = WorkspaceFileKind.CONTENT_NON_INDEXABLE,
     entity = entity,
+    customData = null,
   )
 }
 
-const val CONTENT_NON_INDEXABLE_SUPPORTED = false
+const val CONTENT_NON_INDEXABLE_SUPPORTED = true

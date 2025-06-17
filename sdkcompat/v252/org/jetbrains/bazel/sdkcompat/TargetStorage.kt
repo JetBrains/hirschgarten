@@ -8,9 +8,9 @@ interface HashAdapter {
 
   fun putInt(value: Int)
 
-  fun getAndReset(): HashValue128
-
   fun putByte(value: Byte)
+
+  fun getAndReset(): HashValue128
 }
 
 // no xxh3_128 in 243
