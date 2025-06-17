@@ -13,7 +13,6 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.info.BspTargetInfo
 import org.jetbrains.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
-import org.jetbrains.bazel.label.BazelLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.assumeBazelLabel
 import org.jetbrains.bazel.logger.BspClientLogger
@@ -651,7 +650,7 @@ class BazelProjectMapper(
               label = targetId,
               targetInfo = targetInfo,
               onlyOutputJars = false,
-              isInternalTarget = isTargetTreatedAsInternal(targetId.assumeResolved(), repoMapping),
+              isInternalTarget = isTargetTreatedAsInternal(targetId, repoMapping),
             )?.let { library ->
               targetId to library
             }
@@ -914,9 +913,9 @@ class BazelProjectMapper(
    *
    * It is not 100% reliable, but it works for our use cases, i.e., to import gazelle generated targets as internal.
    */
-  private val BazelLabel.isGazelleGenerated get() = repoName.startsWith("gazelle")
+  private val Label.isGazelleGenerated get() = repoName.startsWith("gazelle")
 
-  private fun isTargetTreatedAsInternal(target: BazelLabel, repoMapping: RepoMapping): Boolean =
+  private fun isTargetTreatedAsInternal(target: Label, repoMapping: RepoMapping): Boolean =
     target.isMainWorkspace || target.repo.repoName in externalRepositoriesTreatedAsInternal(repoMapping) || target.isGazelleGenerated
 
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
