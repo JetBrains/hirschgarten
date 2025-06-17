@@ -16,6 +16,7 @@ import com.intellij.psi.impl.ResolveScopeManager
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.search.UseScopeEnlarger
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelJavaSourceRootEntity
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageNameId
@@ -33,12 +34,14 @@ internal class BazelJavaClassFinder(private val project: Project) : PsiElementFi
   override fun findClasses(qualifiedName: String, scope: GlobalSearchScope): Array<PsiClass> =
     findGeneratedClasses(qualifiedName, scope).toList().toTypedArray()
 
-  private fun findGeneratedClasses(qualifiedName: String, scope: GlobalSearchScope): Sequence<PsiClass> =
-    findGeneratedClassesInPackage(
+  private fun findGeneratedClasses(qualifiedName: String, scope: GlobalSearchScope): Sequence<PsiClass> {
+    if (BazelFeatureFlags.fbsrSupportedInPlatform) return emptySequence()
+    return findGeneratedClassesInPackage(
       packageName = StringUtil.getPackageName(qualifiedName),
       scope,
       classNameHint = StringUtil.getShortName(qualifiedName),
     ).filter { it.qualifiedName == qualifiedName }
+  }
 
   override fun getClasses(psiPackage: PsiPackage, scope: GlobalSearchScope): Array<PsiClass> =
     findGeneratedClassesInPackage(psiPackage.qualifiedName, scope).toList().toTypedArray()
@@ -47,11 +50,13 @@ internal class BazelJavaClassFinder(private val project: Project) : PsiElementFi
     className: String?,
     psiPackage: PsiPackage,
     scope: GlobalSearchScope,
-  ): Array<PsiClass> =
-    findGeneratedClassesInPackage(psiPackage.qualifiedName, scope, classNameHint = className)
+  ): Array<PsiClass> {
+    if (BazelFeatureFlags.fbsrSupportedInPlatform) return emptyArray()
+    return findGeneratedClassesInPackage(psiPackage.qualifiedName, scope, classNameHint = className)
       .filter { className == null || it.name == className }
       .toList()
       .toTypedArray()
+  }
 
   private fun findGeneratedClassesInPackage(
     packageName: String,
@@ -78,6 +83,7 @@ internal class BazelJavaClassFinder(private val project: Project) : PsiElementFi
  */
 internal class BazelJavaUseScopeEnlarger : UseScopeEnlarger() {
   override fun getAdditionalUseScope(psiClass: PsiElement): SearchScope? {
+    if (BazelFeatureFlags.fbsrSupportedInPlatform) return null
     if (psiClass !is PsiClass) return null
 
     val project = psiClass.project

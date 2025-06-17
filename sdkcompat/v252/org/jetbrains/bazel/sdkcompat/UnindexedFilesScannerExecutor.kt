@@ -1,26 +1,20 @@
 package org.jetbrains.bazel.sdkcompat
 
+import com.intellij.ide.SaveAndSyncHandler
+import com.intellij.openapi.components.serviceAsync
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.UnindexedFilesScannerExecutor
+import com.intellij.openapi.util.NlsContexts
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 
 suspend fun suspendScanningAndIndexingThenExecute(
-  activityName: String,
+  @NlsContexts.ProgressText activityName: String,
   project: Project,
   activity: suspend CoroutineScope.() -> Unit,
 ) {
-  coroutineScope {
-    // Use Dispatchers.IO to wait for the blocking call
-    withContext(Dispatchers.IO) {
-      UnindexedFilesScannerExecutor.getInstance(project).suspendScanningAndIndexingThenRun(activityName) {
-        runBlocking(coroutineContext) {
-          activity()
-        }
-      }
+  UnindexedFilesScannerExecutor.getInstance(project).suspendScanningAndIndexingThenExecute(activityName) {
+    serviceAsync<SaveAndSyncHandler>().disableAutoSave().use {
+      activity()
     }
   }
 }
