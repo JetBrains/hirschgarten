@@ -5,7 +5,7 @@
 # To build and push this image locally run `build-and-push.sh e2e` from `tools/docker` folder
 
 # ───────────────────────────────── Base Image ─────────────────────────────────
-FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest
+FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:buildifier
 
 # ─────────────────────────────── Dependencies ────────────────────────────────
 RUN apt-get update -qq && \
