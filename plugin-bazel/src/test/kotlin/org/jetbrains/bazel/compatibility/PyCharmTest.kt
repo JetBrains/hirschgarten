@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.compatibility
 
 import com.intellij.driver.client.Driver
-import com.intellij.driver.sdk.openFile
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
