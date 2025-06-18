@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.config
 
+import com.intellij.codeInsight.multiverse.CodeInsightContextManager
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 import org.jetbrains.annotations.VisibleForTesting
-import org.jetbrains.bazel.sdkcompat.isSharedSourceSupportEnabled
 import org.jetbrains.bsp.protocol.FeatureFlags
 
 object BazelFeatureFlags {
@@ -110,7 +110,7 @@ object FeatureFlagsProvider {
         isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
         bazelSymlinksScanMaxDepth = symlinkScanMaxDepth,
         bazelShutDownBeforeShardBuild = shutDownBeforeShardBuild,
-        isSharedSourceSupportEnabled = project.isSharedSourceSupportEnabled,
+        isSharedSourceSupportEnabled = CodeInsightContextManager.getInstance(project).isSharedSourceSupportEnabled,
         isBazelQueryTabEnabled = isBazelQueryTabEnabled,
       )
     }
