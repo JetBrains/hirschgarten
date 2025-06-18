@@ -1,1 +1,1 @@
-build --define=ij_product="intellij-2024.3"
+build --define=ij_product="intellij-2025.1"
