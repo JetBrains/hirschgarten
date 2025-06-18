@@ -52,7 +52,6 @@ class BazelrcFlagAnnotator : Annotator {
         .newAnnotation(HighlightSeverity.WARNING, "Unknown flag: '${element.text}'")
         .range(element.textRange)
         .textAttributes(BazelrcHighlightingColors.UNKNOWN_FLAG)
-        .needsUpdateOnTyping()
         .create()
       return
     }
@@ -63,7 +62,6 @@ class BazelrcFlagAnnotator : Annotator {
           .newAnnotation(HighlightSeverity.INFORMATION, "Undocumented flag: '${element.text}'")
           .range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.UNKNOWN_FLAG)
-          .needsUpdateOnTyping()
           .create()
 
       isNoOp(flag) ->
@@ -71,7 +69,6 @@ class BazelrcFlagAnnotator : Annotator {
           .newAnnotation(HighlightSeverity.INFORMATION, "Flag: '${element.text}' doesn't do anything")
           .range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.NOOP_FLAG)
-          .needsUpdateOnTyping()
           .withFix(DeleteFlagUseFix(element, flag))
           .create()
 
@@ -80,7 +77,6 @@ class BazelrcFlagAnnotator : Annotator {
           .newAnnotation(HighlightSeverity.WARNING, "Flag: '${element.text}' is deprecated")
           .range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.DEPRECATED_FLAG)
-          .needsUpdateOnTyping()
           .create()
 
       isOld(flag, element.text) ->
@@ -88,7 +84,6 @@ class BazelrcFlagAnnotator : Annotator {
           .newAnnotation(HighlightSeverity.INFORMATION, oldAnnotationMessage(flag, element.text))
           .range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.DEPRECATED_FLAG)
-          .needsUpdateOnTyping()
           .withFix(RenameFlagNameFix(element, flag))
           .create()
 
@@ -99,7 +94,6 @@ class BazelrcFlagAnnotator : Annotator {
             "Flag: '${element.text}' is not applicable to command '${element.parentOfType<BazelrcLine>(false)!!.command}'",
           ).range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.DEPRECATED_FLAG)
-          .needsUpdateOnTyping()
           .create()
 
       else -> {}
