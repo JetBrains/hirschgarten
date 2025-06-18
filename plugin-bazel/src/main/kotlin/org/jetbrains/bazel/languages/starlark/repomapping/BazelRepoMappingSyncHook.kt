@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.starlark.repomapping
 
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -8,6 +7,7 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.sync.ProjectSyncHook.ProjectSyncHookEnvironment
@@ -16,18 +16,14 @@ import org.jetbrains.bazel.sync.withSubtask
 import java.nio.file.Path
 import kotlin.io.path.Path
 
+@TestOnly
 fun Project.injectCanonicalRepoNameToPath(canonicalRepoNameToPath: Map<String, Path>) {
-  require(ApplicationManager.getApplication().isUnitTestMode) {
-    "This should only be used for unit tests!"
-  }
   val service = BazelRepoMappingService.getInstance(this)
   service.canonicalRepoNameToPath = canonicalRepoNameToPath
 }
 
+@TestOnly
 fun Project.injectCanonicalRepoNameToApparentName(canonicalRepoNameToApparentName: Map<String, String>) {
-  require(ApplicationManager.getApplication().isUnitTestMode) {
-    "This should only be used for unit tests!"
-  }
   val service = BazelRepoMappingService.getInstance(this)
   service.canonicalRepoNameToApparentName = canonicalRepoNameToApparentName
 }
