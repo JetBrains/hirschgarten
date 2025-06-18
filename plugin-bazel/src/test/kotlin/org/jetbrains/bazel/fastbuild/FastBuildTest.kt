@@ -2,9 +2,10 @@ package org.jetbrains.bazel.fastbuild
 
 import com.intellij.driver.client.Remote
 import com.intellij.driver.client.service
+import com.intellij.driver.model.OnDispatcher
 import com.intellij.driver.sdk.VirtualFile
+import com.intellij.driver.sdk.XDebuggerUtil
 import com.intellij.driver.sdk.findFile
-import com.intellij.driver.sdk.openFile
 import com.intellij.driver.sdk.singleProject
 import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.toggleLineBreakpoint
@@ -24,6 +25,8 @@ import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.findFile
+import org.jetbrains.bazel.ideStarter.openFile
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -58,8 +61,11 @@ class FastBuildTest : IdeStarterBaseProjectTest() {
         waitForIndicators(5.minutes)
 
         step("Set breakpoint") {
-          openFile("Main.java")
-          toggleLineBreakpoint("Main.java", 6)
+          val file = openFile("Main.java")
+          withContext(OnDispatcher.EDT) {
+            val debuggerUtil = service<XDebuggerUtil>()
+            debuggerUtil.toggleLineBreakpoint(singleProject(), file, 6, false)
+          }
         }
 
         step("Launch debug run config") {
