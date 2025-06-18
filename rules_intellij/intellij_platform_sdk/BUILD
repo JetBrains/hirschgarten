@@ -27,11 +27,6 @@ config_setting(
 )
 
 config_setting(
-    name = "intellij-2024.3",
-    values = {"define": "ij_product=intellij-2024.3"},
-)
-
-config_setting(
     name = "intellij-2025.1",
     values = {"define": "ij_product=intellij-2025.1"},
 )
