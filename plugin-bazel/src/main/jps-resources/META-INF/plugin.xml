@@ -406,6 +406,10 @@
     <lang.parserDefinition
       language="ProjectView"
       implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"/>
+    <refactoring.safeDeleteProcessor implementation="org.jetbrains.bazel.languages.starlark.refactoring.StarlarkFileSafeDeleteProcessor"/>
+    <refactoring.safeDeleteProcessor implementation="org.jetbrains.bazel.languages.starlark.refactoring.StarlarkFunctionSafeDeleteProcessor"/>
+    <lang.refactoringSupport language="Starlark"
+                             implementationClass="org.jetbrains.bazel.languages.starlark.refactoring.StarlarkRefactoringSupportProvider"/>
 
     <formattingService
       implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService"/>
