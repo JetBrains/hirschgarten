@@ -5,8 +5,8 @@ import com.intellij.execution.process.OSProcessUtil
 import com.intellij.openapi.diagnostic.Logger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
-import org.jetbrains.bazel.bazelrunner.ProcessSpawner
-import org.jetbrains.bazel.bazelrunner.SpawnedProcess
+import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
+import org.jetbrains.bazel.bazelrunner.outputs.SpawnedProcess
 import java.io.File
 
 /**

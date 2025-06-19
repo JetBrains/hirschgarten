@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
 import kotlinx.coroutines.coroutineScope
-import org.jetbrains.bazel.bazelrunner.ProcessSpawner
-import org.jetbrains.bazel.bazelrunner.SpawnedProcess
+import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
+import org.jetbrains.bazel.bazelrunner.outputs.SpawnedProcess
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream

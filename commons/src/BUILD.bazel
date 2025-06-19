@@ -4,7 +4,7 @@ kt_jvm_library(
     name = "testFixtures",
     testonly = 1,
     srcs = glob([
-        #         "testFixtures/kotlin/**/*.kt",
+        # "testFixtures/kotlin/**/*.kt",
         "testFixtures/kotlin/**/*.java",
     ]),
     visibility = ["//visibility:public"],

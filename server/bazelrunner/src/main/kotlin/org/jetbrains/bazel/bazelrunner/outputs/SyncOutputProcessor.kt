@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
-import org.jetbrains.bazel.bazelrunner.SpawnedProcess
 import java.util.concurrent.TimeUnit
 
 class SyncOutputProcessor(process: SpawnedProcess, vararg loggers: OutputHandler) : OutputProcessor(process, *loggers) {
