@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.bazelrunner
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.enableWorkspace
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.overrideRepository
@@ -171,12 +173,16 @@ class BazelRunner(
     }
 
     val process =
-      processSpawner.spawnProcess(
-        command = processArgs.first(),
-        args = processArgs.drop(1),
-        environment = environment,
-        redirectErrorStream = false,
-      )
+      runBlocking {
+        processSpawner
+          .spawnDeferredProcess(
+            command = processArgs.first(),
+            args = processArgs.drop(1),
+            environment = environment,
+            redirectErrorStream = false,
+            workDirectory = workDir?.toString(),
+          ).await()
+      }
 
     val outputLogger = bspClientLogger.takeIf { logProcessOutput }?.copy(originId = originId)
 

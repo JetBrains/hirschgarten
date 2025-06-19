@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
-import org.jetbrains.bazel.bazelrunner.SpawnedProcess
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean

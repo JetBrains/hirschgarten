@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.startup
 
 import com.intellij.util.io.awaitExit
-import org.jetbrains.bazel.bazelrunner.SpawnedProcess
+import org.jetbrains.bazel.bazelrunner.outputs.SpawnedProcess
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
 

@@ -1,7 +1,8 @@
-package org.jetbrains.bazel.bazelrunner
+package org.jetbrains.bazel.bazelrunner.outputs
 
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.bazelrunner.outputs.SpawnedProcess
 
 /**
  * Interface for spawning and managing processes

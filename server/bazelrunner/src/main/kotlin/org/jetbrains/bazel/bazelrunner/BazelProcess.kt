@@ -2,6 +2,7 @@ package org.jetbrains.bazel.bazelrunner
 
 import org.jetbrains.bazel.bazelrunner.outputs.AsyncOutputProcessor
 import org.jetbrains.bazel.bazelrunner.outputs.OutputProcessor
+import org.jetbrains.bazel.bazelrunner.outputs.SpawnedProcess
 import org.jetbrains.bazel.bazelrunner.outputs.SyncOutputProcessor
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.commons.Format
