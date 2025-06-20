@@ -41,8 +41,7 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
       BazelFileType.BUILD -> BazelGlobalFunctions.BUILD_FUNCTIONS
       BazelFileType.MODULE -> BazelGlobalFunctions.MODULE_FUNCTIONS
       BazelFileType.WORKSPACE -> BazelGlobalFunctions.WORKSPACE_FUNCTIONS
-      else -> BazelGlobalFunctions.STARLARK_FUNCTIONS
-    }
+    } + BazelGlobalFunctions.STARLARK_FUNCTIONS
 
   override fun addCompletions(
     parameters: CompletionParameters,
