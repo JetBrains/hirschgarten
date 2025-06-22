@@ -103,6 +103,9 @@
                     dynamic="true"/>
     <extensionPoint qualifiedName="org.jetbrains.bazel.bazelGeneralSettingsProvider"
                     interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.bazelVersionResolver"
+                    interface="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionResolver"
+                    dynamic="true"/>/>
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -124,6 +127,7 @@
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.flow.sync.RemoveExcludedVcsMappingsSyncHook"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.sync.SyncCache$ClearSyncCache"/>
+    <projectPostSyncHook implementation="org.jetbrains.bazel.languages.bazelversion.service.BazelVersionFetchSyncHook"/>
 
 
     <projectStructureProvider
@@ -147,6 +151,8 @@
     <additionalProjectTaskRunnerProvider
       implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
     <targetKindProvider implementation="org.jetbrains.bazel.sync.GenericBazelRules"/>
+
+    <bazelVersionResolver implementation="org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubVersionResolver"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
@@ -453,6 +459,23 @@
     <lang.syntaxHighlighterFactory
       language="BazelQueryFlags"
       implementationClass="org.jetbrains.bazel.languages.bazelquery.highlighting.BazelQuerySyntaxHighlighterFactory"/>
+
+    <fileType name="BazelVersion"
+              implementationClass="org.jetbrains.bazel.languages.bazelversion.BazelVersionFileType"
+              fieldName="INSTANCE"
+              language="BazelVersion"
+              fileNames=".bazelversion"
+              extensions="bazelversion"/>
+
+    <lang.parserDefinition language="BazelVersion"
+                           implementationClass="org.jetbrains.bazel.languages.bazelversion.parser.BazelVersionParserDefinition"/>
+
+    <localInspection language="BazelVersion"
+                     displayName="Bazel Version Check"
+                     groupName="Bazel"
+                     enabledByDefault="true"
+                     level="WARNING"
+                     implementationClass="org.jetbrains.bazel.languages.bazelversion.inspection.BazelVersionInspection"/>
 
     <fileType
       name="Bazelrc"
