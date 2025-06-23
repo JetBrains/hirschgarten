@@ -8,6 +8,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.QualifiedName
 import com.jetbrains.python.psi.PyFile
+import com.jetbrains.python.psi.resolve.PyQualifiedNameResolveContext
 import com.jetbrains.python.psi.resolve.PyQualifiedNameResolveContextImpl
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -105,6 +106,35 @@ class BazelPyImportResolverTest : MockProjectBaseTest() {
     result.shouldBeNull()
   }
 
+  @Test
+  fun `should accept a synonym`() {
+    val synonymProvider = MockSynonymProvider()
+    PythonSynonymProvider.ep.registerExtension(synonymProvider)
+    val result = tryResolve("synonym.dir2.dir21.dir211.file2111")
+    result.shouldNotBeNull()
+    result.shouldBeInstanceOf<PyFile>()
+    result.virtualFile.name shouldBe "file2111.py"
+    synonymProvider.wasGetSynonymCalled shouldBe true
+  }
+
+  @Test
+  fun `should not cause an error if synonym provider returns null`() {
+    val synonymProvider = MockSynonymProvider()
+    PythonSynonymProvider.ep.registerExtension(synonymProvider)
+    val result = tryResolve("null")
+    result.shouldBeNull()
+    synonymProvider.wasGetSynonymCalled shouldBe true
+  }
+
+  @Test
+  fun `should not call synonym provider if not necessary`() {
+    val synonymProvider = MockSynonymProvider()
+    PythonSynonymProvider.ep.registerExtension(synonymProvider)
+    val result = tryResolve("file1")
+    result.shouldNotBeNull()
+    synonymProvider.wasGetSynonymCalled shouldBe false
+  }
+
   /**
    * ```
    * root
@@ -146,5 +176,18 @@ class BazelPyImportResolverTest : MockProjectBaseTest() {
     val nameObject = QualifiedName.fromComponents(qualifiedName.split('.'))
     val context = PyQualifiedNameResolveContextImpl(PsiManager.getInstance(project), null, null, null)
     return BazelPyImportResolver().resolveImportReference(nameObject, context, false)
+  }
+}
+
+private class MockSynonymProvider : PythonSynonymProvider {
+  var wasGetSynonymCalled: Boolean = false
+
+  override fun getSynonym(name: QualifiedName, context: PyQualifiedNameResolveContext): QualifiedName? {
+    wasGetSynonymCalled = true
+    return if (name.firstComponent == "synonym") {
+      QualifiedName.fromComponents(name.components.drop(1))
+    } else {
+      null
+    }
   }
 }

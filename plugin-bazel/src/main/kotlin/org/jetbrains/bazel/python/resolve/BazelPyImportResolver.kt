@@ -23,6 +23,11 @@ class BazelPyImportResolver : PyImportResolver {
     val rootImportResolve = resolveRootImport(name, context)
     if (rootImportResolve != null) return rootImportResolve
 
+    val synonymImport = PythonSynonymProvider.ep.extensionList.firstNotNullOfOrNull {
+      it.getSynonym(name, context)?.let { synonym -> resolveRootImport(synonym, context) }
+    }
+    if (synonymImport != null) return synonymImport
+
     return resolveShortImport(name, context)
   }
 
