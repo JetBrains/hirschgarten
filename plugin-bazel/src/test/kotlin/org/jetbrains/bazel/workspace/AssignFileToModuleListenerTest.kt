@@ -187,12 +187,14 @@ class AssignFileToModuleListenerTest : WorkspaceModelBaseTest() {
   fun `should ignore non-source file`() {
     val file = project.rootDir.createDirectory("src").createFile("aaa", "txt")
     createEvent(file).process().shouldBeNull()
+    deleteEvent(file).process().shouldBeNull()
   }
 
   @Test
-  fun `should ignore directory creation`() {
+  fun `should ignore directory events`() {
     val directory = project.rootDir.createDirectory("src")
     createEvent(directory).process().shouldBeNull()
+    deleteEvent(directory).process().shouldBeNull()
   }
 
   @Test

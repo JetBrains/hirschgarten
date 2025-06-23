@@ -63,7 +63,7 @@ import java.nio.file.Path
 
 internal class AssignFileToModuleListener : BulkFileListener {
   override fun after(events: MutableList<out VFileEvent>) {
-    // if the list has multiple events, it means an external operation (like Git) and resync is probably required anyway
+    // if the list has multiple events, a resync is required
     val event = events.singleOrNull()
     if (event != null && !ApplicationManager.getApplication().isUnitTestMode) {
       afterSingleFileEvent(event)
@@ -73,7 +73,7 @@ internal class AssignFileToModuleListener : BulkFileListener {
   // the returned map is for testing purposes; ProjectId is used instead of Project since it's safer to store
   @VisibleForTesting
   fun afterSingleFileEvent(event: VFileEvent): Map<ProjectId, Job> {
-    val file = event.getAffectedFile() ?: return emptyMap()
+    val file = getAffectedFile(event) ?: return emptyMap()
     val isSource =
       if (event is VFileDeleteEvent) {
         file.extension?.let { SourceType.fromExtension(it) } != null
@@ -161,28 +161,28 @@ internal class AssignFileToModuleListener : BulkFileListener {
   }
 }
 
-private fun VFileEvent.getNewFile(): VirtualFile? = if (this !is VFileDeleteEvent) getAffectedFile() else null
+private fun getNewFile(event: VFileEvent): VirtualFile? = if (event !is VFileDeleteEvent) getAffectedFile(event) else null
 
-private fun VFileEvent.getAffectedFile(): VirtualFile? {
+private fun getAffectedFile(event: VFileEvent): VirtualFile? {
   val file =
-    when (this) {
-      is VFileCreateEvent -> this.file
-      is VFileDeleteEvent -> this.file
-      is VFileMoveEvent -> this.file
-      is VFileCopyEvent -> this.findCreatedFile()
-      is VFilePropertyChangeEvent -> if (this.propertyName == VirtualFile.PROP_NAME) this.file else null
+    when (event) {
+      is VFileCreateEvent -> event.file
+      is VFileDeleteEvent -> event.file
+      is VFileMoveEvent -> event.file
+      is VFileCopyEvent -> event.findCreatedFile()
+      is VFilePropertyChangeEvent -> if (event.propertyName == VirtualFile.PROP_NAME) event.file else null
       else -> null
     }
   return if (file?.isDirectory == false) file else null
 }
 
-private fun VFileEvent.getOldFilePath(): Path? =
-  when (this) {
+private fun getOldFilePath(event: VFileEvent): Path? =
+  when (event) {
     is VFileCreateEvent -> null // explicit branch for code clarity
     is VFileCopyEvent -> null // explicit branch for code clarity
-    is VFileDeleteEvent -> this.path
-    is VFileMoveEvent -> this.oldPath
-    is VFilePropertyChangeEvent -> if (this.propertyName == VirtualFile.PROP_NAME) this.oldPath else null
+    is VFileDeleteEvent -> event.path
+    is VFileMoveEvent -> event.oldPath
+    is VFilePropertyChangeEvent -> if (event.propertyName == VirtualFile.PROP_NAME) event.oldPath else null
     else -> null
   }?.toNioPathOrNull()
 
@@ -211,8 +211,8 @@ private suspend fun processFileEvent(
 ) {
   val entityStorageDiff = MutableEntityStorage.from(workspaceModel.currentSnapshot)
 
-  val newFile = event.getNewFile()
-  val oldFilePath = event.getOldFilePath() // the old file must be kept as a path, since this file no longer exists
+  val newFile = getNewFile(event)
+  val oldFilePath = getOldFilePath(event) // the old file must be kept as a path, since this file no longer exists
 
   withBackgroundProgress(project, event.getProgressMessage(newFile)) {
     reportSequentialProgress { reporter ->
