@@ -25,7 +25,7 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelJavaSourceRoot
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.PackageNameId
 
 @GeneratedCodeApiVersion(3)
-@GeneratedCodeImplVersion(6)
+@GeneratedCodeImplVersion(7)
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class BazelJavaSourceRootEntityImpl(private val dataSource: BazelJavaSourceRootEntityData) : BazelJavaSourceRootEntity,
                                                                                                       WorkspaceEntityBase(dataSource) {
