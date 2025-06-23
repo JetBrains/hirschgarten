@@ -182,10 +182,10 @@ class BazelPyImportResolverTest : MockProjectBaseTest() {
 private class MockSynonymProvider : PythonSynonymProvider {
   var wasGetSynonymCalled: Boolean = false
 
-  override fun getSynonym(name: QualifiedName, context: PyQualifiedNameResolveContext): QualifiedName? {
+  override fun getSynonym(qualifiedNameComponents: List<String>): List<String>? {
     wasGetSynonymCalled = true
-    return if (name.firstComponent == "synonym") {
-      QualifiedName.fromComponents(name.components.drop(1))
+    return if (qualifiedNameComponents.firstOrNull() == "synonym") {
+      qualifiedNameComponents.drop(1)
     } else {
       null
     }
