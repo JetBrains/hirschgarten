@@ -19,3 +19,12 @@ kt_junit5_test(
     tags = ["exclusive"],
     deps = ["//plugin-bazel"],
 )
+
+kt_junit5_test(
+    name = "BazelVersionLiteralParserTest",
+    src = "BazelVersionLiteralParserTest.kt",
+    tags = ["exclusive"],
+    deps = [
+        "//plugin-bazel/src:plugin-bazel-lib",
+    ],
+)

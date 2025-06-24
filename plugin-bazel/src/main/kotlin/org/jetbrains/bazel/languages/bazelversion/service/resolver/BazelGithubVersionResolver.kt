@@ -34,9 +34,16 @@ class BazelGithubVersionResolver : BazelVersionResolver {
   override val id: String = ID
   override val name: String = "Github"
 
+  fun getForkOfSupportedBazelVersion(version: BazelVersionLiteral?) = when(version) {
+    is BazelVersionLiteral.Forked -> version.fork
+    is BazelVersionLiteral.Specific, null -> DEFAULT_FORK_NAME
+    else -> null
+  }
+
   override suspend fun resolveLatestBazelVersion(project: Project, currentVersion: BazelVersionLiteral?): String? {
+    val fork = getForkOfSupportedBazelVersion(currentVersion) ?: return null
     val version = project.service<BazelGithubGlobalCacheService>()
-      .getCachedVersion(currentVersion?.fork ?: DEFAULT_FORK_NAME, System.currentTimeMillis()) { name, _ ->
+      .getCachedVersion(fork, System.currentTimeMillis()) { name, _ ->
         getLatestBazelVersion(project, name)
       }
     return version

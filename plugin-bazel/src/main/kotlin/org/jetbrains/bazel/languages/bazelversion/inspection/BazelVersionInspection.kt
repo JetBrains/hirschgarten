@@ -12,6 +12,7 @@ import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.languages.bazelversion.BazelVersionFileType
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionFile
+import org.jetbrains.bazel.languages.bazelversion.psi.toSemVer
 import org.jetbrains.bazel.languages.bazelversion.service.BazelVersionCheckerService
 
 class BazelVersionInspection : LocalInspectionTool() {
@@ -26,10 +27,10 @@ class BazelVersionInspection : LocalInspectionTool() {
   class BazelVersionVisitor(val holder: ProblemsHolder) : PsiElementVisitor() {
     override fun visitFile(psiFile: PsiFile) {
       val file = psiFile as? BazelVersionFile ?: return
-      val currentVersion = file.bazelVersion ?: return
+      val currentVersion = file.bazelVersion?.toSemVer() ?: return
       val latestVersion = holder.project.service<BazelVersionCheckerService>()
-        .getLatestBazelVersion() ?: return
-      if (latestVersion.version.isGreaterThan(currentVersion.version)) {
+        .getLatestBazelVersion()?.toSemVer() ?: return
+      if (latestVersion.isGreaterThan(currentVersion)) {
         holder.registerProblem(
           psiFile, "New bazel version available: $latestVersion",
           BazelVersionQuickFix(),
@@ -44,7 +45,8 @@ class BazelVersionInspection : LocalInspectionTool() {
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
       val manager = PsiDocumentManager.getInstance(project)
       val doc = manager.getDocument(descriptor.psiElement as PsiFile) ?: return
-      val version = project.service<BazelVersionCheckerService>().getLatestBazelVersion() ?: return
+      val version = project.service<BazelVersionCheckerService>()
+        .getLatestBazelVersion()?.toSemVer() ?: return
       WriteCommandAction.runWriteCommandAction(project) {
         doc.setText(version.toString())
         manager.commitDocument(doc)

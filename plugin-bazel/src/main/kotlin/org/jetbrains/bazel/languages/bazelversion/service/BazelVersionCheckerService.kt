@@ -23,12 +23,11 @@ class BazelVersionCheckerService :
   class State : BaseState() {
     var resolverId by string(null)
 
-    var bazelFork by string(null)
     var bazelVersion by string(null)
   }
 
   fun getLatestBazelVersion(): BazelVersionLiteral? {
-    return BazelVersionLiteral(state.bazelFork, SemVer.parseFromText(state.bazelVersion) ?: return null)
+    return state.bazelVersion?.toBazelVersionLiteral()
   }
 
   suspend fun refreshLatestBazelVersion(project: Project, currentVersion: BazelVersionLiteral?) {
@@ -38,6 +37,5 @@ class BazelVersionCheckerService :
     val resolver = BazelVersionResolver.ep.extensionList
       .firstOrNull { it.id == state.resolverId } ?: return
     state.bazelVersion = resolver.resolveLatestBazelVersion(project, currentVersion) ?: return
-    state.bazelFork = currentVersion?.fork
   }
 }
