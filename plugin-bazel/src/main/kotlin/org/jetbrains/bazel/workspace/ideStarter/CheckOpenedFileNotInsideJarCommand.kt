@@ -15,7 +15,7 @@ internal class CheckOpenedFileNotInsideJarCommand(text: String, line: Int) : Pla
     readAction {
       val editor = checkNotNull(FileEditorManager.getInstance(context.project).selectedTextEditor)
       val currentFile = editor.virtualFile
-      check(currentFile.fileSystem !is ArchiveFileSystem) {
+      check(currentFile?.fileSystem !is ArchiveFileSystem) {
         "File $currentFile should not be inside a jar"
       }
     }

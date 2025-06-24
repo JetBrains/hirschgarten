@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.info.BspTargetInfo.Dependency
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -210,7 +211,7 @@ class DependencyGraphTest {
     }
 
     @Test
-    fun `should return direct and transitive dependencies for target with transitive dependencies including deep root target and excluding direct root targets`() {
+    fun `should return direct and transitive dependencies for target with transitive dependencies including deep root target 2`() {
       // graph:
       // '?' - queried target
       // '+' - should be returned
@@ -267,7 +268,7 @@ class DependencyGraphTest {
     }
 
     @Test
-    fun `should return direct and transitive dependencies for target with transitive dependencies including deep root target and excluding direct root targets which are not a root for the graph`() {
+    fun `should return direct and transitive dependencies for target with transitive dependencies including deep root target 3`() {
       // graph:
       // '?' - queried target
       // '+' - should be returned
@@ -362,7 +363,7 @@ class DependencyGraphTest {
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
-      val dependencies = dependencyGraph.allTargetsAtDepth(0, setOf(Label.parse("//A"), Label.parse("//D")))
+      val dependencies = dependencyGraph.allTargetsAtDepth(0, setOf(Label.parse("//A"), Label.parse("//D"))) { false }
 
       // then
       val expectedDependencies =
@@ -410,7 +411,7 @@ class DependencyGraphTest {
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
-      val dependencies = dependencyGraph.allTargetsAtDepth(1, setOf(Label.parse("//A"), Label.parse("//D")))
+      val dependencies = dependencyGraph.allTargetsAtDepth(1, setOf(Label.parse("//A"), Label.parse("//D"))) { false }
 
       // then
       val expectedDependencies =
@@ -458,7 +459,7 @@ class DependencyGraphTest {
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
-      val dependencies = dependencyGraph.allTargetsAtDepth(2, setOf(Label.parse("//A")))
+      val dependencies = dependencyGraph.allTargetsAtDepth(2, setOf(Label.parse("//A"))) { false }
 
       // then
       val expectedDependencies =
@@ -544,7 +545,7 @@ class DependencyGraphTest {
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
-      val dependencies = dependencyGraph.allTargetsAtDepth(10, setOf(Label.parse("//A00")))
+      val dependencies = dependencyGraph.allTargetsAtDepth(10, setOf(Label.parse("//A00"))) { false }
 
       // then
       val expectedDependencies =
@@ -592,7 +593,7 @@ class DependencyGraphTest {
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
-      val dependencies = dependencyGraph.allTargetsAtDepth(-1, setOf(Label.parse("//A")))
+      val dependencies = dependencyGraph.allTargetsAtDepth(-1, setOf(Label.parse("//A"))) { false }
 
       // then
       val expectedDependencies =
@@ -602,6 +603,34 @@ class DependencyGraphTest {
         )
       dependencies shouldBe expectedDependencies
     }
+  }
+
+  @Test
+  fun `should return all transitive deps for libraries`() {
+    // given
+    val target = targetInfo("//target", listOf("@maven//library1", "//target1"))
+    val target1 = targetInfo("//target1")
+    val library1 = targetInfo("@maven//library1", listOf("@maven//library2"))
+    val library2 = targetInfo("@maven//library2", listOf("@maven//library3"))
+    val library3 = targetInfo("@maven//library3")
+    val rootTargets = setOf(Label.parse("//target"))
+    val idToTargetInfo =
+      toIdToTargetInfoMap(target, target1, library1, library2, library3)
+    val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
+
+    // when
+    val dependencies =
+      dependencyGraph.allTargetsAtDepth(0, setOf(Label.parse("//target"))) { label ->
+        label.assumeResolved().repoName == "maven"
+      }
+
+    // then
+    val expectedDependencies =
+      DependencyGraph.TargetsAtDepth(
+        targets = setOf(target, library1, library2, library3),
+        directDependencies = setOf(target1),
+      )
+    dependencies shouldBe expectedDependencies
   }
 
   private fun targetInfo(id: String, dependenciesIds: List<String> = listOf()): TargetInfo {

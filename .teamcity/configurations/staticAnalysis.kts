@@ -42,8 +42,8 @@ open class Analyze(
     },
     steps = {
 //      Utils.CommonParams.CrossBuildPlatforms.forEach { platform ->
-        // TO-DO: remove this hardcoded value for platform once we start crossbuild for 252
-        val platform = "251"
+        // TODO: remove this hardcoded value for platform once we move to ultimate-teamcity-config
+        val platform = "252"
         val platformDot = "20${platform.take(2)}.${platform.last()}"
         script {
             name = "add plugins to qodana"
@@ -164,13 +164,7 @@ open class Hirschgarten (
   params = {
     password("qodana.cloud.token.hirschgarten", "credentialsJSON:d57ead0e-b567-440d-817e-f92e084a1cc0", label = "qodana.cloud.token.hirschgarten", description = "Qodana token for Hirschgarten statistics", display = ParameterDisplay.HIDDEN)
   }
-) {
-  init {
-    steps.items.forEach { step ->
-      step.enabled = false
-    }
-  }
-}
+)
 
 object HirschgartenGitHub : Hirschgarten(
     vcsRoot = BaseConfiguration.GitHubVcs,

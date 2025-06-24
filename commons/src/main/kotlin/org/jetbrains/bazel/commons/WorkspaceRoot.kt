@@ -84,7 +84,7 @@ data class WorkspaceRoot(val directory: Path) {
 
   fun isInWorkspace(file: File): Boolean = isInWorkspace(file.toPath())
 
-  fun isInWorkspace(file: VirtualFile): Boolean = isInWorkspace(file.getPath())
+  fun isInWorkspace(file: VirtualFile): Boolean = isInWorkspace(file.path)
 
   private fun isInWorkspace(path: String): Boolean =
     com.intellij.openapi.util.io.FileUtil

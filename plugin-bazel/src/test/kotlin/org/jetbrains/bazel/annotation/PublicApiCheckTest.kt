@@ -20,9 +20,12 @@ private const val PACKAGE_PREFIX = "org.jetbrains.bazel"
  * If this test fails after you've deleted, renamed, or moved a class to a different package, then revert that change
  * because we don't want to break API for other plugins (Scala, internal customer plugins) that depend on us.
  *
- * If this test fails because you annotated a new class or member with [PublicApi], open the `test.log`, search for `but was:`,
+ * If this test fails because you annotated a new class or member with [PublicApi]:
+ * - For Bazel plugin team members: open the `test.log`, search for `but was:`,
  * and use that to add the new fields the corresponding list (`public-api-classes.txt`, `public-api-methods.txt`, `public-api-fields.txt`).
  * You can also add [InternalApi] on methods or fields of public classes that you don't want to be public.
+ *
+ * - For other contributors: consult with Bazel plugin team members before changing any public APIs, as any changes can break other dependent plugins/customers.
  */
 class PublicApiCheckTest {
   @Test

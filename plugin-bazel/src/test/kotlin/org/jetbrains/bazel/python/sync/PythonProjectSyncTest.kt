@@ -230,6 +230,8 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
             version = "3",
             interpreter = Path(PYTHON_INTERPRETER),
             listOf(),
+            false,
+            listOf(),
           ),
         sources = sources,
         resources = resources,

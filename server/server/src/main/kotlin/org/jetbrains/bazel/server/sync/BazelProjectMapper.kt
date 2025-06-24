@@ -92,7 +92,7 @@ class BazelProjectMapper(
             .allTargetsAtDepth(
               workspaceContext.importDepth.value,
               rootTargets,
-            )
+            ) { !isTargetTreatedAsInternal(it.assumeResolved(), repoMapping) }
         val (targetsToImport, nonWorkspaceTargets) =
           targetsAtDepth.targets.partition {
             isWorkspaceTarget(it, repoMapping, transitiveCompileTimeJarsTargetKinds, featureFlags)
@@ -895,7 +895,8 @@ class BazelProjectMapper(
   private fun hasKnownPythonSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
       it.relativePath.endsWith(".py")
-    }
+    } ||
+      targetInfo.pythonTargetInfo.isCodeGenerator
 
   private fun hasKnownGoSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
@@ -1077,6 +1078,9 @@ class BazelProjectMapper(
       }
       if (target.hasJvmTargetInfo()) {
         add(LanguageClass.JAVA)
+      }
+      if (target.hasPythonTargetInfo()) {
+        add(LanguageClass.PYTHON)
       }
       languagesFromKinds[target.kind]?.let {
         addAll(it)

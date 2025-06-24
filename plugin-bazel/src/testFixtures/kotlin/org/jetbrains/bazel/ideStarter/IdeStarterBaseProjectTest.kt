@@ -1,5 +1,14 @@
 package org.jetbrains.bazel.ideStarter
 
+import com.intellij.driver.client.Driver
+import com.intellij.driver.client.Remote
+import com.intellij.driver.client.utility
+import com.intellij.driver.sdk.Project
+import com.intellij.driver.sdk.VirtualFile
+import com.intellij.driver.sdk.openEditor
+import com.intellij.driver.sdk.singleProject
+import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.waitForCodeAnalysis
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.di.di
@@ -25,6 +34,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.io.File
+import java.lang.IllegalArgumentException
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
@@ -230,3 +240,29 @@ fun <T : CommandChain> T.navigateToFile(
     .delay(500)
     .assertCurrentFile(expectedFilename)
     .assertCaretPosition(expectedCaretLine, expectedCaretColumn)
+
+/**
+ * Should be used instead of [com.intellij.driver.sdk.openFile] because this method doesn't rely on content roots
+ */
+fun Driver.openFile(relativePath: String, waitForCodeAnalysis: Boolean = true): VirtualFile =
+  step("Open file $relativePath") {
+    val fileToOpen = findFile(relativePath = relativePath) ?: throw IllegalArgumentException("Fail to find file $relativePath")
+    openEditor(fileToOpen, singleProject())
+    if (waitForCodeAnalysis) {
+      waitForCodeAnalysis(singleProject(), fileToOpen)
+    }
+    fileToOpen
+  }
+
+/**
+ * Should be used instead of [com.intellij.driver.sdk.findFile] because this method doesn't rely on content roots
+ */
+fun Driver.findFile(relativePath: String): VirtualFile? = projectRootDir.findFileByRelativePath(relativePath)
+
+val Driver.projectRootDir: VirtualFile
+  get() = utility<BazelProjectPropertiesKt>().getRootDir(singleProject())
+
+@Remote("org.jetbrains.bazel.config.BazelProjectPropertiesKt", plugin = "org.jetbrains.bazel")
+interface BazelProjectPropertiesKt {
+  fun getRootDir(project: Project): VirtualFile
+}

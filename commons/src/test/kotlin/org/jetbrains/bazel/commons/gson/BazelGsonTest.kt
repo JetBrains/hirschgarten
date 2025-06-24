@@ -37,6 +37,8 @@ class BazelGsonTest {
             version = "3.8",
             interpreter = Path.of("/usr/bin/python3"),
             listOf(),
+            false,
+            listOf(),
           ),
       )
 

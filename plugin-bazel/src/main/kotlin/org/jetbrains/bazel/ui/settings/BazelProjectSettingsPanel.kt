@@ -2,6 +2,7 @@ package org.jetbrains.bazel.ui.settings
 
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.extensions.BaseExtensionPointName
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.observable.util.whenTextChanged
 import com.intellij.openapi.options.BoundCompositeSearchableConfigurable
 import com.intellij.openapi.options.Configurable
@@ -18,7 +19,6 @@ import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.buildifier.BuildifierUtil
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.sdkcompat.FileChooserDescriptorFactoryCompat
 import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
@@ -73,8 +73,8 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
       val description = "Select the path for your project view file."
       addBrowseFolderListener(
         project,
-        FileChooserDescriptorFactoryCompat
-          .createSingleFileDescriptor()
+        FileChooserDescriptorFactory
+          .singleFile()
           .withTitle(title)
           .withDescription(description),
       )
@@ -91,8 +91,8 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
       val title = BazelPluginBundle.message("buildifier.select.path.to.executable")
       addBrowseFolderListener(
         project,
-        FileChooserDescriptorFactoryCompat
-          .createSingleFileDescriptor()
+        FileChooserDescriptorFactory
+          .singleFile()
           .withTitle(title),
       )
       whenTextChanged {

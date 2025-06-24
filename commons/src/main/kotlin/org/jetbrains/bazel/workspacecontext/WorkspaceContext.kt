@@ -82,6 +82,8 @@ data class WorkspaceContext(
   val shardingApproachSpec: ShardingApproachSpec,
   val importRunConfigurations: ImportRunConfigurationsSpec,
   val gazelleTarget: GazelleTargetSpec,
+  val indexAllFilesInDirectories: IndexAllFilesInDirectoriesSpec,
+  val pythonCodeGeneratorRuleNames: PythonCodeGeneratorRuleNamesSpec,
 ) : ExecutionContext()
 
 /**
