@@ -6,15 +6,8 @@ import com.intellij.openapi.components.SimplePersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.readText
-import com.intellij.testFramework.utils.vfs.getFile
-import com.intellij.util.text.SemVer
-import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionLiteral
-import org.jetbrains.bazel.languages.bazelversion.service.resolver.BazelGithubVersionResolver
-import kotlin.io.path.isReadable
-import kotlin.io.path.readText
 
 @Service(Service.Level.PROJECT)
 @State(name = "BazelVersionCache", storages = [Storage("bazelVersionCache.xml")])
