@@ -278,10 +278,9 @@ class CollectProjectDetailsTask(
               projectBasePath = projectBasePath,
               project = project,
               isAndroidSupportEnabled = false,
-              libraryModules = libraryModules,
             )
 
-          workspaceModelUpdater.loadModules(modulesToLoad + libraryModules)
+          workspaceModelUpdater.loadModules(modulesToLoad, libraryModules)
           workspaceModelUpdater.loadLibraries(libraries)
           compiledSourceCodeInsideJarToExclude?.let { workspaceModelUpdater.loadCompiledSourceCodeInsideJarExclude(it) }
           calculateAllJavacOptions(modulesToLoad)
