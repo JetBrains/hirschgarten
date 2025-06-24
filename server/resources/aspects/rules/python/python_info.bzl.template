@@ -130,7 +130,7 @@ def extract_python_info(target, ctx, output_groups, **kwargs):
             scratch_parts = provider_import_parts[1:]  # remove the workspace name or _main
 
             for p in package_parts:
-                if scratch_parts[0] == p:
+                if len(scratch_parts) > 0 and scratch_parts[0] == p :
                     scratch_parts = scratch_parts[1:]
                 else:
                     return None
