@@ -9,7 +9,9 @@ import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.annotations.Child
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.bazel.annotations.PublicApi
 
+@PublicApi
 interface ScalaAddendumEntity : WorkspaceEntity {
   val compilerVersion: String
   val scalacOptions: List<String>
@@ -59,4 +61,5 @@ var ModuleEntity.Builder.scalaAddendumEntity: @Child ScalaAddendumEntity.Builder
   by WorkspaceEntity.extensionBuilder(ScalaAddendumEntity::class.java)
 //endregion
 
+@PublicApi
 val ModuleEntity.scalaAddendumEntity: @Child ScalaAddendumEntity? by WorkspaceEntity.extension()
