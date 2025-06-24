@@ -12,6 +12,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelProjectProperties
 import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
 import org.jetbrains.bazel.projectAware.BazelWorkspace
+import org.jetbrains.bazel.sdkcompat.setFindInFilesNonIndexable
 import org.jetbrains.bazel.sync.scope.SecondPhaseSync
 import org.jetbrains.bazel.sync.task.PhasedSync
 import org.jetbrains.bazel.sync.task.ProjectSyncTask
@@ -52,6 +53,7 @@ class BazelStartupActivity : BazelProjectActivity() {
 
 private suspend fun executeOnEveryProjectStartup(project: Project) {
   log.debug("Executing Bazel startup activities for every opening")
+  setFindInFilesNonIndexable(project)
   updateBazelFileTargetsWidget(project)
   configureRunConfigurationIgnoreProducers(project)
   project.serviceAsync<BazelWorkspace>().initialize()
