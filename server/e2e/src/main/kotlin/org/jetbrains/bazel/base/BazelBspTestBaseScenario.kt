@@ -20,7 +20,7 @@ abstract class BazelBspTestBaseScenario {
   protected val workspaceDir = System.getenv("BIT_WORKSPACE_DIR")
 
   val majorBazelVersion: Int = calculateMajorBazelVersion()
-  val targetPrefix = "@"
+  val targetPrefix = "@@"
 
   val isBzlmod = majorBazelVersion >= 7
   val bzlmodRepoNameSeparator = if (majorBazelVersion == 7) "~" else "+"

@@ -2,7 +2,7 @@ package org.jetbrains.bazel.install
 
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.projectview.generator.DefaultProjectViewGenerator
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
@@ -58,8 +58,8 @@ object ProjectViewCLiOptionsProvider {
     }
 
   private fun toTargetsSectionNotNull(projectViewCliOptions: ProjectViewCliOptions): ProjectViewTargetsSection {
-    val includedTargets = projectViewCliOptions.targets.orEmpty().map { Label.parse(it) }
-    val excludedTargets = projectViewCliOptions.excludedTargets.orEmpty().map { Label.parse(it) }
+    val includedTargets = projectViewCliOptions.targets.orEmpty().map { TargetPattern.parse(it) }
+    val excludedTargets = projectViewCliOptions.excludedTargets.orEmpty().map { TargetPattern.parse(it) }
 
     return ProjectViewTargetsSection(includedTargets, excludedTargets)
   }
