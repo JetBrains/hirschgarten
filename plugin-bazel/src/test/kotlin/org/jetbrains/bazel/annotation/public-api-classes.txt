@@ -6,4 +6,5 @@ interface org.jetbrains.bazel.extensionPoints.JvmBinaryJarsExtension
 interface org.jetbrains.bazel.label.PackageType
 interface org.jetbrains.bazel.scala.sdk.ScalaSdkExtension
 interface org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JvmBinaryJarsEntity
+interface org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendumEntity
 interface org.jetbrains.bazel.sync.ProjectPostSyncHook
