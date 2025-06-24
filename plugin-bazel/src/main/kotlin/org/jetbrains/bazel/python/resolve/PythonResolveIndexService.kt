@@ -17,8 +17,11 @@ import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import java.nio.file.FileSystems
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.extension
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
 import kotlin.io.path.relativeTo
 
 @Service(Service.Level.PROJECT)
@@ -34,6 +37,7 @@ class PythonResolveIndexService(private val project: Project) {
   private fun buildIndex(rawTargets: List<RawBuildTarget>): Map<QualifiedName, (PsiManager) -> PsiElement?> {
     val executionRoot = BazelBinPathService.getInstance(project).bazelExecPath?.let { Path.of(it) } ?: return emptyMap()
     val rootDir = Path.of(project.rootDir.path)
+    val bazelBin = BazelBinPathService.getInstance(project).bazelBinPath?.let { Path.of(it) } ?: return emptyMap()
     val targets =
       rawTargets
         .filter {
@@ -51,16 +55,31 @@ class PythonResolveIndexService(private val project: Project) {
 
     for (target in targets) {
       val importsPaths = assembleImportsPaths(target)
-
+      val pythonTargetInfo = extractPythonBuildTarget(target) ?: continue
       val fullQualifiedNameToAbsolutePath: Map<QualifiedName?, Path> =
-        if (target.id.isMainWorkspace) {
+        if (pythonTargetInfo.isCodeGenerator) {
+          pythonTargetInfo.generatedSources
+            .flatMap { file ->
+              // some code gen rules return directories. we need to figure out what files are there
+              if (file.isDirectory()) {
+                Files
+                  .walk(file)
+                  .filter { it.isRegularFile() }
+                  .map { it.toAbsolutePath() }
+                  .toList()
+              } else {
+                listOf(file)
+              }
+            }.associateBy { path -> path.relativeTo(bazelBin).toQualifiedName() }
+            .filter { it.key != null }
+        } else if (target.id.isMainWorkspace) {
           importsPaths
             .flatMap { importsPath ->
               allPYSourcesInMainWorkspace.filter { it.startsWith(importsPath) }
             }.toSet()
             .associate {
               it.toQualifiedName() to rootDir.resolve(it)
-            }
+            }.filter { it.key != null }
         } else {
           target.sources.associate { sourceItem ->
             val executionRootRelativePath =
@@ -75,7 +94,6 @@ class PythonResolveIndexService(private val project: Project) {
                     // if this is a file under external/, then we trim the "external/{repo_name}" part
                     Path.of(it.subpath(2, it.nameCount).toString())
                   } else {
-                    // todo: if this is a generated python file #BAZEL-1758
                     it
                   }
                 }
