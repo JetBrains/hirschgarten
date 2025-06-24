@@ -4,12 +4,13 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.importing.AbstractOpenProjectProvider
 import com.intellij.openapi.externalSystem.model.ProjectSystemId
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
-import org.jetbrains.bazel.startup.BazelStartupActivity
+import org.jetbrains.bazel.startup.BazelProjectActivity
 
 private val log = logger<BazelOpenProjectProvider>()
 
@@ -33,7 +34,9 @@ internal suspend fun performOpenBazelProject(project: Project?, projectRootDir: 
     project.initProperties(projectRootDir)
     configureProjectCounterPlatform(project)
     BazelCoroutineService.getInstance(project).start {
-      BazelStartupActivity().execute(project)
+      StartupActivity.POST_STARTUP_ACTIVITY.extensionList.filterIsInstance<BazelProjectActivity>().forEach {
+        it.execute(project)
+      }
     }
   }
 }
