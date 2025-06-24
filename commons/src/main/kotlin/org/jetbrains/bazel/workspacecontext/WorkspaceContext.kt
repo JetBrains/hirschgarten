@@ -84,6 +84,7 @@ data class WorkspaceContext(
   val importRunConfigurations: ImportRunConfigurationsSpec,
   val gazelleTarget: GazelleTargetSpec,
   val indexAllFilesInDirectories: IndexAllFilesInDirectoriesSpec,
+  val pythonCodeGeneratorRuleNames: PythonCodeGeneratorRuleNamesSpec,
 ) : ExecutionContext()
 
 /**

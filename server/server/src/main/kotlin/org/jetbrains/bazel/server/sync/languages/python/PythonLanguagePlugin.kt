@@ -41,6 +41,10 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
         calculateInterpreterPath(interpreter = pythonTargetInfo.interpreter) ?: defaultInterpreter,
         pythonTargetInfo.version.takeUnless(String::isNullOrEmpty) ?: defaultVersion,
         pythonTargetInfo.importsList,
+        pythonTargetInfo.isCodeGenerator,
+        generatedSources =
+          pythonTargetInfo.generatedSourcesList
+            .mapNotNull { bazelPathsResolver.resolve(it) },
       )
     }
 
@@ -56,6 +60,8 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
         version = moduleData.version,
         interpreter = interpreter,
         imports = moduleData.imports,
+        isCodeGenerator = moduleData.isCodeGenerator,
+        generatedSources = moduleData.generatedSources,
       )
   }
 
