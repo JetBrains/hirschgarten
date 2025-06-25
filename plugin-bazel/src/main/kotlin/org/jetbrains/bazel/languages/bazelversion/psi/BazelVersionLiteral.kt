@@ -14,8 +14,8 @@ sealed interface BazelVersionLiteral {
   }
 }
 
-fun BazelVersionLiteral.toStringLiteral(): String = when(this) {
-  is BazelVersionLiteral.Forked -> "$fork/${version.toStringLiteral()}"
+fun BazelVersionLiteral.toBazelVersionStringLiteral(): String = when(this) {
+  is BazelVersionLiteral.Forked -> "$fork/${version.toBazelVersionStringLiteral()}"
   is BazelVersionLiteral.Latest -> if (offset == 0) "latest" else "latest-$offset"
   is BazelVersionLiteral.Other -> version
   BazelVersionLiteral.Special.LAST_GREEN -> "last_green"
@@ -29,6 +29,13 @@ fun BazelVersionLiteral.toSemVer(): SemVer? = when(this) {
   is BazelVersionLiteral.Other -> SemVer.parseFromText(version)
   is BazelVersionLiteral.Specific -> version
   else -> null
+}
+
+fun BazelVersionLiteral.withNewVersionWhenPossible(newVersion: String): BazelVersionLiteral = when(this) {
+  is BazelVersionLiteral.Forked -> BazelVersionLiteral.Forked(fork, version.withNewVersionWhenPossible(newVersion))
+  is BazelVersionLiteral.Other -> newVersion.toBazelVersionLiteral() ?: this
+  is BazelVersionLiteral.Specific -> newVersion.toBazelVersionLiteral() ?: this
+  else -> this
 }
 
 val BAZEL_FORK_VERSION_REGEX = """(?:([^/]+)/)?(.+)""".toRegex()
