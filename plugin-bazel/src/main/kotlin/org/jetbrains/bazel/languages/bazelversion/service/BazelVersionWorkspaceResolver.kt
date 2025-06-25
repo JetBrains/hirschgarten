@@ -9,12 +9,11 @@ import kotlin.io.path.isRegularFile
 import kotlin.io.path.readText
 
 object BazelVersionWorkspaceResolver {
-  fun resolveBazelVersionFromWorkspace(workspace: Path): BazelVersionLiteral? {
-    return resolveBazelVersionEnvVariable()
+  fun resolveBazelVersionFromWorkspace(workspace: Path): BazelVersionLiteral? =
+    resolveBazelVersionEnvVariable()
       ?: resolveBazeliskRcVersion(workspace)
       ?: resolveWorkspaceBazelVersionFile(workspace)
       ?: resolveFallbackBazelVersion()
-  }
 
   private fun resolveWorkspaceBazelVersionFile(workspace: Path): BazelVersionLiteral? =
     workspace.resolve(".bazelversion").readTextOrNull()?.toBazelVersionLiteral()
@@ -55,7 +54,8 @@ object BazelVersionWorkspaceResolver {
 // https://github.com/bazelbuild/bazelisk/blob/2ecd43c25b475cab2cd554f0fce40304f2bf3445/config/config.go#L50
 object BazeliskrcParser {
   fun parse(content: String): Map<String, String> =
-    content.lines()
+    content
+      .lines()
       .filterNot { it.startsWith("#") }
       .map { it.split("=") }
       .filter { it.size >= 2 }

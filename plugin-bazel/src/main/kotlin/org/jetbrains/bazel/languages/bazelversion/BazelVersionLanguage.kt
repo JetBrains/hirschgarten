@@ -16,5 +16,4 @@ object BazelVersionFileType : LanguageFileType(BazelVersionLanguage) {
   override fun getDefaultExtension(): @NlsSafe String = "bazelversion"
 
   override fun getIcon(): Icon = BazelPluginIcons.bazel
-
 }

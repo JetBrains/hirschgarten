@@ -33,29 +33,32 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.toJavaDuration
 
 class BazelGithubVersionResolver : BazelVersionResolver {
-  val githubGson = GsonBuilder()
-    .setPrettyPrinting()
-    .serializeNulls()
-    .disableHtmlEscaping()
-    .create()
+  val githubGson =
+    GsonBuilder()
+      .setPrettyPrinting()
+      .serializeNulls()
+      .disableHtmlEscaping()
+      .create()
   val httpClient = HttpClient(CIO)
 
   override val id: String = ID
   override val name: String = "Github"
 
-  fun getForkOfSupportedBazelVersion(version: BazelVersionLiteral?) = when (version) {
-    is BazelVersionLiteral.Forked -> version.fork
-    is BazelVersionLiteral.Specific, null -> DEFAULT_FORK_NAME
-    else -> null
-  }
+  fun getForkOfSupportedBazelVersion(version: BazelVersionLiteral?) =
+    when (version) {
+      is BazelVersionLiteral.Forked -> version.fork
+      is BazelVersionLiteral.Specific, null -> DEFAULT_FORK_NAME
+      else -> null
+    }
 
   override suspend fun resolveLatestBazelVersion(project: Project, currentVersion: BazelVersionLiteral?): BazelVersionLiteral? {
     val githubService = project.service<BazelGithubGlobalCacheService>()
     githubService.optimizeCache()
     val fork = getForkOfSupportedBazelVersion(currentVersion) ?: return null
-    val version = githubService.getCachedVersion(fork, System.currentTimeMillis()) { name, _ ->
-      getLatestBazelVersion(project, name)
-    } ?: return null
+    val version =
+      githubService.getCachedVersion(fork, System.currentTimeMillis()) { name, _ ->
+        getLatestBazelVersion(project, name)
+      } ?: return null
     return currentVersion?.withNewVersionWhenPossible(version)
   }
 
@@ -66,13 +69,15 @@ class BazelGithubVersionResolver : BazelVersionResolver {
     if (response.status != HttpStatusCode.OK) {
       return null
     }
-    val releases = try {
-      githubGson.fromJson(response.bodyAsText(), Array<GithubReleaseResponse>::class.java)
-    } catch (_: JsonSyntaxException) {
-      return null
-    }
+    val releases =
+      try {
+        githubGson.fromJson(response.bodyAsText(), Array<GithubReleaseResponse>::class.java)
+      } catch (_: JsonSyntaxException) {
+        return null
+      }
     val comparator = compareBy<GithubReleaseResponse> { response -> response.tagName?.let { SemVer.parseFromText(it) } }
-    return releases.toList()
+    return releases
+      .toList()
       .filter {
         if (!cacheService.includePrelease && it.prerelease == true) {
           return@filter false
@@ -81,7 +86,8 @@ class BazelGithubVersionResolver : BazelVersionResolver {
           return@filter false
         }
         true
-      }.maxWithOrNull(comparator)?.tagName
+      }.maxWithOrNull(comparator)
+      ?.tagName
   }
 
   companion object {
@@ -102,9 +108,7 @@ val GITHUB_CACHE_EVICTION_TIME = 24.hours
 
 @Service(Service.Level.PROJECT)
 @State(name = "BazelGithubResolverVersionCache", storages = [Storage("bazelVersionCache.xml")])
-class BazelGithubGlobalCacheService(val coroutineScope: CoroutineScope) :
-  PersistentStateComponent<BazelGithubGlobalCacheService.State> {
-
+class BazelGithubGlobalCacheService(val coroutineScope: CoroutineScope) : PersistentStateComponent<BazelGithubGlobalCacheService.State> {
   class State : BaseState() {
     @get:XMap
     val forks by map<String, ForkState>()
@@ -121,51 +125,56 @@ class BazelGithubGlobalCacheService(val coroutineScope: CoroutineScope) :
 
   sealed interface CachedVersion {
     data class Cached(val version: String, val lastUpdated: Long) : CachedVersion
+
     data object Unavailable : CachedVersion
   }
 
-  val cache: AsyncCache<String, CachedVersion> = Caffeine.newBuilder()
-    .expireAfter(
-      Expiry.writing<String, CachedVersion> { _, value ->
-        return@writing when (value) {
-          is CachedVersion.Cached -> {
-            val currentTime = System.currentTimeMillis().milliseconds
-            val whenExpire = value.lastUpdated.milliseconds + GITHUB_CACHE_EVICTION_TIME
-            return@writing (whenExpire - currentTime).toJavaDuration()
-          }
+  val cache: AsyncCache<String, CachedVersion> =
+    Caffeine
+      .newBuilder()
+      .expireAfter(
+        Expiry.writing<String, CachedVersion> { _, value ->
+          return@writing when (value) {
+            is CachedVersion.Cached -> {
+              val currentTime = System.currentTimeMillis().milliseconds
+              val whenExpire = value.lastUpdated.milliseconds + GITHUB_CACHE_EVICTION_TIME
+              return@writing (whenExpire - currentTime).toJavaDuration()
+            }
 
-          CachedVersion.Unavailable -> {
-            return@writing Duration.ZERO.toJavaDuration()
+            CachedVersion.Unavailable -> {
+              return@writing Duration.ZERO.toJavaDuration()
+            }
           }
-        }
-      },
-    )
-    .executor { coroutineScope.future { it.run() } }
-    .buildAsync()
+        },
+      ).executor { coroutineScope.future { it.run() } }
+      .buildAsync()
 
   var includePrelease = false
   var includeReleaseCandidate = false
 
   override fun getState(): BazelGithubGlobalCacheService.State =
-    State().also  {
+    State().also {
       it.includePrelease = includePrelease
       it.includeReleaseCandidate = includeReleaseCandidate
 
-      val newMap = cache.synchronous().asMap()
-        .mapNotNull { (key, value) ->
-          when (value) {
-            is CachedVersion.Cached -> {
-              key to ForkState().apply {
-                name = key
-                version = value.version
-                lastUpdated = value.lastUpdated
+      val newMap =
+        cache
+          .synchronous()
+          .asMap()
+          .mapNotNull { (key, value) ->
+            when (value) {
+              is CachedVersion.Cached -> {
+                key to
+                  ForkState().apply {
+                    name = key
+                    version = value.version
+                    lastUpdated = value.lastUpdated
+                  }
               }
-            }
 
-            CachedVersion.Unavailable -> null
-          }
-        }
-        .toMap()
+              CachedVersion.Unavailable -> null
+            }
+          }.toMap()
       it.forks.putAll(newMap)
     }
 
@@ -174,23 +183,29 @@ class BazelGithubGlobalCacheService(val coroutineScope: CoroutineScope) :
     includeReleaseCandidate = state.includeReleaseCandidate
 
     cache.synchronous().invalidateAll()
-    val newMap = state.forks.mapValues { (_, value) ->
-      CachedVersion.Cached(value.version, value.lastUpdated)
-    }
+    val newMap =
+      state.forks.mapValues { (_, value) ->
+        CachedVersion.Cached(value.version, value.lastUpdated)
+      }
     cache.synchronous().putAll(newMap)
   }
 
   suspend fun getCachedVersion(
-    forkName: String, currentTimeMs: Long,
+    forkName: String,
+    currentTimeMs: Long,
     supplier: suspend (forkName: String, lastUpdated: Long) -> String?,
   ): String? {
-    val cachedVersion = cache.get(forkName) { forkName, _ ->
-      coroutineScope.future {
-        val version = supplier(forkName, currentTimeMs)
-          ?: return@future CachedVersion.Unavailable
-        return@future CachedVersion.Cached(version, currentTimeMs)
-      }
-    }.asDeferred().await()
+    val cachedVersion =
+      cache
+        .get(forkName) { forkName, _ ->
+          coroutineScope.future {
+            val version =
+              supplier(forkName, currentTimeMs)
+                ?: return@future CachedVersion.Unavailable
+            return@future CachedVersion.Cached(version, currentTimeMs)
+          }
+        }.asDeferred()
+        .await()
     return when (cachedVersion) {
       is CachedVersion.Cached -> cachedVersion.version
       CachedVersion.Unavailable -> null

@@ -7,7 +7,6 @@ import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionLiteral
 import org.junit.jupiter.api.Test
 
 class BazelVersionLiteralParserTest {
-
   @Test
   fun `test official version`() {
     "8.2.1".toBazelVersionLiteral()!! shouldBeEqual BazelVersionLiteral.Specific(SemVer.parseFromText("8.2.1")!!)
@@ -20,10 +19,11 @@ class BazelVersionLiteralParserTest {
 
   @Test
   fun `test forked version`() {
-    "JetBrains/8.2.1-jb_20250522_59".toBazelVersionLiteral()!! shouldBeEqual BazelVersionLiteral.Forked(
-      "JetBrains",
-      BazelVersionLiteral.Specific(SemVer.parseFromText("8.2.1-jb_20250522_59")!!),
-    )
+    "JetBrains/8.2.1-jb_20250522_59".toBazelVersionLiteral()!! shouldBeEqual
+      BazelVersionLiteral.Forked(
+        "JetBrains",
+        BazelVersionLiteral.Specific(SemVer.parseFromText("8.2.1-jb_20250522_59")!!),
+      )
   }
 
   @Test

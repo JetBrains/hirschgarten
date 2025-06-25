@@ -8,7 +8,8 @@ class BazelVersionFetchSyncHook : ProjectPostSyncHook {
   override suspend fun onPostSync(environment: ProjectPostSyncHook.ProjectPostSyncHookEnvironment) {
     val workspaceDir = environment.project.rootDir.toNioPath()
     val currentVersion = BazelVersionWorkspaceResolver.resolveBazelVersionFromWorkspace(workspaceDir)
-    environment.project.service<BazelVersionCheckerService>()
+    environment.project
+      .service<BazelVersionCheckerService>()
       .refreshLatestBazelVersion(environment.project, currentVersion)
   }
 }

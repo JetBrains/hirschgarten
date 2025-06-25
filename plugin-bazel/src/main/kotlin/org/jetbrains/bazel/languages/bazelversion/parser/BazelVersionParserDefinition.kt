@@ -20,15 +20,12 @@ import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionFile
 class BazelVersionParserDefinition : ParserDefinition {
   override fun createLexer(project: Project?): Lexer = EmptyLexer()
 
-  override fun createParser(project: Project?): PsiParser {
-    throw UnsupportedOperationException()
-  }
+  override fun createParser(project: Project?): PsiParser = throw UnsupportedOperationException()
 
-  override fun getFileNodeType(): IFileElementType = object : IFileElementType(BazelVersionLanguage) {
-    override fun parseContents(chameleon: ASTNode): ASTNode {
-      return ASTFactory.leaf(PlainTextTokenTypes.PLAIN_TEXT, chameleon.chars)
+  override fun getFileNodeType(): IFileElementType =
+    object : IFileElementType(BazelVersionLanguage) {
+      override fun parseContents(chameleon: ASTNode): ASTNode = ASTFactory.leaf(PlainTextTokenTypes.PLAIN_TEXT, chameleon.chars)
     }
-  }
 
   override fun getCommentTokens(): TokenSet = TokenSet.EMPTY
 

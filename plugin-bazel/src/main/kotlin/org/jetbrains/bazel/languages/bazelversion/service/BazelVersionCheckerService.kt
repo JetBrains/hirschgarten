@@ -12,8 +12,7 @@ import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionStringLitera
 
 @Service(Service.Level.PROJECT)
 @State(name = "BazelVersionCache", storages = [Storage("bazelVersionCache.xml")])
-class BazelVersionCheckerService :
-  PersistentStateComponent<BazelVersionCheckerService.State> {
+class BazelVersionCheckerService : PersistentStateComponent<BazelVersionCheckerService.State> {
   class State : BaseState() {
     var resolverId by string(null)
     var bazelVersion by string(null)
@@ -23,12 +22,13 @@ class BazelVersionCheckerService :
   private var bazelVersion: BazelVersionLiteral? = null
 
   val latestBazelVersion: BazelVersionLiteral?
-    get () = bazelVersion
+    get() = bazelVersion
 
-  override fun getState(): BazelVersionCheckerService.State = State().also {
-    it.resolverId = resolverId
-    it.bazelVersion = bazelVersion?.toBazelVersionStringLiteral()
-  }
+  override fun getState(): BazelVersionCheckerService.State =
+    State().also {
+      it.resolverId = resolverId
+      it.bazelVersion = bazelVersion?.toBazelVersionStringLiteral()
+    }
 
   override fun loadState(state: BazelVersionCheckerService.State) {
     resolverId = state.resolverId
@@ -37,10 +37,13 @@ class BazelVersionCheckerService :
 
   suspend fun refreshLatestBazelVersion(project: Project, currentVersion: BazelVersionLiteral?) {
     if (resolverId.isNullOrBlank()) {
-      resolverId = BazelVersionResolver.ep.extensionList.firstOrNull()?.id ?: return
+      resolverId = BazelVersionResolver.ep.extensionList
+        .firstOrNull()
+        ?.id ?: return
     }
-    val resolver = BazelVersionResolver.ep.extensionList
-      .firstOrNull { it.id == state.resolverId } ?: return
+    val resolver =
+      BazelVersionResolver.ep.extensionList
+        .firstOrNull { it.id == state.resolverId } ?: return
     bazelVersion = resolver.resolveLatestBazelVersion(project, currentVersion) ?: return
   }
 }

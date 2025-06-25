@@ -7,7 +7,6 @@ import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.junit.jupiter.api.Test
 
 class BazelVersionWorkspaceResolverTest {
-
   @Test
   fun `test workspace version resolver bazelisk`() {
     val path = Runfiles.runfilesPath("/plugin-bazel/src/test/testData/bazelversion/version_resolve_bazelisk")

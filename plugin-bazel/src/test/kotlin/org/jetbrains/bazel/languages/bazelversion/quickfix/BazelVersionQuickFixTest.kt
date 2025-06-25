@@ -21,9 +21,11 @@ class BazelVersionQuickFixTest : BasePlatformTestCase() {
   override fun setUp() {
     super.setUp()
 
-    ExtensionTestUtil.maskExtensions(BazelVersionResolver.ep,
-                                     listOf(CustomBazelVersionResolver()),
-                                     testRootDisposable)
+    ExtensionTestUtil.maskExtensions(
+      BazelVersionResolver.ep,
+      listOf(CustomBazelVersionResolver()),
+      testRootDisposable,
+    )
 
     myFixture.enableInspections(BazelVersionInspection())
   }
@@ -45,8 +47,6 @@ class CustomBazelVersionResolver : BazelVersionResolver {
   override val id: String = "custom"
   override val name: String = "Custom"
 
-  override suspend fun resolveLatestBazelVersion(
-    project: Project,
-    currentVersion: BazelVersionLiteral?,
-  ): BazelVersionLiteral? = currentVersion?.withNewVersionWhenPossible("9999.0.0")
+  override suspend fun resolveLatestBazelVersion(project: Project, currentVersion: BazelVersionLiteral?): BazelVersionLiteral? =
+    currentVersion?.withNewVersionWhenPossible("9999.0.0")
 }
