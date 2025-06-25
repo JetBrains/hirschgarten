@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.info.BspTargetInfo.Dependency
 import org.jetbrains.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.assumeResolved
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -621,7 +620,7 @@ class DependencyGraphTest {
     // when
     val dependencies =
       dependencyGraph.allTargetsAtDepth(0, setOf(Label.parse("//target"))) { label ->
-        label.assumeResolved().repoName == "maven"
+        label.repoName == "maven"
       }
 
     // then
