@@ -16,13 +16,8 @@ object BazelVersionWorkspaceResolver {
       ?: resolveFallbackBazelVersion()
   }
 
-  private fun resolveWorkspaceBazelVersionFile(workspace: Path): BazelVersionLiteral? {
-    val file = workspace.resolve(".bazelversion")
-    if (!file.isRegularFile() || !file.exists()) {
-      return null
-    }
-    return file.readText().toBazelVersionLiteral()
-  }
+  private fun resolveWorkspaceBazelVersionFile(workspace: Path): BazelVersionLiteral? =
+    workspace.resolve(".bazelversion").readTextOrNull()?.toBazelVersionLiteral()
 
   private fun resolveBazelVersionEnvVariable(): BazelVersionLiteral? =
     EnvironmentUtil.getValue("USE_BAZEL_VERSION")?.toBazelVersionLiteral()
@@ -39,14 +34,21 @@ object BazelVersionWorkspaceResolver {
   }
 
   private fun resolveBazeliskRcVersion(workspace: Path): BazelVersionLiteral? {
-    val file = workspace
-      .resolve(".bazeliskrc") ?: return null
-    if (!file.isRegularFile() || !file.exists()) {
-      return null
-    }
-    val properties = BazeliskrcParser.parse(file.readText())
+    val text = workspace.resolve(".bazeliskrc").readTextOrNull() ?: return null
+    val properties = BazeliskrcParser.parse(text)
     val version = properties["USE_BAZEL_VERSION"] ?: return null
     return version.toBazelVersionLiteral()
+  }
+
+  private fun Path.readTextOrNull(): String? {
+    if (!isRegularFile() || !exists()) {
+      return null
+    }
+    return try {
+      return readText()
+    } catch (_: Throwable) {
+      null
+    }
   }
 }
 
