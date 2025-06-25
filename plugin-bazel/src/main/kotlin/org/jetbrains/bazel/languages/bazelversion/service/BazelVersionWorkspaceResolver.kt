@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.bazelversion.service
 
+import com.intellij.util.EnvironmentUtil
 import org.jetbrains.bazel.languages.bazelversion.psi.BazelVersionLiteral
 import org.jetbrains.bazel.languages.bazelversion.psi.toBazelVersionLiteral
 import java.nio.file.Path
@@ -24,10 +25,10 @@ object BazelVersionWorkspaceResolver {
   }
 
   private fun resolveBazelVersionEnvVariable(): BazelVersionLiteral? =
-    System.getenv("USE_BAZEL_VERSION")?.toBazelVersionLiteral()
+    EnvironmentUtil.getValue("USE_BAZEL_VERSION")?.toBazelVersionLiteral()
 
   private fun resolveFallbackBazelVersion(): BazelVersionLiteral? {
-    val fallbackVersion = System.getenv("USE_BAZEL_FALLBACK_VERSION") ?: return null
+    val fallbackVersion = EnvironmentUtil.getValue("USE_BAZEL_FALLBACK_VERSION") ?: return null
     val allowedPrefixes = listOf("error:", "warn:", "silent:")
     val prefix = allowedPrefixes.firstOrNull { fallbackVersion.startsWith(it) }
     return if (prefix == null) {
