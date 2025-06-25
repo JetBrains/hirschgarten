@@ -45,6 +45,8 @@ class BazelStartupActivity : BazelProjectActivity() {
 
     resyncProjectIfNeeded(project)
 
+    executeOnSyncedProject(project)
+
     project.serviceAsync<BazelProjectProperties>().isInitialized = true
 
     BazelStartupActivityTracker.stopConfigurationPhase(project)
@@ -53,7 +55,6 @@ class BazelStartupActivity : BazelProjectActivity() {
 
 private suspend fun executeOnEveryProjectStartup(project: Project) {
   log.debug("Executing Bazel startup activities for every opening")
-  setFindInFilesNonIndexable(project)
   updateBazelFileTargetsWidget(project)
   configureRunConfigurationIgnoreProducers(project)
   project.serviceAsync<BazelWorkspace>().initialize()
@@ -72,6 +73,11 @@ private suspend fun resyncProjectIfNeeded(project: Project) {
       )
     }
   }
+}
+
+private fun executeOnSyncedProject(project: Project) {
+  // Only enable searching after all the excludes from the project view are applied
+  setFindInFilesNonIndexable(project)
 }
 
 /**
