@@ -5,7 +5,7 @@ kt_intellij_junit4_test(
     src = "ProjectViewLexerTest.kt",
     tags = ["exclusive"],
     deps = [
-        "//plugin-bazel/src:plugin-bazel-lib",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/fixtures",
     ],
 )

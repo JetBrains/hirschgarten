@@ -6,6 +6,6 @@ kt_intellij_junit4_test(
     data = ["//plugin-bazel/src/test/testData/projectview/parser/sections"],
     tags = ["exclusive"],
     deps = [
-        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/projectview/fixtures",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
     ],
 )
