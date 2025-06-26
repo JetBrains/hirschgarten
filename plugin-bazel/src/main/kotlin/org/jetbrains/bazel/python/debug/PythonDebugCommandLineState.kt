@@ -13,6 +13,7 @@ import com.jetbrains.python.run.PythonConfigurationType
 import com.jetbrains.python.run.PythonRunConfiguration
 import com.jetbrains.python.run.PythonScriptCommandLineState
 import com.jetbrains.python.sdk.PythonSdkUtil
+import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
@@ -36,7 +37,7 @@ class PythonDebugCommandLineState(
 
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
-  override suspend fun startBsp(server: JoinedBuildServer) {
+  override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
     val configuration = environment.runProfile as BazelRunConfiguration
     val targetId = configuration.targets.single()
     val buildParams =

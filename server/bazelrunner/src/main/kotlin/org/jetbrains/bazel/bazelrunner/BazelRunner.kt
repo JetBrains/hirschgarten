@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.bazelrunner
 
 import com.intellij.execution.configurations.GeneralCommandLine
+import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.enableWorkspace
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag.overrideRepository
@@ -151,6 +152,7 @@ class BazelRunner(
     logProcessOutput: Boolean = true,
     serverPidFuture: CompletableFuture<Long>?,
     shouldLogInvocation: Boolean = true,
+    createdProcessIdDeferred: CompletableDeferred<Long?>? = null,
   ): BazelProcess {
     val executionDescriptor = command.buildExecutionDescriptor()
     val finishCallback = executionDescriptor.finishCallback
@@ -168,6 +170,7 @@ class BazelRunner(
     }
 
     val process = commandLine.createProcess()
+    createdProcessIdDeferred?.complete(process.pid())
     val outputLogger = bspClientLogger.takeIf { logProcessOutput }?.copy(originId = originId)
 
     return BazelProcess(

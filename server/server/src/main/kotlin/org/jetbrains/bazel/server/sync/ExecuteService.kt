@@ -139,6 +139,7 @@ class ExecuteService(
           command,
           originId = params.originId,
           serverPidFuture = null,
+          createdProcessIdDeferred = params.pidDeferred,
         ).waitAndGetResult()
     return RunResult(statusCode = bazelProcessResult.bazelStatus, originId = params.originId)
   }
