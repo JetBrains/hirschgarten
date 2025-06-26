@@ -19,6 +19,7 @@ import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutputType
+import com.intellij.icons.AllIcons
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
@@ -184,8 +185,25 @@ object FastBuildUtils {
           val handler = OSProcessHandler(command)
           handler.addProcessListener(
             object : ProcessListener {
+              // TODO: adapt EclipseOutputParser and JavacOutputParser and group parse errors properly
+              val JAVAC_WARNING = "warning:"
+              val JAVAC_ERROR = "error:"
+              val ECLIPSE_PROBLEM_SEPARATOR = "----------"
+              val ECLIPSE_WARNING = ". WARNING in "
+              val ECLIPSE_ERROR = ". ERROR in "
+
+              var isWarning = false
+
               override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
                 if (outputType == ProcessOutputType.STDERR) {
+                  if (ECLIPSE_PROBLEM_SEPARATOR in event.text) return
+                  if (JAVAC_WARNING in event.text || ECLIPSE_WARNING in event.text) {
+                    isWarning = true
+                  } else if (JAVAC_ERROR in event.text || ECLIPSE_ERROR in event.text) {
+                    isWarning = false
+                  }
+                  val compilerCategory = if (isWarning) CompilerMessageCategory.WARNING else CompilerMessageCategory.ERROR
+
                   val parts = event.text.split(':')
                   val line = parts.firstOrNull()?.trim()?.toIntOrNull()
                   if (parts.size >= 4 && line != null) {
@@ -193,7 +211,7 @@ object FastBuildUtils {
                     compileContext.addMessage(
                       CompilerMessageImpl(
                         project,
-                        CompilerMessageCategory.ERROR,
+                        compilerCategory,
                         error,
                         inputFile,
                         line,
@@ -205,7 +223,7 @@ object FastBuildUtils {
                     compileContext.addMessage(
                       CompilerMessageImpl(
                         project,
-                        CompilerMessageCategory.ERROR,
+                        compilerCategory,
                         event.text,
                       ),
                     )
@@ -420,6 +438,7 @@ object FastBuildUtils {
             "Hotswap completed without errors",
             NotificationType.INFORMATION,
           ).setImportant(false)
+          .setIcon(AllIcons.Status.Success)
           .notify(project)
       }
     } catch (e: Exception) {
