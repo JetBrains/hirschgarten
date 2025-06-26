@@ -571,6 +571,13 @@
       <add-to-group group-id="ProjectViewPopupMenuSettingsGroup" anchor="last"/>
       <add-to-group group-id="EditorPopupMenu" anchor="last"/>
     </action>
+
+    <action id="Bazel.AddToProjectViewAction"
+            class="org.jetbrains.bazel.action.registered.AddToProjectViewAction"
+            text="Add to the Project View File"
+            description = "Add the directory the project view file, if it exists">
+      <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+    </action>
   </actions>
 
   <applicationListeners>
