@@ -10,11 +10,6 @@ kt_jvm_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/label",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/base",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/highlighting",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/language",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/parser",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/repomapping",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/task",
