@@ -17,6 +17,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.util.concurrency.annotations.RequiresWriteLock
 import com.intellij.workspaceModel.ide.JpsProjectLoadingManager
 import org.jetbrains.bazel.config.BazelProjectProperties
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
 
 /**
  * Clean up any modules showing up due to the platform hack
@@ -75,7 +76,9 @@ private fun removeFakeModulesAndLibrariesBlocking(project: Project) {
 private fun updateProjectModel(workspaceModel: WorkspaceModel) {
   @Suppress("UsagesOfObsoleteApi")
   workspaceModel.updateProjectModel("Remove fake modules and libraries from the project") { storage ->
-    storage.entities(ModuleEntity::class.java).forEach { storage.removeEntity(it) }
+    storage.entities(ModuleEntity::class.java).forEach {
+      if (it.entitySource !is BazelModuleEntitySource) storage.removeEntity(it)
+    }
     storage.entities(LibraryEntity::class.java).forEach { storage.removeEntity(it) }
   }
 }

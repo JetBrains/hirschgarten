@@ -9,7 +9,6 @@ import com.intellij.execution.ExecutionResult
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.configurations.RunnerSettings
-import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.GenericProgramRunner
 import com.intellij.execution.ui.RunContentDescriptor
@@ -29,9 +28,9 @@ class BazelGoDebugRunner : GenericProgramRunner<BazelDebugRunnerSetting>() {
 
   override fun canRun(executorId: String, profile: RunProfile): Boolean {
     // if target cannot be debugged, do not offer debugging it
-    if (executorId != DefaultDebugExecutor.EXECUTOR_ID) return false
+    // if (executorId != DefaultDebugExecutor.EXECUTOR_ID) return false
     if (profile !is BazelRunConfiguration) return false
-    return profile.handler is GoBazelRunHandler // todo: add test handler when implemented
+    return profile.handler is GoBazelRunHandler || profile.handler is BazelGoTestHandler
   }
 
   override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor {

@@ -9,16 +9,15 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.module.Module
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelProcessHandler
 import org.jetbrains.bazel.run.BazelRunHandler
-import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
+import org.jetbrains.bazel.run.commandLine.BazelTestCommandLineState
 import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.config.BazelRunConfigurationType
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
-import org.jetbrains.bazel.run.state.GenericRunState
+import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesGo
 import org.jetbrains.bazel.sync.projectStructure.legacy.MonoModuleUtils
@@ -27,15 +26,13 @@ import org.jetbrains.bazel.taskEvents.OriginId
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.RunParams
-import org.jetbrains.bsp.protocol.RunWithDebugParams
+import org.jetbrains.bsp.protocol.TestParams
 import java.util.UUID
 
-class GoBazelRunHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
-  private val buildToolName: String = BazelPluginConstants.BAZEL_DISPLAY_NAME
-  override val name: String = "Go $buildToolName Run Handler"
+class BazelGoTestHandler(private val configuration: BazelRunConfiguration) : BazelRunHandler {
+  override val name: String = "Bazel Go Test Handler"
 
-  override val state = GenericRunState()
+  override val state = GenericTestState()
 
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     when {
@@ -43,11 +40,11 @@ class GoBazelRunHandler(private val configuration: BazelRunConfiguration) : Baze
         val config = GoApplicationConfiguration(environment.project, "default", BazelRunConfigurationType())
         val target = getTargetId(environment)
         val module = MonoModuleUtils.findModule(environment.project) ?: error("Could not find module for target $target")
-        GoRunWithDebugCommandLineState(environment, UUID.randomUUID().toString(), module, config, state)
+        GoTestWithDebugCommandLineState(environment, UUID.randomUUID().toString(), module, config, state)
       }
 
       else -> {
-        BazelRunCommandLineState(environment, UUID.randomUUID().toString(), state)
+        BazelTestCommandLineState(environment, UUID.randomUUID().toString(), state)
       }
     }
 
@@ -58,10 +55,10 @@ class GoBazelRunHandler(private val configuration: BazelRunConfiguration) : Baze
   class GoBazelRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
     override val id: String = "GoBspRunHandlerProvider"
 
-    override fun createRunHandler(configuration: BazelRunConfiguration): BazelRunHandler = GoBazelRunHandler(configuration)
+    override fun createRunHandler(configuration: BazelRunConfiguration): BazelGoTestHandler = BazelGoTestHandler(configuration)
 
     override fun canRun(targetInfos: List<BuildTarget>): Boolean =
-      BazelFeatureFlags.isGoSupportEnabled && targetInfos.all { it.kind.includesGo() && it.kind.ruleType == RuleType.BINARY }
+      BazelFeatureFlags.isGoSupportEnabled && targetInfos.all { it.kind.includesGo() && it.kind.ruleType == RuleType.TEST }
 
     override fun canDebug(targetInfos: List<BuildTarget>): Boolean = canRun(targetInfos)
 
@@ -70,30 +67,28 @@ class GoBazelRunHandler(private val configuration: BazelRunConfiguration) : Baze
   }
 }
 
-class GoRunWithDebugCommandLineState(
+class GoTestWithDebugCommandLineState(
   environment: ExecutionEnvironment,
   originId: OriginId,
   module: Module,
   configuration: GoApplicationConfiguration,
-  val settings: GenericRunState,
+  val settings: GenericTestState,
 ) : GoDebuggableCommandLineState(environment, module, configuration, originId) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
   override suspend fun startBsp(server: JoinedBuildServer) {
     val configuration = environment.runProfile as BazelRunConfiguration
-    val targetId = configuration.targets.single()
-    val runParams =
-      RunParams(
-        targetId,
+    val testParams =
+      TestParams(
+        targets = configuration.targets,
         originId = originId,
         workingDirectory = settings.workingDirectory,
         arguments = transformProgramArguments(settings.programArguments),
         environmentVariables = settings.env.envs,
-        additionalBazelParams = settings.additionalBazelParams,
+        debug = DebugType.GoDlv(debugServerAddress.port),
+        testFilter = settings.testFilter,
       )
-    val remoteDebugData = DebugType.GoDlv(debugServerAddress.port)
-    val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
 
-    server.buildTargetRunWithDebug(runWithDebugParams)
+    server.buildTargetTest(testParams)
   }
 }
