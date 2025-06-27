@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.server.bsp.managers
 
 import com.google.gson.JsonObject
-import com.intellij.util.containers.BidirectionalMap
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bazel.commons.BidirectionalMap
 import org.jetbrains.bazel.commons.gson.bazelGson
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
@@ -43,6 +43,7 @@ class BazelExternalRulesetsQueryImpl(
   private val bspClientLogger: BspClientLogger,
   private val workspaceContext: WorkspaceContext,
   private val repoMapping: RepoMapping,
+  private val bidirectionalMapFactory: () -> BidirectionalMap<String, String>,
 ) : BazelExternalRulesetsQuery {
   override suspend fun fetchExternalRulesetNames(): List<String> =
     when {
@@ -54,6 +55,7 @@ class BazelExternalRulesetsQueryImpl(
           bspClientLogger,
           workspaceContext,
           repoMapping,
+          bidirectionalMapFactory,
         ).fetchExternalRulesetNames() +
           BazelWorkspaceExternalRulesetsQueryImpl(
             bazelRunner,
@@ -128,6 +130,7 @@ class BazelBzlModExternalRulesetsQueryImpl(
   private val bspClientLogger: BspClientLogger,
   private val workspaceContext: WorkspaceContext,
   private val repoMapping: RepoMapping,
+  private val bidirectionalMapFactory: () -> BidirectionalMap<String, String>,
 ) : BazelExternalRulesetsQuery {
   private val gson = bazelGson
 
@@ -137,7 +140,7 @@ class BazelBzlModExternalRulesetsQueryImpl(
       bazelRunner.buildBazelCommand(workspaceContext) {
         graph { options.add("--output=json") }
       }
-    val apparelRepoNameToCanonicalName = (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: BidirectionalMap()
+    val apparelRepoNameToCanonicalName = (repoMapping as? BzlmodRepoMapping)?.apparentRepoNameToCanonicalName ?: bidirectionalMapFactory()
     val bzlmodGraphJson =
       bazelRunner
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)

@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.server.bzlmod
 
-import com.intellij.util.containers.BidirectionalMap
+import org.jetbrains.bazel.commons.BidirectionalMap
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.ModuleOutputParser
 import org.jetbrains.bazel.bazelrunner.ModuleResolver
@@ -60,6 +60,7 @@ suspend fun calculateRepoMapping(
   bazelRunner: BazelRunner,
   bazelInfo: BazelInfo,
   bspClientLogger: BspClientLogger,
+  bidirectionalMapFactory: () -> BidirectionalMap<String, String>,
 ): RepoMapping {
   if (!bazelInfo.isBzlModEnabled) {
     return RepoMappingDisabled
@@ -114,7 +115,7 @@ suspend fun calculateRepoMapping(
   }
 
   val apparentRepoNameToCanonicalName =
-    BidirectionalMap<String, String>()
+    bidirectionalMapFactory()
       .apply { putAll(moduleApparentNameToCanonicalNameForNeededTransitiveRules + moduleApparentNameToCanonicalName) }
 
   return BzlmodRepoMapping(

@@ -40,6 +40,7 @@ import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
+import org.jetbrains.bazel.commons.EnvironmentProvider
 
 class BazelBspServer(
   private val bspInfo: BspInfo,
@@ -163,6 +164,7 @@ class BazelBspServer(
         mavenCoordinatesResolver,
         kotlinAndroidModulesMerger,
         bspClientLogger,
+        EnvironmentProvider.getInstance(),
       )
     val targetInfoReader = TargetInfoReader(bspClientLogger)
 

@@ -11,6 +11,7 @@ import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import java.nio.file.Path
+import org.jetbrains.bazel.commons.BidirectionalMap
 
 class FirstPhaseProjectResolver(
   private val workspaceRoot: Path,
@@ -39,7 +40,9 @@ class FirstPhaseProjectResolver(
       val targets = generateSequence { Target.parseDelimitedFrom(inputStream) }
       val modules = targets.associateBy { Label.parse(it.rule.name) }
 
-      val repoMapping = calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
+      val repoMapping = calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger) { 
+        BidirectionalMap.getTypedInstance()
+      }
 
       val project =
         FirstPhaseProject(

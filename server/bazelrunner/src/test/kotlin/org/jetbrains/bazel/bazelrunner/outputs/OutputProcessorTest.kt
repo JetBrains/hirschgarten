@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
-import com.intellij.openapi.util.SystemInfo.isWindows
-import com.intellij.util.io.awaitExit
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import org.junit.Before
 import org.junit.Test
@@ -13,6 +13,9 @@ import java.io.InputStream
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
+
+// Simple OS detection for tests
+private val isWindows = System.getProperty("os.name").lowercase().contains("windows")
 
 // Test wrapper to adapt java.lang.Process to SpawnedProcess
 class ProcessWrapper(private val process: Process) : SpawnedProcess {
@@ -29,7 +32,9 @@ class ProcessWrapper(private val process: Process) : SpawnedProcess {
     process.destroyForcibly()
   }
 
-  override suspend fun awaitExit(): Int = process.awaitExit()
+  override suspend fun awaitExit(): Int = withContext(Dispatchers.IO) {
+    process.waitFor()
+  }
 }
 
 // Mock ProcessSpawner for testing

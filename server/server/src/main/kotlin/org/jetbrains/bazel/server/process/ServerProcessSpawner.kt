@@ -1,8 +1,9 @@
 package org.jetbrains.bazel.server.process
 
-import com.intellij.util.io.awaitExit
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
 import org.jetbrains.bazel.bazelrunner.outputs.SpawnedProcess
 import java.io.File
@@ -96,5 +97,7 @@ class ServerSpawnedProcess(internal val process: Process) : SpawnedProcess {
 
   override fun destroy(): Unit = process.destroyForcibly().let { }
 
-  override suspend fun awaitExit(): Int = process.awaitExit()
+  override suspend fun awaitExit(): Int = withContext(Dispatchers.IO) {
+    process.waitFor()
+  }
 }
