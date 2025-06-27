@@ -9,6 +9,11 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.util.PlatformUtils
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
+import org.jetbrains.bazel.commons.BidirectionalMap
+import org.jetbrains.bazel.commons.EnvironmentProvider
+import org.jetbrains.bazel.commons.FileUtil
+import org.jetbrains.bazel.commons.FileUtils
+import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.BazelProjectProperties
 import org.jetbrains.bazel.config.workspaceModelLoadedFromCache
@@ -42,7 +47,10 @@ class BazelStartupActivity : BazelProjectActivity() {
     }
     ProcessSpawner.provideProcessSpawner(GenericCommandLineProcessSpawner)
     TelemetryManager.provideTelemetryManager(IntellijTelemetryManager)
-
+    EnvironmentProvider.provideEnvironmentProvider(IntellijEnvironmentProvider)
+    BidirectionalMap.provideBidirectionalMapFactory { IntellijBidirectionalMap<Any, Any>() }
+    SystemInfoProvider.provideSystemInfoProvider(IntellijSystemInfoProvider)
+    FileUtil.provideFileUtil(FileUtilIntellij)
     log.info("Executing Bazel startup activity for project: $project")
     BazelStartupActivityTracker.startConfigurationPhase(project)
 

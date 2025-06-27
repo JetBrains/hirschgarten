@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import kotlin.io.path.pathString
+import org.jetbrains.bazel.commons.SystemInfoProvider
 
 class BazelRunner(
   private val bspClientLogger: BspClientLogger?,
@@ -52,7 +53,7 @@ class BazelRunner(
     ) = BazelCommand.ModDumpRepoMapping(bazelBinary).apply { builder() }
 
     fun query(allowManualTargetsSync: Boolean = true, builder: BazelCommand.Query.() -> Unit = {}) =
-      BazelCommand.Query(bazelBinary, allowManualTargetsSync).apply { builder() }
+      BazelCommand.Query(bazelBinary, allowManualTargetsSync, SystemInfoProvider.getInstance()).apply { builder() }
 
     /** Special version of `query` for asking Bazel about a file instead of a target */
     fun fileQuery(filePath: Path, builder: BazelCommand.FileQuery.() -> Unit = {}) =
