@@ -6,13 +6,13 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.refactoring.RefactoringSettings
 import com.intellij.refactoring.safeDelete.NonCodeUsageSearchInfo
 import com.intellij.refactoring.safeDelete.SafeDeleteProcessor
-import com.intellij.refactoring.safeDelete.SafeDeleteProcessorDelegate
 import com.intellij.usageView.UsageInfo
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
+import org.jetbrains.bazel.sdkcompat.SafeDeleteProcessorDelegateCompat
 
-class StarlarkFileSafeDeleteProcessor : SafeDeleteProcessorDelegate {
+class StarlarkFileSafeDeleteProcessor : SafeDeleteProcessorDelegateCompat() {
   override fun handlesElement(element: PsiElement?): Boolean = element is StarlarkFile
 
   override fun findUsages(
