@@ -1,16 +1,21 @@
 package org.jetbrains.bazel.compatibility
 
+import com.intellij.driver.sdk.step
+import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.waitForIndicators
+import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
-import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * ```sh
@@ -36,13 +41,25 @@ class DisabledKotlinPluginTest : IdeStarterBaseProjectTest() {
         .takeScreenshot("startSync")
         .waitForBazelSync()
         .waitForSmartMode()
-        .checkImportedModules()
-        .checkTargetsInTargetWidget()
-        .exitApp()
 
     createContext()
       .withDisabledPlugins(setOf("org.jetbrains.kotlin"))
-      .runIDE(commands = commands, runTimeout = timeout)
+      .runIdeWithDriver(commands = commands, runTimeout = timeout)
+      .useDriverAndCloseIde {
+        ideFrame {
+          waitForIndicators(5.minutes)
+
+          step("Check imported modules") {
+            execute { checkImportedModules() }
+            takeScreenshot("afterCheckImportedModules")
+          }
+
+          step("Check targets in target widget") {
+            execute { checkTargetsInTargetWidget() }
+            takeScreenshot("afterCheckTargetsInTargetWidget")
+          }
+        }
+      }
   }
 
   private fun <T : CommandChain> T.checkImportedModules(): T = also { addCommand("${CMD_PREFIX}checkImportedModules") }
