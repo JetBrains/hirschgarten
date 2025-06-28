@@ -27,11 +27,12 @@ data class ProjectViewDirectoriesAction(
   data class NotificationFactory(
     val title: String,
     val content: (String) -> String,
-    val type: NotificationType
+    val type: NotificationType,
   ) {
     companion object {
       const val NOTIFICATION_GROUP_ID: String = "Bazel Plugin"
     }
+
     fun create(directory: String): Notification = Notification(NOTIFICATION_GROUP_ID, title, content(directory), type)
   }
 
@@ -75,11 +76,16 @@ data class ProjectViewDirectoriesAction(
 
   private fun getDirectory(item: String) = if (item[0] == '-') item.substring(1) else item
 
-  private fun sectionContainsItem(item: String, section: ProjectViewPsiSection): Boolean = section.getItems().find { it.text == item } != null
+  private fun sectionContainsItem(item: String, section: ProjectViewPsiSection): Boolean =
+    section.getItems().find { it.text == item } != null
 
   private fun getProjectViewPath(project: Project): Path? = project.bazelProjectSettings.projectViewPath
 
-  private fun notify(item: String, notificationFactory: NotificationFactory, project: Project) {
+  private fun notify(
+    item: String,
+    notificationFactory: NotificationFactory,
+    project: Project,
+  ) {
     Notifications.Bus.notify(notificationFactory.create(getDirectory(item)), project)
   }
 

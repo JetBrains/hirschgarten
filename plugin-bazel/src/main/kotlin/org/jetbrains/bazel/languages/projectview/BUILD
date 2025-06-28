@@ -8,4 +8,3 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
     ],
 )
-
