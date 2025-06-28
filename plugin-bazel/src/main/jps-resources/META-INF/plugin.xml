@@ -572,12 +572,23 @@
       <add-to-group group-id="EditorPopupMenu" anchor="last"/>
     </action>
 
-    <action id="Bazel.AddToProjectViewAction"
-            class="org.jetbrains.bazel.action.registered.AddToProjectViewAction"
-            text="Add to the Project View File"
-            description = "Add the directory the project view file, if it exists">
-      <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+    <action id="Bazel.AddToProjectViewDirectoriesAction"
+            class="org.jetbrains.bazel.action.registered.projectViewDirectories.AddToProjectViewDirectoriesAction"
+            text="Add to the Project View Directories"
+            description="Add this directory to the project view file.">
     </action>
+
+    <action id="Bazel.ExcludeFromProjectViewDirectoriesAction"
+            class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
+            text="Exclude from the Project View Directories"
+            description="Exclude this directory from the project view file.">
+    </action>
+
+    <group id="Bazel.ModifyProjectViewDirectories">
+      <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+      <reference id="Bazel.AddToProjectViewDirectoriesAction"/>
+      <reference id="Bazel.ExcludeFromProjectViewDirectoriesAction"/>
+    </group>
   </actions>
 
   <applicationListeners>
