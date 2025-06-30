@@ -1,10 +1,14 @@
 package org.jetbrains.bazel.bazelrunner
 
+import com.intellij.openapi.util.SystemInfo
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.commons.EnvironmentProvider
+import org.jetbrains.bazel.commons.FileUtil
+import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bazel.workspacecontext.AndroidMinSdkSpec
@@ -32,13 +36,49 @@ import org.jetbrains.bazel.workspacecontext.TargetShardSizeSpec
 import org.jetbrains.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bazel.workspacecontext.TransitiveCompileTimeJarsTargetKindsSpec
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.io.File
+import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.readText
 
 fun String.label() = Label.parse(this)
+
+/** Test implementation of SystemInfoProvider */
+private class TestSystemInfoProvider : SystemInfoProvider {
+  override val isWindows: Boolean = SystemInfo.isWindows
+  override val isMac: Boolean = SystemInfo.isMac
+  override val isLinux: Boolean = SystemInfo.isLinux
+  override val isAarch64: Boolean = SystemInfo.isAarch64
+}
+
+/** Test implementation of FileUtil */
+private class TestFileUtil : FileUtil {
+  override fun isAncestor(ancestor: String, file: String, strict: Boolean): Boolean {
+    val ancestorPath = Path.of(ancestor).toAbsolutePath().normalize()
+    val filePath = Path.of(file).toAbsolutePath().normalize()
+
+    if (strict && ancestorPath == filePath) {
+      return false
+    }
+
+    return filePath.startsWith(ancestorPath)
+  }
+
+  override fun isAncestor(ancestor: File, file: File, strict: Boolean): Boolean {
+    return isAncestor(ancestor.absolutePath, file.absolutePath, strict)
+  }
+}
+
+/** Test implementation of EnvironmentProvider */
+private class TestEnvironmentProvider : EnvironmentProvider {
+  override fun getValue(name: String): String? {
+    return System.getenv(name)
+  }
+}
 
 val mockContext =
   WorkspaceContext(
@@ -85,6 +125,14 @@ val bazelRunner = BazelRunner(null, mockBazelInfo.workspaceRoot)
 val bazelRunnerWithBazelInfo = BazelRunner(null, mockBazelInfo.workspaceRoot, mockBazelInfo)
 
 class BazelRunnerBuilderTest {
+  @BeforeEach
+  fun beforeEach() {
+    // Initialize providers for tests
+    SystemInfoProvider.provideSystemInfoProvider(TestSystemInfoProvider())
+    FileUtil.provideFileUtil(TestFileUtil())
+    EnvironmentProvider.provideEnvironmentProvider(TestEnvironmentProvider())
+  }
+
   @Test
   fun `most bare bones build without targets (even though it's not correct)`() {
     val command =
@@ -164,7 +212,7 @@ class BazelRunnerBuilderTest {
       in2
       -ex1
       -ex2
-      
+
       """.trimIndent()
     executionDescriptor.finishCallback()
     targetPatternFile.exists() shouldBe false

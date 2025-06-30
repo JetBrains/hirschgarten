@@ -1,6 +1,9 @@
 package org.jetbrains.bazel.base
 
 import com.intellij.openapi.util.SystemInfo
+import org.jetbrains.bazel.commons.EnvironmentProvider
+import org.jetbrains.bazel.commons.FileUtil
+import org.jetbrains.bazel.commons.SystemInfoProvider
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
@@ -9,11 +12,45 @@ import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.testkit.client.TestClient
 import org.jetbrains.bsp.testkit.client.bazel.BazelJsonTransformer
+import java.io.File
 import java.nio.file.Path
 import java.nio.file.Path.of
 import kotlin.io.path.Path
 import kotlin.io.path.name
 import kotlin.system.exitProcess
+
+/** Test implementation of SystemInfoProvider */
+private class TestSystemInfoProvider : SystemInfoProvider {
+  override val isWindows: Boolean = SystemInfo.isWindows
+  override val isMac: Boolean = SystemInfo.isMac
+  override val isLinux: Boolean = SystemInfo.isLinux
+  override val isAarch64: Boolean = SystemInfo.isAarch64
+}
+
+/** Test implementation of FileUtil */
+private class TestFileUtil : FileUtil {
+  override fun isAncestor(ancestor: String, file: String, strict: Boolean): Boolean {
+    val ancestorPath = Path.of(ancestor).toAbsolutePath().normalize()
+    val filePath = Path.of(file).toAbsolutePath().normalize()
+
+    if (strict && ancestorPath == filePath) {
+      return false
+    }
+
+    return filePath.startsWith(ancestorPath)
+  }
+
+  override fun isAncestor(ancestor: File, file: File, strict: Boolean): Boolean {
+    return isAncestor(ancestor.absolutePath, file.absolutePath, strict)
+  }
+}
+
+/** Test implementation of EnvironmentProvider */
+private class TestEnvironmentProvider : EnvironmentProvider {
+  override fun getValue(name: String): String? {
+    return System.getenv(name)
+  }
+}
 
 abstract class BazelBspTestBaseScenario {
   protected val bazelBinary = System.getenv("BIT_BAZEL_BINARY")
@@ -40,6 +77,11 @@ abstract class BazelBspTestBaseScenario {
   val bazelBinDirectory get() = "\$BAZEL_OUTPUT_BASE_PATH/execroot/$mainBinName/bazel-out/$bazelArch-fastbuild/bin"
 
   init {
+    // Initialize providers for e2e tests
+    SystemInfoProvider.provideSystemInfoProvider(TestSystemInfoProvider())
+    FileUtil.provideFileUtil(TestFileUtil())
+    EnvironmentProvider.provideEnvironmentProvider(TestEnvironmentProvider())
+
     installServer()
   }
 

@@ -2,6 +2,8 @@ package org.jetbrains.bazel.server.connection
 
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.outputs.ProcessSpawner
+import org.jetbrains.bazel.commons.BidirectionalMap
+import org.jetbrains.bazel.commons.EnvironmentProvider
 import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.performance.telemetry.TelemetryManager
@@ -12,6 +14,7 @@ import org.jetbrains.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.process.ServerProcessSpawner
 import org.jetbrains.bazel.server.telemetry.ServerTelemetryManager
+import org.jetbrains.bazel.startup.IntellijBidirectionalMap
 import org.jetbrains.bazel.workspacecontext.provider.DefaultWorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.JoinedBuildClient
@@ -35,9 +38,15 @@ suspend fun startServer(
   // It should download bazelisk if bazel is missing
   val workspaceContext = workspaceContextProvider.readWorkspaceContext()
 
-  // Initialize ProcessSpawner and TelemetryManager for server environment
+  // Initialize ProcessSpawner, TelemetryManager, EnvironmentProvider, and BidirectionalMap for server environment
   ProcessSpawner.provideProcessSpawner(ServerProcessSpawner)
   TelemetryManager.provideTelemetryManager(ServerTelemetryManager)
+  EnvironmentProvider.provideEnvironmentProvider(object : EnvironmentProvider {
+    override fun getValue(name: String): String? = System.getenv(name)
+  })
+  BidirectionalMap.provideBidirectionalMapFactory {
+    IntellijBidirectionalMap<Any?, Any?>()
+  }
 
   val bspServer = BazelBspServer(bspInfo, workspaceContextProvider, workspaceRoot)
   val bspClientLogger = BspClientLogger(client)

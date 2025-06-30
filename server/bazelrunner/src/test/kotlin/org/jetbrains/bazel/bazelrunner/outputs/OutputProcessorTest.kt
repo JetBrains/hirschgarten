@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.bazelrunner.outputs
 
+import com.intellij.util.io.awaitExit
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Deferred
@@ -32,9 +33,7 @@ class ProcessWrapper(private val process: Process) : SpawnedProcess {
     process.destroyForcibly()
   }
 
-  override suspend fun awaitExit(): Int = withContext(Dispatchers.IO) {
-    process.waitFor()
-  }
+  override suspend fun awaitExit(): Int = process.awaitExit()
 }
 
 // Mock ProcessSpawner for testing
