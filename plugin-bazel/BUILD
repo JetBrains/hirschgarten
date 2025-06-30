@@ -30,9 +30,9 @@ stamped_plugin_xml(
     name = "stamped_plugin_xml",
     changelog_file = "CHANGELOG.md",
     since_build_numbers = {PLATFORM_VERSION: SINCE_VERSION},
+    until_build_numbers = {PLATFORM_VERSION: UNTIL_VERSION},
     stamp_since_build = True,
     stamp_until_build = True,
-    until_build_numbers = {PLATFORM_VERSION: UNTIL_VERSION},
     version = INTELLIJ_BAZEL_VERSION,
 )
 
