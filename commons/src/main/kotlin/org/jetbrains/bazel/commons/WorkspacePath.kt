@@ -18,6 +18,7 @@ package org.jetbrains.bazel.commons
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
+import kotlin.ConsistentCopyVisibility
 
 /**
  * Represents a path relative to the workspace root. The path component separator is Bazel specific.
@@ -27,6 +28,7 @@ import kotlin.io.path.Path
  * because it could represent a file and files don't have to follow the same conventions as package
  * names.
  */
+@ConsistentCopyVisibility
 data class WorkspacePath private constructor(private val path: Path) {
   /**
    * @param relativePath relative path that must use the Bazel specific separator char to separate

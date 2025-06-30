@@ -10,19 +10,9 @@ import kotlin.io.path.Path
 class RepoMappingTest {
 
   private fun createTestBidirectionalMap(): BidirectionalMap<String, String> {
-    return object : BidirectionalMap<String, String> {
-      private val delegate = IntellijBidirectionalMap<String, String>()
-
-      override val keys: Set<String> get() = delegate.keys
-      override val values: Collection<String> get() = delegate.values
-      override fun get(key: String): String? = delegate[key]
+    val delegate = IntellijBidirectionalMap<String, String>()
+    return object : BidirectionalMap<String, String>, MutableMap<String, String> by delegate {
       override fun getKeysByValue(value: String): List<String> = delegate.getKeysByValue(value) ?: emptyList()
-      override fun put(key: String, value: String): String? = delegate.put(key, value)
-      override fun putAll(map: Map<String, String>) = delegate.putAll(map)
-      override fun remove(key: String): String? = delegate.remove(key)
-      override fun clear() = delegate.clear()
-      override fun isEmpty(): Boolean = delegate.isEmpty()
-      override fun size(): Int = delegate.size
     }
   }
   @Test

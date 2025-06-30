@@ -3,18 +3,8 @@ package org.jetbrains.bazel.commons
 /**
  * Abstraction for bidirectional map to avoid direct IntelliJ dependencies
  */
-interface BidirectionalMap<K, V> {
-  val keys: Set<K>
-  val values: Collection<V>
-
-  operator fun get(key: K): V?
+interface BidirectionalMap<K, V> : MutableMap<K, V> {
   fun getKeysByValue(value: V): List<K>
-  fun put(key: K, value: V): V?
-  fun putAll(map: Map<K, V>)
-  fun remove(key: K): V?
-  fun clear()
-  fun isEmpty(): Boolean
-  fun size(): Int
 
   companion object {
     private lateinit var factory: () -> BidirectionalMap<*, *>
