@@ -9,6 +9,7 @@ import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.patterns.PatternCondition
 import com.intellij.patterns.PlatformPatterns.psiComment
@@ -18,9 +19,9 @@ import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
-import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRule
-import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRules
-import org.jetbrains.bazel.languages.starlark.documentation.BazelNativeRuleDocumentationSymbol
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionsService
+import org.jetbrains.bazel.languages.starlark.documentation.BazelGlobalFunctionDocumentationSymbol
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
@@ -54,16 +55,17 @@ class BazelNativeRulesCompletionContributor : CompletionContributor() {
       context: ProcessingContext,
       result: CompletionResultSet,
     ) {
-      BazelNativeRules.NATIVE_RULES_MAP.values.forEach { result.addElement(functionLookupElement(it, parameters.position.project)) }
+      val rulesMap = service<BazelGlobalFunctionsService>().getBuildRules()
+      rulesMap.values.forEach { result.addElement(functionLookupElement(it, parameters.position.project)) }
     }
 
-    private class NativeRuleInsertHandler<T : LookupElement>(val rule: BazelNativeRule) : InsertHandler<T> {
+    private class NativeRuleInsertHandler<T : LookupElement>(val rule: BazelGlobalFunction) : InsertHandler<T> {
       override fun handleInsert(context: InsertionContext, item: T) {
         val editor = context.editor
         val document = editor.document
         document.insertString(context.tailOffset, "(\n")
 
-        val requiredArgs = rule.arguments.filter { it.required }
+        val requiredArgs = rule.params.filter { it.required }
         requiredArgs.forEach {
           document.insertString(context.tailOffset, "\t${it.name} = ${it.default},\n")
         }
@@ -73,9 +75,9 @@ class BazelNativeRulesCompletionContributor : CompletionContributor() {
       }
     }
 
-    private fun functionLookupElement(rule: BazelNativeRule, project: Project): LookupElement =
+    private fun functionLookupElement(rule: BazelGlobalFunction, project: Project): LookupElement =
       LookupElementBuilder
-        .create(BazelNativeRuleDocumentationSymbol(rule, project), rule.name)
+        .create(BazelGlobalFunctionDocumentationSymbol(rule, project), rule.name)
         .withIcon(PlatformIcons.FUNCTION_ICON)
         .withInsertHandler(NativeRuleInsertHandler(rule))
   }

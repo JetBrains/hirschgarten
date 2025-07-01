@@ -1,0 +1,1969 @@
+[
+  {
+    "name": "cc_binary",
+    "docString": "https://bazel.build/reference/be/c-cpp#cc_binary",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "srcs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "data",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "additional_linker_inputs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "conlyopts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "copts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "cxxopts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "defines",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "dynamic_deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "includes",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "link_extra_lib",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "linkopts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "linkshared",
+        "default": "False",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "linkstatic",
+        "default": "True",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "local_defines",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "malloc",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "module_interfaces",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "nocopts",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "reexport_deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "stamp",
+        "default": "-1",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "win_def_file",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "cc_import",
+    "docString": "https://bazel.build/reference/be/c-cpp#cc_import",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "hdrs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "alwayslink",
+        "default": "False",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "includes",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "interface_library",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "linkopts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "objects",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "pic_objects",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "pic_static_library",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "shared_library",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "static_library",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "system_provided",
+        "default": "False",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "cc_library",
+    "docString": "https://bazel.build/reference/be/c-cpp#cc_library",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "srcs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "data",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "hdrs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "additional_compiler_inputs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "additional_linker_inputs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "alwayslink",
+        "default": "False",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "conlyopts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "copts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "cxxopts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "defines",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "hdrs_check",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "implementation_deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "include_prefix",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "includes",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "linkopts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "linkstamp",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "linkstatic",
+        "default": "False",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "local_defines",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "module_interfaces",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "strip_include_prefix",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "textual_hdrs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "win_def_file",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "cc_shared_library",
+    "docString": "https://bazel.build/reference/be/c-cpp#cc_shared_library",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "additional_linker_inputs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "dynamic_deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "exports_filter",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "roots",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "shared_lib_name",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "static_deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "user_link_flags",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "win_def_file",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "cc_static_library",
+    "docString": "https://bazel.build/reference/be/c-cpp#cc_static_library",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "cc_test",
+    "docString": "https://bazel.build/reference/be/c-cpp#cc_test",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "src",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "data",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "additional_linker_inputs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "conlyopts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "copts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "cxxopts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "defines",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "dynamic_deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "hdrs_check",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "includes",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "link_extra_lib",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "linkopts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "linkshared",
+        "default": "False",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "linkstatic",
+        "default": "False",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "local_defines",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "malloc",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "module_interfaces",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "nocopts",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "reexport_deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "stamp",
+        "default": "0",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "win_def_file",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "cc_toolchain",
+    "docString": "https://bazel.build/reference/be/c-cpp#cc_toolchain",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "all_files",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "ar_files",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "as_files",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "compiler_files",
+        "default": null,
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "compiler_files_without_includes",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "coverage_files",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "dwp_files",
+        "default": null,
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "dynamic_runtime_lib",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "libc_top",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "linker_files",
+        "default": null,
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "module_map",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "objcopy_files",
+        "default": null,
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "output_licenses",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "static_runtime_lib",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "strip_files",
+        "default": null,
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "supports_header_parsing",
+        "default": "False",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "supports_param_files",
+        "default": "True",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "toolchain_config",
+        "default": "True",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "toolchain_identifier",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "cc_toolchain_suite",
+    "docString": "https://bazel.build/reference/be/c-cpp#cc_toolchain_suite",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "fdo_prefetch_hints",
+    "docString": "https://bazel.build/reference/be/c-cpp#fdo_prefetch_hints",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "profile",
+        "default": null,
+        "positional": false,
+        "required": true,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "fdo_profile",
+    "docString": "https://bazel.build/reference/be/c-cpp#fdo_profile",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "memprof_profile",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "profile",
+        "default": null,
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "proto_profile",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "memprof_profile",
+    "docString": "https://bazel.build/reference/be/c-cpp#memprof_profile",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "profile",
+        "default": null,
+        "positional": false,
+        "required": true,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "propeller_optimize",
+    "docString": "https://bazel.build/reference/be/c-cpp#propeller_optimize",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "cc_profile",
+        "default": null,
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "ld_profile",
+        "default": null,
+        "positional": false,
+        "required": true,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "objc_import",
+    "docString": "https://bazel.build/reference/be/objective-c#objc_import",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "hdrs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "alwayslink",
+        "default": "False",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "archives",
+        "default": null,
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "includes",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "sdk_dylibs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "sdk_frameworks",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "sdk_includes",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "textual_hdrs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "weak_sdk_frameworks",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "objc_library",
+    "docString": "https://bazel.build/reference/be/objective-c#objc_library",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "srcs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "hdrs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "alwayslink",
+        "default": "False",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "conlyopts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "copts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "cxxopts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "defines",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "enable_modules",
+        "default": "False",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "implementation_deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "includes",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "linkopts",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "module_map",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "module_name",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "non_arc_srcs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "pch",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "sdk_dylibs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "sdk_frameworks",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "sdk_includes",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "stamp",
+        "default": "False",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "textual_hdrs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "weak_sdk_frameworks",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "cc_proto_library",
+    "docString": "https://bazel.build/reference/be/protocol-buffer#cc_proto_library",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "java_lite_proto_library",
+    "docString": "https://bazel.build/reference/be/protocol-buffer#java_lite_proto_library",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "java_proto_library",
+    "docString": "https://bazel.build/reference/be/protocol-buffer#java_proto_library",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "proto_library",
+    "docString": "https://bazel.build/reference/be/protocol-buffer#proto_library",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "srcs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "allow_exports",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "exports",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "import_prefix",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "strip_import_prefix",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "py_proto_library",
+    "docString": "https://bazel.build/reference/be/protocol-buffer#py_proto_library",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "proto_lang_toolchain",
+    "docString": "https://bazel.build/reference/be/protocol-buffer#proto_lang_toolchain",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "allowlist_different_package",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "blacklisted_protos",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "command_line",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "mnemonic",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "output_files",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "plugin",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "plugin_format_flag",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "progress_message",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "protoc_minimal_do_not_use",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "runtime",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "toolchain_type",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "proto_toolchain",
+    "docString": "https://bazel.build/reference/be/protocol-buffer#proto_toolchain",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "command_line",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "mnemonic",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "output_files",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "progress_message",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "proto_compiler",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "py_binary",
+    "docString": "https://bazel.build/reference/be/python#py_binary",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "srcs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "data",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "imports",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "legacy_create_init",
+        "default": "-1",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "main",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "precompile",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "precompile_invalidation_mode",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "precompile_optimize_level",
+        "default": "0",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "precompile_source_retention",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "pyc_collection",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "python_version",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "srcs_version",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "stamp",
+        "default": "-1",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "py_library",
+    "docString": "https://bazel.build/reference/be/python#py_library",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "srcs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "data",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "imports",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "precompile",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "precompile_invalidation_mode",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "precompile_optimize_level",
+        "default": "0",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "precompile_source_retention",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "srcs_version",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "py_test",
+    "docString": "https://bazel.build/reference/be/python#py_test",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "srcs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "data",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "imports",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "legacy_create_init",
+        "default": "-1",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "main",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "precompile",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "precompile_invalidation_mode",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "precompile_optimize_level",
+        "default": "0",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "precompile_source_retention",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "pyc_collection",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "python_version",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "srcs_version",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "stamp",
+        "default": "0",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "py_runtime",
+    "docString": "https://bazel.build/reference/be/python#py_runtime",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "abi_flags",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "bootstrap_template",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "coverage_tool",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "files",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "implementation_name",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "interpreter",
+        "default": null,
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "interpreter_path",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "interpreter_version_info",
+        "default": "{}",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "pyc_tag",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "python_version",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "stage2_bootstrap_template",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "stub_shebang",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "zip_main_template",
+        "default": "\"\"",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "sh_binary",
+    "docString": "https://bazel.build/reference/be/shell#sh_binary",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "srcs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "env_inherit",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "sh_library",
+    "docString": "https://bazel.build/reference/be/shell#sh_library",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "srcs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  },
+  {
+    "name": "sh_test",
+    "docString": "https://bazel.build/reference/be/shell#sh_test",
+    "params": [
+      {
+        "name": "name",
+        "default": "\"\"",
+        "positional": false,
+        "required": true,
+        "docString": ""
+      },
+      {
+        "name": "deps",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      },
+      {
+        "name": "srcs",
+        "default": "[]",
+        "positional": false,
+        "required": false,
+        "docString": ""
+      }
+    ]
+  }
+]

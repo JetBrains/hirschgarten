@@ -8,6 +8,7 @@ import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.codeInsight.completion.util.ParenthesesInsertHandler
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.components.service
 import com.intellij.patterns.PatternCondition
 import com.intellij.patterns.PlatformPatterns.psiComment
 import com.intellij.patterns.PlatformPatterns.psiElement
@@ -17,6 +18,7 @@ import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionsService
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
@@ -89,7 +91,7 @@ private object BazelBuildFunctionCompletionProvider :
   BazelFunctionCompletionProvider(BazelGlobalFunctions.BUILD_FUNCTIONS.keys)
 
 private object BazelModuleFunctionCompletionProvider :
-  BazelFunctionCompletionProvider(BazelGlobalFunctions.MODULE_FUNCTIONS.keys)
+  BazelFunctionCompletionProvider(service<BazelGlobalFunctionsService>().getModuleFunctions().keys)
 
 private object BazelWorkspaceFunctionCompletionProvider :
   BazelFunctionCompletionProvider(BazelGlobalFunctions.WORKSPACE_FUNCTIONS.keys)
