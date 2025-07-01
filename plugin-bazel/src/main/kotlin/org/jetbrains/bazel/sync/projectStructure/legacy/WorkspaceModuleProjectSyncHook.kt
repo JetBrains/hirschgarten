@@ -20,10 +20,15 @@ import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDi
 import org.jetbrains.bazel.sync.task.query
 
 class WorkspaceModuleProjectSyncHook : ProjectSyncHook {
-  override fun isEnabled(project: Project): Boolean = EnableWorkspaceModuleSyncHookExtension.EP.extensionList.any { it.isEnabled(project) }
+  /**
+   * this sync hook is enabled by default, but the real check whether to run this is in the [onSync] function.
+   * the reason why this workaround exists is for some logic depending on [ProjectSyncHook.ProjectSyncHookEnvironment] to work.
+   */
+  override fun isEnabled(project: Project): Boolean = true
 
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
     val project = environment.project
+    if (!EnableWorkspaceModuleSyncHookExtension.EP.extensionList.any { it.isEnabled(environment) }) return
     val moduleEntitySource = BazelModuleEntitySource(WORKSPACE_MODULE_NAME)
     val directories = query("workspace/directories") { environment.server.workspaceDirectories() }
     val virtualFileUrlManager = project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
@@ -61,7 +66,7 @@ class WorkspaceModuleProjectSyncHook : ProjectSyncHook {
   }
 
   interface EnableWorkspaceModuleSyncHookExtension {
-    fun isEnabled(project: Project): Boolean
+    suspend fun isEnabled(environment: ProjectSyncHook.ProjectSyncHookEnvironment): Boolean
 
     companion object {
       internal val EP =
