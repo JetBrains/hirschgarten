@@ -14,6 +14,7 @@ import com.intellij.openapi.util.NlsActions
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.commons.RuleType
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.target.targetUtils
 import java.io.File
@@ -24,7 +25,7 @@ class BazelCoverageEngine : CoverageEngine() {
     fun getInstance(): BazelCoverageEngine = EP_NAME.findExtensionOrFail(BazelCoverageEngine::class.java)
   }
 
-  override fun getPresentableText(): @NlsActions.ActionText String? = "Bazel Coverage"
+  override fun getPresentableText(): @NlsActions.ActionText String? = BazelPluginBundle.message("coverage.bazel.presentable.text")
 
   override fun isApplicableTo(configuration: RunConfigurationBase<*>): Boolean {
     if (configuration !is BazelRunConfiguration) return false

@@ -103,7 +103,7 @@ class CollectProjectDetailsTask(
     }
 
     if (scalaSdkExtensionExists()) {
-      progressReporter.indeterminateStep(text = "Calculating all unique scala sdk infos") {
+      progressReporter.indeterminateStep(text = BazelPluginBundle.message("progress.reporter.calculating.scala.sdk.info")) {
         calculateAllScalaSdkInfosSubtask(projectDetails)
       }
     }

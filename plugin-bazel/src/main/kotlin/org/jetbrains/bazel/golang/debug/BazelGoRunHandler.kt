@@ -9,6 +9,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.module.Module
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.commandLine.BazelRunCommandLineState
@@ -52,7 +53,7 @@ class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler 
 
   private fun getTargetId(environment: ExecutionEnvironment): Label =
     (environment.runProfile as? BazelRunConfiguration)?.targets?.singleOrNull()
-      ?: throw ExecutionException("Couldn't get BSP target from run configuration")
+      ?: throw ExecutionException(BazelPluginBundle.message("go.runner.wrong.configuration"))
 
   class BazelGoRunHandlerProvider : GooglePluginAwareRunHandlerProvider {
     override val id: String = "BazelGoRunHandlerProvider"
