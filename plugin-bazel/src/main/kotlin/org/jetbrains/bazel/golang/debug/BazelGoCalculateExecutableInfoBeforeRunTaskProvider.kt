@@ -18,6 +18,7 @@ import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.sync.BazelBinPathService
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
+import org.jetbrains.bazel.run.state.GenericTestState
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesGo
 import org.jetbrains.bazel.server.connection.connection
 import org.jetbrains.bazel.target.targetUtils
@@ -89,6 +90,7 @@ class BazelGoCalculateExecutableInfoBeforeRunTaskProvider :
     val runConfiguration = environment.runProfile as BazelRunConfiguration
     // skipping this task for non-debugging run config
     if (environment.executor !is DefaultDebugExecutor) return true
+    val testFilter = runConfiguration.extractTestFilter()
     val scriptPath = createTempScriptFile()
     val project = environment.project
     val targetUtils = project.targetUtils
@@ -117,7 +119,8 @@ class BazelGoCalculateExecutableInfoBeforeRunTaskProvider :
                       "--dynamic_mode=off " +
                       "--test_sharding_strategy=disabled " +
                       "--compilation_mode=dbg " +
-                      "--test_env=GO_TEST_WRAP_TESTV=1",
+                      "--test_env=GO_TEST_WRAP_TESTV=1 " +
+                      testFilter.orEmpty(),
                 ),
               )
             }
@@ -132,6 +135,12 @@ class BazelGoCalculateExecutableInfoBeforeRunTaskProvider :
         return@runBlocking true
       }
     return success
+  }
+
+  private fun BazelRunConfiguration.extractTestFilter(): String? {
+    val rawTestFilter = (handler?.state as? GenericTestState)?.testFilter
+    if (rawTestFilter.isNullOrEmpty()) return null
+    return "--test_filter=$rawTestFilter"
   }
 
   private fun createTempScriptFile(): Path =

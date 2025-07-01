@@ -80,7 +80,16 @@ open class GoTestWithDebugCommandLineState(
   module: Module,
   configuration: GoApplicationConfiguration,
   val settings: GenericTestState,
-) : GoDebuggableCommandLineState(environment, module, configuration, originId)
+) : GoDebuggableCommandLineState(environment, module, configuration, originId) {
+  override fun patchAdditionalParams() {
+    with(configuration) {
+      val testFilter = settings.testFilter
+      if (testFilter != null) {
+        customEnvironment["TESTBRIDGE_TEST_ONLY"] = testFilter
+      }
+    }
+  }
+}
 
 data class ExecutableInfo(
   val binary: File,
