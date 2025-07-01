@@ -203,7 +203,7 @@ http_jar(
 
 bazel_dep(
     name = "buildifier_prebuilt",
-    version = "8.0.3",
+    version = "8.2.0",
     dev_dependency = True,
 )
 bazel_dep(
