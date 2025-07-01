@@ -63,6 +63,9 @@ private val POP_UP_MESSAGE_ENABLE_SYMLINKS: String =
   
   """.trimIndent()
 
+/**
+ * this class is inspired from [this code snippet](https://github.com/bazelbuild/intellij/blob/master/golang/src/com/google/idea/blaze/golang/run/BlazeGoRunConfigurationRunner.java)
+ */
 class BazelGoCalculateExecutableInfoBeforeRunTaskProvider :
   BeforeRunTaskProvider<BazelGoCalculateExecutableInfoBeforeRunTaskProvider.Task>() {
   class Task : BeforeRunTask<Task>(PROVIDER_ID)
