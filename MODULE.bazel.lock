@@ -146,8 +146,8 @@
     "https://bcr.bazel.build/modules/rules_bazel_integration_test/0.32.0/MODULE.bazel": "44272bc52213fc75edeba581370915e614e458200d51edff45676ed35b5e8145",
     "https://bcr.bazel.build/modules/rules_bazel_integration_test/0.32.0/source.json": "017c01d5f88b307773b3a25dd130bf840b69aa56eaccd54891ed8c0cbd3cc232",
     "https://bcr.bazel.build/modules/rules_buf/0.1.1/MODULE.bazel": "6189aec18a4f7caff599ad41b851ab7645d4f1e114aa6431acf9b0666eb92162",
-    "https://bcr.bazel.build/modules/rules_buf/0.3.0/MODULE.bazel": "1e333238b2e3faa828de0e27a0804a7228c63d42057fffc546bee7f956f3e284",
-    "https://bcr.bazel.build/modules/rules_buf/0.3.0/source.json": "ce5b3bc65ce7065af437e1b1bfa3860e23c14a5a0e178ce8d25b8b4b6c1d19e8",
+    "https://bcr.bazel.build/modules/rules_buf/0.4.0/MODULE.bazel": "d2c438fddb9481f9d727533e8d199033cff10c65192a8a2b98ca858396782f90",
+    "https://bcr.bazel.build/modules/rules_buf/0.4.0/source.json": "d398b6b961ff72f8e383e9c56d1d716ed13be6c566b34a44271341c584bcf726",
     "https://bcr.bazel.build/modules/rules_cc/0.0.1/MODULE.bazel": "cb2aa0747f84c6c3a78dad4e2049c154f08ab9d166b1273835a8174940365647",
     "https://bcr.bazel.build/modules/rules_cc/0.0.10/MODULE.bazel": "ec1705118f7eaedd6e118508d3d26deba2a4e76476ada7e0e3965211be012002",
     "https://bcr.bazel.build/modules/rules_cc/0.0.13/MODULE.bazel": "0e8529ed7b323dad0775ff924d2ae5af7640b23553dfcd4d34344c7e7a867191",
@@ -1129,8 +1129,8 @@
     },
     "@@rules_buf+//buf:extensions.bzl%buf": {
       "general": {
-        "bzlTransitiveDigest": "Cn52bY/1OxGKNv4TI5yExj2vL9hBgfRj4HOOcjWQTdQ=",
-        "usagesDigest": "P6LWd+HvwLpjRMx6Wfa0KvcBBuPubax4U3jfTp2lpl0=",
+        "bzlTransitiveDigest": "J3ndkJEae/GVD6Qr72aEJKdi2NBcHniN24JaqUNAHgQ=",
+        "usagesDigest": "NMXXg5H8CkIxgAyG0Fs3j6H4z3St1Tc+4pwuzKzLcGM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -1138,8 +1138,8 @@
           "rules_buf_toolchains": {
             "repoRuleId": "@@rules_buf+//buf/internal:toolchain.bzl%buf_download_releases",
             "attributes": {
-              "version": "v1.28.1",
-              "sha256": "05dfb45d2330559d258e1230f5a25e154f0a328afda2a434348b5ba4c124ece7"
+              "version": "v1.47.2",
+              "sha256": "1b37b75dc0a777a0cba17fa2604bc9906e55bb4c578823d8b7a8fe3fc9fe4439"
             }
           }
         },
