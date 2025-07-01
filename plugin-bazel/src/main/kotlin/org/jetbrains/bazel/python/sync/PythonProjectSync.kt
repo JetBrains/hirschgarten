@@ -216,7 +216,7 @@ class PythonProjectSync : ProjectSyncHook {
     val libraryDependency =
       sourceDependencyLibrary?.let {
         val addedLibrary = builder.addEntity(it)
-        LibraryDependency(addedLibrary.symbolicId, false, DependencyScope.COMPILE)
+        LibraryDependency(addedLibrary.symbolicId, true, DependencyScope.COMPILE)
       }
 
     val dependencies =
