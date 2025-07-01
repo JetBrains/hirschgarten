@@ -9,6 +9,7 @@ import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.components.service
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.findParentOfType
@@ -18,6 +19,7 @@ import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunction
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionParameter
 import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctions
+import org.jetbrains.bazel.languages.starlark.bazel.BazelGlobalFunctionsService
 import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkNamedLookupElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
@@ -39,7 +41,7 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
     when (file.getBazelFileType()) {
       BazelFileType.EXTENSION -> BazelGlobalFunctions.EXTENSION_FUNCTIONS
       BazelFileType.BUILD -> BazelGlobalFunctions.BUILD_FUNCTIONS
-      BazelFileType.MODULE -> BazelGlobalFunctions.MODULE_FUNCTIONS
+      BazelFileType.MODULE -> service<BazelGlobalFunctionsService>().getModuleFunctions()
       BazelFileType.WORKSPACE -> BazelGlobalFunctions.WORKSPACE_FUNCTIONS
     } + BazelGlobalFunctions.STARLARK_FUNCTIONS
 
