@@ -46,7 +46,7 @@ maven.install(
         "com.google.truth:truth:1.4.4",
         "com.google.truth.extensions:truth-java8-extension:1.4.4",
         "com.google.j2objc:j2objc-annotations:2.8",
-        "com.google.guava:failureaccess:1.0.2",
+        "com.google.guava:failureaccess:1.0.3",
         "org.hamcrest:hamcrest-core:3.0",
         "org.jetbrains:annotations:26.0.2",
         "com.jetbrains.intellij.tools:ide-metrics-collector-starter:252.19874.12-EAP-SNAPSHOT",
