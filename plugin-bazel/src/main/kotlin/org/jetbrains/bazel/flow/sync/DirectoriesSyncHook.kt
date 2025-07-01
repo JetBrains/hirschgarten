@@ -38,8 +38,8 @@ private class DirectoriesSyncHook : ProjectSyncHook {
     }
   }
 
-  private fun String.toVirtualFileUrl(virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl {
-    return if (this.startsWith("file://")) {
+  private fun toVirtualFileUrl(uri: String, virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl {
+    return if (uri.startsWith("file://")) {
       /*
         Apparently on some operating systems(windows)
         VirtualFileUrlManager is unable to decode uri obtained from Path#toUri correctly
@@ -50,9 +50,9 @@ private class DirectoriesSyncHook : ProjectSyncHook {
         VirtualFileUrlManager does not handle that and on windows returns path from root
            /C:/Users/user/something - invalid
        */
-      virtualFileUrlManager.fromPath(Path.of(URI.create(this)).toAbsolutePath().toString())
+      virtualFileUrlManager.fromPath(Path.of(URI.create(uri)).toAbsolutePath().toString())
     } else {
-      virtualFileUrlManager.getOrCreateFromUrl(this)
+      virtualFileUrlManager.getOrCreateFromUrl(uri)
     }
   }
 
@@ -64,9 +64,9 @@ private class DirectoriesSyncHook : ProjectSyncHook {
   ): BazelProjectDirectoriesEntity.Builder {
     val virtualFileUrlManager = project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
-    val includedRoots = directories.includedDirectories.map { it.uri.toVirtualFileUrl(virtualFileUrlManager) }
+    val includedRoots = directories.includedDirectories.map { toVirtualFileUrl(it.uri, virtualFileUrlManager) }
     val excludedRoots =
-      directories.excludedDirectories.map { it.uri.toVirtualFileUrl(virtualFileUrlManager) } +
+      directories.excludedDirectories.map { toVirtualFileUrl(it.uri, virtualFileUrlManager) } +
         additionalExcludes.map { it.toVirtualFileUrl(virtualFileUrlManager) }
 
     return BazelProjectDirectoriesEntity(
