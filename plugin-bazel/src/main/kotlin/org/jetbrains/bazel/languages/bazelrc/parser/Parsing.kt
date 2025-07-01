@@ -5,6 +5,7 @@ import com.intellij.lang.PsiBuilder
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcElementTypes
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenSets
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
@@ -39,7 +40,7 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
     expectToken(BazelrcTokenTypes.IMPORT, "<import> or <try-import> expected")
 
     if (!matchToken(BazelrcTokenTypes.VALUE)) {
-      error("Import path expected")
+      error(BazelPluginBundle.message("bazelrc.language.parser.missing.import.path"))
     }
 
     while (atToken(BazelrcTokenTypes.VALUE)) {

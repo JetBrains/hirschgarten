@@ -4,6 +4,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.lang.PsiBuilder
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryElementTypes
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenTypes
@@ -86,7 +87,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
         if (utils.atToken(queryQuotes)) return queryQuotes
         utils.expectToken(BazelQueryTokenTypes.EQUALS)
         if (utils.atToken(queryQuotes)) return queryQuotes
-        if (utils.atToken(BazelQueryTokenTypes.IN)) error("expected value of variable in let expression")
+        if (utils.atToken(BazelQueryTokenTypes.IN)) error(BazelPluginBundle.message("bazelquery.error.missing.variable.value"))
         queryQuotes = parseExpr(queryQuotes)
         utils.expectToken(BazelQueryTokenTypes.IN)
         if (utils.atToken(queryQuotes)) return queryQuotes
@@ -112,7 +113,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
             utils.advanceError("expected target pattern as an argument of set expression")
           }
         }
-        if (!utils.matchToken(BazelQueryTokenTypes.RIGHT_PAREN)) error("<right parenthesis> expected")
+        if (!utils.matchToken(BazelQueryTokenTypes.RIGHT_PAREN)) error(BazelPluginBundle.message("bazelquery.error.missing.right.parenthesis"))
       }
 
       utils.atAnyToken(BazelQueryTokenSets.COMMANDS) -> queryQuotes = parseCommand(queryQuotes)
@@ -155,7 +156,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
       utils.atToken(BazelQueryTokenTypes.COMMA) ||
       eof()
     ) {
-      error("<expression> expected")
+      error(BazelPluginBundle.message("bazelquery.error.missing.expression"))
     } else if (utils.atToken(BazelQueryTokenTypes.INTEGER)) {
       utils.advanceError("<expression> expected, got <integer>")
     } else {
@@ -170,7 +171,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
       utils.atToken(BazelQueryTokenTypes.COMMA) ||
       eof()
     ) {
-      error("<word> expected")
+      error(BazelPluginBundle.message("bazelquery.error.missing.word"))
     } else if (!utils.atAnyToken(getAvailableWordsSet(queryQuotes))) {
       utils.advanceError("<word> expected")
     } else {
@@ -186,7 +187,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
       utils.atToken(BazelQueryTokenTypes.COMMA) ||
       eof()
     ) {
-      error("<word> expected")
+      error(BazelPluginBundle.message("bazelquery.error.missing.word"))
     } else if (!utils.atAnyToken(getAvailableWordsSet(queryQuotes)) &&
       !utils.atToken(BazelQueryTokenTypes.INTEGER)
     ) {
@@ -204,7 +205,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
         utils.atToken(BazelQueryTokenTypes.COMMA) ||
         eof()
       ) {
-        error("<expression> expected")
+        error(BazelPluginBundle.message("bazelquery.error.missing.expression"))
       } else if (!utils.atToken(BazelQueryTokenTypes.INTEGER)) {
         utils.advanceError("<integer> expected")
       } else {
@@ -226,7 +227,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
         utils.atToken(BazelQueryTokenTypes.RIGHT_PAREN) ||
         eof()
       ) {
-        error("<expression> expected")
+        error(BazelPluginBundle.message("bazelquery.error.missing.expression"))
       } else if (utils.atToken(BazelQueryTokenTypes.INTEGER)) {
         parseInteger()
       } else {
@@ -262,7 +263,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
       BazelQueryTokenTypes.VISIBLE,
       -> {
         queryQuotes = parseExprArg(queryQuotes)
-        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error("<comma> expected")
+        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error(BazelPluginBundle.message("bazelquery.error.missing.comma"))
         queryQuotes = parseExprArg(queryQuotes)
       }
 
@@ -271,7 +272,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
       BazelQueryTokenTypes.FILTER,
       -> {
         queryQuotes = parseWordArg(queryQuotes)
-        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error("<comma> expected")
+        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error(BazelPluginBundle.message("bazelquery.error.missing.comma"))
         queryQuotes = parseExprArg(queryQuotes)
       }
 
@@ -285,16 +286,16 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
 
       BazelQueryTokenTypes.RDEPS -> {
         queryQuotes = parseExprArg(queryQuotes)
-        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error("<comma> expected")
+        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error(BazelPluginBundle.message("bazelquery.error.missing.comma"))
         queryQuotes = parseExprArg(queryQuotes)
         parseOptionalIntArg(queryQuotes)
       }
 
       BazelQueryTokenTypes.ATTR -> {
         queryQuotes = parseWordArg(queryQuotes)
-        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error("<comma> expected")
+        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error(BazelPluginBundle.message("bazelquery.error.missing.comma"))
         queryQuotes = parseAsWordArg(queryQuotes)
-        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error("<comma> expected")
+        if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error(BazelPluginBundle.message("bazelquery.error.missing.comma"))
         queryQuotes = parseExprArg(queryQuotes)
       }
 
@@ -308,12 +309,12 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
       else -> queryQuotes = parseUnknownArgs(queryQuotes)
     }
 
-    if (eof() || utils.atToken(queryQuotes)) error("<right parenthesis> expected")
+    if (eof() || utils.atToken(queryQuotes)) error(BazelPluginBundle.message("bazelquery.error.missing.right.parenthesis"))
     while (!eof() && !utils.atToken(queryQuotes) && !utils.atToken(BazelQueryTokenTypes.RIGHT_PAREN)) {
       utils.advanceError("too many arguments")
     }
     if (!utils.matchToken(BazelQueryTokenTypes.RIGHT_PAREN)) {
-      error("<right parenthesis> expected")
+      error(BazelPluginBundle.message("bazelquery.error.missing.right.parenthesis"))
     }
     command.done(BazelQueryElementTypes.COMMAND)
 
@@ -333,7 +334,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
     } else if (utils.matchToken(BazelQueryTokenTypes.SQ_UNFINISHED) ||
       utils.matchToken(BazelQueryTokenTypes.DQ_UNFINISHED)
     ) {
-      error("<quote> expected")
+      error(BazelPluginBundle.message("bazelquery.error.missing.quote"))
     } else {
       if (queryQuotes == BazelQueryTokenTypes.WHITE_SPACE) {
         if (utils.atToken(BazelQueryTokenTypes.SQ_WORD)) {

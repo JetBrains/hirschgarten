@@ -7,6 +7,7 @@ import com.intellij.modcommand.Presentation
 import com.intellij.modcommand.PsiUpdateModCommandAction
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentOfType
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 
@@ -19,7 +20,8 @@ class DeleteFlagUseFix(element: PsiElement, val flag: Flag) : PsiUpdateModComman
     element.parentOfType<BazelrcFlag>()?.delete()
   }
 
-  override fun getPresentation(context: ActionContext, element: PsiElement): Presentation? = Presentation.of("""Delete NO_OP flag use""")
+  override fun getPresentation(context: ActionContext, element: PsiElement): Presentation? =
+    Presentation.of(BazelPluginBundle.message("quickfix.bazelrc.delete.noop.flag.presentation"))
 
-  override fun getFamilyName(): @IntentionFamilyName String = "Delete NO_OP flag declarations"
+  override fun getFamilyName(): @IntentionFamilyName String = BazelPluginBundle.message("quickfix.bazelrc.delete.noop.flag.declaration")
 }

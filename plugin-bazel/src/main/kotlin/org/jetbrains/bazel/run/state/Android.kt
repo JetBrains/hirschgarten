@@ -2,6 +2,7 @@ package org.jetbrains.bazel.run.state
 
 import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.ui.components.JBCheckBox
+import org.jetbrains.bazel.config.BazelPluginBundle
 
 interface HasUseMobileInstall {
   var useMobileInstall: Boolean
@@ -10,9 +11,9 @@ interface HasUseMobileInstall {
 fun <T : HasUseMobileInstall> useMobileInstallFragment(): SettingsEditorFragment<T, JBCheckBox> =
   SettingsEditorFragment(
     "useMobileInstall",
-    "Use mobile-install",
+    BazelPluginBundle.message("state.android.use.mobile.install.name"),
     null,
-    JBCheckBox("Use mobile-install"),
+    JBCheckBox(BazelPluginBundle.message("state.android.use.mobile.install.name")),
     { settings, component ->
       component.isSelected = settings.useMobileInstall
     },

@@ -9,6 +9,7 @@ import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.parentOfType
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
 import org.jetbrains.bazel.languages.bazelrc.flags.BazelFlagSymbol
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
@@ -49,7 +50,7 @@ class BazelrcFlagAnnotator : Annotator {
 
     if (flag == null) {
       holder
-        .newAnnotation(HighlightSeverity.WARNING, "Unknown flag: '${element.text}'")
+        .newAnnotation(HighlightSeverity.WARNING, BazelPluginBundle.message("annotation.bazelrc.unknown.flag", element.text))
         .range(element.textRange)
         .textAttributes(BazelrcHighlightingColors.UNKNOWN_FLAG)
         .create()
@@ -59,14 +60,14 @@ class BazelrcFlagAnnotator : Annotator {
     when {
       isHidden(flag) ->
         holder
-          .newAnnotation(HighlightSeverity.INFORMATION, "Undocumented flag: '${element.text}'")
+          .newAnnotation(HighlightSeverity.INFORMATION, BazelPluginBundle.message("annotation.bazelrc.undocumented.flag", element.text))
           .range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.UNKNOWN_FLAG)
           .create()
 
       isNoOp(flag) ->
         holder
-          .newAnnotation(HighlightSeverity.INFORMATION, "Flag: '${element.text}' doesn't do anything")
+          .newAnnotation(HighlightSeverity.INFORMATION, BazelPluginBundle.message("annotation.bazelrc.idle.flag", element.text))
           .range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.NOOP_FLAG)
           .withFix(DeleteFlagUseFix(element, flag))
@@ -74,7 +75,7 @@ class BazelrcFlagAnnotator : Annotator {
 
       isDeprecated(flag, element) ->
         holder
-          .newAnnotation(HighlightSeverity.WARNING, "Flag: '${element.text}' is deprecated")
+          .newAnnotation(HighlightSeverity.WARNING, BazelPluginBundle.message("annotation.bazelrc.deprecated.flag", element.text))
           .range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.DEPRECATED_FLAG)
           .create()
@@ -91,7 +92,7 @@ class BazelrcFlagAnnotator : Annotator {
         holder
           .newAnnotation(
             HighlightSeverity.INFORMATION,
-            "Flag: '${element.text}' is not applicable to command '${element.parentOfType<BazelrcLine>(false)!!.command}'",
+            BazelPluginBundle.message("annotation.bazelrc.flag.not.applicable", element.text, element.parentOfType<BazelrcLine>(false)!!.command),
           ).range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.DEPRECATED_FLAG)
           .create()

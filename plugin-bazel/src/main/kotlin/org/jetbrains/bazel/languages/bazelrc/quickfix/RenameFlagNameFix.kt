@@ -6,6 +6,7 @@ import com.intellij.modcommand.ModPsiUpdater
 import com.intellij.modcommand.Presentation
 import com.intellij.modcommand.PsiUpdateModCommandAction
 import com.intellij.psi.PsiElement
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcElementGenerator
 
@@ -25,7 +26,7 @@ class RenameFlagNameFix(element: PsiElement, val flag: Flag) : PsiUpdateModComma
   }
 
   override fun getPresentation(context: ActionContext, element: PsiElement): Presentation? =
-    Presentation.of("""Replace with "${flag.option.name}" variant""")
+    Presentation.of(BazelPluginBundle.message("quickfix.bazelrc.rename.flag.presentation", flag.option.name))
 
-  override fun getFamilyName(): @IntentionFamilyName String = "Replace old flag names with new ones."
+  override fun getFamilyName(): @IntentionFamilyName String = BazelPluginBundle.message("quickfix.bazelrc.rename.flag.description")
 }
