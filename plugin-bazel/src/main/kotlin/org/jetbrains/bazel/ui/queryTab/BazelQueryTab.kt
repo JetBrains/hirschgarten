@@ -30,6 +30,7 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.JBUI
 import org.jdesktop.swingx.VerticalLayout
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryFlagsLanguage
 import org.jetbrains.bazel.languages.bazelquery.BazelQueryLanguage
@@ -145,9 +146,9 @@ class BazelQueryTab(private val project: Project) : JPanel() {
         ?: run {
           val notificationText =
             if (SystemInfo.isUnix) {
-              "Probably graphviz is missing. You could install graphviz using `apt install graphviz` or `brew install graphviz`"
+              BazelPluginBundle.message("notification.bazel.query.graphviz.missing.unix")
             } else {
-              "Probably graphviz is missing. You can download it from https://graphviz.org/download/."
+              BazelPluginBundle.message("notification.bazel.query.graphviz.missing.nonunix")
             }
 
           NotificationGroupManager
@@ -183,7 +184,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
       NotificationGroupManager
         .getInstance()
         .getNotificationGroup("Bazel")
-        .createNotification("Failed to generate graph visualization", NotificationType.ERROR)
+        .createNotification(BazelPluginBundle.message("notification.bazel.query.graph.visualization.failed"), NotificationType.ERROR)
         .notify(project)
     }
   }
@@ -192,9 +193,9 @@ class BazelQueryTab(private val project: Project) : JPanel() {
     fun createDirectorySelectionPanel() =
       JPanel().apply {
         layout = BoxLayout(this, BoxLayout.X_AXIS)
-        val directoryButton = JButton("Select").apply { addActionListener { chooseDirectory() } }
+        val directoryButton = JButton(BazelPluginBundle.message("button.bazel.query.select")).apply { addActionListener { chooseDirectory() } }
 
-        add(JLabel("Selected Directory: "))
+        add(JLabel(BazelPluginBundle.message("label.bazel.query.select.directory")))
         add(directoryField)
         add(directoryButton)
 
@@ -246,7 +247,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
         removeAll()
         add(Box.createHorizontalGlue())
         val evaluateButton =
-          JButton("Evaluate").apply {
+          JButton(BazelPluginBundle.message("button.bazel.query.evaluate")).apply {
             addActionListener { evaluate() }
           }
         add(evaluateButton)
@@ -261,7 +262,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
         removeAll()
         add(Box.createHorizontalGlue())
         val evaluateButton =
-          JButton("Cancel").apply {
+          JButton(BazelPluginBundle.message("button.bazel.query.cancel")).apply {
             addActionListener { cancelEvaluate() }
           }
         add(evaluateButton)
@@ -280,8 +281,8 @@ class BazelQueryTab(private val project: Project) : JPanel() {
       } else {
         val descriptor =
           FileChooserDescriptorFactory.createSingleFolderDescriptor().apply {
-            title = "Select Directory"
-            description = "Choose a directory within the project."
+            title = BazelPluginBundle.message("file.chooser.bazel.query.select.directory.title")
+            description = BazelPluginBundle.message("file.chooser.bazel.query.select.directory.description")
           }
         FileChooser.chooseFile(descriptor, project, null)
       }
@@ -300,7 +301,7 @@ class BazelQueryTab(private val project: Project) : JPanel() {
         NotificationGroupManager
           .getInstance()
           .getNotificationGroup("Bazel")
-          .createNotification("Selected directory is outside of current project", NotificationType.ERROR)
+          .createNotification(BazelPluginBundle.message("notification.bazel.query.selected.dir.outside.project"), NotificationType.ERROR)
           .notify(project)
         return
       }

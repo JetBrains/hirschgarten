@@ -5,6 +5,7 @@ import com.intellij.ide.util.projectWizard.EmptyModuleBuilder
 import com.intellij.openapi.module.InternalModuleType
 import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.module.ModuleTypeManager
+import org.jetbrains.bazel.config.BazelPluginBundle
 import javax.swing.Icon
 
 class BazelDummyModuleType : InternalModuleType<BazelDummyModuleBuilder>(ID) {
@@ -14,7 +15,7 @@ class BazelDummyModuleType : InternalModuleType<BazelDummyModuleBuilder>(ID) {
 
   override fun createModuleBuilder(): BazelDummyModuleBuilder = BazelDummyModuleBuilder()
 
-  override fun getName(): String = "Bazel synthetic module"
+  override fun getName(): String = BazelPluginBundle.message("bazel.dummy.module.type.name")
 
   override fun getDescription(): String = name
 
