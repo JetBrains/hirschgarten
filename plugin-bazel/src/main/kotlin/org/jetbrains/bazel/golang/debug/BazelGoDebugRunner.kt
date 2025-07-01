@@ -4,7 +4,6 @@ import com.goide.dlv.DlvDebugProcess
 import com.goide.dlv.DlvDisconnectOption
 import com.goide.dlv.DlvRemoteVmConnection
 import com.intellij.execution.DefaultExecutionResult
-import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
@@ -13,25 +12,23 @@ import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.GenericProgramRunner
 import com.intellij.execution.ui.RunContentDescriptor
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.progress.ProcessCanceledException
+import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.xdebugger.XDebugProcess
 import com.intellij.xdebugger.XDebugProcessStarter
 import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.XDebuggerManager
 import com.intellij.xdebugger.impl.XDebugSessionImpl
-import org.jdom.Element
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
-import java.util.concurrent.atomic.AtomicReference
 
-class BazelGoDebugRunner : GenericProgramRunner<BazelDebugRunnerSetting>() {
+class BazelGoDebugRunner : GenericProgramRunner<RunnerSettings>() {
   override fun getRunnerId(): String = "BazelGoDebugRunner"
 
   override fun canRun(executorId: String, profile: RunProfile): Boolean {
     // if target cannot be debugged, do not offer debugging it
     if (executorId != DefaultDebugExecutor.EXECUTOR_ID) return false
     if (profile !is BazelRunConfiguration) return false
-    return profile.handler is GoBazelRunHandler // todo: add test handler when implemented
+    return profile.handler is BazelGoRunHandler || profile.handler is BazelGoTestHandler
   }
 
   override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor {
@@ -40,35 +37,18 @@ class BazelGoDebugRunner : GenericProgramRunner<BazelDebugRunnerSetting>() {
   }
 
   private fun attachVM(state: GoDebuggableCommandLineState, executionEnvironment: ExecutionEnvironment): RunContentDescriptor {
-    val ex = AtomicReference<ExecutionException>()
-    val result = AtomicReference<RunContentDescriptor>()
     val project = executionEnvironment.project
-    ApplicationManager.getApplication().invokeAndWait {
-      try {
-        val executionResult = state.execute(executionEnvironment.executor, this)
-        result.set(
-          XDebuggerManager
-            .getInstance(project)
-            .startSession(executionEnvironment, BazelDebugProcessStarter(executionResult, state))
-            .runContentDescriptor,
-        )
-      } catch (_: ProcessCanceledException) {
-        // ignore
-      } catch (e: ExecutionException) {
-        ex.set(e)
-      }
-    }
-    return ex.get()?.let { throw it } ?: result.get()
-  }
-}
-
-class BazelDebugRunnerSetting : RunnerSettings {
-  override fun readExternal(element: Element?) {
-    // empty settings, don't do anything
-  }
-
-  override fun writeExternal(element: Element?) {
-    // empty settings, don't do anything
+    state.patchNativeState()
+    ProgressManager.getInstance().runProcessWithProgressSynchronously(
+      { ReadAction.run<RuntimeException>(state::prepareStateInBGT) },
+      "Preparing Go Application Running State",
+      false,
+      project,
+    )
+    return XDebuggerManager
+      .getInstance(project)
+      .startSession(executionEnvironment, BazelDebugProcessStarter(state.execute(executionEnvironment.executor, this), state))
+      .runContentDescriptor
   }
 }
 
@@ -81,9 +61,8 @@ private class BazelDebugProcessStarter(private val executionResult: ExecutionRes
       sessionImpl.addRestartActions(*it.restartActions)
     }
     val connection = DlvRemoteVmConnection(DlvDisconnectOption.KILL)
-    val remote = true
-    val process = DlvDebugProcess(session, connection, executionResult, remote)
-    connection.open(state.getDebugServerAddress())
+    val process = DlvDebugProcess(session, connection, executionResult, true)
+    connection.open(state.debugServerAddress)
     return process
   }
 }

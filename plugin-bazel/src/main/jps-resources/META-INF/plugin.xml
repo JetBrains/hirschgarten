@@ -103,6 +103,8 @@
                     dynamic="true"/>
     <extensionPoint qualifiedName="org.jetbrains.bazel.bazelGeneralSettingsProvider"
                     interface="org.jetbrains.bazel.ui.settings.BazelSettingsProvider"/>
+    <extensionPoint qualifiedName="org.jetbrains.bazel.workspaceModuleSyncHook.enable"
+                    interface="org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleProjectSyncHook$EnableWorkspaceModuleSyncHookExtension"/>
   </extensionPoints>
 
   <!-- it needs to be here, not in withKotlin.xml because plugin loader checks only this file -->
@@ -120,6 +122,7 @@
     <projectSyncHook implementation="org.jetbrains.bazel.fastbuild.ToolchainInfoSyncHook"/>
     <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.PathSyncHook"/>
     <projectSyncHook implementation="org.jetbrains.bazel.target.sync.TargetUtilsSyncHook" id="TargetUtilsSyncHook"/>
+    <projectSyncHook implementation="org.jetbrains.bazel.sync.projectStructure.legacy.WorkspaceModuleProjectSyncHook" order="after TargetUtilsSyncHook"/>
 
     <projectPostSyncHook implementation="org.jetbrains.bazel.ui.widgets.fileTargets.BazelFileTargetsWidgetSyncHook"/>
     <projectPostSyncHook implementation="org.jetbrains.bazel.flow.sync.RemoveExcludedVcsMappingsSyncHook"/>
