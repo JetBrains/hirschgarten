@@ -7,6 +7,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
+import com.intellij.codeInsight.completion.PrioritizedLookupElement
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.components.service
@@ -50,24 +51,35 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
-    val starlarkCallExpression = parameters.position.findParentOfType<StarlarkCallExpression>()
-    val functionName = starlarkCallExpression?.firstChild?.text
     val file = parameters.originalFile as? StarlarkFile ?: return
-    val functions = fileTypeToGlobalFunctions(file)
+    val starlarkCallExpression = parameters.position.findParentOfType<StarlarkCallExpression>()
+    val functionName = starlarkCallExpression?.firstChild?.text ?: return
+    val globalFunction = fileTypeToGlobalFunctions(file)[functionName]
 
-    if (functionName != null) {
-      val function = functions[functionName]
-      if (function != null) {
-        return function.params.forEach {
-          result.addElement(argumentLookupElement(it))
-        }
-      }
+    if (globalFunction != null) {
+      val argumentListText = starlarkCallExpression.lastChild.text
+      addCompletionForGlobalFunction(result, globalFunction, argumentListText)
+    } else {
+      val argument = PsiTreeUtil.getParentOfType(parameters.position, StarlarkArgumentExpression::class.java) ?: return
+      argument.reference.variants
+        .filterIsInstance<StarlarkNamedLookupElement>()
+        .forEach { result.addElement(it) }
     }
+  }
 
-    val argument = PsiTreeUtil.getParentOfType(parameters.position, StarlarkArgumentExpression::class.java) ?: return
-    argument.reference.variants
-      .filterIsInstance<StarlarkNamedLookupElement>()
-      .forEach { result.addElement(it) }
+  private fun addCompletionForGlobalFunction(
+    result: CompletionResultSet,
+    function: BazelGlobalFunction,
+    argumentListText: String,
+  ) {
+    val filtered =
+      function.params.filter {
+        !argumentListText.contains(it.name)
+      }
+
+    filtered.forEach {
+      result.addElement(PrioritizedLookupElement.withPriority(argumentLookupElement(it), 1.0))
+    }
   }
 
   private class ArgumentInsertHandler<T : LookupElement>(val default: String) : InsertHandler<T> {

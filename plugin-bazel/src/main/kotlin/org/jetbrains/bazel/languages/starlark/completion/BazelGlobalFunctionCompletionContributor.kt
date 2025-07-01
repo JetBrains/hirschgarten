@@ -38,7 +38,7 @@ class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
     )
     extend(
       CompletionType.BASIC,
-      fileSpecificFunctionCompletionElement(BazelFileType.MODULE),
+      fileSpecificFunctionCompletionElement(BazelFileType.MODULE, true),
       BazelModuleFunctionCompletionProvider,
     )
     extend(
@@ -48,9 +48,16 @@ class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
     )
   }
 
-  private fun fileSpecificFunctionCompletionElement(bazelFileType: BazelFileType) =
+  private fun fileSpecificFunctionCompletionElement(bazelFileType: BazelFileType, topLevelOnly: Boolean = false) =
     globalFunctionCompletionElement()
       .inFile(psiFile(StarlarkFile::class.java).with(bazelFileTypeCondition(bazelFileType)))
+      .let { pattern ->
+        if (topLevelOnly) {
+          pattern.withSuperParent(3, StarlarkFile::class.java)
+        } else {
+          pattern
+        }
+      }
 
   private fun globalFunctionCompletionElement() =
     psiElement()
