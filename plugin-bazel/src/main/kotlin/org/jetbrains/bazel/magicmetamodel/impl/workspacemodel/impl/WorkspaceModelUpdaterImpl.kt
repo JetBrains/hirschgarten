@@ -17,11 +17,10 @@ import java.nio.file.Path
 
 class WorkspaceModelUpdaterImpl(
   workspaceEntityStorageBuilder: MutableEntityStorage,
-  val virtualFileUrlManager: VirtualFileUrlManager,
-  projectBasePath: Path,
+  private val virtualFileUrlManager: VirtualFileUrlManager,
+  private val projectBasePath: Path,
   project: Project,
-  isAndroidSupportEnabled: Boolean,
-  libraryModules: List<JavaModule> = emptyList(),
+  private val isAndroidSupportEnabled: Boolean,
 ) : WorkspaceModelUpdater {
   private val workspaceModelEntityUpdaterConfig =
     WorkspaceModelEntityUpdaterConfig(
@@ -30,24 +29,16 @@ class WorkspaceModelUpdaterImpl(
       projectBasePath = projectBasePath,
       project = project,
     )
-  private val javaModuleUpdater =
-    JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled, libraryModules)
 
   init {
     // store generated IML files outside the project directory
     ExternalProjectsManagerImpl.getInstance(project).setStoreExternally(true)
   }
 
-  override suspend fun loadModules(moduleEntities: List<Module>) {
-    moduleEntities.forEach { loadModule(it) }
-  }
-
-  private suspend fun loadModule(module: Module) {
-    when (module) {
-      is JavaModule -> {
-        javaModuleUpdater.addEntity(module)
-      }
-    }
+  override suspend fun loadModules(moduleEntities: List<Module>, libraryModules: List<JavaModule>) {
+    val javaModuleUpdater =
+      JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled, moduleEntities, libraryModules)
+    javaModuleUpdater.addEntities(moduleEntities.filterIsInstance<JavaModule>() + libraryModules)
   }
 
   override suspend fun loadLibraries(libraries: List<Library>) {

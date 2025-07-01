@@ -6,6 +6,7 @@ PLATFORM_VERSION = "252"
 
 # make sure to always choose the lowest among different benchmark build numbers
 SINCE_VERSION = "252.21735"
+UNTIL_VERSION = "252.*"
 
 BENCHMARK_BUILD_NUMBER = "252.23309.22"
-PY_BENCHMARK_BUILD_NUMBER = "252.21735.39"
+PY_BENCHMARK_BUILD_NUMBER = "252.23309.36"
