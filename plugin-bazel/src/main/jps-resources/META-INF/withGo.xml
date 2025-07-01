@@ -7,7 +7,6 @@
         <stepsBeforeRunProvider implementation="org.jetbrains.bazel.golang.debug.BazelGoCalculateExecutableInfoBeforeRunTaskProvider"/>
         <documentationProvider implementation="org.jetbrains.bazel.golang.resolve.GoPackageDocumentationProvider"/>
       <additionalLibraryRootsProvider implementation="org.jetbrains.bazel.golang.sync.GoAdditionalLibraryRootsProvider"/>
-      <additionalLibraryRootsProvider implementation="org.jetbrains.bazel.golang.sync.BazelGoSdkLibraryRootProvider"/>
       <treeStructureProvider implementation="org.jetbrains.bazel.golang.treeview.BazelGoTreeStructureProvider" order="last"/>
       <postStartupActivity implementation="org.jetbrains.bazel.golang.startup.GoPostStartupActivity"/>
     </extensions>
