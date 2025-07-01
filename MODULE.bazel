@@ -161,7 +161,7 @@ single_version_override(
     version = "3.17.1",
 )
 
-bazel_dep(name = "rules_shell", version = "0.4.0")
+bazel_dep(name = "rules_shell", version = "0.5.0")
 bazel_dep(name = "rules_proto", version = "7.1.0")
 bazel_dep(name = "protobuf", version = "29.4")
 bazel_dep(name = "rules_cc", version = "0.1.1")
