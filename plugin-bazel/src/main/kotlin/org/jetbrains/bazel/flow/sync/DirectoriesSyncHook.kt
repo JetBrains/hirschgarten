@@ -38,24 +38,6 @@ private class DirectoriesSyncHook : ProjectSyncHook {
     }
   }
 
-  private fun toVirtualFileUrl(uri: String, virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl {
-    return if (uri.startsWith("file://")) {
-      /*
-        Apparently on some operating systems(windows)
-        VirtualFileUrlManager is unable to decode uri obtained from Path#toUri correctly
-        on unix-like operating system uri path will look something like that:
-          - file:///home/user/something - valid
-        on windows path still contains root directory '/' slash
-          - file:///C:/Users/user/something - valid
-        VirtualFileUrlManager does not handle that and on windows returns path from root
-           /C:/Users/user/something - invalid
-       */
-      virtualFileUrlManager.fromPath(Path.of(URI.create(uri)).toAbsolutePath().toString())
-    } else {
-      virtualFileUrlManager.getOrCreateFromUrl(uri)
-    }
-  }
-
   private suspend fun createEntity(
     project: Project,
     directories: WorkspaceDirectoriesResult,
@@ -64,9 +46,9 @@ private class DirectoriesSyncHook : ProjectSyncHook {
   ): BazelProjectDirectoriesEntity.Builder {
     val virtualFileUrlManager = project.serviceAsync<WorkspaceModel>().getVirtualFileUrlManager()
 
-    val includedRoots = directories.includedDirectories.map { toVirtualFileUrl(it.uri, virtualFileUrlManager) }
+    val includedRoots = directories.includedDirectories.map { IdeaVFSUtil.toVirtualFileUrl(it.uri, virtualFileUrlManager) }
     val excludedRoots =
-      directories.excludedDirectories.map { toVirtualFileUrl(it.uri, virtualFileUrlManager) } +
+      directories.excludedDirectories.map { IdeaVFSUtil.toVirtualFileUrl(it.uri, virtualFileUrlManager) } +
         additionalExcludes.map { it.toVirtualFileUrl(virtualFileUrlManager) }
 
     return BazelProjectDirectoriesEntity(
