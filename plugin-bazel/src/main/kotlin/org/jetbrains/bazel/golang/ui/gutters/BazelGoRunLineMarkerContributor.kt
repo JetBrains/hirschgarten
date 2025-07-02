@@ -16,13 +16,13 @@ class BazelGoRunLineMarkerContributor : BazelRunLineMarkerContributor() {
     GoRunUtil.isMainGoFile(this.containingFile) &&
       GoConstants.MAIN == (this.parent as? GoFunctionDeclaration)?.name
 
-  override fun getSingleTestFilter(element: PsiElement): String {
+  override fun getSingleTestFilter(element: PsiElement): String? {
     val function = GoTestFinder.findTestFunctionInContext(element)
     return if (function != null) {
       val rawTestFilter = calculateRawTestFilterForElement(element, function)
-      return wrapText(rawTestFilter ?: element.text)
+      rawTestFilter?.let { wrapText(it) }
     } else {
-      wrapText(element.text)
+      null
     }
   }
 
