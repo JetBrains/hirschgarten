@@ -46,6 +46,8 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
   //    configureProjectBeforeUse = ::configureProjectBeforeUseWithoutBazelClean,
   //  )
 
+  private val context by lazy { createContext() }
+
   private val commands =
     CommandChain()
       .takeScreenshot("startSync")
@@ -55,7 +57,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun openBazelProject() {
-    createContext()
+    context
       .runIdeWithDriver(commands = commands, runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
@@ -74,7 +76,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun openBazelProjectWithTestFile() {
-    createContext()
+    context
       .runIdeWithDriver(commands = commands, runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
@@ -93,7 +95,7 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
 
   @Test
   fun checkImportStatements() {
-    createContext()
+    context
       .runIdeWithDriver(commands = commands, runTimeout = timeout)
       .useDriverAndCloseIde {
         ideFrame {
