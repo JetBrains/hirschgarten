@@ -35,4 +35,7 @@ class BazelQueryParsingTest : BazelQueryParsingTestCase() {
 
   // quotation incorrect usage test
   fun testMixedQuotes() = doTestWithDir("other", true, false)
+
+  // unnecesary parens test
+  fun testUnnecessaryParens() = doTestWithDir("other", true, true)
 }

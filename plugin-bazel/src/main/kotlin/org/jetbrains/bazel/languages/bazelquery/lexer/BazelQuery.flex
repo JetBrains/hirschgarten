@@ -87,7 +87,7 @@ OPTION_REQ_VALUE="--loading_phase_threads" |
     ({SOFT_NL} | [{SPACE}{NL}])+      { return TokenType.WHITE_SPACE; }
 
     {HYP}                             { yybegin(FLAG);  yypushback(1); }
-    ([A-Za-z0-9/@._:$~\[\]] | {SQ} | {DQ})           { yybegin(EXPR); yypushback(1); }
+    ([A-Za-z0-9/@._:$~\[\]] | {SQ} | {DQ} | {LEFT_PAREN})           { yybegin(EXPR); yypushback(1); }
     [^]                               { yybegin(FLAG);  yypushback(1); }
 }
 

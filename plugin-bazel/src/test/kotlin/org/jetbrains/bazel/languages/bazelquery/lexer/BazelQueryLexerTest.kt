@@ -328,7 +328,7 @@ class BazelQueryLexerTest : LexerTestCase() {
 
   // flags test
   @Test
-  fun `should lex a flag with no value`() {
+  fun `should lex flags`() {
     val code = "--noimplicit_deps --output=graph --order_output full"
 
     code shouldLexTo
