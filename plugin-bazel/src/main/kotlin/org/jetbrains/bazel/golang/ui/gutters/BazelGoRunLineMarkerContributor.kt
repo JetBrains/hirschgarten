@@ -17,13 +17,8 @@ class BazelGoRunLineMarkerContributor : BazelRunLineMarkerContributor() {
       GoConstants.MAIN == (this.parent as? GoFunctionDeclaration)?.name
 
   override fun getSingleTestFilter(element: PsiElement): String? {
-    val function = GoTestFinder.findTestFunctionInContext(element)
-    return if (function != null) {
-      val rawTestFilter = calculateRawTestFilterForElement(element, function)
-      rawTestFilter?.let { wrapText(it) }
-    } else {
-      null
-    }
+    val function = GoTestFinder.findTestFunctionInContext(element) ?: return null
+    return calculateRawTestFilterForElement(element, function)?.let { wrapText(it) }
   }
 
   private fun wrapText(text: String): String = "^${escapeRegexChars(text)}$"
