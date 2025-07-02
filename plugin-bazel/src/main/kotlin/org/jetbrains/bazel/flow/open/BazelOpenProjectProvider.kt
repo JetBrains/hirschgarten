@@ -11,6 +11,7 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
 import org.jetbrains.bazel.startup.BazelProjectActivity
+import org.jetbrains.bazel.ui.widgets.tool.window.all.targets.registerBazelToolWindow
 
 private val log = logger<BazelOpenProjectProvider>()
 
@@ -32,6 +33,7 @@ internal class BazelOpenProjectProvider : AbstractOpenProjectProvider() {
 internal suspend fun performOpenBazelProject(project: Project?, projectRootDir: VirtualFile?) {
   if (projectRootDir != null && project != null) {
     project.initProperties(projectRootDir)
+    registerBazelToolWindow(project)
     configureProjectCounterPlatform(project)
     BazelCoroutineService.getInstance(project).start {
       StartupActivity.POST_STARTUP_ACTIVITY.extensionList.filterIsInstance<BazelProjectActivity>().forEach {
