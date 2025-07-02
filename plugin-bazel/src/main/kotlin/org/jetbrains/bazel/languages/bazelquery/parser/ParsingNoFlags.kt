@@ -113,7 +113,12 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
             utils.advanceError("expected target pattern as an argument of set expression")
           }
         }
-        if (!utils.matchToken(BazelQueryTokenTypes.RIGHT_PAREN)) error(BazelPluginBundle.message("bazelquery.error.missing.right.parenthesis"))
+        if (!utils.matchToken(
+            BazelQueryTokenTypes.RIGHT_PAREN,
+          )
+        ) {
+          error(BazelPluginBundle.message("bazelquery.error.missing.right.parenthesis"))
+        }
       }
 
       utils.atAnyToken(BazelQueryTokenSets.COMMANDS) -> queryQuotes = parseCommand(queryQuotes)

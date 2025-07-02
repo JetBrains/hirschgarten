@@ -436,7 +436,7 @@ object FastBuildUtils {
           .getNotificationGroup("HotSwap Messages")
           .createNotification(
             BazelPluginBundle.message("widget.fastbuild.completed.title"),
-              BazelPluginBundle.message("widget.fastbuild.completed.description"),
+            BazelPluginBundle.message("widget.fastbuild.completed.description"),
             NotificationType.INFORMATION,
           ).setImportant(false)
           .setIcon(AllIcons.Status.Success)

@@ -5,8 +5,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import com.intellij.platform.workspace.storage.url.VirtualFileUrl
-import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectDirectoriesEntity
@@ -17,7 +15,6 @@ import org.jetbrains.bazel.sync.projectStructure.workspaceModel.workspaceModelDi
 import org.jetbrains.bazel.sync.task.query
 import org.jetbrains.bazel.sync.withSubtask
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
-import java.net.URI
 import java.nio.file.Path
 
 private class DirectoriesSyncHook : ProjectSyncHook {
