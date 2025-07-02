@@ -10,7 +10,7 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
-import org.jetbrains.bazel.languages.starlark.references.BazelNativeRuleReference
+import org.jetbrains.bazel.languages.starlark.references.BazelGlobalFunctionReference
 import org.jetbrains.bazel.languages.starlark.references.StarlarkFunctionCallReference
 
 @Suppress("UnstableApiUsage")
@@ -37,7 +37,7 @@ class StarlarkCallExpression(node: ASTNode) : StarlarkBaseElement(node) {
     val name = name ?: return emptyList()
     val function = service<BazelGlobalFunctionsService>().getFunctionByName(name) ?: return emptyList()
     return listOfNotNull(
-      BazelNativeRuleReference(this, function),
+      BazelGlobalFunctionReference(this, function),
       reference?.let { PsiSymbolService.getInstance().asSymbolReference(it) },
     )
   }
