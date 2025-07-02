@@ -26,6 +26,7 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 
 class StarlarkArgumentCompletionContributor : CompletionContributor() {
   init {
@@ -57,8 +58,8 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
     val globalFunction = fileTypeToGlobalFunctions(file)[functionName]
 
     if (globalFunction != null) {
-      val argumentListText = starlarkCallExpression.lastChild.text
-      addCompletionForGlobalFunction(result, globalFunction, argumentListText)
+      val argumentList = (starlarkCallExpression.lastChild as StarlarkArgumentList).getArgumentNames()
+      addCompletionForGlobalFunction(result, globalFunction, argumentList)
     } else {
       val argument = PsiTreeUtil.getParentOfType(parameters.position, StarlarkArgumentExpression::class.java) ?: return
       argument.reference.variants
@@ -70,11 +71,11 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
   private fun addCompletionForGlobalFunction(
     result: CompletionResultSet,
     function: BazelGlobalFunction,
-    argumentListText: String,
+    argumentList: Set<String>,
   ) {
     val filtered =
       function.params.filter {
-        !argumentListText.contains(it.name)
+        !argumentList.contains(it.name)
       }
 
     filtered.forEach {

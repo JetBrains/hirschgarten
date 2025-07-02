@@ -10,7 +10,8 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement.Companion.
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 
 @Suppress("UnstableApiUsage")
-class BazelGlobalFunctionReference(private val element: StarlarkCallExpression, private val rule: BazelGlobalFunction) : PsiSymbolReference {
+class BazelGlobalFunctionReference(private val element: StarlarkCallExpression, private val rule: BazelGlobalFunction) :
+  PsiSymbolReference {
   val textRange = element.getNameNode()?.textRange?.relativeTo(element)!!
 
   override fun getElement(): PsiElement = element

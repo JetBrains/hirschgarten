@@ -43,7 +43,7 @@ class BazelGlobalFunctionArgumentCompletionTest : BasePlatformTestCase() {
       service<BazelGlobalFunctionsService>()
         .getModuleFunctions()["module"]!!
         .params
-        .filter { it.name.contains('a') }
+        .filter { it.name.contains('a') && it.name != "name" }
         .map { it.name }
     lookups shouldContainAll expectedArgNames
   }

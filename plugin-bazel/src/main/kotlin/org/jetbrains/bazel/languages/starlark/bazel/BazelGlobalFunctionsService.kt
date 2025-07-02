@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.starlark.bazel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 
 @Service(Service.Level.APP)
 class BazelGlobalFunctionsService {
@@ -119,4 +120,8 @@ class BazelGlobalFunctionsService {
   fun getBuildFunctions(): Map<String, BazelGlobalFunction> = buildRulesMap
 
   fun getFunctionByName(name: String): BazelGlobalFunction? = moduleFunctionsMap[name] ?: buildRulesMap[name]
+
+  companion object {
+    fun getInstance(): BazelGlobalFunctionsService = service<BazelGlobalFunctionsService>()
+  }
 }
