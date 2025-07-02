@@ -38,8 +38,8 @@ open class GoDebuggableCommandLineState(
       }
       setOutputFilePath(executableInfo.binary.path)
     }
-    patchAdditionalParams()
+    patchAdditionalConfigs()
   }
 
-  open fun patchAdditionalParams() {}
+  open fun patchAdditionalConfigs() {}
 }

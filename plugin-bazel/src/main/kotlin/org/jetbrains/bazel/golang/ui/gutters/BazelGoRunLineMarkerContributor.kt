@@ -14,7 +14,7 @@ class BazelGoRunLineMarkerContributor : BazelRunLineMarkerContributor() {
 
   private fun PsiElement.isMainFunction(): Boolean =
     GoRunUtil.isMainGoFile(this.containingFile) &&
-      GoConstants.MAIN == (this.parent as GoFunctionDeclaration).name
+      GoConstants.MAIN == (this.parent as? GoFunctionDeclaration)?.name
 
   override fun getSingleTestFilter(element: PsiElement): String {
     val function = GoTestFinder.findTestFunctionInContext(element)
