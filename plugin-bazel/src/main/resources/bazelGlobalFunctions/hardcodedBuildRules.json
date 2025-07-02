@@ -8,154 +8,154 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "srcs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "data",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "additional_linker_inputs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "conlyopts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "copts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "cxxopts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "defines",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "dynamic_deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "includes",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "link_extra_lib",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "linkopts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "linkshared",
         "default": "False",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "linkstatic",
         "default": "True",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "local_defines",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "malloc",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "module_interfaces",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "nocopts",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "reexport_deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "stamp",
         "default": "-1",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "win_def_file",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -168,91 +168,91 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "hdrs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "alwayslink",
         "default": "False",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "includes",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "interface_library",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "linkopts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "objects",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "pic_objects",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "pic_static_library",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "shared_library",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "static_library",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "system_provided",
         "default": "False",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -265,168 +265,168 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "srcs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "data",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "hdrs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "additional_compiler_inputs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "additional_linker_inputs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "alwayslink",
         "default": "False",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "conlyopts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "copts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "cxxopts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "defines",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "hdrs_check",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "implementation_deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "include_prefix",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "includes",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "linkopts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "linkstamp",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "linkstatic",
         "default": "False",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "local_defines",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "module_interfaces",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "strip_include_prefix",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "textual_hdrs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "win_def_file",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -439,70 +439,70 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "additional_linker_inputs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "dynamic_deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "exports_filter",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "roots",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "shared_lib_name",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "static_deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "user_link_flags",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "win_def_file",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -515,14 +515,14 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -535,161 +535,161 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "src",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "data",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "additional_linker_inputs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "conlyopts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "copts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "cxxopts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "defines",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "dynamic_deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "hdrs_check",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "includes",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "link_extra_lib",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "linkopts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "linkshared",
         "default": "False",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "linkstatic",
         "default": "False",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "local_defines",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "malloc",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "module_interfaces",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "nocopts",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "reexport_deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "stamp",
         "default": "0",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "win_def_file",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -702,140 +702,140 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "all_files",
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "ar_files",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "as_files",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "compiler_files",
         "default": null,
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "compiler_files_without_includes",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "coverage_files",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "dwp_files",
         "default": null,
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "dynamic_runtime_lib",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "libc_top",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "linker_files",
         "default": null,
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "module_map",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "objcopy_files",
         "default": null,
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "output_licenses",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "static_runtime_lib",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "strip_files",
         "default": null,
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "supports_header_parsing",
         "default": "False",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "supports_param_files",
         "default": "True",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "toolchain_config",
         "default": "True",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "toolchain_identifier",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -848,7 +848,7 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -861,14 +861,14 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "profile",
         "default": null,
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -881,28 +881,28 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "memprof_profile",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "profile",
         "default": null,
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "proto_profile",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -915,14 +915,14 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "profile",
         "default": null,
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -935,21 +935,21 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "cc_profile",
         "default": null,
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "ld_profile",
         "default": null,
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -962,77 +962,77 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "hdrs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "alwayslink",
         "default": "False",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "archives",
         "default": null,
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "includes",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "sdk_dylibs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "sdk_frameworks",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "sdk_includes",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "textual_hdrs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "weak_sdk_frameworks",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -1045,161 +1045,161 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "srcs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "hdrs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "alwayslink",
         "default": "False",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "conlyopts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "copts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "cxxopts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "defines",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "enable_modules",
         "default": "False",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "implementation_deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "includes",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "linkopts",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "module_map",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "module_name",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "non_arc_srcs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "pch",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "sdk_dylibs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "sdk_frameworks",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "sdk_includes",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "stamp",
         "default": "False",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "textual_hdrs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "weak_sdk_frameworks",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -1212,14 +1212,14 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -1232,14 +1232,14 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -1252,14 +1252,14 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -1272,49 +1272,49 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "srcs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "allow_exports",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "exports",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "import_prefix",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "strip_import_prefix",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -1327,14 +1327,14 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -1347,84 +1347,84 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "allowlist_different_package",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "blacklisted_protos",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "command_line",
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "mnemonic",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "output_files",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "plugin",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "plugin_format_flag",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "progress_message",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "protoc_minimal_do_not_use",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "runtime",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "toolchain_type",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -1437,42 +1437,42 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "command_line",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "mnemonic",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "output_files",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "progress_message",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "proto_compiler",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -1485,105 +1485,105 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "srcs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "data",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "imports",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "legacy_create_init",
         "default": "-1",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "main",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "precompile",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "precompile_invalidation_mode",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "precompile_optimize_level",
         "default": "0",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "precompile_source_retention",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "pyc_collection",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "python_version",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "srcs_version",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "stamp",
         "default": "-1",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -1596,70 +1596,70 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "srcs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "data",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "imports",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "precompile",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "precompile_invalidation_mode",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "precompile_optimize_level",
         "default": "0",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "precompile_source_retention",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "srcs_version",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -1672,105 +1672,105 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "srcs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "data",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "imports",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "legacy_create_init",
         "default": "-1",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "main",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "precompile",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "precompile_invalidation_mode",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "precompile_optimize_level",
         "default": "0",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "precompile_source_retention",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "pyc_collection",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "python_version",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "srcs_version",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "stamp",
         "default": "0",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -1783,98 +1783,98 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "abi_flags",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "bootstrap_template",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "coverage_tool",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "files",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "implementation_name",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "interpreter",
         "default": null,
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "interpreter_path",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "interpreter_version_info",
         "default": "{}",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "pyc_tag",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "python_version",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "stage2_bootstrap_template",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "stub_shebang",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "zip_main_template",
         "default": "\"\"",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -1887,28 +1887,28 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "srcs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "env_inherit",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -1921,21 +1921,21 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "srcs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   },
@@ -1948,21 +1948,21 @@
         "default": "\"\"",
         "positional": false,
         "required": true,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "deps",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       },
       {
         "name": "srcs",
         "default": "[]",
         "positional": false,
         "required": false,
-        "docString": ""
+        "docString": null
       }
     ]
   }

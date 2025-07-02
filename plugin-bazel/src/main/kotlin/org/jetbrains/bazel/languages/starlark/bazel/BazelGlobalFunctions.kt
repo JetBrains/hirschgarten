@@ -2,7 +2,7 @@ package org.jetbrains.bazel.languages.starlark.bazel
 
 data class BazelGlobalFunctionParameter(
   val name: String,
-  val default: String,
+  val default: String?,
   val positional: Boolean,
   val required: Boolean = false,
   val docString: String? = null,

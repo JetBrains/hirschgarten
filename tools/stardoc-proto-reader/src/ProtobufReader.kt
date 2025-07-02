@@ -1,8 +1,26 @@
 import com.google.devtools.build.lib.starlarkdocextract.StardocOutputProtos
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import java.io.FileInputStream
 import kotlin.system.exitProcess
 
 object ProtobufReader {
+  private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
+
+  data class AttributeInfo(
+    val name: String,
+    val docString: String,
+    val required: Boolean,
+    val default: String,
+    val positional: Boolean = false,
+  )
+
+  data class RuleInfo(
+    val name: String,
+    val docString: String,
+    val params: List<AttributeInfo>,
+  )
+
   private fun removeLinks(input: String): String {
     var result = input.replace(Regex("<a[^>]*>(.*?)</a>", RegexOption.DOT_MATCHES_ALL), "$1")
     result = result.replace(Regex("\\[(.*?)\\]\\(.*?\\)"), "$1")
@@ -15,30 +33,25 @@ object ProtobufReader {
     return result
   }
 
-  private fun defaultNameOrEmtpyQuotes(name: String): String = if (name == "") "\"\"" else name
+  private fun defaultNameOrEmptyQuotes(name: String): String = if (name == "") "\"\"" else name
 
-  private fun attributeInfoToString(attrInfo: StardocOutputProtos.AttributeInfo): String =
-    "BazelNativeRuleArgument(" +
-      "\"" + attrInfo.name + "\"" + "," +
-      "\"\"\"" + defaultNameOrEmtpyQuotes(attrInfo.defaultValue) + "\"\"\"" + "," +
-      attrInfo.mandatory + "," +
-      "\"\"\"" + replaceTicks(removeLinks(attrInfo.docString)) + "\"\"\"" +
-      ")"
+  private fun attributeInfoToData(attrInfo: StardocOutputProtos.AttributeInfo): AttributeInfo =
+    AttributeInfo(
+      name = attrInfo.name,
+      docString = replaceTicks(removeLinks(attrInfo.docString)),
+      required = attrInfo.mandatory,
+      default = defaultNameOrEmptyQuotes(attrInfo.defaultValue),
+      positional = false,
+    )
 
-  private fun ruleInfoToString(ruleInfo: StardocOutputProtos.RuleInfo): String {
-    var attributes = "setOf("
-    for (attr in ruleInfo.attributeList) {
-      attributes += attributeInfoToString(attr)
-      attributes += ","
-    }
-    attributes += ")"
+  private fun ruleInfoToData(ruleInfo: StardocOutputProtos.RuleInfo): RuleInfo {
+    val attributes = ruleInfo.attributeList.map { attributeInfoToData(it) }
 
-    return "BazelNativeRule(" +
-      "\"" + ruleInfo.ruleName + "\"" + "," +
-      "null" + "," +
-      attributes + "," +
-      "\"\"\"" + replaceTicks(removeLinks(ruleInfo.docString)) + "\"\"\"" +
-      ")"
+    return RuleInfo(
+      name = ruleInfo.ruleName,
+      docString = replaceTicks(removeLinks(ruleInfo.docString)),
+      params = attributes,
+    )
   }
 
   @JvmStatic
@@ -48,8 +61,7 @@ object ProtobufReader {
       exitProcess(1)
     }
 
-    var generatedCode = "package org.jetbrains.bazel.languages.starlark.bazel\n"
-    generatedCode += "val RULES = listOf("
+    val allRules = mutableListOf<RuleInfo>()
 
     for (inputFilePath in args) {
       val moduleInfo =
@@ -57,19 +69,13 @@ object ProtobufReader {
           StardocOutputProtos.ModuleInfo.parseFrom(input)
         }
 
-      generatedCode += "setOf("
-
       for (rule in moduleInfo.ruleInfoList) {
-        val ruleInfo = ruleInfoToString(rule)
-        generatedCode += ruleInfo
-        generatedCode += ","
+        val ruleData = ruleInfoToData(rule)
+        allRules.add(ruleData)
       }
-
-      generatedCode += "),"
     }
 
-    generatedCode += ")"
-
-    println(generatedCode)
+    val jsonOutput = gson.toJson(allRules)
+    println(jsonOutput)
   }
 }

@@ -35,7 +35,7 @@ class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
     )
     extend(
       CompletionType.BASIC,
-      fileSpecificFunctionCompletionElement(BazelFileType.BUILD),
+      fileSpecificFunctionCompletionElement(BazelFileType.BUILD, true),
       BazelBuildFunctionCompletionProvider,
     )
     extend(
@@ -102,7 +102,7 @@ private abstract class BazelFunctionCompletionProvider(val functions: Collection
         document.insertString(context.tailOffset, "\t${it.name} = ${it.default},\n")
         if (!caretPlaced) {
           caretPlaced = true
-          placeCaret(context, it.default)
+          placeCaret(context, it.default ?: "")
         }
       }
 

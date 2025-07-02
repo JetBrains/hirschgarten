@@ -41,7 +41,7 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
   private fun fileTypeToGlobalFunctions(file: StarlarkFile): Map<String, BazelGlobalFunction> =
     when (file.getBazelFileType()) {
       BazelFileType.EXTENSION -> BazelGlobalFunctions.EXTENSION_FUNCTIONS
-      BazelFileType.BUILD -> BazelGlobalFunctions.BUILD_FUNCTIONS
+      BazelFileType.BUILD -> service<BazelGlobalFunctionsService>().getBuildFunctions()
       BazelFileType.MODULE -> service<BazelGlobalFunctionsService>().getModuleFunctions()
       BazelFileType.WORKSPACE -> BazelGlobalFunctions.WORKSPACE_FUNCTIONS
     } + BazelGlobalFunctions.STARLARK_FUNCTIONS
@@ -87,7 +87,7 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
       val editor = context.editor
       val document = editor.document
       document.insertString(context.tailOffset, " = $default,")
-      if (default == "\'\'" || default == "\"\"") {
+      if (default == "\'\'" || default == "\"\"" || default == "[]" || default == "{}") {
         editor.caretModel.moveToOffset(context.tailOffset - 2)
       } else {
         val selectionStart = context.tailOffset - default.length - 1
@@ -102,5 +102,5 @@ private object StarlarkArgumentCompletionProvider : CompletionProvider<Completio
     LookupElementBuilder
       .create(arg.name)
       .withIcon(PlatformIcons.PARAMETER_ICON)
-      .withInsertHandler(ArgumentInsertHandler(arg.default))
+      .withInsertHandler(ArgumentInsertHandler(arg.default ?: ""))
 }
