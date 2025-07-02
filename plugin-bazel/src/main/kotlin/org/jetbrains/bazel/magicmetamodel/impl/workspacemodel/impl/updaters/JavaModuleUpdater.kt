@@ -3,6 +3,8 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.java.workspace.entities.JavaModuleSettingsEntity
 import com.intellij.java.workspace.entities.javaSettings
 import com.intellij.openapi.extensions.ExtensionPointName
+import com.intellij.openapi.vfs.JarFileSystem
+import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
@@ -11,6 +13,7 @@ import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.android.sdk.AndroidSdkType
 import org.jetbrains.bazel.config.BazelFeatureFlags
@@ -23,7 +26,10 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesAndroid
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesJava
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesKotlin
+import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
+import org.jetbrains.bazel.utils.toVirtualFile
 import java.nio.file.Path
+import kotlin.io.path.extension
 
 internal class JavaModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -127,14 +133,21 @@ internal class JavaModuleWithSourcesUpdater(
     entityToAdd: JavaModule,
     moduleEntity: ModuleEntity,
   ) {
-    val compilerOutput =
+    val useJspBuild = workspaceModelEntityUpdaterConfig.project.bazelJVMProjectSettings.enableBuildWithJps
+    val compilerOutput = if (useJspBuild) {
       JpsPaths
         .getJpsCompiledProductionPath(projectBasePath, entityToAdd.genericModuleInfo.name)
         .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
-    val testCompilerOutput =
+    } else {
+      entityToAdd.compiledClassesPath?.toCompiledClassesVFSUrl()
+    }
+    val testCompilerOutput = if (useJspBuild) {
       JpsPaths
         .getJpsCompiledTestPath(projectBasePath, entityToAdd.genericModuleInfo.name)
         .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+    } else {
+      entityToAdd.compiledClassesPath?.toCompiledClassesVFSUrl()
+    }
     val entity =
       JavaModuleSettingsEntity(
         inheritedCompilerOutput = false,
@@ -156,6 +169,16 @@ internal class JavaModuleWithSourcesUpdater(
       listOf(
         ModuleSourceDependency,
       )
+  }
+
+  private fun Path.toCompiledClassesVFSUrl(): VirtualFileUrl? {
+    val isArchive = this.extension == "jar" || this.extension == "zip"
+    return if (isArchive) {
+      this.toVirtualFile()?.let { JarFileSystem.getInstance().getJarRootForLocalFile(it) }
+        ?.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+    } else {
+      this.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+    }
   }
 }
 

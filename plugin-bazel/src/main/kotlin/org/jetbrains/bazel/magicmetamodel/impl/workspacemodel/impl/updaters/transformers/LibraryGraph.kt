@@ -123,6 +123,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
           baseDirContentRoot = null,
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
+          compiledClassesPath = library.jars.firstOrNull() // usually dependency contains only a single JAR archive
         )
       }
   }
