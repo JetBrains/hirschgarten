@@ -10,9 +10,10 @@ class BazelGlobalFunctionsService {
   private val moduleFunctionsFilePath = "/bazelGlobalFunctions/moduleFunctions.json"
   private val hardcodedBuildRulesFilePath = "/bazelGlobalFunctions/hardcodedBuildRules.json"
   private val generatedBuildRulesFilePath = "/bazelGlobalFunctions/generatedBuildRules.json"
+  private val buildFunctionsFilePath = "/bazelGlobalFunctions/buildFunctions.json"
 
   private val moduleFunctionsMap: Map<String, BazelGlobalFunction>
-  private val buildRulesMap: Map<String, BazelGlobalFunction>
+  private val buildFunctions: Map<String, BazelGlobalFunction>
 
   // Apply to all *_binary rules.
   private val binaryRulesCommonArguments =
@@ -102,7 +103,7 @@ class BazelGlobalFunctionsService {
 
   init {
     moduleFunctionsMap = loadFunctionsList(moduleFunctionsFilePath).associateBy { it.name }
-    val buildRules =
+    val buildFunctionsList =
       (loadFunctionsList(hardcodedBuildRulesFilePath) + loadFunctionsList(generatedBuildRulesFilePath)).map { func ->
         if (func.name.endsWith("_binary")) {
           func.copy(params = (func.params + binaryRulesCommonArguments).toList())
@@ -111,15 +112,15 @@ class BazelGlobalFunctionsService {
         } else {
           func
         }
-      }
-    buildRulesMap = buildRules.associateBy { it.name }
+      } + loadFunctionsList(buildFunctionsFilePath)
+    buildFunctions = buildFunctionsList.associateBy { it.name }
   }
 
   fun getModuleFunctions(): Map<String, BazelGlobalFunction> = moduleFunctionsMap
 
-  fun getBuildFunctions(): Map<String, BazelGlobalFunction> = buildRulesMap
+  fun getBuildFunctions(): Map<String, BazelGlobalFunction> = buildFunctions
 
-  fun getFunctionByName(name: String): BazelGlobalFunction? = moduleFunctionsMap[name] ?: buildRulesMap[name]
+  fun getFunctionByName(name: String): BazelGlobalFunction? = moduleFunctionsMap[name] ?: buildFunctions[name]
 
   companion object {
     fun getInstance(): BazelGlobalFunctionsService = service<BazelGlobalFunctionsService>()
