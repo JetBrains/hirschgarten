@@ -29,7 +29,7 @@ class BazelGlobalFunctionsService {
 
   fun getModuleFunctions(): Map<String, BazelGlobalFunction> = moduleFunctionsMap
 
-  fun getBuildRules(): Map<String, BazelGlobalFunction> = buildRulesMap
+  fun getBuildFunctions(): Map<String, BazelGlobalFunction> = buildRulesMap
 
   fun getFunctionByName(name: String): BazelGlobalFunction? = moduleFunctionsMap[name] ?: buildRulesMap[name]
 
