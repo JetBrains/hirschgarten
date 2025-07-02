@@ -225,6 +225,7 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
       jvmJdkName = javaModule.jvmJdkName,
       kotlinAddendum = javaModule.kotlinAddendum,
       javaAddendum = javaModule.javaAddendum,
+      compiledClassesPath = javaModule.compiledClassesPath
     )
   }
 }

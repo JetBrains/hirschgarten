@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.config.bazelProjectName
+import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.AndroidAddendum
@@ -19,6 +20,8 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ScalaAddendum
 import org.jetbrains.bazel.utils.StringUtils
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.protocol.ScalaBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
@@ -52,6 +55,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
         scalaAddendum = toScalaAddendum(inputEntity),
         javaAddendum = toJavaAddendum(inputEntity),
         androidAddendum = if (isAndroidSupportEnabled) toAndroidAddendum(inputEntity) else null,
+        compiledClassesPath = resolveCompiledClassesPathForJVMLanguage(inputEntity),
       )
 
     val dummyModulesResult = javaModuleToDummyJavaModulesTransformerHACK.transform(javaModule)
@@ -82,6 +86,29 @@ internal class ModuleDetailsToJavaModuleTransformer(
           )
         listOf(javaModuleWithMergedSourceRoots)
       }
+    }
+  }
+
+  private fun resolveCompiledClassesPathForJVMLanguage(input: ModuleDetails): Path {
+    val target = input.target.id
+    val targetDir = project.rootDir.toNioPath().resolve("bazel-bin")
+      .resolve(target.packagePath.toString())
+    val targetData = input.target.data
+    return when (targetData) {
+      is JvmBuildTarget -> {
+        targetDir.resolve("_javac")
+              .resolve(target.targetName)
+              .resolve("${target.targetName}_classes")
+      }
+      is KotlinBuildTarget -> {
+        targetDir.resolve("${target.targetName}.jar")
+      }
+      is ScalaBuildTarget -> {
+        targetDir.resolve("_scalac")
+          .resolve(target.targetName)
+          .resolve("classes")
+      }
+      else -> return targetDir.resolve(target.targetName)
     }
   }
 
