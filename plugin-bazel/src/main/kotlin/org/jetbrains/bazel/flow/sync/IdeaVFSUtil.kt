@@ -6,8 +6,8 @@ import java.net.URI
 import java.nio.file.Path
 
 object IdeaVFSUtil {
-  fun toVirtualFileUrl(uri: String, virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl {
-    return if (uri.startsWith("file://")) {
+  fun toVirtualFileUrl(uri: String, virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl =
+    if (uri.startsWith("file://")) {
       /*
         Apparently on some operating systems(windows)
         VirtualFileUrlManager is unable to decode uri obtained from Path#toUri correctly
@@ -22,5 +22,4 @@ object IdeaVFSUtil {
     } else {
       virtualFileUrlManager.getOrCreateFromUrl(uri)
     }
-  }
 }

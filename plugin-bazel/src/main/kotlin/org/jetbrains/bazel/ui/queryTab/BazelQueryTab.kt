@@ -193,7 +193,10 @@ class BazelQueryTab(private val project: Project) : JPanel() {
     fun createDirectorySelectionPanel() =
       JPanel().apply {
         layout = BoxLayout(this, BoxLayout.X_AXIS)
-        val directoryButton = JButton(BazelPluginBundle.message("button.bazel.query.select")).apply { addActionListener { chooseDirectory() } }
+        val directoryButton =
+          JButton(
+            BazelPluginBundle.message("button.bazel.query.select"),
+          ).apply { addActionListener { chooseDirectory() } }
 
         add(JLabel(BazelPluginBundle.message("label.bazel.query.select.directory")))
         add(directoryField)

@@ -27,6 +27,5 @@ class StarlarkAssignmentStatement(node: ASTNode) : StarlarkBaseElement(node) {
 
   private fun getTupleExpression(): StarlarkTupleExpression? = findChildByClass(StarlarkTupleExpression::class.java)
 
-  private fun getParenthesizedExpression(): StarlarkParenthesizedExpression? =
-    findChildByClass(StarlarkParenthesizedExpression::class.java)
+  private fun getParenthesizedExpression(): StarlarkParenthesizedExpression? = findChildByClass(StarlarkParenthesizedExpression::class.java)
 }
