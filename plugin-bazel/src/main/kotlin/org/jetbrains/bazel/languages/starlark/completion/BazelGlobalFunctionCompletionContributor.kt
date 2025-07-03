@@ -132,7 +132,7 @@ private object StarlarkFunctionCompletionProvider :
   BazelFunctionCompletionProvider({ BazelGlobalFunctions.STARLARK_FUNCTIONS.values })
 
 private object BazelExtensionFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getBuildFunctions().values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.EXTENSION_FUNCTIONS.values })
 
 private object BazelBuildFunctionCompletionProvider :
   BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getBuildFunctions().values })
@@ -141,4 +141,4 @@ private object BazelModuleFunctionCompletionProvider :
   BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getModuleFunctions().values })
 
 private object BazelWorkspaceFunctionCompletionProvider :
-  BazelFunctionCompletionProvider({ BazelGlobalFunctionsService.getInstance().getBuildFunctions().values })
+  BazelFunctionCompletionProvider({ BazelGlobalFunctions.WORKSPACE_FUNCTIONS.values })
