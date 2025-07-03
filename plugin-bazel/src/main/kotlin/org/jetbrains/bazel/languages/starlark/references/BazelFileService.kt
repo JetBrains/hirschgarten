@@ -2,7 +2,6 @@ package org.jetbrains.bazel.languages.starlark.references
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -41,11 +40,10 @@ class BazelFileService(private val project: Project) {
   private inner class FileVisitor(
     private val canonicalName: String,
     private val repoPath: Path,
-    private val projectFileIndex: ProjectFileIndex,
     private val map: MutableMap<String, List<ResolvedLabel>>,
   ) {
     fun visitFile(file: VirtualFile): Boolean {
-      if (file.isFile && !projectFileIndex.isExcluded(file) && file.name.endsWith(".bzl")) {
+      if (file.isFile && file.name.endsWith(".bzl")) {
         val targetName = file.name
         val targetBaseDirectory = file.parent ?: return true
         val relativeTargetBaseDirectory = targetBaseDirectory.toNioPath().relativeToOrNull(repoPath) ?: return true
@@ -66,11 +64,9 @@ class BazelFileService(private val project: Project) {
     cacheInvalid = false
     canonicalRepoNameToBzlFiles.clear()
 
-    val projectFileIndex = ProjectFileIndex.getInstance(project)
-
     for ((canonicalName, repoPath) in project.canonicalRepoNameToPath) {
       val root = VirtualFileManager.getInstance().findFileByNioPath(repoPath) ?: continue
-      val visitor = FileVisitor(canonicalName, repoPath, projectFileIndex, canonicalRepoNameToBzlFiles)
+      val visitor = FileVisitor(canonicalName, repoPath, canonicalRepoNameToBzlFiles)
       VfsUtilCore.processFilesRecursively(root, visitor::visitFile)
     }
   }
