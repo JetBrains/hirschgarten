@@ -1,24 +1,28 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij">
-        <programRunner implementation="org.jetbrains.bazel.python.run.PythonBspDebugRunner"/>
+        <programRunner implementation="org.jetbrains.bazel.python.run.PythonBspDebugRunner" />
       <runLineMarkerContributor
-        implementationClass="org.jetbrains.bazel.python.gutter.BazelPyRunLineMarkerContributor"
-        language="Python"/>
+      implementationClass="org.jetbrains.bazel.python.gutter.BazelPyRunLineMarkerContributor"
+      language="Python"
+    />
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.bazel">
-        <projectSyncHook implementation="org.jetbrains.bazel.python.sync.PythonProjectSync"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.python.sync.PythonProjectSync" />
 
-        <sourceTypeIconProvider
-                implementation="org.jetbrains.bazel.python.sync.PythonSourceIconProvider"/>
+        <sourceTypeIconProvider implementation="org.jetbrains.bazel.python.sync.PythonSourceIconProvider" />
 
-        <runHandlerProvider implementation="org.jetbrains.bazel.python.run.PythonBazelRunHandler$Provider"
-                            id="PythonBazelRunHandlerProvider"/>
-        <runHandlerProvider implementation="org.jetbrains.bazel.python.run.PythonBazelTestHandler$Provider"
-                            id="PythonBazelTestHandlerProvider"/>
+        <runHandlerProvider
+      id="PythonBazelRunHandlerProvider"
+      implementation="org.jetbrains.bazel.python.run.PythonBazelRunHandler$Provider"
+    />
+        <runHandlerProvider
+      id="PythonBazelTestHandlerProvider"
+      implementation="org.jetbrains.bazel.python.run.PythonBazelTestHandler$Provider"
+    />
     </extensions>
 
     <extensions defaultExtensionNs="Pythonid">
-        <importResolver implementation="org.jetbrains.bazel.python.resolve.BazelPyImportResolver"/>
+        <importResolver implementation="org.jetbrains.bazel.python.resolve.BazelPyImportResolver" />
     </extensions>
 </idea-plugin>
