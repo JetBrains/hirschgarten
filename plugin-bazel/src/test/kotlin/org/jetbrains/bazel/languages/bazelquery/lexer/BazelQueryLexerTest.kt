@@ -130,7 +130,7 @@ class BazelQueryLexerTest : LexerTestCase() {
         "BazelQuery:UNQUOTED_WORD",
         "BazelQuery:,",
         "WHITE_SPACE",
-        "BazelQuery:DQ_WORD",
+        "BazelQuery:DQ_PATTERN",
         "BazelQuery:,",
         "WHITE_SPACE",
         "BazelQuery:DEPS",

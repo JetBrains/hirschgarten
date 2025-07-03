@@ -18,6 +18,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
         BazelQueryTokenTypes.DQ_WORD,
         BazelQueryTokenTypes.DQ_UNFINISHED,
         BazelQueryTokenTypes.DQ_EMPTY,
+        BazelQueryTokenTypes.ERR_WORD,
       )
 
     private val wordInDqQuery =
@@ -26,6 +27,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
         BazelQueryTokenTypes.SQ_WORD,
         BazelQueryTokenTypes.SQ_UNFINISHED,
         BazelQueryTokenTypes.SQ_EMPTY,
+        BazelQueryTokenTypes.ERR_WORD,
       )
 
     private val wordInUnqQuery =
@@ -37,6 +39,26 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
         BazelQueryTokenTypes.DQ_WORD,
         BazelQueryTokenTypes.DQ_UNFINISHED,
         BazelQueryTokenTypes.DQ_EMPTY,
+        BazelQueryTokenTypes.ERR_WORD,
+      )
+
+    private val patternInSqQuery =
+      TokenSet.create(
+        *wordInSqQuery.types,
+        BazelQueryTokenTypes.DQ_PATTERN,
+      )
+
+    private val patternInDqQuery =
+      TokenSet.create(
+        *wordInDqQuery.types,
+        BazelQueryTokenTypes.SQ_PATTERN,
+      )
+
+    private val patternInUnqQuery =
+      TokenSet.create(
+        *wordInUnqQuery.types,
+        BazelQueryTokenTypes.SQ_PATTERN,
+        BazelQueryTokenTypes.DQ_PATTERN,
       )
   }
 
@@ -45,6 +67,14 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
       BazelQueryTokenTypes.WHITE_SPACE -> wordInUnqQuery
       BazelQueryTokenTypes.SINGLE_QUOTE -> wordInSqQuery
       BazelQueryTokenTypes.DOUBLE_QUOTE -> wordInDqQuery
+      else -> TokenSet.EMPTY
+    }
+
+  private fun getAvailablePatternsSet(queryQuotes: IElementType): TokenSet =
+    when (queryQuotes) {
+      BazelQueryTokenTypes.WHITE_SPACE -> patternInUnqQuery
+      BazelQueryTokenTypes.SINGLE_QUOTE -> patternInSqQuery
+      BazelQueryTokenTypes.DOUBLE_QUOTE -> patternInDqQuery
       else -> TokenSet.EMPTY
     }
 
@@ -180,17 +210,17 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
     return queryQuotes
   }
 
-  private fun parseAsWordArg(queryQuotes: IElementType): IElementType {
+  private fun parsePatternArg(queryQuotes: IElementType): IElementType {
     var queryQuotes = queryQuotes
     if (utils.atToken(BazelQueryTokenTypes.RIGHT_PAREN) ||
       utils.atToken(BazelQueryTokenTypes.COMMA) ||
       eof()
     ) {
-      error("<word> expected")
-    } else if (!utils.atAnyToken(getAvailableWordsSet(queryQuotes)) &&
+      error("<word> as pattern expected")
+    } else if (!utils.atAnyToken(getAvailablePatternsSet(queryQuotes)) &&
       !utils.atToken(BazelQueryTokenTypes.INTEGER)
     ) {
-      utils.advanceError("<word> expected")
+      utils.advanceError("<word> as pattern expected")
     } else {
       queryQuotes = parseWord(queryQuotes)
     }
@@ -270,7 +300,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
       BazelQueryTokenTypes.KIND,
       BazelQueryTokenTypes.FILTER,
       -> {
-        queryQuotes = parseWordArg(queryQuotes)
+        queryQuotes = parsePatternArg(queryQuotes)
         if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error("<comma> expected")
         queryQuotes = parseExprArg(queryQuotes)
       }
@@ -293,7 +323,7 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
       BazelQueryTokenTypes.ATTR -> {
         queryQuotes = parseWordArg(queryQuotes)
         if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error("<comma> expected")
-        queryQuotes = parseAsWordArg(queryQuotes)
+        queryQuotes = parsePatternArg(queryQuotes)
         if (!utils.matchToken(BazelQueryTokenTypes.COMMA)) error("<comma> expected")
         queryQuotes = parseExprArg(queryQuotes)
       }
@@ -334,6 +364,8 @@ open class ParsingNoFlags(private val root: IElementType, val builder: PsiBuilde
       utils.matchToken(BazelQueryTokenTypes.DQ_UNFINISHED)
     ) {
       error("<quote> expected")
+    } else if (utils.atToken(BazelQueryTokenTypes.ERR_WORD)) {
+      utils.advanceError("incorrect word")
     } else {
       if (queryQuotes == BazelQueryTokenTypes.WHITE_SPACE) {
         if (utils.atToken(BazelQueryTokenTypes.SQ_WORD)) {

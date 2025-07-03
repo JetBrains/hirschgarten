@@ -25,7 +25,8 @@ HYP=[\-]
 PLUS=[+]
 HYPHEN=[-]
 CARET=[\^]
-EQALS=[=]
+EQUALS=[=]
+BS=[\\]
 
 LEFT_PAREN=[(]
 RIGHT_PAREN=[)]
@@ -44,16 +45,26 @@ DOUBLE_AT=[@@]
 // to external repositories, unquoted words that start with @@ may
 // contain + characters.
 UNQUOTED_WORD=([A-Za-z0-9/@._:$~\[\]][A-Za-z0-9*/@.\-_:$~\[\]]* | {DOUBLE_AT}[A-Za-z0-9*/@.\-_:$~\[\]+]*)
-QUOTED_WORD=[^{NL}{SQ}{DQ}]+
+QUOTED_WORD=[^{NL}{SQ}{DQ}{BS}]+
+ERR_WORD = [^{NL}{SQ}{DQ}]+
 
 SQ_WORD={SQ}{QUOTED_WORD}{SQ}
 DQ_WORD={DQ}{QUOTED_WORD}{DQ}
 
-UNEXPECTED_WORD=[^-{NL}{SPACE}][^{NL}{SPACE}]*
-FLAG_WORD=[a-z_:]*
+// Patterns
+META_CHAR = [\^$.|?*+(){}\[\]]
+ESCAPED = \\[\\\^$.|?*+(){}\[\]tnrfvwdDsSwWbB]
+CHAR_CLASS = \[([^\[\]]|\\.)*\]
+QUANTIFIER = [?*+]|\{[0-9]+(,[0-9]*)?}
+GROUP = \([^()]*\)
+PATTERN = ({ESCAPED}|{CHAR_CLASS}|{GROUP}|[^{NL}{SQ}{DQ}\\]|{META_CHAR}|{QUANTIFIER})+
+SQ_PATTERN={SQ}{PATTERN}{SQ}
+DQ_PATTERN={DQ}{PATTERN}{DQ}
 
 INTEGER=[0-9]+
 
+UNEXPECTED_WORD=[^-{NL}{SPACE}][^{NL}{SPACE}]*
+FLAG_WORD=[a-z_:]*
 OPTION={HYP}{HYP}{FLAG_WORD} | {HYP}{FLAG_WORD}
 
 // TODO: check if it is possible to generate this list dynamicly and change lexer on updates
@@ -97,7 +108,9 @@ OPTION_REQ_VALUE="--loading_phase_threads" |
 <WORD_SQ> {
      {SQ}{SQ}                         { yybegin(EXPR); return BazelQueryTokenTypes.SQ_EMPTY; }
      {SQ_WORD}                        { yybegin(EXPR); return BazelQueryTokenTypes.SQ_WORD; }
-     {SQ}{QUOTED_WORD}                { return BazelQueryTokenTypes.SQ_UNFINISHED; }
+     {SQ_PATTERN}                     { yybegin(EXPR); return BazelQueryTokenTypes.SQ_PATTERN; }
+     {SQ}{ERR_WORD}{SQ}               { return BazelQueryTokenTypes.ERR_WORD; }
+     {SQ}{ERR_WORD}                   { return BazelQueryTokenTypes.SQ_UNFINISHED; }
      {SQ}                             { return BazelQueryTokenTypes.SQ_UNFINISHED; }
      [^]                              { yybegin(EXPR); yypushback(1); }
  }
@@ -105,7 +118,9 @@ OPTION_REQ_VALUE="--loading_phase_threads" |
 <WORD_DQ> {
       {DQ}{DQ}                        { yybegin(EXPR); return BazelQueryTokenTypes.DQ_EMPTY; }
       {DQ_WORD}                       { yybegin(EXPR); return BazelQueryTokenTypes.DQ_WORD; }
-      {DQ}{QUOTED_WORD}               { return BazelQueryTokenTypes.DQ_UNFINISHED; }
+      {DQ_PATTERN}                    { yybegin(EXPR); return BazelQueryTokenTypes.DQ_PATTERN; }
+      {DQ}{ERR_WORD}{DQ}              { return BazelQueryTokenTypes.ERR_WORD; }
+      {DQ}{ERR_WORD}                  { return BazelQueryTokenTypes.DQ_UNFINISHED; }
       {DQ}                            { return BazelQueryTokenTypes.DQ_UNFINISHED; }
       [^]                             { yybegin(EXPR); yypushback(1); }
   }
@@ -168,18 +183,18 @@ OPTION_REQ_VALUE="--loading_phase_threads" |
 <FLAG> {
     {HYP} | {HYP}{HYP}                { return BazelQueryTokenTypes.UNFINISHED_FLAG; }
     {OPTION_REQ_VALUE}{SPACE}         { yybegin(PRE_VALUE); yypushback(1); return BazelQueryTokenTypes.FLAG; }
-    {OPTION_REQ_VALUE}{EQALS}         { yybegin(PRE_VALUE); yypushback(1); return BazelQueryTokenTypes.FLAG; }
+    {OPTION_REQ_VALUE}{EQUALS}         { yybegin(PRE_VALUE); yypushback(1); return BazelQueryTokenTypes.FLAG; }
     {OPTION_REQ_VALUE}                { yybegin(PRE_VALUE); return BazelQueryTokenTypes.FLAG; }
-    {OPTION}{EQALS}                   { yybegin(PRE_VALUE); yypushback(1); return BazelQueryTokenTypes.FLAG; }
+    {OPTION}{EQUALS}                   { yybegin(PRE_VALUE); yypushback(1); return BazelQueryTokenTypes.FLAG; }
     {OPTION}                          { yybegin(SPACE_NEEDED); return BazelQueryTokenTypes.FLAG_NO_VAL; }
 
-    {OPTION_REQ_VALUE}[^{EQALS}{SPACE}][-]*{UNEXPECTED_WORD}*     { yybegin(YYINITIAL); return BazelQueryTokenTypes.UNEXPECTED; }
+    {OPTION_REQ_VALUE}[^{EQUALS}{SPACE}][-]*{UNEXPECTED_WORD}*     { yybegin(YYINITIAL); return BazelQueryTokenTypes.UNEXPECTED; }
     {UNEXPECTED_WORD}                 { yybegin(YYINITIAL); return BazelQueryTokenTypes.UNEXPECTED; }
 }
 
 // expecting space or equals sign if option requires value
 <PRE_VALUE> {
-    {SPACE} | {EQALS}                 { yybegin(VALUE); return BazelQueryTokenTypes.EQUALS; }
+    {SPACE} | {EQUALS}                 { yybegin(VALUE); return BazelQueryTokenTypes.EQUALS; }
 }
 
 
