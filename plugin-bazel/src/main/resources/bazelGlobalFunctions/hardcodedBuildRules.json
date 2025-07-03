@@ -1,7 +1,7 @@
 [
   {
     "name": "cc_binary",
-    "docString": "https://bazel.build/reference/be/c-cpp#cc_binary",
+    "docString": "External documentation for <code>cc_binary</code>: <a href=\"https://bazel.build/reference/be/c-cpp#cc_binary\">https://bazel.build/reference/be/c-cpp#cc_binary</a>",
     "params": [
       {
         "name": "name",
@@ -161,7 +161,7 @@
   },
   {
     "name": "cc_import",
-    "docString": "https://bazel.build/reference/be/c-cpp#cc_import",
+    "docString": "External documentation for <code>cc_import</code>: <a href=\"https://bazel.build/reference/be/c-cpp#cc_import\">https://bazel.build/reference/be/c-cpp#cc_import</a>",
     "params": [
       {
         "name": "name",
@@ -258,7 +258,7 @@
   },
   {
     "name": "cc_library",
-    "docString": "https://bazel.build/reference/be/c-cpp#cc_library",
+    "docString": "External documentation for <code>cc_library</code>: <a href=\"https://bazel.build/reference/be/c-cpp#cc_library\">https://bazel.build/reference/be/c-cpp#cc_library</a>",
     "params": [
       {
         "name": "name",
@@ -432,7 +432,7 @@
   },
   {
     "name": "cc_shared_library",
-    "docString": "https://bazel.build/reference/be/c-cpp#cc_shared_library",
+    "docString": "External documentation for <code>cc_shared_library</code>: <a href=\"https://bazel.build/reference/be/c-cpp#cc_shared_library\">https://bazel.build/reference/be/c-cpp#cc_shared_library</a>",
     "params": [
       {
         "name": "name",
@@ -508,7 +508,7 @@
   },
   {
     "name": "cc_static_library",
-    "docString": "https://bazel.build/reference/be/c-cpp#cc_static_library",
+    "docString": "External documentation for <code>cc_static_library</code>: <a href=\"https://bazel.build/reference/be/c-cpp#cc_static_library\">https://bazel.build/reference/be/c-cpp#cc_static_library</a>",
     "params": [
       {
         "name": "name",
@@ -528,7 +528,7 @@
   },
   {
     "name": "cc_test",
-    "docString": "https://bazel.build/reference/be/c-cpp#cc_test",
+    "docString": "External documentation for <code>cc_test</code>: <a href=\"https://bazel.build/reference/be/c-cpp#cc_test\">https://bazel.build/reference/be/c-cpp#cc_test</a>",
     "params": [
       {
         "name": "name",
@@ -695,7 +695,7 @@
   },
   {
     "name": "cc_toolchain",
-    "docString": "https://bazel.build/reference/be/c-cpp#cc_toolchain",
+    "docString": "External documentation for <code>cc_toolchain</code>: <a href=\"https://bazel.build/reference/be/c-cpp#cc_toolchain\">https://bazel.build/reference/be/c-cpp#cc_toolchain</a>",
     "params": [
       {
         "name": "name",
@@ -841,7 +841,7 @@
   },
   {
     "name": "cc_toolchain_suite",
-    "docString": "https://bazel.build/reference/be/c-cpp#cc_toolchain_suite",
+    "docString": "External documentation for <code>cc_toolchain_suite</code>: <a href=\"https://bazel.build/reference/be/c-cpp#cc_toolchain_suite\">https://bazel.build/reference/be/c-cpp#cc_toolchain_suite</a>",
     "params": [
       {
         "name": "name",
@@ -854,7 +854,7 @@
   },
   {
     "name": "fdo_prefetch_hints",
-    "docString": "https://bazel.build/reference/be/c-cpp#fdo_prefetch_hints",
+    "docString": "External documentation for <code>fdo_prefetch_hints</code>: <a href=\"https://bazel.build/reference/be/c-cpp#fdo_prefetch_hints\">https://bazel.build/reference/be/c-cpp#fdo_prefetch_hints</a>",
     "params": [
       {
         "name": "name",
@@ -874,7 +874,7 @@
   },
   {
     "name": "fdo_profile",
-    "docString": "https://bazel.build/reference/be/c-cpp#fdo_profile",
+    "docString": "External documentation for <code>fdo_profile</code>: <a href=\"https://bazel.build/reference/be/c-cpp#fdo_profile\">https://bazel.build/reference/be/c-cpp#fdo_profile</a>",
     "params": [
       {
         "name": "name",
@@ -908,7 +908,7 @@
   },
   {
     "name": "memprof_profile",
-    "docString": "https://bazel.build/reference/be/c-cpp#memprof_profile",
+    "docString": "External documentation for <code>memprof_profile</code>: <a href=\"https://bazel.build/reference/be/c-cpp#memprof_profile\">https://bazel.build/reference/be/c-cpp#memprof_profile</a>",
     "params": [
       {
         "name": "name",
@@ -928,7 +928,7 @@
   },
   {
     "name": "propeller_optimize",
-    "docString": "https://bazel.build/reference/be/c-cpp#propeller_optimize",
+    "docString": "External documentation for <code>propeller_optimize</code>: <a href=\"https://bazel.build/reference/be/c-cpp#propeller_optimize\">https://bazel.build/reference/be/c-cpp#propeller_optimize</a>",
     "params": [
       {
         "name": "name",
@@ -955,7 +955,7 @@
   },
   {
     "name": "objc_import",
-    "docString": "https://bazel.build/reference/be/objective-c#objc_import",
+    "docString": "External documentation for <code>objc_import</code>: <a href=\"https://bazel.build/reference/be/objective-c#objc_import\">https://bazel.build/reference/be/objective-c#objc_import</a>",
     "params": [
       {
         "name": "name",
@@ -1038,7 +1038,7 @@
   },
   {
     "name": "objc_library",
-    "docString": "https://bazel.build/reference/be/objective-c#objc_library",
+    "docString": "External documentation for <code>objc_library</code>: <a href=\"https://bazel.build/reference/be/objective-c#objc_library\">https://bazel.build/reference/be/objective-c#objc_library</a>",
     "params": [
       {
         "name": "name",
@@ -1205,7 +1205,7 @@
   },
   {
     "name": "cc_proto_library",
-    "docString": "https://bazel.build/reference/be/protocol-buffer#cc_proto_library",
+    "docString": "External documentation for <code>cc_proto_library</code>: <a href=\"https://bazel.build/reference/be/protocol-buffer#cc_proto_library\">https://bazel.build/reference/be/protocol-buffer#cc_proto_library</a>",
     "params": [
       {
         "name": "name",
@@ -1225,7 +1225,7 @@
   },
   {
     "name": "java_lite_proto_library",
-    "docString": "https://bazel.build/reference/be/protocol-buffer#java_lite_proto_library",
+    "docString": "External documentation for <code>java_lite_proto_library</code>: <a href=\"https://bazel.build/reference/be/protocol-buffer#java_lite_proto_library\">https://bazel.build/reference/be/protocol-buffer#java_lite_proto_library</a>",
     "params": [
       {
         "name": "name",
@@ -1245,7 +1245,7 @@
   },
   {
     "name": "java_proto_library",
-    "docString": "https://bazel.build/reference/be/protocol-buffer#java_proto_library",
+    "docString": "External documentation for <code>java_proto_library</code>: <a href=\"https://bazel.build/reference/be/protocol-buffer#java_proto_library\">https://bazel.build/reference/be/protocol-buffer#java_proto_library</a>",
     "params": [
       {
         "name": "name",
@@ -1265,7 +1265,7 @@
   },
   {
     "name": "proto_library",
-    "docString": "https://bazel.build/reference/be/protocol-buffer#proto_library",
+    "docString": "External documentation for <code>proto_library</code>: <a href=\"https://bazel.build/reference/be/protocol-buffer#proto_library\">https://bazel.build/reference/be/protocol-buffer#proto_library</a>",
     "params": [
       {
         "name": "name",
@@ -1320,7 +1320,7 @@
   },
   {
     "name": "py_proto_library",
-    "docString": "https://bazel.build/reference/be/protocol-buffer#py_proto_library",
+    "docString": "External documentation for <code>py_proto_library</code>: <a href=\"https://bazel.build/reference/be/protocol-buffer#py_proto_library\">https://bazel.build/reference/be/protocol-buffer#py_proto_library</a>",
     "params": [
       {
         "name": "name",
@@ -1340,7 +1340,7 @@
   },
   {
     "name": "proto_lang_toolchain",
-    "docString": "https://bazel.build/reference/be/protocol-buffer#proto_lang_toolchain",
+    "docString": "External documentation for <code>proto_lang_toolchain</code>: <a href=\"https://bazel.build/reference/be/protocol-buffer#proto_lang_toolchain\">https://bazel.build/reference/be/protocol-buffer#proto_lang_toolchain</a>",
     "params": [
       {
         "name": "name",
@@ -1430,7 +1430,7 @@
   },
   {
     "name": "proto_toolchain",
-    "docString": "https://bazel.build/reference/be/protocol-buffer#proto_toolchain",
+    "docString": "External documentation for <code>proto_toolchain</code>: <a href=\"https://bazel.build/reference/be/protocol-buffer#proto_toolchain\">https://bazel.build/reference/be/protocol-buffer#proto_toolchain</a>",
     "params": [
       {
         "name": "name",
@@ -1478,7 +1478,7 @@
   },
   {
     "name": "py_binary",
-    "docString": "https://bazel.build/reference/be/python#py_binary",
+    "docString": "External documentation for <code>py_binary</code>: <a href=\"https://bazel.build/reference/be/python#py_binary\">https://bazel.build/reference/be/python#py_binary</a>",
     "params": [
       {
         "name": "name",
@@ -1589,7 +1589,7 @@
   },
   {
     "name": "py_library",
-    "docString": "https://bazel.build/reference/be/python#py_library",
+    "docString": "External documentation for <code>py_library</code>: <a href=\"https://bazel.build/reference/be/python#py_library\">https://bazel.build/reference/be/python#py_library</a>",
     "params": [
       {
         "name": "name",
@@ -1665,7 +1665,7 @@
   },
   {
     "name": "py_test",
-    "docString": "https://bazel.build/reference/be/python#py_test",
+    "docString": "External documentation for <code>py_test</code>: <a href=\"https://bazel.build/reference/be/python#py_test\">https://bazel.build/reference/be/python#py_test</a>",
     "params": [
       {
         "name": "name",
@@ -1776,7 +1776,7 @@
   },
   {
     "name": "py_runtime",
-    "docString": "https://bazel.build/reference/be/python#py_runtime",
+    "docString": "External documentation for <code>py_runtime</code>: <a href=\"https://bazel.build/reference/be/python#py_runtime\">https://bazel.build/reference/be/python#py_runtime</a>",
     "params": [
       {
         "name": "name",
@@ -1880,7 +1880,7 @@
   },
   {
     "name": "sh_binary",
-    "docString": "https://bazel.build/reference/be/shell#sh_binary",
+    "docString": "External documentation for <code>sh_binary</code>: <a href=\"https://bazel.build/reference/be/shell#sh_binary\">https://bazel.build/reference/be/shell#sh_binary</a>",
     "params": [
       {
         "name": "name",
@@ -1914,7 +1914,7 @@
   },
   {
     "name": "sh_library",
-    "docString": "https://bazel.build/reference/be/shell#sh_library",
+    "docString": "External documentation for <code>sh_library</code>: <a href=\"https://bazel.build/reference/be/shell#sh_library\">https://bazel.build/reference/be/shell#sh_library</a>",
     "params": [
       {
         "name": "name",
@@ -1941,7 +1941,7 @@
   },
   {
     "name": "sh_test",
-    "docString": "https://bazel.build/reference/be/shell#sh_test",
+    "docString": "External documentation for <code>sh_test</code>: <a href=\"https://bazel.build/reference/be/shell#sh_test\">https://bazel.build/reference/be/shell#sh_test</a>",
     "params": [
       {
         "name": "name",
