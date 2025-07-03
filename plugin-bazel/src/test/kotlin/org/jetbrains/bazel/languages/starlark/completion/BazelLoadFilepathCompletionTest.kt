@@ -6,6 +6,7 @@ import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase
 import com.intellij.testFramework.fixtures.ModuleFixture
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bazel.languages.starlark.references.BazelFileService
 import org.jetbrains.bazel.languages.starlark.repomapping.injectCanonicalRepoNameToApparentName
 import org.jetbrains.bazel.languages.starlark.repomapping.injectCanonicalRepoNameToPath
 import org.junit.Rule
@@ -26,7 +27,9 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
     val myRootPath = myFixture.tempDirFixture.tempDirPath.toNioPathOrNull()!!
     val newRepoNameToPathMap = mapOf("" to myRootPath)
     myFixture.project.injectCanonicalRepoNameToPath(newRepoNameToPathMap)
+    BazelFileService.getInstance(myFixture.project).forceUpdateCache()
 
+    Thread.sleep(1000)
     myFixture.configureByText("BUILD.bazel", """load("//:<caret>)""")
     myFixture.type("d")
 
@@ -53,6 +56,7 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
     val newCanonicalRepoNameToApparentName = mapOf("rules_kotlin" to "rules_kotlin")
     myFixture.project.injectCanonicalRepoNameToPath(newRepoNameToPathMap)
     myFixture.project.injectCanonicalRepoNameToApparentName(newCanonicalRepoNameToApparentName)
+    BazelFileService.getInstance(myFixture.project).forceUpdateCache()
 
     myFixture.configureByText("BUILD.bazel", """load("//:<caret>)""")
     myFixture.type("kt")

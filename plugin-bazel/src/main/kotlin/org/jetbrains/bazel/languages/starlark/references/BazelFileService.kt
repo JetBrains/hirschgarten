@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.languages.starlark.references
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.isFile
+import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.label.Package
@@ -21,8 +23,8 @@ import kotlin.io.path.relativeToOrNull
 
 @Service(Service.Level.PROJECT)
 class BazelFileService(private val project: Project) {
-  private var cacheInvalid = true
-  private val canonicalRepoNameToBzlFiles = mutableMapOf<String, List<ResolvedLabel>>()
+  @Volatile
+  var canonicalRepoNameToBzlFiles: Map<String, List<ResolvedLabel>> = emptyMap()
 
   init {
     project.messageBus.connect().subscribe(
@@ -31,7 +33,8 @@ class BazelFileService(private val project: Project) {
         override fun syncStarted() {}
 
         override fun syncFinished(canceled: Boolean) {
-          cacheInvalid = true
+          if (canceled) return
+          ApplicationManager.getApplication().executeOnPooledThread { updateCache() }
         }
       },
     )
@@ -61,20 +64,23 @@ class BazelFileService(private val project: Project) {
   }
 
   private fun updateCache() {
-    cacheInvalid = false
-    canonicalRepoNameToBzlFiles.clear()
-
+    val newMap = mutableMapOf<String, List<ResolvedLabel>>()
     for ((canonicalName, repoPath) in project.canonicalRepoNameToPath) {
       val root = VirtualFileManager.getInstance().findFileByNioPath(repoPath) ?: continue
-      val visitor = FileVisitor(canonicalName, repoPath, canonicalRepoNameToBzlFiles)
+      val visitor = FileVisitor(canonicalName, repoPath, newMap)
       VfsUtilCore.processFilesRecursively(root, visitor::visitFile)
     }
+    canonicalRepoNameToBzlFiles = newMap
   }
 
-  fun getApparentRepoNameToFiles(): Map<String, List<Label>> {
-    if (cacheInvalid) {
-      updateCache()
-    }
-    return canonicalRepoNameToBzlFiles
+  fun getApparentRepoNameToFiles(): Map<String, List<Label>> = canonicalRepoNameToBzlFiles
+
+  @TestOnly
+  fun forceUpdateCache() {
+    updateCache()
+  }
+
+  companion object {
+    fun getInstance(project: Project): BazelFileService = project.getService(BazelFileService::class.java)
   }
 }
