@@ -69,8 +69,8 @@ class BazelProjectSettingsConfigurable(private val project: Project) :
 
   private fun initProjectViewFileField(): TextFieldWithBrowseButton =
     TextFieldWithBrowseButton().apply {
-      val title = "Select Path"
-      val description = "Select the path for your project view file."
+      val title = BazelPluginBundle.message("text.field.project.settings.select.path.title")
+      val description = BazelPluginBundle.message("text.field.project.settings.select.path.description")
       addBrowseFolderListener(
         project,
         FileChooserDescriptorFactory

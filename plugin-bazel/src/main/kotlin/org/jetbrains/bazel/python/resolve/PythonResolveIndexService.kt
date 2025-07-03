@@ -1,6 +1,9 @@
 package org.jetbrains.bazel.python.resolve
 
+import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.State
+import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -24,16 +27,19 @@ import kotlin.io.path.isRegularFile
 import kotlin.io.path.relativeTo
 
 @Service(Service.Level.PROJECT)
-class PythonResolveIndexService(private val project: Project) {
-  // Todo: this index should be persisted after python generated source files are supported
+@State(name = "PythonResolveIndexService", storages = [Storage("bazelPython.xml")], reportStatistic = true)
+class PythonResolveIndexService(private val project: Project) : PersistentStateComponent<PythonResolveIndexService.State> {
   var resolveIndex: Map<QualifiedName, (PsiManager) -> PsiElement?> = emptyMap()
     private set
+  private var internalResolveIndex: Map<QualifiedName, Path> = mapOf()
 
   fun updatePythonResolveIndex(rawTargets: List<RawBuildTarget>) {
-    resolveIndex = buildIndex(rawTargets)
+    internalResolveIndex = buildIndex(rawTargets)
+    resolveIndex =
+      internalResolveIndex.mapValues { (_, path) -> { psiManager -> psiManager.findFile(path.toVirtualFile() ?: return@mapValues null) } }
   }
 
-  private fun buildIndex(rawTargets: List<RawBuildTarget>): Map<QualifiedName, (PsiManager) -> PsiElement?> {
+  private fun buildIndex(rawTargets: List<RawBuildTarget>): Map<QualifiedName, Path> {
     val executionRoot = BazelBinPathService.getInstance(project).bazelExecPath?.let { Path.of(it) } ?: return emptyMap()
     val rootDir = Path.of(project.rootDir.path)
     val bazelBin = BazelBinPathService.getInstance(project).bazelBinPath?.let { Path.of(it) } ?: return emptyMap()
@@ -50,7 +56,7 @@ class PythonResolveIndexService(private val project: Project) {
         .filter { it.path.extension == "py" && it.path.startsWith(rootDir) }
         .map { it.path.relativeTo(rootDir) }
 
-    val qualifiedNamesResolverMap = mutableMapOf<QualifiedName, (PsiManager) -> PsiElement?>()
+    val qualifiedNamesResolverMap = mutableMapOf<QualifiedName, Path>()
 
     for (target in targets) {
       val importsPaths = assembleImportsPaths(target)
@@ -112,7 +118,7 @@ class PythonResolveIndexService(private val project: Project) {
         sourceImports.forEach { qualifiedName ->
           qualifiedNamesResolverMap.put(
             qualifiedName,
-            { psiManager -> psiManager.findFile(pair.value.toVirtualFile() ?: return@put null) },
+            pair.value,
           )
         }
       }
@@ -148,6 +154,26 @@ class PythonResolveIndexService(private val project: Project) {
     return ideInfo.imports.map {
       buildParentPath.resolve(it).normalize()
     }
+  }
+
+  data class State(var index: Map<String, String> = mapOf())
+
+  override fun getState(): PythonResolveIndexService.State? =
+    PythonResolveIndexService.State(
+      internalResolveIndex
+        .map {
+          it.key.toString() to it.value.toString()
+        }.toMap(),
+    )
+
+  override fun loadState(state: PythonResolveIndexService.State) {
+    internalResolveIndex =
+      state.index
+        .map { pair ->
+          pair.key.split(".").let { QualifiedName.fromComponents(it) } to Path.of(pair.value)
+        }.toMap()
+    resolveIndex =
+      internalResolveIndex.mapValues { (_, path) -> { psiManager -> psiManager.findFile(path.toVirtualFile() ?: return@mapValues null) } }
   }
 }
 
