@@ -41,5 +41,6 @@ object ProjectViewSection {
       "test_sources" to Parser.List.String, // used by Google's plugin
       "gazelle_target" to Parser.Scalar.String,
       "index_all_files_in_directories" to Parser.Scalar.Boolean,
+      "python_code_generator_rule_names" to Parser.List.String,
     )
 }
