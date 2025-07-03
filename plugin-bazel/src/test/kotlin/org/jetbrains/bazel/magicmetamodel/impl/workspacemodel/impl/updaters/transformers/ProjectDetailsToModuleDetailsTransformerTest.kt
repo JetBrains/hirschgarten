@@ -7,8 +7,8 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.ProjectDetails
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JavacOptionsItem
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -21,7 +21,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     // given
     val targetId = Label.parse("target")
     val target =
-      BuildTarget(
+      RawBuildTarget(
         targetId,
         emptyList(),
         emptyList(),
@@ -40,7 +40,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targets = setOf(target),
         javacOptions = emptyList(),
         libraries = null,
-        scalacOptions = emptyList(),
       )
 
     // when
@@ -52,7 +51,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target,
         javacOptions = null,
-        scalacOptions = null,
         libraryDependencies = null,
         moduleDependencies = emptyList(),
         defaultJdkName = null,
@@ -67,7 +65,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     // given
     val targetId = Label.parse("target")
     val target =
-      BuildTarget(
+      RawBuildTarget(
         targetId,
         emptyList(),
         emptyList(),
@@ -93,7 +91,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targets = setOf(target),
         javacOptions = listOf(javacOptions),
         libraries = emptyList(),
-        scalacOptions = emptyList(),
       )
 
     // when
@@ -105,7 +102,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target,
         javacOptions = javacOptions,
-        scalacOptions = null,
         libraryDependencies = emptyList(),
         moduleDependencies = emptyList(),
         defaultJdkName = null,
@@ -121,7 +117,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val target1Id = Label.parse("target1")
     val target2Id = Label.parse("target2")
     val target1 =
-      BuildTarget(
+      RawBuildTarget(
         target1Id,
         emptyList(),
         listOf(target2Id),
@@ -141,7 +137,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       )
 
     val target2 =
-      BuildTarget(
+      RawBuildTarget(
         target2Id,
         emptyList(),
         emptyList(),
@@ -159,7 +155,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       )
     val target3Id = Label.parse("target3")
     val target3 =
-      BuildTarget(
+      RawBuildTarget(
         target3Id,
         emptyList(),
         listOf(target2Id),
@@ -180,7 +176,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
 
     val target4Id = Label.parse("target4")
     val target4 =
-      BuildTarget(
+      RawBuildTarget(
         target4Id,
         emptyList(),
         listOf(target1Id),
@@ -201,7 +197,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         targets = setOf(target2, target1, target3, target4),
         javacOptions = listOf(target3JavacOptionsItem, target1JavacOptionsItem),
         libraries = emptyList(),
-        scalacOptions = emptyList(),
       )
 
     // when
@@ -216,7 +211,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target1,
         javacOptions = target1JavacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = emptyList(),
         moduleDependencies = listOf(target2Id),
         defaultJdkName = null,
@@ -226,7 +220,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target2,
         javacOptions = null,
-        scalacOptions = null,
         libraryDependencies = emptyList(),
         moduleDependencies = emptyList(),
         defaultJdkName = null,
@@ -236,7 +229,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target3,
         javacOptions = target3JavacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = emptyList(),
         moduleDependencies = listOf(target2Id),
         defaultJdkName = null,
@@ -246,7 +238,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       ModuleDetails(
         target = target4,
         javacOptions = null,
-        scalacOptions = null,
         libraryDependencies = emptyList(),
         moduleDependencies = listOf(target1Id),
         defaultJdkName = null,

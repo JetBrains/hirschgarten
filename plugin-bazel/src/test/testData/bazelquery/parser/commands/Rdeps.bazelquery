@@ -1,0 +1,1 @@
+rdeps(//path/to:target1, rdeps(//path/to:target2, //path/to:target3), 1)

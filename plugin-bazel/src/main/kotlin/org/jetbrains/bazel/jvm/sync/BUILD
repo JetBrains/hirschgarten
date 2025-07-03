@@ -22,10 +22,11 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/scope",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/task",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/target/sync/projectStructure",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/console",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/notifications",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/utils",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/workspacemodel/entities",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
+        "//sdkcompat",
     ],
 )

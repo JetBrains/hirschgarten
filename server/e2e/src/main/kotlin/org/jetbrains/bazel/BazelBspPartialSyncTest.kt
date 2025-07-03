@@ -9,8 +9,8 @@ import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
@@ -63,7 +63,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
             javaVersion = "11",
           )
         val javaTargetsJavaBinary =
-          BuildTarget(
+          RawBuildTarget(
             partialSyncTargetId,
             listOf(),
             emptyList(),
@@ -102,7 +102,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
       )
 
     val javaTargetsJavaLibrary =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("$targetPrefix//java_targets:java_library"),
         listOf(),
         listOf(),

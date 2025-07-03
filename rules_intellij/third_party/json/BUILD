@@ -12,13 +12,13 @@ java_library(
     name = "json_internal",
     visibility = ["//visibility:private"],
     exports = select_for_plugin_api({
-        "intellij-2024.3": [
-            "@json_2024_3//jar",
-            "@json_split_2024_3//jar",
-        ],
         "intellij-2025.1": [
             "@json_2025_1//jar",
             "@json_split_2025_1//jar",
+        ],
+        "intellij-2025.2": [
+            "@json_2025_2//jar",
+            "@json_split_2025_2//jar",
         ],
         "default": [],
     }),

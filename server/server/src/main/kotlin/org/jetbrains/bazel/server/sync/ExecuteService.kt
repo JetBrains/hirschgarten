@@ -130,7 +130,7 @@ class ExecuteService(
           params.environmentVariables?.let { environment.putAll(it) }
           params.workingDirectory?.let { workingDirectory = Path(it) }
           params.arguments?.let { programArguments.addAll(it) }
-          params.additionalBazelParams?.let { additionalBazelOptions.addAll(it.split(" ")) }
+          params.additionalBazelParams?.let { additionalBazelOptions.addAll(it.trim().split(" ")) }
         }
       }
     val bazelProcessResult =
@@ -139,6 +139,7 @@ class ExecuteService(
           command,
           originId = params.originId,
           serverPidFuture = null,
+          createdProcessIdDeferred = params.pidDeferred,
         ).waitAndGetResult()
     return RunResult(statusCode = bazelProcessResult.bazelStatus, originId = params.originId)
   }
@@ -175,8 +176,22 @@ class ExecuteService(
         else -> bazelRunner.buildBazelCommand(workspaceContext) { test() }
       }
 
-    if (params.debug is DebugType.JDWP) {
+    val debugType = params.debug
+
+    if (debugType is DebugType.JDWP) {
       command.options.add(BazelFlag.javaTestDebug())
+    }
+
+    if (debugType is DebugType.GoDlv) {
+      command.options.addAll(
+        listOf(
+          BazelFlag.runUnder(
+            "dlv --listen=127.0.0.1:${debugType.port} --headless=true --api-version=2 --check-go-version=false --only-same-user=false exec",
+          ),
+          "--compilation_mode=dbg",
+          "--dynamic_mode=off",
+        ),
+      )
     }
 
     params.additionalBazelParams?.let { additionalParams ->

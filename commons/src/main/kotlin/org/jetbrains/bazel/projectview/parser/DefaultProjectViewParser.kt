@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.projectview.parser
 
-import org.apache.logging.log4j.LogManager
 import org.jetbrains.bazel.projectview.model.ProjectView
 import org.jetbrains.bazel.projectview.parser.sections.AndroidMinSdkSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.EnableNativeAndroidRulesParser
@@ -8,7 +7,9 @@ import org.jetbrains.bazel.projectview.parser.sections.ExperimentalAddTransitive
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalNoPruneTransitiveCompileTimeJarsPatternsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalPrioritizeLibrariesOverModulesTargetKindsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ExperimentalTransitiveCompileTimeJarsTargetKindsSectionParser
+import org.jetbrains.bazel.projectview.parser.sections.GazelleTargetParser
 import org.jetbrains.bazel.projectview.parser.sections.ImportRunConfigurationsSectionParser
+import org.jetbrains.bazel.projectview.parser.sections.IndexAllFilesInDirectoriesSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewAllowManualTargetsSyncSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewBazelBinarySectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewBuildFlagsSectionParser
@@ -19,11 +20,14 @@ import org.jetbrains.bazel.projectview.parser.sections.ProjectViewIdeJavaHomeOve
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewImportDepthSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewSyncFlagsSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ProjectViewTargetsSectionParser
+import org.jetbrains.bazel.projectview.parser.sections.PythonCodeGeneratorRuleNamesSectionParser
 import org.jetbrains.bazel.projectview.parser.sections.ShardSyncParser
 import org.jetbrains.bazel.projectview.parser.sections.ShardingApproachParser
 import org.jetbrains.bazel.projectview.parser.sections.TargetShardSizeParser
 import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewRawSections
 import org.jetbrains.bazel.projectview.parser.splitter.ProjectViewSectionSplitter
+import org.slf4j.LoggerFactory
+import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -34,7 +38,7 @@ import kotlin.io.path.Path
  * @see ProjectViewSectionSplitter
  */
 open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : ProjectViewParser {
-  private val log = LogManager.getLogger(DefaultProjectViewParser::class.java)
+  private val log = LoggerFactory.getLogger(DefaultProjectViewParser::class.java)
 
   override fun parse(projectViewFileContent: String): ProjectView {
     log.trace("Parsing project view for the content: '{}'", projectViewFileContent.escapeNewLines())
@@ -64,10 +68,13 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         targetShardSize = TargetShardSizeParser.parse(rawSections),
         shardingApproach = ShardingApproachParser.parse(rawSections),
         importRunConfigurations = ImportRunConfigurationsSectionParser.parse(rawSections),
+        gazelleTarget = GazelleTargetParser.parse(rawSections),
+        indexAllFilesInDirectories = IndexAllFilesInDirectoriesSectionParser.parse(rawSections),
+        pythonCodeGeneratorRuleNamesSection = PythonCodeGeneratorRuleNamesSectionParser.parse(rawSections),
       ).build()
   }
 
-  fun String.escapeNewLines(): String = this.replace("\n", "\\n")
+  private fun String.escapeNewLines(): String = this.replace("\n", "\\n")
 
   private fun findImportedProjectViews(rawSections: ProjectViewRawSections): List<ProjectView> =
     rawSections
@@ -77,8 +84,13 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
       .map(String::trim)
       .map(::toProjectViewPath)
       .onEach { log.debug("Parsing imported file {}.", it) }
-      .map(this::parse)
-      .toList()
+      .map {
+        try {
+          parse(it)
+        } catch (_: NoSuchFileException) {
+          throw ProjectViewParser.ImportNotFound(it)
+        }
+      }.toList()
 
   private fun findTryImportedProjectViews(rawSections: ProjectViewRawSections): List<ProjectView> =
     rawSections

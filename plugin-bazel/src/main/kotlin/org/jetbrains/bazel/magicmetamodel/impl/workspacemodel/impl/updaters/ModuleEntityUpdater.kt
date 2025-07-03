@@ -16,14 +16,15 @@ import com.intellij.util.containers.Interner
 import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.bazel.jpsCompilation.utils.JpsConstants
 import org.jetbrains.bazel.jpsCompilation.utils.JpsPaths
-import org.jetbrains.bazel.settings.bazel.bazelProjectSettings
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelModuleEntitySource
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateLibraryDependency
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.settings.bazel.bazelJVMProjectSettings
 import org.jetbrains.bazel.target.addLibraryModulePrefix
 import org.jetbrains.bazel.target.targetUtils
-import org.jetbrains.bazel.workspacemodel.entities.BazelDummyEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.BazelModuleEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
-import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.bsp.protocol.BuildTargetTag
 
 private val dependencyInterner: Interner<ModuleDependencyItem> = Interner.createWeakInterner()
@@ -32,7 +33,10 @@ private val idInterner: Interner<SymbolicEntityId<*>> = Interner.createWeakInter
 internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
+  libraryModules: List<JavaModule> = emptyList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<GenericModuleInfo, ModuleEntity> {
+  val libraryModuleLookupTable = libraryModules.map { it.genericModuleInfo.name }.toHashSet()
+
   override suspend fun addEntity(entityToAdd: GenericModuleInfo): ModuleEntity =
     addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
 
@@ -40,8 +44,7 @@ internal class ModuleEntityUpdater(
     val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
     val (libraryModulesDependencies, librariesDependencies) =
       entityToAdd.librariesDependencies.partition {
-        !entityToAdd.isLibraryModule &&
-          workspaceModelEntityUpdaterConfig.project.targetUtils.isLibraryModule(it.libraryName)
+        !entityToAdd.isLibraryModule && it.libraryName.addLibraryModulePrefix() in libraryModuleLookupTable
       }
     val allLibrariesDependencies =
       librariesDependencies.map { toLibraryDependency(it) } +
@@ -87,7 +90,7 @@ internal class ModuleEntityUpdater(
   private fun toEntitySource(entityToAdd: GenericModuleInfo): EntitySource =
     when {
       entityToAdd.isDummy -> BazelDummyEntitySource
-      !workspaceModelEntityUpdaterConfig.project.bazelProjectSettings.enableBuildWithJps ||
+      !workspaceModelEntityUpdaterConfig.project.bazelJVMProjectSettings.enableBuildWithJps ||
         entityToAdd.kind.languageClasses.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BazelModuleEntitySource(entityToAdd.name)
 
       else ->

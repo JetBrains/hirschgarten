@@ -22,6 +22,7 @@
     "https://bcr.bazel.build/modules/aspect_bazel_lib/2.14.0/source.json": "0cf1826853b0bef8b5cd19c0610d717500f5521aa2b38b72b2ec302ac5e7526c",
     "https://bcr.bazel.build/modules/aspect_bazel_lib/2.7.7/MODULE.bazel": "491f8681205e31bb57892d67442ce448cda4f472a8e6b3dc062865e29a64f89c",
     "https://bcr.bazel.build/modules/aspect_rules_js/1.40.0/MODULE.bazel": "01a1014e95e6816b68ecee2584ae929c7d6a1b72e4333ab1ff2d2c6c30babdf1",
+    "https://bcr.bazel.build/modules/aspect_rules_js/1.40.0/source.json": "b6fd491369e9ef888fdef64b839023a2360caaea8eb370d2cfbfdd2a96721311",
     "https://bcr.bazel.build/modules/aspect_rules_js/2.0.0/MODULE.bazel": "b45b507574aa60a92796e3e13c195cd5744b3b8aff516a9c0cb5ae6a048161c5",
     "https://bcr.bazel.build/modules/aspect_rules_js/2.0.0/source.json": "a6b09288ab135225982a58ac0b5e2c032c331d88f80553d86596000e894e86b3",
     "https://bcr.bazel.build/modules/aspect_rules_lint/1.3.4/MODULE.bazel": "e0758f32323887cfe0b9d6e9f01f803f50a3f5efb6a229fc6791e99bd91ea038",
@@ -219,6 +220,7 @@
     "https://bcr.bazel.build/modules/rules_multitool/0.4.0/MODULE.bazel": "15517987d5c00c9e7faab41fbe22ee67a350b6eabcc1e08baded5c6d9025897f",
     "https://bcr.bazel.build/modules/rules_multitool/0.4.0/source.json": "d73b450b7c6d9683e400d6cebc463fbc2b870cc5d8e2e75080d6278805aaab08",
     "https://bcr.bazel.build/modules/rules_nodejs/5.8.2/MODULE.bazel": "6bc03c8f37f69401b888023bf511cb6ee4781433b0cb56236b2e55a21e3a026a",
+    "https://bcr.bazel.build/modules/rules_nodejs/5.8.2/source.json": "6e82cf5753d835ea18308200bc79b9c2e782efe2e2a4edc004a9162ca93382ca",
     "https://bcr.bazel.build/modules/rules_nodejs/6.2.0/MODULE.bazel": "ec27907f55eb34705adb4e8257952162a2d4c3ed0f0b3b4c3c1aad1fac7be35e",
     "https://bcr.bazel.build/modules/rules_nodejs/6.2.0/source.json": "a77c307175a82982f0847fd6a8660db5b21440d8a9d073642cb4afa7a18612ff",
     "https://bcr.bazel.build/modules/rules_pkg/0.7.0/MODULE.bazel": "df99f03fc7934a4737122518bb87e667e62d780b610910f0447665a7e2be62dc",
@@ -314,8 +316,8 @@
     },
     "@@aspect_rules_js+//npm:extensions.bzl%pnpm": {
       "general": {
-        "bzlTransitiveDigest": "DnLJ9p167xEBnB+MDE6SLeux/qm7rubsvNmcCbpZpnM=",
-        "usagesDigest": "VcsfDFwmBt+ECaA/4/v9Ozpk8OnXWBpmy21oeFuDhZg=",
+        "bzlTransitiveDigest": "BVZQ7fXl174t7B3BBOwdLtj76B00NSc1IeDIehRC40s=",
+        "usagesDigest": "ZYGEy1FrDUNPBzAzD+ujlHkMEsVPMYOvpHm9RhUexUE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -343,8 +345,7 @@
               "lifecycle_hooks": [],
               "extra_build_content": "load(\"@aspect_rules_js//js:defs.bzl\", \"js_binary\")\njs_binary(name = \"pnpm\", data = glob([\"package/**\"]), entry_point = \"package/dist/pnpm.cjs\", visibility = [\"//visibility:public\"])",
               "generate_bzl_library_targets": false,
-              "extract_full_archive": true,
-              "system_tar": "auto"
+              "extract_full_archive": true
             }
           },
           "pnpm__links": {
@@ -364,6 +365,7 @@
               ],
               "lifecycle_hooks_use_default_shell_env": false,
               "bins": {},
+              "npm_translate_lock_repo": "",
               "package_visibility": [
                 "//visibility:public"
               ],
@@ -404,13 +406,8 @@
           ],
           [
             "bazel_features+",
-            "bazel_features_globals",
-            "bazel_features++version_extension+bazel_features_globals"
-          ],
-          [
-            "bazel_features+",
-            "bazel_features_version",
-            "bazel_features++version_extension+bazel_features_version"
+            "bazel_tools",
+            "bazel_tools"
           ]
         ]
       }
@@ -1825,7 +1822,7 @@
     },
     "@@rules_python+//python/extensions:pip.bzl%pip": {
       "general": {
-        "bzlTransitiveDigest": "XbNU6VpN/0xVgIxoFW6RHJkxmSgZ/pDyimGqtoUROvo=",
+        "bzlTransitiveDigest": "Qa+iJw8tzy1aSnSim/bIfC1H+YwLylNaga7sLCJ22ns=",
         "usagesDigest": "/CyCS8lsAekVK9pGtJ2FJOH1jLjGyC/gT30yrgZxJvc=",
         "recordedFileInputs": {
           "@@grpc+//requirements.bazel.txt": "4c8c19a2a8f22108bf29feb5cc2694eb0c7e0c82ba0364df27fe5f5e4d7936e5",

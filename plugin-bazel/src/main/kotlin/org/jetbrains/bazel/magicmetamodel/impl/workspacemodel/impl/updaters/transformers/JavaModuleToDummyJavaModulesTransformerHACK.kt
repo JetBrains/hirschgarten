@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bazel.commons.LanguageClass
@@ -11,16 +10,15 @@ import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.BazelJavaSourceRootEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.sanitizeName
 import org.jetbrains.bazel.magicmetamodel.shortenTargetPath
-import org.jetbrains.bazel.sdkcompat.isSharedSourceSupportEnabled
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bazel.utils.allAncestorsSequence
 import org.jetbrains.bazel.utils.commonAncestor
 import org.jetbrains.bazel.utils.filterPathsThatDontContainEachOther
 import org.jetbrains.bazel.utils.isUnder
-import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
-import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -38,7 +36,7 @@ private val RELEVANT_EXTENSIONS = listOf("java", "kt", "scala")
  */
 internal class JavaModuleToDummyJavaModulesTransformerHACK(
   private val projectBasePath: Path,
-  private val fileToTarget: Map<Path, List<Label>>,
+  private val fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>>,
   private val project: Project,
 ) {
   sealed interface Result
@@ -48,8 +46,6 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
   data class MergedRoots(val mergedSourceRoots: List<JavaSourceRoot>, val mergedResourceRoots: List<ResourceRoot>?) : Result
 
   fun transform(inputEntity: JavaModule): Result {
-    if (!BazelFeatureFlags.addDummyModules && !BazelFeatureFlags.mergeSourceRoots) return DummyModulesToAdd(emptyList())
-
     val buildFileDirectory = inputEntity.baseDirContentRoot?.path
     val (relevantSourceRoots, irrelevantSourceRoots) = inputEntity.sourceRoots.partition { it.isRelevant() }
     val sourceRootsForParentDirs = calculateSourceRootsForParentDirs(relevantSourceRoots)
@@ -70,27 +66,23 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
         )
       }
     }
-    return if (!BazelFeatureFlags.addDummyModules) {
-      DummyModulesToAdd(emptyList())
-    } else {
-      val dummySourceRoots =
-        if (buildFileDirectory == null) {
-          mergedSourceRootVotes
-        } else {
-          mergedSourceRootVotes.restoreSourceRootFromPackagePrefix(limit = null)
-        }.keys.toList()
-      DummyModulesToAdd(
-        dummySourceRoots
-          .zip(calculateDummyJavaModuleNames(dummySourceRoots, projectBasePath))
-          .mapNotNull {
-            calculateDummyJavaSourceModule(
-              name = it.second,
-              sourceRoot = it.first,
-              javaModule = inputEntity,
-            )
-          }.distinctBy { it.genericModuleInfo.name },
-      )
-    }
+    val dummySourceRoots =
+      if (buildFileDirectory == null) {
+        mergedSourceRootVotes
+      } else {
+        mergedSourceRootVotes.restoreSourceRootFromPackagePrefix(limit = null)
+      }.keys.toList()
+    return DummyModulesToAdd(
+      dummySourceRoots
+        .zip(calculateDummyJavaModuleNames(dummySourceRoots, projectBasePath))
+        .mapNotNull {
+          calculateDummyJavaSourceModule(
+            name = it.second,
+            sourceRoot = it.first,
+            javaModule = inputEntity,
+          )
+        }.distinctBy { it.genericModuleInfo.name },
+    )
   }
 
   private fun JavaSourceRoot.isRelevant(): Boolean = this.sourcePath.extension in RELEVANT_EXTENSIONS || this.sourcePath.isDirectory()
@@ -101,9 +93,7 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
     sourceRootsForParentDirsVotes: Map<JavaSourceRoot, Int>,
   ): List<JavaSourceRoot>? {
     val originalSourceRoots: Set<Path> = sourceRoots.map { it.sourcePath }.toSet()
-    if (!project.isSharedSourceSupportEnabled &&
-      originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }
-    ) {
+    if (originalSourceRoots.any { it.isSharedBetweenSeveralTargets() }) {
       return null
     }
 
@@ -152,10 +142,11 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
   }
 
   /**
-   * We don't really support shared sources anyway, but adding whole directories if some of the source files
-   * are contained in several targets can cause red code on https://github.com/bazelbuild/bazel
+   * If after merging sources, one source root becomes a parent of another one, then
+   * IDEA will only consider the inner source root because of how the workspace model works.
+   * This can cause red code, e.g., on https://github.com/bazelbuild/bazel
    */
-  private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTarget[this]?.size ?: 0) > 1
+  private fun Path.isSharedBetweenSeveralTargets(): Boolean = (fileToTargetWithoutLowPrioritySharedSources[this]?.size ?: 0) > 1
 
   private fun tryMergeResources(resourceRoots: List<ResourceRoot>): List<ResourceRoot>? {
     if (resourceRoots.isEmpty()) return emptyList()
@@ -211,7 +202,7 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
       genericModuleInfo =
         GenericModuleInfo(
           name = name,
-          type = ModuleTypeId(StdModuleTypes.JAVA.id),
+          type = ModuleTypeId(BazelDummyModuleType.ID),
           kind =
             TargetKind(
               kindString = "java_library",
@@ -219,7 +210,12 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
               languageClasses = setOf(LanguageClass.JAVA, LanguageClass.SCALA, LanguageClass.KOTLIN),
             ),
           modulesDependencies = listOf(),
-          librariesDependencies = javaModule.genericModuleInfo.librariesDependencies,
+          librariesDependencies =
+            if (!BazelFeatureFlags.fbsrSupportedInPlatform) {
+              javaModule.genericModuleInfo.librariesDependencies
+            } else {
+              emptyList()
+            },
           isDummy = true,
         ),
       baseDirContentRoot = ContentRoot(path = sourceRoot.sourcePath),
@@ -239,7 +235,7 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(
 private fun calculateSourceRootsForParentDirs(sourceRoots: List<JavaSourceRoot>): Map<JavaSourceRoot, Int> =
   sourceRoots
     .asSequence()
-    .filter { !BazelJavaSourceRootEntityUpdater.shouldAddBazelJavaSourceRootEntity(it) }
+    .filter { root -> !root.generated && !BazelJavaSourceRootEntityUpdater.shouldAddBazelJavaSourceRootEntity(root) }
     .mapNotNull {
       sourceRootForParentDir(it)
     }.groupingBy { it }

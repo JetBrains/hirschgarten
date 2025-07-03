@@ -40,30 +40,33 @@ internal open class RunAllTestsBaseAction(
     e.presentation.isEnabledAndVisible = runReadAction { shouldShowAction(project, e) }
   }
 
-  private fun getAllTestTargetInfos(project: Project, event: AnActionEvent): List<BuildTarget> =
-    event
-      .getCurrentPath()
-      ?.toChildTestTargets(project)
-      .orEmpty()
+  private fun getAllTestTargetInfos(project: Project, event: AnActionEvent): List<BuildTarget> {
+    return (event.getCurrentPath() ?: return emptyList())
+      .toChildTestTargets(project)
+      .toList()
+  }
 
   private fun shouldShowAction(project: Project, e: AnActionEvent): Boolean =
-    e.getCurrentPath()?.toChildTestTargets(project)?.isNotEmpty() ?: false
+    e.getCurrentPath()?.toChildTestTargets(project)?.any() ?: false
 
   private fun AnActionEvent.getCurrentPath(): VirtualFile? = getData(PlatformDataKeys.VIRTUAL_FILE)
 
-  private fun VirtualFile.toChildTestTargets(project: Project): List<BuildTarget> {
+  private fun VirtualFile.toChildTestTargets(project: Project): Sequence<BuildTarget> {
+    val targetUtils = project.targetUtils
     val childTargets =
       if (isDirectory) {
-        val path = toNioPathOrNull() ?: return emptyList()
-        project.targetUtils
+        val path = toNioPathOrNull() ?: return emptySequence()
+        targetUtils
           .allBuildTargets()
           .filter { it.baseDirectory.startsWith(path) }
       } else {
-        project.targetUtils.getExecutableTargetsForFile(this).mapNotNull { project.targetUtils.getBuildTargetForLabel(it) }
+        targetUtils
+          .getExecutableTargetsForFile(this)
+          .mapNotNull { targetUtils.getBuildTargetForLabel(it) }
+          .asSequence()
       }
-    return childTargets.filter {
-      it.kind.ruleType == RuleType.TEST && !it.tags.contains(BuildTargetTag.MANUAL)
-    }
+    return childTargets
+      .filter { it.kind.ruleType == RuleType.TEST && !it.tags.contains(BuildTargetTag.MANUAL) }
   }
 }
 

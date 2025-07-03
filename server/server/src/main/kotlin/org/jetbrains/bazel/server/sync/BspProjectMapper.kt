@@ -19,13 +19,10 @@ import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bazel.server.sync.languages.java.JavaModule
 import org.jetbrains.bazel.server.sync.languages.jvm.javaModule
-import org.jetbrains.bazel.server.sync.languages.scala.ScalaModule
-import org.jetbrains.bazel.workspacecontext.provider.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteParams
 import org.jetbrains.bsp.protocol.BazelResolveLocalToRemoteResult
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalParams
 import org.jetbrains.bsp.protocol.BazelResolveRemoteToLocalResult
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.CppOptionsItem
 import org.jetbrains.bsp.protocol.CppOptionsParams
 import org.jetbrains.bsp.protocol.CppOptionsResult
@@ -33,6 +30,7 @@ import org.jetbrains.bsp.protocol.DependencySourcesItem
 import org.jetbrains.bsp.protocol.DependencySourcesParams
 import org.jetbrains.bsp.protocol.DependencySourcesResult
 import org.jetbrains.bsp.protocol.DirectoryItem
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.GoLibraryItem
 import org.jetbrains.bsp.protocol.InverseSourcesParams
 import org.jetbrains.bsp.protocol.InverseSourcesResult
@@ -50,27 +48,34 @@ import org.jetbrains.bsp.protocol.JvmTestEnvironmentParams
 import org.jetbrains.bsp.protocol.JvmTestEnvironmentResult
 import org.jetbrains.bsp.protocol.JvmToolchainInfo
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.jetbrains.bsp.protocol.ScalacOptionsItem
-import org.jetbrains.bsp.protocol.ScalacOptionsParams
-import org.jetbrains.bsp.protocol.ScalacOptionsResult
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
-import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import java.nio.file.Path
 import kotlin.io.path.relativeToOrNull
 
 class BspProjectMapper(
   private val languagePluginsService: LanguagePluginsService,
-  private val workspaceContextProvider: WorkspaceContextProvider,
   private val bazelPathsResolver: BazelPathsResolver,
   private val bazelRunner: BazelRunner,
   private val bspInfo: BspInfo,
+  private val featureFlags: FeatureFlags,
 ) {
   fun workspaceTargets(project: AspectSyncProject): WorkspaceBuildTargetsResult {
-    val buildTargets = project.modules.map { it.toBuildTarget() }
+    val highPrioritySources =
+      if (featureFlags.isSharedSourceSupportEnabled) {
+        emptySet()
+      } else {
+        project.modules
+          .filter { !it.hasLowSharedSourcesPriority() }
+          .flatMap { it.sources }
+          .map { it.path }
+          .toSet()
+      }
+    val buildTargets = project.modules.map { it.toBuildTarget(highPrioritySources) }
     val nonModuleTargets =
       project.nonModuleTargets
         .map {
@@ -78,9 +83,6 @@ class BspProjectMapper(
         }.filter { it.kind.isExecutable } // Filter out non-module targets that would just clutter the ui
     return WorkspaceBuildTargetsResult(buildTargets + nonModuleTargets, hasError = project.hasError)
   }
-
-  fun workspaceInvalidTargets(project: AspectSyncProject): WorkspaceInvalidTargetsResult =
-    WorkspaceInvalidTargetsResult(project.invalidTargets)
 
   fun workspaceLibraries(project: AspectSyncProject): WorkspaceLibrariesResult {
     val libraries =
@@ -92,6 +94,7 @@ class BspProjectMapper(
           jars = it.outputs.toList(),
           sourceJars = it.sources.toList(),
           mavenCoordinates = it.mavenCoordinates,
+          isFromInternalTarget = it.isFromInternalTarget,
         )
       }
     return WorkspaceLibrariesResult(libraries)
@@ -149,10 +152,10 @@ class BspProjectMapper(
       uri = this.toUri().toString(),
     )
 
-  private fun NonModuleTarget.toBuildTarget(): BuildTarget {
+  private fun NonModuleTarget.toBuildTarget(): RawBuildTarget {
     val tags = tags.mapNotNull(BspMappings::toBspTag)
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         id = label,
         tags = tags,
         kind = inferKind(this.tags, kindString, emptySet()),
@@ -164,20 +167,28 @@ class BspProjectMapper(
     return buildTarget
   }
 
-  private fun Module.toBuildTarget(): BuildTarget {
+  private fun Module.toBuildTarget(highPrioritySources: Set<Path>): RawBuildTarget {
     val label = label
     val dependencies =
       directDependencies
     val tags = tags.mapNotNull(BspMappings::toBspTag)
 
+    val (sources, lowPrioritySharedSources) =
+      if (hasLowSharedSourcesPriority()) {
+        sources.partition { it.path !in highPrioritySources }
+      } else {
+        sources to emptyList()
+      }
+
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         id = label,
         tags = tags,
         dependencies = dependencies,
         kind = inferKind(this.tags, kindString, languages),
         baseDirectory = baseDirectory,
         sources = sources,
+        lowPrioritySharedSources = lowPrioritySharedSources,
         noBuild = this.tags.contains(Tag.NO_BUILD),
         resources = resources.toList(),
       )
@@ -185,6 +196,8 @@ class BspProjectMapper(
     applyLanguageData(this, buildTarget)
     return buildTarget
   }
+
+  private fun Module.hasLowSharedSourcesPriority(): Boolean = Tag.IDE_LOW_SHARED_SOURCES_PRIORITY in tags
 
   private fun inferKind(
     tags: Set<Tag>,
@@ -205,7 +218,7 @@ class BspProjectMapper(
     )
   }
 
-  private fun applyLanguageData(module: Module, buildTarget: BuildTarget) {
+  private fun applyLanguageData(module: Module, buildTarget: RawBuildTarget) {
     val plugin = languagePluginsService.getPlugin(module.languages)
     module.languageData?.let { plugin.setModuleData(it, buildTarget) }
   }
@@ -300,29 +313,10 @@ class BspProjectMapper(
     return CppOptionsResult(items)
   }
 
-  fun buildTargetScalacOptions(project: AspectSyncProject, params: ScalacOptionsParams): ScalacOptionsResult {
-    val items =
-      params.targets
-        .mapNotNull { project.findModule(it) }
-        .mapNotNull { toScalacOptionsItem(it) }
-    return ScalacOptionsResult(items)
-  }
-
   private fun resolveClasspath(cqueryResult: List<Path>): List<Path> =
     cqueryResult
       .map { bazelPathsResolver.resolveOutput(it) }
       .filter { it.toFile().exists() } // I'm surprised this is needed, but we literally test it in e2e tests
-
-  private fun toScalacOptionsItem(module: Module): ScalacOptionsItem? =
-    (module.languageData as? ScalaModule)?.let { scalaModule ->
-      scalaModule.javaModule?.let { javaModule ->
-        val javacOptions = toJavacOptionsItem(module, javaModule)
-        ScalacOptionsItem(
-          javacOptions.target,
-          scalaModule.scalacOpts,
-        )
-      }
-    }
 
   private fun toJavacOptionsItem(module: Module, javaModule: JavaModule): JavacOptionsItem =
     JavacOptionsItem(

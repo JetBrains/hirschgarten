@@ -10,7 +10,6 @@ format_multirun(
     java = ":java-format",
     kotlin = ":ktfmt",
     protocol_buffer = "@rules_buf_toolchains//:buf",
-    shell = "@aspect_rules_lint//format:shfmt",
     starlark = "@buildifier_prebuilt//:buildifier",
     xml = ":prettier",
     yaml = "@aspect_rules_lint//format:yamlfmt",

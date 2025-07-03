@@ -4,6 +4,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
+import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.run.BazelProcessHandler
@@ -13,10 +14,10 @@ import org.jetbrains.bazel.run.commandLine.transformProgramArguments
 import org.jetbrains.bazel.run.config.BazelRunConfiguration
 import org.jetbrains.bazel.run.import.GooglePluginAwareRunHandlerProvider
 import org.jetbrains.bazel.run.task.BazelRunTaskListener
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.includesAndroid
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.isJvmTarget
 import org.jetbrains.bazel.taskEvents.BazelTaskListener
 import org.jetbrains.bazel.taskEvents.OriginId
-import org.jetbrains.bazel.workspacemodel.entities.includesAndroid
-import org.jetbrains.bazel.workspacemodel.entities.isJvmTarget
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.DebugType
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -70,7 +71,7 @@ class JvmRunWithDebugCommandLineState(
 ) : JvmDebuggableCommandLineState(environment, originId, settings.debugPort) {
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener = BazelRunTaskListener(handler)
 
-  override suspend fun startBsp(server: JoinedBuildServer) {
+  override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
     val configuration = environment.runProfile as BazelRunConfiguration
     val targetId = configuration.targets.single()
     val runParams =
@@ -81,6 +82,7 @@ class JvmRunWithDebugCommandLineState(
         environmentVariables = settings.env.envs,
         workingDirectory = settings.workingDirectory,
         additionalBazelParams = settings.additionalBazelParams,
+        pidDeferred = pidDeferred,
       )
     val remoteDebugData = DebugType.JDWP(getConnectionPort())
     val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)

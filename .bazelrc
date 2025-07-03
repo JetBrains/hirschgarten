@@ -1,8 +1,7 @@
-try-import %workspace%/.engflow.bazelrc
-try-import %workspace%/.cache.bazelrc
+try-import %workspace%/.ci.bazelrc
 try-import %workspace%/.user.bazelrc
 
-build --define=ij_product=intellij-2025.1
+build --define=ij_product=intellij-2025.2
 build --java_language_version=17 --java_runtime_version=17
 build --tool_java_language_version=17 --tool_java_runtime_version=17
 
@@ -72,3 +71,6 @@ common --experimental_rule_extension_api
 build --host_cxxopt=-std=c++14 --cxxopt=-std=c++14
 
 common --symlink_prefix=out/bazel-
+
+test:fast -- //... -//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/... -//server/server/src/test/kotlin/org/jetbrains/bazel/server/sync/...
+test:slow --jobs=1 //plugin-bazel/src/test/kotlin/org/jetbrains/bazel/... //server/server/src/test/kotlin/org/jetbrains/bazel/server/sync/...

@@ -1,11 +1,11 @@
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("//rules/kotlin:macros.bzl", "kt_library")
 
-kt_jvm_library(
+kt_library(
     name = "FlatMapUtils",
     srcs = ["FlatMapUtils.kt"],
 )
 
-kt_jvm_library(
+kt_library(
     name = "JsonComparator",
     srcs = ["JsonComparator.kt"],
     visibility = ["//visibility:public"],

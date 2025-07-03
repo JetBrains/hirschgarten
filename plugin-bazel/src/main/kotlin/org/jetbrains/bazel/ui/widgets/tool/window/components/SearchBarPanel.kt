@@ -13,7 +13,7 @@ import org.jetbrains.bazel.ui.widgets.tool.window.utils.TextComponentExtension
 import java.awt.BorderLayout
 import javax.swing.JComponent
 
-class SearchBarPanel(private val model: BazelTargetsPanelModel) : JBPanel<SearchBarPanel>(BorderLayout()) {
+internal class SearchBarPanel(private val model: BazelTargetsPanelModel) : JBPanel<SearchBarPanel>(BorderLayout()) {
   private val textField = prepareTextField()
 
   private val focusFindAction = SimpleAction { textField.requestFocus() }

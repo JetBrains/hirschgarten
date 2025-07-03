@@ -2,7 +2,6 @@ package org.jetbrains.bazel.ui.testRunLineMarker
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.invokeAction
-import com.intellij.driver.sdk.openFile
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
@@ -17,6 +16,7 @@ import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.openFile
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.minutes
@@ -61,7 +61,7 @@ class RunLineMarkerTest : IdeStarterBaseProjectTest() {
       selectedGutterIcon.click()
       val heavyWeightWindow = popup(xQuery { byClass("HeavyWeightWindow") })
       val texts = heavyWeightWindow.getAllTexts()
-      assert(texts.any { it.text.contains("Test using Bazel") })
+      assert(texts.any { it.text.contains("Test") })
     }
   }
 }

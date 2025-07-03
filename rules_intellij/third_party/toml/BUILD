@@ -12,17 +12,14 @@ java_library(
     name = "toml_internal",
     visibility = ["//visibility:private"],
     exports = select_for_plugin_api({
-        "intellij-2024.3": [
-            "@toml_2024_3//jar",
-            "@toml_core_2024_3//jar",
-            "@toml_json_2024_3//jar",
-            "@toml_grazie_2024_3//jar",
-        ],
         "intellij-2025.1": [
             "@toml_2025_1//jar",
             "@toml_core_2025_1//jar",
             "@toml_json_2025_1//jar",
             "@toml_grazie_2025_1//jar",
+        ],
+        "intellij-2025.2": [
+            "@toml_plugin_2025_2//:toml",
         ],
         "default": [],
     }),

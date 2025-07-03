@@ -5,6 +5,8 @@ import com.intellij.openapi.util.NlsContexts
 import com.intellij.openapi.vcs.FilePath
 import com.intellij.openapi.vcs.changes.IgnoredFileDescriptor
 import com.intellij.openapi.vcs.changes.IgnoredFileProvider
+import org.jetbrains.bazel.config.BazelFeatureFlags
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 
 /**
@@ -23,13 +25,15 @@ internal class BazelProjectExcludesIgnoredFileProvider : IgnoredFileProvider {
     return delegate?.getIgnoredFiles(project) ?: emptySet()
   }
 
-  override fun getIgnoredGroupDescription(): @NlsContexts.DetailedDescription String = "Bazel ignore files provider"
+  override fun getIgnoredGroupDescription(): @NlsContexts.DetailedDescription String =
+    BazelPluginBundle.message("text.bazel.ignored.group.description")
 }
 
 internal fun getProjectExcludesIgnoredFileProviderClass(): Class<IgnoredFileProvider>? =
   Class.forName("com.intellij.openapi.vcs.changes.ProjectExcludesIgnoredFileProvider") as? Class<IgnoredFileProvider>
 
 fun unregisterProjectExcludesIgnoredFileProvider() {
+  if (BazelFeatureFlags.fbsrSupportedInPlatform) return
   val clazz = getProjectExcludesIgnoredFileProviderClass()
   clazz?.also { IgnoredFileProvider.IGNORE_FILE.point.unregisterExtension(clazz) }
 }

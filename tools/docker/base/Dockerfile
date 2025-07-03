@@ -3,12 +3,14 @@
 
 FROM ubuntu:22.04
 
+# ───────────────────────────── system-wide defaults ────────────────────────────
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Set display variable for X11
 ENV DISPLAY=:0
 
+# ───────────────────────────── dependency stack ────────────────────────────────
 # Update and install dependencies
 RUN apt-get update --quiet --quiet --yes && \
     apt-get install --quiet --quiet --fix-broken --yes \
@@ -46,9 +48,7 @@ RUN apt-get update --quiet --quiet --yes && \
     openjdk-17-jdk-headless \
     protobuf-compiler \
     jq \
-    wget \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    wget
 
 # Rebuild fontconfig
 RUN fc-cache -f -v
@@ -57,10 +57,6 @@ RUN fc-cache -f -v
 RUN curl -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64 \
     && chmod +x /usr/local/bin/bazel \
     && bazel version
-
-# Install Coursier
-RUN curl -fL "https://github.com/coursier/coursier/releases/download/v2.1.10/cs-x86_64-pc-linux.gz" | gzip -d > "/usr/local/bin/cs" \
-    && chmod +x /usr/local/bin/cs
 
 # Upgrade pip to latest version
 RUN python3 -m pip install --no-cache-dir --upgrade pip

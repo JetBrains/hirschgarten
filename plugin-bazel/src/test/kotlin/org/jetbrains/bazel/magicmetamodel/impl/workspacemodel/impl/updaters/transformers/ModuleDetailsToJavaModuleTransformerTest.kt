@@ -10,23 +10,24 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.config.BazelFeatureFlags
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaAddendum
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.KotlinAddendum
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
-import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
-import org.jetbrains.bazel.workspacemodel.entities.JavaAddendum
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.workspacemodel.entities.KotlinAddendum
-import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.BuildTargetData
 import org.jetbrains.bsp.protocol.JavacOptionsItem
 import org.jetbrains.bsp.protocol.JvmBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import org.jetbrains.bsp.protocol.SourceItem
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.junit.jupiter.api.DisplayName
@@ -71,7 +72,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val buildTargetId = Label.parse("module1")
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         buildTargetId,
         listOf(),
         listOf(
@@ -115,7 +116,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget,
         javacOptions = javacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -217,7 +217,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val buildTargetId = Label.parse("module1")
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         buildTargetId,
         listOf(),
         listOf(
@@ -242,7 +242,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget,
         javacOptions = null,
-        scalacOptions = null,
         libraryDependencies = emptyList(),
         moduleDependencies =
           listOf(
@@ -333,7 +332,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val buildTargetId1 = Label.parse("module1")
     val buildTarget1 =
-      BuildTarget(
+      RawBuildTarget(
         buildTargetId1,
         listOf(),
         listOf(
@@ -377,7 +376,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget1,
         javacOptions = target1JavacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -402,7 +400,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val buildTargetId2 = Label.parse("module2")
     val buildTarget2 =
-      BuildTarget(
+      RawBuildTarget(
         buildTargetId2,
         listOf(),
         listOf(
@@ -439,7 +437,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget2,
         javacOptions = target2JavacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -569,6 +566,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
   @Test
   fun `should add dependency on dummy module properly`() {
+    if (BazelFeatureFlags.fbsrSupportedInPlatform) return
     // given
     val projectRoot = createTempDirectory(projectBasePath, "project").toAbsolutePath()
     projectRoot.toFile().deleteOnExit()
@@ -600,7 +598,7 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
 
     val buildTargetId = Label.parse("module1")
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         buildTargetId,
         listOf(),
         listOf(
@@ -641,7 +639,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetails(
         target = buildTarget,
         javacOptions = javacOptionsItem,
-        scalacOptions = null,
         libraryDependencies = null,
         moduleDependencies =
           listOf(
@@ -787,9 +784,9 @@ class ExtractJvmBuildTargetTest {
     extractedJvmBuildTarget shouldBe null
   }
 
-  private fun buildDummyTarget(data: BuildTargetData? = null): BuildTarget {
+  private fun buildDummyTarget(data: BuildTargetData? = null): RawBuildTarget {
     val buildTarget =
-      BuildTarget(
+      RawBuildTarget(
         Label.parse("target"),
         listOf("tag1", "tag2"),
         listOf(Label.parse("dep1"), Label.parse("dep2")),

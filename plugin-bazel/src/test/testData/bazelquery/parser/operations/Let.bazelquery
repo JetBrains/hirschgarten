@@ -1,0 +1,1 @@
+let a = deps(//path/to:my_target, 4) in deps($a, 3)

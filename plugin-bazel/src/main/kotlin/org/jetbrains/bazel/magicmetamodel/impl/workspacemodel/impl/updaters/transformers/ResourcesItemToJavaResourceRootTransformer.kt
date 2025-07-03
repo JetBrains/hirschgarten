@@ -2,12 +2,13 @@ package org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.tra
 
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bsp.protocol.BuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
-internal class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartitionTransformer<BuildTarget, ResourceRoot> {
-  override fun transform(inputEntity: BuildTarget): List<ResourceRoot> {
+internal class ResourcesItemToJavaResourceRootTransformer : WorkspaceModelEntityPartitionTransformer<RawBuildTarget, ResourceRoot> {
+  override fun transform(inputEntity: RawBuildTarget): List<ResourceRoot> {
     val rootType = inputEntity.inferRootType()
     return inputEntity.resources
       .map { toJavaResourceRoot(it, rootType) }

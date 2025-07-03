@@ -1,12 +1,17 @@
 load("@npm//:defs.bzl", "npm_link_all_packages")
-load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
+load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain", "kt_kotlinc_options")
+
+kt_kotlinc_options(
+    name = "kotlinc_options",
+    include_stdlibs = "none",
+    jvm_target = "17",
+)
 
 define_kt_toolchain(
     name = "kotlin_toolchain",
     api_version = "2.0",
-    #     we should turn it on one day
-    #     experimental_strict_kotlin_deps = "warn",
     jvm_target = "17",
+    kotlinc_options = ":kotlinc_options",
     language_version = "2.0",
 )
 

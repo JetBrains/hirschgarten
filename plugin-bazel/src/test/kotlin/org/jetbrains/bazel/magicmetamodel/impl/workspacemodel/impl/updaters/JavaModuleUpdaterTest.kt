@@ -26,26 +26,23 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelProjectEntitySource
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ContentRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateLibraryDependency
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.IntermediateModuleDependency
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.ResourceRoot
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.bazel.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.bazel.workspacemodel.entities.BazelProjectEntitySource
-import org.jetbrains.bazel.workspacemodel.entities.ContentRoot
-import org.jetbrains.bazel.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.bazel.workspacemodel.entities.IntermediateLibraryDependency
-import org.jetbrains.bazel.workspacemodel.entities.IntermediateModuleDependency
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.JavaSourceRoot
-import org.jetbrains.bazel.workspacemodel.entities.ResourceRoot
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
-import kotlin.reflect.KClass
-import kotlin.reflect.KFunction
-import kotlin.reflect.full.primaryConstructor
 
 // TODO add libraries tests
 internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
@@ -54,7 +51,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
   inner class JavaModuleWithSourcesUpdaterTest {
     @Test
     fun `should add one java module with sources to the workspace model`() {
-      runTestForUpdaters(listOf(JavaModuleWithSourcesUpdater::class, JavaModuleUpdater::class)) { updater ->
+      runTestForUpdaters(
+        listOf(
+          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, false) },
+          { JavaModuleUpdater(it, it.projectBasePath, false) },
+        ),
+      ) { updater ->
         // given
         val module =
           GenericModuleInfo(
@@ -167,7 +169,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                       library =
                         LibraryId(
                           name = "lib1",
-                          tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+                          tableId = LibraryTableId.ProjectLibraryTableId,
                         ),
                       exported = true,
                       scope = DependencyScope.COMPILE,
@@ -176,7 +178,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                       library =
                         LibraryId(
                           name = "lib2",
-                          tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+                          tableId = LibraryTableId.ProjectLibraryTableId,
                         ),
                       exported = true,
                       scope = DependencyScope.COMPILE,
@@ -318,7 +320,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
 
     @Test
     fun `should add multiple java module with sources to the workspace model`() {
-      runTestForUpdaters(listOf(JavaModuleWithSourcesUpdater::class, JavaModuleUpdater::class)) { updater ->
+      runTestForUpdaters(
+        listOf(
+          { JavaModuleWithSourcesUpdater(it, it.projectBasePath, false) },
+          { JavaModuleUpdater(it, it.projectBasePath, false) },
+        ),
+      ) { updater ->
         // given
         val module1 =
           GenericModuleInfo(
@@ -495,7 +502,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                       library =
                         LibraryId(
                           name = "lib1",
-                          tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+                          tableId = LibraryTableId.ProjectLibraryTableId,
                         ),
                       exported = true,
                       scope = DependencyScope.COMPILE,
@@ -504,7 +511,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                       library =
                         LibraryId(
                           name = "lib2",
-                          tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+                          tableId = LibraryTableId.ProjectLibraryTableId,
                         ),
                       exported = true,
                       scope = DependencyScope.COMPILE,
@@ -543,7 +550,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                       library =
                         LibraryId(
                           name = "lib1",
-                          tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module2")),
+                          tableId = LibraryTableId.ProjectLibraryTableId,
                         ),
                       exported = true,
                       scope = DependencyScope.COMPILE,
@@ -745,7 +752,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
   inner class JavaModuleWithoutSourcesUpdaterTest {
     @Test
     fun `should add one java module without sources to the workspace model`() {
-      runTestForUpdaters(listOf(JavaModuleWithoutSourcesUpdater::class, JavaModuleUpdater::class)) { updater ->
+      runTestForUpdaters(
+        listOf(
+          { JavaModuleWithoutSourcesUpdater(it) },
+          { JavaModuleUpdater(it, it.projectBasePath, false) },
+        ),
+      ) { updater ->
         // given
         val module =
           GenericModuleInfo(
@@ -803,7 +815,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
 
     @Test
     fun `should add multiple java module without sources to the workspace model`() {
-      runTestForUpdaters(listOf(JavaModuleWithoutSourcesUpdater::class, JavaModuleUpdater::class)) { updater ->
+      runTestForUpdaters(
+        listOf(
+          { JavaModuleWithoutSourcesUpdater(it) },
+          { JavaModuleUpdater(it, it.projectBasePath, false) },
+        ),
+      ) { updater ->
         // given
         val module1 =
           GenericModuleInfo(
@@ -906,25 +923,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
   }
 
   private fun runTestForUpdaters(
-    updaters: List<KClass<out WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity>>>,
+    updaters: List<(WorkspaceModelEntityUpdaterConfig) -> WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity>>,
     test: (WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity>) -> Unit,
   ) = updaters
-    .map { it.primaryConstructor!! }
-    .forEach { runTest(it, test) }
-
-  private fun runTest(
-    updaterConstructor: KFunction<WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity>>,
-    test: (WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity>) -> Unit,
-  ) {
-    beforeEach()
-
-    val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
-
-    if (updaterConstructor.parameters.size == 1) {
-      test(updaterConstructor.call(workspaceModelEntityUpdaterConfig))
-    } else if (updaterConstructor.parameters.size == 2) {
-      test(updaterConstructor.call(workspaceModelEntityUpdaterConfig, projectBasePath))
+    .forEach {
+      beforeEach()
+      val updater = it(WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project))
+      test(updater)
     }
-  }
 }

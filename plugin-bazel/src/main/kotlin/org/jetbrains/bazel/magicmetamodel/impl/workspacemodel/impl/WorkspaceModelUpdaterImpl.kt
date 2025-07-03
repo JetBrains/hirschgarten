@@ -9,18 +9,18 @@ import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.Comp
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryEntityUpdater
 import org.jetbrains.bazel.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
-import org.jetbrains.bazel.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
-import org.jetbrains.bazel.workspacemodel.entities.JavaModule
-import org.jetbrains.bazel.workspacemodel.entities.Library
-import org.jetbrains.bazel.workspacemodel.entities.Module
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExclude
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.JavaModule
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Library
+import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.Module
 import java.nio.file.Path
 
 class WorkspaceModelUpdaterImpl(
   workspaceEntityStorageBuilder: MutableEntityStorage,
-  val virtualFileUrlManager: VirtualFileUrlManager,
-  projectBasePath: Path,
+  private val virtualFileUrlManager: VirtualFileUrlManager,
+  private val projectBasePath: Path,
   project: Project,
-  isAndroidSupportEnabled: Boolean,
+  private val isAndroidSupportEnabled: Boolean,
 ) : WorkspaceModelUpdater {
   private val workspaceModelEntityUpdaterConfig =
     WorkspaceModelEntityUpdaterConfig(
@@ -29,24 +29,16 @@ class WorkspaceModelUpdaterImpl(
       projectBasePath = projectBasePath,
       project = project,
     )
-  private val javaModuleUpdater =
-    JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled)
 
   init {
     // store generated IML files outside the project directory
     ExternalProjectsManagerImpl.getInstance(project).setStoreExternally(true)
   }
 
-  override suspend fun loadModules(moduleEntities: List<Module>) {
-    moduleEntities.forEach { loadModule(it) }
-  }
-
-  private suspend fun loadModule(module: Module) {
-    when (module) {
-      is JavaModule -> {
-        javaModuleUpdater.addEntity(module)
-      }
-    }
+  override suspend fun loadModules(moduleEntities: List<Module>, libraryModules: List<JavaModule>) {
+    val javaModuleUpdater =
+      JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled, moduleEntities, libraryModules)
+    javaModuleUpdater.addEntities(moduleEntities.filterIsInstance<JavaModule>() + libraryModules)
   }
 
   override suspend fun loadLibraries(libraries: List<Library>) {

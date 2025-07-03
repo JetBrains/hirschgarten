@@ -47,7 +47,7 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
         idToLazyTransitiveDependencies[it]?.value.orEmpty()
       }.toSet()
 
-  private fun idsToTargetInfo(dependencies: Set<Label>): Set<TargetInfo> = dependencies.mapNotNull(idToTargetInfo::get).toSet()
+  private fun idsToTargetInfo(dependencies: Collection<Label>): Set<TargetInfo> = dependencies.mapNotNull(idToTargetInfo::get).toSet()
 
   private fun directDependenciesIds(targetIds: Set<Label>) =
     targetIds
@@ -55,23 +55,49 @@ class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private 
         idToDirectDependenciesIds[it].orEmpty()
       }.toSet()
 
-  fun allTargetsAtDepth(depth: Int, targets: Set<Label>): Set<TargetInfo> {
+  data class TargetsAtDepth(val targets: Set<TargetInfo>, val directDependencies: Set<TargetInfo>)
+
+  fun allTargetsAtDepth(
+    depth: Int,
+    targets: Set<Label>,
+    isExternalTarget: (Label) -> Boolean,
+  ): TargetsAtDepth {
     if (depth < 0) {
-      return idsToTargetInfo(targets) + calculateStrictlyTransitiveDependencies(targets)
+      return TargetsAtDepth(
+        targets = idsToTargetInfo(targets) + calculateStrictlyTransitiveDependencies(targets),
+        directDependencies = emptySet(),
+      )
     }
 
     var currentDepth = depth
-    val searched: MutableSet<TargetInfo> = mutableSetOf()
+    val searched = mutableSetOf<Label>()
     var currentTargets = targets
 
-    while (currentDepth > 0) {
-      searched.addAll(idsToTargetInfo(currentTargets))
-      currentTargets = directDependenciesIds(currentTargets)
+    while (currentDepth >= 0) {
+      searched.addAll(currentTargets)
+      currentTargets = directDependenciesIds(currentTargets).filterTo(mutableSetOf()) { it !in searched }
       currentDepth--
     }
 
-    searched.addAll(idsToTargetInfo(currentTargets))
-    return searched
+    // Add all transitive dependencies for external targets
+    val (externalTargets, directInternalTargets) = currentTargets.partition { isExternalTarget(it) }
+    val toVisit = ArrayDeque(externalTargets)
+    searched.addAll(toVisit)
+    while (toVisit.isNotEmpty()) {
+      val current = toVisit.removeFirst()
+      val directDependencies = idToDirectDependenciesIds[current].orEmpty()
+      for (dependency in directDependencies) {
+        if (dependency !in searched) {
+          searched.add(dependency)
+          toVisit.addLast(dependency)
+        }
+      }
+    }
+
+    return TargetsAtDepth(
+      targets = idsToTargetInfo(searched),
+      directDependencies = idsToTargetInfo(directInternalTargets),
+    )
   }
 
   fun transitiveDependenciesWithoutRootTargets(targetId: Label): Set<TargetInfo> =

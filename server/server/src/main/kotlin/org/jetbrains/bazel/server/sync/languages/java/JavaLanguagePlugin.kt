@@ -7,8 +7,8 @@ import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.JvmBuildTarget
+import org.jetbrains.bsp.protocol.RawBuildTarget
 import java.nio.file.Path
 
 class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, private val jdkResolver: JdkResolver) :
@@ -22,6 +22,7 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
 
   override fun resolveModule(targetInfo: TargetInfo): JavaModule? =
     targetInfo.takeIf(TargetInfo::hasJvmTargetInfo)?.jvmTargetInfo?.run {
+      if (jarsCount == 0) return@run null
       val mainOutput = bazelPathsResolver.resolve(getJars(0).getBinaryJars(0))
       val binaryOutputs = jarsList.flatMap { it.binaryJarsList }.map(bazelPathsResolver::resolve)
       val mainClass = getMainClass(this)
@@ -46,7 +47,7 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
   override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     emptySet() // Provided via workspace/libraries
 
-  override fun applyModuleData(moduleData: JavaModule, buildTarget: BuildTarget) {
+  override fun applyModuleData(moduleData: JavaModule, buildTarget: RawBuildTarget) {
     val jvmBuildTarget = toJvmBuildTarget(moduleData)
     buildTarget.data = jvmBuildTarget
   }

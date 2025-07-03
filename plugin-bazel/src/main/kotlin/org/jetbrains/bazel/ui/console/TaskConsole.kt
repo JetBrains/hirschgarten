@@ -376,7 +376,7 @@ abstract class TaskConsole(
   private fun maybeGetRootTask(taskId: Any): Any? = if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.rootTask
 
   private inner class CancelAction(private val doCancelAction: () -> Unit, private val taskId: Any) :
-    DumbAwareAction({ "Stop" }, AllIcons.Actions.Suspend) {
+    DumbAwareAction({ BazelPluginBundle.message("cancel.action.text") }, AllIcons.Actions.Suspend) {
     @Volatile
     private var cancelActionActivated = false
 

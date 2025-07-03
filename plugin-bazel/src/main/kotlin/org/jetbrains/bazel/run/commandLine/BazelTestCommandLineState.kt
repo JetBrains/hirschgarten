@@ -6,6 +6,7 @@ import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
+import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.run.BazelCommandLineStateBase
 import org.jetbrains.bazel.run.BazelProcessHandler
@@ -32,12 +33,13 @@ class BazelTestCommandLineState(
   override fun createAndAddTaskListener(handler: BazelProcessHandler): BazelTaskListener =
     BazelTestTaskListener(handler, coverageReportListener)
 
-  override suspend fun startBsp(server: JoinedBuildServer) {
+  override suspend fun startBsp(server: JoinedBuildServer, pidDeferred: CompletableDeferred<Long?>) {
     if (configuration.targets.isEmpty()) {
       throw ExecutionException(BazelPluginBundle.message("bsp.run.error.cannotRun"))
     }
 
     val targets = configuration.targets
+    // TODO: add pidDeferred to TestParams
     val params =
       TestParams(
         targets,

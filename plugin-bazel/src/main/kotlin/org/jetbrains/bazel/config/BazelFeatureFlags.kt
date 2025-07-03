@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.config
 
+import com.intellij.codeInsight.multiverse.CodeInsightContextManager
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bsp.protocol.FeatureFlags
@@ -8,13 +11,14 @@ object BazelFeatureFlags {
   private const val PYTHON_SUPPORT = "bsp.python.support"
   private const val ANDROID_SUPPORT = "bsp.android.support"
   private const val GO_SUPPORT = "bsp.go.support"
+  private const val QUERY_TERMINAL_COMPLETION = "bazel.query.terminal.completion"
 
   @VisibleForTesting
   const val BUILD_PROJECT_ON_SYNC = "bsp.build.project.on.sync"
   private const val SHORTEN_MODULE_LIBRARY_NAMES = "bsp.shorten.module.library.names"
   private const val WRAP_LIBRARIES_INSIDE_MODULES = "bsp.wrap.libraries.inside.modules"
   private const val EXECUTE_SECOND_PHASE_ON_SYNC = "bsp.execute.second.phase.on.sync"
-  private const val ADD_DUMMY_MODULES = "bsp.add.dummy.modules"
+  private const val ADD_DUMMY_MODULE_DEPENDENCIES = "bsp.add.dummy.module.dependencies"
   private const val EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS = "bsp.exclude.compiled.source.code.inside.jars"
   private const val ENABLE_PARTIAL_SYNC = "bsp.enable.partial.sync"
   private const val SYMLINK_SCAN_MAX_DEPTH = "bazel.symlink.scan.max.depth"
@@ -24,6 +28,9 @@ object BazelFeatureFlags {
 
   @VisibleForTesting
   const val FAST_BUILD_ENABLED = "bazel.enable.jvm.fastbuild"
+  private const val CHECK_SHARED_SOURCES = "bazel.check.shared.sources"
+  private const val AUTO_OPEN_PROJECT_IF_PRESENT = "bazel.project.auto.open.if.present"
+  private const val ENABLE_BAZEL_QUERY_TAB = "bazel.query.tab.enabled"
 
   val isPythonSupportEnabled: Boolean
     get() = isEnabled(PYTHON_SUPPORT)
@@ -49,8 +56,13 @@ object BazelFeatureFlags {
   val executeSecondPhaseOnSync: Boolean
     get() = isEnabled(EXECUTE_SECOND_PHASE_ON_SYNC)
 
-  val addDummyModules: Boolean
-    get() = isEnabled(ADD_DUMMY_MODULES) && !enableBazelJavaClassFinder
+  val addDummyModuleDependencies: Boolean
+    get() =
+      (Registry.stringValue(ADD_DUMMY_MODULE_DEPENDENCIES).toBooleanStrictOrNull() ?: !fbsrSupportedInPlatform) &&
+        !enableBazelJavaClassFinder
+
+  // File-based source root problems fixed here: https://youtrack.jetbrains.com/issue/IDEA-371097
+  val fbsrSupportedInPlatform: Boolean = org.jetbrains.bazel.sdkcompat.fbsrSupportedInPlatform
 
   val excludeCompiledSourceCodeInsideJars: Boolean
     get() = isEnabled(EXCLUDE_COMPILED_SOURCE_CODE_INSIDE_JARS)
@@ -73,11 +85,23 @@ object BazelFeatureFlags {
   val fastBuildEnabled: Boolean
     get() = isEnabled(FAST_BUILD_ENABLED)
 
+  val checkSharedSources: Boolean
+    get() = isEnabled(CHECK_SHARED_SOURCES)
+
+  val autoOpenProjectIfPresent: Boolean
+    get() = isEnabled(AUTO_OPEN_PROJECT_IF_PRESENT) || ApplicationManager.getApplication().isHeadlessEnvironment
+
+  val isQueryTerminalCompletionEnabled: Boolean
+    get() = isEnabled(QUERY_TERMINAL_COMPLETION)
+
+  val isBazelQueryTabEnabled: Boolean
+    get() = isEnabled(ENABLE_BAZEL_QUERY_TAB)
+
   private fun isEnabled(key: String): Boolean = Registry.`is`(key) || System.getProperty(key, "false").toBoolean()
 }
 
 object FeatureFlagsProvider {
-  fun getFeatureFlags(): FeatureFlags =
+  fun getFeatureFlags(project: Project): FeatureFlags =
     with(BazelFeatureFlags) {
       FeatureFlags(
         isPythonSupportEnabled = isPythonSupportEnabled,
@@ -86,6 +110,8 @@ object FeatureFlagsProvider {
         isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
         bazelSymlinksScanMaxDepth = symlinkScanMaxDepth,
         bazelShutDownBeforeShardBuild = shutDownBeforeShardBuild,
+        isSharedSourceSupportEnabled = CodeInsightContextManager.getInstance(project).isSharedSourceSupportEnabled,
+        isBazelQueryTabEnabled = isBazelQueryTabEnabled,
       )
     }
 }
