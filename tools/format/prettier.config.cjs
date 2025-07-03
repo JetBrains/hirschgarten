@@ -1,11 +1,11 @@
 const config = {
   tabWidth: 2,
   printWidth: 120,
-  xmlWhitespaceSensitivity: "ignore",
-  bracketSameLine: true,
+  htmlWhitespaceSensitivity: "ignore",
   singleAttributePerLine: true,
+  xmlSortAttributesByKey: true,
   plugins: [
-    require("@prettier/plugin-xml"),
+    "@prettier/plugin-xml",
   ],
 };
 

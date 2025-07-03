@@ -4,14 +4,26 @@
     <ports>
       <entry key="5901">
         <ForwardedPortInfo>
-          <option name="hostPort" value="5901" />
-          <option name="readOnly" value="false" />
+          <option
+            name="hostPort"
+            value="5901"
+          />
+          <option
+            name="readOnly"
+            value="false"
+          />
         </ForwardedPortInfo>
       </entry>
       <entry key="6081">
         <ForwardedPortInfo>
-          <option name="hostPort" value="6081" />
-          <option name="readOnly" value="false" />
+          <option
+            name="hostPort"
+            value="6081"
+          />
+          <option
+            name="readOnly"
+            value="false"
+          />
         </ForwardedPortInfo>
       </entry>
     </ports>

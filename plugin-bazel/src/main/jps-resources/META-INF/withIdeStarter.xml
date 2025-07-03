@@ -1,11 +1,7 @@
 <idea-plugin>
   <extensions defaultExtensionNs="com.jetbrains">
-    <performancePlugin.commandProvider
-      implementation="org.jetbrains.bazel.performanceImpl.BazelCommandProvider"
-    />
-    <performancePlugin.commandProvider
-      implementation="org.jetbrains.bazel.hotswap.ideStarter.HotSwapCommandProvider"
-    />
+    <performancePlugin.commandProvider implementation="org.jetbrains.bazel.performanceImpl.BazelCommandProvider" />
+    <performancePlugin.commandProvider implementation="org.jetbrains.bazel.hotswap.ideStarter.HotSwapCommandProvider" />
     <performancePlugin.commandProvider
       implementation="org.jetbrains.bazel.workspace.ideStarter.WorkspaceCommandProvider"
     />
@@ -24,9 +20,7 @@
     <performancePlugin.commandProvider
       implementation="org.jetbrains.bazel.kotlin.sync.ideStarter.CheckTargetsInTargetWidgetProvider"
     />
-    <performancePlugin.commandProvider
-      implementation="org.jetbrains.bazel.ui.ideStarter.UITestCommandProvider"
-    />
+    <performancePlugin.commandProvider implementation="org.jetbrains.bazel.ui.ideStarter.UITestCommandProvider" />
     <performancePlugin.commandProvider
       implementation="org.jetbrains.bazel.python.sync.ideStarter.PyCharmCheckImportedModulesProvider"
     />

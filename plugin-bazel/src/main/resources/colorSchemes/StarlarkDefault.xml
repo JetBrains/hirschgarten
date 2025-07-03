@@ -2,7 +2,10 @@
 <list>
   <option name="STARLARK_NAMED_ARGUMENT">
     <value>
-      <option name="FOREGROUND" value="467CDA" />
+      <option
+        name="FOREGROUND"
+        value="467CDA"
+      />
     </value>
   </option>
 </list>
