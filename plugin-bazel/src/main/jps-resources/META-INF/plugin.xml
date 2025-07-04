@@ -850,22 +850,29 @@
       />
     </action>
 
-    <action id="Bazel.AddToProjectViewDirectoriesAction"
-            class="org.jetbrains.bazel.action.registered.projectViewDirectories.AddToProjectViewDirectoriesAction"
-            text="Add to the Project View Directories"
-            description="Add this directory to the project view file.">
+    <action
+      class="org.jetbrains.bazel.action.registered.projectViewDirectories.AddToProjectViewDirectoriesAction"
+      description="Add this directory to the project view file."
+      id="Bazel.AddToProjectViewDirectoriesAction"
+      text="Add to the Project View Directories"
+    >
     </action>
 
-    <action id="Bazel.ExcludeFromProjectViewDirectoriesAction"
-            class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
-            text="Exclude from the Project View Directories"
-            description="Exclude this directory from the project view file.">
+    <action
+      class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
+      description="Exclude this directory from the project view file."
+      id="Bazel.ExcludeFromProjectViewDirectoriesAction"
+      text="Exclude from the Project View Directories"
+    >
     </action>
 
     <group id="Bazel.ModifyProjectViewDirectories">
-      <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-      <reference id="Bazel.AddToProjectViewDirectoriesAction"/>
-      <reference id="Bazel.ExcludeFromProjectViewDirectoriesAction"/>
+      <add-to-group
+        anchor="last"
+        group-id="ProjectViewPopupMenu"
+      />
+      <reference id="Bazel.AddToProjectViewDirectoriesAction" />
+      <reference id="Bazel.ExcludeFromProjectViewDirectoriesAction" />
     </group>
   </actions>
 

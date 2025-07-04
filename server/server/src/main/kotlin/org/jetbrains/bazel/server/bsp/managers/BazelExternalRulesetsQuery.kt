@@ -5,7 +5,7 @@ import com.intellij.util.containers.BidirectionalMap
 import org.jetbrains.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.commons.gson.bazelGson
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.TargetPattern
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.server.bsp.utils.readXML
 import org.jetbrains.bazel.server.bsp.utils.toJson
@@ -78,7 +78,7 @@ class BazelWorkspaceExternalRulesetsQueryImpl(
         val command =
           buildBazelCommand(workspaceContext) {
             query {
-              targets.add(Label.parse("//external:*"))
+              targets.add(TargetPattern.parse("//external:*"))
               options.addAll(listOf("--output=xml", "--order_output=no"))
             }
           }
