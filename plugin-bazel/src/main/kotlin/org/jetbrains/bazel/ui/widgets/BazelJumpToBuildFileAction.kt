@@ -2,11 +2,12 @@ package org.jetbrains.bazel.ui.widgets
 
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.EditorHelper
-import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.registry.Registry
+import com.intellij.psi.PsiElement
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.action.SuspendableAction
@@ -14,6 +15,8 @@ import org.jetbrains.bazel.action.getEditor
 import org.jetbrains.bazel.action.getPsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.languages.starlark.references.resolveLabel
 import org.jetbrains.bazel.target.targetUtils
 
@@ -32,12 +35,9 @@ class BazelJumpToBuildFileAction(private val target: Label?) :
       // Action was created via BazelFileTargetsWidget. In this case `e.getPsiFile()` is `null`, but we should enable the action regardless.
       return true
     }
-    return (
-      ALLOWED_ACTION_PLACES.contains(e.place) &&
-        e.getPsiFile()?.virtualFile?.let {
-          project.targetUtils.getTargetsForFile(it).isNotEmpty()
-        } == true
-    )
+    return e.getPsiFile()?.virtualFile?.let {
+      project.targetUtils.getTargetsForFile(it).isNotEmpty()
+    } == true
   }
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
@@ -51,23 +51,42 @@ class BazelJumpToBuildFileAction(private val target: Label?) :
 }
 
 suspend fun jumpToBuildFile(project: Project, target: Label) {
-  val buildFile =
-    readAction {
-      resolveLabel(project, target)
-    } ?: return
+  val buildFile = readAction {
+    resolveLabel(project, target)
+  } ?: return
+
+  val definition = if (buildFile is StarlarkFile && Registry.`is`("bazel.use.longest.prefix.heuristic")) {
+    findDefinitionByLongestPrefix(buildFile, target) ?: buildFile
+  }
+  else {
+    buildFile
+  }
+
   withContext(Dispatchers.EDT) {
-    EditorHelper.openInEditor(buildFile, true, true)
+    EditorHelper.openInEditor(definition, true, true)
   }
 }
 
-// if the action is triggered from idea vim
-private const val IDEA_VIM_ACTION_PLACE = "IdeaVim"
+/**
+ * Uses a simple longest prefix heuristic to find the corresponding definition
+ * inside the BUILD file. Similar to what the Google plugin does.
+ */
+private fun findDefinitionByLongestPrefix(file: StarlarkFile, target: Label): PsiElement? {
+  val name = target.targetName
 
-private val ALLOWED_ACTION_PLACES =
-  listOf(
-    ActionPlaces.EDITOR_POPUP,
-    ActionPlaces.KEYBOARD_SHORTCUT,
-    ActionPlaces.EDITOR_TAB_POPUP,
-    ActionPlaces.ACTION_SEARCH,
-    IDEA_VIM_ACTION_PLACE,
-  )
+  return file.findChildrenByClass(StarlarkExpressionStatement::class.java).maxByOrNull {
+    getCallCommonPrefix(it, name)
+  }
+}
+
+private fun getCallCommonPrefix(expr: StarlarkExpressionStatement, value: String): Int {
+  val name = getCallName(expr) ?: return 0
+  return name.commonPrefixWith(value).length
+}
+
+private fun getCallName(expr: StarlarkExpressionStatement): String? {
+  val call = expr.callExpressionOrNull() ?: return null
+  val args = call.getArgumentList() ?: return null
+  val name = args.getKeywordArgument("name") ?: return null
+  return name.getArgumentStringValue()
+}
