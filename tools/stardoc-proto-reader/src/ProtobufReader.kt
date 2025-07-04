@@ -9,7 +9,7 @@ object ProtobufReader {
 
   data class AttributeInfo(
     val name: String,
-    val docString: String,
+    val docString: String?,
     val required: Boolean,
     val default: String,
     val positional: Boolean = false,
@@ -38,7 +38,7 @@ object ProtobufReader {
   private fun attributeInfoToData(attrInfo: StardocOutputProtos.AttributeInfo): AttributeInfo =
     AttributeInfo(
       name = attrInfo.name,
-      docString = replaceTicks(removeLinks(attrInfo.docString)),
+      docString = if (attrInfo.docString.isEmpty()) null else replaceTicks(removeLinks(attrInfo.docString)),
       required = attrInfo.mandatory,
       default = defaultNameOrEmptyQuotes(attrInfo.defaultValue),
       positional = false,

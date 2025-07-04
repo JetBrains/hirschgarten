@@ -75,7 +75,6 @@
       },
       {
         "name": "neverlink",
-        "docString": null,
         "required": false,
         "default": "False",
         "positional": false
@@ -145,7 +144,6 @@
       },
       {
         "name": "env",
-        "docString": null,
         "required": false,
         "default": "{}",
         "positional": false
@@ -159,7 +157,6 @@
       },
       {
         "name": "licenses",
-        "docString": null,
         "required": false,
         "default": "[]",
         "positional": false
@@ -270,7 +267,6 @@
       },
       {
         "name": "licenses",
-        "docString": null,
         "required": false,
         "default": "[]",
         "positional": false
@@ -402,7 +398,6 @@
       },
       {
         "name": "licenses",
-        "docString": null,
         "required": false,
         "default": "[]",
         "positional": false
@@ -513,7 +508,6 @@
       },
       {
         "name": "licenses",
-        "docString": null,
         "required": false,
         "default": "[]",
         "positional": false
@@ -534,7 +528,6 @@
       },
       {
         "name": "output_licenses",
-        "docString": null,
         "required": false,
         "default": "[]",
         "positional": false
@@ -561,7 +554,6 @@
       },
       {
         "name": "env_inherit",
-        "docString": null,
         "required": false,
         "default": "[]",
         "positional": false
@@ -624,7 +616,6 @@
       },
       {
         "name": "neverlink",
-        "docString": null,
         "required": false,
         "default": "False",
         "positional": false
@@ -694,7 +685,6 @@
       },
       {
         "name": "env",
-        "docString": null,
         "required": false,
         "default": "{}",
         "positional": false
@@ -708,7 +698,6 @@
       },
       {
         "name": "licenses",
-        "docString": null,
         "required": false,
         "default": "[]",
         "positional": false
@@ -770,7 +759,6 @@
       },
       {
         "name": "output_licenses",
-        "docString": null,
         "required": false,
         "default": "[]",
         "positional": false
@@ -853,7 +841,6 @@
       },
       {
         "name": "output_licenses",
-        "docString": null,
         "required": false,
         "default": "[]",
         "positional": false
@@ -1202,7 +1189,6 @@
       },
       {
         "name": "licenses",
-        "docString": null,
         "required": false,
         "default": "[]",
         "positional": false
@@ -1706,7 +1692,6 @@
       },
       {
         "name": "java_stub_template",
-        "docString": null,
         "required": false,
         "default": "\"@rules_kotlin//third_party:java_stub_template.txt\"",
         "positional": false
@@ -1769,7 +1754,6 @@
       },
       {
         "name": "plugins",
-        "docString": null,
         "required": false,
         "default": "[]",
         "positional": false
@@ -1893,7 +1877,6 @@
       },
       {
         "name": "java_stub_template",
-        "docString": null,
         "required": false,
         "default": "\"@rules_kotlin//third_party:java_stub_template.txt\"",
         "positional": false
@@ -1956,7 +1939,6 @@
       },
       {
         "name": "plugins",
-        "docString": null,
         "required": false,
         "default": "[]",
         "positional": false
@@ -2018,7 +2000,6 @@
       },
       {
         "name": "java_stub_template",
-        "docString": null,
         "required": false,
         "default": "\"@rules_kotlin//third_party:java_stub_template.txt\"",
         "positional": false
@@ -2081,7 +2062,6 @@
       },
       {
         "name": "plugins",
-        "docString": null,
         "required": false,
         "default": "[]",
         "positional": false
@@ -2123,7 +2103,6 @@
       },
       {
         "name": "main_class",
-        "docString": null,
         "required": false,
         "default": "\"com.google.testing.junit.runner.BazelTestRunner\"",
         "positional": false
@@ -2221,6 +2200,691 @@
         "docString": "Turn on experimental rules (ktlint-ruleset-experimental)",
         "required": false,
         "default": "False",
+        "positional": false
+      }
+    ]
+  },
+  {
+    "name": "go_binary",
+    "docString": "This builds an executable from a set of source files,\n        which must all be in the \u003ccode\u003emain\u003c/code\u003e package. You can run the binary with\n        \u003ccode\u003ebazel run\u003c/code\u003e, or you can build it with \u003ccode\u003ebazel build\u003c/code\u003e and run it directly.\u003cbr\u003e\u003cbr\u003e\n        ***Note:*** \u003ccode\u003ename\u003c/code\u003e should be the same as the desired name of the generated binary.\u003cbr\u003e\u003cbr\u003e\n        **Providers:**\n        \u003cul\u003e\n          \u003cli\u003e[GoArchive]\u003c/li\u003e\n        \u003c/ul\u003e\n        ",
+    "params": [
+      {
+        "name": "name",
+        "docString": "A unique name for this target.",
+        "required": true,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "basename",
+        "docString": "The basename of this binary. The binary\n                basename may also be platform-dependent: on Windows, we add an .exe extension.\n                ",
+        "required": false,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "cdeps",
+        "docString": "The list of other libraries that the c code depends on.\n                This can be anything that would be allowed in [cc_library deps]\n                Only valid if \u003ccode\u003ecgo\u003c/code\u003e \u003d \u003ccode\u003eTrue\u003c/code\u003e.\n                ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "cgo",
+        "docString": "If \u003ccode\u003eTrue\u003c/code\u003e, the package may contain [cgo] code, and \u003ccode\u003esrcs\u003c/code\u003e may contain\n                C, C++, Objective-C, and Objective-C++ files and non-Go assembly files.\n                When cgo is enabled, these files will be compiled with the C/C++ toolchain\n                and included in the package. Note that this attribute does not force cgo\n                to be enabled. Cgo is enabled for non-cross-compiling builds when a C/C++\n                toolchain is configured.\n                ",
+        "required": false,
+        "default": "False",
+        "positional": false
+      },
+      {
+        "name": "clinkopts",
+        "docString": "List of flags to add to the C link command.\n                Subject to [\"Make variable\"] substitution and [Bourne shell tokenization].\n                Only valid if \u003ccode\u003ecgo\u003c/code\u003e \u003d \u003ccode\u003eTrue\u003c/code\u003e.\n                ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "copts",
+        "docString": "List of flags to add to the C compilation command.\n                Subject to [\"Make variable\"] substitution and [Bourne shell tokenization].\n                Only valid if \u003ccode\u003ecgo\u003c/code\u003e \u003d \u003ccode\u003eTrue\u003c/code\u003e.\n                ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "cppopts",
+        "docString": "List of flags to add to the C/C++ preprocessor command.\n                Subject to [\"Make variable\"] substitution and [Bourne shell tokenization].\n                Only valid if \u003ccode\u003ecgo\u003c/code\u003e \u003d \u003ccode\u003eTrue\u003c/code\u003e.\n                ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "cxxopts",
+        "docString": "List of flags to add to the C++ compilation command.\n                Subject to [\"Make variable\"] substitution and [Bourne shell tokenization].\n                Only valid if \u003ccode\u003ecgo\u003c/code\u003e \u003d \u003ccode\u003eTrue\u003c/code\u003e.\n                ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "data",
+        "docString": "List of files needed by this rule at run-time. This may include data files\n                needed or other programs that may be executed. The [bazel] package may be\n                used to locate run files; they may appear in different places depending on the\n                operating system and environment. See [data dependencies] for more\n                information on data files.\n                ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "deps",
+        "docString": "List of Go libraries this package imports directly.\n                These may be \u003ccode\u003ego_library\u003c/code\u003e rules or compatible rules with the [GoInfo] provider.\n                ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "embed",
+        "docString": "List of Go libraries whose sources should be compiled together with this\n                binary\u0027s sources. Labels listed here must name \u003ccode\u003ego_library\u003c/code\u003e,\n                \u003ccode\u003ego_proto_library\u003c/code\u003e, or other compatible targets with the [GoInfo] provider.\n                Embedded libraries must all have the same \u003ccode\u003eimportpath\u003c/code\u003e,\n                which must match the \u003ccode\u003eimportpath\u003c/code\u003e for this \u003ccode\u003ego_binary\u003c/code\u003e if one is\n                specified. At most one embedded library may have \u003ccode\u003ecgo \u003d True\u003c/code\u003e, and the\n                embedding binary may not also have \u003ccode\u003ecgo \u003d True\u003c/code\u003e. See [Embedding] for\n                more information.\n                ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "embedsrcs",
+        "docString": "The list of files that may be embedded into the compiled package using\n                \u003ccode\u003e//go:embed\u003c/code\u003e directives. All files must be in the same logical directory\n                or a subdirectory as source files. All source files containing \u003ccode\u003e//go:embed\u003c/code\u003e\n                directives must be in the same logical directory. It\u0027s okay to mix static and\n                generated source files and static and generated embeddable files.\n                ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "env",
+        "docString": "Environment variables to set when the binary is executed with bazel run.\n                The values (but not keys) are subject to\n                location expansion but not full\n                make variable expansion.\n                ",
+        "required": false,
+        "default": "{}",
+        "positional": false
+      },
+      {
+        "name": "gc_goopts",
+        "docString": "List of flags to add to the Go compilation command when using the gc compiler.\n                Subject to [\"Make variable\"] substitution and [Bourne shell tokenization].\n                ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "gc_linkopts",
+        "docString": "List of flags to add to the Go link command when using the gc compiler.\n                Subject to [\"Make variable\"] substitution and [Bourne shell tokenization].\n                ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "goarch",
+        "docString": "Forces a binary to be cross-compiled for a specific architecture. It\u0027s usually\n                better to control this on the command line with \u003ccode\u003e--platforms\u003c/code\u003e.\n\n                This disables cgo by default, since a cross-compiling C/C++ toolchain is\n                rarely available. To force cgo, set \u003ccode\u003epure\u003c/code\u003e \u003d \u003ccode\u003eoff\u003c/code\u003e.\n\n                See [Cross compilation] for more information.\n                ",
+        "required": false,
+        "default": "\"auto\"",
+        "positional": false
+      },
+      {
+        "name": "goos",
+        "docString": "Forces a binary to be cross-compiled for a specific operating system. It\u0027s\n                usually better to control this on the command line with \u003ccode\u003e--platforms\u003c/code\u003e.\n\n                This disables cgo by default, since a cross-compiling C/C++ toolchain is\n                rarely available. To force cgo, set \u003ccode\u003epure\u003c/code\u003e \u003d \u003ccode\u003eoff\u003c/code\u003e.\n\n                See [Cross compilation] for more information.\n                ",
+        "required": false,
+        "default": "\"auto\"",
+        "positional": false
+      },
+      {
+        "name": "gotags",
+        "docString": "Enables a list of build tags when evaluating [build constraints]. Useful for\n                conditional compilation.\n                ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "importpath",
+        "docString": "The import path of this binary. Binaries can\u0027t actually be imported, but this\n                may be used by [go_path] and other tools to report the location of source\n                files. This may be inferred from embedded libraries.\n                ",
+        "required": false,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "linkmode",
+        "docString": "Determines how the binary should be built and linked. This accepts some of\n                the same values as \u003ccode\u003ego build -buildmode\u003c/code\u003e and works the same way.\n                \u003cbr\u003e\u003cbr\u003e\n                \u003cul\u003e\n                \u003cli\u003e\u003ccode\u003eauto\u003c/code\u003e (default): Controlled by \u003ccode\u003e//go/config:linkmode\u003c/code\u003e, which defaults to \u003ccode\u003enormal\u003c/code\u003e.\u003c/li\u003e\n                \u003cli\u003e\u003ccode\u003enormal\u003c/code\u003e: Builds a normal executable with position-dependent code.\u003c/li\u003e\n                \u003cli\u003e\u003ccode\u003epie\u003c/code\u003e: Builds a position-independent executable.\u003c/li\u003e\n                \u003cli\u003e\u003ccode\u003eplugin\u003c/code\u003e: Builds a shared library that can be loaded as a Go plugin. Only supported on platforms that support plugins.\u003c/li\u003e\n                \u003cli\u003e\u003ccode\u003ec-shared\u003c/code\u003e: Builds a shared library that can be linked into a C program.\u003c/li\u003e\n                \u003cli\u003e\u003ccode\u003ec-archive\u003c/code\u003e: Builds an archive that can be linked into a C program.\u003c/li\u003e\n                \u003c/ul\u003e\n                ",
+        "required": false,
+        "default": "\"auto\"",
+        "positional": false
+      },
+      {
+        "name": "msan",
+        "docString": "Controls whether code is instrumented for memory sanitization. May be one of\n                \u003ccode\u003eon\u003c/code\u003e, \u003ccode\u003eoff\u003c/code\u003e, or \u003ccode\u003eauto\u003c/code\u003e. Not available when cgo is\n                disabled. In most cases, it\u0027s better to control this on the command line with\n                \u003ccode\u003e--@io_bazel_rules_go//go/config:msan\u003c/code\u003e. See [mode attributes], specifically\n                [msan].\n                ",
+        "required": false,
+        "default": "\"auto\"",
+        "positional": false
+      },
+      {
+        "name": "out",
+        "docString": "Sets the output filename for the generated executable. When set, \u003ccode\u003ego_binary\u003c/code\u003e\n                will write this file without mode-specific directory prefixes, without\n                linkmode-specific prefixes like \"lib\", and without platform-specific suffixes\n                like \".exe\". Note that without a mode-specific directory prefix, the\n                output file (but not its dependencies) will be invalidated in Bazel\u0027s cache\n                when changing configurations.\n                ",
+        "required": false,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "pgoprofile",
+        "docString": "Provides a pprof file to be used for profile guided optimization when compiling go targets.\n                A pprof file can also be provided via \u003ccode\u003e--@io_bazel_rules_go//go/config:pgoprofile\u003d\u003clabel of a pprof file\u003e\u003c/code\u003e.\n                Profile guided optimization is only supported on go 1.20+.\n                See https://go.dev/doc/pgo for more information.\n                ",
+        "required": false,
+        "default": "//go/config:empty",
+        "positional": false
+      },
+      {
+        "name": "pure",
+        "docString": "Controls whether cgo source code and dependencies are compiled and linked,\n                similar to setting \u003ccode\u003eCGO_ENABLED\u003c/code\u003e. May be one of \u003ccode\u003eon\u003c/code\u003e, \u003ccode\u003eoff\u003c/code\u003e,\n                or \u003ccode\u003eauto\u003c/code\u003e. If \u003ccode\u003eauto\u003c/code\u003e, pure mode is enabled when no C/C++\n                toolchain is configured or when cross-compiling. It\u0027s usually better to\n                control this on the command line with\n                \u003ccode\u003e--@io_bazel_rules_go//go/config:pure\u003c/code\u003e. See [mode attributes], specifically\n                [pure].\n                ",
+        "required": false,
+        "default": "\"auto\"",
+        "positional": false
+      },
+      {
+        "name": "race",
+        "docString": "Controls whether code is instrumented for race detection. May be one of\n                \u003ccode\u003eon\u003c/code\u003e, \u003ccode\u003eoff\u003c/code\u003e, or \u003ccode\u003eauto\u003c/code\u003e. Not available when cgo is\n                disabled. In most cases, it\u0027s better to control this on the command line with\n                \u003ccode\u003e--@io_bazel_rules_go//go/config:race\u003c/code\u003e. See [mode attributes], specifically\n                [race].\n                ",
+        "required": false,
+        "default": "\"auto\"",
+        "positional": false
+      },
+      {
+        "name": "srcs",
+        "docString": "The list of Go source files that are compiled to create the package.\n                Only \u003ccode\u003e.go\u003c/code\u003e, \u003ccode\u003e.s\u003c/code\u003e, and \u003ccode\u003e.syso\u003c/code\u003e files are permitted, unless the \u003ccode\u003ecgo\u003c/code\u003e\n                attribute is set, in which case,\n                \u003ccode\u003e.c .cc .cpp .cxx .h .hh .hpp .hxx .inc .m .mm\u003c/code\u003e\n                files are also permitted. Files may be filtered at build time\n                using Go [build constraints].\n                ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "static",
+        "docString": "Controls whether a binary is statically linked. May be one of \u003ccode\u003eon\u003c/code\u003e,\n                \u003ccode\u003eoff\u003c/code\u003e, or \u003ccode\u003eauto\u003c/code\u003e. Not available on all platforms or in all\n                modes. It\u0027s usually better to control this on the command line with\n                \u003ccode\u003e--@io_bazel_rules_go//go/config:static\u003c/code\u003e. See [mode attributes],\n                specifically [static].\n                ",
+        "required": false,
+        "default": "\"auto\"",
+        "positional": false
+      },
+      {
+        "name": "x_defs",
+        "docString": "Map of defines to add to the go link command.\n                See [Defines and stamping] for examples of how to use these.\n                ",
+        "required": false,
+        "default": "{}",
+        "positional": false
+      }
+    ]
+  },
+  {
+    "name": "go_cross_binary",
+    "docString": "This wraps an executable built by \u003ccode\u003ego_binary\u003c/code\u003e to cross compile it\n    for a different platform, and/or compile it using a different version\n    of the golang SDK.\u003cbr\u003e\u003cbr\u003e\n    **Providers:**\n    \u003cul\u003e\n      \u003cli\u003e[GoArchive]\u003c/li\u003e\n    \u003c/ul\u003e\n    ",
+    "params": [
+      {
+        "name": "name",
+        "docString": "A unique name for this target.",
+        "required": true,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "compilation_mode",
+        "docString": "The compilation_mode to use for compiling the \u003ccode\u003etarget\u003c/code\u003e.\n            Must be one of \u003ccode\u003edbg\u003c/code\u003e, \u003ccode\u003efastbuild\u003c/code\u003e, or \u003ccode\u003eopt\u003c/code\u003e. If unspecified, use the\n            same compilation mode as the original \u003ccode\u003ego_binary\u003c/code\u003e rule.\n            ",
+        "required": false,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "platform",
+        "docString": "The platform to cross compile the \u003ccode\u003etarget\u003c/code\u003e for.\n            If unspecified, the \u003ccode\u003etarget\u003c/code\u003e will be compiled with the\n            same platform as it would\u0027ve with the original \u003ccode\u003ego_binary\u003c/code\u003e rule.\n            ",
+        "required": false,
+        "default": "None",
+        "positional": false
+      },
+      {
+        "name": "sdk_version",
+        "docString": "The golang SDK version to use for compiling the \u003ccode\u003etarget\u003c/code\u003e.\n            Supports specifying major, minor, and/or patch versions, eg. \u003ccode\u003e\"1\"\u003c/code\u003e,\n            \u003ccode\u003e\"1.17\"\u003c/code\u003e, or \u003ccode\u003e\"1.17.1\"\u003c/code\u003e. The first Go SDK provider installed in the\n            repo\u0027s workspace (via \u003ccode\u003ego_download_sdk\u003c/code\u003e, \u003ccode\u003ego_wrap_sdk\u003c/code\u003e, etc) that\n            matches the specified version will be used for compiling the given\n            \u003ccode\u003etarget\u003c/code\u003e. If unspecified, the \u003ccode\u003etarget\u003c/code\u003e will be compiled with the same\n            SDK as it would\u0027ve with the original \u003ccode\u003ego_binary\u003c/code\u003e rule.\n            Transitions \u003ccode\u003etarget\u003c/code\u003e by changing the \u003ccode\u003e--@io_bazel_rules_go//go/toolchain:sdk_version\u003c/code\u003e\n            build flag to the value provided for \u003ccode\u003esdk_version\u003c/code\u003e here.\n            ",
+        "required": false,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "target",
+        "docString": "Go binary target to transition to the given platform and/or sdk_version.\n            ",
+        "required": true,
+        "default": "\"\"",
+        "positional": false
+      }
+    ]
+  },
+  {
+    "name": "go_library",
+    "docString": "This builds a Go library from a set of source files that are all part of\n    the same package.\u003cbr\u003e\u003cbr\u003e\n    ***Note:*** For targets generated by Gazelle, \u003ccode\u003ename\u003c/code\u003e is typically the last component of the path,\n    or \u003ccode\u003ego_default_library\u003c/code\u003e, with the old naming convention.\u003cbr\u003e\u003cbr\u003e\n    **Providers:**\n    \u003cul\u003e\n      \u003cli\u003e[GoInfo]\u003c/li\u003e\n      \u003cli\u003e[GoArchive]\u003c/li\u003e\n    \u003c/ul\u003e\n    ",
+    "params": [
+      {
+        "name": "name",
+        "docString": "A unique name for this target.",
+        "required": true,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "cdeps",
+        "docString": "\n            List of other libraries that the c code depends on.\n            This can be anything that would be allowed in [cc_library deps] Only valid if \u003ccode\u003ecgo \u003d True\u003c/code\u003e.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "cgo",
+        "docString": "\n            If \u003ccode\u003eTrue\u003c/code\u003e, the package may contain [cgo] code, and \u003ccode\u003esrcs\u003c/code\u003e may contain C, C++, Objective-C, and Objective-C++ files\n            and non-Go assembly files. When cgo is enabled, these files will be compiled with the C/C++ toolchain and\n            included in the package. Note that this attribute does not force cgo to be enabled. Cgo is enabled for\n            non-cross-compiling builds when a C/C++ toolchain is configured.\n            ",
+        "required": false,
+        "default": "False",
+        "positional": false
+      },
+      {
+        "name": "clinkopts",
+        "docString": "\n            List of flags to add to the C link command.\n            Subject to [\"Make variable\"] substitution and [Bourne shell tokenization]. Only valid if \u003ccode\u003ecgo \u003d True\u003c/code\u003e.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "copts",
+        "docString": "\n            List of flags to add to the C compilation command.\n            Subject to [\"Make variable\"] substitution and [Bourne shell tokenization]. Only valid if \u003ccode\u003ecgo \u003d True\u003c/code\u003e.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "cppopts",
+        "docString": "\n            List of flags to add to the C/C++ preprocessor command.\n            Subject to [\"Make variable\"] substitution and [Bourne shell tokenization].\n            Only valid if \u003ccode\u003ecgo \u003d True\u003c/code\u003e.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "cxxopts",
+        "docString": "\n            List of flags to add to the C++ compilation command.\n            Subject to [\"Make variable\"] substitution and [Bourne shell tokenization]. Only valid if \u003ccode\u003ecgo \u003d True\u003c/code\u003e.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "data",
+        "docString": "\n            List of files needed by this rule at run-time.\n            This may include data files needed or other programs that may be executed.\n            The [bazel] package may be used to locate run files; they may appear in different places\n            depending on the operating system and environment. See [data dependencies] for more information on data files.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "deps",
+        "docString": "\n            List of Go libraries this package imports directly.\n            These may be \u003ccode\u003ego_library\u003c/code\u003e rules or compatible rules with the [GoInfo] provider.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "embed",
+        "docString": "\n            List of Go libraries whose sources should be compiled together with this package\u0027s sources.\n            Labels listed here must name \u003ccode\u003ego_library\u003c/code\u003e, \u003ccode\u003ego_proto_library\u003c/code\u003e, or other compatible targets with\n            the [GoInfo] provider. Embedded libraries must have the same \u003ccode\u003eimportpath\u003c/code\u003e as the embedding library.\n            At most one embedded library may have \u003ccode\u003ecgo \u003d True\u003c/code\u003e, and the embedding library may not also have \u003ccode\u003ecgo \u003d True\u003c/code\u003e.\n            See [Embedding] for more information.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "embedsrcs",
+        "docString": "\n            The list of files that may be embedded into the compiled package using \u003ccode\u003e//go:embed\u003c/code\u003e\n            directives. All files must be in the same logical directory or a subdirectory as source files.\n            All source files containing \u003ccode\u003e//go:embed\u003c/code\u003e directives must be in the same logical directory.\n            It\u0027s okay to mix static and generated source files and static and generated embeddable files.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "gc_goopts",
+        "docString": "\n            List of flags to add to the Go compilation command when using the gc compiler.\n            Subject to [\"Make variable\"] substitution and [Bourne shell tokenization].\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "importmap",
+        "docString": "\n            The actual import path of this library. By default, this is \u003ccode\u003eimportpath\u003c/code\u003e. This is mostly only visible to the compiler and linker,\n            but it may also be seen in stack traces. This must be unique among packages passed to the linker.\n            It may be set to something different than \u003ccode\u003eimportpath\u003c/code\u003e to prevent conflicts between multiple packages\n            with the same path (for example, from different vendor directories).\n            ",
+        "required": false,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "importpath",
+        "docString": "\n            The source import path of this library. Other libraries can import this library using this path.\n            This must either be specified in \u003ccode\u003ego_library\u003c/code\u003e or inherited from one of the libraries in \u003ccode\u003eembed\u003c/code\u003e.\n            ",
+        "required": false,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "importpath_aliases",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "srcs",
+        "docString": "\n            The list of Go source files that are compiled to create the package.\n            Only \u003ccode\u003e.go\u003c/code\u003e, \u003ccode\u003e.s\u003c/code\u003e, and \u003ccode\u003e.syso\u003c/code\u003e files are permitted, unless the \u003ccode\u003ecgo\u003c/code\u003e attribute is set,\n            in which case, \u003ccode\u003e.c .cc .cpp .cxx .h .hh .hpp .hxx .inc .m .mm\u003c/code\u003e files are also permitted.\n            Files may be filtered at build time using Go [build constraints].\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "x_defs",
+        "docString": "\n            Map of defines to add to the go link command. See [Defines and stamping] for examples of how to use these.\n            ",
+        "required": false,
+        "default": "{}",
+        "positional": false
+      }
+    ]
+  },
+  {
+    "name": "go_path",
+    "docString": "\u003ccode\u003ego_path\u003c/code\u003e builds a directory structure that can be used with\n    tools that understand the GOPATH directory layout. This directory structure\n    can be built by zipping, copying, or linking files.\n    \u003ccode\u003ego_path\u003c/code\u003e can depend on one or more Go targets (i.e., [go_library], [go_binary], or [go_test]).\n    It will include packages from those targets, as well as their transitive dependencies.\n    Packages will be in subdirectories named after their \u003ccode\u003eimportpath\u003c/code\u003e or \u003ccode\u003eimportmap\u003c/code\u003e attributes under a \u003ccode\u003esrc/\u003c/code\u003e directory.\n    ",
+    "params": [
+      {
+        "name": "name",
+        "docString": "A unique name for this target.",
+        "required": true,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "data",
+        "docString": "\n            A list of targets producing data files that will be stored next to the\n            \u003ccode\u003esrc/\u003c/code\u003e directory. Useful for including things like licenses and readmes.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "deps",
+        "docString": "A list of targets that build Go packages. A directory will be generated from\n            files in these targets and their transitive dependencies. All targets must\n            provide [GoArchive] ([go_library], [go_binary], [go_test], and similar\n            rules have this).\n\n            Only targets with explicit \u003ccode\u003eimportpath\u003c/code\u003e attributes will be included in the\n            generated directory. Synthetic packages (like the main package produced by\n            [go_test]) and packages with inferred import paths will not be\n            included. The values of \u003ccode\u003eimportmap\u003c/code\u003e attributes may influence the placement\n            of packages within the generated directory (for example, in vendor\n            directories).\n\n            The generated directory will contain original source files, including .go,\n            .s, .h, and .c files compiled by cgo. It will not contain files generated by\n            tools like cover and cgo, but it will contain generated files passed in\n            \u003ccode\u003esrcs\u003c/code\u003e attributes like .pb.go files. The generated directory will also\n            contain runfiles found in \u003ccode\u003edata\u003c/code\u003e attributes.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "include_data",
+        "docString": "\n            When true, data files referenced by libraries, binaries, and tests will be\n            included in the output directory. Files listed in the \u003ccode\u003edata\u003c/code\u003e attribute\n            for this rule will be included regardless of this attribute.\n            ",
+        "required": false,
+        "default": "True",
+        "positional": false
+      },
+      {
+        "name": "include_pkg",
+        "docString": "\n            When true, a \u003ccode\u003epkg\u003c/code\u003e subdirectory containing the compiled libraries will be created in the\n            generated \u003ccode\u003eGOPATH\u003c/code\u003e containing compiled libraries.\n            ",
+        "required": false,
+        "default": "False",
+        "positional": false
+      },
+      {
+        "name": "include_transitive",
+        "docString": "\n            When true, the transitive dependency graph will be included in the generated \u003ccode\u003eGOPATH\u003c/code\u003e. This is\n            the default behaviour. When false, only the direct dependencies will be included in the\n            generated \u003ccode\u003eGOPATH\u003c/code\u003e.\n            ",
+        "required": false,
+        "default": "True",
+        "positional": false
+      },
+      {
+        "name": "mode",
+        "docString": "\n            Determines how the generated directory is provided. May be one of:\n            \u003cul\u003e\n                \u003cli\u003e\u003ccode\u003e\"archive\"\u003c/code\u003e: The generated directory is packaged as a single .zip file.\u003c/li\u003e\n                \u003cli\u003e\u003ccode\u003e\"copy\"\u003c/code\u003e: The generated directory is a single tree artifact. Source files\n                are copied into the tree.\u003c/li\u003e\n                \u003cli\u003e\u003ccode\u003e\"link\"\u003c/code\u003e: \u003cb\u003eUnmaintained due to correctness issues\u003c/b\u003e. Source files\n                are symlinked into the tree. All of the symlink files are provided as separate output\n                files.\u003c/li\u003e\n            \u003c/ul\u003e\n\n            ***Note:*** In \u003ccode\u003e\"copy\"\u003c/code\u003e mode, when a \u003ccode\u003eGoPath\u003c/code\u003e is consumed as a set of input\n            files or run files, Bazel may provide symbolic links instead of regular files.\n            Any program that consumes these files should dereference links, e.g., if you\n            run \u003ccode\u003etar\u003c/code\u003e, use the \u003ccode\u003e--dereference\u003c/code\u003e flag.\n            ",
+        "required": false,
+        "default": "\"copy\"",
+        "positional": false
+      }
+    ]
+  },
+  {
+    "name": "go_reset_target",
+    "docString": "Forwards providers from a target and default Go binary settings.\n\ngo_reset_target depends on a single target and builds it to be a Go tool binary. It\nforwards Go providers and DefaultInfo.\n\ngo_reset_target does two things using transitions:\n   1. builds the tool with \u0027cfg \u003d \"exec\"\u0027 so they work on the execution platform.\n   2. Sets most Go settings to default value and disables nogo.\n\nThis is used for Go tool binaries that shouldn\u0027t depend on the link mode or tags of the\ntarget configuration and neither the tools nor the code they potentially\ngenerate should be subject to Nogo\u0027s static analysis. This is helpful, for example, so\na tool isn\u0027t built as a shared library with race instrumentation. This acts as an\nintermediate rule that allows users to apply these transitions.\n",
+    "params": [
+      {
+        "name": "name",
+        "docString": "A unique name for this target.",
+        "required": true,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "dep",
+        "docString": "The target to forward providers from and apply go_tool_transition to.",
+        "required": true,
+        "default": "\"\"",
+        "positional": false
+      }
+    ]
+  },
+  {
+    "name": "go_source",
+    "docString": "This declares a set of source files and related dependencies that can be embedded into one of the\n    other rules.\n    This is used as a way of easily declaring a common set of sources re-used in multiple rules.\u003cbr\u003e\u003cbr\u003e\n    **Providers:**\n    \u003cul\u003e\n      \u003cli\u003e[GoInfo]\u003c/li\u003e\n    \u003c/ul\u003e\n    ",
+    "params": [
+      {
+        "name": "name",
+        "docString": "A unique name for this target.",
+        "required": true,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "data",
+        "docString": "List of files needed by this rule at run-time. This may include data files\n            needed or other programs that may be executed. The [bazel] package may be\n            used to locate run files; they may appear in different places depending on the\n            operating system and environment. See [data dependencies] for more\n            information on data files.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "deps",
+        "docString": "List of Go libraries this source list imports directly.\n            These may be go_library rules or compatible rules with the [GoInfo] provider.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "embed",
+        "docString": "List of Go libraries whose sources should be compiled together with this\n            package\u0027s sources. Labels listed here must name \u003ccode\u003ego_library\u003c/code\u003e,\n            \u003ccode\u003ego_proto_library\u003c/code\u003e, or other compatible targets with the [GoInfo]\n            provider. Embedded libraries must have the same \u003ccode\u003eimportpath\u003c/code\u003e as\n            the embedding library. At most one embedded library may have \u003ccode\u003ecgo \u003d True\u003c/code\u003e,\n            and the embedding library may not also have \u003ccode\u003ecgo \u003d True\u003c/code\u003e. See [Embedding]\n            for more information.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "gc_goopts",
+        "docString": "List of flags to add to the Go compilation command when using the gc compiler.\n            Subject to [\"Make variable\"] substitution and [Bourne shell tokenization].\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "srcs",
+        "docString": "The list of Go source files that are compiled to create the package.\n            The following file types are permitted: \u003ccode\u003e.go, .c, .s, .syso, .S, .h\u003c/code\u003e.\n            The files may contain Go-style [build constraints].\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      }
+    ]
+  },
+  {
+    "name": "go_test",
+    "docString": "This builds a set of tests that can be run with \u003ccode\u003ebazel test\u003c/code\u003e.\u003cbr\u003e\u003cbr\u003e\n    To run all tests in the workspace, and print output on failure (the\n    equivalent of \u003ccode\u003ego test ./...\u003c/code\u003e), run\u003cbr\u003e\n    \u003ccode\u003e\n    bazel test --test_output\u003derrors //...\n    \u003ccode\u003e\u003c/code\u003e\u003ccode\u003e\u003cbr\u003e\u003cbr\u003e\n    To run a Go benchmark test, run\u003cbr\u003e\n    \u003c/code\u003e\u003ccode\u003e\u003c/code\u003e\n    bazel run //path/to:test -- -test.bench\u003d.\n    \u003c/code\u003e\u003cbr\u003e\u003cbr\u003e\n    You can run specific tests by passing the \u003ccode\u003e--test_filter\u003dpattern\n    \u003ctest_filter_\u003e\u003c/code\u003e argument to Bazel. You can pass arguments to tests by passing\n    \u003ccode\u003e--test_arg\u003darg \u003ctest_arg_\u003e\u003c/code\u003e arguments to Bazel, and you can set environment\n    variables in the test environment by passing\n    \u003ccode\u003e--test_env\u003dVAR\u003dvalue \u003ctest_env_\u003e\u003c/code\u003e. You can terminate test execution after the first\n    failure by passing the \u003ccode\u003e--test_runner_fail_fast \u003ctest_runner_fail_fast_\u003e\u003c/code\u003e argument\n    to Bazel. This is equivalent to passing \u003ccode\u003e--test_arg\u003d-failfast \u003ctest_arg_\u003e\u003c/code\u003e.\u003cbr\u003e\u003cbr\u003e\n    To write structured testlog information to Bazel\u0027s \u003ccode\u003eXML_OUTPUT_FILE\u003c/code\u003e, tests\n    ran with \u003ccode\u003ebazel test\u003c/code\u003e execute using a wrapper. This functionality can be\n    disabled by setting \u003ccode\u003eGO_TEST_WRAP\u003d0\u003c/code\u003e in the test environment. Additionally,\n    the testbinary can be invoked with \u003ccode\u003e-test.v\u003c/code\u003e by setting\n    \u003ccode\u003eGO_TEST_WRAP_TESTV\u003d1\u003c/code\u003e in the test environment; this will result in the\n    \u003ccode\u003eXML_OUTPUT_FILE\u003c/code\u003e containing more granular data.\u003cbr\u003e\u003cbr\u003e\n    ***Note:*** To interoperate cleanly with old targets generated by [Gazelle], \u003ccode\u003ename\u003c/code\u003e\n    should be \u003ccode\u003ego_default_test\u003c/code\u003e for internal tests and\n    \u003ccode\u003ego_default_xtest\u003c/code\u003e for external tests. Gazelle now generates\n    the name  based on the last component of the path. For example, a test\n    in \u003ccode\u003e//foo/bar\u003c/code\u003e is named \u003ccode\u003ebar_test\u003c/code\u003e, and uses internal and external\n    sources.\n    ",
+    "params": [
+      {
+        "name": "name",
+        "docString": "A unique name for this target.",
+        "required": true,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "cdeps",
+        "docString": "The list of other libraries that the c code depends on.\n            This can be anything that would be allowed in [cc_library deps]\n            Only valid if \u003ccode\u003ecgo\u003c/code\u003e \u003d \u003ccode\u003eTrue\u003c/code\u003e.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "cgo",
+        "docString": "\n            If \u003ccode\u003eTrue\u003c/code\u003e, the package may contain [cgo] code, and \u003ccode\u003esrcs\u003c/code\u003e may contain\n            C, C++, Objective-C, and Objective-C++ files and non-Go assembly files.\n            When cgo is enabled, these files will be compiled with the C/C++ toolchain\n            and included in the package. Note that this attribute does not force cgo\n            to be enabled. Cgo is enabled for non-cross-compiling builds when a C/C++\n            toolchain is configured.\n            ",
+        "required": false,
+        "default": "False",
+        "positional": false
+      },
+      {
+        "name": "clinkopts",
+        "docString": "List of flags to add to the C link command.\n            Subject to [\"Make variable\"] substitution and [Bourne shell tokenization].\n            Only valid if \u003ccode\u003ecgo\u003c/code\u003e \u003d \u003ccode\u003eTrue\u003c/code\u003e.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "copts",
+        "docString": "List of flags to add to the C compilation command.\n            Subject to [\"Make variable\"] substitution and [Bourne shell tokenization].\n            Only valid if \u003ccode\u003ecgo\u003c/code\u003e \u003d \u003ccode\u003eTrue\u003c/code\u003e.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "cppopts",
+        "docString": "List of flags to add to the C/C++ preprocessor command.\n            Subject to [\"Make variable\"] substitution and [Bourne shell tokenization].\n            Only valid if \u003ccode\u003ecgo\u003c/code\u003e \u003d \u003ccode\u003eTrue\u003c/code\u003e.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "cxxopts",
+        "docString": "List of flags to add to the C++ compilation command.\n            Subject to [\"Make variable\"] substitution and [Bourne shell tokenization].\n            Only valid if \u003ccode\u003ecgo\u003c/code\u003e \u003d \u003ccode\u003eTrue\u003c/code\u003e.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "data",
+        "docString": "List of files needed by this rule at run-time. This may include data files\n            needed or other programs that may be executed. The [bazel] package may be\n            used to locate run files; they may appear in different places depending on the\n            operating system and environment. See [data dependencies] for more\n            information on data files.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "deps",
+        "docString": "List of Go libraries this test imports directly.\n            These may be go_library rules or compatible rules with the [GoInfo] provider.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "embed",
+        "docString": "List of Go libraries whose sources should be compiled together with this\n            package\u0027s sources. Labels listed here must name \u003ccode\u003ego_library\u003c/code\u003e,\n            \u003ccode\u003ego_proto_library\u003c/code\u003e, or other compatible targets with the\n            [GoInfo] provider. Embedded libraries must have the same \u003ccode\u003eimportpath\u003c/code\u003e as\n            the embedding library. At most one embedded library may have \u003ccode\u003ecgo \u003d True\u003c/code\u003e,\n            and the embedding library may not also have \u003ccode\u003ecgo \u003d True\u003c/code\u003e. See [Embedding]\n            for more information.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "embedsrcs",
+        "docString": "The list of files that may be embedded into the compiled package using\n            \u003ccode\u003e//go:embed\u003c/code\u003e directives. All files must be in the same logical directory\n            or a subdirectory as source files. All source files containing \u003ccode\u003e//go:embed\u003c/code\u003e\n            directives must be in the same logical directory. It\u0027s okay to mix static and\n            generated source files and static and generated embeddable files.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "env",
+        "docString": "Environment variables to set for the test execution.\n            The values (but not keys) are subject to\n            location expansion but not full\n            make variable expansion.\n            ",
+        "required": false,
+        "default": "{}",
+        "positional": false
+      },
+      {
+        "name": "env_inherit",
+        "docString": "Environment variables to inherit from the external environment.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "gc_goopts",
+        "docString": "List of flags to add to the Go compilation command when using the gc compiler.\n            Subject to [\"Make variable\"] substitution and [Bourne shell tokenization].\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "gc_linkopts",
+        "docString": "List of flags to add to the Go link command when using the gc compiler.\n            Subject to [\"Make variable\"] substitution and [Bourne shell tokenization].\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "goarch",
+        "docString": "Forces a binary to be cross-compiled for a specific architecture. It\u0027s usually\n            better to control this on the command line with \u003ccode\u003e--platforms\u003c/code\u003e.\n\n            This disables cgo by default, since a cross-compiling C/C++ toolchain is\n            rarely available. To force cgo, set \u003ccode\u003epure\u003c/code\u003e \u003d \u003ccode\u003eoff\u003c/code\u003e.\n\n            See [Cross compilation] for more information.\n            ",
+        "required": false,
+        "default": "\"auto\"",
+        "positional": false
+      },
+      {
+        "name": "goos",
+        "docString": "Forces a binary to be cross-compiled for a specific operating system. It\u0027s\n            usually better to control this on the command line with \u003ccode\u003e--platforms\u003c/code\u003e.\n\n            This disables cgo by default, since a cross-compiling C/C++ toolchain is\n            rarely available. To force cgo, set \u003ccode\u003epure\u003c/code\u003e \u003d \u003ccode\u003eoff\u003c/code\u003e.\n\n            See [Cross compilation] for more information.\n            ",
+        "required": false,
+        "default": "\"auto\"",
+        "positional": false
+      },
+      {
+        "name": "gotags",
+        "docString": "Enables a list of build tags when evaluating [build constraints]. Useful for\n            conditional compilation.\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "importpath",
+        "docString": "The import path of this test. Tests can\u0027t actually be imported, but this\n            may be used by [go_path] and other tools to report the location of source\n            files. This may be inferred from embedded libraries.\n            ",
+        "required": false,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "linkmode",
+        "docString": "Determines how the binary should be built and linked. This accepts some of\n            the same values as \u003ccode\u003ego build -buildmode\u003c/code\u003e and works the same way.\n            \u003cbr\u003e\u003cbr\u003e\n            \u003cul\u003e\n            \u003cli\u003e\u003ccode\u003eauto\u003c/code\u003e (default): Controlled by \u003ccode\u003e//go/config:linkmode\u003c/code\u003e, which defaults to \u003ccode\u003enormal\u003c/code\u003e.\u003c/li\u003e\n            \u003cli\u003e\u003ccode\u003enormal\u003c/code\u003e: Builds a normal executable with position-dependent code.\u003c/li\u003e\n            \u003cli\u003e\u003ccode\u003epie\u003c/code\u003e: Builds a position-independent executable.\u003c/li\u003e\n            \u003cli\u003e\u003ccode\u003eplugin\u003c/code\u003e: Builds a shared library that can be loaded as a Go plugin. Only supported on platforms that support plugins.\u003c/li\u003e\n            \u003cli\u003e\u003ccode\u003ec-shared\u003c/code\u003e: Builds a shared library that can be linked into a C program.\u003c/li\u003e\n            \u003cli\u003e\u003ccode\u003ec-archive\u003c/code\u003e: Builds an archive that can be linked into a C program.\u003c/li\u003e\n            \u003c/ul\u003e\n            ",
+        "required": false,
+        "default": "\"auto\"",
+        "positional": false
+      },
+      {
+        "name": "msan",
+        "docString": "Controls whether code is instrumented for memory sanitization. May be one of\n            \u003ccode\u003eon\u003c/code\u003e, \u003ccode\u003eoff\u003c/code\u003e, or \u003ccode\u003eauto\u003c/code\u003e. Not available when cgo is\n            disabled. In most cases, it\u0027s better to control this on the command line with\n            \u003ccode\u003e--@io_bazel_rules_go//go/config:msan\u003c/code\u003e. See [mode attributes], specifically\n            [msan].\n            ",
+        "required": false,
+        "default": "\"auto\"",
+        "positional": false
+      },
+      {
+        "name": "pure",
+        "docString": "Controls whether cgo source code and dependencies are compiled and linked,\n            similar to setting \u003ccode\u003eCGO_ENABLED\u003c/code\u003e. May be one of \u003ccode\u003eon\u003c/code\u003e, \u003ccode\u003eoff\u003c/code\u003e,\n            or \u003ccode\u003eauto\u003c/code\u003e. If \u003ccode\u003eauto\u003c/code\u003e, pure mode is enabled when no C/C++\n            toolchain is configured or when cross-compiling. It\u0027s usually better to\n            control this on the command line with\n            \u003ccode\u003e--@io_bazel_rules_go//go/config:pure\u003c/code\u003e. See [mode attributes], specifically\n            [pure].\n            ",
+        "required": false,
+        "default": "\"auto\"",
+        "positional": false
+      },
+      {
+        "name": "race",
+        "docString": "Controls whether code is instrumented for race detection. May be one of\n            \u003ccode\u003eon\u003c/code\u003e, \u003ccode\u003eoff\u003c/code\u003e, or \u003ccode\u003eauto\u003c/code\u003e. Not available when cgo is\n            disabled. In most cases, it\u0027s better to control this on the command line with\n            \u003ccode\u003e--@io_bazel_rules_go//go/config:race\u003c/code\u003e. See [mode attributes], specifically\n            [race].\n            ",
+        "required": false,
+        "default": "\"auto\"",
+        "positional": false
+      },
+      {
+        "name": "rundir",
+        "docString": " A directory to cd to before the test is run.\n            This should be a path relative to the root directory of the\n            repository in which the test is defined, which can be the main or an\n            external repository.\n\n            The default behaviour is to change to the relative path\n            corresponding to the test\u0027s package, which replicates the normal\n            behaviour of \u003ccode\u003ego test\u003c/code\u003e so it is easy to write compatible tests.\n\n            Setting it to \u003ccode\u003e.\u003c/code\u003e makes the test behave the normal way for a bazel\n            test, except that the working directory is always that of the test\u0027s\n            repository, which is not necessarily the main repository.\n\n            Note: If runfile symlinks are disabled (such as on Windows by\n            default), the test will run in the working directory set by Bazel,\n            which is the subdirectory of the runfiles directory corresponding to\n            the main repository.\n            ",
+        "required": false,
+        "default": "\"\"",
+        "positional": false
+      },
+      {
+        "name": "srcs",
+        "docString": "The list of Go source files that are compiled to create the package.\n            Only \u003ccode\u003e.go\u003c/code\u003e, \u003ccode\u003e.s\u003c/code\u003e, and \u003ccode\u003e.syso\u003c/code\u003e files are permitted, unless the \u003ccode\u003ecgo\u003c/code\u003e\n            attribute is set, in which case,\n            \u003ccode\u003e.c .cc .cpp .cxx .h .hh .hpp .hxx .inc .m .mm\u003c/code\u003e\n            files are also permitted. Files may be filtered at build time\n            using Go [build constraints].\n            ",
+        "required": false,
+        "default": "[]",
+        "positional": false
+      },
+      {
+        "name": "static",
+        "docString": "Controls whether a binary is statically linked. May be one of \u003ccode\u003eon\u003c/code\u003e,\n            \u003ccode\u003eoff\u003c/code\u003e, or \u003ccode\u003eauto\u003c/code\u003e. Not available on all platforms or in all\n            modes. It\u0027s usually better to control this on the command line with\n            \u003ccode\u003e--@io_bazel_rules_go//go/config:static\u003c/code\u003e. See [mode attributes],\n            specifically [static].\n            ",
+        "required": false,
+        "default": "\"auto\"",
+        "positional": false
+      },
+      {
+        "name": "x_defs",
+        "docString": "Map of defines to add to the go link command.\n            See [Defines and stamping] for examples of how to use these.\n            ",
+        "required": false,
+        "default": "{}",
         "positional": false
       }
     ]
