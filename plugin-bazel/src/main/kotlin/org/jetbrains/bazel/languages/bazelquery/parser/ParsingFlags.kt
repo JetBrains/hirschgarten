@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.bazelquery.parser
 import com.intellij.lang.ASTNode
 import com.intellij.lang.PsiBuilder
 import com.intellij.psi.tree.IElementType
+import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryElementTypes
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenSets
 import org.jetbrains.bazel.languages.bazelquery.elements.BazelQueryTokenTypes
@@ -35,9 +36,9 @@ open class ParsingFlags(private val root: IElementType, val builder: PsiBuilder)
         utils.advanceError("expected flag value")
       } else {
         if (utils.matchToken(BazelQueryTokenTypes.UNFINISHED_VAL)) {
-          error("<quote> expected")
+          error(BazelPluginBundle.message("bazelquery.error.missing.quote"))
         } else if (!utils.matchAnyToken(BazelQueryTokenSets.FLAG_VALS)) {
-          error("expected flag value")
+          error(BazelPluginBundle.message("bazelquery.error.missing.flag"))
         } else if (!eof()) {
           utils.expectToken(BazelQueryTokenTypes.WHITE_SPACE)
         }

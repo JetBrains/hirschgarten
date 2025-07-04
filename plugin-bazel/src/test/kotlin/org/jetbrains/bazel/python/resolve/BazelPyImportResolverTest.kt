@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.python.resolve
 
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.externalSystem.autoimport.AutoImportProjectTracker
+import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
@@ -14,6 +16,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.config.rootDir
 import org.jetbrains.bazel.workspace.model.test.framework.MockProjectBaseTest
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -23,6 +26,12 @@ class BazelPyImportResolverTest : MockProjectBaseTest() {
     super.beforeEach()
     project.isBazelProject = true
     prepareFiles()
+  }
+
+  /** Dispose of the auto‑import tracker created for this test project. */
+  @AfterEach
+  fun tearDownTracker() {
+    Disposer.dispose(AutoImportProjectTracker.getInstance(project))
   }
 
   @Test

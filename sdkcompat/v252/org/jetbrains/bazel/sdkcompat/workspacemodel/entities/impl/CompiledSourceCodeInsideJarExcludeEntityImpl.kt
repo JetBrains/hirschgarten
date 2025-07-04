@@ -25,7 +25,7 @@ import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeI
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.CompiledSourceCodeInsideJarExcludeId
 
 @GeneratedCodeApiVersion(3)
-@GeneratedCodeImplVersion(6)
+@GeneratedCodeImplVersion(7)
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class CompiledSourceCodeInsideJarExcludeEntityImpl(private val dataSource: CompiledSourceCodeInsideJarExcludeEntityData) :
   CompiledSourceCodeInsideJarExcludeEntity, WorkspaceEntityBase(dataSource) {

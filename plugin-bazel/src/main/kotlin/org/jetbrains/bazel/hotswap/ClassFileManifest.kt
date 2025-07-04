@@ -18,6 +18,7 @@ package org.jetbrains.bazel.hotswap
 import com.intellij.execution.RunCanceledByUserException
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.util.containers.MultiMap
+import org.jetbrains.bazel.config.BazelPluginBundle
 import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.attribute.FileTime
@@ -126,7 +127,7 @@ class ClassFileManifest private constructor(
       } catch (_: InterruptedException) {
         throw RunCanceledByUserException()
       } catch (e: ExecutionException) {
-        throw com.intellij.execution.ExecutionException("Error parsing runtime jars", e)
+        throw com.intellij.execution.ExecutionException(BazelPluginBundle.message("hotswap.error.parsing.jars"), e)
       }
     }
 

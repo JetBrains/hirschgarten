@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.compatibility
 
 import com.intellij.driver.client.Driver
+import com.intellij.driver.sdk.step
 import com.intellij.driver.sdk.ui.components.common.editorTabs
 import com.intellij.driver.sdk.ui.components.common.gutter
 import com.intellij.driver.sdk.ui.components.common.ideFrame
@@ -12,11 +13,11 @@ import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
-import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.jetbrains.bazel.ideStarter.IdeStarterBaseProjectTest
+import org.jetbrains.bazel.ideStarter.execute
 import org.jetbrains.bazel.ideStarter.navigateToFile
 import org.jetbrains.bazel.ideStarter.waitForBazelSync
 import org.junit.jupiter.api.Test
@@ -32,75 +33,113 @@ class PyCharmTest : IdeStarterBaseProjectTest() {
     get() =
       GitProjectInfo(
         repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
-        commitHash = "8b08ee4fffabd26ece6d338f94f22398d415ce78",
+        commitHash = "73ad49439188c91342d46f63a32230e5b535dc03",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("simpleMultiLanguageTest") },
-        isReusable = false,
-        configureProjectBeforeUse = ::configureProjectBeforeUse,
+        isReusable = true,
+        configureProjectBeforeUse = ::configureProjectBeforeUseWithoutBazelClean,
       )
+  // get() =
+  //  LocalProjectInfo(
+  //    projectDir = Path.of("path/to/simpleBazelProjectsForTesting/simpleMultiLanguageTest"),
+  //    isReusable = true,
+  //    configureProjectBeforeUse = ::configureProjectBeforeUseWithoutBazelClean,
+  //  )
+
+  private val commands =
+    CommandChain()
+      .takeScreenshot("startSync")
+      .waitForBazelSync()
+      .waitForSmartMode()
+      .checkImportedModules()
 
   @Test
   fun openBazelProject() {
-    val commands =
-      CommandChain()
-        .takeScreenshot("startSync")
-        .waitForBazelSync()
-        .waitForSmartMode()
-        .checkImportedModules()
-        .openFile("python/bin.py")
-
     createContext()
       .runIdeWithDriver(commands = commands, runTimeout = timeout)
       .useDriverAndCloseIde {
-        verifyRunLineMarkerText(listOf("Run", "Debug run"))
+        ideFrame {
+          waitForIndicators(10.minutes)
+
+          step("Open file") {
+            execute { openFile("python/bin.py") }
+          }
+
+          step("Verify run line marker text") {
+            verifyRunLineMarkerText(listOf("Run", "Debug run"))
+          }
+        }
       }
   }
 
   @Test
   fun openBazelProjectWithTestFile() {
-    val commands =
-      CommandChain()
-        .takeScreenshot("startSync")
-        .waitForBazelSync()
-        .waitForSmartMode()
-        .checkImportedModules()
-        .openFile("python/test.py")
-
     createContext()
       .runIdeWithDriver(commands = commands, runTimeout = timeout)
       .useDriverAndCloseIde {
-        verifyRunLineMarkerText(listOf("Test", "Debug test", "Run with Coverage"))
+        ideFrame {
+          waitForIndicators(10.minutes)
+
+          step("Open test file") {
+            execute { openFile("python/test.py") }
+          }
+
+          step("Verify run line marker text") {
+            verifyRunLineMarkerText(listOf("Test", "Debug test", "Run with Coverage"))
+          }
+        }
       }
   }
 
   @Test
   fun checkImportStatements() {
-    val commands =
-      CommandChain()
-        .takeScreenshot("startSync")
-        .waitForBazelSync()
-        .waitForSmartMode()
-        .checkImportedModules()
-        .openFile("python/bin.py")
-        .navigateToFile(1, 2, "builtins.pyi", 1645, 5)
-        .openFile("python/main/main.py")
-        .navigateToFile(9, 5, "util.py", 3, 5)
-        .openFile("python/main/main.py")
-        .navigateToFile(7, 26, "__version__.py", 8, 1)
-        .openFile("python/main/main.py")
-        .navigateToFile(8, 26, "version.py", 5, 1)
-        .openFile("python/main/main.py")
-        .navigateToFile(8, 26, "version.py", 5, 1)
-        .openFile("python/libs/my_lib2/util.py")
-        .navigateToFile(4, 7, "util.py", 1, 5)
-        .exitApp()
+    createContext()
+      .runIdeWithDriver(commands = commands, runTimeout = timeout)
+      .useDriverAndCloseIde {
+        ideFrame {
+          waitForIndicators(10.minutes)
 
-    createContext().runIDE(commands = commands, runTimeout = timeout)
+          step("Open main.py and navigate to bbb") {
+            execute { openFile("python/main/main.py") }
+            execute { navigateToFile(2, 28, "util.py", 3, 5) }
+            takeScreenshot("afterNavigatingToBbb")
+          }
+
+          step("Navigate to requests.__version__") {
+            execute { openFile("python/main/main.py") }
+            execute { navigateToFile(9, 26, "__version__.py", 8, 1) }
+            takeScreenshot("afterNavigatingToRequestsVersion")
+          }
+
+          step("Navigate to np.version.version") {
+            execute { openFile("python/main/main.py") }
+            execute { navigateToFile(10, 26, "version.py", 5, 1) }
+            takeScreenshot("afterNavigatingToNumpyVersion")
+          }
+
+          step("Navigate to aaa from my_lib2") {
+            execute { openFile("python/libs/my_lib2/util.py") }
+            execute { navigateToFile(1, 27, "util.py", 1, 5) }
+            takeScreenshot("afterNavigatingToAaaFromMyLib2")
+          }
+
+          step("Navigate to urban.cities") {
+            execute { openFile("python/main/main.py") }
+            execute { navigateToFile(6, 34, "cities.py", 4, 5) }
+            takeScreenshot("afterNavigatingToUrbanCities")
+          }
+
+          step("Navigate to artificial.plastics") {
+            execute { openFile("python/main/main.py") }
+            execute { navigateToFile(7, 37, "plastics.py", 4, 5) }
+            takeScreenshot("afterNavigatingToArtificialPlastics")
+          }
+        }
+      }
   }
 
   private fun Driver.verifyRunLineMarkerText(expectedTexts: List<String>) {
     ideFrame {
-      waitForIndicators(5.minutes)
       val gutterIcons = editorTabs().gutter().getGutterIcons()
       val selectedGutterIcon = gutterIcons.first()
       selectedGutterIcon.click()
