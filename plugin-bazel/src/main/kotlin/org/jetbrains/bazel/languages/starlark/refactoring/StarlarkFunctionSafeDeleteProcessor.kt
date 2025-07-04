@@ -19,8 +19,12 @@ class StarlarkFunctionSafeDeleteProcessor : SafeDeleteProcessorDelegateBase() {
     allElementsToDelete: Array<out PsiElement?>,
     result: MutableList<in UsageInfo>,
   ): NonCodeUsageSearchInfo {
-    SafeDeleteProcessor.findGenericElementUsages(element, result, allElementsToDelete,
-                                                 GlobalSearchScope.projectScope(element.project))
+    SafeDeleteProcessor.findGenericElementUsages(
+      element,
+      result,
+      allElementsToDelete,
+      GlobalSearchScope.projectScope(element.project),
+    )
     return NonCodeUsageSearchInfo(SafeDeleteProcessor.getDefaultInsideDeletedCondition(allElementsToDelete), element)
   }
 
@@ -28,7 +32,7 @@ class StarlarkFunctionSafeDeleteProcessor : SafeDeleteProcessorDelegateBase() {
     element: PsiElement,
     module: Module?,
     allElementsToDelete: Collection<PsiElement?>,
-  ): Collection<PsiElement> = listOf()
+  ): Collection<PsiElement> = listOf(element)
 
   override fun getAdditionalElementsToDelete(
     element: PsiElement,
@@ -36,17 +40,12 @@ class StarlarkFunctionSafeDeleteProcessor : SafeDeleteProcessorDelegateBase() {
     askUser: Boolean,
   ): Collection<PsiElement?> = emptyList()
 
-  override fun preprocessUsages(
-    project: Project,
-    usages: Array<out UsageInfo?>,
-  ): Array<out UsageInfo?> = usages
+  override fun preprocessUsages(project: Project, usages: Array<out UsageInfo?>): Array<out UsageInfo?> = usages
 
   override fun prepareForDeletion(element: PsiElement) {
-
   }
 
-  override fun isToSearchInComments(element: PsiElement?): Boolean =
-    RefactoringSettings.getInstance().SAFE_DELETE_SEARCH_IN_COMMENTS
+  override fun isToSearchInComments(element: PsiElement?): Boolean = RefactoringSettings.getInstance().SAFE_DELETE_SEARCH_IN_COMMENTS
 
   override fun setToSearchInComments(element: PsiElement?, enabled: Boolean) {
     RefactoringSettings.getInstance().SAFE_DELETE_SEARCH_IN_COMMENTS = enabled
@@ -59,4 +58,3 @@ class StarlarkFunctionSafeDeleteProcessor : SafeDeleteProcessorDelegateBase() {
     RefactoringSettings.getInstance().SAFE_DELETE_SEARCH_IN_NON_JAVA = enabled
   }
 }
-
