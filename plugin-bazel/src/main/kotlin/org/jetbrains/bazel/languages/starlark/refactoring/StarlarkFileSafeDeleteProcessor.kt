@@ -10,6 +10,7 @@ import com.intellij.refactoring.safeDelete.SafeDeleteProcessor
 import com.intellij.refactoring.safeDelete.SafeDeleteProcessorDelegateBase
 import com.intellij.usageView.UsageInfo
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 
@@ -24,13 +25,22 @@ class StarlarkFileSafeDeleteProcessor : SafeDeleteProcessorDelegateBase() {
     val file = element as StarlarkFile
     val elements = mutableListOf<PsiElement>(file.containingFile)
 
-    // we are interested only in top-level elements
+    // we are interested only in top-level elements and targets
     elements += file.children.filterIsInstance<StarlarkFunctionDeclaration>()
     elements += file.children.filterIsInstance<StarlarkAssignmentStatement>()
+    elements +=
+      file.children
+        .filterIsInstance<StarlarkAssignmentStatement>()
+        .map { it.firstChild }
+        .filterIsInstance<StarlarkTargetExpression>()
 
     elements.forEach {
-      SafeDeleteProcessor.findGenericElementUsages(it, result, allElementsToDelete,
-                                                   GlobalSearchScope.projectScope(element.project))
+      SafeDeleteProcessor.findGenericElementUsages(
+        it,
+        result,
+        allElementsToDelete,
+        GlobalSearchScope.projectScope(element.project),
+      )
     }
     return NonCodeUsageSearchInfo(SafeDeleteProcessor.getDefaultInsideDeletedCondition(allElementsToDelete), elements)
   }
@@ -47,17 +57,12 @@ class StarlarkFileSafeDeleteProcessor : SafeDeleteProcessorDelegateBase() {
     askUser: Boolean,
   ): Collection<PsiElement?> = emptyList()
 
-  override fun preprocessUsages(
-    project: Project,
-    usages: Array<out UsageInfo?>,
-  ): Array<out UsageInfo?> = usages
+  override fun preprocessUsages(project: Project, usages: Array<out UsageInfo?>): Array<out UsageInfo?> = usages
 
   override fun prepareForDeletion(element: PsiElement) {
-
   }
 
-  override fun isToSearchInComments(element: PsiElement?): Boolean =
-    RefactoringSettings.getInstance().SAFE_DELETE_SEARCH_IN_COMMENTS
+  override fun isToSearchInComments(element: PsiElement?): Boolean = RefactoringSettings.getInstance().SAFE_DELETE_SEARCH_IN_COMMENTS
 
   override fun setToSearchInComments(element: PsiElement?, enabled: Boolean) {
     RefactoringSettings.getInstance().SAFE_DELETE_SEARCH_IN_COMMENTS = enabled
