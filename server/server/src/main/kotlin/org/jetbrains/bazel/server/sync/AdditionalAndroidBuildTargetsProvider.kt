@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.server.sync
 
 import org.jetbrains.bazel.label.CanonicalLabel
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.BspMappings
 import org.jetbrains.bazel.server.sync.languages.android.AndroidModule

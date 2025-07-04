@@ -6,8 +6,8 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bazel/commons",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/info",
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
-        "//commons/src/main/kotlin/org/jetbrains/bsp/info",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/projectStructure",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/sync/scope",

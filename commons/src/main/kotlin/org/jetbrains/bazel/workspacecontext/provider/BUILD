@@ -14,7 +14,7 @@ kt_jvm_library(
         "//commons/src/main/kotlin/org/jetbrains/bazel/workspacecontext",
         "//rules_intellij/intellij_platform_sdk:plugin_api",
         "//server/bazelrunner:params",
-                "@maven//:commons_io_commons_io",
+        "@maven//:commons_io_commons_io",
         "@maven//:org_slf4j_slf4j_api",
     ],
 )

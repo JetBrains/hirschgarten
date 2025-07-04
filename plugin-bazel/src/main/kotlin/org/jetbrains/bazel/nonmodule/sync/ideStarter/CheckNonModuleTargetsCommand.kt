@@ -11,16 +11,16 @@ class CheckNonModuleTargetsCommand(text: String, line: Int) : PlaybackCommandCor
     val project = context.project
     val targetUtils = project.targetUtils
     val loadedTargets = targetUtils.allTargets()
-    check(loadedTargets.toSet() == setOf(Label.parse("//:bin"), Label.parse("//:test"))) {
+    check(loadedTargets.toSet() == setOf(Label.parseCanonical("//:bin"), Label.parseCanonical("//:test"))) {
       "Expected targets: //:bin, //:test, actual: $loadedTargets"
     }
 
-    val binInfo = checkNotNull(targetUtils.getBuildTargetForLabel(Label.parse("//:bin"))) { "No info for //:bin" }
+    val binInfo = checkNotNull(targetUtils.getBuildTargetForLabel(Label.parseCanonical("//:bin"))) { "No info for //:bin" }
     check(binInfo.kind.ruleType == RuleType.BINARY) {
       "Expected //:bin to be runnable, actual: ${binInfo.kind.ruleType}"
     }
 
-    val testInfo = checkNotNull(targetUtils.getBuildTargetForLabel(Label.parse("//:test"))) { "No info for //:test" }
+    val testInfo = checkNotNull(targetUtils.getBuildTargetForLabel(Label.parseCanonical("//:test"))) { "No info for //:test" }
     check(testInfo.kind.ruleType == RuleType.TEST) {
       "Expected //:test to be testable, actual: ${testInfo.kind.ruleType}"
     }

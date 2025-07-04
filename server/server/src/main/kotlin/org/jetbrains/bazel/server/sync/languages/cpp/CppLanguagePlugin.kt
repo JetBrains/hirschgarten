@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.server.sync.languages.cpp
 
-import org.jetbrains.bazel.info.CppTargetInfo
 import org.jetbrains.bazel.info.TargetInfo
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.model.Module

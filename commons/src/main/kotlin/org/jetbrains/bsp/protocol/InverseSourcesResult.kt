@@ -1,5 +1,5 @@
 package org.jetbrains.bsp.protocol
 
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 
-data class InverseSourcesResult(val targets: List<Label>)
+data class InverseSourcesResult(val targets: List<CanonicalLabel>)

@@ -23,13 +23,13 @@ class ThriftLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
   }
 
   private fun sourcesFromJvmTargetInfo(targetInfo: TargetInfo): HashSet<Path> =
-      targetInfo
-        .jvmTargetInfo
-        ?.jars
-        ?.flatMap { it.sourceJars}
-        ?.map(bazelPathsResolver::resolve)
-        ?.toHashSet()
-        ?: hashSetOf()
+    targetInfo
+      .jvmTargetInfo
+      ?.jars
+      ?.flatMap { it.sourceJars }
+      ?.map(bazelPathsResolver::resolve)
+      ?.toHashSet()
+      ?: hashSetOf()
 
   private fun isThriftLibrary(target: TargetInfo): Boolean = target.kind == THRIFT_LIBRARY_RULE_NAME
 

@@ -1,15 +1,15 @@
 package org.jetbrains.bazel.server.bep
 
 import com.google.common.collect.Queues
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import java.nio.file.Path
 
 class BepOutput(
   private val outputGroups: Map<String, Set<String>> = emptyMap(),
   private val textProtoFileSets: Map<String, TextProtoDepSet> = emptyMap(),
-  private val rootTargets: Set<Label> = emptySet(),
+  private val rootTargets: Set<CanonicalLabel> = emptySet(),
 ) {
-  fun rootTargets(): Set<Label> = rootTargets
+  fun rootTargets(): Set<CanonicalLabel> = rootTargets
 
   fun filesByOutputGroupNameTransitive(outputGroup: String): Set<Path> {
     val rootIds = outputGroups.getOrDefault(outputGroup, emptySet())

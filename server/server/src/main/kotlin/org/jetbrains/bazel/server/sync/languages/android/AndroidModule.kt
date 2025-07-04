@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.server.sync.languages.android
 
 import org.jetbrains.bazel.label.CanonicalLabel
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.model.LanguageData
 import org.jetbrains.bazel.server.sync.languages.java.JavaModule
 import org.jetbrains.bazel.server.sync.languages.kotlin.KotlinModule

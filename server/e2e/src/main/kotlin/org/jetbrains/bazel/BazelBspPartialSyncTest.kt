@@ -49,7 +49,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
         testClient.assertJsonEquals(expectedWorkspaceBuildTargetsResult(), workspaceBuildTargetsResult)
 
         // partial sync
-        val partialSyncTargetId = Label.parse("$targetPrefix//java_targets:java_binary")
+        val partialSyncTargetId = Label.parseCanonical("$targetPrefix//java_targets:java_binary")
         val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
         val javaHomeBazel5And6 = Path("\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/")
         val javaHomeBazel7 =
@@ -79,7 +79,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
           )
 
         val workspaceBuildTargetsPartialParams =
-          WorkspaceBuildTargetsPartialParams(listOf(Label.parse("$targetPrefix//java_targets:java_binary")))
+          WorkspaceBuildTargetsPartialParams(listOf(Label.parseCanonical("$targetPrefix//java_targets:java_binary")))
         val expectedTargetsResult = WorkspaceBuildTargetsResult(listOf(javaTargetsJavaBinary))
 
         val workspaceBuildTargetsPartialResult = session.server.workspaceBuildTargetsPartial(workspaceBuildTargetsPartialParams)
@@ -103,7 +103,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
 
     val javaTargetsJavaLibrary =
       RawBuildTarget(
-        Label.parse("$targetPrefix//java_targets:java_library"),
+        Label.parseCanonical("$targetPrefix//java_targets:java_library"),
         listOf(),
         listOf(),
         TargetKind(

@@ -71,7 +71,7 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
 
     val srcMainBuildTarget =
       RawBuildTarget(
-        Label.parse("$targetPrefix//src:main"),
+        Label.parseCanonical("$targetPrefix//src:main"),
         listOf(),
         emptyList(),
         kind =

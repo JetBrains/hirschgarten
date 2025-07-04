@@ -38,12 +38,12 @@ internal class TargetInfoManager(
   private val filePathSuffix: String,
   logSupplier: () -> Logger,
 ) {
-  private val fileToExecutableTargets: MVMap<HashValue128, List<Label>> =
+  private val fileToExecutableTargets: MVMap<HashValue128, List<CanonicalLabel>> =
     openIdToLabelListMap("fileToExecutableTargets", store, logSupplier)
-  private val fileToTarget: MVMap<HashValue128, List<Label>> = openIdToLabelListMap("fileToTarget", store, logSupplier)
+  private val fileToTarget: MVMap<HashValue128, List<CanonicalLabel>> = openIdToLabelListMap("fileToTarget", store, logSupplier)
 
-  private val libraryIdToTarget: MVMap<HashValue128, Label> = openIdToLabelMap(store, "libraryIdToTarget", logSupplier)
-  private val moduleIdToTarget: MVMap<HashValue128, Label> = openIdToResolvedLabelMap(store, "moduleIdToTarget", logSupplier)
+  private val libraryIdToTarget: MVMap<HashValue128, CanonicalLabel> = openIdToLabelMap(store, "libraryIdToTarget", logSupplier)
+  private val moduleIdToTarget: MVMap<HashValue128, CanonicalLabel> = openIdToResolvedLabelMap(store, "moduleIdToTarget", logSupplier)
 
   private val labelToTargetInfo: MVMap<HashValue128, PartialBuildTarget> =
     openOrResetMap(
@@ -96,8 +96,8 @@ internal class TargetInfoManager(
       }
     }
 
-  fun allBuildTargetAsLabelToTargetMap(predicate: (BuildTarget) -> Boolean): List<Label> {
-    val result = ArrayList<Label>(labelToTargetInfo.size)
+  fun allBuildTargetAsLabelToTargetMap(predicate: (BuildTarget) -> Boolean): List<CanonicalLabel> {
+    val result = ArrayList<CanonicalLabel>(labelToTargetInfo.size)
     val cursor = labelToTargetInfo.cursor(null)
     while (cursor.hasNext()) {
       cursor.next()
@@ -109,7 +109,7 @@ internal class TargetInfoManager(
     return result
   }
 
-  fun getAllTargets(): Sequence<Label> =
+  fun getAllTargets(): Sequence<CanonicalLabel> =
     sequence {
       val cursor = labelToTargetInfo.cursor(null)
       while (cursor.hasNext()) {
@@ -118,8 +118,8 @@ internal class TargetInfoManager(
       }
     }
 
-  fun computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo: Map<Label, BuildTarget>): Map<Label, BuildTarget> {
-    val result = HashMap<Label, BuildTarget>(labelToTargetInfo.size + syncedTargetIdToTargetInfo.size)
+  fun computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo: Map<CanonicalLabel, BuildTarget>): Map<CanonicalLabel, BuildTarget> {
+    val result = HashMap<CanonicalLabel, BuildTarget>(labelToTargetInfo.size + syncedTargetIdToTargetInfo.size)
     // first, an existing map, and then a new addition
     val cursor = labelToTargetInfo.cursor(null)
     while (cursor.hasNext()) {
@@ -143,7 +143,7 @@ internal class TargetInfoManager(
 
   fun getExecutableTargetsForPath(file: Path) = fileToExecutableTargets.get(fileToKey(file))
 
-  fun addFileToTarget(file: Path, targets: List<Label>) {
+  fun addFileToTarget(file: Path, targets: List<CanonicalLabel>) {
     fileToTarget.put(fileToKey(file), targets)
   }
 
@@ -155,7 +155,7 @@ internal class TargetInfoManager(
 
   fun getTargetForModuleId(libraryId: String) = moduleIdToTarget.get(stringToHashId(libraryId))
 
-  fun setTargets(labelToTargetInfo: Map<Label, BuildTarget>) {
+  fun setTargets(labelToTargetInfo: Map<CanonicalLabel, BuildTarget>) {
     this.labelToTargetInfo.clear()
     val hashStream = createHashStream128()
     for ((label, info) in labelToTargetInfo) {
@@ -175,8 +175,8 @@ internal class TargetInfoManager(
   }
 
   fun reset(
-    fileToTarget: Map<Path, List<Label>>,
-    fileToExecutableTargets: Map<Path, List<Label>>,
+    fileToTarget: Map<Path, List<CanonicalLabel>>,
+    fileToExecutableTargets: Map<Path, List<CanonicalLabel>>,
     libraryItems: List<LibraryItem>?,
     project: Project,
     targets: List<BuildTarget>,
@@ -204,8 +204,7 @@ internal class TargetInfoManager(
     this.labelToTargetInfo.clear()
     val hashStream = createHashStream128()
     for (target in targets) {
-      // must be canonical label
-      val label = target.id as CanonicalLabel
+      val label = target.id
       this.labelToTargetInfo.put(
         computeLabelHash(label, hashStream),
         PartialBuildTarget(
@@ -234,8 +233,8 @@ private fun openIdToLabelMap(
   store: MVStore,
   @Suppress("SameParameterValue") name: String,
   logSupplier: () -> Logger,
-): MVMap<HashValue128, Label> {
-  val mapBuilder = MVMap.Builder<HashValue128, Label>()
+): MVMap<HashValue128, CanonicalLabel> {
+  val mapBuilder = MVMap.Builder<HashValue128, CanonicalLabel>()
   mapBuilder.setKeyType(HashValue128KeyDataType)
   mapBuilder.setValueType(
     createAnyValueDataType(
@@ -254,10 +253,10 @@ private fun openIdToResolvedLabelMap(
   store: MVStore,
   @Suppress("SameParameterValue") name: String,
   logSupplier: () -> Logger,
-): MVMap<HashValue128, Label> {
-  val mapBuilder = MVMap.Builder<HashValue128, Label>()
+): MVMap<HashValue128, CanonicalLabel> {
+  val mapBuilder = MVMap.Builder<HashValue128, CanonicalLabel>()
   mapBuilder.setKeyType(HashValue128KeyDataType)
-  mapBuilder.setValueType(createAnyValueDataType<Label>(writer = ::writeLabel, reader = ::readLabel))
+  mapBuilder.setValueType(createAnyValueDataType<CanonicalLabel>(writer = ::writeLabel, reader = ::readLabel))
   return openOrResetMap(store = store, name = name, mapBuilder = mapBuilder, logSupplier = logSupplier)
 }
 
@@ -265,11 +264,11 @@ private fun openIdToLabelListMap(
   name: String,
   store: MVStore,
   logSupplier: () -> Logger,
-): MVMap<HashValue128, List<Label>> {
-  val mapBuilder = MVMap.Builder<HashValue128, List<Label>>()
+): MVMap<HashValue128, List<CanonicalLabel>> {
+  val mapBuilder = MVMap.Builder<HashValue128, List<CanonicalLabel>>()
   mapBuilder.setKeyType(HashValue128KeyDataType)
   mapBuilder.setValueType(
-    createAnyValueDataType<List<Label>>(
+    createAnyValueDataType<List<CanonicalLabel>>(
       writer = { buffer, list ->
         buffer.putVarInt(list.size)
         for (label in list) {

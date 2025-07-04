@@ -11,7 +11,7 @@ kt_jvm_binary(
         "//rules_intellij/intellij_platform_sdk:plugin_api_for_tests",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
-            ],
+    ],
 )
 
 kt_jvm_binary(
@@ -50,7 +50,7 @@ kt_jvm_binary(
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
-            ],
+    ],
 )
 
 kt_jvm_binary(
@@ -76,7 +76,7 @@ kt_jvm_binary(
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
-            ],
+    ],
 )
 
 kt_jvm_binary(
@@ -89,7 +89,7 @@ kt_jvm_binary(
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
-            ],
+    ],
 )
 
 kt_jvm_binary(
@@ -145,7 +145,7 @@ kt_jvm_binary(
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/android",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
-            ],
+    ],
 )
 
 kt_jvm_binary(
@@ -184,7 +184,7 @@ kt_jvm_binary(
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bazel/base",
-            ],
+    ],
 )
 
 kt_jvm_binary(

@@ -1,10 +1,10 @@
 package org.jetbrains.bsp.protocol
 import org.jetbrains.bazel.commons.TargetKind
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import java.nio.file.Path
 
 interface BuildTarget {
-  val id: Label
+  val id: CanonicalLabel
   val kind: TargetKind
   val baseDirectory: Path
   val data: BuildTargetData?
@@ -13,9 +13,9 @@ interface BuildTarget {
 }
 
 data class RawBuildTarget(
-  override val id: Label,
+  override val id: CanonicalLabel,
   override val tags: List<String>,
-  val dependencies: List<Label>,
+  val dependencies: List<CanonicalLabel>,
   override val kind: TargetKind,
   val sources: List<SourceItem>,
   val resources: List<Path>,
@@ -26,7 +26,7 @@ data class RawBuildTarget(
 ) : BuildTarget
 
 data class PartialBuildTarget(
-  override val id: Label,
+  override val id: CanonicalLabel,
   override val tags: List<String>,
   override val kind: TargetKind,
   override val baseDirectory: Path,
@@ -47,7 +47,7 @@ public data class KotlinBuildTarget(
   val languageVersion: String,
   val apiVersion: String,
   val kotlincOptions: List<String>,
-  val associates: List<Label>,
+  val associates: List<CanonicalLabel>,
   var jvmBuildTarget: JvmBuildTarget? = null,
 ) : BuildTargetData
 
@@ -84,7 +84,7 @@ data class GoBuildTarget(
   val importPath: String,
   val generatedLibraries: List<Path>,
   val generatedSources: List<Path>,
-  val libraryLabels: List<Label>,
+  val libraryLabels: List<CanonicalLabel>,
 ) : BuildTargetData
 
 @ClassDiscriminator(6)

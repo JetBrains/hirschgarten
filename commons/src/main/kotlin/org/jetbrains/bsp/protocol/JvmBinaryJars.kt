@@ -1,7 +1,6 @@
 package org.jetbrains.bsp.protocol
 
 import org.jetbrains.bazel.label.CanonicalLabel
-import org.jetbrains.bazel.label.Label
 import java.nio.file.Path
 
 public data class JvmBinaryJarsParams(val targets: List<CanonicalLabel>)

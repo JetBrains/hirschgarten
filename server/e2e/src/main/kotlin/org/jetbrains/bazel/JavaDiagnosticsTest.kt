@@ -39,7 +39,7 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
       "deprecated warning",
     ) {
       val currentTime = System.currentTimeMillis()
-      val targetUri = Label.parse("@//:deprecated_warning")
+      val targetUri = Label.parseCanonical("@//:deprecated_warning")
       val params =
         CompileParams(
           listOf(targetUri),
@@ -99,8 +99,8 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
       "no such method error",
     ) {
       val currentTime = System.currentTimeMillis()
-      val noSuchMethodTargetUri = Label.parse("@//:no_such_method_error")
-      val warningAndErrorTargetUri = Label.parse("@//:warning_and_error")
+      val noSuchMethodTargetUri = Label.parseCanonical("@//:no_such_method_error")
+      val warningAndErrorTargetUri = Label.parseCanonical("@//:warning_and_error")
       val params =
         CompileParams(
           listOf(

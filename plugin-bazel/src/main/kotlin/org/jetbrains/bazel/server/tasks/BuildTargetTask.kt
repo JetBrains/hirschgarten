@@ -16,6 +16,7 @@ import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.commons.BazelStatus
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.languages.starlark.repomapping.toShortString
 import org.jetbrains.bazel.server.connection.connection
@@ -33,7 +34,7 @@ import java.util.UUID
 
 @InternalApi
 class BuildTargetTask(private val project: Project) {
-  suspend fun execute(server: JoinedBuildServer, targetsIds: List<Label>): CompileResult =
+  suspend fun execute(server: JoinedBuildServer, targetsIds: List<CanonicalLabel>): CompileResult =
     coroutineScope {
       val bspBuildConsole = ConsoleService.getInstance(project).buildConsole
       val originId = "build-" + UUID.randomUUID().toString()
@@ -119,7 +120,7 @@ class BuildTargetTask(private val project: Project) {
     }
 
   private fun startBuildConsoleTask(
-    targetIds: List<Label>,
+    targetIds: List<CanonicalLabel>,
     bspBuildConsole: TaskConsole,
     originId: String,
     cs: CoroutineScope,
@@ -135,18 +136,18 @@ class BuildTargetTask(private val project: Project) {
     )
   }
 
-  private fun calculateStartBuildMessage(targetIds: List<Label>): String =
+  private fun calculateStartBuildMessage(targetIds: List<CanonicalLabel>): String =
     when (targetIds.size) {
       0 -> BazelPluginBundle.message("console.task.build.no.targets")
       1 -> BazelPluginBundle.message("console.task.build.in.progress.one", targetIds.first().toShortString(project))
       else -> BazelPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
     }
 
-  private fun createCompileParams(targetIds: List<Label>, originId: String) =
+  private fun createCompileParams(targetIds: List<CanonicalLabel>, originId: String) =
     CompileParams(targetIds, originId = originId, arguments = listOf("--keep_going"))
 }
 
-suspend fun runBuildTargetTask(targetIds: List<Label>, project: Project): CompileResult? {
+suspend fun runBuildTargetTask(targetIds: List<CanonicalLabel>, project: Project): CompileResult? {
   saveAllFiles()
   return withBackgroundProgress(project, BazelPluginBundle.message("background.progress.building.targets")) {
     project.connection.runWithServer { BuildTargetTask(project).execute(it, targetIds) }

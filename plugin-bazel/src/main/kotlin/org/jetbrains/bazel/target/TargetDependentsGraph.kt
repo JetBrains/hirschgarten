@@ -1,18 +1,18 @@
 package org.jetbrains.bazel.target
 
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.RawBuildTarget
 
 internal class TargetDependentsGraph(targets: List<RawBuildTarget>, libraryItems: List<LibraryItem>?) {
-  private val targetIdToDirectDependentIds = hashMapOf<Label, MutableSet<Label>>()
+  private val targetIdToDirectDependentIds = hashMapOf<CanonicalLabel, MutableSet<CanonicalLabel>>()
 
   init {
     for (targetInfo in targets) {
       val dependencies = targetInfo.dependencies
       for (dependency in dependencies) {
         targetIdToDirectDependentIds
-          .computeIfAbsent(dependency) { hashSetOf<Label>() }
+          .computeIfAbsent(dependency) { hashSetOf<CanonicalLabel>() }
           .add(targetInfo.id)
       }
     }
@@ -27,5 +27,5 @@ internal class TargetDependentsGraph(targets: List<RawBuildTarget>, libraryItems
     }
   }
 
-  fun directDependentIds(targetId: Label): Set<Label> = targetIdToDirectDependentIds.getOrDefault(targetId, emptySet())
+  fun directDependentIds(targetId: CanonicalLabel): Set<CanonicalLabel> = targetIdToDirectDependentIds.getOrDefault(targetId, emptySet())
 }

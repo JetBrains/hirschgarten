@@ -43,9 +43,9 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
 
     val exampleExampleBuildTarget =
       RawBuildTarget(
-        Label.parse("$targetPrefix//example:example"),
+        Label.parseCanonical("$targetPrefix//example:example"),
         tags = ImmutableList.of(),
-        dependencies = ImmutableList.of(Label.parse("@com_google_googletest//:gtest_main")),
+        dependencies = ImmutableList.of(Label.parseCanonical("@com_google_googletest//:gtest_main")),
         kind =
           TargetKind(
             kindString = "cc_binary",
@@ -78,11 +78,11 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
   }
 
   private fun cppOptions(): BazelBspTestScenarioStep {
-    val cppOptionsParams = CppOptionsParams(ImmutableList.of(Label.parse("$targetPrefix//example:example")))
+    val cppOptionsParams = CppOptionsParams(ImmutableList.of(Label.parseCanonical("$targetPrefix//example:example")))
 
     val exampleExampleCppOptionsItem =
       CppOptionsItem(
-        Label.parse("$targetPrefix//example:example"),
+        Label.parseCanonical("$targetPrefix//example:example"),
         ImmutableList.of("-Iexternal/gtest/include"),
         ImmutableList.of("BOOST_FALLTHROUGH"),
         ImmutableList.of("-pthread"),

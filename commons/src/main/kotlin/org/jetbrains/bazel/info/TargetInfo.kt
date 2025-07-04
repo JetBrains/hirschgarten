@@ -11,10 +11,7 @@ data class FileLocation(
 
 enum class DependencyType { COMPILE, RUNTIME }
 
-data class Dependency(
-  val id: CanonicalLabel,
-  val dependencyType: DependencyType,
-)
+data class Dependency(val id: CanonicalLabel, val dependencyType: DependencyType)
 
 data class JvmOutputs(
   val binaryJars: List<FileLocation>,
@@ -27,7 +24,7 @@ data class JvmTargetInfo(
   val generatedJars: List<JvmOutputs>,
   val javacOpts: List<String>,
   val jvmFlags: List<String>,
-  val mainClass: String?,
+  val mainClass: String,
   val args: List<String>,
   val jdeps: List<FileLocation>,
   val transitiveCompileTimeJars: List<FileLocation>,
@@ -39,9 +36,7 @@ data class JavaToolchainInfo(
   val javaHome: FileLocation,
 )
 
-data class JavaRuntimeInfo(
-  val javaHome: FileLocation,
-)
+data class JavaRuntimeInfo(val javaHome: FileLocation)
 
 data class ScalaTargetInfo(
   val scalacOpts: List<String>,
@@ -49,15 +44,9 @@ data class ScalaTargetInfo(
   val scalatestClasspath: List<FileLocation>,
 )
 
-data class KotlincPluginOption(
-  val pluginId: String,
-  val optionValue: String,
-)
+data class KotlincPluginOption(val pluginId: String, val optionValue: String)
 
-data class KotlincPluginInfo(
-  val pluginJars: List<FileLocation>,
-  val kotlincPluginOptions: List<KotlincPluginOption>,
-)
+data class KotlincPluginInfo(val pluginJars: List<FileLocation>, val kotlincPluginOptions: List<KotlincPluginOption>)
 
 data class KotlinTargetInfo(
   val languageVersion: String,
@@ -92,8 +81,8 @@ data class CppTargetInfo(
   val transitiveQuoteIncludeDirectories: List<String>,
   val transitiveDefines: List<String>,
   val transitiveSystemIncludeDirectories: List<String>,
-  val includePrefix: String?,
-  val stripIncludePrefix: String?,
+  val includePrefix: String,
+  val stripIncludePrefix: String,
 )
 
 data class CToolchainInfo(
@@ -135,7 +124,6 @@ data class TargetInfo(
   val envInherit: List<String>,
   val executable: Boolean,
   val workspaceName: String,
-
   val jvmTargetInfo: JvmTargetInfo? = null,
   val javaToolchainInfo: JavaToolchainInfo? = null,
   val javaRuntimeInfo: JavaRuntimeInfo? = null,

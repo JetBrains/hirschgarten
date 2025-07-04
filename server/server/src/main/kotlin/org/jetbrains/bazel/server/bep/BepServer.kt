@@ -14,6 +14,8 @@ import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.logger.BspClientLogger
 import org.jetbrains.bazel.logger.BspClientTestNotifier
+import org.jetbrains.bazel.server.bzlmod.TodoRepoMapping
+import org.jetbrains.bazel.server.bzlmod.canonicalize
 import org.jetbrains.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.protocol.CompileReport
@@ -328,7 +330,7 @@ class BepServer(
   }
 
   private fun consumeCompletedEvent(event: BuildEventStreamProtos.BuildEvent) {
-    val eventLabel = Label.parseOrNull(event.id.targetCompleted.label)
+    val eventLabel = Label.parseOrNull(event.id.targetCompleted.label)?.canonicalize(TodoRepoMapping)
     val label =
       eventLabel ?: run {
         LOGGER.warn("No target label found in event {}", event)

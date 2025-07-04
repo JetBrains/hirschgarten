@@ -2,7 +2,6 @@ package org.jetbrains.bsp.protocol
 
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.bazel.label.CanonicalLabel
-import org.jetbrains.bazel.label.Label
 
 data class RunParams(
   val target: CanonicalLabel,

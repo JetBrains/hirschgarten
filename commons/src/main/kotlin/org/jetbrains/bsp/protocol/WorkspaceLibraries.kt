@@ -1,11 +1,11 @@
 package org.jetbrains.bsp.protocol
 
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import java.nio.file.Path
 
 public data class LibraryItem(
-  val id: Label,
-  val dependencies: List<Label>,
+  val id: CanonicalLabel,
+  val dependencies: List<CanonicalLabel>,
   val ijars: List<Path>,
   val jars: List<Path>,
   val sourceJars: List<Path>,
@@ -20,7 +20,7 @@ data class MavenCoordinates(
 )
 
 public data class GoLibraryItem(
-  val id: Label,
+  val id: CanonicalLabel,
   val goImportPath: String? = null,
   val goRoot: Path? = null,
 )

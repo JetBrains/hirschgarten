@@ -2,7 +2,6 @@ package org.jetbrains.bazel.server.model
 
 import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.label.CanonicalLabel
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.SourceItem
 import java.nio.file.Path
 

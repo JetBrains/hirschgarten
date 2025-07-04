@@ -9,5 +9,5 @@ kt_library(
     deps = [
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/commons",
-            ],
+    ],
 )

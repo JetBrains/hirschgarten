@@ -257,7 +257,8 @@ class DependencyGraphTest {
       val k = targetInfo("//k", listOf("//L"))
       val l = targetInfo("//L", listOf())
       val idToTargetInfo = toIdToTargetInfoMap(a, b, c, d, e, f, g, h, i, j, k, l)
-      val rootTargets = setOf(Label.parseCanonical("//A"), Label.parseCanonical("//B"), Label.parseCanonical("//F"), Label.parseCanonical("//L"))
+      val rootTargets =
+        setOf(Label.parseCanonical("//A"), Label.parseCanonical("//B"), Label.parseCanonical("//F"), Label.parseCanonical("//L"))
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
@@ -312,7 +313,8 @@ class DependencyGraphTest {
       val k = targetInfo("//k", listOf("//L"))
       val l = targetInfo("//L", listOf())
       val idToTargetInfo = toIdToTargetInfoMap(a, b, c, d, e, f, g, h, i, j, k, l)
-      val rootTargets = setOf(Label.parseCanonical("//A"), Label.parseCanonical("//B"), Label.parseCanonical("//F"), Label.parseCanonical("//L"))
+      val rootTargets =
+        setOf(Label.parseCanonical("//A"), Label.parseCanonical("//B"), Label.parseCanonical("//F"), Label.parseCanonical("//L"))
       val dependencyGraph = DependencyGraph(rootTargets, idToTargetInfo)
 
       // when
@@ -652,10 +654,11 @@ class DependencyGraphTest {
     )
   }
 
-  private fun dependency(id: String): Dependency = Dependency(
-    id = Label.parseCanonical(id),
-    dependencyType = DependencyType.COMPILE
-  )
+  private fun dependency(id: String): Dependency =
+    Dependency(
+      id = Label.parseCanonical(id),
+      dependencyType = DependencyType.COMPILE,
+    )
 
   private fun toIdToTargetInfoMap(vararg targetIds: TargetInfo): Map<CanonicalLabel, TargetInfo> =
     targetIds.associateBy { targetId -> targetId.id }

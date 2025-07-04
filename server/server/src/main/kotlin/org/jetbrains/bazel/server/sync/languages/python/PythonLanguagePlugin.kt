@@ -72,8 +72,7 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
       emptySet()
     }
 
-  private fun getExternalSources(targetInfo: TargetInfo): List<FileLocation> =
-    targetInfo.sources.mapNotNull { it.takeIf { it.isExternal } }
+  private fun getExternalSources(targetInfo: TargetInfo): List<FileLocation> = targetInfo.sources.mapNotNull { it.takeIf { it.isExternal } }
 
   private fun calculateExternalSourcePath(externalSource: FileLocation): Path {
     val path = bazelPathsResolver.resolve(externalSource)

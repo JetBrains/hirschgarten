@@ -6,7 +6,6 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.assumeLabel
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
@@ -37,11 +36,11 @@ class FirstPhaseTargetToBspMapper(private val bazelPathsResolver: BazelPathsReso
   }
 
   private fun Target.toBspBuildTarget(project: FirstPhaseProject): RawBuildTarget {
-    val label = Label.parse(name).assumeLabel()
+    val label = Label.parseCanonical(name)
     return RawBuildTarget(
       id = label,
       tags = inferTags(),
-      dependencies = interestingDeps.map { Label.parse(it) },
+      dependencies = interestingDeps.map { Label.parseCanonical(it) },
       kind = inferKind(),
       sources = calculateSources(project),
       resources = calculateResources(project),

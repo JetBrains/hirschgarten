@@ -83,7 +83,7 @@ private fun createMockProject(lightweightModules: List<Build.Target>, allowManua
   FirstPhaseProject(
     workspaceRoot = Path("/path/to/workspace"),
     bazelRelease = BazelRelease(7),
-    modules = lightweightModules.associateBy { Label.parse(it.rule.name) },
+    modules = lightweightModules.associateBy { Label.parseCanonical(it.rule.name) },
     repoMapping = RepoMappingDisabled,
     workspaceContext = createMockWorkspaceContext(allowManualTargetsSync),
   )
@@ -242,9 +242,9 @@ class FirstPhaseTargetToBspMapperTest {
         listOf(
           // target1: unchanged
           RawBuildTarget(
-            id = Label.parse("//target1"),
+            id = Label.parseCanonical("//target1"),
             tags = listOf(),
-            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            dependencies = listOf(Label.parseCanonical("//dep/target1"), Label.parseCanonical("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "java_library",
@@ -265,9 +265,9 @@ class FirstPhaseTargetToBspMapperTest {
           ),
           // target2: now merges its declared language with those inferred from its .kt sources
           RawBuildTarget(
-            id = Label.parse("//target2"),
+            id = Label.parseCanonical("//target2"),
             tags = listOf(),
-            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            dependencies = listOf(Label.parseCanonical("//dep/target1"), Label.parseCanonical("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "java_binary",
@@ -284,9 +284,9 @@ class FirstPhaseTargetToBspMapperTest {
           ),
           // target3
           RawBuildTarget(
-            id = Label.parse("//target3"),
+            id = Label.parseCanonical("//target3"),
             tags = listOf(),
-            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            dependencies = listOf(Label.parseCanonical("//dep/target1"), Label.parseCanonical("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "java_test",
@@ -303,9 +303,9 @@ class FirstPhaseTargetToBspMapperTest {
           ),
           // target4
           RawBuildTarget(
-            id = Label.parse("//target4"),
+            id = Label.parseCanonical("//target4"),
             tags = listOf(),
-            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            dependencies = listOf(Label.parseCanonical("//dep/target1"), Label.parseCanonical("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "kt_jvm_library",
@@ -318,9 +318,9 @@ class FirstPhaseTargetToBspMapperTest {
           ),
           // target5
           RawBuildTarget(
-            id = Label.parse("//target5"),
+            id = Label.parseCanonical("//target5"),
             tags = listOf(),
-            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            dependencies = listOf(Label.parseCanonical("//dep/target1"), Label.parseCanonical("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "kt_jvm_binary",
@@ -333,9 +333,9 @@ class FirstPhaseTargetToBspMapperTest {
           ),
           // target6
           RawBuildTarget(
-            id = Label.parse("//target6"),
+            id = Label.parseCanonical("//target6"),
             tags = listOf(),
-            dependencies = listOf(Label.parse("//dep/target1"), Label.parse("//dep/target2")),
+            dependencies = listOf(Label.parseCanonical("//dep/target1"), Label.parseCanonical("//dep/target2")),
             kind =
               TargetKind(
                 kindString = "kt_jvm_test",
@@ -348,7 +348,7 @@ class FirstPhaseTargetToBspMapperTest {
           ),
           // target7: now with its created source files
           RawBuildTarget(
-            id = Label.parse("//target7"),
+            id = Label.parseCanonical("//target7"),
             tags = listOf(),
             dependencies = emptyList(),
             kind =
@@ -367,7 +367,7 @@ class FirstPhaseTargetToBspMapperTest {
           ),
           // target8: merging its own source and the sources from filegroupSources dependency
           RawBuildTarget(
-            id = Label.parse("//target8"),
+            id = Label.parseCanonical("//target8"),
             tags = listOf(),
             dependencies = emptyList(),
             kind =
@@ -394,7 +394,7 @@ class FirstPhaseTargetToBspMapperTest {
             baseDirectory = workspaceRoot.resolve(Path("target8")),
           ),
           RawBuildTarget(
-            id = Label.parse("//filegroupSources"),
+            id = Label.parseCanonical("//filegroupSources"),
             tags = listOf(),
             dependencies = emptyList(),
             kind =

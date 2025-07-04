@@ -4,7 +4,7 @@ import com.intellij.openapi.util.SystemInfo
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.testkit.client.TestClient
@@ -165,7 +165,7 @@ abstract class BazelBspTestBaseScenario {
 
   private fun executeScenarioSteps(): Boolean = scenarioSteps().map { it.executeAndReturnResult() }.all { it }
 
-  protected fun expectedTargetIdentifiers(): List<Label> = expectedWorkspaceBuildTargetsResult().targets.map { it.id }
+  protected fun expectedTargetIdentifiers(): List<CanonicalLabel> = expectedWorkspaceBuildTargetsResult().targets.map { it.id }
 
   protected abstract fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult
 

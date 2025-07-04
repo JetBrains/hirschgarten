@@ -42,7 +42,11 @@ class JavaLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver, pri
 
   override fun calculateJvmPackagePrefix(source: Path): String? = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source)
 
-  private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass?.isBlank() == true }
+  private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? =
+    jvmTargetInfo.mainClass.takeUnless {
+      jvmTargetInfo.mainClass?.isBlank() ==
+        true
+    }
 
   override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<Path> =
     emptySet() // Provided via workspace/libraries

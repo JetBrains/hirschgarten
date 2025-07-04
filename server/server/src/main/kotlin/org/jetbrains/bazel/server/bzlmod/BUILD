@@ -8,5 +8,5 @@ kt_library(
     visibility = ["//server/server:__subpackages__"],
     deps = [
         "//server/bazelrunner",
-            ],
+    ],
 )

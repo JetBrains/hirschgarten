@@ -52,7 +52,7 @@ class AndroidLanguagePlugin(
     val androidTargetInfo = targetInfo.androidTargetInfo ?: return null
     val androidJar = bazelPathsResolver.resolve(androidTargetInfo.androidJar)
     val manifest =
-        bazelPathsResolver.resolve(androidTargetInfo.manifest)
+      bazelPathsResolver.resolve(androidTargetInfo.manifest)
     val manifestOverrides =
       androidTargetInfo.manifestOverrides.run {
         androidMinSdkOverride?.let { androidMinSdkOverride ->

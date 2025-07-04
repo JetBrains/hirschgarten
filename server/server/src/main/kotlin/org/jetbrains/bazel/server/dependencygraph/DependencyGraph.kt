@@ -2,9 +2,11 @@ package org.jetbrains.bazel.server.dependencygraph
 
 import org.jetbrains.bazel.info.TargetInfo
 import org.jetbrains.bazel.label.CanonicalLabel
-import org.jetbrains.bazel.label.Label
 
-class DependencyGraph(private val rootTargets: Set<CanonicalLabel> = emptySet(), private val idToTargetInfo: Map<CanonicalLabel, TargetInfo> = emptyMap()) {
+class DependencyGraph(
+  private val rootTargets: Set<CanonicalLabel> = emptySet(),
+  private val idToTargetInfo: Map<CanonicalLabel, TargetInfo> = emptyMap(),
+) {
   private val idToDirectDependenciesIds = mutableMapOf<CanonicalLabel, Set<CanonicalLabel>>()
   private val idToReverseDependenciesIds = mutableMapOf<CanonicalLabel, HashSet<CanonicalLabel>>()
   private val idToLazyTransitiveDependencies: Map<CanonicalLabel, Lazy<Set<TargetInfo>>>
@@ -25,7 +27,9 @@ class DependencyGraph(private val rootTargets: Set<CanonicalLabel> = emptySet(),
 
   fun getReverseDependencies(id: CanonicalLabel): Set<CanonicalLabel> = idToReverseDependenciesIds[id].orEmpty()
 
-  private fun createIdToLazyTransitiveDependenciesMap(idToTargetInfo: Map<CanonicalLabel, TargetInfo>): Map<CanonicalLabel, Lazy<Set<TargetInfo>>> =
+  private fun createIdToLazyTransitiveDependenciesMap(
+    idToTargetInfo: Map<CanonicalLabel, TargetInfo>,
+  ): Map<CanonicalLabel, Lazy<Set<TargetInfo>>> =
     idToTargetInfo.mapValues { (_, targetInfo) ->
       calculateLazyTransitiveDependenciesForTarget(targetInfo)
     }
@@ -46,7 +50,8 @@ class DependencyGraph(private val rootTargets: Set<CanonicalLabel> = emptySet(),
         idToLazyTransitiveDependencies[it]?.value.orEmpty()
       }.toSet()
 
-  private fun idsToTargetInfo(dependencies: Collection<CanonicalLabel>): Set<TargetInfo> = dependencies.mapNotNull(idToTargetInfo::get).toSet()
+  private fun idsToTargetInfo(dependencies: Collection<CanonicalLabel>): Set<TargetInfo> =
+    dependencies.mapNotNull(idToTargetInfo::get).toSet()
 
   private fun directDependenciesIds(targetIds: Set<CanonicalLabel>) =
     targetIds
@@ -108,7 +113,8 @@ class DependencyGraph(private val rootTargets: Set<CanonicalLabel> = emptySet(),
       .toSet()
 
   private fun getDependencies(target: TargetInfo): Set<CanonicalLabel> =
-    target.dependencies.map {it.id}
+    target.dependencies
+      .map { it.id }
       .toSet()
 
   private fun isNotARootTarget(targetId: CanonicalLabel): Boolean = !rootTargets.contains(targetId)

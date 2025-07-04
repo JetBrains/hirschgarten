@@ -25,19 +25,23 @@ data class BzlmodRepoMapping(
 
 data object RepoMappingDisabled : RepoMapping
 
+data object TodoRepoMapping : RepoMapping
+
 fun Label.canonicalize(repoMapping: RepoMapping): CanonicalLabel =
-      when (this) {
-        is ApparentLabel -> {
-          val apparentRepoName = this.repoName
-          val canonicalRepoName = when (repoMapping) {
-            is BzlmodRepoMapping -> repoMapping.apparentRepoNameToCanonicalName[apparentRepoName]
+  when (this) {
+    is ApparentLabel -> {
+      val apparentRepoName = this.repoName
+      val canonicalRepoName =
+        when (repoMapping) {
+          is BzlmodRepoMapping ->
+            repoMapping.apparentRepoNameToCanonicalName[apparentRepoName]
               ?: error("No canonical name found for $this")
-            RepoMappingDisabled -> apparentRepoName
-          }
-          CanonicalLabel.fromParts(canonicalRepoName, this.packagePath, this.target)
+          RepoMappingDisabled, TodoRepoMapping -> apparentRepoName
         }
-        is CanonicalLabel -> this
-      }
+      CanonicalLabel.fromParts(canonicalRepoName, this.packagePath, this.target)
+    }
+    is CanonicalLabel -> this
+  }
 
 val rootRulesToNeededTransitiveRules = mapOf("rules_kotlin" to listOf("rules_java"))
 

@@ -2,7 +2,6 @@ package org.jetbrains.bazel.server.sync.languages.scala
 
 import org.jetbrains.bazel.info.TargetInfo
 import org.jetbrains.bazel.label.CanonicalLabel
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.JVMLanguagePluginParser
@@ -31,7 +30,8 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
         .associateBy(
           { it.id },
           {
-            it.scalaTargetInfo!!.scalatestClasspath
+            it.scalaTargetInfo!!
+              .scalatestClasspath
               .map(bazelPathsResolver::resolve)
               .toSet()
           },

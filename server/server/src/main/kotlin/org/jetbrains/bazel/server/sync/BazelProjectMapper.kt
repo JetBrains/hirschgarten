@@ -254,7 +254,12 @@ class BazelProjectMapper(
     targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(Label.parseCanonical(target.id.toString() + "_output_jars"), target, onlyOutputJars = true, isInternalTarget = true)?.let { library ->
+        createLibrary(
+          Label.parseCanonical(target.id.toString() + "_output_jars"),
+          target,
+          onlyOutputJars = true,
+          isInternalTarget = true,
+        )?.let { library ->
           target.id to listOf(library)
         }
       }.toMap()
@@ -275,12 +280,14 @@ class BazelProjectMapper(
           Library(
             label = Label.parseCanonical(targetInfo.id.toString() + "_generated"),
             outputs =
-              targetInfo.jvmTargetInfo!!.generatedJars
+              targetInfo.jvmTargetInfo!!
+                .generatedJars
                 .flatMap { it.binaryJars }
                 .map { bazelPathsResolver.resolve(it) }
                 .toSet(),
             sources =
-              targetInfo.jvmTargetInfo!!.generatedJars
+              targetInfo.jvmTargetInfo!!
+                .generatedJars
                 .flatMap { it.sourceJars }
                 .map { bazelPathsResolver.resolve(it) }
                 .toSet(),
@@ -333,7 +340,8 @@ class BazelProjectMapper(
       .filter { it.kotlinTargetInfo != null && it.kotlinTargetInfo!!.kotlincPluginInfos.isNotEmpty() }
       .associate {
         val pluginClasspaths =
-          it.kotlinTargetInfo!!.kotlincPluginInfos
+          it.kotlinTargetInfo!!
+            .kotlincPluginInfos
             .flatMap { it.pluginJars }
             .map { bazelPathsResolver.resolve(it) }
             .distinct()
@@ -419,7 +427,7 @@ class BazelProjectMapper(
 
     val outputs = listOfNotNull(target.androidTargetInfo?.aidlBinaryJar).resolvePaths()
     val sources =
-        listOfNotNull(target.androidTargetInfo?.aidlSourceJar).resolvePaths()
+      listOfNotNull(target.androidTargetInfo?.aidlSourceJar).resolvePaths()
     return Library(
       label = libraryLabel,
       outputs = outputs,
@@ -573,7 +581,8 @@ class BazelProjectMapper(
     }
 
   private fun dependencyJarsFromJdepsFiles(targetInfo: TargetInfo): Set<Path> =
-    targetInfo.jvmTargetInfo!!.jdeps
+    targetInfo.jvmTargetInfo!!
+      .jdeps
       .flatMap { jdeps ->
         val path = bazelPathsResolver.resolve(jdeps)
         if (path.toFile().exists()) {
@@ -621,7 +630,7 @@ class BazelProjectMapper(
   }
 
   private fun createNonModuleTargets(
-    targets: Map<Label, TargetInfo>,
+    targets: Map<CanonicalLabel, TargetInfo>,
     repoMapping: RepoMapping,
     workspaceContext: WorkspaceContext,
   ): List<NonModuleTarget> =
@@ -741,7 +750,8 @@ class BazelProjectMapper(
         val jdepsJars = collectReverseDepsJdepsJars(targetLabel, dependencyGraph, extraLibrariesFromJdeps)
         val explicitlyDefinedThirdPartyLibraries = extractExplicitThirdPartyLibraries(explicitCompileTimeInterfaces)
         targetLabel to
-          targetInfo.jvmTargetInfo!!.transitiveCompileTimeJars
+          targetInfo.jvmTargetInfo!!
+            .transitiveCompileTimeJars
             .map { bazelPathsResolver.resolve(it) }
             .filter { path ->
               explicitCompileTimeInterfaces.contains(path) ||
@@ -845,22 +855,25 @@ class BazelProjectMapper(
   }
 
   private fun getSourceJarPaths(targetInfo: TargetInfo) =
-    targetInfo.jvmTargetInfo!!.jars
+    targetInfo.jvmTargetInfo!!
+      .jars
       .flatMap { it.sourceJars }
       .resolvePaths()
 
   private fun getTargetOutputJarsSet(targetInfo: TargetInfo) = getTargetOutputJarsList(targetInfo).toSet()
 
   private fun getTargetOutputJarsList(targetInfo: TargetInfo) =
-    targetInfo.jvmTargetInfo!!.jars
+    targetInfo.jvmTargetInfo!!
+      .jars
       .flatMap { it.binaryJars }
       .map { bazelPathsResolver.resolve(it) }
 
   private fun getTargetInterfaceJarsSet(targetInfo: TargetInfo) = getTargetInterfaceJarsList(targetInfo).toSet()
 
   private fun getTargetInterfaceJarsList(targetInfo: TargetInfo) =
-    targetInfo.jvmTargetInfo!!.jars
-      .flatMap { it.interfaceJars}
+    targetInfo.jvmTargetInfo!!
+      .jars
+      .flatMap { it.interfaceJars }
       .map { bazelPathsResolver.resolve(it) }
 
   private fun getGoRootPath(targetInfo: TargetInfo, repoMapping: RepoMapping): Path =

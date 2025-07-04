@@ -49,7 +49,7 @@ object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
 
     val exampleExampleBuildTarget =
       RawBuildTarget(
-        Label.parse("$targetPrefix//example:example"),
+        Label.parseCanonical("$targetPrefix//example:example"),
         listOf(),
         emptyList(),
         TargetKind(

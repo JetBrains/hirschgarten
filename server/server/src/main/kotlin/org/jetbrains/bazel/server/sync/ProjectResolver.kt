@@ -15,7 +15,6 @@ import org.jetbrains.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerat
 import org.jetbrains.bazel.server.bsp.managers.BazelExternalRulesetsQueryImpl
 import org.jetbrains.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bazel.server.bzlmod.calculateRepoMapping
-import org.jetbrains.bazel.server.bzlmod.canonicalize
 import org.jetbrains.bazel.server.model.AspectSyncProject
 import org.jetbrains.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bazel.server.paths.BazelPathsResolver

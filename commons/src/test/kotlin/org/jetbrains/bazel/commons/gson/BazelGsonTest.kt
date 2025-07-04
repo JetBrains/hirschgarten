@@ -20,9 +20,9 @@ class BazelGsonTest {
   fun `test BuildTarget serialization`() {
     val buildTarget =
       RawBuildTarget(
-        id = Label.parse("//foo:bar"),
+        id = Label.parseCanonical("//foo:bar"),
         tags = listOf("tag1", "tag2"),
-        dependencies = listOf(Label.parse("//baz:qux")),
+        dependencies = listOf(Label.parseCanonical("//baz:qux")),
         kind =
           TargetKind(
             kindString = "java_library",
@@ -75,8 +75,8 @@ class BazelGsonTest {
     @JvmStatic
     fun labelProvider(): Stream<Arguments> =
       Stream.of(
-        Arguments.of(Label.parse("//foo:bar")),
-        Arguments.of(Label.parse("@//baz")),
+        Arguments.of(Label.parseCanonical("//foo:bar")),
+        Arguments.of(Label.parseCanonical("@//baz")),
       )
 
     @JvmStatic

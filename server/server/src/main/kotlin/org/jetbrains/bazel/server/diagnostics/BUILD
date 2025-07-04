@@ -8,5 +8,5 @@ kt_library(
         "//commons/src/main/kotlin/org/jetbrains/bsp/protocol",
         "//server/bazelrunner",
         "//server/commons",
-            ],
+    ],
 )

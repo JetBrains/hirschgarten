@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.target.sync
 
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.sync.ProjectSyncHook
 import org.jetbrains.bazel.target.sync.projectStructure.targetUtilsDiff
 import org.jetbrains.bsp.protocol.BuildTarget
@@ -17,8 +17,8 @@ private class TargetUtilsSyncHook : ProjectSyncHook {
       calculateFileToTarget(bspTargets, withLowPrioritySharedSources = false)
   }
 
-  private fun calculateFileToTarget(targets: List<BuildTarget>, withLowPrioritySharedSources: Boolean): Map<Path, List<Label>> {
-    val resultMap = HashMap<Path, MutableList<Label>>()
+  private fun calculateFileToTarget(targets: List<BuildTarget>, withLowPrioritySharedSources: Boolean): Map<Path, List<CanonicalLabel>> {
+    val resultMap = HashMap<Path, MutableList<CanonicalLabel>>()
     for (target in targets) {
       target as RawBuildTarget
       val sources =

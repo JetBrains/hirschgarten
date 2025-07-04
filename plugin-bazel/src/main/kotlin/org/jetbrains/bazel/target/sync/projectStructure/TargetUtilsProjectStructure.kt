@@ -2,7 +2,7 @@ package org.jetbrains.bazel.target.sync.projectStructure
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.sync.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.bazel.sync.projectStructure.ProjectStructureDiff
 import org.jetbrains.bazel.sync.projectStructure.ProjectStructureProvider
@@ -17,8 +17,8 @@ import java.nio.file.Path
 
 class TargetUtilsProjectStructureDiff : ProjectStructureDiff {
   var bspTargets: List<RawBuildTarget> = emptyList()
-  var fileToTarget: Map<Path, List<Label>> = emptyMap()
-  var fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<Label>> = emptyMap()
+  var fileToTarget: Map<Path, List<CanonicalLabel>> = emptyMap()
+  var fileToTargetWithoutLowPrioritySharedSources: Map<Path, List<CanonicalLabel>> = emptyMap()
   var libraryItems: List<LibraryItem>? = null
 
   override suspend fun apply(

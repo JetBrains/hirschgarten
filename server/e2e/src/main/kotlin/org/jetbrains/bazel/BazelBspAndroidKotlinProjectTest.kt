@@ -81,14 +81,14 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
 
     val appBuildTarget =
       RawBuildTarget(
-        Label.parse("@@//src/main:app"),
+        Label.parseCanonical("@@//src/main:app"),
         listOf(),
         listOf(
-          Label.parse("@@//src/main/java/com/example/myapplication:lib"),
+          Label.parseCanonical("@@//src/main/java/com/example/myapplication:lib"),
           // TODO: ideally these non-existent dependencies should be filtered out somehow
           // See KotlinAndroidModulesMerger for more explanation
-          Label.parse("@@//src/main/java/com/example/myapplication:lib_base"),
-          Label.parse("@@//src/main/java/com/example/myapplication:lib_kt"),
+          Label.parseCanonical("@@//src/main/java/com/example/myapplication:lib_base"),
+          Label.parseCanonical("@@//src/main/java/com/example/myapplication:lib_kt"),
         ),
         kind =
           TargetKind(
@@ -104,10 +104,10 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
 
     val libBuildTarget =
       RawBuildTarget(
-        Label.parse("@@//src/main/java/com/example/myapplication:lib"),
+        Label.parseCanonical("@@//src/main/java/com/example/myapplication:lib"),
         listOf(),
         listOf(
-          Label.parse("@@rules_jvm_external~~maven~maven//:androidx_appcompat_appcompat"),
+          Label.parseCanonical("@@rules_jvm_external~~maven~maven//:androidx_appcompat_appcompat"),
           Label.synthetic("rules_kotlin_kotlin-stdlibs"),
         ),
         kind =
@@ -128,15 +128,15 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
 
     val libTestBuildTarget =
       RawBuildTarget(
-        Label.parse("@@//src/test/java/com/example/myapplication:lib_test"),
+        Label.parseCanonical("@@//src/test/java/com/example/myapplication:lib_test"),
         listOf(),
         listOf(
-          Label.parse("@@//src/main/java/com/example/myapplication:lib"),
-          Label.parse("@@//src/main/java/com/example/myapplication:lib_base"),
-          Label.parse("@@//src/main/java/com/example/myapplication:lib_kt"),
-          Label.parse("@@rules_jvm_external~~maven~maven//:junit_junit"),
-          Label.parse("@@rules_jvm_external~~maven~maven//:org_robolectric_robolectric"),
-          Label.parse("@@rules_robolectric~//bazel:android-all"),
+          Label.parseCanonical("@@//src/main/java/com/example/myapplication:lib"),
+          Label.parseCanonical("@@//src/main/java/com/example/myapplication:lib_base"),
+          Label.parseCanonical("@@//src/main/java/com/example/myapplication:lib_kt"),
+          Label.parseCanonical("@@rules_jvm_external~~maven~maven//:junit_junit"),
+          Label.parseCanonical("@@rules_jvm_external~~maven~maven//:org_robolectric_robolectric"),
+          Label.parseCanonical("@@rules_robolectric~//bazel:android-all"),
           Label.synthetic("rules_kotlin_kotlin-stdlibs"),
         ),
         kind =

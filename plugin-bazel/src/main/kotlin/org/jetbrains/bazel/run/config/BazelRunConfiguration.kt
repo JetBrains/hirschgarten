@@ -12,9 +12,12 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.WriteExternalException
 import org.jdom.Element
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.run.BazelRunHandler
 import org.jetbrains.bazel.run.RunHandlerProvider
+import org.jetbrains.bazel.server.bzlmod.TodoRepoMapping
+import org.jetbrains.bazel.server.bzlmod.canonicalize
 
 // Use BazelRunConfigurationType.createTemplateConfiguration(project) to create a new BazelRunConfiguration.
 class BazelRunConfiguration internal constructor(
@@ -30,10 +33,10 @@ class BazelRunConfiguration internal constructor(
   /** The BSP-specific parts of the last serialized state of this run configuration. */
   private var bspElementState = Element(BSP_STATE_TAG)
 
-  var targets: List<Label> = emptyList()
+  var targets: List<CanonicalLabel> = emptyList()
     private set // private because we need to set the targets directly when running readExternal
 
-  fun updateTargets(newTargets: List<Label>, runHandlerProvider: RunHandlerProvider? = null) {
+  fun updateTargets(newTargets: List<CanonicalLabel>, runHandlerProvider: RunHandlerProvider? = null) {
     targets = newTargets
     updateHandlerIfDifferentProvider(runHandlerProvider ?: RunHandlerProvider.getRunHandlerProvider(project, newTargets))
   }
@@ -76,7 +79,7 @@ class BazelRunConfiguration internal constructor(
       targets.add(targetElement.text)
     }
 
-    this.targets = targets.map { Label.parse(it) }
+    this.targets = targets.map { Label.parse(it).canonicalize(TodoRepoMapping) }
 
     // It should be possible to load the configuration before the project is synchronized,
     // so we can't access targets' data here. Instead, we have to use the stored provider ID.

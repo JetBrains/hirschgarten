@@ -70,7 +70,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
 
     val manualTargetJavaLibrary =
       RawBuildTarget(
-        Label.parse("$targetPrefix//manual_target:java_library"),
+        Label.parseCanonical("$targetPrefix//manual_target:java_library"),
         tags = listOf("manual"),
         dependencies = emptyList(),
         kind =
@@ -94,7 +94,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
 
     val manualTargetJavaBinary =
       RawBuildTarget(
-        Label.parse("$targetPrefix//manual_target:java_binary"),
+        Label.parseCanonical("$targetPrefix//manual_target:java_binary"),
         tags = listOf("manual"),
         dependencies = emptyList(),
         kind =
@@ -118,7 +118,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
 
     val manualTargetJavaTest =
       RawBuildTarget(
-        Label.parse("$targetPrefix//manual_target:java_test"),
+        Label.parseCanonical("$targetPrefix//manual_target:java_test"),
         tags = listOf("manual"),
         dependencies = emptyList(),
         kind =

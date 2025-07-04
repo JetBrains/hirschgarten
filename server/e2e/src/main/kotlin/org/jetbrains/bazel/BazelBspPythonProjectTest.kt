@@ -53,10 +53,10 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
 
     val exampleExampleBuildTarget =
       RawBuildTarget(
-        Label.parse("$targetPrefix//example:example"),
+        Label.parseCanonical("$targetPrefix//example:example"),
         listOf(),
         listOf(
-          Label.parse("$targetPrefix//lib:example_library"),
+          Label.parseCanonical("$targetPrefix//lib:example_library"),
         ),
         TargetKind(
           kindString = "py_binary",
@@ -77,7 +77,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
 
     val exampleExampleLibBuildTarget =
       RawBuildTarget(
-        Label.parse("$targetPrefix//lib:example_library"),
+        Label.parseCanonical("$targetPrefix//lib:example_library"),
         listOf(),
         listOf(),
         TargetKind(
@@ -99,7 +99,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
 
     val exampleExampleTestBuildTarget =
       RawBuildTarget(
-        Label.parse("$targetPrefix//test:test"),
+        Label.parseCanonical("$targetPrefix//test:test"),
         listOf(),
         listOf(),
         TargetKind(
@@ -144,7 +144,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
   private fun dependencySourcesResults(): BazelBspTestScenarioStep {
     val expectedPythonDependencySourcesItems =
       expectedWorkspaceBuildTargetsResult().targets.map {
-        if (it.id == Label.parse("$targetPrefix//lib:example_library")) {
+        if (it.id == Label.parseCanonical("$targetPrefix//lib:example_library")) {
           DependencySourcesItem(
             it.id,
             listOf(),

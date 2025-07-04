@@ -2,7 +2,6 @@ package org.jetbrains.bsp.protocol
 
 import org.jetbrains.bazel.info.TargetInfo
 import org.jetbrains.bazel.label.CanonicalLabel
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 
 data class BazelProject(val targets: Map<CanonicalLabel, TargetInfo>, val hasError: Boolean)

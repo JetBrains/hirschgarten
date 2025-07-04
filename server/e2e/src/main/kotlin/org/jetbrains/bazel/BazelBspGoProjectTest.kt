@@ -8,6 +8,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import org.jetbrains.bsp.protocol.GoLibraryItem
@@ -79,8 +80,8 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
         ),
       dependencies =
         listOf(
-          Label.parse("$targetPrefix//lib:go_default_library"),
-          Label.parse("@org_golang_x_text//cases:cases"),
+          Label.parseCanonical("$targetPrefix//lib:go_default_library"),
+          Label.parseCanonical("@org_golang_x_text//cases:cases"),
         ),
       importPath = "example/hello",
       sources =
@@ -141,7 +142,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     kind: TargetKind,
     importPath: String,
     sdkHomePath: Path = defaultSdkHomePath,
-    dependencies: List<Label> = listOf(),
+    dependencies: List<CanonicalLabel> = listOf(),
     sources: List<SourceItem> = emptyList(),
   ): RawBuildTarget {
     val goBuildTarget =
@@ -155,7 +156,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
 
     val buildTargetData =
       RawBuildTarget(
-        Label.parse("$targetPrefix//$targetDirectory:$targetName"),
+        Label.parseCanonical("$targetPrefix//$targetDirectory:$targetName"),
         tags = tags,
         dependencies = dependencies,
         kind = kind,
@@ -180,42 +181,42 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     val expectedLibraries =
       listOf(
         GoLibraryItem(
-          id = Label.parse("@org_golang_x_text//cases:cases"),
+          id = Label.parseCanonical("@org_golang_x_text//cases:cases"),
           goImportPath = "golang.org/x/text/cases",
           goRoot = Path(libraryRoot + "cases/"),
         ),
         GoLibraryItem(
-          id = Label.parse("@org_golang_x_text//internal:internal"),
+          id = Label.parseCanonical("@org_golang_x_text//internal:internal"),
           goImportPath = "golang.org/x/text/internal",
           goRoot = Path(libraryRoot + "internal/"),
         ),
         GoLibraryItem(
-          id = Label.parse("@org_golang_x_text//internal/language:language"),
+          id = Label.parseCanonical("@org_golang_x_text//internal/language:language"),
           goImportPath = "golang.org/x/text/internal/language",
           goRoot = Path(libraryRoot + "internal/language/"),
         ),
         GoLibraryItem(
-          id = Label.parse("@org_golang_x_text//internal/language/compact:compact"),
+          id = Label.parseCanonical("@org_golang_x_text//internal/language/compact:compact"),
           goImportPath = "golang.org/x/text/internal/language/compact",
           goRoot = Path(libraryRoot + "internal/language/compact/"),
         ),
         GoLibraryItem(
-          id = Label.parse("@org_golang_x_text//internal/tag:tag"),
+          id = Label.parseCanonical("@org_golang_x_text//internal/tag:tag"),
           goImportPath = "golang.org/x/text/internal/tag",
           goRoot = Path(libraryRoot + "internal/tag/"),
         ),
         GoLibraryItem(
-          id = Label.parse("@org_golang_x_text//language:language"),
+          id = Label.parseCanonical("@org_golang_x_text//language:language"),
           goImportPath = "golang.org/x/text/language",
           goRoot = Path(libraryRoot + "language/"),
         ),
         GoLibraryItem(
-          id = Label.parse("@org_golang_x_text//transform:transform"),
+          id = Label.parseCanonical("@org_golang_x_text//transform:transform"),
           goImportPath = "golang.org/x/text/transform",
           goRoot = Path(libraryRoot + "transform/"),
         ),
         GoLibraryItem(
-          id = Label.parse("@org_golang_x_text//unicode/norm:norm"),
+          id = Label.parseCanonical("@org_golang_x_text//unicode/norm:norm"),
           goImportPath = "golang.org/x/text/unicode/norm",
           goRoot = Path(libraryRoot + "unicode/norm/"),
         ),

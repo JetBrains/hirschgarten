@@ -56,7 +56,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val srcJavaLibTarget =
       RawBuildTarget(
-        Label.parse("//src:java-lib"),
+        Label.parseCanonical("//src:java-lib"),
         tags = listOf(),
         dependencies = emptyList(),
         kind =
@@ -72,9 +72,9 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
 
     val srcJavaBinaryTarget =
       RawBuildTarget(
-        Label.parse("//src:java-binary"),
+        Label.parseCanonical("//src:java-binary"),
         tags = listOf(),
-        dependencies = listOf(Label.parse("//src:java-lib")),
+        dependencies = listOf(Label.parseCanonical("//src:java-lib")),
         kind =
           TargetKind(
             kindString = "java_binary",
@@ -88,7 +88,7 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
 
     val srcKotlinLibTarget =
       RawBuildTarget(
-        Label.parse("//src:kt-lib"),
+        Label.parseCanonical("//src:kt-lib"),
         tags = listOf(),
         dependencies = emptyList(),
         kind =
@@ -104,9 +104,9 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
 
     val srcKotlinBinaryTarget =
       RawBuildTarget(
-        Label.parse("//src:kt-binary"),
+        Label.parseCanonical("//src:kt-binary"),
         tags = listOf(),
-        dependencies = listOf(Label.parse("//src:kt-lib")),
+        dependencies = listOf(Label.parseCanonical("//src:kt-lib")),
         kind =
           TargetKind(
             kindString = "kt_jvm_binary",

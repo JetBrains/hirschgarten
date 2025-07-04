@@ -2,7 +2,10 @@ package org.jetbrains.bazel.server.sync
 
 import org.jetbrains.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.server.bzlmod.RepoMappingDisabled
+import org.jetbrains.bazel.server.bzlmod.canonicalize
 import org.jetbrains.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.InverseSourcesResult
 import java.nio.file.Path
@@ -31,7 +34,7 @@ object InverseSourcesQuery {
     bazelRunner: BazelRunner,
     bazelRelease: BazelRelease,
     workspaceContext: WorkspaceContext,
-  ): List<Label> {
+  ): List<CanonicalLabel> {
     val packageLabel = fileLabel.replace(":.*".toRegex(), ":*")
     val consistentLabelsArg = listOfNotNull(if (bazelRelease.major >= 6) "--consistent_labels" else null) // #bazel5
     val command =
@@ -46,7 +49,10 @@ object InverseSourcesQuery {
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
         .waitAndGetResult()
     if (targetLabelsQuery.isSuccess) {
-      return targetLabelsQuery.stdoutLines.mapNotNull { Label.parseOrNull(it) }
+      return targetLabelsQuery.stdoutLines
+        .mapNotNull {
+          Label.parseOrNull(it)?.canonicalize(RepoMappingDisabled) // TODO: use repo mapping}
+        }.distinct()
     } else {
       error("Could not retrieve inverse sources")
     }

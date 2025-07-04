@@ -81,7 +81,7 @@ intellij_integration_test_suite(
     ],
     test_package_root = "org.jetbrains.bazel.workspacecontext",
     deps = [
-        "//plugin-bazel/src:test_fixtures",
         "//commons/src/main/kotlin/org/jetbrains/bazel/label",
+        "//plugin-bazel/src:test_fixtures",
     ],
 )

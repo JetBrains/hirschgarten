@@ -42,6 +42,7 @@ import kotlinx.coroutines.sync.withLock
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.coroutines.BazelCoroutineService
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bazel.sdkcompat.workspacemodel.entities.BazelDummyEntitySource
@@ -276,7 +277,7 @@ private fun processFileRemoved(
   targetUtils.removeFileToTargetIdEntry(oldUri)
 }
 
-private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<Label>? =
+private suspend fun queryTargetsForFile(project: Project, fileUrl: VirtualFileUrl): List<CanonicalLabel>? =
   if (!project.serviceAsync<SyncStatusService>().isSyncInProgress) {
     try {
       askForInverseSources(project, fileUrl)

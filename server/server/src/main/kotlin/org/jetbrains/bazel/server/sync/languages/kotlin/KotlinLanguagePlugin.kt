@@ -2,7 +2,6 @@ package org.jetbrains.bazel.server.sync.languages.kotlin
 
 import org.jetbrains.bazel.info.KotlinTargetInfo
 import org.jetbrains.bazel.info.TargetInfo
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bazel.server.sync.languages.LanguagePlugin
@@ -48,8 +47,7 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
 
   private fun KotlinTargetInfo.toKotlincOptArguments(): List<String> = kotlincOpts + additionalKotlinOpts()
 
-  private fun KotlinTargetInfo.additionalKotlinOpts(): List<String> =
-    toKotlincPluginClasspathArguments() + toKotlincPluginOptionArguments()
+  private fun KotlinTargetInfo.additionalKotlinOpts(): List<String> = toKotlincPluginClasspathArguments() + toKotlincPluginOptionArguments()
 
   private fun KotlinTargetInfo.toKotlincPluginOptionArguments(): List<String> =
     kotlincPluginInfos

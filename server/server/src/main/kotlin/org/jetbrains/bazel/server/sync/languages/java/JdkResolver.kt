@@ -37,8 +37,8 @@ class JdkResolver(private val bazelPathsResolver: BazelPathsResolver, private va
 
   private fun resolveJdkData(targetInfo: TargetInfo): JdkCandidateData? {
     val javaHomeFile =
-        targetInfo.javaRuntimeInfo?.javaHome ?:
-        targetInfo.javaToolchainInfo?.javaHome
+      targetInfo.javaRuntimeInfo?.javaHome
+        ?: targetInfo.javaToolchainInfo?.javaHome
 
     val javaHome = javaHomeFile?.let { bazelPathsResolver.resolve(it) }
 

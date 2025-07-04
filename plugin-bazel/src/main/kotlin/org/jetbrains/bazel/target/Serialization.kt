@@ -9,14 +9,8 @@ import org.jetbrains.bazel.commons.LanguageClass
 import org.jetbrains.bazel.commons.RuleType
 import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.commons.gson.bazelGson
-import org.jetbrains.bazel.label.Apparent
-import org.jetbrains.bazel.label.ApparentLabel
-import org.jetbrains.bazel.label.Canonical
 import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
-import org.jetbrains.bazel.label.Package
-import org.jetbrains.bazel.label.SingleTarget
-import org.jetbrains.bazel.label.SyntheticLabel
 import org.jetbrains.bsp.protocol.PartialBuildTarget
 import java.nio.ByteBuffer
 import java.nio.file.Path
@@ -44,48 +38,13 @@ internal fun ByteBuffer.readString(): String {
   return String(bytes)
 }
 
-internal fun writeLabel(buffer: WriteBuffer, label: Label) {
-  val repo = label.repo
-  when {
-    label is SyntheticLabel -> {
-      buffer.put(0)
-      buffer.writeString("")
-    }
-
-    repo is Canonical -> {
-      buffer.put(1)
-      buffer.writeString(repo.repoName)
-    }
-
-    repo is Apparent -> {
-      buffer.put(2)
-      buffer.writeString(repo.repoName)
-    }
-  }
-
-  val packagePath = label.packagePath
-  buffer.putVarInt(packagePath.pathSegments.size)
-  for (value in packagePath.pathSegments) {
-    buffer.writeString(value)
-  }
-
-  buffer.writeString(label.targetName)
+internal fun writeLabel(buffer: WriteBuffer, label: CanonicalLabel) {
+  buffer.writeString(label.toString())
 }
 
-internal fun readLabel(buffer: ByteBuffer): Label {
-  val repoType = buffer.get().toInt()
-  val repoName = buffer.readString()
-
-  val packagePath = Package(Array(readVarInt(buffer)) { buffer.readString() }.asList())
-
-  val target = SingleTarget(buffer.readString())
-
-  return when (repoType) {
-    0 -> SyntheticLabel(target)
-    1 -> CanonicalLabel(Canonical(repoName), packagePath, target)
-    2 -> ApparentLabel(Apparent(repoName), packagePath, target)
-    else -> throw IllegalStateException("Unexpected repo type $repoType")
-  }
+internal fun readLabel(buffer: ByteBuffer): CanonicalLabel {
+  val label = buffer.readString()
+  return Label.parseCanonical(label)
 }
 
 internal fun createIdToBuildMapType(filePathSuffix: String, rootDir: Path): MVMap.Builder<HashValue128, PartialBuildTarget> {

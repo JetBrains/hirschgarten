@@ -95,7 +95,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
 
     val kotlincTestBuildTarget =
       RawBuildTarget(
-        Label.parse("$targetPrefix//kotlinc_test:Foo"),
+        Label.parseCanonical("$targetPrefix//kotlinc_test:Foo"),
         tags = listOf(),
         dependencies = listOf(Label.synthetic("rules_kotlin_kotlin-stdlibs")),
         kind =
@@ -118,7 +118,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
 
     val openForTestingBuildTarget =
       RawBuildTarget(
-        Label.parse("$targetPrefix//plugin_allopen_test:open_for_testing"),
+        Label.parseCanonical("$targetPrefix//plugin_allopen_test:open_for_testing"),
         tags = listOf(),
         dependencies = listOf(Label.synthetic("rules_kotlin_kotlin-stdlibs")),
         kind =
@@ -184,12 +184,12 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
 
     val userBuildTarget =
       RawBuildTarget(
-        Label.parse("$targetPrefix//plugin_allopen_test:user"),
+        Label.parseCanonical("$targetPrefix//plugin_allopen_test:user"),
         tags = listOf(),
         dependencies =
           listOf(
             Label.synthetic("rules_kotlin_kotlin-stdlibs"),
-            Label.parse("@//plugin_allopen_test:open_for_testing"),
+            Label.parseCanonical("@//plugin_allopen_test:open_for_testing"),
             Label.synthetic("allopen-compiler-plugin.jar"),
           ),
         kind =
@@ -213,12 +213,12 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
 
     val userOfExportBuildTarget =
       RawBuildTarget(
-        Label.parse("$targetPrefix//plugin_allopen_test:user_of_export"),
+        Label.parseCanonical("$targetPrefix//plugin_allopen_test:user_of_export"),
         tags = listOf(),
         dependencies =
           listOf(
             Label.synthetic("rules_kotlin_kotlin-stdlibs"),
-            Label.parse("@//plugin_allopen_test:open_for_testing_export"),
+            Label.parseCanonical("@//plugin_allopen_test:open_for_testing_export"),
             Label.synthetic("allopen-compiler-plugin.jar"),
           ),
         kind =
@@ -242,12 +242,12 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
 
     val openForTestingExport =
       RawBuildTarget(
-        Label.parse("$targetPrefix//plugin_allopen_test:open_for_testing_export"),
+        Label.parseCanonical("$targetPrefix//plugin_allopen_test:open_for_testing_export"),
         tags = listOf(),
         dependencies =
           listOf(
             Label.synthetic("rules_kotlin_kotlin-stdlibs"),
-            Label.parse("@//plugin_allopen_test:open_for_testing"),
+            Label.parseCanonical("@//plugin_allopen_test:open_for_testing"),
           ),
         kind =
           TargetKind(
@@ -293,7 +293,7 @@ open class BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
 
   private fun compareJavacOptionsResult(): BazelBspTestScenarioStep {
     val stepName = "javac options results"
-    val target = Label.parse("$targetPrefix//kotlinc_test:Foo")
+    val target = Label.parseCanonical("$targetPrefix//kotlinc_test:Foo")
     val params = JavacOptionsParams(listOf(target))
 
     val expectedResult =

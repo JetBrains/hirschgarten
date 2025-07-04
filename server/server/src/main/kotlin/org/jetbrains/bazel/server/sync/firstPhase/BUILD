@@ -10,7 +10,7 @@ kt_library(
         "//server/bazelrunner",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/managers",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/utils",
-                "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/languages",
+        "//server/server/src/main/kotlin/org/jetbrains/bazel/server/sync/languages",
         "//third_party/bazel/src/main/protobuf:build_java_proto",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
     ],

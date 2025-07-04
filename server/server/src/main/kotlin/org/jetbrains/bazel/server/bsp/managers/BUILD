@@ -17,7 +17,7 @@ kt_library(
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bsp/utils:structured_files_utils",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/bzlmod",
         "//server/server/src/main/kotlin/org/jetbrains/bazel/server/diagnostics",
-                "@maven//:com_google_guava_guava",
+        "@maven//:com_google_guava_guava",
         "@maven//:io_grpc_grpc_protobuf",
         "@maven//:org_apache_velocity_velocity_engine_core",
         "@maven//:org_slf4j_slf4j_api",

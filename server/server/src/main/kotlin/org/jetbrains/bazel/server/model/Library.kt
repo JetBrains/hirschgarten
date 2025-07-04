@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.server.model
 
 import org.jetbrains.bazel.label.CanonicalLabel
-import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.MavenCoordinates
 import java.nio.file.Path
 

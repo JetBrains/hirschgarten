@@ -34,7 +34,7 @@ import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bazel.annotations.InternalApi
 import org.jetbrains.bazel.annotations.PublicApi
 import org.jetbrains.bazel.commons.RuleType
-import org.jetbrains.bazel.label.Label
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.magicmetamodel.formatAsModuleName
 import org.jetbrains.bsp.protocol.BuildTarget
 import org.jetbrains.bsp.protocol.LibraryItem
@@ -97,7 +97,7 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     }
   }
 
-  fun addFileToTargetIdEntry(file: Path, targets: List<Label>) {
+  fun addFileToTargetIdEntry(file: Path, targets: List<CanonicalLabel>) {
     db.addFileToTarget(file, targets)
   }
 
@@ -107,19 +107,19 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   @InternalApi
   @TestOnly
-  fun setTargets(labelToTargetInfo: Map<Label, BuildTarget>) {
+  fun setTargets(labelToTargetInfo: Map<CanonicalLabel, BuildTarget>) {
     db.setTargets(labelToTargetInfo)
     notifyTargetListUpdated()
   }
 
   // todo expensive operation
-  fun computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo: Map<Label, BuildTarget>): Map<Label, BuildTarget> =
+  fun computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo: Map<CanonicalLabel, BuildTarget>): Map<CanonicalLabel, BuildTarget> =
     db.computeFullLabelToTargetInfoMap(syncedTargetIdToTargetInfo)
 
   @InternalApi
   suspend fun saveTargets(
     targets: List<RawBuildTarget>,
-    fileToTarget: Map<Path, List<Label>>,
+    fileToTarget: Map<Path, List<CanonicalLabel>>,
     libraryItems: List<LibraryItem>?,
   ) {
     val labelToTargetInfo = targets.associateByTo(HashMap(targets.size)) { it.id }
@@ -149,13 +149,13 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   private suspend fun calculateFileToExecutableTargets(
     libraryItems: List<LibraryItem>?,
-    fileToTarget: Map<Path, List<Label>>,
+    fileToTarget: Map<Path, List<CanonicalLabel>>,
     targets: List<RawBuildTarget>,
-    labelToTargetInfo: Map<Label, BuildTarget>,
-  ): Map<Path, List<Label>> =
+    labelToTargetInfo: Map<CanonicalLabel, BuildTarget>,
+  ): Map<Path, List<CanonicalLabel>> =
     withContext(Dispatchers.Default) {
       val targetDependentsGraph = TargetDependentsGraph(targets, libraryItems)
-      val targetToTransitiveRevertedDependenciesCache = ConcurrentHashMap<Label, Set<Label>>()
+      val targetToTransitiveRevertedDependenciesCache = ConcurrentHashMap<CanonicalLabel, Set<CanonicalLabel>>()
       transformConcurrent(fileToTarget.entries) { (path, targets) ->
         val dependents =
           targets
@@ -177,11 +177,11 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
     }
 
   private fun calculateTransitivelyExecutableTargets(
-    resultCache: ConcurrentHashMap<Label, Set<Label>>,
+    resultCache: ConcurrentHashMap<CanonicalLabel, Set<CanonicalLabel>>,
     targetDependentsGraph: TargetDependentsGraph,
-    target: Label,
-    labelToTargetInfo: Map<Label, BuildTarget>,
-  ): Set<Label> =
+    target: CanonicalLabel,
+    labelToTargetInfo: Map<CanonicalLabel, BuildTarget>,
+  ): Set<CanonicalLabel> =
     resultCache.getOrPut(target) {
       val targetInfo = labelToTargetInfo.get(target)
       if (targetInfo?.kind?.isExecutable == true) {
@@ -204,18 +204,18 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   }
 
   @PublicApi
-  fun allTargets(): Sequence<Label> = db.getAllTargets()
+  fun allTargets(): Sequence<CanonicalLabel> = db.getAllTargets()
 
   fun getTotalTargetCount(): Int = db.getTotalTargetCount()
 
   @PublicApi
-  fun getTargetsForPath(path: Path): List<Label> = db.getTargetsForPath(path) ?: emptyList()
+  fun getTargetsForPath(path: Path): List<CanonicalLabel> = db.getTargetsForPath(path) ?: emptyList()
 
   @PublicApi
-  fun getTargetsForFile(file: VirtualFile): List<Label> = file.toNioPathOrNull()?.let { getTargetsForPath(it) } ?: emptyList()
+  fun getTargetsForFile(file: VirtualFile): List<CanonicalLabel> = file.toNioPathOrNull()?.let { getTargetsForPath(it) } ?: emptyList()
 
   @InternalApi
-  fun getExecutableTargetsForFile(file: VirtualFile): List<Label> {
+  fun getExecutableTargetsForFile(file: VirtualFile): List<CanonicalLabel> {
     val executableDirectTargets =
       getTargetsForFile(file)
         .filter { label -> db.getBuildTargetForLabel(label, project)?.kind?.isExecutable == true }
@@ -226,20 +226,20 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
   }
 
   @PublicApi
-  fun isLibrary(target: Label): Boolean = getBuildTargetForLabel(target)?.kind?.ruleType == RuleType.LIBRARY
+  fun isLibrary(target: CanonicalLabel): Boolean = getBuildTargetForLabel(target)?.kind?.ruleType == RuleType.LIBRARY
 
   @PublicApi
-  fun getTargetForModuleId(moduleId: String): Label? = db.getTargetForModuleId(moduleId)
+  fun getTargetForModuleId(moduleId: String): CanonicalLabel? = db.getTargetForModuleId(moduleId)
 
   @PublicApi
-  fun getTargetForLibraryId(libraryId: String): Label? = db.getTargetForLibraryId(libraryId)
+  fun getTargetForLibraryId(libraryId: String): CanonicalLabel? = db.getTargetForLibraryId(libraryId)
 
   /**
    * All labels in a label-to-target map are canonical.
    * The label must be first canonicalized via toCanonicalLabel.
    */
   @InternalApi
-  fun getBuildTargetForLabel(label: Label): BuildTarget? = db.getBuildTargetForLabel(label, project)
+  fun getBuildTargetForLabel(label: CanonicalLabel): BuildTarget? = db.getBuildTargetForLabel(label, project)
 
   @InternalApi
   fun getBuildTargetForModule(module: Module): BuildTarget? = getTargetForModuleId(module.name)?.let { getBuildTargetForLabel(it) }
@@ -249,7 +249,8 @@ class TargetUtils(private val project: Project, private val coroutineScope: Coro
 
   // todo: avoid such methods as we load all targets into memory
   @InternalApi
-  fun allBuildTargetAsLabelToTargetMap(predicate: (BuildTarget) -> Boolean): List<Label> = db.allBuildTargetAsLabelToTargetMap(predicate)
+  fun allBuildTargetAsLabelToTargetMap(predicate: (BuildTarget) -> Boolean): List<CanonicalLabel> =
+    db.allBuildTargetAsLabelToTargetMap(predicate)
 
   fun getTotalFileCount(): Int = db.getTotalFileCount()
 }
@@ -262,10 +263,10 @@ val Project.targetUtils: TargetUtils
   get() = service<TargetUtils>()
 
 @PublicApi
-fun Label.getModule(project: Project): Module? = project.targetUtils.getBuildTargetForLabel(this)?.getModule(project)
+fun CanonicalLabel.getModule(project: Project): Module? = project.targetUtils.getBuildTargetForLabel(this)?.getModule(project)
 
 @PublicApi
-fun Label.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity
+fun CanonicalLabel.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity
 
 val Module.moduleEntity: ModuleEntity?
   @InternalApi

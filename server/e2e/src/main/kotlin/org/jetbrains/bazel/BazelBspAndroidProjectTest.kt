@@ -68,9 +68,9 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
 
     val appBuildTarget =
       RawBuildTarget(
-        Label.parse("@@//src/main:app"),
+        Label.parseCanonical("@@//src/main:app"),
         listOf(),
-        listOf(Label.parse("@@//src/main/java/com/example/myapplication:lib")),
+        listOf(Label.parseCanonical("@@//src/main/java/com/example/myapplication:lib")),
         kind =
           TargetKind(
             kindString = "java_binary",
@@ -85,9 +85,9 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
 
     val libBuildTarget =
       RawBuildTarget(
-        Label.parse("@@//src/main/java/com/example/myapplication:lib"),
+        Label.parseCanonical("@@//src/main/java/com/example/myapplication:lib"),
         listOf(),
-        listOf(Label.parse("@@rules_jvm_external~~maven~maven//:androidx_appcompat_appcompat")),
+        listOf(Label.parseCanonical("@@rules_jvm_external~~maven~maven//:androidx_appcompat_appcompat")),
         kind =
           TargetKind(
             kindString = "java_binary",
@@ -102,14 +102,14 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
 
     val libTestBuildTarget =
       RawBuildTarget(
-        Label.parse("@@//src/test/java/com/example/myapplication:lib_test"),
+        Label.parseCanonical("@@//src/test/java/com/example/myapplication:lib_test"),
         listOf(),
         listOf(
-          Label.parse("@@//src/main/java/com/example/myapplication:lib"),
-          Label.parse("@@rules_jvm_external~~maven~maven//:junit_junit"),
-          Label.parse("@@rules_jvm_external~~maven~maven//:org_robolectric_robolectric"),
-          Label.parse("@@rules_jvm_external~~maven~maven//:org_robolectric_shadows_framework"),
-          Label.parse("@@rules_robolectric~//bazel:android-all"),
+          Label.parseCanonical("@@//src/main/java/com/example/myapplication:lib"),
+          Label.parseCanonical("@@rules_jvm_external~~maven~maven//:junit_junit"),
+          Label.parseCanonical("@@rules_jvm_external~~maven~maven//:org_robolectric_robolectric"),
+          Label.parseCanonical("@@rules_jvm_external~~maven~maven//:org_robolectric_shadows_framework"),
+          Label.parseCanonical("@@rules_robolectric~//bazel:android-all"),
         ),
         kind =
           TargetKind(

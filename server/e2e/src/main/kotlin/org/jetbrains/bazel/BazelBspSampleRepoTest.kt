@@ -10,6 +10,7 @@ import org.jetbrains.bazel.commons.TargetKind
 import org.jetbrains.bazel.install.Install
 import org.jetbrains.bazel.install.cli.CliOptions
 import org.jetbrains.bazel.install.cli.ProjectViewCliOptions
+import org.jetbrains.bazel.label.CanonicalLabel
 import org.jetbrains.bazel.label.Label
 import org.jetbrains.bsp.protocol.CompileParams
 import org.jetbrains.bsp.protocol.CompileResult
@@ -137,7 +138,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
   private fun inverseSourcesResults(): BazelBspTestScenarioStep {
     val inverseSourcesDocument = TextDocumentIdentifier(Path("\$WORKSPACE/java_targets/JavaBinary.java"))
     val expectedInverseSourcesResult =
-      InverseSourcesResult(listOf(Label.parse("$targetPrefix//java_targets:java_binary")))
+      InverseSourcesResult(listOf(Label.parseCanonical("$targetPrefix//java_targets:java_binary")))
     val inverseSourcesParams = InverseSourcesParams(inverseSourcesDocument)
     return BazelBspTestScenarioStep(
       "inverse sources results",
@@ -153,100 +154,100 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
   private fun dependencySourcesResults(): BazelBspTestScenarioStep {
     val javaTargetsJavaBinary =
       DependencySourcesItem(
-        Label.parse("$targetPrefix//java_targets:java_binary"),
+        Label.parseCanonical("$targetPrefix//java_targets:java_binary"),
         emptyList(),
       )
     val javaTargetsJavaBinaryWithFlag =
       DependencySourcesItem(
-        Label.parse("$targetPrefix//java_targets:java_binary_with_flag"),
+        Label.parseCanonical("$targetPrefix//java_targets:java_binary_with_flag"),
         emptyList(),
       )
     val javaTargetsJavaLibrary =
       DependencySourcesItem(
-        Label.parse("$targetPrefix//java_targets:java_library"),
+        Label.parseCanonical("$targetPrefix//java_targets:java_library"),
         emptyList(),
       )
     val targetWithDependencyJavaBinary =
       DependencySourcesItem(
-        Label.parse("$targetPrefix//target_with_dependency:java_binary"),
+        Label.parseCanonical("$targetPrefix//target_with_dependency:java_binary"),
         emptyList(),
       )
     val javaTargetsSubpackageJavaLibrary =
       DependencySourcesItem(
-        Label.parse("$targetPrefix//java_targets/subpackage:java_library"),
+        Label.parseCanonical("$targetPrefix//java_targets/subpackage:java_library"),
         emptyList(),
       )
     val scalaTargetsScalaBinary =
       DependencySourcesItem(
-        Label.parse("$targetPrefix//scala_targets:scala_binary"),
+        Label.parseCanonical("$targetPrefix//scala_targets:scala_binary"),
         emptyList(),
       )
     val scalaTargetsScalaTest =
       DependencySourcesItem(
-        Label.parse("$targetPrefix//scala_targets:scala_test"),
+        Label.parseCanonical("$targetPrefix//scala_targets:scala_test"),
         emptyList(),
       )
     val targetWithResourcesJavaBinary =
       DependencySourcesItem(
-        Label.parse("$targetPrefix//target_with_resources:java_binary"),
+        Label.parseCanonical("$targetPrefix//target_with_resources:java_binary"),
         emptyList(),
       )
     val targetWithoutArgsBinary =
       DependencySourcesItem(
-        Label.parse("$targetPrefix//target_without_args:binary"),
+        Label.parseCanonical("$targetPrefix//target_without_args:binary"),
         emptyList(),
       )
     val targetWithoutJvmFlagsBinary =
       DependencySourcesItem(
-        Label.parse("$targetPrefix//target_without_jvm_flags:binary"),
+        Label.parseCanonical("$targetPrefix//target_without_jvm_flags:binary"),
         emptyList(),
       )
     val targetWithoutMainClassLibrary =
       DependencySourcesItem(
-        Label.parse("$targetPrefix//target_without_main_class:library"),
+        Label.parseCanonical("$targetPrefix//target_without_main_class:library"),
         emptyList(),
       )
     val javaTargetsJavaLibraryExported =
       DependencySourcesItem(
-        Label.parse("$targetPrefix//java_targets:java_library_exported"),
+        Label.parseCanonical("$targetPrefix//java_targets:java_library_exported"),
         emptyList(),
       )
     val environmentVariablesJavaBinary =
       DependencySourcesItem(
-        Label.parse("$targetPrefix//environment_variables:java_binary"),
+        Label.parseCanonical("$targetPrefix//environment_variables:java_binary"),
         emptyList(),
       )
     val environmentVariablesJavaTest =
       DependencySourcesItem(
-        Label.parse("$targetPrefix//environment_variables:java_test"),
+        Label.parseCanonical("$targetPrefix//environment_variables:java_test"),
         emptyList(),
       )
     val targetWithJavacExportsJavaLibrary =
       DependencySourcesItem(
-        Label.parse("$targetPrefix//target_with_javac_exports:java_library"),
+        Label.parseCanonical("$targetPrefix//target_with_javac_exports:java_library"),
         emptyList(),
       )
 
     val nonModuleTargets =
       listOf(
         DependencySourcesItem(
-          Label.parse("//genrule:foo"),
+          Label.parseCanonical("//genrule:foo"),
           emptyList(),
         ),
         DependencySourcesItem(
-          Label.parse("//target_without_java_info:genrule"),
+          Label.parseCanonical("//target_without_java_info:genrule"),
           emptyList(),
         ),
         DependencySourcesItem(
-          Label.parse("//target_without_java_info:filegroup"),
+          Label.parseCanonical("//target_without_java_info:filegroup"),
           emptyList(),
         ),
         DependencySourcesItem(
-          Label.parse("//target_without_main_class:library"),
+          Label.parseCanonical("//target_without_main_class:library"),
           emptyList(),
         ),
         DependencySourcesItem(
-          Label.parse("//target_without_jvm_flags:binary"),
+          Label.parseCanonical("//target_without_jvm_flags:binary"),
           emptyList(),
         ),
       )
@@ -292,7 +293,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       JvmRunEnvironmentResult(
         listOfNotNull(
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//java_targets:java_binary"),
+            Label.parseCanonical("$targetPrefix//java_targets:java_binary"),
             listOf(),
             listOf("--some_flag=bazel-out/$bazelArch-fastbuild/bin/java_targets/libjava_library.jar"),
             Path("\$WORKSPACE"),
@@ -300,7 +301,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("java_targets.JavaBinary", emptyList())),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//java_targets:java_binary_with_flag"),
+            Label.parseCanonical("$targetPrefix//java_targets:java_binary_with_flag"),
             listOf(),
             emptyList(),
             Path("\$WORKSPACE"),
@@ -308,14 +309,14 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("java_targets.JavaBinaryWithFlag", emptyList())),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//java_targets:java_library"),
+            Label.parseCanonical("$targetPrefix//java_targets:java_library"),
             listOf(),
             emptyList(),
             Path("\$WORKSPACE"),
             mapOf(),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//target_with_dependency:java_binary"),
+            Label.parseCanonical("$targetPrefix//target_with_dependency:java_binary"),
             guavaClasspath,
             emptyList(),
             Path("\$WORKSPACE"),
@@ -323,21 +324,21 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("target_with_dependency.JavaBinary", emptyList())),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//java_targets/subpackage:java_library"),
+            Label.parseCanonical("$targetPrefix//java_targets/subpackage:java_library"),
             listOf(),
             emptyList(),
             Path("\$WORKSPACE"),
             mapOf(),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//java_targets:java_library_exported"),
+            Label.parseCanonical("$targetPrefix//java_targets:java_library_exported"),
             listOf(),
             emptyList(),
             Path("\$WORKSPACE"),
             mapOf(),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//scala_targets:scala_binary"),
+            Label.parseCanonical("$targetPrefix//scala_targets:scala_binary"),
             listOf(
               Path(
                 "\$BAZEL_OUTPUT_BASE_PATH/external/${scalaRulesPath}_scala_library$scalaRulesPathVersionSuffix/scala-library-$scalaRulesVersion.jar",
@@ -352,7 +353,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("example.Example", listOf("arg1", "arg2"))),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//scala_targets:scala_test"),
+            Label.parseCanonical("$targetPrefix//scala_targets:scala_test"),
             listOf(
               Path(
                 "\$BAZEL_OUTPUT_BASE_PATH/external/${scalaRulesPath}_scala_library$scalaRulesPathVersionSuffix/scala-library-$scalaRulesVersion.jar",
@@ -399,7 +400,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("io.bazel.rulesscala.scala_test.Runner", emptyList())),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//target_with_resources:java_binary"),
+            Label.parseCanonical("$targetPrefix//target_with_resources:java_binary"),
             listOf(),
             emptyList(),
             Path("\$WORKSPACE"),
@@ -407,7 +408,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("target_with_resources.JavaBinary", emptyList())),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//target_without_args:binary"),
+            Label.parseCanonical("$targetPrefix//target_without_args:binary"),
             listOf(
               Path(
                 "\$BAZEL_OUTPUT_BASE_PATH/external/${scalaRulesPath}_scala_library$scalaRulesPathVersionSuffix/scala-library-$scalaRulesVersion.jar",
@@ -422,7 +423,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("example.Example", emptyList())),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//target_without_jvm_flags:binary"),
+            Label.parseCanonical("$targetPrefix//target_without_jvm_flags:binary"),
             listOf(
               Path(
                 "\$BAZEL_OUTPUT_BASE_PATH/external/${scalaRulesPath}_scala_library$scalaRulesPathVersionSuffix/scala-library-$scalaRulesVersion.jar",
@@ -437,7 +438,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("example.Example", listOf("arg1", "arg2"))),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//target_without_main_class:library"),
+            Label.parseCanonical("$targetPrefix//target_without_main_class:library"),
             listOf(
               Path(
                 "\$BAZEL_OUTPUT_BASE_PATH/external/${scalaRulesPath}_scala_library$scalaRulesPathVersionSuffix/scala-library-$scalaRulesVersion.jar",
@@ -451,7 +452,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             mapOf(),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//environment_variables:java_binary"),
+            Label.parseCanonical("$targetPrefix//environment_variables:java_binary"),
             listOf(),
             emptyList(),
             Path("\$WORKSPACE"),
@@ -459,7 +460,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("environment_variables.JavaEnv", emptyList())),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//environment_variables:java_test"),
+            Label.parseCanonical("$targetPrefix//environment_variables:java_test"),
             listOf(
               Path("\$BAZEL_OUTPUT_BASE_PATH/external/$remote_java_tools/java_tools/Runner_deploy.jar"),
             ),
@@ -475,7 +476,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             ),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//target_with_javac_exports:java_library"),
+            Label.parseCanonical("$targetPrefix//target_with_javac_exports:java_library"),
             emptyList(),
             emptyList(),
             Path("\$WORKSPACE"),
@@ -495,7 +496,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       JvmTestEnvironmentResult(
         listOfNotNull(
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//java_targets:java_binary"),
+            Label.parseCanonical("$targetPrefix//java_targets:java_binary"),
             listOf(),
             listOf("--some_flag=bazel-out/$bazelArch-fastbuild/bin/java_targets/libjava_library.jar"),
             Path("\$WORKSPACE"),
@@ -503,7 +504,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("java_targets.JavaBinary", emptyList())),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//java_targets:java_binary_with_flag"),
+            Label.parseCanonical("$targetPrefix//java_targets:java_binary_with_flag"),
             listOf(),
             emptyList(),
             Path("\$WORKSPACE"),
@@ -511,14 +512,14 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("java_targets.JavaBinaryWithFlag", emptyList())),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//java_targets:java_library"),
+            Label.parseCanonical("$targetPrefix//java_targets:java_library"),
             listOf(),
             emptyList(),
             Path("\$WORKSPACE"),
             mapOf(),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//target_with_dependency:java_binary"),
+            Label.parseCanonical("$targetPrefix//target_with_dependency:java_binary"),
             guavaClasspath,
             emptyList(),
             Path("\$WORKSPACE"),
@@ -526,21 +527,21 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("target_with_dependency.JavaBinary", emptyList())),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//java_targets/subpackage:java_library"),
+            Label.parseCanonical("$targetPrefix//java_targets/subpackage:java_library"),
             listOf(),
             emptyList(),
             Path("\$WORKSPACE"),
             mapOf(),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//java_targets:java_library_exported"),
+            Label.parseCanonical("$targetPrefix//java_targets:java_library_exported"),
             listOf(),
             emptyList(),
             Path("\$WORKSPACE"),
             mapOf(),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//scala_targets:scala_binary"),
+            Label.parseCanonical("$targetPrefix//scala_targets:scala_binary"),
             listOf(
               Path(
                 "\$BAZEL_OUTPUT_BASE_PATH/external/${scalaRulesPath}_scala_library$scalaRulesPathVersionSuffix/scala-library-$scalaRulesVersion.jar",
@@ -555,7 +556,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("example.Example", listOf("arg1", "arg2"))),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//scala_targets:scala_test"),
+            Label.parseCanonical("$targetPrefix//scala_targets:scala_test"),
             listOf(
               Path(
                 "\$BAZEL_OUTPUT_BASE_PATH/external/${scalaRulesPath}_scala_library$scalaRulesPathVersionSuffix/scala-library-$scalaRulesVersion.jar",
@@ -602,7 +603,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("io.bazel.rulesscala.scala_test.Runner", emptyList())),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//target_with_resources:java_binary"),
+            Label.parseCanonical("$targetPrefix//target_with_resources:java_binary"),
             listOf(),
             emptyList(),
             Path("\$WORKSPACE"),
@@ -610,7 +611,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("target_with_resources.JavaBinary", emptyList())),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//target_without_args:binary"),
+            Label.parseCanonical("$targetPrefix//target_without_args:binary"),
             listOf(
               Path(
                 "\$BAZEL_OUTPUT_BASE_PATH/external/${scalaRulesPath}_scala_library$scalaRulesPathVersionSuffix/scala-library-$scalaRulesVersion.jar",
@@ -625,7 +626,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("example.Example", emptyList())),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//target_without_jvm_flags:binary"),
+            Label.parseCanonical("$targetPrefix//target_without_jvm_flags:binary"),
             listOf(
               Path(
                 "\$BAZEL_OUTPUT_BASE_PATH/external/${scalaRulesPath}_scala_library$scalaRulesPathVersionSuffix/scala-library-$scalaRulesVersion.jar",
@@ -640,7 +641,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("example.Example", listOf("arg1", "arg2"))),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//target_without_main_class:library"),
+            Label.parseCanonical("$targetPrefix//target_without_main_class:library"),
             listOf(
               Path(
                 "\$BAZEL_OUTPUT_BASE_PATH/external/${scalaRulesPath}_scala_library$scalaRulesPathVersionSuffix/scala-library-$scalaRulesVersion.jar",
@@ -654,7 +655,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             mapOf(),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//environment_variables:java_binary"),
+            Label.parseCanonical("$targetPrefix//environment_variables:java_binary"),
             listOf(),
             emptyList(),
             Path("\$WORKSPACE"),
@@ -662,7 +663,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             listOf(JvmMainClass("environment_variables.JavaEnv", emptyList())),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//environment_variables:java_test"),
+            Label.parseCanonical("$targetPrefix//environment_variables:java_test"),
             listOf(
               Path("\$BAZEL_OUTPUT_BASE_PATH/external/$remote_java_tools/java_tools/Runner_deploy.jar"),
             ),
@@ -678,7 +679,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             ),
           ),
           JvmEnvironmentItem(
-            Label.parse("$targetPrefix//target_with_javac_exports:java_library"),
+            Label.parseCanonical("$targetPrefix//target_with_javac_exports:java_library"),
             emptyList(),
             emptyList(),
             Path("\$WORKSPACE"),
@@ -694,7 +695,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
   private fun javacOptionsResult(): BazelBspTestScenarioStep {
     val stepName = "javac options results"
     if (majorBazelVersion == 5) return BazelBspTestScenarioStep(stepName) {}
-    val targetWithJavacExportsIdentifier = Label.parse("$targetPrefix//target_with_javac_exports:java_library")
+    val targetWithJavacExportsIdentifier = Label.parseCanonical("$targetPrefix//target_with_javac_exports:java_library")
     val params = JavacOptionsParams(listOf(targetWithJavacExportsIdentifier))
 
     val expectedResult =
@@ -717,12 +718,12 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
   }
 
   private fun buildTargetWithOriginId(): BazelBspTestScenarioStep {
-    val targetId = Label.parse("$targetPrefix//java_targets:java_library")
+    val targetId = Label.parseCanonical("$targetPrefix//java_targets:java_library")
     val originId = "build-target-origin-id"
     return buildTarget(targetId, originId)
   }
 
-  private fun buildTarget(targetId: Label, originId: String): BazelBspTestScenarioStep {
+  private fun buildTarget(targetId: CanonicalLabel, originId: String): BazelBspTestScenarioStep {
     val params =
       CompileParams(listOf(targetId), originId = originId)
 
@@ -761,7 +762,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
 
     val javaTargetsJavaBinary =
       RawBuildTarget(
-        Label.parse("$targetPrefix//java_targets:java_binary"),
+        Label.parseCanonical("$targetPrefix//java_targets:java_binary"),
         listOf(),
         emptyList(),
         TargetKind(
@@ -783,7 +784,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
     val javaTargetsJavaBinaryWithFlag =
       RawBuildTarget(
-        Label.parse("$targetPrefix//java_targets:java_binary_with_flag"),
+        Label.parseCanonical("$targetPrefix//java_targets:java_binary_with_flag"),
         listOf(),
         emptyList(),
         TargetKind(
@@ -823,7 +824,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
 
     val scalaTargetsScalaBinary =
       RawBuildTarget(
-        Label.parse("$targetPrefix//scala_targets:scala_binary"),
+        Label.parseCanonical("$targetPrefix//scala_targets:scala_binary"),
         listOf(),
         listOf(
           Label.synthetic("scala-compiler-$scalaRulesVersion.jar"),
@@ -849,7 +850,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
     val javaTargetsSubpackageSubpackage =
       RawBuildTarget(
-        Label.parse("$targetPrefix//java_targets/subpackage:java_library"),
+        Label.parseCanonical("$targetPrefix//java_targets/subpackage:java_library"),
         listOf(),
         emptyList(),
         TargetKind(
@@ -871,7 +872,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
     val javaTargetsJavaLibrary =
       RawBuildTarget(
-        Label.parse("$targetPrefix//java_targets:java_library"),
+        Label.parseCanonical("$targetPrefix//java_targets:java_library"),
         listOf(),
         listOf(),
         TargetKind(
@@ -893,7 +894,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
     val targetWithoutJvmFlagsBinary =
       RawBuildTarget(
-        Label.parse("$targetPrefix//target_without_jvm_flags:binary"),
+        Label.parseCanonical("$targetPrefix//target_without_jvm_flags:binary"),
         listOf(),
         listOf(
           Label.synthetic("scala-compiler-$scalaRulesVersion.jar"),
@@ -919,7 +920,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
     val targetWithoutMainClassLibrary =
       RawBuildTarget(
-        Label.parse("$targetPrefix//target_without_main_class:library"),
+        Label.parseCanonical("$targetPrefix//target_without_main_class:library"),
         listOf(),
         listOf(
           Label.synthetic("scala-compiler-$scalaRulesVersion.jar"),
@@ -945,7 +946,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
     val targetWithoutArgsBinary =
       RawBuildTarget(
-        Label.parse("$targetPrefix//target_without_args:binary"),
+        Label.parseCanonical("$targetPrefix//target_without_args:binary"),
         listOf(),
         listOf(
           Label.synthetic("scala-compiler-$scalaRulesVersion.jar"),
@@ -976,11 +977,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val guavaDep = if (isBzlmod) guavaDepBazel7 else guavaDepBazel5And6
     val targetWithDependencyJavaBinary =
       RawBuildTarget(
-        Label.parse("$targetPrefix//target_with_dependency:java_binary"),
+        Label.parseCanonical("$targetPrefix//target_with_dependency:java_binary"),
         listOf(),
         listOf(
-          Label.parse("$targetPrefix//java_targets:java_library_exported"),
-          Label.parse(guavaDep),
+          Label.parseCanonical("$targetPrefix//java_targets:java_library_exported"),
+          Label.parseCanonical(guavaDep),
         ),
         TargetKind(
           kindString = "java_binary",
@@ -1001,7 +1002,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
     val scalaTargetsScalaTest =
       RawBuildTarget(
-        Label.parse("$targetPrefix//scala_targets:scala_test"),
+        Label.parseCanonical("$targetPrefix//scala_targets:scala_test"),
         listOf(),
         listOf(
           Label.synthetic("scala-compiler-$scalaRulesVersion.jar"),
@@ -1041,7 +1042,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
     val targetWithResourcesJavaBinary =
       RawBuildTarget(
-        Label.parse("$targetPrefix//target_with_resources:java_binary"),
+        Label.parseCanonical("$targetPrefix//target_with_resources:java_binary"),
         listOf(),
         emptyList(),
         TargetKind(
@@ -1067,11 +1068,11 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
     val javaTargetsJavaLibraryExported =
       RawBuildTarget(
-        Label.parse("$targetPrefix//java_targets:java_library_exported"),
+        Label.parseCanonical("$targetPrefix//java_targets:java_library_exported"),
         listOf(),
         listOf(
-          Label.parse("$targetPrefix//java_targets/subpackage:java_library"),
-          Label.parse("$targetPrefix//java_targets:java_library_exported_output_jars"),
+          Label.parseCanonical("$targetPrefix//java_targets/subpackage:java_library"),
+          Label.parseCanonical("$targetPrefix//java_targets:java_library_exported_output_jars"),
         ),
         TargetKind(
           kindString = "java_library",
@@ -1086,7 +1087,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
     val environmentVariablesJavaLibrary =
       RawBuildTarget(
-        Label.parse("$targetPrefix//environment_variables:java_binary"),
+        Label.parseCanonical("$targetPrefix//environment_variables:java_binary"),
         listOf(),
         emptyList(),
         TargetKind(
@@ -1108,7 +1109,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
     val environmentVariablesJavaTest =
       RawBuildTarget(
-        Label.parse("$targetPrefix//environment_variables:java_test"),
+        Label.parseCanonical("$targetPrefix//environment_variables:java_test"),
         listOf(),
         emptyList(),
         TargetKind(
@@ -1130,7 +1131,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
     val targetWithJavacExportsJavaLibrary =
       RawBuildTarget(
-        Label.parse("$targetPrefix//target_with_javac_exports:java_library"),
+        Label.parseCanonical("$targetPrefix//target_with_javac_exports:java_library"),
         listOf(),
         emptyList(),
         TargetKind(
@@ -1154,7 +1155,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val nonModuleTargets =
       listOf(
         RawBuildTarget(
-          Label.parse("@//genrule:foo"),
+          Label.parseCanonical("@//genrule:foo"),
           listOf(),
           emptyList(),
           kind =
@@ -1168,7 +1169,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           resources = emptyList(),
         ),
         RawBuildTarget(
-          Label.parse("@//target_without_java_info:filegroup"),
+          Label.parseCanonical("@//target_without_java_info:filegroup"),
           listOf(),
           emptyList(),
           kind =
@@ -1182,7 +1183,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           resources = emptyList(),
         ),
         RawBuildTarget(
-          Label.parse("@//target_without_java_info:genrule"),
+          Label.parseCanonical("@//target_without_java_info:genrule"),
           listOf(),
           emptyList(),
           kind =

@@ -91,7 +91,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
 
     val target =
       RawBuildTarget(
-        Label.parse("$targetPrefix//scala_targets:library"),
+        Label.parseCanonical("$targetPrefix//scala_targets:library"),
         listOf(),
         listOf(
           Label.synthetic("scala-compiler-2.12.14.jar"),
