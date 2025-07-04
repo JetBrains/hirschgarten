@@ -3,17 +3,54 @@ package org.jetbrains.bazel.languages.starlark.references
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
+import com.intellij.util.Processor
 import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkLookupElement
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.rename.RenameUtils
+
+private fun getNamedArgumentValue(element: StarlarkCallExpression, argName: String): String? =
+  (
+    element
+      .getArgumentList()
+      ?.getArguments()
+      ?.find { arg ->
+        arg.name == argName
+      }?.getValue() as? StarlarkStringLiteralExpression
+  )?.getStringContents()
+
+internal class BazelDepProcessor(val result: MutableList<StarlarkElement>, private val lookingForModuleName: String) :
+  Processor<StarlarkElement> {
+  private fun getFunctionName(element: StarlarkCallExpression): String? = element.getNamePsi()?.text
+
+  override fun process(element: StarlarkElement): Boolean {
+    if (element !is StarlarkCallExpression) return true
+    val moduleNameArgValue = getNamedArgumentValue(element, "name")
+    if (getFunctionName(element) == "bazel_dep" && moduleNameArgValue == lookingForModuleName) {
+      result.add(element)
+    }
+    return true
+  }
+}
 
 class StarlarkFunctionCallReference(element: StarlarkCallExpression, rangeInElement: TextRange) :
   PsiReferenceBase<StarlarkCallExpression>(element, rangeInElement, true) {
   override fun resolve(): PsiElement? =
     myElement?.let {
-      val processor = StarlarkResolveProcessor(mutableListOf(), it)
-      SearchUtils.searchInFile(it, processor)
-      processor.result.firstOrNull()
+      val functionName = element.name
+      if (functionName != null && (functionName == "archive_override" || functionName == "git_override")) {
+        val moduleNameValue = getNamedArgumentValue(it, "module_name") ?: return@let null
+        val processor = BazelDepProcessor(mutableListOf(), moduleNameValue)
+        val file = it.containingFile as? StarlarkFile ?: return@let null
+        file.searchInFunctionCalls(processor)
+        processor.result.firstOrNull()
+      } else {
+        val processor = StarlarkResolveProcessor(mutableListOf(), it)
+        SearchUtils.searchInFile(it, processor)
+        processor.result.firstOrNull()
+      }
     }
 
   override fun getVariants(): Array<StarlarkLookupElement> = emptyArray()
