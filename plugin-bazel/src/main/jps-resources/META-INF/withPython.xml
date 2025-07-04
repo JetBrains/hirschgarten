@@ -25,4 +25,10 @@
     <extensions defaultExtensionNs="Pythonid">
         <importResolver implementation="org.jetbrains.bazel.python.resolve.BazelPyImportResolver" />
     </extensions>
+
+    <extensionPoints>
+        <extensionPoint qualifiedName="org.jetbrains.bazel.python.synonymProvider"
+                        interface="org.jetbrains.bazel.python.resolve.PythonSynonymProvider"
+                        dynamic="true"/>
+    </extensionPoints>
 </idea-plugin>
