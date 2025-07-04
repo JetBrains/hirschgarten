@@ -961,6 +961,7 @@ class BazelProjectMapper(
       "kt_android_library",
       "kt_android_local_test",
       "intellij_plugin_debug_target",
+      "go_proto_library",
       "go_library",
       "go_binary",
       "go_test",
@@ -1075,6 +1076,9 @@ class BazelProjectMapper(
       }
       if (target.hasPythonTargetInfo()) {
         add(LanguageClass.PYTHON)
+      }
+      if (target.hasGoTargetInfo()) {
+        add(LanguageClass.GO)
       }
       languagesFromKinds[target.kind]?.let {
         addAll(it)
