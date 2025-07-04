@@ -133,15 +133,15 @@ internal class JavaModuleWithSourcesUpdater(
     entityToAdd: JavaModule,
     moduleEntity: ModuleEntity,
   ) {
-    val useJspBuild = workspaceModelEntityUpdaterConfig.project.bazelJVMProjectSettings.enableBuildWithJps
-    val compilerOutput = if (useJspBuild) {
+    val useJpsBuild = workspaceModelEntityUpdaterConfig.project.bazelJVMProjectSettings.enableBuildWithJps
+    val compilerOutput = if (useJpsBuild) {
       JpsPaths
         .getJpsCompiledProductionPath(projectBasePath, entityToAdd.genericModuleInfo.name)
         .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
     } else {
       entityToAdd.compiledClassesPath?.toCompiledClassesVFSUrl()
     }
-    val testCompilerOutput = if (useJspBuild) {
+    val testCompilerOutput = if (useJpsBuild) {
       JpsPaths
         .getJpsCompiledTestPath(projectBasePath, entityToAdd.genericModuleInfo.name)
         .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
