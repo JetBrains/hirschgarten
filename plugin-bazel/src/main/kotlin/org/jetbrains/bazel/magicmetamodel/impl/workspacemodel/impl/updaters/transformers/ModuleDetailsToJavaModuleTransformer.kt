@@ -91,22 +91,13 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   private fun resolveCompiledClassesPathForJVMLanguage(input: ModuleDetails): Path {
     val target = input.target.id
-    val targetDir = project.rootDir.toNioPath().resolve("bazel-bin")
+    val targetDir = project.rootDir.toNioPath()
+      .resolve("bazel-bin")
       .resolve(target.packagePath.toString())
     val targetData = input.target.data
     return when (targetData) {
-      is JvmBuildTarget -> {
-        targetDir.resolve("_javac")
-              .resolve(target.targetName)
-              .resolve("${target.targetName}_classes")
-      }
-      is KotlinBuildTarget -> {
+      is JvmBuildTarget, is KotlinBuildTarget, is ScalaBuildTarget -> {
         targetDir.resolve("${target.targetName}.jar")
-      }
-      is ScalaBuildTarget -> {
-        targetDir.resolve("_scalac")
-          .resolve(target.targetName)
-          .resolve("classes")
       }
       else -> return targetDir.resolve(target.targetName)
     }
