@@ -60,9 +60,14 @@ suspend fun jumpToBuildFile(project: Project, target: Label) {
   }
 }
 
+// if the action is triggered from idea vim
+private const val IDEA_VIM_ACTION_PLACE = "IdeaVim"
+
 private val ALLOWED_ACTION_PLACES =
   listOf(
     ActionPlaces.EDITOR_POPUP,
     ActionPlaces.KEYBOARD_SHORTCUT,
     ActionPlaces.EDITOR_TAB_POPUP,
+    ActionPlaces.ACTION_SEARCH,
+    IDEA_VIM_ACTION_PLACE,
   )

@@ -827,7 +827,8 @@
         second-keystroke="H"
       />
     </action>
-    <action class="org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction">
+    <action id="Bazel.JumpToBuildFile"
+            class="org.jetbrains.bazel.ui.widgets.BazelJumpToBuildFileAction">
       <add-to-group group-id="EditorPopupMenu" />
       <add-to-group group-id="EditorTabPopupMenu" />
       <keyboard-shortcut
@@ -860,6 +861,10 @@
             class="org.jetbrains.bazel.action.registered.projectViewDirectories.ExcludeFromProjectViewDirectoriesAction"
             text="Exclude from the Project View Directories"
             description="Exclude this directory from the project view file.">
+    </action>
+
+    <action id="Bazel.OpenProjectViewFile"
+            class="org.jetbrains.bazel.action.registered.OpenProjectViewAction">
     </action>
 
     <group id="Bazel.ModifyProjectViewDirectories">
