@@ -32,7 +32,7 @@ class BazelGoTestHandler(configuration: BazelRunConfiguration) : BazelRunHandler
   init {
     configuration.beforeRunTasks =
       listOfNotNull(
-        BazelGoCalculateExecutableInfoBeforeRunTaskProvider().createTask(configuration),
+        BazelGoTestBeforeRunTaskProvider().createTask(configuration),
       )
   }
 
@@ -81,12 +81,18 @@ open class GoTestWithDebugCommandLineState(
   configuration: GoApplicationConfiguration,
   val settings: GenericTestState,
 ) : GoDebuggableCommandLineState(environment, module, configuration, originId) {
-  override fun patchAdditionalParams() {
+  override fun patchAdditionalConfigs() {
     with(configuration) {
       val testFilter = settings.testFilter
       if (testFilter != null) {
         customEnvironment["TESTBRIDGE_TEST_ONLY"] = testFilter
       }
+      val envVarsData = settings.env
+      val envVars = envVarsData.envs
+      for (env in envVars) {
+        customEnvironment[env.key] = env.value
+      }
+      isPassParentEnvironment = envVarsData.isPassParentEnvs
     }
   }
 }

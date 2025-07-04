@@ -28,7 +28,7 @@ class BazelGoRunHandler(configuration: BazelRunConfiguration) : BazelRunHandler 
   init {
     configuration.beforeRunTasks =
       listOfNotNull(
-        BazelGoCalculateExecutableInfoBeforeRunTaskProvider().createTask(configuration),
+        BazelGoBinaryBeforeRunTaskProvider().createTask(configuration),
       )
   }
 
@@ -76,4 +76,15 @@ class GoRunWithDebugCommandLineState(
   module: Module,
   configuration: GoApplicationConfiguration,
   val settings: GenericRunState,
-) : GoDebuggableCommandLineState(environment, module, configuration, originId)
+) : GoDebuggableCommandLineState(environment, module, configuration, originId) {
+  override fun patchAdditionalConfigs() {
+    with(configuration) {
+      val envVarsData = settings.env
+      val envVars = envVarsData.envs
+      for (env in envVars) {
+        customEnvironment[env.key] = env.value
+      }
+      isPassParentEnvironment = envVarsData.isPassParentEnvs
+    }
+  }
+}
