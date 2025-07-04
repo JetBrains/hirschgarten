@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.languages.starlark.refactoring
 
-import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
@@ -8,16 +7,15 @@ import com.intellij.psi.util.parentOfType
 import com.intellij.refactoring.RefactoringSettings
 import com.intellij.refactoring.safeDelete.NonCodeUsageSearchInfo
 import com.intellij.refactoring.safeDelete.SafeDeleteProcessor
-import com.intellij.refactoring.safeDelete.SafeDeleteProcessorDelegateBase
 import com.intellij.usageView.UsageInfo
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
+import org.jetbrains.bazel.sdkcompat.SafeDeleteProcessorDelegateCompat
 
-class StarlarkTargetSafeDeleteProcessor : SafeDeleteProcessorDelegateBase() {
+class StarlarkTargetSafeDeleteProcessor : SafeDeleteProcessorDelegateCompat() {
   override fun getElementsToSearch(
     element: PsiElement,
-    module: Module?,
     allElementsToDelete: Collection<PsiElement?>,
   ): Collection<PsiElement> = listOf(element)
 
