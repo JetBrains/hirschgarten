@@ -29,7 +29,6 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
     myFixture.project.injectCanonicalRepoNameToPath(newRepoNameToPathMap)
     BazelFileService.getInstance(myFixture.project).forceUpdateCache()
 
-    Thread.sleep(1000)
     myFixture.configureByText("BUILD.bazel", """load("//:<caret>)""")
     myFixture.type("d")
 
@@ -48,9 +47,9 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
     val rulesDir = tempFolder.newFolder("rules_kotlin")
     tempFolder.newFile("rules_kotlin/MODULE.bazel")
     tempFolder.newFile("rules_kotlin/BUILD.bazel")
-    tempFolder.newFolder("rules_kotlin/nested_rules")
+    tempFolder.newFolder("rules_kotlin/package")
     tempFolder.newFile("rules_kotlin/kt_jvm_library.bzl")
-    tempFolder.newFile("rules_kotlin/nested_rules/kt_jvm_binary.bzl")
+    tempFolder.newFile("rules_kotlin/package/kt_jvm_binary.bzl")
 
     val newRepoNameToPathMap = mapOf("rules_kotlin" to rulesDir.path.toNioPathOrNull()!!)
     val newCanonicalRepoNameToApparentName = mapOf("rules_kotlin" to "rules_kotlin")
@@ -66,7 +65,7 @@ class BazelLoadFilepathCompletionTest : CodeInsightFixtureTestCase<ModuleFixture
     lookups shouldContainExactlyInAnyOrder
       listOf(
         "\"@rules_kotlin//:kt_jvm_library.bzl\"",
-        "\"@rules_kotlin//nested_rules:kt_jvm_binary.bzl\"",
+        "\"@rules_kotlin//package:kt_jvm_binary.bzl\"",
       )
   }
 }
